@@ -72,6 +72,7 @@ struct _NbtkButtonPrivate
   guint is_hover : 1;
 
   ClutterActor     *bg_image;
+  ClutterActor     *old_bg;
   ClutterColor     *bg_color;
 };
 
@@ -79,6 +80,16 @@ static guint button_signals[LAST_SIGNAL] = { 0, };
 
 
 G_DEFINE_TYPE (NbtkButton, nbtk_button, NBTK_TYPE_WIDGET)
+
+static void
+style_changed_completed_effect (ClutterActor *actor, NbtkButton *button)
+{
+  NbtkButtonPrivate *priv = NBTK_BUTTON_GET_PRIVATE (button);
+
+  if (priv->old_bg)
+    g_object_unref (priv->old_bg);
+  priv->old_bg = NULL;
+}
 
 static void
 nbtk_button_style_changed (NbtkWidget *button)
@@ -108,21 +119,45 @@ nbtk_button_style_changed (NbtkWidget *button)
       ClutterActor *texture;
 
       if (priv->bg_image)
-        g_object_unref (priv->bg_image);
+        priv->old_bg = priv->bg_image;
 
       cache = nbtk_texture_cache_get_default ();
 
+      /* the TextureFrame doesn't work with texture clones as it only
+       * references the texture data */
       texture = nbtk_texture_cache_get_texture (cache, bg_url, FALSE);
 
       priv->bg_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
                                                0, 0, 0, 0);
+      clutter_actor_set_opacity (CLUTTER_ACTOR (priv->bg_image), 0);
       clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image),
                                 CLUTTER_ACTOR (button));
       g_free (bg_url);
+
+      if (G_UNLIKELY (!priv->press_tmpl))
+        {
+          priv->timeline = clutter_timeline_new_for_duration (100);
+          priv->press_tmpl = clutter_effect_template_new (priv->timeline,
+                                                          clutter_sine_inc_func);
+          clutter_effect_template_set_timeline_clone (priv->press_tmpl, FALSE);
+        }
+
+      if (clutter_timeline_is_playing (priv->timeline))
+        {
+          clutter_timeline_stop (priv->timeline);
+	  /* in case we stopped the timeline before old_bg was fully opaque */
+	  clutter_actor_set_opacity (priv->old_bg, 0xff);
+        }
+
+      clutter_effect_fade (priv->press_tmpl, priv->bg_image,
+                           0xff,
+                           (ClutterEffectCompleteFunc) style_changed_completed_effect, button);
+
     }
 
   /* queue a relayout, which also calls redraw */
   clutter_actor_queue_relayout (CLUTTER_ACTOR (button));
+
  
   if (NBTK_WIDGET_CLASS (nbtk_button_parent_class)->style_changed)
     NBTK_WIDGET_CLASS (nbtk_button_parent_class)->style_changed (button);
@@ -135,7 +170,12 @@ nbtk_button_paint (ClutterActor *actor)
   NbtkButtonPrivate *priv = button->priv;
 
   if (priv->bg_image)
-    clutter_actor_paint (priv->bg_image);
+    {
+      if (priv->old_bg)
+        clutter_actor_paint (priv->old_bg);
+
+      clutter_actor_paint (priv->bg_image);
+    }
   else
     {
       ClutterActorBox allocation = { 0, };
@@ -168,60 +208,19 @@ nbtk_button_paint (ClutterActor *actor)
 static void
 nbtk_button_real_pressed (NbtkButton *button)
 {
-  NbtkButtonPrivate *priv = button->priv;
-  ClutterActor *actor = CLUTTER_ACTOR (button);
-
   nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "active");
-/*
-  if (G_UNLIKELY (!priv->press_tmpl))
-    {
-      priv->timeline = clutter_timeline_new_for_duration (250);
-      priv->press_tmpl = clutter_effect_template_new (priv->timeline,
-                                                      clutter_sine_inc_func);
-      clutter_effect_template_set_timeline_clone (priv->press_tmpl, FALSE);
-    }
-
-  if (clutter_timeline_is_playing (priv->timeline))
-    {
-      clutter_timeline_stop (priv->timeline);
-      clutter_actor_set_opacity (actor, priv->old_opacity);
-    }
-
-  priv->old_opacity = clutter_actor_get_opacity (actor);
-
-  clutter_effect_fade (priv->press_tmpl, actor,
-                       0x44,
-                       NULL, NULL);
-*/
 }
 
 static void
 nbtk_button_real_released (NbtkButton *button)
 {
   NbtkButtonPrivate *priv = button->priv;
-  ClutterActor *actor = CLUTTER_ACTOR (button);
 
   if (!priv->is_hover)
     nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "normal");
   else
     nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "hover");
 
-/*
-  if (G_UNLIKELY (!priv->press_tmpl))
-    {
-      priv->timeline = clutter_timeline_new_for_duration (250);
-      priv->press_tmpl = clutter_effect_template_new (priv->timeline,
-                                                      clutter_sine_inc_func);
-      clutter_effect_template_set_timeline_clone (priv->press_tmpl, FALSE);
-    }
-
-  if (clutter_timeline_is_playing (priv->timeline))
-    clutter_timeline_stop (priv->timeline);
-
-  clutter_effect_fade (priv->press_tmpl, actor,
-                       priv->old_opacity,
-                       NULL, NULL);
-*/
 }
 
 static void
@@ -255,8 +254,7 @@ nbtk_button_button_press (ClutterActor       *actor,
                           ClutterButtonEvent *event)
 {
   
-  if (event->button == 1 &&
-      event->click_count == 1)
+  if (event->button == 1)
     {
       NbtkButton *button = NBTK_BUTTON (actor);
       NbtkButtonClass *klass = NBTK_BUTTON_GET_CLASS (button);
@@ -320,9 +318,8 @@ nbtk_button_leave (ClutterActor         *actor,
 {
   NbtkButton *button = NBTK_BUTTON (actor);
 
-  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "");
-
   button->priv->is_hover = 0;
+
 
   if (button->priv->is_pressed)
     {
@@ -335,6 +332,8 @@ nbtk_button_leave (ClutterActor         *actor,
       if (klass->released)
         klass->released (button);
     }
+
+  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "");
 
   return FALSE;
 }
@@ -415,15 +414,23 @@ nbtk_button_allocate (ClutterActor          *self,
 
   if (priv->bg_image)
     {
-      clutter_actor_set_width (priv->bg_image,
-                               CLUTTER_UNITS_TO_DEVICE (box->x2 - box->x1));
-      clutter_actor_set_height (priv->bg_image,
-                                CLUTTER_UNITS_TO_DEVICE (box->y2 - box->y1));
+      clutter_actor_set_size (priv->bg_image,
+                              CLUTTER_UNITS_TO_DEVICE (box->x2 - box->x1),
+                              CLUTTER_UNITS_TO_DEVICE (box->y2 - box->y1));
       clutter_actor_set_position (priv->bg_image,
                                   CLUTTER_UNITS_TO_DEVICE (box->x1),
                                   CLUTTER_UNITS_TO_DEVICE (box->y1));
     }
 
+  if (priv->old_bg)
+    {
+      clutter_actor_set_size (priv->old_bg,
+                              CLUTTER_UNITS_TO_DEVICE (box->x2 - box->x1),
+                              CLUTTER_UNITS_TO_DEVICE (box->y2 - box->y1));
+      clutter_actor_set_position (priv->bg_image,
+                                  CLUTTER_UNITS_TO_DEVICE (box->x1),
+                                  CLUTTER_UNITS_TO_DEVICE (box->y1));
+    }
 
   CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->allocate (self, box, absolute_origin_changed);
 }
