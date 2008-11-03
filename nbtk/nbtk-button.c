@@ -106,7 +106,6 @@ nbtk_button_style_changed (NbtkWidget *button)
     {
       NbtkTextureCache *cache;
       ClutterActor *texture;
-      gint height, width;
 
       if (priv->bg_image)
         g_object_unref (priv->bg_image);
@@ -117,11 +116,6 @@ nbtk_button_style_changed (NbtkWidget *button)
 
       priv->bg_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
                                                0, 0, 0, 0);
-      clutter_actor_reparent (CLUTTER_ACTOR (priv->label),
-                              CLUTTER_ACTOR (priv->bg_image));
-      height = clutter_actor_get_height (CLUTTER_ACTOR (button));
-      width = clutter_actor_get_width (CLUTTER_ACTOR (button));
-      clutter_actor_set_size (CLUTTER_ACTOR (priv->bg_image), width, height);
       clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image),
                                 CLUTTER_ACTOR (button));
     }
@@ -138,9 +132,6 @@ nbtk_button_paint (ClutterActor *actor)
   NbtkButton *button = NBTK_BUTTON (actor);
   NbtkButtonPrivate *priv = button->priv;
 
-  cogl_push_matrix ();
-
-  
   if (priv->bg_image)
     clutter_actor_paint (priv->bg_image);
   else
@@ -168,8 +159,6 @@ nbtk_button_paint (ClutterActor *actor)
 
   if (priv->label && CLUTTER_ACTOR_IS_VISIBLE (priv->label))
     clutter_actor_paint (priv->label);
-
-  cogl_pop_matrix ();
 }
 
 
@@ -234,7 +223,6 @@ static void
 nbtk_button_construct_child (NbtkButton *button)
 {
   NbtkButtonPrivate *priv = button->priv;
-  ClutterColor *real_color;
   ClutterActor *label;
 
   if (!priv->text)
@@ -248,17 +236,13 @@ nbtk_button_construct_child (NbtkButton *button)
                         "wrap", FALSE,
                         NULL);
 
-  nbtk_stylable_get (NBTK_STYLABLE (button),
-                     "color", &real_color,
-                     NULL);
-
   priv->label = label;
 
-  g_object_set (G_OBJECT (label), "color", real_color, NULL);
-  clutter_color_free (real_color);
+  if (priv->bg_image)
+    clutter_container_add_actor (CLUTTER_CONTAINER (priv->bg_image), label);
+  else
+    clutter_container_add_actor (CLUTTER_CONTAINER (button), label);
 
-  clutter_actor_show (label);
-  clutter_container_add_actor (CLUTTER_CONTAINER (button), label);
 }
 
 static gboolean
@@ -418,6 +402,28 @@ nbtk_button_dispose (GObject *gobject)
 }
 
 static void
+nbtk_button_allocate (ClutterActor          *self,
+                      const ClutterActorBox *box,
+                      gboolean               absolute_origin_changed)
+{
+  NbtkButtonPrivate *priv = NBTK_BUTTON_GET_PRIVATE (self);
+
+  if (priv->bg_image)
+    {
+      clutter_actor_set_width (priv->bg_image,
+                               CLUTTER_UNITS_TO_DEVICE (box->x2 - box->x1));
+      clutter_actor_set_height (priv->bg_image,
+                                CLUTTER_UNITS_TO_DEVICE (box->y2 - box->y1));
+      clutter_actor_set_position (priv->bg_image,
+                                  CLUTTER_UNITS_TO_DEVICE (box->x1),
+                                  CLUTTER_UNITS_TO_DEVICE (box->y1));
+    }
+
+
+  CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->allocate (self, box, absolute_origin_changed);
+}
+
+static void
 nbtk_button_class_init (NbtkButtonClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -439,6 +445,7 @@ nbtk_button_class_init (NbtkButtonClass *klass)
   actor_class->enter_event = nbtk_button_enter;
   actor_class->leave_event = nbtk_button_leave;
   actor_class->paint = nbtk_button_paint;
+  actor_class->allocate = nbtk_button_allocate;
   
   nbtk_widget_class->style_changed = nbtk_button_style_changed;
 
