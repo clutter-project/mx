@@ -38,6 +38,8 @@
 
 #include "nbtk-marshal.h"
 #include "nbtk-stylable.h"
+#include "nbtk-texture-frame.h"
+#include "nbtk-texture-cache.h"
 
 enum
 {
@@ -68,6 +70,9 @@ struct _NbtkButtonPrivate
 
   guint is_pressed : 1;
   guint is_hover : 1;
+
+  ClutterActor     *bg_image;
+  ClutterColor     *bg_color;
 };
 
 static guint button_signals[LAST_SIGNAL] = { 0, };
@@ -79,13 +84,47 @@ static void
 nbtk_button_style_changed (NbtkWidget *button)
 {
   ClutterColor *real_color;
+  gchar *bg_url = NULL;
+  NbtkButtonPrivate *priv = NBTK_BUTTON_GET_PRIVATE (button);
 
   /* update the label styling */
   nbtk_stylable_get (NBTK_STYLABLE (button),
                      "color", &real_color,
                      NULL);
-  g_object_set (G_OBJECT (NBTK_BUTTON_GET_PRIVATE (button)->label), "color", real_color, NULL);
+  g_object_set (G_OBJECT (priv->label),
+                "color", real_color,
+                NULL);
   clutter_color_free (real_color);
+
+  /* cache these values for use in the paint function */
+  nbtk_stylable_get (NBTK_STYLABLE (button),
+                    "background-color", &priv->bg_color,
+                    "background-image", &bg_url,
+                    NULL);
+
+  if (bg_url)
+    {
+      NbtkTextureCache *cache;
+      ClutterActor *texture;
+      gint height, width;
+
+      if (priv->bg_image)
+        g_object_unref (priv->bg_image);
+
+      cache = nbtk_texture_cache_get_default ();
+
+      texture = nbtk_texture_cache_get_texture (cache, bg_url, FALSE);
+
+      priv->bg_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
+                                               0, 0, 0, 0);
+      clutter_actor_reparent (CLUTTER_ACTOR (priv->label),
+                              CLUTTER_ACTOR (priv->bg_image));
+      height = clutter_actor_get_height (CLUTTER_ACTOR (button));
+      width = clutter_actor_get_width (CLUTTER_ACTOR (button));
+      clutter_actor_set_size (CLUTTER_ACTOR (priv->bg_image), width, height);
+      clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image),
+                                CLUTTER_ACTOR (button));
+    }
 
   clutter_actor_queue_redraw (CLUTTER_ACTOR (button));
  
@@ -101,30 +140,30 @@ nbtk_button_paint (ClutterActor *actor)
 
   cogl_push_matrix ();
 
-  /*
-  if (priv->texture)
-    clutter_actor_paint (priv->texture);
+  
+  if (priv->bg_image)
+    clutter_actor_paint (priv->bg_image);
   else
-  */
     {
       ClutterActorBox allocation = { 0, };
-      ClutterColor *bg_color;
+      ClutterColor *bg_color = priv->bg_color;
       guint w, h;
 
-      nbtk_stylable_get (NBTK_STYLABLE (button), "background-color", &bg_color, NULL);
 
-      bg_color->alpha = clutter_actor_get_paint_opacity (actor)
-                      * bg_color->alpha
-                      / 255;
+      if (bg_color)
+        {
+          bg_color->alpha = clutter_actor_get_paint_opacity (actor)
+                          * bg_color->alpha
+                          / 255;
 
-      clutter_actor_get_allocation_box (actor, &allocation);
+          clutter_actor_get_allocation_box (actor, &allocation);
+ 
+          w = CLUTTER_UNITS_TO_DEVICE (allocation.x2 - allocation.x1);
+          h = CLUTTER_UNITS_TO_DEVICE (allocation.y2 - allocation.y1);
 
-      w = CLUTTER_UNITS_TO_DEVICE (allocation.x2 - allocation.x1);
-      h = CLUTTER_UNITS_TO_DEVICE (allocation.y2 - allocation.y1);
-
-      cogl_color (bg_color);
-      cogl_rectangle (0, 0, w, h);
-      clutter_color_free (bg_color);
+          cogl_color (bg_color);
+          cogl_rectangle (0, 0, w, h);
+        }
     }
 
   if (priv->label && CLUTTER_ACTOR_IS_VISIBLE (priv->label))
