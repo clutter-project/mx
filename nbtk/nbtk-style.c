@@ -290,7 +290,7 @@ nbtk_style_get_property (NbtkStyle    *style,
 
       ccss_style = ccss_style_new ();
 
-      if (ccss_stylesheet_query_apply (priv->stylesheet, (ccss_node_t*) ccss_node, ccss_style))
+      if (ccss_stylesheet_query (priv->stylesheet, (ccss_node_t*) ccss_node, ccss_style))
         {
           if (G_PARAM_SPEC_VALUE_TYPE (pspec))
             {
