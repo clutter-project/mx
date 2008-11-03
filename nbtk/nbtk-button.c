@@ -172,7 +172,7 @@ nbtk_button_real_pressed (NbtkButton *button)
   ClutterActor *actor = CLUTTER_ACTOR (button);
 
   nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "active");
-
+/*
   if (G_UNLIKELY (!priv->press_tmpl))
     {
       priv->timeline = clutter_timeline_new_for_duration (250);
@@ -192,6 +192,7 @@ nbtk_button_real_pressed (NbtkButton *button)
   clutter_effect_fade (priv->press_tmpl, actor,
                        0x44,
                        NULL, NULL);
+*/
 }
 
 static void
@@ -205,6 +206,7 @@ nbtk_button_real_released (NbtkButton *button)
   else
     nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "hover");
 
+/*
   if (G_UNLIKELY (!priv->press_tmpl))
     {
       priv->timeline = clutter_timeline_new_for_duration (250);
@@ -219,6 +221,7 @@ nbtk_button_real_released (NbtkButton *button)
   clutter_effect_fade (priv->press_tmpl, actor,
                        priv->old_opacity,
                        NULL, NULL);
+*/
 }
 
 static void
