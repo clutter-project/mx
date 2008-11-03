@@ -26,12 +26,12 @@
 
 G_BEGIN_DECLS
 
-#define NBTK_TYPE_ACTOR                 (nbtk_widget_get_type ())
-#define NBTK_WIDGET(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_ACTOR, NbtkWidget))
-#define NBTK_IS_ACTOR(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NBTK_TYPE_ACTOR))
-#define NBTK_WIDGET_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), NBTK_TYPE_ACTOR, NbtkWidgetClass))
-#define NBTK_IS_ACTOR_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), NBTK_TYPE_ACTOR))
-#define NBTK_WIDGET_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), NBTK_TYPE_ACTOR, NbtkWidgetClass))
+#define NBTK_TYPE_WIDGET                 (nbtk_widget_get_type ())
+#define NBTK_WIDGET(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_WIDGET, NbtkWidget))
+#define NBTK_IS_WIDGET(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NBTK_TYPE_WIDGET))
+#define NBTK_WIDGET_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), NBTK_TYPE_WIDGET, NbtkWidgetClass))
+#define NBTK_IS_WIDGET_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), NBTK_TYPE_WIDGET))
+#define NBTK_WIDGET_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), NBTK_TYPE_WIDGET, NbtkWidgetClass))
 
 typedef struct _NbtkWidget               NbtkWidget;
 typedef struct _NbtkWidgetPrivate        NbtkWidgetPrivate;

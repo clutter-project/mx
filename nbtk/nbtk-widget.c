@@ -81,7 +81,7 @@ G_DEFINE_ABSTRACT_TYPE_WITH_CODE (NbtkWidget, nbtk_widget, CLUTTER_TYPE_ACTOR,
 					                 nbtk_container_iface_init));
 
 #define NBTK_WIDGET_GET_PRIVATE(obj) \
-        (G_TYPE_INSTANCE_GET_PRIVATE ((obj), NBTK_TYPE_ACTOR, NbtkWidgetPrivate))
+        (G_TYPE_INSTANCE_GET_PRIVATE ((obj), NBTK_TYPE_WIDGET, NbtkWidgetPrivate))
 
 struct _NbtkWidgetPrivate
 {
@@ -591,7 +591,7 @@ nbtk_widget_get_container (NbtkStylable *stylable)
 {
   ClutterActor *parent;
 
-  g_return_val_if_fail (NBTK_IS_ACTOR (stylable), NULL);
+  g_return_val_if_fail (NBTK_IS_WIDGET (stylable), NULL);
 
   parent = clutter_actor_get_parent (CLUTTER_ACTOR (stylable));
 
@@ -614,7 +614,7 @@ nbtk_widget_get_base_style (NbtkStylable *stylable)
 static const gchar*
 nbtk_widget_get_style_id (NbtkStylable *stylable)
 {
-  g_return_val_if_fail (NBTK_IS_ACTOR (stylable), NULL);
+  g_return_val_if_fail (NBTK_IS_WIDGET (stylable), NULL);
 
   return clutter_actor_get_name (CLUTTER_ACTOR (stylable));
 }
@@ -628,7 +628,7 @@ nbtk_widget_get_style_type (NbtkStylable *stylable)
 static const gchar*
 nbtk_widget_get_style_class (NbtkStylable *stylable)
 {
-  g_return_val_if_fail (NBTK_IS_ACTOR (stylable), NULL);
+  g_return_val_if_fail (NBTK_IS_WIDGET (stylable), NULL);
   
   return NBTK_WIDGET (stylable)->priv->style_class;
 }
@@ -636,7 +636,7 @@ nbtk_widget_get_style_class (NbtkStylable *stylable)
 static const gchar*
 nbtk_widget_get_pseudo_class (NbtkStylable *stylable)
 {
-  g_return_val_if_fail (NBTK_IS_ACTOR (stylable), NULL);
+  g_return_val_if_fail (NBTK_IS_WIDGET (stylable), NULL);
   
   return NBTK_WIDGET (stylable)->priv->pseudo_class;
 }
@@ -646,7 +646,7 @@ nbtk_widget_get_viewport (NbtkStylable *stylable,
                                  gint *x, gint *y,
                                  gint *width, gint *height)
 {
-  g_return_val_if_fail (NBTK_IS_ACTOR (stylable), FALSE);
+  g_return_val_if_fail (NBTK_IS_WIDGET (stylable), FALSE);
 
   *x = 0;
   *y = 0;
@@ -694,28 +694,28 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
                                    "The font to use for displaying text",
                                    "Sans 12px",
                                    G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_ACTOR, pspec);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
       pspec = clutter_param_spec_color ("background-color",
                                   "Background Color",
                                   "The background color of an actor",
                                   &bg_color,
                                   G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_ACTOR, pspec);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
       pspec = clutter_param_spec_color ("color",
                                   "Text Color",
                                   "The color of the text of an actor",
                                   &color,
                                   G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_ACTOR, pspec);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
       pspec = g_param_spec_string ("background-image",
                                    "Background Image",
                                    "Background image filename",
                                    "",
                                    G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_ACTOR, pspec);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
       iface->get_style = nbtk_widget_get_style;
       iface->set_style = nbtk_widget_set_style;
@@ -758,7 +758,7 @@ void
 nbtk_widget_set_padding (NbtkWidget         *actor,
                         const NbtkPadding *padding)
 {
-  g_return_if_fail (NBTK_IS_ACTOR (actor));
+  g_return_if_fail (NBTK_IS_WIDGET (actor));
   g_return_if_fail (padding != NULL);
 
   actor->priv->padding = *padding;
@@ -780,7 +780,7 @@ void
 nbtk_widget_get_padding (NbtkWidget   *actor,
                         NbtkPadding *padding)
 {
-  g_return_if_fail (NBTK_IS_ACTOR (actor));
+  g_return_if_fail (NBTK_IS_WIDGET (actor));
   g_return_if_fail (padding != NULL);
 
   *padding = actor->priv->padding;
@@ -802,7 +802,7 @@ nbtk_widget_set_alignment (NbtkWidget *actor,
 {
   NbtkWidgetPrivate *priv;
 
-  g_return_if_fail (NBTK_IS_ACTOR (actor));
+  g_return_if_fail (NBTK_IS_WIDGET (actor));
 
   g_object_ref (actor);
   g_object_freeze_notify (G_OBJECT (actor));
@@ -843,7 +843,7 @@ nbtk_widget_get_alignment (NbtkWidget *actor,
 {
   NbtkWidgetPrivate *priv;
 
-  g_return_if_fail (NBTK_IS_ACTOR (actor));
+  g_return_if_fail (NBTK_IS_WIDGET (actor));
 
   priv = actor->priv;
 
@@ -872,7 +872,7 @@ nbtk_widget_set_alignmentx (NbtkWidget    *actor,
 {
   NbtkWidgetPrivate *priv;
 
-  g_return_if_fail (NBTK_IS_ACTOR (actor));
+  g_return_if_fail (NBTK_IS_WIDGET (actor));
 
   g_object_ref (actor);
   g_object_freeze_notify (G_OBJECT (actor));
@@ -921,7 +921,7 @@ nbtk_widget_get_alignmentx (NbtkWidget    *actor,
 {
   NbtkWidgetPrivate *priv;
 
-  g_return_if_fail (NBTK_IS_ACTOR (actor));
+  g_return_if_fail (NBTK_IS_WIDGET (actor));
 
   priv = actor->priv;
 

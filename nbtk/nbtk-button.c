@@ -78,7 +78,7 @@ struct _NbtkButtonPrivate
 static guint button_signals[LAST_SIGNAL] = { 0, };
 
 
-G_DEFINE_TYPE (NbtkButton, nbtk_button, NBTK_TYPE_ACTOR)
+G_DEFINE_TYPE (NbtkButton, nbtk_button, NBTK_TYPE_WIDGET)
 
 static void
 nbtk_button_style_changed (NbtkWidget *button)
