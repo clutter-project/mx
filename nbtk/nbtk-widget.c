@@ -449,6 +449,14 @@ nbtk_widget_get_preferred_height (ClutterActor *actor,
     *natural_height_p = natural_height;
 }
 
+static void
+nbtk_widget_parent_set (ClutterActor *widget, ClutterActor *old_parent)
+{
+  g_signal_emit_by_name (widget, "style-changed", 0);
+
+  if (CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->parent_set)
+    CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->parent_set (widget, old_parent);
+}
 
 static void
 nbtk_widget_class_init (NbtkWidgetClass *klass)
@@ -467,6 +475,7 @@ nbtk_widget_class_init (NbtkWidgetClass *klass)
   actor_class->pick = nbtk_widget_pick;
   actor_class->get_preferred_height = nbtk_widget_get_preferred_height;
   actor_class->get_preferred_width = nbtk_widget_get_preferred_width;
+  actor_class->parent_set = nbtk_widget_parent_set;
 
   /**
    * NbtkWidget:padding:
