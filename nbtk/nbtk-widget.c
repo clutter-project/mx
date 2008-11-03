@@ -119,20 +119,20 @@ static void
 nbtk_widget_remove_actor (ClutterContainer *container,
                          ClutterActor     *actor)
 {
-  NbtkWidgetPrivate *priv = NBTK_WIDGET (container)->priv;
+  NbtkWidgetPrivate *priv = NBTK_WIDGET_GET_PRIVATE (container);
 
   if (priv->child == actor)
     {
       g_object_ref (priv->child);
 
       clutter_actor_unparent (priv->child);
-      priv->child = NULL;
 
       clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
 
       g_signal_emit_by_name (container, "actor-removed", priv->child);
 
       g_object_unref (priv->child);
+      priv->child = NULL;
     }
 }
 
