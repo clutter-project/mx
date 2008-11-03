@@ -118,9 +118,11 @@ nbtk_button_style_changed (NbtkWidget *button)
                                                0, 0, 0, 0);
       clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image),
                                 CLUTTER_ACTOR (button));
+      g_free (bg_url);
     }
 
-  clutter_actor_queue_redraw (CLUTTER_ACTOR (button));
+  /* queue a relayout, which also calls redraw */
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (button));
  
   if (NBTK_WIDGET_CLASS (nbtk_button_parent_class)->style_changed)
     NBTK_WIDGET_CLASS (nbtk_button_parent_class)->style_changed (button);
