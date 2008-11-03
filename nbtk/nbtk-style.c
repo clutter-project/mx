@@ -104,7 +104,7 @@ nbtk_style_load (NbtkStyle *style)
   if (!rc_file)
     rc_file = g_build_filename (g_get_user_config_dir (),
                                 "nbtk",
-                                "nbtkrc",
+                                "default.css",
                                 NULL);
 
   error = NULL;
