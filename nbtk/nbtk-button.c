@@ -107,6 +107,12 @@ nbtk_button_style_changed (NbtkWidget *button)
                 NULL);
   clutter_color_free (real_color);
 
+  if (priv->bg_color)
+    {
+      clutter_color_free (priv->bg_color);
+      priv->bg_color = NULL;
+    }
+
   /* cache these values for use in the paint function */
   nbtk_stylable_get (NBTK_STYLABLE (button),
                     "background-color", &priv->bg_color,
@@ -129,6 +135,7 @@ nbtk_button_style_changed (NbtkWidget *button)
 
       priv->bg_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
                                                0, 0, 0, 0);
+      g_object_unref (texture);
       clutter_actor_set_opacity (CLUTTER_ACTOR (priv->bg_image), 0);
       clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image),
                                 CLUTTER_ACTOR (button));
