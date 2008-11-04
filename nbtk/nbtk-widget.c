@@ -452,7 +452,15 @@ nbtk_widget_get_preferred_height (ClutterActor *actor,
 static void
 nbtk_widget_parent_set (ClutterActor *widget, ClutterActor *old_parent)
 {
-  g_signal_emit_by_name (widget, "style-changed", 0);
+  ClutterActor *parent;
+
+  parent = clutter_actor_get_parent (widget);
+
+  /* don't send the style changed signal if we no longer have a parent actor */
+  if (parent)
+    {
+      g_signal_emit_by_name (widget, "style-changed", 0);
+    }
 
   if (CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->parent_set)
     CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->parent_set (widget, old_parent);
