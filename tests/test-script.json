@@ -4,6 +4,7 @@
     "type" : "ClutterStage",
     "title" : "ClutterScript test",
     "color" : "black",
+    "is-default" : true,
     "children" : [
       {
         "id" : "left-button",
@@ -20,6 +21,7 @@
       },
       {
         "id" : "red-button",
+        "name" : "red-button",
         "type" : "NbtkButton",
         "x" : 125,
         "y" : 150,

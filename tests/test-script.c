@@ -6,13 +6,11 @@
 #include <clutter/clutter.h>
 
 static ClutterScript *script = NULL;
-static guint merge_id = 0;
-
 
 int
 main (int argc, char *argv[])
 {
-  GObject *stage, *blue_button, *red_button;
+  GObject *stage;
   GError *error = NULL;
   gint res;
 
@@ -35,10 +33,7 @@ main (int argc, char *argv[])
 
   res = clutter_script_get_objects (script,
                                     "main-stage", &stage,
-                                    "red-button", &red_button,
-                                    "blue-button", &blue_button,
                                     NULL);
-//  g_assert (res == 3);
 
   clutter_actor_show (CLUTTER_ACTOR (stage));
 
