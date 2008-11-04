@@ -155,8 +155,8 @@ nbtk_button_style_changed (NbtkWidget *button)
       if (clutter_timeline_is_playing (priv->timeline))
         {
           clutter_timeline_stop (priv->timeline);
-	  /* in case we stopped the timeline before old_bg was fully opaque */
-	  clutter_actor_set_opacity (priv->old_bg, 0xff);
+	  /* in case we stopped the timeline before background-image was fully opaque */
+	  clutter_actor_set_opacity (priv->bg_image, 0xff);
         }
 
       clutter_effect_fade (priv->press_tmpl, priv->bg_image,
