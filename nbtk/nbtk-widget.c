@@ -722,7 +722,7 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
       pspec = g_param_spec_string ("background-image",
                                    "Background Image",
                                    "Background image filename",
-                                   "",
+                                   NULL,
                                    G_PARAM_READWRITE);
       nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
