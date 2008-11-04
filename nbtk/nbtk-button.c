@@ -161,6 +161,14 @@ nbtk_button_style_changed (NbtkWidget *button)
                            (ClutterEffectCompleteFunc) style_changed_completed_effect, button);
 
     }
+  else
+    {
+      if (priv->bg_image)
+        {
+          g_object_unref (priv->bg_image);
+          priv->bg_image = NULL;
+        }
+    }
 
   /* queue a relayout, which also calls redraw */
   clutter_actor_queue_relayout (CLUTTER_ACTOR (button));
