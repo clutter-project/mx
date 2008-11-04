@@ -99,13 +99,16 @@ nbtk_button_style_changed (NbtkWidget *button)
   NbtkButtonPrivate *priv = NBTK_BUTTON_GET_PRIVATE (button);
 
   /* update the label styling */
-  nbtk_stylable_get (NBTK_STYLABLE (button),
-                     "color", &real_color,
-                     NULL);
-  g_object_set (G_OBJECT (priv->label),
-                "color", real_color,
-                NULL);
-  clutter_color_free (real_color);
+  if (priv->label)
+    {
+      nbtk_stylable_get (NBTK_STYLABLE (button),
+                         "color", &real_color,
+                         NULL);
+      g_object_set (G_OBJECT (priv->label),
+                    "color", real_color,
+                    NULL);
+      clutter_color_free (real_color);
+    }
 
   if (priv->bg_color)
     {
