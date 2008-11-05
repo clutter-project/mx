@@ -126,7 +126,7 @@ nbtk_button_style_changed (NbtkWidget *button)
     {
       NbtkTextureCache *cache;
       ClutterActor *texture;
-      gchar *pseudo_class;
+      const gchar *pseudo_class;
 
       if (priv->bg_image)
         priv->old_bg = priv->bg_image;
@@ -158,7 +158,7 @@ nbtk_button_style_changed (NbtkWidget *button)
         }
 
       /* start a fade if we're not changing to pressed ("active") state */
-      pseudo_class = nbtk_stylable_get_pseudo_class (button);
+      pseudo_class = nbtk_stylable_get_pseudo_class (NBTK_STYLABLE (button));
       if (g_strcmp0 ("active", pseudo_class))
         {
           if (priv->old_bg)
@@ -170,7 +170,8 @@ nbtk_button_style_changed (NbtkWidget *button)
       else
         {
           /* remove the old image to perform instant transition when pressed */
-          clutter_container_remove (button, priv->old_bg);
+          clutter_container_remove (CLUTTER_CONTAINER (button), priv->old_bg,
+                                    NULL);
           g_object_unref (priv->old_bg);
           priv->old_bg = NULL;
         }
