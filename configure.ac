@@ -20,7 +20,7 @@ IT_PROG_INTLTOOL([0.35.0])
 
 AM_PROG_LIBTOOL
 
-PKG_CHECK_MODULES(NBTK, [clutter-0.9 libccss-1])
+PKG_CHECK_MODULES(NBTK, [clutter-0.8 >= 0.8.3 libccss-1])
 
 AC_OUTPUT([
 Makefile
