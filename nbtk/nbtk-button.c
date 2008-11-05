@@ -126,6 +126,7 @@ nbtk_button_style_changed (NbtkWidget *button)
     {
       NbtkTextureCache *cache;
       ClutterActor *texture;
+      gchar *pseudo_class;
 
       if (priv->bg_image)
         priv->old_bg = priv->bg_image;
@@ -139,14 +140,13 @@ nbtk_button_style_changed (NbtkWidget *button)
       priv->bg_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
                                                0, 0, 0, 0);
       g_object_unref (texture);
-      clutter_actor_set_opacity (CLUTTER_ACTOR (priv->bg_image), 0);
       clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image),
                                 CLUTTER_ACTOR (button));
       g_free (bg_url);
 
       if (G_UNLIKELY (!priv->press_tmpl))
         {
-          priv->timeline = clutter_timeline_new_for_duration (100);
+          priv->timeline = clutter_timeline_new_for_duration (200);
           priv->press_tmpl = clutter_effect_template_new (priv->timeline,
                                                           clutter_sine_inc_func);
           clutter_effect_template_set_timeline_clone (priv->press_tmpl, FALSE);
@@ -155,13 +155,25 @@ nbtk_button_style_changed (NbtkWidget *button)
       if (clutter_timeline_is_playing (priv->timeline))
         {
           clutter_timeline_stop (priv->timeline);
-	  /* in case we stopped the timeline before background-image was fully opaque */
-	  clutter_actor_set_opacity (priv->bg_image, 0xff);
         }
 
-      clutter_effect_fade (priv->press_tmpl, priv->bg_image,
-                           0xff,
-                           (ClutterEffectCompleteFunc) style_changed_completed_effect, button);
+      /* start a fade if we're not changing to pressed ("active") state */
+      pseudo_class = nbtk_stylable_get_pseudo_class (button);
+      if (g_strcmp0 ("active", pseudo_class))
+        {
+          if (priv->old_bg)
+            clutter_effect_fade (priv->press_tmpl, priv->old_bg,
+                                 0x00,
+                                 (ClutterEffectCompleteFunc) style_changed_completed_effect,
+                                 button);
+        }
+      else
+        {
+          /* remove the old image to perform instant transition when pressed */
+          clutter_container_remove (button, priv->old_bg);
+          g_object_unref (priv->old_bg);
+          priv->old_bg = NULL;
+        }
 
     }
   else
@@ -189,10 +201,10 @@ nbtk_button_paint (ClutterActor *actor)
 
   if (priv->bg_image)
     {
+      clutter_actor_paint (priv->bg_image);
+
       if (priv->old_bg)
         clutter_actor_paint (priv->old_bg);
-
-      clutter_actor_paint (priv->bg_image);
     }
   else
     {
