@@ -370,10 +370,12 @@ nbtk_table_allocate (ClutterActor          *self,
       g_object_get (meta, "column", &col, "row", &row, NULL);
 
 
-      childbox.x1 = (col_width * col);
+      childbox.x1 = (col_width * col)
+                    + (CLUTTER_UNITS_FROM_DEVICE (priv->col_spacing) * col);
       childbox.x2 = (childbox.x1 + col_width);
 
-      childbox.y1 = (row_height * row);
+      childbox.y1 = (row_height * row)
+                    + (CLUTTER_UNITS_FROM_DEVICE (priv->row_spacing) * row);
       childbox.y2 = (childbox.y1 + row_height);
 
       clutter_actor_allocate (child, &childbox, absolute_origin_changed);
@@ -452,22 +454,28 @@ void
 nbtk_table_set_col_spacing (NbtkTable *table,
                             gint       spacing)
 {
-  g_return_if_fail (NBTK_IS_TABLE (table));
-  g_return_if_fail (spacing <= 0);
+  NbtkTablePrivate *priv;
 
-  /* XXX: not yet implemented */
-  g_warning ("%s() not yet implemented", __FUNCTION__);
+  g_return_if_fail (NBTK_IS_TABLE (table));
+  g_return_if_fail (spacing >= 0);
+
+  priv = NBTK_TABLE_GET_PRIVATE (table);
+
+  priv->col_spacing = spacing;
 }
 
 void
 nbtk_table_set_row_spacing (NbtkTable *table,
                             gint       spacing)
 {
-  g_return_if_fail (NBTK_IS_TABLE (table));
-  g_return_if_fail (spacing <= 0);
+  NbtkTablePrivate *priv;
 
-  /* XXX: not yet implemented */
-  g_warning ("%s() not yet implemented", __FUNCTION__);
+  g_return_if_fail (NBTK_IS_TABLE (table));
+  g_return_if_fail (spacing >= 0);
+
+  priv = NBTK_TABLE_GET_PRIVATE (table);
+
+  priv->row_spacing = spacing;
 }
 
 void

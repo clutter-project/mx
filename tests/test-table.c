@@ -22,6 +22,8 @@ main (int argc, char *argv[])
   stage = clutter_stage_get_default ();
 
   table = nbtk_table_new ();
+  nbtk_table_set_col_spacing (NBTK_TABLE (table), 10);
+  nbtk_table_set_row_spacing (NBTK_TABLE (table), 50);
 
   button1 = nbtk_button_new_with_label ("button1");
   button2 = nbtk_button_new_with_label ("button2");
