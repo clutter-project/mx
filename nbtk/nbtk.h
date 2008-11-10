@@ -30,6 +30,7 @@
 #include <nbtk-marshal.h>
 #include <nbtk-stylable.h>
 #include <nbtk-style.h>
+#include <nbtk-table.h>
 #include <nbtk-texture-cache.h>
 #include <nbtk-texture-frame.h>
 #include <nbtk-types.h>
