@@ -550,7 +550,12 @@ nbtk_table_set_widget_colspan (NbtkTable *table,
 {
   ClutterChildMeta *meta;
 
-  meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (table), widget);
+  g_return_if_fail (NBTK_TABLE (table));
+  g_return_if_fail (NBTK_WIDGET (widget));
+  g_return_if_fail (colspan >= 1);
+
+  meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (table),
+                                           CLUTTER_ACTOR (widget));
   g_object_set (meta, "col-span", colspan, NULL);
 
 }
@@ -562,6 +567,11 @@ nbtk_table_set_widget_rowspan (NbtkTable *table,
 {
   ClutterChildMeta *meta;
 
-  meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (table), widget);
+  g_return_if_fail (NBTK_TABLE (table));
+  g_return_if_fail (NBTK_WIDGET (widget));
+  g_return_if_fail (rowspan >= 1);
+
+  meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (table),
+                                           CLUTTER_ACTOR (widget));
   g_object_set (meta, "row-span", rowspan, NULL);
 }
