@@ -426,6 +426,11 @@ nbtk_button_dispose (GObject *gobject)
 
   if (priv->press_tmpl)
     {
+      if (clutter_timeline_is_playing (priv->timeline))
+        {
+          clutter_timeline_stop (priv->timeline);
+        }
+
       g_object_unref (priv->press_tmpl);
       g_object_unref (priv->timeline);
 
