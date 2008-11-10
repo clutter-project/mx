@@ -29,11 +29,11 @@ main (int argc, char *argv[])
   button4 = nbtk_button_new_with_label ("button4");
   button5 = nbtk_button_new_with_label ("button5");
 
-  nbtk_table_add_widget (table, button1, 0, 0);
-  nbtk_table_add_widget (table, button2, 0, 1);
-  nbtk_table_add_widget (table, button3, 1, 0);
-  nbtk_table_add_widget (table, button4, 1, 1);
-  nbtk_table_add_widget (table, button5, 2, 0);
+  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button1), 0, 0);
+  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button2), 0, 1);
+  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button3), 1, 0);
+  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button4), 1, 1);
+  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button5), 2, 0);
 
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (table));
   clutter_actor_set_size (CLUTTER_ACTOR (table), 300, 300);
