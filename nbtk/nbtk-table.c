@@ -219,11 +219,12 @@ nbtk_container_remove_actor (ClutterContainer *container,
   g_object_ref (actor);
 
   priv->children = g_slist_delete_link (priv->children, item);
+
   clutter_actor_unparent (actor);
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
 
-  g_object_unref (item);
+  g_object_unref (actor);
 }
 
 static void
