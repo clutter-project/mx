@@ -72,7 +72,9 @@ enum {
   CHILD_PROP_0,
 
   CHILD_PROP_COL,
-  CHILD_PROP_ROW
+  CHILD_PROP_ROW,
+  CHILD_PROP_COL_SPAN,
+  CHILD_PROP_ROW_SPAN
 };
 
 #define NBTK_TYPE_TABLE_CHILD          (nbtk_table_child_get_type ())
@@ -91,6 +93,8 @@ struct _NbtkTableChild
 
   gint col;
   gint row;
+  gint col_span;
+  gint row_span;
 };
 
 struct _NbtkTableChildClass
@@ -115,9 +119,14 @@ table_child_set_property (GObject      *gobject,
     case CHILD_PROP_COL:
       child->col = g_value_get_int (value);
       break;
-
     case CHILD_PROP_ROW:
       child->row = g_value_get_int (value);
+      break;
+    case CHILD_PROP_COL_SPAN:
+      child->col_span = g_value_get_int (value);
+      break;
+    case CHILD_PROP_ROW_SPAN:
+      child->row_span = g_value_get_int (value);
       break;
 
     default:
@@ -139,9 +148,14 @@ table_child_get_property (GObject    *gobject,
     case CHILD_PROP_COL:
       g_value_set_int (value, child->col);
       break;
-
     case CHILD_PROP_ROW:
       g_value_set_int (value, child->row);
+      break;
+    case CHILD_PROP_COL_SPAN:
+      g_value_set_int (value, child->col_span);
+      break;
+    case CHILD_PROP_ROW_SPAN:
+      g_value_set_int (value, child->row_span);
       break;
 
     default:
@@ -150,6 +164,8 @@ table_child_get_property (GObject    *gobject,
     }
 }
 
+
+#define NBTK_PARAM_READWRITE G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_STATIC_NAME | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB
 
 static void
 nbtk_table_child_class_init (NbtkTableChildClass *klass)
@@ -165,9 +181,7 @@ nbtk_table_child_class_init (NbtkTableChildClass *klass)
                             "The column the widget resides in",
                             0, G_MAXINT,
                             0,
-                            G_PARAM_READABLE | G_PARAM_WRITABLE
-                            | G_PARAM_STATIC_NAME | G_PARAM_STATIC_NICK
-                            | G_PARAM_STATIC_BLURB);
+                            NBTK_PARAM_READWRITE);
 
   g_object_class_install_property (gobject_class, CHILD_PROP_COL, pspec);
 
@@ -176,16 +190,34 @@ nbtk_table_child_class_init (NbtkTableChildClass *klass)
                             "The row the widget resides in",
                             0, G_MAXINT,
                             0,
-                            G_PARAM_READABLE | G_PARAM_WRITABLE
-                            | G_PARAM_STATIC_NAME | G_PARAM_STATIC_NICK
-                            | G_PARAM_STATIC_BLURB);
+                            NBTK_PARAM_READWRITE);
 
   g_object_class_install_property (gobject_class, CHILD_PROP_ROW, pspec);
+
+  pspec = g_param_spec_int ("row-span",
+                            "Row Span",
+                            "The number of rows the widget should span",
+                            1, G_MAXINT,
+                            1,
+                            NBTK_PARAM_READWRITE);
+
+  g_object_class_install_property (gobject_class, CHILD_PROP_ROW_SPAN, pspec);
+
+  pspec = g_param_spec_int ("col-span",
+                            "Column Span",
+                            "The number of columns the widget should span",
+                            1, G_MAXINT,
+                            1,
+                            NBTK_PARAM_READWRITE);
+
+  g_object_class_install_property (gobject_class, CHILD_PROP_COL_SPAN, pspec);
 }
 
 static void
-nbtk_table_child_init (NbtkTableChild *klass)
+nbtk_table_child_init (NbtkTableChild *self)
 {
+  self->col_span = 1;
+  self->row_span = 1;
 }
 
 /* 
@@ -359,7 +391,7 @@ nbtk_table_allocate (ClutterActor          *self,
 
   for (list = priv->children; list; list = g_slist_next (list))
     {
-      gint row, col;
+      gint row, col, row_span, col_span, row_spacing, col_spacing;
       ClutterChildMeta *meta;
       ClutterActor *child;
       ClutterActorBox childbox;
@@ -367,16 +399,18 @@ nbtk_table_allocate (ClutterActor          *self,
       child = CLUTTER_ACTOR (list->data);
 
       meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
-      g_object_get (meta, "column", &col, "row", &row, NULL);
-
+      g_object_get (meta, "column", &col, "row", &row,
+                    "row-span", &row_span, "col-span", &col_span, NULL);
+      col_spacing = CLUTTER_UNITS_FROM_DEVICE (priv->col_spacing);
+      row_spacing = CLUTTER_UNITS_FROM_DEVICE (priv->row_spacing);
 
       childbox.x1 = (col_width * col)
-                    + (CLUTTER_UNITS_FROM_DEVICE (priv->col_spacing) * col);
-      childbox.x2 = (childbox.x1 + col_width);
+                    + col_spacing * col;
+      childbox.x2 = childbox.x1 + col_width * col_span + (col_spacing * (col_span - 1));
 
       childbox.y1 = (row_height * row)
-                    + (CLUTTER_UNITS_FROM_DEVICE (priv->row_spacing) * row);
-      childbox.y2 = (childbox.y1 + row_height);
+                    + row_spacing * row;
+      childbox.y2 = childbox.y1 + row_height * row_span + (row_spacing * (row_span - 1));
 
       clutter_actor_allocate (child, &childbox, absolute_origin_changed);
     }
@@ -506,4 +540,28 @@ nbtk_table_add_widget (NbtkTable *table,
   priv->children = g_slist_prepend (priv->children, widget);
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
+}
+
+
+void
+nbtk_table_set_widget_colspan (NbtkTable *table,
+                               NbtkWidget *widget,
+                               gint colspan)
+{
+  ClutterChildMeta *meta;
+
+  meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (table), widget);
+  g_object_set (meta, "col-span", colspan, NULL);
+
+}
+
+void
+nbtk_table_set_widget_rowspan (NbtkTable *table,
+                               NbtkWidget *widget,
+                               gint rowspan)
+{
+  ClutterChildMeta *meta;
+
+  meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (table), widget);
+  g_object_set (meta, "row-span", rowspan, NULL);
 }
