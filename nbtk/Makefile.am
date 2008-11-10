@@ -92,6 +92,8 @@ libnbtk_la_SOURCES = \
 		nbtk-stylable.h \
 		nbtk-style.c \
 		nbtk-style.h \
+		nbtk-table.c \
+		nbtk-table.h \
 		nbtk-texture-cache.c \
 		nbtk-texture-cache.h \
 		nbtk-texture-frame.c \
