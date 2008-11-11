@@ -1,0 +1,16 @@
+NbtkButton {
+  color: blue;
+  background-image: url('file://lime-button.png');
+}
+
+NbtkButton:hover {
+  background-image: url('file://cyan-button.png');
+}
+
+NbtkButton:active {
+  background-image: url('file://green-button.png');
+}
+
+*#red-button {
+  background-image: url('file://red-button.png');
+}
