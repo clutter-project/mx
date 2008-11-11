@@ -12,8 +12,6 @@ main (int argc, char *argv[])
   ClutterActor *stage;
   NbtkWidget *table;
   ClutterActor *button1, *button2, *button3, *button4, *button5;
-  GError *error = NULL;
-  gint res;
   ClutterBehaviour *b;
   ClutterTimeline *timeline;
 
@@ -51,7 +49,7 @@ main (int argc, char *argv[])
 
 
   clutter_timeline_start (timeline);
-  clutter_behaviour_apply (b, table);
+  clutter_behaviour_apply (b, CLUTTER_ACTOR (table));
 
   clutter_main ();
 
