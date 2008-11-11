@@ -1,0 +1,10 @@
+NBTK
+====
+
+'NBTK' is a currently experiemental toolkit for the moblin-netbook
+implementation.
+
+It depends on libccss of which can be obtained via 
+
+  git clone  http://anongit.freedesktop.org/git/ccss.git
+
