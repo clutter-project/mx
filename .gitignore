@@ -53,3 +53,4 @@ prepare.sh
 stamp-h*
 tests/test-script
 tests/test-styles
+tests/test-table
