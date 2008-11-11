@@ -1,5 +1,13 @@
 SUBDIRS = nbtk po tests
 
+pcfiles = nbtk-1.0.pc
+
+nbtk-1.0.pc: nbtk.pc
+	@cp -f $< $@
+
+pkgconfig_DATA = $(pcfiles)
+pkgconfigdir = $(libdir)/pkgconfig
+
 nbtkdocdir = ${prefix}/doc/nbtk
 nbtkdoc_DATA = \
 	README\
@@ -9,7 +17,9 @@ nbtkdoc_DATA = \
 	INSTALL\
 	NEWS
 
-EXTRA_DIST = $(nbtkdoc_DATA)
+EXTRA_DIST = $(nbtkdoc_DATA) nbtk.pc.in
+
+CLEANFILES = $(pcfiles)
 
 # Extra clean files so that maintainer-clean removes *everything*
 MAINTAINERCLEANFILES = \

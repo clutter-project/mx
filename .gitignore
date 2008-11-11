@@ -46,6 +46,8 @@ nbtk/nbtk-marshal.c
 nbtk/nbtk-marshal.h
 nbtk/stamp-nbtk-enum-types.h
 nbtk/stamp-nbtk-marshal.h
+nbtk.pc
+nbtk-1.0.pc
 po/Makefile.in.in
 po/POTFILES
 po/stamp-it

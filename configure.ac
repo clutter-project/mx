@@ -24,6 +24,7 @@ PKG_CHECK_MODULES(NBTK, [clutter-0.8 >= 0.8.3 libccss-1])
 
 AC_OUTPUT([
 Makefile
+nbtk.pc
 nbtk/Makefile
 po/Makefile.in
 tests/Makefile
