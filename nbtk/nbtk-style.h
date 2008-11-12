@@ -47,12 +47,6 @@ GType            nbtk_style_get_type     (void) G_GNUC_CONST;
 NbtkStyle *      nbtk_style_get_default  (void);
 NbtkStyle *      nbtk_style_new          (void);
 
-gboolean         nbtk_style_has_effect   (NbtkStyle        *style,
-                                          const gchar      *effect_name);
-
-void             nbtk_style_add_effect   (NbtkStyle        *style,
-                                          const gchar      *effect_name);
-
 void             nbtk_style_get_property (NbtkStyle        *style,
                                           NbtkStylable     *stylable,
                                           GParamSpec       *pspec,
