@@ -22,9 +22,15 @@ AM_PROG_LIBTOOL
 
 PKG_CHECK_MODULES(NBTK, [clutter-0.8 >= 0.8.3 libccss-1])
 
+# check for gtk-doc
+GTK_DOC_CHECK(1.9)
+
 AC_OUTPUT([
 Makefile
 nbtk.pc
+docs/Makefile
+docs/reference/Makefile
+docs/reference/libnbtk/Makefile
 nbtk/Makefile
 po/Makefile.in
 tests/Makefile

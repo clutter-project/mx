@@ -1,4 +1,6 @@
-SUBDIRS = nbtk po tests
+SUBDIRS = nbtk po tests docs
+
+DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
 
 pcfiles = nbtk-1.0.pc
 
