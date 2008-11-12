@@ -521,18 +521,41 @@ nbtk_button_init (NbtkButton *button)
   button->priv = NBTK_BUTTON_GET_PRIVATE (button);
 }
 
+/**
+ * nbtk_button_new:
+ *
+ * Create a new button
+ *
+ * Returns: a new #NbtkButton
+ */
 ClutterActor *
 nbtk_button_new (void)
 {
   return g_object_new (NBTK_TYPE_BUTTON, NULL);
 }
 
+/**
+ * nbtk_button_new_with_label:
+ * @text: text to set the label to
+ *
+ * Create a new #NbtkButton with the specified label
+ *
+ * Returns: a new #NbtkButton
+ */
 ClutterActor *
 nbtk_button_new_with_label (const gchar *text)
 {
   return g_object_new (NBTK_TYPE_BUTTON, "label", text, NULL);
 }
 
+/**
+ * nbtk_button_get_label:
+ * @button: a #NbtkButton
+ *
+ * Get the text displayed on the button
+ *
+ * Returns: the text for the button. This must not be freed by the application
+ */
 G_CONST_RETURN gchar *
 nbtk_button_get_label (NbtkButton *button)
 {
@@ -541,6 +564,13 @@ nbtk_button_get_label (NbtkButton *button)
   return button->priv->text;
 }
 
+/**
+ * nbtk_button_set_label:
+ * @button: a #Nbtkbutton
+ * @text: text to set the label to
+ *
+ * Sets the text displayed on the button
+ */
 void
 nbtk_button_set_label (NbtkButton  *button,
                        const gchar *text)

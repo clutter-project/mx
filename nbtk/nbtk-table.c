@@ -478,12 +478,28 @@ nbtk_table_init (NbtkTable *table)
   table->priv->n_rows = 0;
 }
 
+/*** Public Functions ***/
+
+/**
+ * nbtk_table_new:
+ *
+ * Create a new #NbtkTable
+ *
+ * Returns: a new #NbtkTable
+ */
 NbtkWidget*
 nbtk_table_new (void)
 {
   return g_object_new (NBTK_TYPE_TABLE, NULL);
 }
 
+/**
+ * nbtk_table_set_col_spacing
+ * @table: a #NbtkTable
+ * @spacing: spacing in pixels
+ *
+ * Sets the amount of spacing between columns.
+ */
 void
 nbtk_table_set_col_spacing (NbtkTable *table,
                             gint       spacing)
@@ -498,6 +514,13 @@ nbtk_table_set_col_spacing (NbtkTable *table,
   priv->col_spacing = spacing;
 }
 
+/**
+ * nbtk_table_set_row_spacing
+ * @table: a #NbtkTable
+ * @spacing: spacing in pixels
+ *
+ * Sets the amount of spacing between rows.
+ */
 void
 nbtk_table_set_row_spacing (NbtkTable *table,
                             gint       spacing)
@@ -512,6 +535,18 @@ nbtk_table_set_row_spacing (NbtkTable *table,
   priv->row_spacing = spacing;
 }
 
+/**
+ * nbtk_table_add_widget:
+ * @table: a #NbtkTable
+ * @widget: a #NbtkWidget
+ * @row: row to insert the widget in
+ * @column: column to insert the widget in
+ *
+ * Add a widget to the table at the specified row and column.
+ *
+ * Note: row and column numberings start from 0 in the top left corner.
+ * Therefore, the top left most cell is at column 0, row 0.
+ */
 void
 nbtk_table_add_widget (NbtkTable *table,
                        NbtkWidget *widget,
@@ -543,6 +578,16 @@ nbtk_table_add_widget (NbtkTable *table,
 }
 
 
+/**
+ * nbtk_table_set_widget_colspan:
+ * @table: a #NbtkTable
+ * @widget: a #NbtkWidget
+ * @colspan: The number of columns to span
+ *
+ * Set the number of columns a widget should span, starting with the current
+ * column and moving right. For example, a widget placed in column 1 with
+ * colspan set to 3 will occupy columns 1, 2 and 3.
+ */
 void
 nbtk_table_set_widget_colspan (NbtkTable *table,
                                NbtkWidget *widget,
@@ -560,6 +605,16 @@ nbtk_table_set_widget_colspan (NbtkTable *table,
 
 }
 
+/**
+ * nbtk_table_set_widget_rowspan:
+ * @table: a #NbtkTable
+ * @widget: a #NbtkWidget
+ * @rowspan: The number of rows to span
+ *
+ * Set the number of rows a widget should span, starting with the current
+ * row and moving down. For example, a widget placed in row 1 with rowspan
+ * set to 3 will occupy rows 1, 2 and 3.
+ */
 void
 nbtk_table_set_widget_rowspan (NbtkTable *table,
                                NbtkWidget *widget,
