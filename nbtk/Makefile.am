@@ -22,7 +22,6 @@ BUILT_SOURCES = \
 source_h = \
 	nbtk-widget.h \
 	nbtk-button.h \
-	nbtk-grid.h \
 	nbtk-private.h \
 	nbtk-stylable.h \
 	nbtk-style.h \
@@ -85,8 +84,6 @@ libnbtk_la_SOURCES = \
 		nbtk-widget.h \
 		nbtk-button.c \
 		nbtk-button.h \
-		nbtk-grid.c \
-		nbtk-grid.h \
 		nbtk-private.h \
 		nbtk-stylable.c \
 		nbtk-stylable.h \
