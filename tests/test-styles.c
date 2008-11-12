@@ -20,7 +20,7 @@ static const gchar *style_names[N_STYLES] = {
   "blue"
 };
 
-static ClutterActor *buttons[N_STYLES] = { NULL, };
+static NbtkWidget *buttons[N_STYLES] = { NULL, };
 static NbtkStyle *styles[N_STYLES] = { NULL, };
 
 static ClutterActor *stage = NULL;
@@ -99,7 +99,7 @@ create_blue_style (void)
   return style;
 }
 
-static ClutterActor *
+static NbtkWidget*
 create_button (ClutterActor *parent,
                const gchar  *text,
                gint          x,
@@ -107,7 +107,7 @@ create_button (ClutterActor *parent,
                StyleName     style_name)
 {
   NbtkStyle *style = NULL;
-  ClutterActor *button;
+  NbtkWidget *button;
   NbtkPadding padding = { 0, };
 
   padding.top = padding.bottom = 0; 
@@ -138,9 +138,10 @@ create_button (ClutterActor *parent,
 
   button = nbtk_button_new_with_label (text);
   nbtk_widget_set_padding (NBTK_WIDGET (button), &padding);
-  clutter_container_add_actor (CLUTTER_CONTAINER (parent), button);
-  clutter_actor_set_position (button, x, y);
-  clutter_actor_set_size (button, 200, 50);
+  clutter_container_add_actor (CLUTTER_CONTAINER (parent),
+                               CLUTTER_ACTOR (button));
+  clutter_actor_set_position (CLUTTER_ACTOR (button), x, y);
+  clutter_actor_set_size (CLUTTER_ACTOR (button), 200, 50);
   g_signal_connect (button,
                     "clicked", G_CALLBACK (button_clicked),
                     GINT_TO_POINTER (style_name));
@@ -154,7 +155,7 @@ create_button (ClutterActor *parent,
 int
 main (int argc, char *argv[])
 {
-  ClutterActor *button;
+  NbtkWidget *button;
   ClutterColor stage_color =  { 0xff, 0xff, 0xff, 0xff };
 
   clutter_init (&argc, &argv);
@@ -163,20 +164,16 @@ main (int argc, char *argv[])
   clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
 
   button = create_button (stage, "Default Style", 100, 100, DEFAULT_STYLE);
-  clutter_actor_set_name (button, "defaultbutton");
-  clutter_actor_show (button);
+  clutter_actor_set_name (CLUTTER_ACTOR (button), "defaultbutton");
 
   button = create_button (stage, "Red Style", 100, 200, RED_STYLE);
-  clutter_actor_set_name (button, "redbutton");
-  clutter_actor_show (button);
+  clutter_actor_set_name (CLUTTER_ACTOR (button), "redbutton");
 
   button = create_button (stage, "Green Style", 350, 100, GREEN_STYLE);
-  clutter_actor_set_name (button, "greenbutton");
-  clutter_actor_show (button);
+  clutter_actor_set_name (CLUTTER_ACTOR (button), "greenbutton");
 
   button = create_button (stage, "Blue Style", 350, 200, BLUE_STYLE);
-  clutter_actor_set_name (button, "bluebutton");
-  clutter_actor_show (button);
+  clutter_actor_set_name (CLUTTER_ACTOR (button), "bluebutton");
 
   clutter_actor_show (stage);
 

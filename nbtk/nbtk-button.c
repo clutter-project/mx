@@ -528,7 +528,7 @@ nbtk_button_init (NbtkButton *button)
  *
  * Returns: a new #NbtkButton
  */
-ClutterActor *
+NbtkWidget *
 nbtk_button_new (void)
 {
   return g_object_new (NBTK_TYPE_BUTTON, NULL);
@@ -542,7 +542,7 @@ nbtk_button_new (void)
  *
  * Returns: a new #NbtkButton
  */
-ClutterActor *
+NbtkWidget *
 nbtk_button_new_with_label (const gchar *text)
 {
   return g_object_new (NBTK_TYPE_BUTTON, "label", text, NULL);

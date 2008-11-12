@@ -1,7 +1,8 @@
 /* nbtk-button.h: Plain button actor
  *
  * Copyright (C) 2007 OpenedHand
- *
+ * Copyright (C) 2008 Intel Corporation
+ * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -18,6 +19,7 @@
  * Boston, MA 02111-1307, USA.
  *
  * Written by: Emmanuele Bassi <ebassi@openedhand.com>
+ *             Thomas Wood <thomas@linux.intel.com>
  */
 
 #ifndef __NBTK_BUTTON_H__
@@ -59,8 +61,8 @@ struct _NbtkButtonClass
 
 GType nbtk_button_get_type (void) G_GNUC_CONST;
 
-ClutterActor *        nbtk_button_new            (void);
-ClutterActor *        nbtk_button_new_with_label (const gchar  *text);
+NbtkWidget *          nbtk_button_new            (void);
+NbtkWidget *          nbtk_button_new_with_label (const gchar  *text);
 G_CONST_RETURN gchar *nbtk_button_get_label      (NbtkButton   *button);
 void                  nbtk_button_set_label      (NbtkButton   *button,
                                                   const gchar  *text);
