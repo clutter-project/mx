@@ -382,6 +382,15 @@ nbtk_widget_pick (ClutterActor       *actor,
 }
 
 static void
+nbtk_widget_paint (ClutterActor *actor)
+{
+  NbtkWidgetPrivate *priv = NBTK_WIDGET_GET_PRIVATE (actor);
+
+  if (priv->child && CLUTTER_ACTOR_IS_VISIBLE (priv->child))
+    clutter_actor_paint (priv->child);
+}
+
+static void
 nbtk_widget_get_preferred_width (ClutterActor *actor,
                                 ClutterUnit   for_height,
                                 ClutterUnit  *min_width_p,
@@ -481,6 +490,7 @@ nbtk_widget_class_init (NbtkWidgetClass *klass)
 
   actor_class->allocate = nbtk_widget_allocate;
   actor_class->pick = nbtk_widget_pick;
+  actor_class->paint = nbtk_widget_paint;
   actor_class->get_preferred_height = nbtk_widget_get_preferred_height;
   actor_class->get_preferred_width = nbtk_widget_get_preferred_width;
   actor_class->parent_set = nbtk_widget_parent_set;
