@@ -66,6 +66,8 @@ NbtkWidget *          nbtk_button_new_with_label (const gchar  *text);
 G_CONST_RETURN gchar *nbtk_button_get_label      (NbtkButton   *button);
 void                  nbtk_button_set_label      (NbtkButton   *button,
                                                   const gchar  *text);
+void                  nbtk_button_set_icon_from_file (NbtkButton *button,
+                                                      gchar      *filename);
 
 G_END_DECLS
 

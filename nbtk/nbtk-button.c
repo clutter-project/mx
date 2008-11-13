@@ -63,6 +63,7 @@ struct _NbtkButtonPrivate
   gchar *text;
 
   ClutterActor *label;
+  ClutterActor *icon;
   ClutterTimeline *timeline;
   ClutterEffectTemplate *press_tmpl;
 
@@ -230,8 +231,8 @@ nbtk_button_paint (ClutterActor *actor)
         }
     }
 
-  if (priv->label && CLUTTER_ACTOR_IS_VISIBLE (priv->label))
-    clutter_actor_paint (priv->label);
+  if (CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->paint)
+    CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->paint (CLUTTER_ACTOR (button));
 }
 
 
@@ -587,4 +588,50 @@ nbtk_button_set_label (NbtkButton  *button,
   nbtk_button_construct_child (button);
 
   g_object_notify (G_OBJECT (button), "label");
+}
+
+/**
+ * nbtk_button_set_icon_from_file:
+ * @button: a #NbtkButton
+ * @filename: path to an image to set
+ *
+ * Sets the icon of the button to the image specified in @filename.
+ * If @filename is NULL, the current icon is removed.
+ */
+void
+nbtk_button_set_icon_from_file (NbtkButton *button,
+                                gchar      *filename)
+{
+  NbtkButtonPrivate *priv;
+  GError *err = NULL;
+  ClutterActor *icon;
+
+  g_return_if_fail (NBTK_IS_BUTTON (button));
+
+  priv = button->priv;
+
+  if (filename == NULL)
+    {
+      if (priv->icon)
+        clutter_container_remove_actor (CLUTTER_CONTAINER (button),
+                                        priv->icon);
+    }
+
+  icon = clutter_texture_new_from_file (filename, &err);
+
+  if (err)
+    {
+      g_warning ("Failed to load icon from file. %s", err->message);
+      g_error_free (err);
+      return;
+    }
+
+
+  /* remove the label if present */
+  if (priv->label)
+    clutter_container_remove_actor (CLUTTER_CONTAINER (button),
+                                    priv->label);
+  g_free (priv->text);
+
+  clutter_container_add_actor (CLUTTER_CONTAINER (button), icon);
 }
