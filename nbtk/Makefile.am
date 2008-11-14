@@ -20,14 +20,18 @@ BUILT_SOURCES = \
 	nbtk-marshal.c
 
 source_h = \
-	nbtk-widget.h \
 	nbtk-button.h \
+	nbtk-enum-types.h \
+	nbtk-marshal.h \
 	nbtk-private.h \
 	nbtk-stylable.h \
 	nbtk-style.h \
+	nbtk-table.h \
 	nbtk-texture-cache.h \
 	nbtk-texture-frame.h \
-	nbtk-types.h
+	nbtk-types.h \
+	nbtk-widget.h \
+	nbtk.h
 
 
 STAMP_FILES = stamp-nbtk-marshal.h stamp-nbtk-enum-types.h
@@ -75,6 +79,11 @@ nbtk-enum-types.c: stamp-nbtk-enum-types.h nbtk-enum-types.c.in
 
 
 # libnbtk library
+
+tidyincludedir = $(includedir)/nbtk
+tidyinclude_DATA = \
+        $(source_h)
+
 
 lib_LTLIBRARIES = libnbtk.la
 
