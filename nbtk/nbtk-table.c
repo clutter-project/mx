@@ -386,6 +386,8 @@ nbtk_table_allocate (ClutterActor          *self,
 
   CLUTTER_ACTOR_CLASS (nbtk_table_parent_class)->allocate (self, box, absolute_origin_changed);
 
+  g_return_if_fail (priv->n_cols != 0 || priv->n_rows != 0);
+
   col_width = (box->x2 - box->x1) / priv->n_cols;
   row_height = (box->y2 - box->y1) / priv->n_rows;
 
