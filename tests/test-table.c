@@ -11,9 +11,7 @@ main (int argc, char *argv[])
 {
   ClutterActor *stage;
   NbtkWidget *table;
-  ClutterActor *button1, *button2, *button3, *button4, *button5;
-  ClutterBehaviour *b;
-  ClutterTimeline *timeline;
+  NbtkWidget *button1, *button2, *button3, *button4, *button5;
 
   clutter_init (&argc, &argv);
 
@@ -39,17 +37,6 @@ main (int argc, char *argv[])
   clutter_actor_set_size (CLUTTER_ACTOR (table), 300, 300);
 
   clutter_actor_show (stage);
-
-  timeline = clutter_timeline_new_for_duration (2000);
-  clutter_timeline_set_loop (timeline, TRUE);
-
-  b = clutter_behaviour_scale_new (
-      clutter_alpha_new_full (timeline, clutter_sine_func, NULL, NULL),
-      1, 2, 2, 1);
-
-
-  clutter_timeline_start (timeline);
-  clutter_behaviour_apply (b, CLUTTER_ACTOR (table));
 
   clutter_main ();
 
