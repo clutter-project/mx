@@ -21,7 +21,6 @@ BUILT_SOURCES = \
 
 source_h = \
 	nbtk-button.h \
-	nbtk-enum-types.h \
 	nbtk-marshal.h \
 	nbtk-private.h \
 	nbtk-stylable.h \
@@ -82,7 +81,8 @@ nbtk-enum-types.c: stamp-nbtk-enum-types.h nbtk-enum-types.c.in
 
 tidyincludedir = $(includedir)/nbtk
 tidyinclude_DATA = \
-        $(source_h)
+        $(source_h) \
+	$(top_builddir)/nbtk/nbtk-enum-types.h
 
 
 lib_LTLIBRARIES = libnbtk.la
