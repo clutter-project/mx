@@ -537,6 +537,35 @@ nbtk_table_set_row_spacing (NbtkTable *table,
   priv->row_spacing = spacing;
 }
 
+void
+nbtk_table_add_actor (NbtkTable   *table,
+                     ClutterActor *actor,
+                     gint          row,
+                     gint          column)
+{
+  NbtkTablePrivate *priv;
+  ClutterChildMeta *child;
+
+  g_return_if_fail (NBTK_IS_TABLE (table));
+  g_return_if_fail (CLUTTER_IS_ACTOR (actor));
+  g_return_if_fail (row >= 0);
+  g_return_if_fail (column >= 0);
+
+  priv = NBTK_TABLE_GET_PRIVATE (table);
+
+  clutter_container_add_actor (CLUTTER_CONTAINER (table), actor);
+  child = clutter_container_get_child_meta (CLUTTER_CONTAINER (table), actor);
+
+  g_object_set (child, "row", row, "column", column, NULL);
+
+  priv->n_cols = MAX (priv->n_cols, column + 1);
+  priv->n_rows = MAX (priv->n_rows, row + 1);
+
+  priv->children = g_slist_prepend (priv->children, actor);
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
+}
+
 /**
  * nbtk_table_add_widget:
  * @table: a #NbtkTable
@@ -550,33 +579,17 @@ nbtk_table_set_row_spacing (NbtkTable *table,
  * Therefore, the top left most cell is at column 0, row 0.
  */
 void
-nbtk_table_add_widget (NbtkTable *table,
+nbtk_table_add_widget (NbtkTable  *table,
                        NbtkWidget *widget,
-                       gint row,
-                       gint column)
+                       gint        row,
+                       gint        column)
 {
-  NbtkTablePrivate *priv;
-  ClutterChildMeta *child;
-
   g_return_if_fail (NBTK_IS_TABLE (table));
   g_return_if_fail (NBTK_IS_WIDGET (widget));
   g_return_if_fail (row >= 0);
   g_return_if_fail (column >= 0);
 
-  priv = NBTK_TABLE_GET_PRIVATE (table);
-
-  clutter_container_add_actor (CLUTTER_CONTAINER (table),
-                               CLUTTER_ACTOR (widget));
-  child = clutter_container_get_child_meta (CLUTTER_CONTAINER (table),
-                                            CLUTTER_ACTOR (widget));
-  g_object_set (child, "row", row, "column", column, NULL);
-
-  priv->n_cols = MAX (priv->n_cols, column + 1);
-  priv->n_rows = MAX (priv->n_rows, row + 1);
-
-  priv->children = g_slist_prepend (priv->children, widget);
-
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
+  nbtk_table_add_actor (table, CLUTTER_ACTOR (widget), row, column);
 }
 
 

@@ -52,12 +52,13 @@ struct _NbtkTableClass
 
 GType nbtk_table_get_type (void) G_GNUC_CONST;
 
-NbtkWidget*    nbtk_table_new                 (void);
-void           nbtk_table_set_col_spacing     (NbtkTable *table, gint spacing);
-void           nbtk_table_set_row_spacing     (NbtkTable *table, gint spacing);
-void           nbtk_table_add_widget          (NbtkTable *table, NbtkWidget *widget, gint row, gint column);
-void           nbtk_table_set_widget_colspan  (NbtkTable *table, NbtkWidget *widget, gint colspan);
-void           nbtk_table_set_widget_rowspan  (NbtkTable *table, NbtkWidget *widget, gint rowspan);
+NbtkWidget* nbtk_table_new                (void);
+void        nbtk_table_set_col_spacing    (NbtkTable *table, gint spacing);
+void        nbtk_table_set_row_spacing    (NbtkTable *table, gint spacing);
+void        nbtk_table_add_widget         (NbtkTable *table, NbtkWidget *widget, gint row, gint column);
+void        nbtk_table_add_actor          (NbtkTable *table, ClutterActor *actor, gint row, gint column);
+void        nbtk_table_set_widget_colspan (NbtkTable *table, NbtkWidget *widget, gint colspan);
+void        nbtk_table_set_widget_rowspan (NbtkTable *table, NbtkWidget *widget, gint rowspan);
 
 
 G_END_DECLS
