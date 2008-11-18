@@ -368,7 +368,7 @@ nbtk_table_dispose (GObject *gobject)
 {
   NbtkTablePrivate *priv = NBTK_TABLE (gobject)->priv;
 
-  g_slist_foreach (priv->children, (GFunc) g_object_unref, NULL);
+  g_slist_foreach (priv->children, (GFunc) clutter_actor_unparent, NULL);
   g_slist_free (priv->children);
   priv->children = NULL;
 
