@@ -1,4 +1,4 @@
-SUBDIRS = nbtk po tests docs
+SUBDIRS = nbtk tests docs
 
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
 
