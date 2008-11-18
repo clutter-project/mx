@@ -444,7 +444,7 @@ nbtk_table_allocate (ClutterActor          *self,
               gint center_offset;
 
               /* ratio of height to width multiplied by new width */
-              new_height = ((gdouble) h / w)  * ((gdouble) childbox.y2 - childbox.y1);
+              new_height = ((gdouble) h / w)  * ((gdouble) childbox.x2 - childbox.x1);
 
               /* center for new height */
               center_offset = ((childbox.y2 - childbox.y1) - new_height) / 2;
