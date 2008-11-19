@@ -595,8 +595,7 @@ void
 nbtk_table_add_actor (NbtkTable   *table,
                      ClutterActor *actor,
                      gint          row,
-                     gint          column,
-                     gboolean      keep_aspect_ratio)
+                     gint          column)
 {
   NbtkTablePrivate *priv;
   ClutterChildMeta *child;
@@ -611,8 +610,7 @@ nbtk_table_add_actor (NbtkTable   *table,
   clutter_container_add_actor (CLUTTER_CONTAINER (table), actor);
   child = clutter_container_get_child_meta (CLUTTER_CONTAINER (table), actor);
 
-  g_object_set (child, "row", row, "column", column,
-               "keep-aspect-ratio", keep_aspect_ratio, NULL);
+  g_object_set (child, "row", row, "column", column, NULL);
 
   priv->n_cols = MAX (priv->n_cols, column + 1);
   priv->n_rows = MAX (priv->n_rows, row + 1);
@@ -645,7 +643,7 @@ nbtk_table_add_widget (NbtkTable  *table,
   g_return_if_fail (row >= 0);
   g_return_if_fail (column >= 0);
 
-  nbtk_table_add_actor (table, CLUTTER_ACTOR (widget), row, column, FALSE);
+  nbtk_table_add_actor (table, CLUTTER_ACTOR (widget), row, column);
 }
 
 

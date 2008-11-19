@@ -56,7 +56,7 @@ NbtkWidget* nbtk_table_new                (void);
 void        nbtk_table_set_col_spacing    (NbtkTable *table, gint spacing);
 void        nbtk_table_set_row_spacing    (NbtkTable *table, gint spacing);
 void        nbtk_table_add_widget         (NbtkTable *table, NbtkWidget *widget, gint row, gint column);
-void        nbtk_table_add_actor          (NbtkTable *table, ClutterActor *actor, gint row, gint column, gboolean keep_ratio);
+void        nbtk_table_add_actor          (NbtkTable *table, ClutterActor *actor, gint row, gint column);
 void        nbtk_table_set_widget_colspan (NbtkTable *table, NbtkWidget *widget, gint colspan);
 void        nbtk_table_set_widget_rowspan (NbtkTable *table, NbtkWidget *widget, gint rowspan);
 
