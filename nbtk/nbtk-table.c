@@ -414,17 +414,21 @@ nbtk_table_allocate (ClutterActor          *self,
   NbtkTablePrivate *priv = NBTK_TABLE_GET_PRIVATE (self);
   GSList *list;
   ClutterUnit col_width, row_height;
+  gint row_spacing, col_spacing;
 
   CLUTTER_ACTOR_CLASS (nbtk_table_parent_class)->allocate (self, box, absolute_origin_changed);
 
   g_return_if_fail (priv->n_cols != 0 || priv->n_rows != 0);
 
-  col_width = (box->x2 - box->x1) / priv->n_cols;
-  row_height = (box->y2 - box->y1) / priv->n_rows;
+  col_spacing = CLUTTER_UNITS_FROM_DEVICE (priv->col_spacing);
+  row_spacing = CLUTTER_UNITS_FROM_DEVICE (priv->row_spacing);
+
+  col_width = ((box->x2 - box->x1) - (col_spacing * (priv->n_cols - 1))) / priv->n_cols;
+  row_height = ((box->y2 - box->y1) - (row_spacing * (priv->n_rows - 1))) / priv->n_rows;
 
   for (list = priv->children; list; list = g_slist_next (list))
     {
-      gint row, col, row_span, col_span, row_spacing, col_spacing;
+      gint row, col, row_span, col_span;
       gboolean keep_ratio;
       ClutterChildMeta *meta;
       ClutterActor *child;
@@ -436,14 +440,12 @@ nbtk_table_allocate (ClutterActor          *self,
       g_object_get (meta, "column", &col, "row", &row,
                     "row-span", &row_span, "col-span", &col_span,
                     "keep-aspect-ratio", &keep_ratio, NULL);
-      col_spacing = CLUTTER_UNITS_FROM_DEVICE (priv->col_spacing);
-      row_spacing = CLUTTER_UNITS_FROM_DEVICE (priv->row_spacing);
 
-      childbox.x1 = (col_width * col) + (col_spacing * col);
-      childbox.x2 = childbox.x1 + col_width * col_span + (col_spacing * (col_span - 1));
+      childbox.x1 = (col_width + col_spacing) * col;
+      childbox.x2 = childbox.x1 + (col_width * col_span) + (col_spacing * (col_span - 1));
 
-      childbox.y1 = (row_height * row) + (row_spacing * row);
-      childbox.y2 = childbox.y1 + row_height * row_span + (row_spacing * (row_span - 1));
+      childbox.y1 = (row_height + row_spacing) * row;
+      childbox.y2 = childbox.y1 + (row_height * row_span) + (row_spacing * (row_span - 1));
 
       if (keep_ratio)
         {

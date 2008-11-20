@@ -146,7 +146,10 @@ nbtk_style_class_init (NbtkStyleClass *klass)
 
 /* url loader for libccss */
 static char *
-ccss_url (GSList const *args)
+ccss_url (ccss_block_t  *block,
+          char const    *property_name,
+          char const    *function_name,
+          GSList const  *args)
 {
   const gchar *given_path;
   gchar *test_path;
@@ -191,7 +194,7 @@ nbtk_style_init (NbtkStyle *style)
   if (!inited)
   {
     inited = TRUE;
-    ccss_init (ccss_functions);
+    ccss_init (NULL, ccss_functions);
   }
 
   nbtk_style_load (style);
