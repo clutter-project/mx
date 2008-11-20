@@ -1,6 +1,7 @@
 /* nbtk-button.c: Plain button actor
  *
- * Copyright (C) 2007 OpenedHand
+ * Copyright 2007 OpenedHand
+ * Copyright 2008 Intel Corporation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
