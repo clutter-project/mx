@@ -23,9 +23,9 @@
 #ifndef __NBTK_TABLE_H__
 #define __NBTK_TABLE_H__
 
-G_BEGIN_DECLS
-
 #include <nbtk-widget.h>
+
+G_BEGIN_DECLS
 
 #define NBTK_TYPE_TABLE                (nbtk_table_get_type ())
 #define NBTK_TABLE(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_TABLE, NbtkTable))

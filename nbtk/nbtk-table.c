@@ -25,15 +25,15 @@
 #include "config.h"
 #endif
 
+#include "nbtk-table.h"
+
 #include <stdlib.h>
 #include <string.h>
-
 #include <glib.h>
-
 #include <clutter/clutter.h>
 #include <clutter/clutter-container.h>
 
-#include "nbtk-table.h"
+#include "nbtk-stylable.h"
 
 enum
 {
@@ -55,11 +55,13 @@ struct _NbtkTablePrivate
 
   gint n_rows;
   gint n_cols;
+
+  ClutterColor *bg_color;
 };
 
 static void nbtk_container_iface_init (ClutterContainerIface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (NbtkTable, nbtk_table, CLUTTER_TYPE_ACTOR,
+G_DEFINE_TYPE_WITH_CODE (NbtkTable, nbtk_table, NBTK_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
                                                 nbtk_container_iface_init));
 
@@ -323,6 +325,18 @@ nbtk_container_iface_init (ClutterContainerIface *iface)
   iface->child_meta_type = NBTK_TYPE_TABLE_CHILD;
 }
 
+/* NbtkTable Class Implementation */
+
+static void
+nbtk_table_style_changed (NbtkWidget *table)
+{
+  NbtkTablePrivate *priv = NBTK_TABLE_GET_PRIVATE (table);
+
+  /* cache these values for use in the paint function */
+  nbtk_stylable_get (NBTK_STYLABLE (table),
+                    "background-color", &priv->bg_color,
+                    NULL);
+}
 
 static void
 nbtk_table_set_property (GObject       *gobject,
@@ -478,6 +492,25 @@ nbtk_table_paint (ClutterActor *self)
   NbtkTablePrivate *priv = NBTK_TABLE_GET_PRIVATE (self);
   GSList *list;
 
+  if (priv->bg_color)
+    {
+      ClutterActorBox allocation = { 0, };
+      ClutterColor *bg_color = priv->bg_color;
+      guint w, h;
+
+      priv->bg_color->alpha = clutter_actor_get_paint_opacity (self)
+                              * bg_color->alpha / 255;
+
+      clutter_actor_get_allocation_box (self, &allocation);
+
+      w = CLUTTER_UNITS_TO_DEVICE (allocation.x2 - allocation.x1);
+      h = CLUTTER_UNITS_TO_DEVICE (allocation.y2 - allocation.y1);
+
+      cogl_color (priv->bg_color);
+      cogl_rectangle (0, 0, w, h);
+    }
+
+
   for (list = priv->children; list; list = g_slist_next (list))
     {
       clutter_actor_paint (CLUTTER_ACTOR (list->data));
@@ -505,7 +538,7 @@ nbtk_table_class_init (NbtkTableClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  /* NbtkWidgetClass *nbtk_widget_class = NBTK_WIDGET_CLASS (klass); */
+  NbtkWidgetClass *nbtk_widget_class = NBTK_WIDGET_CLASS (klass);
 
   g_type_class_add_private (klass, sizeof (NbtkTablePrivate));
 
@@ -523,6 +556,8 @@ nbtk_table_class_init (NbtkTableClass *klass)
   actor_class->paint = nbtk_table_paint;
   actor_class->pick = nbtk_table_pick;
   actor_class->allocate = nbtk_table_allocate;
+
+  nbtk_widget_class->style_changed = nbtk_table_style_changed;
 }
 
 static void
