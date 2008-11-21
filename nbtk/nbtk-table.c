@@ -40,7 +40,10 @@ enum
   PROP_0,
 
   PROP_COL_SPACING,
-  PROP_ROW_SPACING
+  PROP_ROW_SPACING,
+
+  PROP_ACTIVE_ROW,
+  PROP_ACTIVE_COL
 };
 
 #define NBTK_TABLE_GET_PRIVATE(obj)    \
@@ -56,7 +59,11 @@ struct _NbtkTablePrivate
   gint n_rows;
   gint n_cols;
 
+  gint active_row;
+  gint active_col;
+
   ClutterColor *bg_color;
+  ClutterColor *active_color;
 };
 
 static void nbtk_container_iface_init (ClutterContainerIface *iface);
@@ -335,6 +342,7 @@ nbtk_table_style_changed (NbtkWidget *table)
   /* cache these values for use in the paint function */
   nbtk_stylable_get (NBTK_STYLABLE (table),
                     "background-color", &priv->bg_color,
+                    "color", &priv->active_color,
                     NULL);
 }
 
@@ -354,6 +362,14 @@ nbtk_table_set_property (GObject       *gobject,
 
     case PROP_ROW_SPACING:
       nbtk_table_set_row_spacing (table, g_value_get_int (value));
+      break;
+
+    case PROP_ACTIVE_COL:
+      nbtk_table_set_active_col (table, g_value_get_int (value));
+      break;
+
+    case PROP_ACTIVE_ROW:
+      nbtk_table_set_active_row (table, g_value_get_int (value));
       break;
 
     default:
@@ -380,6 +396,14 @@ nbtk_table_get_property (GObject    *gobject,
       g_value_set_int (value, priv->row_spacing);
       break;
 
+    case PROP_ACTIVE_COL:
+      g_value_set_int (value, priv->active_col);
+      break;
+
+    case PROP_ACTIVE_ROW:
+      g_value_set_int (value, priv->active_row);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -402,6 +426,9 @@ nbtk_table_dispose (GObject *gobject)
   g_slist_foreach (priv->children, (GFunc) clutter_actor_unparent, NULL);
   g_slist_free (priv->children);
   priv->children = NULL;
+
+  g_free (priv->bg_color);
+  g_free (priv->active_color);
 
   G_OBJECT_CLASS (nbtk_table_parent_class)->dispose (gobject);
 }
@@ -512,6 +539,40 @@ nbtk_table_paint (ClutterActor *self)
       cogl_rectangle (0, 0, w, h);
     }
 
+  if (priv->active_col >= 0)
+    {
+      gint col_width;
+      guint w, h;
+
+      clutter_actor_get_size (self, &w, &h);
+
+      col_width = w / priv->n_cols;
+
+      cogl_color (priv->active_color);
+      priv->active_color->alpha = clutter_actor_get_paint_opacity (self)
+                                 * priv->active_color->alpha / 255;
+      
+      cogl_rectangle (col_width * priv->active_col, 0,
+                      col_width * priv->active_col, h);
+    }
+
+  if (priv->active_row >= 0)
+    {
+      gint row_height;
+      guint w, h;
+
+      clutter_actor_get_size (self, &w, &h);
+
+      row_height = h / priv->n_rows;
+
+      cogl_color (priv->active_color);
+      priv->active_color->alpha = clutter_actor_get_paint_opacity (self)
+                                  * priv->active_color->alpha / 255;
+      
+      cogl_rectangle (0, row_height * priv->active_row,
+                      w, row_height * priv->active_row);
+    }
+
 
   for (list = priv->children; list; list = g_slist_next (list))
     {
@@ -569,6 +630,9 @@ nbtk_table_init (NbtkTable *table)
 
   table->priv->n_cols = 0;
   table->priv->n_rows = 0;
+
+  table->priv->active_row = -1;
+  table->priv->active_col = -1;
 }
 
 /*** Public Functions ***/
@@ -626,6 +690,52 @@ nbtk_table_set_row_spacing (NbtkTable *table,
   priv = NBTK_TABLE_GET_PRIVATE (table);
 
   priv->row_spacing = spacing;
+}
+
+/**
+ * nbtk_table_set_active_col:
+ * @table: a #NbtkTable
+ * @column: column number to set as active
+ *
+ * Sets the active column in the table. An active column is hilighted with the
+ * active color. A value of -1 removes the active column.
+ */
+void
+nbtk_table_set_active_col (NbtkTable *table,
+                           gint       column)
+{
+  NbtkTablePrivate *priv;
+
+  g_return_if_fail (NBTK_IS_TABLE (table));
+
+  priv = NBTK_TABLE_GET_PRIVATE (table);
+
+  g_return_if_fail (column >= -1 && column <= priv->n_cols);
+
+  priv->active_col = column;
+}
+
+/**
+ * nbtk_table_set_active_row:
+ * @table: a #NbtkTable
+ * @row: row number to set as active
+ *
+ * Sets the active row in the table. An active row is hilighted with the active
+ * color. A value of -1 removes the active row.
+ */
+void
+nbtk_table_set_active_row (NbtkTable *table,
+                           gint       row)
+{
+  NbtkTablePrivate *priv;
+
+  g_return_if_fail (NBTK_IS_TABLE (table));
+
+  priv = NBTK_TABLE_GET_PRIVATE (table);
+
+  g_return_if_fail (row >= -1 && row <= priv->n_rows);
+
+  priv->active_row = row;
 }
 
 void

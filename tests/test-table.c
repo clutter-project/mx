@@ -33,11 +33,13 @@ main (int argc, char *argv[])
   nbtk_table_set_widget_rowspan (NBTK_TABLE (table), NBTK_WIDGET (button1), 2);
   nbtk_table_set_widget_colspan (NBTK_TABLE (table), NBTK_WIDGET (button4), 2);
 
-  clutter_actor_set_size (button2, 10, 10);
-  clutter_container_child_set (CLUTTER_CONTAINER (table), button2,
+  clutter_actor_set_size (CLUTTER_ACTOR (button2), 10, 10);
+  clutter_container_child_set (CLUTTER_CONTAINER (table), CLUTTER_ACTOR (button2),
                                "keep-aspect-ratio", TRUE, NULL);
 
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (table));
+  nbtk_table_set_active_row (NBTK_TABLE (table), 1);
+  nbtk_table_set_active_col (NBTK_TABLE (table), 1);
   clutter_actor_set_size (CLUTTER_ACTOR (table), 300, 300);
 
   clutter_actor_show (stage);
