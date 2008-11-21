@@ -759,7 +759,7 @@ nbtk_table_add_actor (NbtkTable   *table,
   priv->n_cols = MAX (priv->n_cols, column + 1);
   priv->n_rows = MAX (priv->n_rows, row + 1);
 
-  priv->children = g_slist_prepend (priv->children, actor);
+  priv->children = g_slist_append (priv->children, actor);
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
 }
