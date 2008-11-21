@@ -427,9 +427,6 @@ nbtk_table_dispose (GObject *gobject)
   g_slist_free (priv->children);
   priv->children = NULL;
 
-  g_free (priv->bg_color);
-  g_free (priv->active_color);
-
   G_OBJECT_CLASS (nbtk_table_parent_class)->dispose (gobject);
 }
 
