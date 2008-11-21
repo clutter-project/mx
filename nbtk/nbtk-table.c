@@ -550,7 +550,7 @@ nbtk_table_paint (ClutterActor *self)
                                  * priv->active_color->alpha / 255;
       
       cogl_rectangle (col_width * priv->active_col, 0,
-                      col_width * priv->active_col, h);
+                      col_width, h);
     }
 
   if (priv->active_row >= 0)
@@ -567,7 +567,7 @@ nbtk_table_paint (ClutterActor *self)
                                   * priv->active_color->alpha / 255;
       
       cogl_rectangle (0, row_height * priv->active_row,
-                      w, row_height * priv->active_row);
+                      w, row_height);
     }
 
 
