@@ -757,6 +757,13 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
     }
 }
 
+
+static void
+nbtk_widget_name_notify (NbtkWidget *widget, GParamSpec *pspec, gpointer data)
+{
+  g_signal_emit_by_name (widget, "style-changed", 0);
+}
+
 static void
 nbtk_widget_init (NbtkWidget *actor)
 {
@@ -772,6 +779,10 @@ nbtk_widget_init (NbtkWidget *actor)
   priv->x_align = priv->y_align = CLUTTER_FLOAT_TO_FIXED (0.5);
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (actor), TRUE);
+
+  /* connect style changed */
+  g_signal_connect (actor, "notify::name", G_CALLBACK (nbtk_widget_name_notify), NULL);
+
 }
 
 /**
