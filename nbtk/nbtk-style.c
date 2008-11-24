@@ -37,6 +37,7 @@ typedef struct {
 struct _NbtkStylePrivate
 {
   ccss_stylesheet_t *stylesheet;
+  gchar **image_paths;
 };
 
 typedef struct {
@@ -58,23 +59,31 @@ g_style_error_quark (void)
   return g_quark_from_static_string ("nbtk-style-error-quark");
 }
 
-static gboolean
+/**
+ * nbtk_style_load_from_file:
+ * @style: a #NbtkStyle
+ * @filename: filename of the style sheet to load
+ * @error: a #GError or #NULL
+ *
+ * Load style information from the specified file.
+ *
+ * returns: TRUE if the style information was loaded successfully. Returns
+ * FALSE on error.
+ */
+
+gboolean
 nbtk_style_load_from_file (NbtkStyle    *style,
                            const gchar  *filename,
                            GError      **error)
 {
-  NbtkStylePrivate *priv = style->priv;
+  NbtkStylePrivate *priv;
   GError *internal_error;  
 
-  /* if the specified files does not exist then just ignore it
-   * and fall back to the default values; if, instead, the file
-   * is not accessible or is malformed, propagate the error
-   */
-  
-  if (!g_file_test (filename, G_FILE_TEST_EXISTS))
-    {
-      return TRUE;
-    }
+
+  g_return_val_if_fail (NBTK_IS_STYLE (style), FALSE);
+  g_return_val_if_fail (filename != NULL, FALSE);
+
+  priv = NBTK_STYLE_GET_PRIVATE (style);
 
   if (!g_file_test (filename, G_FILE_TEST_IS_REGULAR))
     {
@@ -86,6 +95,47 @@ nbtk_style_load_from_file (NbtkStyle    *style,
     }
 
   priv->stylesheet = ccss_stylesheet_new_from_file (filename);
+
+  if (priv->stylesheet)
+    {
+      gint length;
+      gchar *path;
+
+      /* add the path of the stylesheet to the search path */
+      path = g_path_get_dirname (filename);
+
+      /* make sure path is valid */
+      if (!path)
+        return TRUE;
+
+      if (!priv->image_paths)
+        length = 0;
+      else
+        {
+          /* check we don't have this path already */
+          gchar *s;
+
+          length = g_strv_length (priv->image_paths);
+
+          for (s = *priv->image_paths; s; s++)
+            {
+              if (g_str_equal (s, path))
+                  break;
+            }
+
+          if (s)
+            {
+              /* we have this path already */
+              g_free (path);
+              return TRUE;
+            }
+        }
+
+      priv->image_paths = g_realloc (priv->image_paths, length + 1);
+
+      priv->image_paths[length] = path;
+
+    }
 
   return TRUE;
 }
@@ -151,8 +201,9 @@ ccss_url (ccss_block_t  *block,
           char const    *function_name,
           GSList const  *args)
 {
-  const gchar *given_path;
+  const gchar *given_path, *filename;
   gchar *test_path;
+  gchar *s;
 
   g_return_val_if_fail (args, NULL);
 
@@ -161,18 +212,35 @@ ccss_url (ccss_block_t  *block,
   /* we can only deal with local paths */
   if (!g_str_has_prefix (given_path, "file://"))
     return NULL;
+  filename = &given_path[7];
 
   /* first try looking in the theme dir */
   test_path = g_build_filename (g_get_user_config_dir (),
                                 "nbtk",
-                                &given_path[7],
+                                filename,
                                 NULL);
   if (g_file_test (test_path, G_FILE_TEST_IS_REGULAR))
     return test_path;
-
-  /* couldn't find it in the theme dir, so just return the path */
   g_free (test_path);
 
+  /* we can only check the default style right now due no user-data in this
+   * callback
+   */
+  if (default_style)
+  {
+    for (s = *default_style->priv->image_paths; s; s++)
+      {
+        test_path = g_build_filename (s, filename, NULL);
+
+        if (g_file_test (test_path, G_FILE_TEST_IS_REGULAR))
+          return test_path;
+
+        g_free (test_path);
+      }
+  }
+
+
+  /* couldn't find the image anywhere, so just return the filename */
   return strdup (given_path);
 }
 
