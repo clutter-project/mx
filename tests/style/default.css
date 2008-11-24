@@ -14,3 +14,11 @@ NbtkButton:active {
 *#red-button {
   background-image: url('file://red-button.png');
 }
+
+*#blue-button {
+  background-image: url('file://cyan-button.png');
+}
+
+*#green-button {
+  background-image: url('file://green-button.png');
+}
