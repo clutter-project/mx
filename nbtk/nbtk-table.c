@@ -34,6 +34,7 @@
 #include <clutter/clutter-container.h>
 
 #include "nbtk-stylable.h"
+#include "nbtk-private.h"
 
 enum
 {
@@ -181,8 +182,6 @@ table_child_get_property (GObject    *gobject,
     }
 }
 
-
-#define NBTK_PARAM_READWRITE G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_STATIC_NAME | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB
 
 static void
 nbtk_table_child_class_init (NbtkTableChildClass *klass)
@@ -593,12 +592,12 @@ nbtk_table_pick (ClutterActor       *self,
       if (CLUTTER_ACTOR_IS_VISIBLE (list->data))
         clutter_actor_paint (CLUTTER_ACTOR (list->data));
     }
-
 }
 
 static void
 nbtk_table_class_init (NbtkTableClass *klass)
 {
+  GParamSpec *pspec;
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
   NbtkWidgetClass *nbtk_widget_class = NBTK_WIDGET_CLASS (klass);
@@ -621,6 +620,43 @@ nbtk_table_class_init (NbtkTableClass *klass)
   actor_class->allocate = nbtk_table_allocate;
 
   nbtk_widget_class->style_changed = nbtk_table_style_changed;
+
+
+  pspec = g_param_spec_int ("col-spacing",
+                            "Column Spacing",
+                            "Spacing between columns",
+                            0, G_MAXINT, 0,
+                            NBTK_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class,
+                                   PROP_COL_SPACING,
+                                   pspec);
+
+  pspec = g_param_spec_int ("row-spacing",
+                            "Row Spacing",
+                            "Spacing between row",
+                            0, G_MAXINT, 0,
+                            NBTK_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class,
+                                   PROP_ROW_SPACING,
+                                   pspec);
+
+  pspec = g_param_spec_int ("active-row",
+                            "Active Row",
+                            "Row to highlight",
+                            0, G_MAXINT, 0,
+                            NBTK_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class,
+                                   PROP_ACTIVE_ROW,
+                                   pspec);
+
+  pspec = g_param_spec_int ("active-col",
+                            "Active Column",
+                            "Column to highlight",
+                            0, G_MAXINT, 0,
+                            NBTK_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class,
+                                   PROP_ACTIVE_ROW,
+                                   pspec);
 }
 
 static void
