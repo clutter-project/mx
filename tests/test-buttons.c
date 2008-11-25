@@ -40,6 +40,13 @@ main (int argc, char *argv[])
   nbtk_widget_set_padding (NBTK_WIDGET (button), &padding);
   clutter_actor_set_size (CLUTTER_ACTOR (button), 100, 100);
 
+  button = nbtk_button_new_with_label ("Toggle");
+  nbtk_button_set_toggle_mode (NBTK_BUTTON (button), TRUE);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage),
+                               CLUTTER_ACTOR (button));
+  clutter_actor_set_position (CLUTTER_ACTOR (button), 150, 200);
+  clutter_actor_set_size (CLUTTER_ACTOR (button), 100, 100);
+
   clutter_actor_show (stage);
 
   clutter_main ();

@@ -68,6 +68,10 @@ void                  nbtk_button_set_label      (NbtkButton   *button,
                                                   const gchar  *text);
 void                  nbtk_button_set_icon_from_file (NbtkButton *button,
                                                       gchar      *filename);
+void                  nbtk_button_set_toggle_mode    (NbtkButton *button, gboolean toggle);
+gboolean              nbtk_button_get_toggle_mode    (NbtkButton *button);
+void                  nbtk_button_set_active         (NbtkButton *button, gboolean active);
+gboolean              nbtk_button_get_active         (NbtkButton *button);
 
 G_END_DECLS
 

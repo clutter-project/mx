@@ -46,7 +46,9 @@ enum
 {
   PROP_0,
 
-  PROP_LABEL
+  PROP_LABEL,
+  PROP_TOGGLE,
+  PROP_ACTIVE
 };
 
 enum
@@ -72,6 +74,8 @@ struct _NbtkButtonPrivate
 
   guint is_pressed : 1;
   guint is_hover : 1;
+  guint is_active : 1;
+  guint is_toggle : 1;
 
   ClutterActor     *bg_image;
   ClutterActor     *old_bg;
@@ -249,7 +253,9 @@ nbtk_button_real_released (NbtkButton *button)
 {
   NbtkButtonPrivate *priv = button->priv;
 
-  if (!priv->is_hover)
+  if (priv->is_active)
+    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "active");
+  else if (!priv->is_hover)
     nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "normal");
   else
     nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "hover");
@@ -319,6 +325,9 @@ nbtk_button_button_release (ClutterActor       *actor,
 
       clutter_ungrab_pointer ();
 
+      if (button->priv->is_toggle)
+        nbtk_button_set_active (button, !button->priv->is_active);
+
       button->priv->is_pressed = FALSE;
 
       if (klass->released)
@@ -338,7 +347,8 @@ nbtk_button_enter (ClutterActor         *actor,
 {
   NbtkButton *button = NBTK_BUTTON (actor);
 
-  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "hover");
+  if (!button->priv->is_active)
+    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "hover");
 
   button->priv->is_hover = 1;
 
@@ -366,7 +376,10 @@ nbtk_button_leave (ClutterActor         *actor,
         klass->released (button);
     }
 
-  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "");
+  if (button->priv->is_active)
+    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "active");
+  else
+    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "");
 
   return FALSE;
 }
@@ -383,6 +396,12 @@ nbtk_button_set_property (GObject      *gobject,
     {
     case PROP_LABEL:
       nbtk_button_set_label (button, g_value_get_string (value));
+      break;
+    case PROP_TOGGLE:
+      nbtk_button_set_toggle_mode (button, g_value_get_boolean (value));
+      break;
+    case PROP_ACTIVE:
+      nbtk_button_set_active (button, g_value_get_boolean (value));
       break;
 
     default:
@@ -403,6 +422,12 @@ nbtk_button_get_property (GObject    *gobject,
     {
     case PROP_LABEL:
       g_value_set_string (value, priv->text);
+      break;
+    case PROP_TOGGLE:
+      g_value_set_boolean (value, priv->is_toggle);
+      break;
+    case PROP_ACTIVE:
+      g_value_set_boolean (value, priv->is_active);
       break;
 
     default:
@@ -479,6 +504,7 @@ nbtk_button_class_init (NbtkButtonClass *klass)
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
   NbtkWidgetClass *nbtk_widget_class = NBTK_WIDGET_CLASS (klass);
+  GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (NbtkButtonPrivate));
 
@@ -499,13 +525,23 @@ nbtk_button_class_init (NbtkButtonClass *klass)
   
   nbtk_widget_class->style_changed = nbtk_button_style_changed;
 
-  g_object_class_install_property (gobject_class,
-                                   PROP_LABEL,
-                                   g_param_spec_string ("label",
-                                                        "Label",
-                                                        "Label of the button",
-                                                        NULL,
-                                                        G_PARAM_READWRITE));
+  pspec = g_param_spec_string ("label",
+                               "Label",
+                               "Label of the button",
+                               NULL, G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_LABEL, pspec);
+
+  pspec = g_param_spec_boolean ("toggle-mode",
+                                "Toggle Mode",
+                                "Enable or disable toggling",
+                                FALSE, G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_TOGGLE, pspec);
+
+  pspec = g_param_spec_boolean ("active",
+                                "Active",
+                                "Indicates whether the button is \"pressed\"",
+                                FALSE, G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_ACTIVE, pspec);
 
   button_signals[CLICKED] =
     g_signal_new ("clicked",
@@ -589,6 +625,76 @@ nbtk_button_set_label (NbtkButton  *button,
   nbtk_button_construct_child (button);
 
   g_object_notify (G_OBJECT (button), "label");
+}
+
+/**
+ * nbtk_button_get_toggle_mode:
+ * @button: a #NbtkButton
+ *
+ * Get the toggle mode status of the button.
+ *
+ * Returns: 
+ */
+gboolean
+nbtk_button_get_toggle_mode (NbtkButton *button)
+{
+  g_return_val_if_fail (NBTK_IS_BUTTON (button), FALSE);
+
+  return button->priv->is_toggle;
+}
+
+/**
+ * nbtk_button_set_toggle_mode:
+ * @button: a #Nbtkbutton
+ * @toggle: #TRUE or #FALSE
+ *
+ * Enables or disables toggle mode for the button. In toggle mode, the active 
+ * state will be "toggled" when the user clicks the button.
+ */
+void
+nbtk_button_set_toggle_mode (NbtkButton  *button,
+                             gboolean     toggle)
+{
+  g_return_if_fail (NBTK_IS_BUTTON (button));
+
+  button->priv->is_toggle = toggle;
+
+  g_object_notify (G_OBJECT (button), "toggle-mode");
+}
+
+/**
+ * nbtk_button_get_active:
+ * @button: a #NbtkButton
+ *
+ * Get the active (pressed) state of the button.
+ *
+ * Returns: #TRUE if the button is pressed, or #FALSE if not
+ */
+gboolean
+nbtk_button_get_active (NbtkButton *button)
+{
+  g_return_val_if_fail (NBTK_IS_BUTTON (button), FALSE);
+
+  return button->priv->is_active;
+}
+
+/**
+ * nbtk_button_set_active:
+ * @button: a #Nbtkbutton
+ * @toggle: #TRUE or #FALSE
+ *
+ * Sets the pressed state of the button. This is only really useful if the
+ * button has #toggle-mode mode set to #TRUE.
+ */
+void
+nbtk_button_set_active (NbtkButton  *button,
+                        gboolean     active)
+{
+  g_return_if_fail (NBTK_IS_BUTTON (button));
+
+  button->priv->is_active = active;
+
+  g_object_notify (G_OBJECT (button), "active");
 }
 
 /**
