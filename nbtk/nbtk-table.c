@@ -585,6 +585,9 @@ nbtk_table_pick (ClutterActor       *self,
   NbtkTablePrivate *priv = NBTK_TABLE_GET_PRIVATE (self);
   GSList *list;
 
+  /* Chain up so we get a bounding box painted (if we are reactive) */
+  CLUTTER_ACTOR_CLASS (nbtk_table_parent_class)->pick (self, color);
+
   for (list = priv->children; list; list = g_slist_next (list))
     {
       if (CLUTTER_ACTOR_IS_VISIBLE (list->data))
