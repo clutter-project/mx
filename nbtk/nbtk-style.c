@@ -158,12 +158,16 @@ nbtk_style_load (NbtkStyle *style)
                                 NULL);
 
   error = NULL;
-  if (!nbtk_style_load_from_file (style, rc_file, &error))
+
+  if (g_file_test (rc_file, G_FILE_TEST_EXISTS))
     {
-      g_critical ("Unable to load resource file `%s': %s",
-                  rc_file,
-                  error->message);
-      g_error_free (error);
+      if (!nbtk_style_load_from_file (style, rc_file, &error))
+        {
+          g_critical ("Unable to load resource file `%s': %s",
+                      rc_file,
+                      error->message);
+          g_error_free (error);
+        }
     }
   
   g_free (rc_file);
