@@ -430,18 +430,14 @@ nbtk_table_dispose (GObject *gobject)
 }
 
 static void
-nbtk_table_allocate (ClutterActor          *self,
-                     const ClutterActorBox *box,
-                     gboolean               absolute_origin_changed)
+nbtk_table_homogenous_allocate (ClutterActor          *self,
+                                const ClutterActorBox *box,
+                                gboolean               absolute_origin_changed)
 {
-  NbtkTablePrivate *priv = NBTK_TABLE_GET_PRIVATE (self);
   GSList *list;
   ClutterUnit col_width, row_height;
   gint row_spacing, col_spacing;
-
-  CLUTTER_ACTOR_CLASS (nbtk_table_parent_class)->allocate (self, box, absolute_origin_changed);
-
-  g_return_if_fail (priv->n_cols != 0 || priv->n_rows != 0);
+  NbtkTablePrivate *priv = NBTK_TABLE_GET_PRIVATE (self);
 
   col_spacing = CLUTTER_UNITS_FROM_DEVICE (priv->col_spacing);
   row_spacing = CLUTTER_UNITS_FROM_DEVICE (priv->row_spacing);
@@ -509,6 +505,21 @@ nbtk_table_allocate (ClutterActor          *self,
 
       clutter_actor_allocate (child, &childbox, absolute_origin_changed);
     }
+
+}
+
+static void
+nbtk_table_allocate (ClutterActor          *self,
+                     const ClutterActorBox *box,
+                     gboolean               absolute_origin_changed)
+{
+  NbtkTablePrivate *priv = NBTK_TABLE_GET_PRIVATE (self);
+
+  CLUTTER_ACTOR_CLASS (nbtk_table_parent_class)->allocate (self, box, absolute_origin_changed);
+
+  g_return_if_fail (priv->n_cols != 0 || priv->n_rows != 0);
+
+  nbtk_table_homogenous_allocate (self, box, absolute_origin_changed);
 }
 
 static void
