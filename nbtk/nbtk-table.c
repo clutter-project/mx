@@ -729,6 +729,40 @@ nbtk_table_set_row_spacing (NbtkTable *table,
 }
 
 /**
+ * nbtk_table_get_row_spacing
+ * @table: a #NbtkTable
+ *
+ * Gets the amount of spacing between rows.
+ */
+gint
+nbtk_table_get_row_spacing (NbtkTable *table)
+{
+  NbtkTablePrivate *priv;
+
+  g_return_val_if_fail (NBTK_IS_TABLE (table), -1);
+  priv = NBTK_TABLE_GET_PRIVATE (table);
+
+  return priv->row_spacing;
+}
+
+/**
+ * nbtk_table_get_col_spacing
+ * @table: a #NbtkTable
+ *
+ * Gets the amount of spacing between columns.
+ */
+gint
+nbtk_table_get_col_spacing (NbtkTable *table)
+{
+  NbtkTablePrivate *priv;
+
+  g_return_val_if_fail (NBTK_IS_TABLE (table), -1);
+  priv = NBTK_TABLE_GET_PRIVATE (table);
+
+  return priv->col_spacing;
+}
+
+/**
  * nbtk_table_set_active_col:
  * @table: a #NbtkTable
  * @column: column number to set as active
