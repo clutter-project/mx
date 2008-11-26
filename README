@@ -6,5 +6,5 @@ implementation.
 
 It depends on libccss of which can be obtained via 
 
-  git clone  http://anongit.freedesktop.org/git/ccss.git
-
+  git clone    ssh://gitserver@git.o-hand.com/libccss.git
+  git checkout branch-for-nbtk
