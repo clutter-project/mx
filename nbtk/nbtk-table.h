@@ -59,6 +59,8 @@ gint        nbtk_table_get_col_spacing    (NbtkTable *table);
 gint        nbtk_table_get_row_spacing    (NbtkTable *table);
 void        nbtk_table_set_active_col     (NbtkTable *table, gint column);
 void        nbtk_table_set_active_row     (NbtkTable *table, gint row);
+gint        nbtk_table_get_active_col     (NbtkTable *table);
+gint        nbtk_table_get_active_row     (NbtkTable *table);
 void        nbtk_table_add_widget         (NbtkTable *table, NbtkWidget *widget, gint row, gint column);
 void        nbtk_table_add_actor          (NbtkTable *table, ClutterActor *actor, gint row, gint column);
 void        nbtk_table_set_widget_colspan (NbtkTable *table, NbtkWidget *widget, gint colspan);

@@ -808,6 +808,41 @@ nbtk_table_set_active_row (NbtkTable *table,
   priv->active_row = row;
 }
 
+/**
+ * nbtk_table_get_active_row:
+ * @table: a #NbtkTable
+ *
+ * Gets the active row in the table.
+ */
+gint
+nbtk_table_get_active_row (NbtkTable *table)
+{
+  NbtkTablePrivate *priv;
+
+  g_return_val_if_fail (NBTK_IS_TABLE (table), -1);
+  priv = NBTK_TABLE_GET_PRIVATE (table);
+
+  return priv->active_row;
+}
+
+/**
+ * nbtk_table_get_active_col:
+ * @table: a #NbtkTable
+ *
+ * Gets the active column in the table.
+ */
+gint
+nbtk_table_get_active_col (NbtkTable *table)
+{
+  NbtkTablePrivate *priv;
+
+  g_return_val_if_fail (NBTK_IS_TABLE (table), -1);
+  priv = NBTK_TABLE_GET_PRIVATE (table);
+
+  return priv->active_col;
+}
+
+
 void
 nbtk_table_add_actor (NbtkTable   *table,
                      ClutterActor *actor,
