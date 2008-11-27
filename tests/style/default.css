@@ -22,3 +22,8 @@ NbtkButton:active {
 *#green-button {
   background-image: url('file://green-button.png');
 }
+
+NbtkTable {
+  color: #aee;
+  background-color: #ddd;
+}
