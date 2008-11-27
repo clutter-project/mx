@@ -90,7 +90,7 @@ G_DEFINE_TYPE (NbtkButton, nbtk_button, NBTK_TYPE_WIDGET)
 static void
 style_changed_completed_effect (ClutterActor *actor, NbtkButton *button)
 {
-  NbtkButtonPrivate *priv = NBTK_BUTTON_GET_PRIVATE (button);
+  NbtkButtonPrivate *priv = button->priv;
 
   if (priv->old_bg)
     g_object_unref (priv->old_bg);
@@ -102,7 +102,7 @@ nbtk_button_style_changed (NbtkWidget *button)
 {
   ClutterColor *real_color;
   gchar *bg_url = NULL;
-  NbtkButtonPrivate *priv = NBTK_BUTTON_GET_PRIVATE (button);
+  NbtkButtonPrivate *priv = NBTK_BUTTON (button)->priv;
 
   /* update the label styling */
   if (priv->label)
@@ -473,7 +473,7 @@ nbtk_button_allocate (ClutterActor          *self,
                       const ClutterActorBox *box,
                       gboolean               absolute_origin_changed)
 {
-  NbtkButtonPrivate *priv = NBTK_BUTTON_GET_PRIVATE (self);
+  NbtkButtonPrivate *priv = NBTK_BUTTON (self)->priv;
 
   if (priv->bg_image)
     {
