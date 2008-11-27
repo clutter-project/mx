@@ -18,14 +18,19 @@ main (int argc, char *argv[])
   nbtk_style_load_from_file (nbtk_style_get_default (),
                              "style/default.css", NULL);
 
+  padding.left = CLUTTER_UNITS_FROM_DEVICE (40);
+  padding.right = CLUTTER_UNITS_FROM_DEVICE (40);
+  padding.top = CLUTTER_UNITS_FROM_DEVICE (40);
+  padding.bottom = CLUTTER_UNITS_FROM_DEVICE (40);
+
   stage = clutter_stage_get_default ();
   clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
 
-  button = nbtk_button_new_with_label ("Hello");
+  button = nbtk_button_new_with_label ("Hello World!");
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 100, 100);
-  clutter_actor_set_size (CLUTTER_ACTOR (button), 100, 100);
+  nbtk_widget_set_padding (NBTK_WIDGET (button), &padding);
 
   button = nbtk_button_new ();
   nbtk_button_set_icon_from_file (NBTK_BUTTON (button),
@@ -33,19 +38,14 @@ main (int argc, char *argv[])
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 300, 100);
-  padding.left = CLUTTER_UNITS_FROM_DEVICE (20);
-  padding.right = CLUTTER_UNITS_FROM_DEVICE (20);
-  padding.top = CLUTTER_UNITS_FROM_DEVICE (20);
-  padding.bottom = CLUTTER_UNITS_FROM_DEVICE (20);
   nbtk_widget_set_padding (NBTK_WIDGET (button), &padding);
-  clutter_actor_set_size (CLUTTER_ACTOR (button), 100, 100);
 
   button = nbtk_button_new_with_label ("Toggle");
   nbtk_button_set_toggle_mode (NBTK_BUTTON (button), TRUE);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 150, 200);
-  clutter_actor_set_size (CLUTTER_ACTOR (button), 100, 100);
+  nbtk_widget_set_padding (NBTK_WIDGET (button), &padding);
 
   clutter_actor_show (stage);
 
