@@ -692,7 +692,12 @@ nbtk_button_set_active (NbtkButton  *button,
 {
   g_return_if_fail (NBTK_IS_BUTTON (button));
 
-  button->priv->is_active = active;
+  if (button->priv->is_active != active)
+    {
+      button->priv->is_active = active;
+
+      nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "active");
+    }
 
   g_object_notify (G_OBJECT (button), "active");
 }
