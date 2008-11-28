@@ -109,17 +109,17 @@ nbtk_style_load_from_file (NbtkStyle    *style,
   else
     {
       /* check we don't have this path already */
-      gchar *s;
+      gchar **s;
 
       length = g_strv_length (priv->image_paths);
 
-      for (s = *priv->image_paths; s; s++)
+      for (s = priv->image_paths; *s; s++)
         {
-          if (g_str_equal (s, path))
+          if (g_str_equal (*s, path))
               break;
         }
 
-      if (s)
+      if (*s)
         {
           /* we have this path already */
           g_free (path);
@@ -127,10 +127,12 @@ nbtk_style_load_from_file (NbtkStyle    *style,
         }
     }
 
+  length++;
+
   priv->image_paths = g_realloc (priv->image_paths, length + 1);
 
-  priv->image_paths[length] = path;
-  priv->image_paths[length + 1] = NULL;
+  priv->image_paths[length - 1] = path;
+  priv->image_paths[length] = NULL;
 
   /* now load the stylesheet */
   priv->stylesheet = ccss_stylesheet_new_from_file (filename);
