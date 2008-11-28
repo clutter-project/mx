@@ -119,7 +119,7 @@ static void
 nbtk_widget_remove_actor (ClutterContainer *container,
                          ClutterActor     *actor)
 {
-  NbtkWidgetPrivate *priv = NBTK_WIDGET_GET_PRIVATE (container);
+  NbtkWidgetPrivate *priv = NBTK_WIDGET (container)->priv;
 
   if (priv->child == actor)
     {
@@ -278,7 +278,7 @@ static void
 nbtk_widget_dispose (GObject *gobject)
 {
   NbtkWidget *actor = NBTK_WIDGET (gobject);
-  NbtkWidgetPrivate *priv = NBTK_WIDGET_GET_PRIVATE (actor);
+  NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
 
   if (priv->style)
     {
@@ -372,7 +372,7 @@ static void
 nbtk_widget_pick (ClutterActor       *actor,
                  const ClutterColor *pick_color)
 {
-  NbtkWidgetPrivate *priv = NBTK_WIDGET_GET_PRIVATE (actor);
+  NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
 
   /* chain up, so we get a box with our coordinates */
   CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->pick (actor, pick_color);
@@ -384,7 +384,7 @@ nbtk_widget_pick (ClutterActor       *actor,
 static void
 nbtk_widget_paint (ClutterActor *actor)
 {
-  NbtkWidgetPrivate *priv = NBTK_WIDGET_GET_PRIVATE (actor);
+  NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
 
   if (priv->child && CLUTTER_ACTOR_IS_VISIBLE (priv->child))
     clutter_actor_paint (priv->child);
