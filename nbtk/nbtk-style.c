@@ -78,6 +78,8 @@ nbtk_style_load_from_file (NbtkStyle    *style,
 {
   NbtkStylePrivate *priv;
   GError *internal_error;  
+  gint length;
+  gchar *path;
 
 
   g_return_val_if_fail (NBTK_IS_STYLE (style), FALSE);
@@ -94,48 +96,44 @@ nbtk_style_load_from_file (NbtkStyle    *style,
       return FALSE;
     }
 
-  priv->stylesheet = ccss_stylesheet_new_from_file (filename);
 
-  if (priv->stylesheet)
+  /* add the path of the stylesheet to the search path */
+  path = g_path_get_dirname (filename);
+
+  /* make sure path is valid */
+  if (!path)
+    return TRUE;
+
+  if (!priv->image_paths)
+    length = 0;
+  else
     {
-      gint length;
-      gchar *path;
+      /* check we don't have this path already */
+      gchar *s;
 
-      /* add the path of the stylesheet to the search path */
-      path = g_path_get_dirname (filename);
+      length = g_strv_length (priv->image_paths);
 
-      /* make sure path is valid */
-      if (!path)
-        return TRUE;
-
-      if (!priv->image_paths)
-        length = 0;
-      else
+      for (s = *priv->image_paths; s; s++)
         {
-          /* check we don't have this path already */
-          gchar *s;
-
-          length = g_strv_length (priv->image_paths);
-
-          for (s = *priv->image_paths; s; s++)
-            {
-              if (g_str_equal (s, path))
-                  break;
-            }
-
-          if (s)
-            {
-              /* we have this path already */
-              g_free (path);
-              return TRUE;
-            }
+          if (g_str_equal (s, path))
+              break;
         }
 
-      priv->image_paths = g_realloc (priv->image_paths, length + 1);
-
-      priv->image_paths[length] = path;
-
+      if (s)
+        {
+          /* we have this path already */
+          g_free (path);
+          return TRUE;
+        }
     }
+
+  priv->image_paths = g_realloc (priv->image_paths, length + 1);
+
+  priv->image_paths[length] = path;
+  priv->image_paths[length + 1] = NULL;
+
+  /* now load the stylesheet */
+  priv->stylesheet = ccss_stylesheet_new_from_file (filename);
 
   return TRUE;
 }
@@ -207,7 +205,7 @@ ccss_url (ccss_block_t  *block,
 {
   const gchar *given_path, *filename;
   gchar *test_path;
-  gchar *s;
+  gchar **s;
 
   g_return_val_if_fail (args, NULL);
 
@@ -232,14 +230,17 @@ ccss_url (ccss_block_t  *block,
    */
   if (default_style)
   {
-    for (s = *default_style->priv->image_paths; s; s++)
+    if (default_style->priv->image_paths)
       {
-        test_path = g_build_filename (s, filename, NULL);
+        for (s = default_style->priv->image_paths; *s; s++)
+          {
+            test_path = g_build_filename (*s, filename, NULL);
 
-        if (g_file_test (test_path, G_FILE_TEST_IS_REGULAR))
-          return test_path;
+            if (g_file_test (test_path, G_FILE_TEST_IS_REGULAR))
+              return test_path;
 
-        g_free (test_path);
+            g_free (test_path);
+          }
       }
   }
 
