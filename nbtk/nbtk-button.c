@@ -152,7 +152,7 @@ nbtk_button_style_changed (NbtkWidget *button)
 
       if (G_UNLIKELY (!priv->press_tmpl))
         {
-          priv->timeline = clutter_timeline_new_for_duration (200);
+          priv->timeline = clutter_timeline_new_for_duration (100);
           priv->press_tmpl = clutter_effect_template_new (priv->timeline,
                                                           clutter_sine_inc_func);
           clutter_effect_template_set_timeline_clone (priv->press_tmpl, FALSE);
