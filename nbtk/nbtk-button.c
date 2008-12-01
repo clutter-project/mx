@@ -256,7 +256,7 @@ nbtk_button_real_released (NbtkButton *button)
   if (priv->is_active)
     nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "active");
   else if (!priv->is_hover)
-    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "normal");
+    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), NULL);
   else
     nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "hover");
 
@@ -379,7 +379,7 @@ nbtk_button_leave (ClutterActor         *actor,
   if (button->priv->is_active)
     nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "active");
   else
-    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "");
+    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), NULL);
 
   return FALSE;
 }
@@ -696,7 +696,10 @@ nbtk_button_set_active (NbtkButton  *button,
     {
       button->priv->is_active = active;
 
-      nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "active");
+      if (active)
+        nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "active");
+      else
+        nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), NULL);
     }
 
   g_object_notify (G_OBJECT (button), "active");
