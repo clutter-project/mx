@@ -48,7 +48,8 @@ enum
 
   PROP_LABEL,
   PROP_TOGGLE,
-  PROP_ACTIVE
+  PROP_ACTIVE,
+  PROP_TRANSITION
 };
 
 enum
@@ -76,6 +77,8 @@ struct _NbtkButtonPrivate
   guint is_hover : 1;
   guint is_active : 1;
   guint is_toggle : 1;
+
+  guint transition_duration;
 
   ClutterActor     *bg_image;
   ClutterActor     *old_bg;
@@ -165,7 +168,7 @@ nbtk_button_style_changed (NbtkWidget *button)
 
       /* start a fade if we're not changing to pressed ("active") state */
       pseudo_class = nbtk_stylable_get_pseudo_class (NBTK_STYLABLE (button));
-      if (g_strcmp0 ("active", pseudo_class))
+      if (g_strcmp0 ("active", pseudo_class) && priv->transition_duration > 0)
         {
           if (priv->old_bg)
             clutter_effect_fade (priv->press_tmpl, priv->old_bg,
@@ -195,7 +198,6 @@ nbtk_button_style_changed (NbtkWidget *button)
   /* queue a relayout, which also calls redraw */
   clutter_actor_queue_relayout (CLUTTER_ACTOR (button));
 
- 
   if (NBTK_WIDGET_CLASS (nbtk_button_parent_class)->style_changed)
     NBTK_WIDGET_CLASS (nbtk_button_parent_class)->style_changed (button);
 }
@@ -391,6 +393,7 @@ nbtk_button_set_property (GObject      *gobject,
                           GParamSpec   *pspec)
 {
   NbtkButton *button = NBTK_BUTTON (gobject);
+  NbtkButtonPrivate *priv = NBTK_BUTTON (gobject)->priv;
 
   switch (prop_id)
     {
@@ -402,6 +405,9 @@ nbtk_button_set_property (GObject      *gobject,
       break;
     case PROP_ACTIVE:
       nbtk_button_set_active (button, g_value_get_boolean (value));
+      break;
+    case PROP_TRANSITION:
+      priv->transition_duration = g_value_get_int (value);
       break;
 
     default:
@@ -428,6 +434,9 @@ nbtk_button_get_property (GObject    *gobject,
       break;
     case PROP_ACTIVE:
       g_value_set_boolean (value, priv->is_active);
+      break;
+    case PROP_TRANSITION:
+      g_value_set_int (value, priv->transition_duration);
       break;
 
     default:
@@ -542,6 +551,12 @@ nbtk_button_class_init (NbtkButtonClass *klass)
                                 "Indicates whether the button is \"pressed\"",
                                 FALSE, G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_ACTIVE, pspec);
+
+  pspec = g_param_spec_int ("transition-duration",
+                            "Transition Duration",
+                            "Duration of the state transition effect",
+                            0, G_MAXINT, 0, G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_TRANSITION, pspec);
 
   button_signals[CLICKED] =
     g_signal_new ("clicked",
