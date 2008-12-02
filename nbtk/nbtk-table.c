@@ -463,45 +463,38 @@ nbtk_table_homogenous_allocate (ClutterActor          *self,
                     "row-span", &row_span, "col-span", &col_span,
                     "keep-aspect-ratio", &keep_ratio, NULL);
 
-      childbox.x1 = box->x1 + (col_width + col_spacing) * col;
+      childbox.x1 = padding.left + (col_width + col_spacing) * col;
       childbox.x2 = childbox.x1 + (col_width * col_span) + (col_spacing * (col_span - 1));
 
-      childbox.y1 = box->y1 + (row_height + row_spacing) * row;
+      childbox.y1 = padding.top + (row_height + row_spacing) * row;
       childbox.y2 = childbox.y1 + (row_height * row_span) + (row_spacing * (row_span - 1));
 
       if (keep_ratio)
         {
           ClutterUnit w, h;
+          gint new_width;
+          gint new_height;
+          gint center_offset;
 
           clutter_actor_get_sizeu (child, &w, &h);
 
-          if (w > h)
+          new_height = ((gdouble) h / w)  * ((gdouble) childbox.x2 - childbox.x1);
+          new_width = ((gdouble) w / h)  * ((gdouble) childbox.y2 - childbox.y1);
+
+
+          if (new_height > row_height)
             {
-              /* scale for width */
-              gint new_height;
-              gint center_offset;
-
-              /* ratio of height to width multiplied by new width */
-              new_height = ((gdouble) h / w)  * ((gdouble) childbox.x2 - childbox.x1);
-
-              /* center for new height */
-              center_offset = ((childbox.y2 - childbox.y1) - new_height) / 2;
-              childbox.y1 = childbox.y1 + center_offset;
-              childbox.y2 = childbox.y1 + new_height;
-            }
-          else
-            {
-              /* scale for height */
-              gint new_width;
-              gint center_offset;
-
-              /* ratio of width to height multiplied by new height */
-              new_width = ((gdouble) w / h)  * ((gdouble) childbox.y2 - childbox.y1);
-              
               /* center for new width */
               center_offset = ((childbox.x2 - childbox.x1) - new_width) / 2;
               childbox.x1 = childbox.x1 + center_offset;
               childbox.x2 = childbox.x1 + new_width;
+            }
+          else
+            {
+              /* center for new height */
+              center_offset = ((childbox.y2 - childbox.y1) - new_height) / 2;
+              childbox.y1 = childbox.y1 + center_offset;
+              childbox.y2 = childbox.y1 + new_height;
             }
 
         }
