@@ -179,10 +179,14 @@ nbtk_button_style_changed (NbtkWidget *button)
       else
         {
           /* remove the old image to perform instant transition when pressed */
-          clutter_container_remove (CLUTTER_CONTAINER (button), priv->old_bg,
-                                    NULL);
-          g_object_unref (priv->old_bg);
-          priv->old_bg = NULL;
+          if (priv->old_bg)
+            {
+              clutter_container_remove (CLUTTER_CONTAINER (button),
+                                        priv->old_bg,
+                                        NULL);
+              g_object_unref (priv->old_bg);
+              priv->old_bg = NULL;
+            }
         }
 
     }
