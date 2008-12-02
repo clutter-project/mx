@@ -437,13 +437,16 @@ nbtk_table_homogenous_allocate (ClutterActor          *self,
   GSList *list;
   ClutterUnit col_width, row_height;
   gint row_spacing, col_spacing;
+  NbtkPadding padding = { 0, };
   NbtkTablePrivate *priv = NBTK_TABLE_GET_PRIVATE (self);
 
   col_spacing = CLUTTER_UNITS_FROM_DEVICE (priv->col_spacing);
   row_spacing = CLUTTER_UNITS_FROM_DEVICE (priv->row_spacing);
 
-  col_width = ((box->x2 - box->x1) - (col_spacing * (priv->n_cols - 1))) / priv->n_cols;
-  row_height = ((box->y2 - box->y1) - (row_spacing * (priv->n_rows - 1))) / priv->n_rows;
+  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
+
+  col_width = (box->x2 - box->x1 - padding.left - padding.right - (col_spacing * (priv->n_cols - 1))) / priv->n_cols;
+  row_height = (box->y2 - box->y1 - padding.top - padding.bottom - (row_spacing * (priv->n_rows - 1))) / priv->n_rows;
 
   for (list = priv->children; list; list = g_slist_next (list))
     {
@@ -460,10 +463,10 @@ nbtk_table_homogenous_allocate (ClutterActor          *self,
                     "row-span", &row_span, "col-span", &col_span,
                     "keep-aspect-ratio", &keep_ratio, NULL);
 
-      childbox.x1 = (col_width + col_spacing) * col;
+      childbox.x1 = box->x1 + (col_width + col_spacing) * col;
       childbox.x2 = childbox.x1 + (col_width * col_span) + (col_spacing * (col_span - 1));
 
-      childbox.y1 = (row_height + row_spacing) * row;
+      childbox.y1 = box->y1 + (row_height + row_spacing) * row;
       childbox.y2 = childbox.y1 + (row_height * row_span) + (row_spacing * (row_span - 1));
 
       if (keep_ratio)
@@ -527,6 +530,14 @@ nbtk_table_paint (ClutterActor *self)
 {
   NbtkTablePrivate *priv = NBTK_TABLE_GET_PRIVATE (self);
   GSList *list;
+  NbtkPadding padding = { 0, };
+  gint p_left, p_right, p_top, p_bottom;
+
+  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
+  p_left = CLUTTER_UNITS_TO_INT (padding.left);
+  p_right = CLUTTER_UNITS_TO_INT (padding.right);
+  p_top = CLUTTER_UNITS_TO_INT (padding.top);
+  p_bottom = CLUTTER_UNITS_TO_INT (padding.bottom);
 
   if (priv->bg_color)
     {
@@ -553,14 +564,16 @@ nbtk_table_paint (ClutterActor *self)
 
       clutter_actor_get_size (self, &w, &h);
 
-      col_width = w / priv->n_cols;
+      col_width = (w - p_left - p_right) / priv->n_cols;
 
       cogl_color (priv->active_color);
       priv->active_color->alpha = clutter_actor_get_paint_opacity (self)
                                  * priv->active_color->alpha / 255;
       
-      cogl_rectangle (col_width * priv->active_col, 0,
-                      col_width, h);
+      cogl_rectangle (p_left + col_width * priv->active_col,
+                      p_top,
+                      col_width,
+                      h - p_bottom - p_top);
     }
 
   if (priv->active_row >= 0)
@@ -570,14 +583,16 @@ nbtk_table_paint (ClutterActor *self)
 
       clutter_actor_get_size (self, &w, &h);
 
-      row_height = h / priv->n_rows;
+      row_height = (h - p_top - p_bottom) / priv->n_rows;
 
       cogl_color (priv->active_color);
       priv->active_color->alpha = clutter_actor_get_paint_opacity (self)
                                   * priv->active_color->alpha / 255;
       
-      cogl_rectangle (0, row_height * priv->active_row,
-                      w, row_height);
+      cogl_rectangle (p_left,
+                      row_height * priv->active_row,
+                      w - p_left - p_right,
+                      row_height);
     }
 
 

@@ -12,6 +12,10 @@ main (int argc, char *argv[])
   ClutterActor *stage;
   NbtkWidget *table;
   NbtkWidget *button1, *button2, *button3, *button4, *button5;
+  NbtkPadding padding = {CLUTTER_UNITS_FROM_INT (10),
+                         CLUTTER_UNITS_FROM_INT (30),
+                         CLUTTER_UNITS_FROM_INT (10),
+                         CLUTTER_UNITS_FROM_INT (10)};
 
   clutter_init (&argc, &argv);
 
@@ -22,6 +26,8 @@ main (int argc, char *argv[])
   stage = clutter_stage_get_default ();
 
   table = nbtk_table_new ();
+  clutter_actor_set_position (CLUTTER_ACTOR (table), 10, 10);
+  nbtk_widget_set_padding (table, &padding);
   nbtk_table_set_col_spacing (NBTK_TABLE (table), 10);
   nbtk_table_set_row_spacing (NBTK_TABLE (table), 20);
 
