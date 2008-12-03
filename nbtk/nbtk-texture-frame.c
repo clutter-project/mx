@@ -121,9 +121,9 @@ nbtk_texture_frame_paint (ClutterActor *self)
   /* top middle */
   cogl_texture_rectangle (cogl_texture,
                           FX(priv->left),
-                          FX(priv->top),
-                          FX(ex),
                           0,
+                          FX(ex),
+                          FX(priv->top),
                           tx1,
                           0,
                           tx2,
