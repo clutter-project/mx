@@ -60,3 +60,4 @@ tests/test-buttons
 tests/test-script
 tests/test-styles
 tests/test-table
+tests/test-texture-frame
