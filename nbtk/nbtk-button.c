@@ -49,7 +49,8 @@ enum
   PROP_LABEL,
   PROP_TOGGLE,
   PROP_ACTIVE,
-  PROP_TRANSITION
+  PROP_TRANSITION,
+  PROP_TRANS_TYPE
 };
 
 enum
@@ -102,6 +103,32 @@ style_changed_completed_effect (ClutterActor *actor, NbtkButton *button)
 }
 
 static void
+nbtk_button_fade_transition (NbtkWidget *button)
+{
+  const gchar *pseudo_class;
+  NbtkButtonPrivate *priv = NBTK_BUTTON (button)->priv;
+
+  pseudo_class = nbtk_stylable_get_pseudo_class (NBTK_STYLABLE (button));
+  if (priv->old_bg && g_strcmp0 ("active", pseudo_class))
+    {
+      clutter_effect_fade (priv->press_tmpl, priv->old_bg, 0x00,
+                           (ClutterEffectCompleteFunc) style_changed_completed_effect,
+                           button);
+    }
+  else
+    {
+      /* remove the old image to perform instant transition when pressed */
+      if (priv->old_bg)
+        {
+          clutter_container_remove (CLUTTER_CONTAINER (button),
+                                    priv->old_bg,
+                                    NULL);
+          priv->old_bg = NULL;
+        }
+    }
+}
+
+static void
 nbtk_button_style_changed (NbtkWidget *button)
 {
   ClutterColor *real_color;
@@ -136,7 +163,6 @@ nbtk_button_style_changed (NbtkWidget *button)
     {
       NbtkTextureCache *cache;
       ClutterActor *texture;
-      const gchar *pseudo_class;
 
       if (priv->bg_image)
         priv->old_bg = priv->bg_image;
@@ -167,30 +193,34 @@ nbtk_button_style_changed (NbtkWidget *button)
           clutter_timeline_stop (priv->timeline);
         }
 
-      /* start a fade if we're not changing to pressed ("active") state */
-      pseudo_class = nbtk_stylable_get_pseudo_class (NBTK_STYLABLE (button));
-      if (g_strcmp0 ("active", pseudo_class) && priv->transition_duration > 0)
+
+      /* run a transition effect if applicable */
+      if (priv->transition_type != NBTK_TRANSITION_NONE
+          && priv->transition_duration > 0)
         {
           clutter_timeline_set_duration (priv->timeline, priv->transition_duration);
-          if (priv->old_bg)
-            clutter_effect_fade (priv->press_tmpl, priv->old_bg,
-                                 0x00,
-                                 (ClutterEffectCompleteFunc) style_changed_completed_effect,
-                                 button);
+
+          switch (priv->transition_type)
+            {
+            case NBTK_TRANSITION_FADE:
+              nbtk_button_fade_transition (button);
+              break;
+
+            default:
+              break;
+            }
         }
       else
         {
-          /* remove the old image to perform instant transition when pressed */
+          /* no transition, so just remove the old background */
           if (priv->old_bg)
             {
               clutter_container_remove (CLUTTER_CONTAINER (button),
                                         priv->old_bg,
                                         NULL);
-              g_object_unref (priv->old_bg);
               priv->old_bg = NULL;
             }
         }
-
     }
   else
     {
@@ -415,6 +445,9 @@ nbtk_button_set_property (GObject      *gobject,
     case PROP_TRANSITION:
       priv->transition_duration = g_value_get_int (value);
       break;
+    case PROP_TRANS_TYPE:
+      priv->transition_type = g_value_get_int (value);
+      break;
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -443,6 +476,9 @@ nbtk_button_get_property (GObject    *gobject,
       break;
     case PROP_TRANSITION:
       g_value_set_int (value, priv->transition_duration);
+      break;
+    case PROP_TRANS_TYPE:
+      g_value_set_int (value, priv->transition_type);
       break;
 
     default:
@@ -563,6 +599,12 @@ nbtk_button_class_init (NbtkButtonClass *klass)
                             "Duration of the state transition effect",
                             0, G_MAXINT, 0, G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_TRANSITION, pspec);
+
+  pspec = g_param_spec_int ("transition-type",
+                            "Transition Type",
+                            "Type of transition to run on state changes",
+                            0, G_MAXINT, 0, G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_TRANS_TYPE, pspec);
 
   button_signals[CLICKED] =
     g_signal_new ("clicked",

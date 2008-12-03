@@ -9,6 +9,7 @@ G_BEGIN_DECLS
 #define NBTK_TYPE_PADDING               (nbtk_padding_get_type ())
 
 typedef struct _NbtkPadding             NbtkPadding;
+typedef enum   _NbtkTransitionType      NbtkTransitionType;
 
 struct _NbtkPadding
 {
@@ -19,6 +20,13 @@ struct _NbtkPadding
 };
 
 GType nbtk_padding_get_type (void) G_GNUC_CONST;
+
+enum _NbtkTransitionType
+{
+  NBTK_TRANSITION_NONE,
+  NBTK_TRANSITION_FADE
+};
+
 
 G_END_DECLS
 
