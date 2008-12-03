@@ -79,6 +79,7 @@ struct _NbtkButtonPrivate
   guint is_toggle : 1;
 
   guint transition_duration;
+  guint transition_type;
 
   ClutterActor     *bg_image;
   ClutterActor     *old_bg;
@@ -155,7 +156,7 @@ nbtk_button_style_changed (NbtkWidget *button)
 
       if (G_UNLIKELY (!priv->press_tmpl))
         {
-          priv->timeline = clutter_timeline_new_for_duration (100);
+          priv->timeline = clutter_timeline_new_for_duration (priv->transition_duration);
           priv->press_tmpl = clutter_effect_template_new (priv->timeline,
                                                           clutter_sine_inc_func);
           clutter_effect_template_set_timeline_clone (priv->press_tmpl, FALSE);
@@ -170,6 +171,7 @@ nbtk_button_style_changed (NbtkWidget *button)
       pseudo_class = nbtk_stylable_get_pseudo_class (NBTK_STYLABLE (button));
       if (g_strcmp0 ("active", pseudo_class) && priv->transition_duration > 0)
         {
+          clutter_timeline_set_duration (priv->timeline, priv->transition_duration);
           if (priv->old_bg)
             clutter_effect_fade (priv->press_tmpl, priv->old_bg,
                                  0x00,

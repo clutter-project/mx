@@ -27,6 +27,7 @@ main (int argc, char *argv[])
   clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
 
   button = nbtk_button_new_with_label ("Hello World!");
+  g_object_set (button, "transition-duration", 400, NULL);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 100, 100);
