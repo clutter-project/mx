@@ -553,25 +553,28 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
         min_heights[row] = h_pref;
     }
 
-  total_min_width = 0;
+  total_min_width = col_spacing * (priv->n_cols - 1);
   for (i = 0; i < priv->n_cols; i++)
     total_min_width += min_widths[i];
 
-  total_min_height = 0;
+  total_min_height = row_spacing * (priv->n_rows - 1);
   for (i = 0; i < priv->n_rows; i++)
     total_min_height += min_heights[i];
-
-  total_min_width += col_spacing * (priv->n_cols);
-  total_min_height += row_spacing * (priv->n_rows);
 
   /* calculate the remaining space and distribute it evenly onto all rows/cols */
   extra_col_width = (table_width - total_min_width) / priv->n_cols;
   extra_row_height =  (table_height - total_min_height) / priv->n_rows;
 
+  for (i = 0; i < priv->n_cols; i++)
+    min_widths[i] += extra_col_width;
+
+  for (i = 0; i < priv->n_rows; i++)
+    min_heights[i] += extra_row_height;
+
 
   for (list = priv->children; list; list = g_slist_next (list))
     {
-      gint row, col, row_span, col_span, col_span_width, row_span_height;
+      gint row, col, row_span, col_span;
       gint col_width, row_height;
       gboolean keep_ratio;
       ClutterChildMeta *meta;
@@ -586,37 +589,41 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
                     "row-span", &row_span, "col-span", &col_span,
                     "keep-aspect-ratio", &keep_ratio, NULL);
 
-      col_width = min_widths[col] + extra_col_width;
-      row_height = min_heights[row] + extra_row_height;
+      /* initialise the width and height */
+      col_width = min_widths[col];
+      row_height = min_heights[row];
 
-      child_x = padding.left;
-      for (i = 0; i < col; i++)
-        child_x += min_widths[i] + (extra_col_width);
-
-      child_y = padding.top;
-      for (i = 0; i < row; i++)
-        child_y += min_heights[i] + (extra_row_height);
-
-      child_x += col_spacing * col;
-      child_y += row_spacing * row;
-
-      for (i = col; i < col + col_span - 1; i++)
+      /* add the widths of the spanned columns */
+      for (i = col + 1; i < col + col_span; i++)
         {
-          col_width += min_widths[i] + extra_col_width;
+          col_width += min_widths[i];
         }
-      for (i = row; i < row + row_span - 1; i++)
-        {
-          row_height += min_heights[i] + extra_row_height;
-        }
+      col_width += col_spacing * (col_span - 1);
 
+      /* add the height of the spanned rows */
+      for (i = row + 1; i < row + row_span; i++)
+        {
+          row_height += min_heights[i];
+        }
       row_height += row_spacing * (row_span - 1);
-      col_width  += col_spacing * (col_span - 1);
 
+
+      /* calculate child x */
+      child_x = padding.left + col_spacing * col;
+      for (i = 0; i < col; i++)
+        child_x += min_widths[i];
+
+      /* calculate child y */
+      child_y = padding.top + row_spacing * row;
+      for (i = 0; i < row; i++)
+        child_y += min_heights[i];
+
+      /* set up childbox */
       childbox.x1 = child_x;
-      childbox.x2 = childbox.x1 + col_width;
+      childbox.x2 = child_x + col_width;
 
       childbox.y1 = child_y;
-      childbox.y2 = childbox.y1 + row_height;
+      childbox.y2 = child_y + row_height;
 
       if (keep_ratio)
         {
