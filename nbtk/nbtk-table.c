@@ -44,7 +44,9 @@ enum
   PROP_ROW_SPACING,
 
   PROP_ACTIVE_ROW,
-  PROP_ACTIVE_COL
+  PROP_ACTIVE_COL,
+
+  PROP_HOMOGENEOUS
 };
 
 #define NBTK_TABLE_GET_PRIVATE(obj)    \
@@ -62,6 +64,8 @@ struct _NbtkTablePrivate
 
   gint active_row;
   gint active_col;
+
+  gboolean homogeneous;
 
   ClutterColor *bg_color;
   ClutterColor *active_color;
@@ -430,7 +434,7 @@ nbtk_table_dispose (GObject *gobject)
 }
 
 static void
-nbtk_table_homogenous_allocate (ClutterActor          *self,
+nbtk_table_homogeneous_allocate (ClutterActor          *self,
                                 const ClutterActorBox *box,
                                 gboolean               absolute_origin_changed)
 {
@@ -505,17 +509,167 @@ nbtk_table_homogenous_allocate (ClutterActor          *self,
 }
 
 static void
+nbtk_table_preferred_allocate (ClutterActor          *self,
+                               const ClutterActorBox *box,
+                               gboolean               absolute_origin_changed)
+{
+  GSList *list;
+  gint row_spacing, col_spacing, extra_col_width, extra_row_height;
+  gint total_min_width, total_min_height, i, table_width, table_height;
+  gint *min_widths, *min_heights;
+  NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
+  NbtkPadding padding = { 0, };
+
+  col_spacing = CLUTTER_UNITS_FROM_DEVICE (priv->col_spacing);
+  row_spacing = CLUTTER_UNITS_FROM_DEVICE (priv->row_spacing);
+
+  min_widths = g_new0 (gint, priv->n_cols);
+  min_heights = g_new0 (gint, priv->n_rows);
+
+  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
+
+  table_height = box->y2 - box->y1 - padding.top - padding.bottom;
+  table_width = box->x2 - box->x1 - padding.right - padding.left;
+
+  /* calculate minimum row widths and column heights */
+  for (list = priv->children; list; list = g_slist_next (list))
+    {
+      gint row, col;
+      gint h_min, h_pref, w_min, w_pref;
+      ClutterChildMeta *meta;
+      ClutterActor *child;
+
+      child = CLUTTER_ACTOR (list->data);
+
+      meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
+
+      g_object_get (meta, "column", &col, "row", &row, NULL);
+
+      clutter_actor_get_preferred_size (child, &w_min, &h_min, &w_pref, &h_pref);
+      if (w_pref > min_widths[col])
+        min_widths[col] = w_pref;
+
+      if (h_pref > min_heights[row])
+        min_heights[row] = h_pref;
+    }
+
+  total_min_width = 0;
+  for (i = 0; i < priv->n_cols; i++)
+    total_min_width += min_widths[i];
+
+  total_min_height = 0;
+  for (i = 0; i < priv->n_rows; i++)
+    total_min_height += min_heights[i];
+
+  total_min_width += col_spacing * (priv->n_cols);
+  total_min_height += row_spacing * (priv->n_rows);
+
+  /* calculate the remaining space and distribute it evenly onto all rows/cols */
+  extra_col_width = (table_width - total_min_width) / priv->n_cols;
+  extra_row_height =  (table_height - total_min_height) / priv->n_rows;
+
+
+  for (list = priv->children; list; list = g_slist_next (list))
+    {
+      gint row, col, row_span, col_span, col_span_width, row_span_height;
+      gint col_width, row_height;
+      gboolean keep_ratio;
+      ClutterChildMeta *meta;
+      ClutterActor *child;
+      ClutterActorBox childbox;
+      gint child_x, child_y;
+
+      child = CLUTTER_ACTOR (list->data);
+
+      meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
+      g_object_get (meta, "column", &col, "row", &row,
+                    "row-span", &row_span, "col-span", &col_span,
+                    "keep-aspect-ratio", &keep_ratio, NULL);
+
+      col_width = min_widths[col] + extra_col_width;
+      row_height = min_heights[row] + extra_row_height;
+
+      child_x = padding.left;
+      for (i = 0; i < col; i++)
+        child_x += min_widths[i] + (extra_col_width);
+
+      child_y = padding.top;
+      for (i = 0; i < row; i++)
+        child_y += min_heights[i] + (extra_row_height);
+
+      child_x += col_spacing * col;
+      child_y += row_spacing * row;
+
+      for (i = col; i < col + col_span - 1; i++)
+        {
+          col_width += min_widths[i] + extra_col_width;
+        }
+      for (i = row; i < row + row_span - 1; i++)
+        {
+          row_height += min_heights[i] + extra_row_height;
+        }
+
+      row_height += row_spacing * (row_span - 1);
+      col_width  += col_spacing * (col_span - 1);
+
+      childbox.x1 = child_x;
+      childbox.x2 = childbox.x1 + col_width;
+
+      childbox.y1 = child_y;
+      childbox.y2 = childbox.y1 + row_height;
+
+      if (keep_ratio)
+        {
+          ClutterUnit w, h;
+          gint new_width;
+          gint new_height;
+          gint center_offset;
+
+          clutter_actor_get_sizeu (child, &w, &h);
+
+          new_height = ((gdouble) h / w)  * ((gdouble) childbox.x2 - childbox.x1);
+          new_width = ((gdouble) w / h)  * ((gdouble) childbox.y2 - childbox.y1);
+
+
+          if (new_height > row_height)
+            {
+              /* center for new width */
+              center_offset = ((childbox.x2 - childbox.x1) - new_width) / 2;
+              childbox.x1 = childbox.x1 + center_offset;
+              childbox.x2 = childbox.x1 + new_width;
+            }
+          else
+            {
+              /* center for new height */
+              center_offset = ((childbox.y2 - childbox.y1) - new_height) / 2;
+              childbox.y1 = childbox.y1 + center_offset;
+              childbox.y2 = childbox.y1 + new_height;
+            }
+        }
+
+      clutter_actor_allocate (child, &childbox, absolute_origin_changed);
+
+    }
+
+  g_free (min_widths);
+  g_free (min_heights);
+}
+
+static void
 nbtk_table_allocate (ClutterActor          *self,
                      const ClutterActorBox *box,
                      gboolean               absolute_origin_changed)
 {
-  NbtkTablePrivate *priv = NBTK_TABLE_GET_PRIVATE (self);
+  NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
 
   CLUTTER_ACTOR_CLASS (nbtk_table_parent_class)->allocate (self, box, absolute_origin_changed);
 
   g_return_if_fail (priv->n_cols != 0 || priv->n_rows != 0);
 
-  nbtk_table_homogenous_allocate (self, box, absolute_origin_changed);
+  if (priv->homogeneous)
+    nbtk_table_homogeneous_allocate (self, box, absolute_origin_changed);
+  else
+    nbtk_table_preferred_allocate (self, box, absolute_origin_changed);
 }
 
 static void
@@ -640,6 +794,14 @@ nbtk_table_class_init (NbtkTableClass *klass)
 
   nbtk_widget_class->style_changed = nbtk_table_style_changed;
 
+  pspec = g_param_spec_boolean ("homogeneous",
+                                "Homogeneous",
+                                "Homogeneous rows and columns",
+                                TRUE,
+                                NBTK_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class,
+                                   PROP_HOMOGENEOUS,
+                                   pspec);
 
   pspec = g_param_spec_int ("col-spacing",
                             "Column Spacing",

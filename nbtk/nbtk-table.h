@@ -53,6 +53,7 @@ struct _NbtkTableClass
 GType nbtk_table_get_type (void) G_GNUC_CONST;
 
 NbtkWidget* nbtk_table_new                (void);
+void        nbtk_table_set_homogeneous    (NbtkTable *table, gboolean homogeneous);
 void        nbtk_table_set_col_spacing    (NbtkTable *table, gint spacing);
 void        nbtk_table_set_row_spacing    (NbtkTable *table, gint spacing);
 gint        nbtk_table_get_col_spacing    (NbtkTable *table);
