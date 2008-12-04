@@ -680,6 +680,106 @@ nbtk_table_allocate (ClutterActor          *self,
 }
 
 static void
+nbtk_table_get_preferred_width (ClutterActor *self,
+                                ClutterUnit   for_height,
+                                ClutterUnit  *min_width_p,
+                                ClutterUnit  *natural_width_p)
+{
+  ClutterUnit *min_widths;
+  ClutterUnit total_min_width;
+  NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
+  NbtkPadding padding = { 0, };
+  GSList *list;
+  gint i;
+
+  min_widths = g_new0 (ClutterUnit, priv->n_cols);
+
+  /* calculate minimum row widths */
+  for (list = priv->children; list; list = g_slist_next (list))
+    {
+      gint col;
+      gint w_min, w_pref;
+      ClutterChildMeta *meta;
+      ClutterActor *child;
+
+      child = CLUTTER_ACTOR (list->data);
+
+      meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
+
+      g_object_get (meta, "column", &col, NULL);
+
+      clutter_actor_get_preferred_width (child, -1, &w_min, &w_pref);
+      if (w_pref > min_widths[col])
+        min_widths[col] = w_pref;
+
+    }
+
+  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
+
+  total_min_width = padding.left + padding.right
+                    + (priv->n_cols - 1) * CLUTTER_UNITS_FROM_DEVICE (priv->col_spacing);
+  for (i = 0; i < priv->n_cols; i++)
+    total_min_width += min_widths[i];
+
+  g_free (min_widths);
+
+  if (min_width_p)
+    *min_width_p = total_min_width;
+  if (natural_width_p)
+    *natural_width_p = total_min_width;
+}
+
+static void
+nbtk_table_get_preferred_height (ClutterActor *self,
+                                 ClutterUnit   for_width,
+                                 ClutterUnit  *min_height_p,
+                                 ClutterUnit  *natural_height_p)
+{
+  ClutterUnit *min_heights;
+  ClutterUnit total_min_height;
+  NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
+  NbtkPadding padding = { 0, };
+  GSList *list;
+  gint i;
+
+  min_heights = g_new0 (ClutterUnit, priv->n_rows);
+
+  /* calculate minimum row heights */
+  for (list = priv->children; list; list = g_slist_next (list))
+    {
+      gint row;
+      gint min, pref;
+      ClutterChildMeta *meta;
+      ClutterActor *child;
+
+      child = CLUTTER_ACTOR (list->data);
+
+      meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
+
+      g_object_get (meta, "row", &row, NULL);
+
+      clutter_actor_get_preferred_height (child, -1, &min, &pref);
+      if (pref > min_heights[row])
+        min_heights[row] = pref;
+    }
+
+  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
+
+  total_min_height = padding.top + padding.bottom
+                     + (priv->n_rows - 1) * CLUTTER_UNITS_FROM_DEVICE (priv->row_spacing);
+
+  for (i = 0; i < priv->n_rows; i++)
+    total_min_height += min_heights[i];
+
+  g_free (min_heights);
+
+  if (min_height_p)
+    *min_height_p = total_min_height;
+  if (natural_height_p)
+    *natural_height_p = total_min_height;
+}
+
+static void
 nbtk_table_paint (ClutterActor *self)
 {
   NbtkTablePrivate *priv = NBTK_TABLE_GET_PRIVATE (self);
@@ -798,6 +898,8 @@ nbtk_table_class_init (NbtkTableClass *klass)
   actor_class->paint = nbtk_table_paint;
   actor_class->pick = nbtk_table_pick;
   actor_class->allocate = nbtk_table_allocate;
+  actor_class->get_preferred_width = nbtk_table_get_preferred_width;
+  actor_class->get_preferred_height = nbtk_table_get_preferred_height;
 
   nbtk_widget_class->style_changed = nbtk_table_style_changed;
 
