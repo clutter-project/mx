@@ -33,8 +33,8 @@
 #include <clutter/clutter.h>
 #include <clutter/clutter-container.h>
 
-#include "nbtk-stylable.h"
 #include "nbtk-private.h"
+#include "nbtk.h"
 
 enum
 {
@@ -65,7 +65,7 @@ struct _NbtkTablePrivate
   gboolean homogeneous;
 
   ClutterColor *bg_color;
-  ClutterColor *active_color;
+  ClutterActor *bg_frame;
 };
 
 static void nbtk_container_iface_init (ClutterContainerIface *iface);
@@ -338,12 +338,35 @@ static void
 nbtk_table_style_changed (NbtkWidget *table)
 {
   NbtkTablePrivate *priv = NBTK_TABLE_GET_PRIVATE (table);
+  gchar *bg_image;
 
   /* cache these values for use in the paint function */
   nbtk_stylable_get (NBTK_STYLABLE (table),
                     "background-color", &priv->bg_color,
-                    "color", &priv->active_color,
+                    "background-image", &bg_image,
                     NULL);
+
+  if (priv->bg_frame)
+    {
+       clutter_actor_unparent (CLUTTER_ACTOR (priv->bg_frame));
+       priv->bg_frame = NULL;
+    }
+
+  if (bg_image)
+    {
+      NbtkTextureCache *texture_cache;
+      ClutterActor *texture;
+
+
+      texture_cache = nbtk_texture_cache_get_default ();
+      texture = nbtk_texture_cache_get_texture (texture_cache,
+                                                bg_image,
+                                                FALSE);
+      priv->bg_frame = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture), 0, 0, 0, 0);
+      clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_frame), CLUTTER_ACTOR (table));
+
+      g_free (bg_image);
+    }
 }
 
 static void
@@ -654,6 +677,17 @@ nbtk_table_allocate (ClutterActor          *self,
 
   g_return_if_fail (priv->n_cols != 0 || priv->n_rows != 0);
 
+  if (priv->bg_frame)
+    {
+      ClutterActorBox frame_box = {
+          0, 0, box->x2 - box->x1, box->y2 - box->y1
+      };
+
+      clutter_actor_allocate (CLUTTER_ACTOR (priv->bg_frame),
+                              &frame_box,
+                              absolute_origin_changed);
+    }
+
   if (priv->homogeneous)
     nbtk_table_homogeneous_allocate (self, box, absolute_origin_changed);
   else
@@ -791,6 +825,9 @@ nbtk_table_paint (ClutterActor *self)
       cogl_color (&bg_color);
       cogl_rectangle (0, 0, w, h);
     }
+
+  if (priv->bg_frame)
+    clutter_actor_paint (CLUTTER_ACTOR (priv->bg_frame));
 
   for (list = priv->children; list; list = g_slist_next (list))
     {

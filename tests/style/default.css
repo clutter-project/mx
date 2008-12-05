@@ -26,4 +26,5 @@ NbtkButton:active {
 NbtkTable {
   color: #aee;
   background-color: #ddd;
+  background-image: url('file://redhand.png');
 }
