@@ -260,7 +260,7 @@ static void
 nbtk_container_remove_actor (ClutterContainer *container,
                              ClutterActor     *actor)
 {
-  NbtkTablePrivate *priv = NBTK_TABLE_GET_PRIVATE (container);
+  NbtkTablePrivate *priv = NBTK_TABLE (container)->priv;
 
   GSList *item = NULL;
 
@@ -290,7 +290,7 @@ nbtk_container_foreach (ClutterContainer *container,
                         ClutterCallback   callback,
                         gpointer          callback_data)
 {
-  NbtkTablePrivate *priv = NBTK_TABLE_GET_PRIVATE (container);
+  NbtkTablePrivate *priv = NBTK_TABLE (container)->priv;
 
   g_slist_foreach (priv->children, (GFunc) callback, callback_data);
 }
@@ -337,7 +337,7 @@ nbtk_container_iface_init (ClutterContainerIface *iface)
 static void
 nbtk_table_style_changed (NbtkWidget *table)
 {
-  NbtkTablePrivate *priv = NBTK_TABLE_GET_PRIVATE (table);
+  NbtkTablePrivate *priv = NBTK_TABLE (table)->priv;
   gchar *bg_image;
 
   /* cache these values for use in the paint function */
@@ -446,7 +446,7 @@ nbtk_table_homogeneous_allocate (ClutterActor          *self,
   ClutterUnit col_width, row_height;
   gint row_spacing, col_spacing;
   NbtkPadding padding = { 0, };
-  NbtkTablePrivate *priv = NBTK_TABLE_GET_PRIVATE (self);
+  NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
 
   col_spacing = CLUTTER_UNITS_FROM_DEVICE (priv->col_spacing);
   row_spacing = CLUTTER_UNITS_FROM_DEVICE (priv->row_spacing);
@@ -797,7 +797,7 @@ nbtk_table_get_preferred_height (ClutterActor *self,
 static void
 nbtk_table_paint (ClutterActor *self)
 {
-  NbtkTablePrivate *priv = NBTK_TABLE_GET_PRIVATE (self);
+  NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
   GSList *list;
   NbtkPadding padding = { 0, };
   gint p_left, p_right, p_top, p_bottom;
@@ -840,7 +840,7 @@ static void
 nbtk_table_pick (ClutterActor       *self,
                  const ClutterColor *color)
 {
-  NbtkTablePrivate *priv = NBTK_TABLE_GET_PRIVATE (self);
+  NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
   GSList *list;
 
   /* Chain up so we get a bounding box painted (if we are reactive) */
@@ -951,7 +951,7 @@ nbtk_table_set_col_spacing (NbtkTable *table,
   g_return_if_fail (NBTK_IS_TABLE (table));
   g_return_if_fail (spacing >= 0);
 
-  priv = NBTK_TABLE_GET_PRIVATE (table);
+  priv = NBTK_TABLE (table)->priv;
 
   priv->col_spacing = spacing;
 }
@@ -972,7 +972,7 @@ nbtk_table_set_row_spacing (NbtkTable *table,
   g_return_if_fail (NBTK_IS_TABLE (table));
   g_return_if_fail (spacing >= 0);
 
-  priv = NBTK_TABLE_GET_PRIVATE (table);
+  priv = NBTK_TABLE (table)->priv;
 
   priv->row_spacing = spacing;
 }
@@ -989,7 +989,7 @@ nbtk_table_get_row_spacing (NbtkTable *table)
   NbtkTablePrivate *priv;
 
   g_return_val_if_fail (NBTK_IS_TABLE (table), -1);
-  priv = NBTK_TABLE_GET_PRIVATE (table);
+  priv = NBTK_TABLE (table)->priv;
 
   return priv->row_spacing;
 }
@@ -1006,7 +1006,7 @@ nbtk_table_get_col_spacing (NbtkTable *table)
   NbtkTablePrivate *priv;
 
   g_return_val_if_fail (NBTK_IS_TABLE (table), -1);
-  priv = NBTK_TABLE_GET_PRIVATE (table);
+  priv = NBTK_TABLE (table)->priv;
 
   return priv->col_spacing;
 }
@@ -1025,7 +1025,7 @@ nbtk_table_add_actor (NbtkTable   *table,
   g_return_if_fail (row >= 0);
   g_return_if_fail (column >= 0);
 
-  priv = NBTK_TABLE_GET_PRIVATE (table);
+  priv = NBTK_TABLE (table)->priv;
 
   clutter_container_add_actor (CLUTTER_CONTAINER (table), actor);
   child = clutter_container_get_child_meta (CLUTTER_CONTAINER (table), actor);
