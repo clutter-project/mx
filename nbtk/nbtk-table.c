@@ -562,8 +562,8 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
     total_min_height += min_heights[i];
 
   /* calculate the remaining space and distribute it evenly onto all rows/cols */
-  extra_col_width = (table_width - total_min_width) / priv->n_cols;
-  extra_row_height =  (table_height - total_min_height) / priv->n_rows;
+  extra_col_width = MAX (0, (table_width - total_min_width) / priv->n_cols);
+  extra_row_height = MAX (0, (table_height - total_min_height) / priv->n_rows);
 
   for (i = 0; i < priv->n_cols; i++)
     min_widths[i] += extra_col_width;
