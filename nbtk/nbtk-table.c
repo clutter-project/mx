@@ -628,26 +628,26 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
       if (keep_ratio)
         {
           ClutterUnit w, h;
-          gint new_width;
-          gint new_height;
-          gint center_offset;
+          ClutterUnit new_width;
+          ClutterUnit new_height;
+          ClutterUnit center_offset;
 
           clutter_actor_get_sizeu (child, &w, &h);
 
-          new_height = ((gdouble) h / w)  * ((gdouble) childbox.x2 - childbox.x1);
-          new_width = ((gdouble) w / h)  * ((gdouble) childbox.y2 - childbox.y1);
+          new_height = (h / (gdouble) w)  * (gdouble) col_width;
+          new_width = (w / (gdouble) h)  * (gdouble) row_height;
 
 
           if (new_height > row_height)
             {
-              /* center for new width */
+              /* apply new width */
               center_offset = ((childbox.x2 - childbox.x1) - new_width) / 2;
               childbox.x1 = childbox.x1 + center_offset;
               childbox.x2 = childbox.x1 + new_width;
             }
           else
             {
-              /* center for new height */
+              /* apply new height */
               center_offset = ((childbox.y2 - childbox.y1) - new_height) / 2;
               childbox.y1 = childbox.y1 + center_offset;
               childbox.y2 = childbox.y1 + new_height;
