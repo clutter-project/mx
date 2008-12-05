@@ -56,8 +56,6 @@ main (int argc, char *argv[])
                                "keep-aspect-ratio", TRUE, NULL);
 
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (table));
-  nbtk_table_set_active_row (NBTK_TABLE (table), 1);
-  nbtk_table_set_active_col (NBTK_TABLE (table), 1);
 
   clutter_actor_set_position (CLUTTER_ACTOR (table),
                               clutter_actor_get_width (stage) / 2 - clutter_actor_get_width (table) / 2,
