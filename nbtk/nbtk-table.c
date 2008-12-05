@@ -815,14 +815,15 @@ nbtk_table_paint (ClutterActor *self)
     {
       gint col_width;
       guint w, h;
+      ClutterColor color = *priv->active_color;
 
       clutter_actor_get_size (self, &w, &h);
 
       col_width = (w - p_left - p_right) / priv->n_cols;
 
-      cogl_color (priv->active_color);
-      priv->active_color->alpha = clutter_actor_get_paint_opacity (self)
-                                 * priv->active_color->alpha / 255;
+      color.alpha = clutter_actor_get_paint_opacity (self)
+                    * color.alpha / 255;
+      cogl_color (&color);
       
       cogl_rectangle (p_left + col_width * priv->active_col,
                       p_top,
@@ -834,14 +835,15 @@ nbtk_table_paint (ClutterActor *self)
     {
       gint row_height;
       guint w, h;
+      ClutterColor color = *priv->active_color;
 
       clutter_actor_get_size (self, &w, &h);
 
       row_height = (h - p_top - p_bottom) / priv->n_rows;
 
-      cogl_color (priv->active_color);
-      priv->active_color->alpha = clutter_actor_get_paint_opacity (self)
-                                  * priv->active_color->alpha / 255;
+      cogl_color (&color);
+      color.alpha = clutter_actor_get_paint_opacity (self)
+                    * color.alpha / 255;
       
       cogl_rectangle (p_left,
                       row_height * priv->active_row,
