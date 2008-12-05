@@ -32,6 +32,7 @@ source_h = \
 	nbtk-widget.h \
 	nbtk.h
 
+EXTRA_DIST = nbtk-marshal.list nbtk-enum-types.h.in nbtk-enum-types.c.in
 
 STAMP_FILES = stamp-nbtk-marshal.h stamp-nbtk-enum-types.h
 
@@ -104,7 +105,8 @@ libnbtk_la_SOURCES = \
 		nbtk-texture-cache.h \
 		nbtk-texture-frame.c \
 		nbtk-texture-frame.h \
-		nbtk-types.h
+		nbtk-types.h \
+		nbtk.h
 
 
 libnbtk_la_LIBADD = $(NBTK_LIBS)

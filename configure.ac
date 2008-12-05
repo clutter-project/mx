@@ -12,11 +12,11 @@ AC_HEADER_STDC
 dnl ***************************************************************************
 dnl Internatinalization
 dnl ***************************************************************************
-GETTEXT_PACKAGE=nbtk
-AC_SUBST(GETTEXT_PACKAGE)
-AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE", [GETTEXT package name])
-AM_GLIB_GNU_GETTEXT
-IT_PROG_INTLTOOL([0.35.0])
+# GETTEXT_PACKAGE=nbtk
+# AC_SUBST(GETTEXT_PACKAGE)
+# AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE", [GETTEXT package name])
+# AM_GLIB_GNU_GETTEXT
+# IT_PROG_INTLTOOL([0.35.0])
 
 AM_PROG_LIBTOOL
 
@@ -32,6 +32,5 @@ docs/Makefile
 docs/reference/Makefile
 docs/reference/libnbtk/Makefile
 nbtk/Makefile
-po/Makefile.in
 tests/Makefile
 ])
