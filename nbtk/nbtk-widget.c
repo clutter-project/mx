@@ -711,10 +711,8 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
   if (!is_initialized)
     {
       GParamSpec *pspec;
-      ClutterColor color, bg_color;
-
-      clutter_color_parse ("#000", &color);
-      clutter_color_parse ("#CCC", &bg_color);
+      ClutterColor color = { 0x00, 0x00, 0x00, 0xff };
+      ClutterColor bg_color = { 0xff, 0xff, 0xff, 0x00 };
 
       pspec = g_param_spec_string ("font-name",
                                    "Font Name",
