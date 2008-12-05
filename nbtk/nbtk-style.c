@@ -85,7 +85,7 @@ nbtk_style_load_from_file (NbtkStyle    *style,
   g_return_val_if_fail (NBTK_IS_STYLE (style), FALSE);
   g_return_val_if_fail (filename != NULL, FALSE);
 
-  priv = NBTK_STYLE_GET_PRIVATE (style);
+  priv = NBTK_STYLE (style)->priv;
 
   if (!g_file_test (filename, G_FILE_TEST_IS_REGULAR))
     {
