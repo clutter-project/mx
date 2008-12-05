@@ -796,18 +796,18 @@ nbtk_table_paint (ClutterActor *self)
   if (priv->bg_color)
     {
       ClutterActorBox allocation = { 0, };
-      ClutterColor *bg_color = priv->bg_color;
+      ClutterColor bg_color = *priv->bg_color;
       guint w, h;
 
-      priv->bg_color->alpha = clutter_actor_get_paint_opacity (self)
-                              * bg_color->alpha / 255;
+      bg_color.alpha = clutter_actor_get_paint_opacity (self)
+                       * bg_color.alpha / 255;
 
       clutter_actor_get_allocation_box (self, &allocation);
 
       w = CLUTTER_UNITS_TO_DEVICE (allocation.x2 - allocation.x1);
       h = CLUTTER_UNITS_TO_DEVICE (allocation.y2 - allocation.y1);
 
-      cogl_color (priv->bg_color);
+      cogl_color (&bg_color);
       cogl_rectangle (0, 0, w, h);
     }
 
