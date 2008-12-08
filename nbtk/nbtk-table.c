@@ -63,9 +63,6 @@ struct _NbtkTablePrivate
   gint active_col;
 
   gboolean homogeneous;
-
-  ClutterColor *bg_color;
-  ClutterActor *bg_frame;
 };
 
 static void nbtk_container_iface_init (ClutterContainerIface *iface);
@@ -333,41 +330,6 @@ nbtk_container_iface_init (ClutterContainerIface *iface)
 }
 
 /* NbtkTable Class Implementation */
-
-static void
-nbtk_table_style_changed (NbtkWidget *table)
-{
-  NbtkTablePrivate *priv = NBTK_TABLE (table)->priv;
-  gchar *bg_image;
-
-  /* cache these values for use in the paint function */
-  nbtk_stylable_get (NBTK_STYLABLE (table),
-                    "background-color", &priv->bg_color,
-                    "background-image", &bg_image,
-                    NULL);
-
-  if (priv->bg_frame)
-    {
-       clutter_actor_unparent (CLUTTER_ACTOR (priv->bg_frame));
-       priv->bg_frame = NULL;
-    }
-
-  if (bg_image)
-    {
-      NbtkTextureCache *texture_cache;
-      ClutterActor *texture;
-
-
-      texture_cache = nbtk_texture_cache_get_default ();
-      texture = nbtk_texture_cache_get_texture (texture_cache,
-                                                bg_image,
-                                                FALSE);
-      priv->bg_frame = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture), 0, 0, 0, 0);
-      clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_frame), CLUTTER_ACTOR (table));
-
-      g_free (bg_image);
-    }
-}
 
 static void
 nbtk_table_set_property (GObject       *gobject,
@@ -677,17 +639,6 @@ nbtk_table_allocate (ClutterActor          *self,
 
   g_return_if_fail (priv->n_cols != 0 || priv->n_rows != 0);
 
-  if (priv->bg_frame)
-    {
-      ClutterActorBox frame_box = {
-          0, 0, box->x2 - box->x1, box->y2 - box->y1
-      };
-
-      clutter_actor_allocate (CLUTTER_ACTOR (priv->bg_frame),
-                              &frame_box,
-                              absolute_origin_changed);
-    }
-
   if (priv->homogeneous)
     nbtk_table_homogeneous_allocate (self, box, absolute_origin_changed);
   else
@@ -802,32 +753,16 @@ nbtk_table_paint (ClutterActor *self)
   NbtkPadding padding = { 0, };
   gint p_left, p_right, p_top, p_bottom;
 
+
+  /* make sure the background gets painted first */
+  CLUTTER_ACTOR_CLASS (nbtk_table_parent_class)->paint (self);
+
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
   p_left = CLUTTER_UNITS_TO_INT (padding.left);
   p_right = CLUTTER_UNITS_TO_INT (padding.right);
   p_top = CLUTTER_UNITS_TO_INT (padding.top);
   p_bottom = CLUTTER_UNITS_TO_INT (padding.bottom);
 
-  if (priv->bg_color)
-    {
-      ClutterActorBox allocation = { 0, };
-      ClutterColor bg_color = *priv->bg_color;
-      guint w, h;
-
-      bg_color.alpha = clutter_actor_get_paint_opacity (self)
-                       * bg_color.alpha / 255;
-
-      clutter_actor_get_allocation_box (self, &allocation);
-
-      w = CLUTTER_UNITS_TO_DEVICE (allocation.x2 - allocation.x1);
-      h = CLUTTER_UNITS_TO_DEVICE (allocation.y2 - allocation.y1);
-
-      cogl_color (&bg_color);
-      cogl_rectangle (0, 0, w, h);
-    }
-
-  if (priv->bg_frame)
-    clutter_actor_paint (CLUTTER_ACTOR (priv->bg_frame));
 
   for (list = priv->children; list; list = g_slist_next (list))
     {
@@ -859,7 +794,7 @@ nbtk_table_class_init (NbtkTableClass *klass)
   GParamSpec *pspec;
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  NbtkWidgetClass *nbtk_widget_class = NBTK_WIDGET_CLASS (klass);
+  /* NbtkWidgetClass *nbtk_widget_class = NBTK_WIDGET_CLASS (klass); */
 
   g_type_class_add_private (klass, sizeof (NbtkTablePrivate));
 
@@ -879,8 +814,6 @@ nbtk_table_class_init (NbtkTableClass *klass)
   actor_class->allocate = nbtk_table_allocate;
   actor_class->get_preferred_width = nbtk_table_get_preferred_width;
   actor_class->get_preferred_height = nbtk_table_get_preferred_height;
-
-  nbtk_widget_class->style_changed = nbtk_table_style_changed;
 
   pspec = g_param_spec_boolean ("homogeneous",
                                 "Homogeneous",
