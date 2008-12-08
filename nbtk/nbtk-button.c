@@ -41,6 +41,7 @@
 #include "nbtk-stylable.h"
 #include "nbtk-texture-frame.h"
 #include "nbtk-texture-cache.h"
+#include "nbtk-tooltip.h"
 
 enum
 {
@@ -69,6 +70,8 @@ struct _NbtkButtonPrivate
 
   ClutterActor *label;
   ClutterActor *icon;
+  NbtkWidget   *tooltip;
+
   ClutterTimeline *timeline;
   ClutterEffectTemplate *press_tmpl;
 
@@ -388,6 +391,9 @@ nbtk_button_enter (ClutterActor         *actor,
 
   button->priv->is_hover = 1;
 
+  if (button->priv->tooltip)
+    nbtk_tooltip_show (NBTK_TOOLTIP (button->priv->tooltip));
+
   return FALSE;
 }
 
@@ -416,6 +422,9 @@ nbtk_button_leave (ClutterActor         *actor,
     nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "active");
   else
     nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), NULL);
+
+  if (button->priv->tooltip)
+    nbtk_tooltip_hide (NBTK_TOOLTIP (button->priv->tooltip));
 
   return FALSE;
 }
@@ -810,4 +819,30 @@ nbtk_button_set_icon_from_file (NbtkButton *button,
   g_free (priv->text);
 
   clutter_container_add_actor (CLUTTER_CONTAINER (button), icon);
+}
+
+/**
+ * nbtk_button_set_tooltip:
+ * @button: a #NbtkButton
+ * @label: text to display in the tooltip, or NULL to unset the tooltip
+ *
+ * Set or remove a tooltip from the button.
+ */
+void
+nbtk_button_set_tooltip (NbtkButton *button, const gchar *label)
+{
+  NbtkButtonPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_BUTTON (button));
+
+  priv = button->priv;
+
+  if (label)
+    {
+      priv->tooltip = nbtk_tooltip_new (NBTK_WIDGET (button), label);
+    }
+  else
+    {
+      g_object_unref (priv->tooltip);
+    }
 }
