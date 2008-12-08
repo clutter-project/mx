@@ -41,13 +41,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <clutter/clutter-container.h>
+#include <clutter/clutter.h>
 
 #include "nbtk-widget.h"
 
 #include "nbtk-marshal.h"
 #include "nbtk-private.h"
 #include "nbtk-stylable.h"
+#include "nbtk-texture-cache.h"
+#include "nbtk-texture-frame.h"
 
 enum
 {
@@ -85,8 +87,6 @@ G_DEFINE_ABSTRACT_TYPE_WITH_CODE (NbtkWidget, nbtk_widget, CLUTTER_TYPE_ACTOR,
 
 struct _NbtkWidgetPrivate
 {
-  NbtkStyle *style;
-
   ClutterActor *child;
 
   NbtkPadding padding;
@@ -94,8 +94,12 @@ struct _NbtkWidgetPrivate
   ClutterFixed x_align;
   ClutterFixed y_align;
   
+  NbtkStyle *style;
   gchar *pseudo_class;
   gchar *style_class;
+
+  ClutterActor *bg_image;
+  ClutterColor *bg_color;
 };
 
 static void
@@ -307,19 +311,17 @@ nbtk_widget_allocate (ClutterActor          *actor,
   klass = CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class);
   klass->allocate (actor, box, origin_changed);
 
-/*
-  if (priv->texture)
+  if (priv->bg_image)
     {
-      ClutterActorBox texture_box = { 0, };
+      ClutterActorBox frame_box = {
+          0, 0, box->x2 - box->x1, box->y2 - box->y1
+      };
 
-      texture_box.x1 = 0;
-      texture_box.y1 = 0;
-      texture_box.x2 = box->x2 - box->x1;
-      texture_box.y2 = box->y2 - box->y1;
-
-      clutter_actor_allocate (priv->texture, &texture_box, origin_changed);
+      clutter_actor_allocate (CLUTTER_ACTOR (priv->bg_image),
+                              &frame_box,
+                              origin_changed);
     }
-*/
+
   if (priv->child)
     {
       NbtkPadding padding = { 0, };
@@ -382,9 +384,30 @@ nbtk_widget_pick (ClutterActor       *actor,
 }
 
 static void
-nbtk_widget_paint (ClutterActor *actor)
+nbtk_widget_paint (ClutterActor *self)
 {
-  NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
+  NbtkWidgetPrivate *priv = NBTK_WIDGET (self)->priv;
+
+  if (priv->bg_color)
+    {
+      ClutterActorBox allocation = { 0, };
+      ClutterColor bg_color = *priv->bg_color;
+      guint w, h;
+
+      bg_color.alpha = clutter_actor_get_paint_opacity (self)
+                       * bg_color.alpha / 255;
+
+      clutter_actor_get_allocation_box (self, &allocation);
+
+      w = CLUTTER_UNITS_TO_DEVICE (allocation.x2 - allocation.x1);
+      h = CLUTTER_UNITS_TO_DEVICE (allocation.y2 - allocation.y1);
+
+      cogl_color (&bg_color);
+      cogl_rectangle (0, 0, w, h);
+    }
+
+  if (priv->bg_image)
+    clutter_actor_paint (CLUTTER_ACTOR (priv->bg_image));
 
   if (priv->child && CLUTTER_ACTOR_IS_VISIBLE (priv->child))
     clutter_actor_paint (priv->child);
@@ -476,6 +499,40 @@ nbtk_widget_parent_set (ClutterActor *widget, ClutterActor *old_parent)
 }
 
 static void
+nbtk_widget_style_changed (NbtkWidget *self)
+{
+  NbtkWidgetPrivate *priv = self->priv;
+  gchar *bg_file;
+
+  /* cache these values for use in the paint function */
+  nbtk_stylable_get (NBTK_STYLABLE (self),
+                    "background-color", &priv->bg_color,
+                    "background-image", &bg_file,
+                    NULL);
+
+  if (priv->bg_image)
+    {
+       clutter_actor_unparent (CLUTTER_ACTOR (priv->bg_image));
+       priv->bg_image = NULL;
+    }
+
+  if (bg_file)
+    {
+      NbtkTextureCache *texture_cache;
+      ClutterActor *texture;
+
+
+      texture_cache = nbtk_texture_cache_get_default ();
+      texture = nbtk_texture_cache_get_texture (texture_cache,
+                                                bg_file,
+                                                FALSE);
+      priv->bg_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture), 0, 0, 0, 0);
+      clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image), CLUTTER_ACTOR (self));
+
+      g_free (bg_file);
+    }
+}
+static void
 nbtk_widget_class_init (NbtkWidgetClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -487,13 +544,14 @@ nbtk_widget_class_init (NbtkWidgetClass *klass)
   gobject_class->get_property = nbtk_widget_get_property;
   gobject_class->dispose = nbtk_widget_dispose;
 
-
   actor_class->allocate = nbtk_widget_allocate;
   actor_class->pick = nbtk_widget_pick;
   actor_class->paint = nbtk_widget_paint;
   actor_class->get_preferred_height = nbtk_widget_get_preferred_height;
   actor_class->get_preferred_width = nbtk_widget_get_preferred_width;
   actor_class->parent_set = nbtk_widget_parent_set;
+
+  klass->style_changed = nbtk_widget_style_changed;
 
   /**
    * NbtkWidget:padding:
