@@ -129,6 +129,14 @@ nbtk_tooltip_init (NbtkTooltip *tooltip)
   clutter_container_add (CLUTTER_CONTAINER (tooltip), tooltip->priv->label, NULL);
 }
 
+
+static void
+nbtk_tooltip_weak_ref_notify (gpointer tooltip, GObject *obj)
+{
+  g_object_ref_sink (G_OBJECT (tooltip));
+  g_object_unref (G_OBJECT (tooltip));
+}
+
 /**
  * nbtk_tooltip_new:
  * @widget: actor the tooltip is attached to
@@ -158,6 +166,8 @@ nbtk_tooltip_new (NbtkWidget *widget, const gchar *text)
 
   /* remember the associated widget */
   tooltip->priv->widget = CLUTTER_ACTOR (widget);
+
+  g_object_weak_ref (G_OBJECT (widget), nbtk_tooltip_weak_ref_notify, tooltip);
 
   return NBTK_WIDGET (tooltip);
 }
