@@ -28,3 +28,7 @@ NbtkTable {
   background-color: #ddd;
   background-image: url('file://redhand.png');
 }
+
+NbtkTooltip {
+  background-color: #ccc;
+}
