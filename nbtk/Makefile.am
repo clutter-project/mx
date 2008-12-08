@@ -28,6 +28,7 @@ source_h = \
 	nbtk-table.h \
 	nbtk-texture-cache.h \
 	nbtk-texture-frame.h \
+	nbtk-tooltip.h \
 	nbtk-types.h \
 	nbtk-widget.h \
 	nbtk.h
@@ -105,6 +106,8 @@ libnbtk_la_SOURCES = \
 		nbtk-texture-cache.h \
 		nbtk-texture-frame.c \
 		nbtk-texture-frame.h \
+		nbtk-tooltip.c \
+		nbtk-tooltip.h \
 		nbtk-types.h \
 		nbtk.h
 
