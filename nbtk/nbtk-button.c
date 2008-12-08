@@ -234,8 +234,6 @@ nbtk_button_style_changed (NbtkWidget *button)
   /* queue a relayout, which also calls redraw */
   clutter_actor_queue_relayout (CLUTTER_ACTOR (button));
 
-  if (NBTK_WIDGET_CLASS (nbtk_button_parent_class)->style_changed)
-    NBTK_WIDGET_CLASS (nbtk_button_parent_class)->style_changed (button);
 }
 
 static void
