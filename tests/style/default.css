@@ -26,7 +26,11 @@ NbtkButton:active {
 NbtkTable {
   color: #aee;
   background-color: #ddd;
-  background-image: url('file://redhand.png');
+  background-image: url('file://rounded-corner.png');
+  border-left-width: 30;
+  border-right-width: 30;
+  border-bottom-width: 30;
+  border-top-width: 30;
 }
 
 NbtkTooltip {

@@ -372,26 +372,37 @@ nbtk_style_get_property (NbtkStyle    *style,
         {
           if (G_PARAM_SPEC_VALUE_TYPE (pspec))
             {
-              gchar *string = NULL;
-
-              ccss_style_get_string (ccss_style, pspec->name, &string);
-
-              if (string)
+              if (G_IS_PARAM_SPEC_INT (pspec))
                 {
-                  if (CLUTTER_IS_PARAM_SPEC_COLOR (pspec))
+                  double number;
+
+                  ccss_style_get_double (ccss_style, pspec->name, &number);
+                  g_value_set_int (&real_value, (int) number);
+                  value_set = TRUE;
+                }
+              else
+                {
+                  gchar *string = NULL;
+
+                  ccss_style_get_string (ccss_style, pspec->name, &string);
+
+                  if (string)
                     {
-                      ClutterColor color;
-                      clutter_color_parse (string, &color);
-                      clutter_value_set_color (&real_value, &color);
-                      value_set = TRUE;
+                      if (CLUTTER_IS_PARAM_SPEC_COLOR (pspec))
+                        {
+                          ClutterColor color;
+                          clutter_color_parse (string, &color);
+                          clutter_value_set_color (&real_value, &color);
+                          value_set = TRUE;
+                        }
+                      else
+                        if (G_IS_PARAM_SPEC_STRING (pspec))
+                          {
+                            g_value_set_string (&real_value, string);
+                            value_set = TRUE;
+                          }
+                      g_free (string);
                     }
-                  else
-                    if (G_IS_PARAM_SPEC_STRING (pspec))
-                      {
-                        g_value_set_string (&real_value, string);
-                        value_set = TRUE;
-                      }
-                  g_free (string);
                 }
             }
         }

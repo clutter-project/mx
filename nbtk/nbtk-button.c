@@ -137,6 +137,10 @@ nbtk_button_style_changed (NbtkWidget *button)
   ClutterColor *real_color;
   gchar *bg_url = NULL;
   NbtkButtonPrivate *priv = NBTK_BUTTON (button)->priv;
+  gint border_left;
+  gint border_right;
+  gint border_top;
+  gint border_bottom;
 
   /* update the label styling */
   if (priv->label)
@@ -160,6 +164,10 @@ nbtk_button_style_changed (NbtkWidget *button)
   nbtk_stylable_get (NBTK_STYLABLE (button),
                     "background-color", &priv->bg_color,
                     "background-image", &bg_url,
+                    "border-top-width", &border_top,
+                    "border-bottom-width", &border_bottom,
+                    "border-right-width", &border_right,
+                    "border-left-width", &border_left,
                     NULL);
 
   if (bg_url)
@@ -177,7 +185,11 @@ nbtk_button_style_changed (NbtkWidget *button)
       texture = nbtk_texture_cache_get_texture (cache, bg_url, FALSE);
 
       priv->bg_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
-                                               0, 0, 0, 0);
+                                               border_left,
+                                               border_top,
+                                               border_right,
+                                               border_bottom);
+
       g_object_unref (texture);
       clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image),
                                 CLUTTER_ACTOR (button));

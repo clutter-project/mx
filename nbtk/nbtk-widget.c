@@ -507,11 +507,19 @@ nbtk_widget_style_changed (NbtkWidget *self)
 {
   NbtkWidgetPrivate *priv = self->priv;
   gchar *bg_file;
+  gint border_left;
+  gint border_right;
+  gint border_top;
+  gint border_bottom;
 
   /* cache these values for use in the paint function */
   nbtk_stylable_get (NBTK_STYLABLE (self),
                     "background-color", &priv->bg_color,
                     "background-image", &bg_file,
+                    "border-top-width", &border_top,
+                    "border-bottom-width", &border_bottom,
+                    "border-right-width", &border_right,
+                    "border-left-width", &border_left,
                     NULL);
 
   if (priv->bg_image)
@@ -530,7 +538,11 @@ nbtk_widget_style_changed (NbtkWidget *self)
       texture = nbtk_texture_cache_get_texture (texture_cache,
                                                 bg_file,
                                                 FALSE);
-      priv->bg_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture), 0, 0, 0, 0);
+      priv->bg_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
+                                               border_left,
+                                               border_top,
+                                               border_right,
+                                               border_bottom);
       clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image), CLUTTER_ACTOR (self));
 
       g_free (bg_file);
@@ -802,6 +814,34 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
                                    "Background image filename",
                                    NULL,
                                    G_PARAM_READWRITE);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
+
+      pspec = g_param_spec_int ("border-left-width",
+                                "Border Left Width",
+                                "Left border of the image",
+                                0, G_MAXINT, 0,
+                                G_PARAM_READWRITE);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
+
+      pspec = g_param_spec_int ("border-right-width",
+                                "Border Right Width",
+                                "Right border of the image",
+                                0, G_MAXINT, 0,
+                                G_PARAM_READWRITE);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
+
+      pspec = g_param_spec_int ("border-top-width",
+                                "Border Top Width",
+                                "Top border of the image",
+                                0, G_MAXINT, 0,
+                                G_PARAM_READWRITE);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
+
+      pspec = g_param_spec_int ("border-bottom-width",
+                                "Border Bottom Width",
+                                "Bottom border of the image",
+                                0, G_MAXINT, 0,
+                                G_PARAM_READWRITE);
       nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
       iface->get_style = nbtk_widget_get_style;
