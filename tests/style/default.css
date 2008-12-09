@@ -27,12 +27,9 @@ NbtkTable {
   color: #aee;
   background-color: #ddd;
   background-image: url('file://rounded-corner.png');
-  border-left-width: 30;
-  border-right-width: 30;
-  border-bottom-width: 30;
-  border-top-width: 30;
+  border-width: 30 30 30 30;
 }
 
 NbtkTooltip {
-  background-color: #ccc;
+  background-color: #ccc5;
 }
