@@ -486,16 +486,16 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
   NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
   NbtkPadding padding = { 0, };
 
-  col_spacing = CLUTTER_UNITS_FROM_DEVICE (priv->col_spacing);
-  row_spacing = CLUTTER_UNITS_FROM_DEVICE (priv->row_spacing);
+  col_spacing = (priv->col_spacing);
+  row_spacing = (priv->row_spacing);
 
   min_widths = g_new0 (gint, priv->n_cols);
   min_heights = g_new0 (gint, priv->n_rows);
 
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
-  table_height = box->y2 - box->y1 - padding.top - padding.bottom;
-  table_width = box->x2 - box->x1 - padding.right - padding.left;
+  table_height = CLUTTER_UNITS_TO_INT (box->y2 - box->y1 - padding.top - padding.bottom);
+  table_width = CLUTTER_UNITS_TO_INT (box->x2 - box->x1 - padding.right - padding.left);
 
   /* calculate minimum row widths and column heights */
   for (list = priv->children; list; list = g_slist_next (list))
@@ -513,10 +513,10 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
 
       clutter_actor_get_preferred_size (child, &w_min, &h_min, &w_pref, &h_pref);
       if (w_pref > min_widths[col])
-        min_widths[col] = w_pref;
+        min_widths[col] = CLUTTER_UNITS_TO_INT (w_pref);
 
       if (h_pref > min_heights[row])
-        min_heights[row] = h_pref;
+        min_heights[row] = CLUTTER_UNITS_TO_INT (h_pref);
     }
 
   total_min_width = col_spacing * (priv->n_cols - 1);
@@ -575,30 +575,30 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
 
 
       /* calculate child x */
-      child_x = padding.left + col_spacing * col;
+      child_x = CLUTTER_UNITS_TO_INT (padding.left) + col_spacing * col;
       for (i = 0; i < col; i++)
         child_x += min_widths[i];
 
       /* calculate child y */
-      child_y = padding.top + row_spacing * row;
+      child_y = CLUTTER_UNITS_TO_INT (padding.top) + row_spacing * row;
       for (i = 0; i < row; i++)
         child_y += min_heights[i];
 
       /* set up childbox */
-      childbox.x1 = child_x;
-      childbox.x2 = child_x + col_width;
+      childbox.x1 = CLUTTER_UNITS_FROM_INT (child_x);
+      childbox.x2 = CLUTTER_UNITS_FROM_INT (child_x + col_width);
 
-      childbox.y1 = child_y;
-      childbox.y2 = child_y + row_height;
+      childbox.y1 = CLUTTER_UNITS_FROM_INT (child_y);
+      childbox.y2 = CLUTTER_UNITS_FROM_INT (child_y + row_height);
 
       if (keep_ratio)
         {
-          ClutterUnit w, h;
-          ClutterUnit new_width;
-          ClutterUnit new_height;
-          ClutterUnit center_offset;
+          guint w, h;
+          guint new_width;
+          guint new_height;
+          gint center_offset;
 
-          clutter_actor_get_sizeu (child, &w, &h);
+          clutter_actor_get_size (child, &w, &h);
 
           new_height = (h / (gdouble) w)  * (gdouble) col_width;
           new_width = (w / (gdouble) h)  * (gdouble) row_height;
@@ -607,21 +607,20 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
           if (new_height > row_height)
             {
               /* apply new width */
-              center_offset = ((childbox.x2 - childbox.x1) - new_width) / 2;
-              childbox.x1 = childbox.x1 + center_offset;
-              childbox.x2 = childbox.x1 + new_width;
+              center_offset = (CLUTTER_UNITS_TO_INT (childbox.x2 - childbox.x1) - new_width) / 2;
+              childbox.x1 = childbox.x1 + CLUTTER_UNITS_FROM_INT (center_offset);
+              childbox.x2 = childbox.x1 + CLUTTER_UNITS_FROM_INT (new_width);
             }
           else
             {
               /* apply new height */
-              center_offset = ((childbox.y2 - childbox.y1) - new_height) / 2;
-              childbox.y1 = childbox.y1 + center_offset;
-              childbox.y2 = childbox.y1 + new_height;
+              center_offset = (CLUTTER_UNITS_TO_INT (childbox.y2 - childbox.y1) - new_height) / 2;
+              childbox.y1 = childbox.y1 + CLUTTER_UNITS_FROM_INT (center_offset);
+              childbox.y2 = childbox.y1 + CLUTTER_UNITS_FROM_INT (new_height);
             }
         }
 
       clutter_actor_allocate (child, &childbox, absolute_origin_changed);
-
     }
 
   g_free (min_widths);
