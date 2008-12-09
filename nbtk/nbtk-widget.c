@@ -363,6 +363,10 @@ nbtk_widget_allocate (ClutterActor          *actor,
                                         y_align)
                    + padding.top;
 
+      /* align the co-ordinates to device units to prevent allocation on sub-pixels */
+      child_box.x1 = CLUTTER_UNITS_FROM_DEVICE ((CLUTTER_UNITS_TO_DEVICE (child_box.x1)));
+      child_box.y1 = CLUTTER_UNITS_FROM_DEVICE ((CLUTTER_UNITS_TO_DEVICE (child_box.y1)));
+
       child_box.x2 = child_box.x1 + child_width;
       child_box.y2 = child_box.y1 + child_height;
 
