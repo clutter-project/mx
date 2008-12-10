@@ -377,7 +377,11 @@ nbtk_button_button_release (ClutterActor       *actor,
       clutter_ungrab_pointer ();
 
       if (button->priv->is_toggle)
-        nbtk_button_set_active (button, !button->priv->is_active);
+        {
+          nbtk_button_set_active (button, !button->priv->is_active);
+          if (button->priv->tooltip)
+            nbtk_tooltip_hide (NBTK_TOOLTIP (button->priv->tooltip));
+        }
 
       button->priv->is_pressed = FALSE;
 
