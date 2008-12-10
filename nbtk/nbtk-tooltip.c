@@ -150,18 +150,11 @@ NbtkWidget *
 nbtk_tooltip_new (NbtkWidget *widget, const gchar *text)
 {
   NbtkTooltip  *tooltip;
-  NbtkPadding   padding = {
-      CLUTTER_UNITS_FROM_INT (5),
-      CLUTTER_UNITS_FROM_INT (10),
-      CLUTTER_UNITS_FROM_INT (5),
-      CLUTTER_UNITS_FROM_INT (10)
-  };
 
   /* add the tooltip to the stage, but don't allow it to be visible */
   tooltip = g_object_new (NBTK_TYPE_TOOLTIP,
                           "label", text,
                           "show-on-set-parent", FALSE,
-                          "padding", &padding,
                           NULL);
 
   /* remember the associated widget */
