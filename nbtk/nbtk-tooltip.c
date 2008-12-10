@@ -37,6 +37,7 @@
 
 #include "nbtk-widget.h"
 #include "nbtk-stylable.h"
+#include "nbtk-behaviour-bounce.h"
 
 enum
 {
@@ -52,6 +53,8 @@ struct _NbtkTooltipPrivate
 {
   ClutterActor *label;
   ClutterActor *widget;
+
+  ClutterEffectTemplate *hide_template;
 };
 
 G_DEFINE_TYPE (NbtkTooltip, nbtk_tooltip, NBTK_TYPE_WIDGET)
@@ -102,8 +105,8 @@ nbtk_tooltip_style_changed (NbtkWidget *self)
   ClutterColor *color = NULL;
   NbtkTooltipPrivate *priv;
   gchar *font_name;
+  gchar *font_string;
   gint font_size;
-  gint font_string;
 
   priv = NBTK_TOOLTIP (self)->priv;
 
@@ -141,6 +144,15 @@ nbtk_tooltip_style_changed (NbtkWidget *self)
 }
 
 static void
+nbtk_tooltip_dispose (GObject *object)
+{
+  NbtkTooltipPrivate *priv = NBTK_TOOLTIP (object)->priv;
+
+  g_object_unref (priv->hide_template);
+  priv->hide_template = NULL;
+}
+
+static void
 nbtk_tooltip_class_init (NbtkTooltipClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -151,6 +163,7 @@ nbtk_tooltip_class_init (NbtkTooltipClass *klass)
 
   gobject_class->set_property = nbtk_tooltip_set_property;
   gobject_class->get_property = nbtk_tooltip_get_property;
+  gobject_class->dispose = nbtk_tooltip_dispose;
 
   widget_class->style_changed = nbtk_tooltip_style_changed;
 
@@ -173,6 +186,9 @@ nbtk_tooltip_init (NbtkTooltip *tooltip)
                                        "use-markup", TRUE,
                                        "wrap", FALSE,
                                        NULL);
+
+  tooltip->priv->hide_template = clutter_effect_template_new_for_duration (150,
+                                                                           clutter_ramp_inc_func);
 
   clutter_container_add (CLUTTER_CONTAINER (tooltip), tooltip->priv->label, NULL);
 }
@@ -289,12 +305,18 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
   clutter_actor_get_transformed_position (tooltip->priv->widget, &x, &y);
   clutter_actor_get_transformed_size (tooltip->priv->widget, &w, &h);
 
+
+  clutter_actor_move_anchor_point_from_gravity (CLUTTER_ACTOR (tooltip), CLUTTER_GRAVITY_NORTH);
+
   clutter_actor_set_position (CLUTTER_ACTOR (tooltip),
-                              (x + w / 2) - clutter_actor_get_width (CLUTTER_ACTOR (tooltip)) / 2,
+                              (x + w / 2),
                               y + h);
 
-  /* finally show the tooltip! */
+  /* finally show the tooltip... */
   clutter_actor_show (CLUTTER_ACTOR (tooltip));
+
+  /* and give it some bounce! */
+  nbtk_bounce_scale (CLUTTER_ACTOR (tooltip), 500);
 }
 
 /**
@@ -308,5 +330,8 @@ nbtk_tooltip_hide (NbtkTooltip *tooltip)
 {
   g_return_if_fail (NBTK_TOOLTIP (tooltip));
 
-  clutter_actor_hide (CLUTTER_ACTOR (tooltip));
+
+  clutter_effect_scale (tooltip->priv->hide_template,
+                        CLUTTER_ACTOR (tooltip),
+                        0, 0, clutter_actor_hide, NULL);
 }
