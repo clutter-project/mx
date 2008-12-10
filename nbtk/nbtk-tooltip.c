@@ -101,11 +101,16 @@ nbtk_tooltip_style_changed (NbtkWidget *self)
 {
   ClutterColor *color = NULL;
   NbtkTooltipPrivate *priv;
+  gchar *font_name;
+  gint font_size;
+  gint font_string;
 
   priv = NBTK_TOOLTIP (self)->priv;
 
   nbtk_stylable_get (NBTK_STYLABLE (self),
                      "color", &color,
+                     "font-name", &font_name,
+                     "font-size", &font_size,
                      NULL);
 
   if (color)
@@ -113,6 +118,23 @@ nbtk_tooltip_style_changed (NbtkWidget *self)
       clutter_label_set_color (CLUTTER_LABEL (priv->label), color);
       clutter_color_free (color);
     }
+
+  if (font_name && font_size)
+    {
+      font_string = g_strdup_printf ("%s %dpx", font_name, font_size);
+      g_free (font_name);
+    }
+  else
+    if (!font_name && font_size)
+      font_string = g_strdup_printf ("%dpx", font_size);
+    else
+      if (!font_size && font_name)
+        font_string = font_name;
+
+  clutter_label_set_font_name (CLUTTER_LABEL (priv->label), font_string);
+
+  g_free (font_string);
+
 
   if (NBTK_WIDGET_CLASS (nbtk_tooltip_parent_class)->style_changed)
     NBTK_WIDGET_CLASS (nbtk_tooltip_parent_class)->style_changed (self);
