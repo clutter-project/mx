@@ -36,6 +36,7 @@
 #include "nbtk-tooltip.h"
 
 #include "nbtk-widget.h"
+#include "nbtk-stylable.h"
 
 enum
 {
@@ -96,15 +97,40 @@ nbtk_tooltip_get_property (GObject    *gobject,
 }
 
 static void
+nbtk_tooltip_style_changed (NbtkWidget *self)
+{
+  ClutterColor *color = NULL;
+  NbtkTooltipPrivate *priv;
+
+  priv = NBTK_TOOLTIP (self)->priv;
+
+  nbtk_stylable_get (NBTK_STYLABLE (self),
+                     "color", &color,
+                     NULL);
+
+  if (color)
+    {
+      clutter_label_set_color (CLUTTER_LABEL (priv->label), color);
+      clutter_color_free (color);
+    }
+
+  if (NBTK_WIDGET_CLASS (nbtk_tooltip_parent_class)->style_changed)
+    NBTK_WIDGET_CLASS (nbtk_tooltip_parent_class)->style_changed (self);
+}
+
+static void
 nbtk_tooltip_class_init (NbtkTooltipClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (NbtkTooltipPrivate));
 
   gobject_class->set_property = nbtk_tooltip_set_property;
   gobject_class->get_property = nbtk_tooltip_get_property;
+
+  widget_class->style_changed = nbtk_tooltip_style_changed;
 
   pspec = g_param_spec_string ("label",
                                "Label",
