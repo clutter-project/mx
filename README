@@ -7,4 +7,4 @@ implementation.
 It depends on libccss of which can be obtained via 
 
   git clone    ssh://gitserver@git.o-hand.com/libccss.git
-  git checkout -b branch-for-nbtk
+  git checkout -b branch-for-nbtk origin/branch-for-nbtk
