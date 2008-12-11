@@ -1,3 +1,10 @@
+NbtkLabel {
+  color: red;
+  background-color: yellow;
+  font-size: 30;
+  font-family: "Times";
+}
+
 NbtkButton {
   color: blue;
   background-image: url('file://lime-button.png');

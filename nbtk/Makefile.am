@@ -22,6 +22,7 @@ BUILT_SOURCES = \
 source_h = \
 	nbtk-behaviour-bounce.h \
 	nbtk-button.h \
+	nbtk-label.h \
 	nbtk-marshal.h \
 	nbtk-private.h \
 	nbtk-stylable.h \
@@ -94,10 +95,10 @@ libnbtk_la_SOURCES = \
 		$(BUILT_SOURCES) \
 		nbtk-behaviour-bounce.c \
 		nbtk-behaviour-bounce.h \
-		nbtk-widget.c \
-		nbtk-widget.h \
 		nbtk-button.c \
 		nbtk-button.h \
+		nbtk-label.c \
+		nbtk-label.h \
 		nbtk-private.h \
 		nbtk-stylable.c \
 		nbtk-stylable.h \
@@ -112,6 +113,8 @@ libnbtk_la_SOURCES = \
 		nbtk-tooltip.c \
 		nbtk-tooltip.h \
 		nbtk-types.h \
+		nbtk-widget.c \
+		nbtk-widget.h \
 		nbtk.h
 
 
