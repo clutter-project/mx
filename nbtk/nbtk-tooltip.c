@@ -122,22 +122,23 @@ nbtk_tooltip_style_changed (NbtkWidget *self)
       clutter_color_free (color);
     }
 
-  if (font_name && font_size)
+  if (font_name || font_size)
     {
-      font_string = g_strdup_printf ("%s %dpx", font_name, font_size);
-      g_free (font_name);
+      if (font_name && font_size)
+        {
+          font_string = g_strdup_printf ("%s %dpx", font_name, font_size);
+          g_free (font_name);
+        }
+      else
+        if (font_size)
+          font_string = g_strdup_printf ("%dpx", font_size);
+        else
+          font_string = font_name;
+
+      clutter_label_set_font_name (CLUTTER_LABEL (priv->label), font_string);
+
+      g_free (font_string);
     }
-  else
-    if (!font_name && font_size)
-      font_string = g_strdup_printf ("%dpx", font_size);
-    else
-      if (!font_size && font_name)
-        font_string = font_name;
-
-  clutter_label_set_font_name (CLUTTER_LABEL (priv->label), font_string);
-
-  g_free (font_string);
-
 
   if (NBTK_WIDGET_CLASS (nbtk_tooltip_parent_class)->style_changed)
     NBTK_WIDGET_CLASS (nbtk_tooltip_parent_class)->style_changed (self);
