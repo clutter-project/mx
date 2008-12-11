@@ -335,5 +335,5 @@ nbtk_tooltip_hide (NbtkTooltip *tooltip)
 
   clutter_effect_scale (tooltip->priv->hide_template,
                         CLUTTER_ACTOR (tooltip),
-                        0, 0, clutter_actor_hide, NULL);
+                        0, 0, (ClutterEffectCompleteFunc) clutter_actor_hide, NULL);
 }
