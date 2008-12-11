@@ -157,8 +157,6 @@ nbtk_button_bounce_transition (NbtkWidget *button)
       priv->old_bg = NULL;
     }
 
-  g_debug ("was active %d %s", was_active, pseudo_class);
-
   if (!g_strcmp0 (pseudo_class, "active"))
     {
       was_active = TRUE;
