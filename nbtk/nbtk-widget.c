@@ -773,8 +773,9 @@ nbtk_widget_set_style_pseudo_class (NbtkWidget   *actor,
                                    const gchar *pseudo_class)
 {
   g_return_if_fail (NBTK_WIDGET (actor));
-  
-  g_object_set (G_OBJECT (actor), "pseudo-class", pseudo_class, NULL);
+
+  if (g_strcmp0 (pseudo_class, actor->priv->pseudo_class))
+    g_object_set (G_OBJECT (actor), "pseudo-class", pseudo_class, NULL);
 }
 
 
