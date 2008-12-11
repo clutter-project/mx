@@ -24,7 +24,8 @@ GType nbtk_padding_get_type (void) G_GNUC_CONST;
 enum _NbtkTransitionType
 {
   NBTK_TRANSITION_NONE,
-  NBTK_TRANSITION_FADE
+  NBTK_TRANSITION_FADE,
+  NBTK_TRANSITION_BOUNCE
 };
 
 

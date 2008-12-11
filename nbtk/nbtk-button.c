@@ -42,6 +42,7 @@
 #include "nbtk-texture-frame.h"
 #include "nbtk-texture-cache.h"
 #include "nbtk-tooltip.h"
+#include "nbtk-behaviour-bounce.h"
 
 enum
 {
@@ -92,6 +93,12 @@ struct _NbtkButtonPrivate
 
 static guint button_signals[LAST_SIGNAL] = { 0, };
 
+typedef struct 
+{
+  gint x;
+  gint y;    
+  ClutterActor *actor;
+} Point;
 
 G_DEFINE_TYPE (NbtkButton, nbtk_button, NBTK_TYPE_WIDGET)
 
@@ -213,12 +220,34 @@ nbtk_button_style_changed (NbtkWidget *button)
       if (priv->transition_type != NBTK_TRANSITION_NONE
           && priv->transition_duration > 0)
         {
+          Point *point;
           clutter_timeline_set_duration (priv->timeline, priv->transition_duration);
 
           switch (priv->transition_type)
             {
             case NBTK_TRANSITION_FADE:
               nbtk_button_fade_transition (button);
+              break;
+
+            case NBTK_TRANSITION_BOUNCE:
+              if (!priv->old_bg)
+                break;
+
+              clutter_container_remove (CLUTTER_CONTAINER (button),
+                                        priv->old_bg,
+                                        NULL);
+              priv->old_bg = NULL;
+
+              point = g_new0 (Point, 1);
+
+              clutter_actor_get_anchor_point (priv->bg_image, &point->x, &point->y);
+              point->actor = CLUTTER_ACTOR (priv->bg_image);
+
+              clutter_actor_move_anchor_point_from_gravity (priv->bg_image, CLUTTER_GRAVITY_CENTER);
+
+              nbtk_bounce_scale (priv->bg_image, priv->transition_duration);
+              if (priv->icon)
+                nbtk_bounce_scale (CLUTTER_ACTOR (priv->icon), priv->transition_duration);
               break;
 
             default:
@@ -549,27 +578,37 @@ nbtk_button_allocate (ClutterActor          *self,
 {
   NbtkButtonPrivate *priv = NBTK_BUTTON (self)->priv;
 
+  CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->allocate (self, box, absolute_origin_changed);
+
   if (priv->bg_image)
     {
-      clutter_actor_set_size (priv->bg_image,
-                              CLUTTER_UNITS_TO_DEVICE (box->x2 - box->x1),
-                              CLUTTER_UNITS_TO_DEVICE (box->y2 - box->y1));
-      clutter_actor_set_position (priv->bg_image,
-                                  CLUTTER_UNITS_TO_DEVICE (box->x1),
-                                  CLUTTER_UNITS_TO_DEVICE (box->y1));
+       ClutterActorBox childbox;
+       ClutterUnit ax, ay;
+
+       clutter_actor_get_anchor_pointu (priv->bg_image, &ax, &ay);
+
+       childbox.x1 = ax;
+       childbox.y1 = ay;
+       childbox.x2 = box->x2 - box->x1 +ax;
+       childbox.y2 = box->y2 - box->y1 +ay;
+
+       clutter_actor_allocate (priv->bg_image, &childbox, absolute_origin_changed);
     }
 
   if (priv->old_bg)
     {
-      clutter_actor_set_size (priv->old_bg,
-                              CLUTTER_UNITS_TO_DEVICE (box->x2 - box->x1),
-                              CLUTTER_UNITS_TO_DEVICE (box->y2 - box->y1));
-      clutter_actor_set_position (priv->bg_image,
-                                  CLUTTER_UNITS_TO_DEVICE (box->x1),
-                                  CLUTTER_UNITS_TO_DEVICE (box->y1));
-    }
+       ClutterActorBox childbox;
+       ClutterUnit ax, ay;
 
-  CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->allocate (self, box, absolute_origin_changed);
+       clutter_actor_get_anchor_pointu (priv->old_bg, &ax, &ay);
+
+       childbox.x1 = ax;
+       childbox.y1 = ay;
+       childbox.x2 = box->x2 - box->x1 +ax;
+       childbox.y2 = box->y2 - box->y1 +ay;
+
+       clutter_actor_allocate (priv->old_bg, &childbox, absolute_origin_changed);
+    }
 }
 
 static void
