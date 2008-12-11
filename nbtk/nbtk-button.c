@@ -138,6 +138,57 @@ nbtk_button_fade_transition (NbtkWidget *button)
     }
 }
 
+
+static void
+nbtk_button_bounce_transition (NbtkWidget *button)
+{
+  const gchar *pseudo_class;
+  static gboolean was_active = FALSE;
+  Point *point;
+  NbtkButtonPrivate *priv = NBTK_BUTTON (button)->priv;
+
+  pseudo_class = nbtk_stylable_get_pseudo_class (NBTK_STYLABLE (button));
+
+  if (priv->old_bg)
+    {
+      clutter_container_remove (CLUTTER_CONTAINER (button),
+                                priv->old_bg,
+                                NULL);
+      priv->old_bg = NULL;
+    }
+
+  g_debug ("was active %d %s", was_active, pseudo_class);
+
+  if (!g_strcmp0 (pseudo_class, "active"))
+    {
+      was_active = TRUE;
+      return;
+    }
+  else
+    {
+      if (was_active)
+        {
+          was_active = FALSE;
+          return;
+        }
+    }
+
+
+  point = g_new0 (Point, 1);
+
+  clutter_actor_get_anchor_point (priv->bg_image, &point->x, &point->y);
+  point->actor = CLUTTER_ACTOR (priv->bg_image);
+
+  clutter_actor_move_anchor_point_from_gravity (priv->bg_image, CLUTTER_GRAVITY_CENTER);
+
+  if (!g_strcmp0 (pseudo_class, "hover"))
+    {
+      nbtk_bounce_scale (priv->bg_image, priv->transition_duration);
+      if (priv->icon)
+        nbtk_bounce_scale (CLUTTER_ACTOR (priv->icon), priv->transition_duration);
+    }
+}
+
 static void
 nbtk_button_style_changed (NbtkWidget *button)
 {
@@ -220,7 +271,6 @@ nbtk_button_style_changed (NbtkWidget *button)
       if (priv->transition_type != NBTK_TRANSITION_NONE
           && priv->transition_duration > 0)
         {
-          Point *point;
           clutter_timeline_set_duration (priv->timeline, priv->transition_duration);
 
           switch (priv->transition_type)
@@ -230,24 +280,7 @@ nbtk_button_style_changed (NbtkWidget *button)
               break;
 
             case NBTK_TRANSITION_BOUNCE:
-              if (!priv->old_bg)
-                break;
-
-              clutter_container_remove (CLUTTER_CONTAINER (button),
-                                        priv->old_bg,
-                                        NULL);
-              priv->old_bg = NULL;
-
-              point = g_new0 (Point, 1);
-
-              clutter_actor_get_anchor_point (priv->bg_image, &point->x, &point->y);
-              point->actor = CLUTTER_ACTOR (priv->bg_image);
-
-              clutter_actor_move_anchor_point_from_gravity (priv->bg_image, CLUTTER_GRAVITY_CENTER);
-
-              nbtk_bounce_scale (priv->bg_image, priv->transition_duration);
-              if (priv->icon)
-                nbtk_bounce_scale (CLUTTER_ACTOR (priv->icon), priv->transition_duration);
+              nbtk_button_bounce_transition (button);
               break;
 
             default:
@@ -824,7 +857,10 @@ nbtk_button_set_active (NbtkButton  *button,
       if (active)
         nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "active");
       else
-        nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), NULL);
+        if (button->priv->is_hover)
+          nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "hover");
+        else
+          nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), NULL);
     }
 
   g_object_notify (G_OBJECT (button), "active");
