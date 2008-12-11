@@ -279,6 +279,7 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
   ClutterActor *parent;
   ClutterActor *stage;
   gint x, y;
+  gint ax, ay;
   guint w, h;
 
   g_return_if_fail (NBTK_TOOLTIP (tooltip));
@@ -303,14 +304,15 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
 
   /* place the tooltip under the associated actor */
   clutter_actor_get_transformed_position (tooltip->priv->widget, &x, &y);
+  clutter_actor_get_anchor_point (tooltip->priv->widget, &ax, &ay);
   clutter_actor_get_transformed_size (tooltip->priv->widget, &w, &h);
 
 
   clutter_actor_move_anchor_point_from_gravity (CLUTTER_ACTOR (tooltip), CLUTTER_GRAVITY_NORTH);
 
   clutter_actor_set_position (CLUTTER_ACTOR (tooltip),
-                              (x + w / 2),
-                              y + h);
+                              (x - ax + w / 2),
+                              y - ay + h);
 
   /* finally show the tooltip... */
   clutter_actor_show (CLUTTER_ACTOR (tooltip));
