@@ -20,6 +20,15 @@
  * Written by: Thomas Wood <thomas@linux.intel.com>
  */
 
+/**
+ * SECTION:nbtk-label
+ * @short_description: Widget for displaying text
+ *
+ * #NbtkLabel is a simple widget for displaying text. It derives from
+ * #NbtkWidget to add extra style and placement functionality over
+ * #ClutterLabel. The internal #ClutterLabel is publicly accessibly to allow
+ * applications to set further properties. 
+ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

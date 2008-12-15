@@ -20,6 +20,15 @@
  * Written by: Thomas Wood <thomas@linux.intel.com>
  */
 
+/**
+ * SECTION:nbtk-table
+ * @short_description: A multi-child layout container based on rows
+ * and columns
+ *
+ * #NbtkTable is a mult-child layout container based on a table arrangement
+ * with rows and columns. #NbtkTable adds several child properties to it's
+ * children that control their position and size in the table.
+ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

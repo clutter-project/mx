@@ -20,6 +20,14 @@
  * Written by: Thomas Wood <thomas@linux.intel.com>
  */
 
+/**
+ * SECTION:nbtk-tooltip
+ * @short_description: A tooltip widget
+ *
+ * #NbtkTooltip implements a single tooltip. It should not normally be created
+ * by the application but by the widget implementing tooltip capabilities, for
+ * example, #nbtk_button_set_tooltip().
+ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

@@ -22,6 +22,13 @@
  *             Thomas Wood <thomas@linux.intel.com>
  */
 
+/**
+ * SECTION:nbtk-button
+ * @short_description: Button widget
+ *
+ * A button widget with support for either a text label or icon, toggle mode
+ * and transitions effects between states.
+ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
