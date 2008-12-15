@@ -40,6 +40,7 @@ typedef struct _NbtkLabelClass         NbtkLabelClass;
 
 struct _NbtkLabel
 {
+  /*< private >*/
   NbtkWidget parent_instance;
 
   NbtkLabelPrivate *priv;

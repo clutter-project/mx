@@ -50,7 +50,8 @@ G_BEGIN_DECLS
   NBTK_TYPE_TEXTURE_CACHE, NbtkTextureCacheClass))
 
 typedef struct {
-  GObject parent;
+    /*< private >*/
+    GObject parent;
 } NbtkTextureCache;
 
 typedef struct {

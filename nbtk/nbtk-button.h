@@ -42,6 +42,7 @@ typedef struct _NbtkButtonClass         NbtkButtonClass;
 
 struct _NbtkButton
 {
+  /*< private >*/
   NbtkWidget parent_instance;
 
   NbtkButtonPrivate *priv;

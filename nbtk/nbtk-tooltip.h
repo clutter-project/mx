@@ -40,6 +40,7 @@ typedef struct _NbtkTooltipClass         NbtkTooltipClass;
 
 struct _NbtkTooltip
 {
+  /*< private >*/
   NbtkWidget parent_instance;
 
   NbtkTooltipPrivate *priv;

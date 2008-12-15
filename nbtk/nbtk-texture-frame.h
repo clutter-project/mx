@@ -53,9 +53,9 @@ typedef struct _NbtkTextureFrameClass   NbtkTextureFrameClass;
 
 struct _NbtkTextureFrame
 {
+  /*< private >*/
   ClutterCloneTexture              parent;
   
-  /*< priv >*/
   NbtkTextureFramePrivate    *priv;
 };
 

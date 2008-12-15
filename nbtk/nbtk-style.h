@@ -25,6 +25,7 @@ typedef enum   _NbtkStyleError         NbtkStyleError;
 
 struct _NbtkStyle
 {
+  /*< private >*/
   GObject parent_instance;
 
   NbtkStylePrivate *priv;
