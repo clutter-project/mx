@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+<book id="index" xmlns:xi="http://www.w3.org/2003/XInclude">
+  <bookinfo>
+    <title>nbtk Reference Manual</title>
+    <releaseinfo>
+      for nbtk [VERSION]
+      The latest version of this documentation can be found on-line at
+      <ulink role="online-location" url="http://[SERVER]/nbtk/index.html">http://[SERVER]/nbtk/</ulink>.
+    </releaseinfo>
+  </bookinfo>
+
+  <chapter>
+    <title>libnbtk</title>
+    <xi:include href="xml/nbtk-button.xml"/>
+    <xi:include href="xml/nbtk-enum-types.xml"/>
+    <xi:include href="xml/nbtk-label.xml"/>
+    <xi:include href="xml/nbtk-stylable.xml"/>
+    <xi:include href="xml/nbtk-style.xml"/>
+    <xi:include href="xml/nbtk-table.xml"/>
+    <xi:include href="xml/nbtk-texture-cache.xml"/>
+    <xi:include href="xml/nbtk-texture-frame.xml"/>
+    <xi:include href="xml/nbtk-tooltip.xml"/>
+    <xi:include href="xml/nbtk-types.xml"/>
+    <xi:include href="xml/nbtk-widget.xml"/>
+  </chapter>
+</book>
