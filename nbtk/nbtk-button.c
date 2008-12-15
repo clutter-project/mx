@@ -844,7 +844,7 @@ nbtk_button_get_active (NbtkButton *button)
 /**
  * nbtk_button_set_active:
  * @button: a #Nbtkbutton
- * @toggle: #TRUE or #FALSE
+ * @active: #TRUE or #FALSE
  *
  * Sets the pressed state of the button. This is only really useful if the
  * button has #toggle-mode mode set to #TRUE.

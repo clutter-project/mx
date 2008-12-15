@@ -332,7 +332,7 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
 
 /**
  * nbtk_tooltip_hide:
- * tooltip: a #NbtkTooltip
+ * @tooltip: a #NbtkTooltip
  *
  * Hide the tooltip
  */

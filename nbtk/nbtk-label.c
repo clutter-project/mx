@@ -193,7 +193,6 @@ nbtk_label_init (NbtkLabel *label)
 
 /**
  * nbtk_label_new:
- * @widget: actor the label is attached to
  * @text: text to set the label to
  *
  * Create a new #NbtkLabel with the specified label
