@@ -92,7 +92,8 @@ enum {
   CHILD_PROP_ROW,
   CHILD_PROP_COL_SPAN,
   CHILD_PROP_ROW_SPAN,
-  CHILD_PROP_KEEP_RATIO
+  CHILD_PROP_KEEP_RATIO,
+  CHILD_PROP_EXPAND
 };
 
 #define NBTK_TYPE_TABLE_CHILD          (nbtk_table_child_get_type ())
@@ -114,6 +115,7 @@ struct _NbtkTableChild
   gint col_span;
   gint row_span;
   gboolean keep_ratio;
+  gboolean expand;
 };
 
 struct _NbtkTableChildClass
@@ -150,6 +152,9 @@ table_child_set_property (GObject      *gobject,
     case CHILD_PROP_KEEP_RATIO:
       child->keep_ratio = g_value_get_boolean (value);
       break;
+    case CHILD_PROP_EXPAND:
+      child->expand = g_value_get_boolean (value);
+      break;
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -181,6 +186,9 @@ table_child_get_property (GObject    *gobject,
       break;
     case CHILD_PROP_KEEP_RATIO:
       g_value_set_boolean (value, child->keep_ratio);
+      break;
+    case CHILD_PROP_EXPAND:
+      g_value_set_boolean (value, child->expand);
       break;
 
     default:
@@ -237,12 +245,22 @@ nbtk_table_child_class_init (NbtkTableChildClass *klass)
 
   pspec = g_param_spec_boolean ("keep-aspect-ratio",
                                 "Keep Aspect Ratio",
-                                "Whether the container should attempt to preserve the child's"
-                                "aspect ratio when allocating it's size",
+                                "Whether the container should attempt to "
+                                "preserve the child's aspect ratio when "
+                                "allocating it's size",
                                 FALSE,
                                 NBTK_PARAM_READWRITE);
 
   g_object_class_install_property (gobject_class, CHILD_PROP_KEEP_RATIO, pspec);
+
+  pspec = g_param_spec_boolean ("expand",
+                                "Expand",
+                                "Whether the child should receive priority "
+                                "when the container is allocating spare space",
+                                FALSE,
+                                NBTK_PARAM_READWRITE);
+
+  g_object_class_install_property (gobject_class, CHILD_PROP_EXPAND, pspec);
 }
 
 static void
@@ -494,12 +512,18 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
   gint *min_widths, *min_heights;
   NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
   NbtkPadding padding = { 0, };
+  gboolean *has_expand_cols;
+  gboolean *has_expand_rows;
+  gint expanded_cols;
+  gint expanded_rows;
 
   col_spacing = (priv->col_spacing);
   row_spacing = (priv->row_spacing);
 
   min_widths = g_new0 (gint, priv->n_cols);
   min_heights = g_new0 (gint, priv->n_rows);
+  has_expand_cols = g_new0 (gboolean, priv->n_cols);
+  has_expand_rows = g_new0 (gboolean, priv->n_rows);
 
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
@@ -511,6 +535,7 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
     {
       gint row, col;
       gint h_min, h_pref, w_min, w_pref;
+      gboolean expand;
       ClutterChildMeta *meta;
       ClutterActor *child;
 
@@ -518,7 +543,13 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
 
       meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
 
-      g_object_get (meta, "column", &col, "row", &row, NULL);
+      g_object_get (meta, "column", &col, "row", &row, "expand", &expand, NULL);
+      
+      if (expand)
+        {
+          has_expand_cols[col] = TRUE;
+          has_expand_rows[col] = TRUE;
+        }
 
       clutter_actor_get_preferred_size (child, &w_min, &h_min, &w_pref, &h_pref);
       if (w_pref > min_widths[col])
@@ -536,16 +567,31 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
   for (i = 0; i < priv->n_rows; i++)
     total_min_height += min_heights[i];
 
-  /* calculate the remaining space and distribute it evenly onto all rows/cols */
-  extra_col_width = MAX (0, (table_width - total_min_width) / priv->n_cols);
-  extra_row_height = MAX (0, (table_height - total_min_height) / priv->n_rows);
-
+  /* calculate the remaining space and distribute it evenly onto all rows/cols
+   * with the 'expand' property set (or all, if none have that property). */
   for (i = 0; i < priv->n_cols; i++)
-    min_widths[i] += extra_col_width;
+    if (has_expand_cols[i])
+      expanded_cols++;
 
   for (i = 0; i < priv->n_rows; i++)
-    min_heights[i] += extra_row_height;
+    if (has_expand_rows[i])
+      expanded_rows++;
 
+  extra_col_width = MAX (0, (table_width - total_min_width) /
+                            (expanded_cols ? expanded_cols : priv->n_cols));
+  
+  extra_row_height = MAX (0, (table_height - total_min_height) /
+                             (expanded_rows ? expanded_rows : priv->n_rows));
+
+  /* If there aren't any expanded columns, or the current column is expanded,
+   * give it the extra space. */
+  for (i = 0; i < priv->n_cols; i++)
+    if (!expanded_cols || has_expand_cols[i])
+      min_widths[i] += extra_col_width;
+
+  for (i = 0; i < priv->n_rows; i++)
+    if (!expanded_rows || has_expand_rows[i])
+      min_heights[i] += extra_row_height;
 
   for (list = priv->children; list; list = g_slist_next (list))
     {
@@ -634,6 +680,8 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
 
   g_free (min_widths);
   g_free (min_heights);
+  g_free (has_expand_cols);
+  g_free (has_expand_rows);
 }
 
 static void
