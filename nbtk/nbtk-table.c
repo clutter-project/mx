@@ -548,7 +548,7 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
       if (expand)
         {
           has_expand_cols[col] = TRUE;
-          has_expand_rows[col] = TRUE;
+          has_expand_rows[row] = TRUE;
         }
 
       clutter_actor_get_preferred_size (child, &w_min, &h_min, &w_pref, &h_pref);

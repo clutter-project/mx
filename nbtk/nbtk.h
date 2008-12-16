@@ -25,7 +25,6 @@
 #include <nbtk-widget.h>
 #include <nbtk-button.h>
 #include <nbtk-enum-types.h>
-#include <nbtk.h>
 #include <nbtk-label.h>
 #include <nbtk-marshal.h>
 #include <nbtk-stylable.h>
