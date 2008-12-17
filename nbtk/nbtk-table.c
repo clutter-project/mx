@@ -93,7 +93,8 @@ enum {
   CHILD_PROP_COL_SPAN,
   CHILD_PROP_ROW_SPAN,
   CHILD_PROP_KEEP_RATIO,
-  CHILD_PROP_EXPAND
+  CHILD_PROP_X_EXPAND,
+  CHILD_PROP_Y_EXPAND
 };
 
 #define NBTK_TYPE_TABLE_CHILD          (nbtk_table_child_get_type ())
@@ -115,7 +116,8 @@ struct _NbtkTableChild
   gint col_span;
   gint row_span;
   gboolean keep_ratio;
-  gboolean expand;
+  gboolean x_expand;
+  gboolean y_expand;
 };
 
 struct _NbtkTableChildClass
@@ -152,8 +154,11 @@ table_child_set_property (GObject      *gobject,
     case CHILD_PROP_KEEP_RATIO:
       child->keep_ratio = g_value_get_boolean (value);
       break;
-    case CHILD_PROP_EXPAND:
-      child->expand = g_value_get_boolean (value);
+    case CHILD_PROP_X_EXPAND:
+      child->x_expand = g_value_get_boolean (value);
+      break;
+    case CHILD_PROP_Y_EXPAND:
+      child->y_expand = g_value_get_boolean (value);
       break;
 
     default:
@@ -187,8 +192,11 @@ table_child_get_property (GObject    *gobject,
     case CHILD_PROP_KEEP_RATIO:
       g_value_set_boolean (value, child->keep_ratio);
       break;
-    case CHILD_PROP_EXPAND:
-      g_value_set_boolean (value, child->expand);
+    case CHILD_PROP_X_EXPAND:
+      g_value_set_boolean (value, child->x_expand);
+      break;
+    case CHILD_PROP_Y_EXPAND:
+      g_value_set_boolean (value, child->y_expand);
       break;
 
     default:
@@ -253,14 +261,25 @@ nbtk_table_child_class_init (NbtkTableChildClass *klass)
 
   g_object_class_install_property (gobject_class, CHILD_PROP_KEEP_RATIO, pspec);
 
-  pspec = g_param_spec_boolean ("expand",
-                                "Expand",
+  pspec = g_param_spec_boolean ("x-expand",
+                                "X Expand",
                                 "Whether the child should receive priority "
-                                "when the container is allocating spare space",
+                                "when the container is allocating spare space "
+                                "on the horizontal axis",
                                 FALSE,
                                 NBTK_PARAM_READWRITE);
 
-  g_object_class_install_property (gobject_class, CHILD_PROP_EXPAND, pspec);
+  g_object_class_install_property (gobject_class, CHILD_PROP_X_EXPAND, pspec);
+
+  pspec = g_param_spec_boolean ("y-expand",
+                                "Y Expand",
+                                "Whether the child should receive priority "
+                                "when the container is allocating spare space "
+                                "on the vertical axis",
+                                FALSE,
+                                NBTK_PARAM_READWRITE);
+
+  g_object_class_install_property (gobject_class, CHILD_PROP_Y_EXPAND, pspec);
 }
 
 static void
@@ -535,7 +554,7 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
     {
       gint row, col;
       gint h_min, h_pref, w_min, w_pref;
-      gboolean expand;
+      gboolean x_expand, y_expand;
       ClutterChildMeta *meta;
       ClutterActor *child;
 
@@ -543,13 +562,13 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
 
       meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
 
-      g_object_get (meta, "column", &col, "row", &row, "expand", &expand, NULL);
+      g_object_get (meta, "column", &col, "row", &row,
+                    "x-expand", &x_expand, "y-expand", &y_expand, NULL);
       
-      if (expand)
-        {
-          has_expand_cols[col] = TRUE;
-          has_expand_rows[row] = TRUE;
-        }
+      if (x_expand)
+        has_expand_cols[col] = TRUE;
+      if (y_expand)
+        has_expand_rows[row] = TRUE;
 
       clutter_actor_get_preferred_size (child, &w_min, &h_min, &w_pref, &h_pref);
       if (w_pref > min_widths[col])
@@ -568,7 +587,7 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
     total_min_height += min_heights[i];
 
   /* calculate the remaining space and distribute it evenly onto all rows/cols
-   * with the 'expand' property set (or all, if none have that property). */
+   * with the x/y expand property set (or all, if none have that property). */
   for (i = 0; i < priv->n_cols; i++)
     if (has_expand_cols[i])
       expanded_cols++;

@@ -60,7 +60,7 @@ main (int argc, char *argv[])
   clutter_container_child_set (CLUTTER_CONTAINER (table), CLUTTER_ACTOR (button2),
                                "keep-aspect-ratio", TRUE, NULL);
   clutter_container_child_set (CLUTTER_CONTAINER (table), CLUTTER_ACTOR (button5),
-                               "expand", TRUE, NULL);
+                               "x-expand", TRUE, NULL);
 
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (table));
 
