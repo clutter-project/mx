@@ -85,10 +85,12 @@ void       nbtk_widget_set_alignmentx (NbtkWidget         *actor,
 void       nbtk_widget_get_alignmentx (NbtkWidget         *actor,
                                       ClutterFixed      *x_align,
                                       ClutterFixed      *y_align);
-void       nbtk_widget_set_style_pseudo_class (NbtkWidget   *actor,
+void         nbtk_widget_set_style_pseudo_class (NbtkWidget *actor,
                                               const gchar *pseudo_class);
-void       nbtk_widget_set_style_pseudo_class (NbtkWidget   *actor,
-                                              const gchar *pseudo_class);
+const gchar* nbtk_widget_get_style_pseudo_class (NbtkWidget *actor);
+void         nbtk_widget_set_style_class_name (NbtkWidget  *actor,
+                                               const gchar *style_class);
+const gchar* nbtk_widget_get_style_class_name (NbtkWidget  *actor);
 G_END_DECLS
 
 #endif /* __NBTK_WIDGET_H__ */

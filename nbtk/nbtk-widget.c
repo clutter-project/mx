@@ -216,15 +216,11 @@ nbtk_widget_set_property (GObject      *gobject,
       break;
 
     case PROP_PSEUDO_CLASS:
-      g_free (actor->priv->pseudo_class);
-      actor->priv->pseudo_class = g_value_dup_string (value);
-      g_signal_emit (actor, actor_signals[STYLE_CHANGED], 0);
+      nbtk_widget_set_style_pseudo_class (actor, g_value_get_string (value));
       break;
 
     case PROP_STYLE_CLASS:
-      g_free (actor->priv->style_class);
-      actor->priv->style_class = g_value_dup_string (value);
-      g_signal_emit (actor, actor_signals[STYLE_CHANGED], 0);
+      nbtk_widget_set_style_class_name (actor, g_value_get_string (value));
       break;     
 
     default:
@@ -759,23 +755,81 @@ nbtk_widget_get_viewport (NbtkStylable *stylable,
   return TRUE;
 }
 
+/**
+ * nbtk_widget_set_style_class_name:
+ * @actor: a #NbtkWidget
+ * @pseudo_class: a new pseudo class string
+ *
+ * Set the style class name
+ */
 void
-nbtk_widget_set_style_class (NbtkWidget   *actor,
-                            const gchar *style_class)
+nbtk_widget_set_style_class_name (NbtkWidget  *actor,
+                                  const gchar *style_class)
 {
   g_return_if_fail (NBTK_WIDGET (actor));
   
-  g_object_set (G_OBJECT (actor), "style-class", style_class, NULL);
+  if (g_strcmp0 (style_class, actor->priv->style_class))
+    {
+      g_free (actor->priv->style_class);
+      actor->priv->style_class = g_strdup (style_class);
+      g_signal_emit (actor, actor_signals[STYLE_CHANGED], 0);
+    }
 }
 
+
+/**
+ * nbtk_widget_get_style_class_name:
+ * @actor: a #NbtkWidget
+ *
+ * Get the current style class name
+ *
+ * Returns: the class name string. The string is owned by the #NbtkWidget and
+ * should not be modified or freed.
+ */
+const gchar*
+nbtk_widget_get_style_class_name (NbtkWidget *actor)
+{
+  g_return_val_if_fail (NBTK_WIDGET (actor), NULL);
+  
+  return actor->priv->style_class;
+}
+
+/**
+ * nbtk_widget_get_style_pseudo_class:
+ * @actor: a #NbtkWidget
+ *
+ * Get the current style pseudo class
+ *
+ * Returns: the pseudo class string. The string is owned by the #NbtkWidget and
+ * should not be modified or freed.
+ */
+const gchar*
+nbtk_widget_get_style_pseudo_class (NbtkWidget *actor)
+{
+  g_return_val_if_fail (NBTK_WIDGET (actor), NULL);
+
+  return actor->priv->pseudo_class;
+}
+
+/**
+ * nbtk_widget_set_style_pseudo_class:
+ * @actor: a #NbtkWidget
+ * @pseudo_class: a new pseudo class string
+ *
+ * Set the style pseudo class
+ */
 void
-nbtk_widget_set_style_pseudo_class (NbtkWidget   *actor,
-                                   const gchar *pseudo_class)
+nbtk_widget_set_style_pseudo_class (NbtkWidget  *actor,
+                                    const gchar *pseudo_class)
 {
   g_return_if_fail (NBTK_WIDGET (actor));
 
   if (g_strcmp0 (pseudo_class, actor->priv->pseudo_class))
-    g_object_set (G_OBJECT (actor), "pseudo-class", pseudo_class, NULL);
+    {
+      g_free (actor->priv->pseudo_class);
+      actor->priv->pseudo_class = g_strdup (pseudo_class);
+      g_signal_emit (actor, actor_signals[STYLE_CHANGED], 0);
+    }
 }
 
 
