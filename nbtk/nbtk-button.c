@@ -796,7 +796,7 @@ nbtk_button_set_label (NbtkButton  *button,
  *
  * Get the toggle mode status of the button.
  *
- * Returns: 
+ * Returns: #TRUE if toggle mode is set, otherwise #FALSE 
  */
 gboolean
 nbtk_button_get_toggle_mode (NbtkButton *button)

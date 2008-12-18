@@ -213,7 +213,7 @@ nbtk_label_new (const gchar *text)
 }
 
 /**
- * nbtk_label_get_label:
+ * nbtk_label_get_text:
  * @label: a #NbtkLabel
  *
  * Get the text displayed on the label
@@ -255,6 +255,9 @@ nbtk_label_set_text (NbtkLabel *label,
  * @label: a #NbtkLabel
  *
  * Retrieve the internal #ClutterLabel so that extra parameters can be set
+ *
+ * Returns: the #ClutterLabel used by #NbtkLabel. The label is owned by the
+ * #NbtkLabel and should not be unref'ed by the application.
  */
 ClutterActor*
 nbtk_label_get_clutter_label (NbtkLabel *label)

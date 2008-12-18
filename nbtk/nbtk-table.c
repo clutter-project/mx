@@ -990,6 +990,8 @@ nbtk_table_set_row_spacing (NbtkTable *table,
  * @table: a #NbtkTable
  *
  * Gets the amount of spacing between rows.
+ *
+ * Returns: the spacing between rows in device units
  */
 gint
 nbtk_table_get_row_spacing (NbtkTable *table)
@@ -1007,6 +1009,8 @@ nbtk_table_get_row_spacing (NbtkTable *table)
  * @table: a #NbtkTable
  *
  * Gets the amount of spacing between columns.
+ *
+ * Returns: the spacing between columns in device units
  */
 gint
 nbtk_table_get_col_spacing (NbtkTable *table)
