@@ -223,34 +223,10 @@ NbtkBehaviourBouncePrivate
 </SECTION>
 
 <SECTION>
-<FILE>nbtk</FILE>
-</SECTION>
-
-<SECTION>
 <FILE>nbtk-types</FILE>
 NBTK_TYPE_PADDING
 NbtkPadding
 <SUBSECTION Standard>
 nbtk_padding_get_type
-</SECTION>
-
-<SECTION>
-<FILE>stamp-nbtk-marshal</FILE>
-</SECTION>
-
-<SECTION>
-<FILE>nbtk-marshal</FILE>
-</SECTION>
-
-<SECTION>
-<FILE>stamp-nbtk-enum-types</FILE>
-</SECTION>
-
-<SECTION>
-<FILE>nbtk-enum-types</FILE>
-struct_struct_get_type
-NBTK_TYPE_STRUCT
-g_type_get_type
-NBTK_TYPE_TYPE
 </SECTION>
 
