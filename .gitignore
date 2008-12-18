@@ -1,4 +1,3 @@
-#*#
 *.anjuta
 *.autosave
 *.bak
@@ -31,7 +30,20 @@ config.status
 config.sub
 configure
 depcomp
-docs/reference/libnbtk/*
+docs/reference/libnbtk/html/*
+docs/reference/libnbtk/nbtk-decl-list.txt
+docs/reference/libnbtk/nbtk-decl.txt
+docs/reference/libnbtk/nbtk-overrides.txt
+docs/reference/libnbtk/nbtk-undeclared.txt
+docs/reference/libnbtk/nbtk-undocumented.txt
+docs/reference/libnbtk/nbtk-unused.txt
+docs/reference/libnbtk/nbtk.args
+docs/reference/libnbtk/nbtk.hierarchy
+docs/reference/libnbtk/nbtk.interfaces
+docs/reference/libnbtk/nbtk.prerequisites
+docs/reference/libnbtk/nbtk.signals
+docs/reference/libnbtk/tmpl/*
+docs/reference/libnbtk/xml/*
 dump
 gtk-doc.make
 install-sh
