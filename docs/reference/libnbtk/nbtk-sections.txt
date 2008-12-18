@@ -128,15 +128,10 @@ NbtkStylePrivate
 <TITLE>NbtkTable</TITLE>
 NbtkTable
 nbtk_table_new
-nbtk_table_set_homogeneous
 nbtk_table_set_col_spacing
 nbtk_table_set_row_spacing
 nbtk_table_get_col_spacing
 nbtk_table_get_row_spacing
-nbtk_table_set_active_col
-nbtk_table_set_active_row
-nbtk_table_get_active_col
-nbtk_table_get_active_row
 nbtk_table_add_widget
 nbtk_table_add_actor
 nbtk_table_set_widget_colspan
