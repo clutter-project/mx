@@ -557,13 +557,15 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
       gboolean x_expand, y_expand;
       ClutterChildMeta *meta;
       ClutterActor *child;
+      gint col_span, row_span;
 
       child = CLUTTER_ACTOR (list->data);
 
       meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
 
       g_object_get (meta, "column", &col, "row", &row,
-                    "x-expand", &x_expand, "y-expand", &y_expand, NULL);
+                    "x-expand", &x_expand, "y-expand", &y_expand, 
+                    "col-span", &col_span, "row-span", &row_span, NULL);
       
       if (x_expand)
         has_expand_cols[col] = TRUE;
@@ -571,10 +573,10 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
         has_expand_rows[row] = TRUE;
 
       clutter_actor_get_preferred_size (child, &w_min, &h_min, &w_pref, &h_pref);
-      if (w_pref > min_widths[col])
+      if (col_span == 1 && w_pref > min_widths[col])
         min_widths[col] = CLUTTER_UNITS_TO_INT (w_pref);
 
-      if (h_pref > min_heights[row])
+      if (row_span == 1 && h_pref > min_heights[row])
         min_heights[row] = CLUTTER_UNITS_TO_INT (h_pref);
     }
 
