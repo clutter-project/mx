@@ -533,8 +533,8 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
   NbtkPadding padding = { 0, };
   gboolean *has_expand_cols;
   gboolean *has_expand_rows;
-  gint expanded_cols;
-  gint expanded_rows;
+  gint expanded_cols = 0;
+  gint expanded_rows = 0;
 
   col_spacing = (priv->col_spacing);
   row_spacing = (priv->row_spacing);
