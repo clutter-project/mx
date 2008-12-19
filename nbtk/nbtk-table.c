@@ -738,6 +738,13 @@ nbtk_table_get_preferred_width (ClutterActor *self,
   GSList *list;
   gint i;
 
+  if (priv->n_cols < 1)
+  {
+    *min_width_p = 0;
+    *natural_width_p = 0;
+    return;
+  }
+
   min_widths = g_new0 (ClutterUnit, priv->n_cols);
 
   /* calculate minimum row widths */
@@ -787,6 +794,13 @@ nbtk_table_get_preferred_height (ClutterActor *self,
   NbtkPadding padding = { 0, };
   GSList *list;
   gint i;
+
+  if (priv->n_rows < 1)
+  {
+    *min_height_p = 0;
+    *natural_height_p = 0;
+    return;
+  }
 
   min_heights = g_new0 (ClutterUnit, priv->n_rows);
 
