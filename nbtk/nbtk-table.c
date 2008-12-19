@@ -712,7 +712,10 @@ nbtk_table_allocate (ClutterActor          *self,
 
   CLUTTER_ACTOR_CLASS (nbtk_table_parent_class)->allocate (self, box, absolute_origin_changed);
 
-  g_return_if_fail (priv->n_cols != 0 || priv->n_rows != 0);
+  if (priv->n_cols < 1 || priv->n_rows < 1)
+    {
+      return;
+    };
 
   if (priv->homogeneous)
     nbtk_table_homogeneous_allocate (self, box, absolute_origin_changed);
