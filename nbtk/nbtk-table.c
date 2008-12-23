@@ -118,8 +118,6 @@ struct _NbtkTableChild
   gboolean keep_ratio;
   gboolean x_expand;
   gboolean y_expand;
-
-  NbtkTable *table;
 };
 
 struct _NbtkTableChildClass
@@ -138,7 +136,7 @@ table_child_set_property (GObject      *gobject,
                           GParamSpec   *pspec)
 {
   NbtkTableChild *child = NBTK_TABLE_CHILD (gobject);
-  NbtkTable *table = child->table;
+  NbtkTable *table = NBTK_TABLE (CLUTTER_CHILD_META(gobject)->container);
 
   switch (prop_id)
     {
@@ -301,17 +299,7 @@ static void
 nbtk_container_add_actor (ClutterContainer *container,
                           ClutterActor     *actor)
 {
-  NbtkTableChild *meta;
-
   clutter_actor_set_parent (actor, CLUTTER_ACTOR (container));
-  meta = NBTK_TABLE_CHILD (clutter_container_get_child_meta (container,
-                                                             actor));
-
-  /* 
-   * save a pointer to the table in the child. we use this to update the
-   * number of columns / rows
-   */
-  meta->table = (NbtkTable *)container;
 }
 
 static void
