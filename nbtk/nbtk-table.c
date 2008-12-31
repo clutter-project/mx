@@ -638,20 +638,33 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
       col_width = min_widths[col];
       row_height = min_heights[row];
 
-      /* add the widths of the spanned columns */
-      for (i = col + 1; i < col + col_span; i++)
+      /* Add the widths of the spanned columns:
+       *
+       * First check that we have a non-zero span. Then we loop over each of
+       * the columns that we're spanning but we stop short if we go past the
+       * number of columns in the table. This is necessary to avoid accessing
+       * uninitialised memory. We add the spacing in here too since we only
+       * want to add as much spacing as times we successfully span.
+       */
+      if (col_span > 1)
         {
-          col_width += min_widths[i];
+          for (i = col + 1; i < col + col_span && i < priv->n_cols; i++)
+            {
+              col_width += min_widths[i];
+              col_width += col_spacing;
+            }
         }
-      col_width += col_spacing * (col_span - 1);
 
       /* add the height of the spanned rows */
-      for (i = row + 1; i < row + row_span; i++)
+      if (row_span > 1)
         {
-          row_height += min_heights[i];
+          for (i = row + 1; i < row + row_span && i < priv->n_rows; i++)
+            {
+              row_height += min_heights[i];
+              row_height += row_spacing;
+            }
         }
       row_height += row_spacing * (row_span - 1);
-
 
       /* calculate child x */
       child_x = CLUTTER_UNITS_TO_INT (padding.left) + col_spacing * col;
