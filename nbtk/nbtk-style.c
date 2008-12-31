@@ -37,7 +37,7 @@ typedef struct {
 struct _NbtkStylePrivate
 {
   ccss_stylesheet_t *stylesheet;
-  gchar **image_paths;
+  GList *image_paths;
 };
 
 typedef struct {
@@ -78,9 +78,8 @@ nbtk_style_load_from_file (NbtkStyle    *style,
 {
   NbtkStylePrivate *priv;
   GError *internal_error;  
-  gint length;
   gchar *path;
-
+  GList *l;
 
   g_return_val_if_fail (NBTK_IS_STYLE (style), FALSE);
   g_return_val_if_fail (filename != NULL, FALSE);
@@ -104,22 +103,9 @@ nbtk_style_load_from_file (NbtkStyle    *style,
   if (!path)
     return TRUE;
 
-  if (!priv->image_paths)
-    length = 0;
-  else
+  for (l = priv->image_paths; l; l = l->next)
     {
-      /* check we don't have this path already */
-      gchar **s;
-
-      length = g_strv_length (priv->image_paths);
-
-      for (s = priv->image_paths; *s; s++)
-        {
-          if (g_str_equal (*s, path))
-              break;
-        }
-
-      if (*s)
+      if (g_str_equal ((gchar *)l->data, path))
         {
           /* we have this path already */
           g_free (path);
@@ -127,12 +113,8 @@ nbtk_style_load_from_file (NbtkStyle    *style,
         }
     }
 
-  length++;
-
-  priv->image_paths = g_realloc (priv->image_paths, length + 1);
-
-  priv->image_paths[length - 1] = path;
-  priv->image_paths[length] = NULL;
+  /* Add the new path */
+  priv->image_paths = g_list_append (priv->image_paths, path);
 
   /* now load the stylesheet */
   priv->stylesheet = ccss_stylesheet_new_from_file (filename);
@@ -176,6 +158,14 @@ nbtk_style_load (NbtkStyle *style)
 static void
 nbtk_style_finalize (GObject *gobject)
 {
+  NbtkStylePrivate *priv = ((NbtkStyle *)gobject)->priv;
+  GList *l;
+
+  for (l = priv->image_paths; l; l = g_list_delete_link (l, l))
+  {
+    g_free (l->data);
+  }
+
   G_OBJECT_CLASS (nbtk_style_parent_class)->finalize (gobject);
 }
 
@@ -207,7 +197,7 @@ ccss_url (ccss_block_t  *block,
 {
   const gchar *given_path, *filename;
   gchar *test_path;
-  gchar **s;
+  GList *l;
 
   g_return_val_if_fail (args, NULL);
 
@@ -232,20 +222,16 @@ ccss_url (ccss_block_t  *block,
    */
   if (default_style)
   {
-    if (default_style->priv->image_paths)
+    for (l = default_style->priv->image_paths; l; l = l->next)
       {
-        for (s = default_style->priv->image_paths; *s; s++)
-          {
-            test_path = g_build_filename (*s, filename, NULL);
+        test_path = g_build_filename ((gchar *)l->data, filename, NULL);
 
-            if (g_file_test (test_path, G_FILE_TEST_IS_REGULAR))
-              return test_path;
+        if (g_file_test (test_path, G_FILE_TEST_IS_REGULAR))
+          return test_path;
 
-            g_free (test_path);
-          }
+        g_free (test_path);
       }
   }
-
 
   /* couldn't find the image anywhere, so just return the filename */
   return strdup (given_path);
