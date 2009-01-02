@@ -94,7 +94,9 @@ enum {
   CHILD_PROP_ROW_SPAN,
   CHILD_PROP_KEEP_RATIO,
   CHILD_PROP_X_EXPAND,
-  CHILD_PROP_Y_EXPAND
+  CHILD_PROP_Y_EXPAND,
+  CHILD_PROP_X_ALIGN,
+  CHILD_PROP_Y_ALIGN
 };
 
 #define NBTK_TYPE_TABLE_CHILD          (nbtk_table_child_get_type ())
@@ -118,6 +120,8 @@ struct _NbtkTableChild
   gboolean keep_ratio : 1;
   gboolean x_expand : 1;
   gboolean y_expand : 1;
+  gdouble x_align;
+  gdouble y_align;
 };
 
 struct _NbtkTableChildClass
@@ -163,6 +167,12 @@ table_child_set_property (GObject      *gobject,
     case CHILD_PROP_Y_EXPAND:
       child->y_expand = g_value_get_boolean (value);
       break;
+    case CHILD_PROP_X_ALIGN:
+      child->x_align = g_value_get_double (value);
+      break;
+    case CHILD_PROP_Y_ALIGN:
+      child->y_align = g_value_get_double (value);
+      break;
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -200,6 +210,12 @@ table_child_get_property (GObject    *gobject,
       break;
     case CHILD_PROP_Y_EXPAND:
       g_value_set_boolean (value, child->y_expand);
+      break;
+    case CHILD_PROP_X_ALIGN:
+      g_value_set_double (value, child->x_align);
+      break;
+    case CHILD_PROP_Y_ALIGN:
+      g_value_set_double (value, child->y_align);
       break;
 
     default:
@@ -283,6 +299,23 @@ nbtk_table_child_class_init (NbtkTableChildClass *klass)
                                 NBTK_PARAM_READWRITE);
 
   g_object_class_install_property (gobject_class, CHILD_PROP_Y_EXPAND, pspec);
+
+  pspec = g_param_spec_double ("x-align",
+                               "X Alignment",
+                               "X alignment of the widget within the cell",
+                               0, 1,
+                               0.5,
+                               NBTK_PARAM_READWRITE);
+
+  g_object_class_install_property (gobject_class, CHILD_PROP_X_ALIGN, pspec);
+
+  pspec = g_param_spec_double ("y-align",
+                               "Y Alignment",
+                               "Y alignment of the widget within the cell",
+                               0, 1,
+                               0.5,
+                               NBTK_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, CHILD_PROP_Y_ALIGN, pspec);
 }
 
 static void
@@ -290,6 +323,9 @@ nbtk_table_child_init (NbtkTableChild *self)
 {
   self->col_span = 1;
   self->row_span = 1;
+
+  self->x_align = 0.5;
+  self->y_align = 0.5;
 }
 
 /* 
@@ -474,13 +510,15 @@ nbtk_table_homogeneous_allocate (ClutterActor          *self,
       ClutterChildMeta *meta;
       ClutterActor *child;
       ClutterActorBox childbox;
+      gdouble x_align, y_align;
 
       child = CLUTTER_ACTOR (list->data);
 
       meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
       g_object_get (meta, "column", &col, "row", &row,
                     "row-span", &row_span, "col-span", &col_span,
-                    "keep-aspect-ratio", &keep_ratio, NULL);
+                    "keep-aspect-ratio", &keep_ratio,
+                    "x-align", &x_align, "y-align", &y_align, NULL);
 
       childbox.x1 = padding.left + (col_width + col_spacing) * col;
       childbox.x2 = childbox.x1 + (col_width * col_span) + (col_spacing * (col_span - 1));
@@ -504,14 +542,14 @@ nbtk_table_homogeneous_allocate (ClutterActor          *self,
           if (new_height > row_height)
             {
               /* center for new width */
-              center_offset = ((childbox.x2 - childbox.x1) - new_width) / 2;
+              center_offset = ((childbox.x2 - childbox.x1) - new_width) * x_align;
               childbox.x1 = childbox.x1 + center_offset;
               childbox.x2 = childbox.x1 + new_width;
             }
           else
             {
               /* center for new height */
-              center_offset = ((childbox.y2 - childbox.y1) - new_height) / 2;
+              center_offset = ((childbox.y2 - childbox.y1) - new_height) * y_align;
               childbox.y1 = childbox.y1 + center_offset;
               childbox.y2 = childbox.y1 + new_height;
             }
@@ -626,13 +664,15 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
       ClutterActor *child;
       ClutterActorBox childbox;
       gint child_x, child_y;
+      gdouble x_align, y_align;
 
       child = CLUTTER_ACTOR (list->data);
 
       meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
       g_object_get (meta, "column", &col, "row", &row,
                     "row-span", &row_span, "col-span", &col_span,
-                    "keep-aspect-ratio", &keep_ratio, NULL);
+                    "keep-aspect-ratio", &keep_ratio,
+                    "x-align", &x_align, "y-align", &y_align, NULL);
 
       /* initialise the width and height */
       col_width = min_widths[col];
@@ -699,14 +739,14 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
           if (new_height > row_height)
             {
               /* apply new width */
-              center_offset = (CLUTTER_UNITS_TO_INT (childbox.x2 - childbox.x1) - new_width) / 2;
+              center_offset = (CLUTTER_UNITS_TO_INT (childbox.x2 - childbox.x1) - new_width) * x_align;
               childbox.x1 = childbox.x1 + CLUTTER_UNITS_FROM_INT (center_offset);
               childbox.x2 = childbox.x1 + CLUTTER_UNITS_FROM_INT (new_width);
             }
           else
             {
               /* apply new height */
-              center_offset = (CLUTTER_UNITS_TO_INT (childbox.y2 - childbox.y1) - new_height) / 2;
+              center_offset = (CLUTTER_UNITS_TO_INT (childbox.y2 - childbox.y1) - new_height) * y_align;
               childbox.y1 = childbox.y1 + CLUTTER_UNITS_FROM_INT (center_offset);
               childbox.y2 = childbox.y1 + CLUTTER_UNITS_FROM_INT (new_height);
             }
