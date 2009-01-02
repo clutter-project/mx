@@ -115,9 +115,9 @@ struct _NbtkTableChild
   gint row;
   gint col_span;
   gint row_span;
-  gboolean keep_ratio;
-  gboolean x_expand;
-  gboolean y_expand;
+  gboolean keep_ratio : 1;
+  gboolean x_expand : 1;
+  gboolean y_expand : 1;
 };
 
 struct _NbtkTableChildClass
