@@ -434,6 +434,14 @@ nbtk_table_set_property (GObject       *gobject,
       nbtk_table_set_row_spacing (table, g_value_get_int (value));
       break;
 
+    case PROP_HOMOGENEOUS:
+      if (table->priv->homogeneous != g_value_get_boolean (value))
+        {
+          table->priv->homogeneous = g_value_get_boolean (value);
+          clutter_actor_queue_relayout ((ClutterActor *)gobject);
+        }
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -456,6 +464,10 @@ nbtk_table_get_property (GObject    *gobject,
 
     case PROP_ROW_SPACING:
       g_value_set_int (value, priv->row_spacing);
+      break;
+
+    case PROP_HOMOGENEOUS:
+      g_value_set_boolean (value, priv->homogeneous);
       break;
 
     default:
