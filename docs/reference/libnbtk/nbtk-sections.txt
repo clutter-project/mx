@@ -150,8 +150,6 @@ NbtkTablePrivate
 
 <SECTION>
 <FILE>nbtk-stylable</FILE>
-NBTK_STYLABLE_IFACE
-NBTK_IS_STYLABLE_IFACE
 NbtkStylable
 NbtkStylableIface
 nbtk_stylable_iface_install_property
@@ -175,6 +173,8 @@ nbtk_stylable_get_pseudo_class
 nbtk_stylable_get_attribute
 nbtk_stylable_get_viewport
 <SUBSECTION Standard>
+NBTK_STYLABLE_IFACE
+NBTK_IS_STYLABLE_IFACE
 NBTK_STYLABLE
 NBTK_IS_STYLABLE
 NBTK_TYPE_STYLABLE
@@ -224,9 +224,9 @@ NbtkBehaviourBouncePrivate
 
 <SECTION>
 <FILE>nbtk-types</FILE>
-NBTK_TYPE_PADDING
 NbtkPadding
 <SUBSECTION Standard>
+NBTK_TYPE_PADDING
 nbtk_padding_get_type
 </SECTION>
 
