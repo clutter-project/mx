@@ -978,10 +978,10 @@ nbtk_stylable_get_attribute (NbtkStylable *stylable,
 /**
  * nbtk_stylable_get_viewport:
  * @stylable: a #NbtkStylable
- * @x: attribute name
- * @y: 
- * @width:
- * @height:
+ * @x: location to store X coordinate
+ * @y: location to store Y coordinate
+ * @width: location to store width
+ * @height: location to store height
  *
  * Obtain the position and dimensions of @stylable.
  *
