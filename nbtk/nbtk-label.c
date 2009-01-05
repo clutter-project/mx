@@ -119,7 +119,7 @@ nbtk_label_style_changed (NbtkWidget *self)
 
   nbtk_stylable_get (NBTK_STYLABLE (self),
                      "color", &color,
-                     "font-name", &font_name,
+                     "font-family", &font_name,
                      "font-size", &font_size,
                      NULL);
 

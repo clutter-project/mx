@@ -844,13 +844,6 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
       ClutterColor color = { 0x00, 0x00, 0x00, 0xff };
       ClutterColor bg_color = { 0xff, 0xff, 0xff, 0x00 };
 
-      pspec = g_param_spec_string ("font-name",
-                                   "Font Name",
-                                   "The font to use for displaying text",
-                                   "Sans 12px",
-                                   G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
-
       pspec = clutter_param_spec_color ("background-color",
                                   "Background Color",
                                   "The background color of an actor",
