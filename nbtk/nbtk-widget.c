@@ -868,14 +868,14 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
       pspec = g_param_spec_string ("font-family",
                                    "Font Family",
                                    "Name of the font to use",
-                                   NULL,
+                                   "Sans",
                                    G_PARAM_READWRITE);
       nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
       pspec = g_param_spec_int ("font-size",
                                 "Font Size",
                                 "Size of the font to use in pixels",
-                                0, G_MAXINT, 0,
+                                0, G_MAXINT, 12,
                                 G_PARAM_READWRITE);
       nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
