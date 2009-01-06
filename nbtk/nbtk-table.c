@@ -285,7 +285,7 @@ nbtk_table_child_class_init (NbtkTableChildClass *klass)
                                 "Whether the child should receive priority "
                                 "when the container is allocating spare space "
                                 "on the horizontal axis",
-                                FALSE,
+                                TRUE,
                                 NBTK_PARAM_READWRITE);
 
   g_object_class_install_property (gobject_class, CHILD_PROP_X_EXPAND, pspec);
@@ -295,7 +295,7 @@ nbtk_table_child_class_init (NbtkTableChildClass *klass)
                                 "Whether the child should receive priority "
                                 "when the container is allocating spare space "
                                 "on the vertical axis",
-                                FALSE,
+                                TRUE,
                                 NBTK_PARAM_READWRITE);
 
   g_object_class_install_property (gobject_class, CHILD_PROP_Y_EXPAND, pspec);
@@ -326,6 +326,9 @@ nbtk_table_child_init (NbtkTableChild *self)
 
   self->x_align = 0.5;
   self->y_align = 0.5;
+
+  self->x_expand = TRUE;
+  self->y_expand = TRUE;
 }
 
 /* 
