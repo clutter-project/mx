@@ -661,15 +661,16 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
   else
     extra_row_height = 0;
 
-  /* If there aren't any expanded columns, or the current column is expanded,
-   * give it the extra space. */
-  for (i = 0; i < priv->n_cols; i++)
-    if (!expanded_cols || has_expand_cols[i])
-      min_widths[i] += extra_col_width;
+  /* If the current column is expanded give it the extra space. */
+  if (extra_col_width)
+    for (i = 0; i < priv->n_cols; i++)
+      if (has_expand_cols[i])
+        min_widths[i] += extra_col_width;
 
-  for (i = 0; i < priv->n_rows; i++)
-    if (!expanded_rows || has_expand_rows[i])
-      min_heights[i] += extra_row_height;
+  if (extra_row_height)
+    for (i = 0; i < priv->n_rows; i++)
+      if (has_expand_rows[i])
+        min_heights[i] += extra_row_height;
 
   for (list = priv->children; list; list = g_slist_next (list))
     {
