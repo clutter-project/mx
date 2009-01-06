@@ -399,10 +399,7 @@ nbtk_button_construct_child (NbtkButton *button)
 
   priv->label = label;
 
-  if (priv->bg_image)
-    clutter_container_add_actor (CLUTTER_CONTAINER (priv->bg_image), label);
-  else
-    clutter_container_add_actor (CLUTTER_CONTAINER (button), label);
+  clutter_container_add_actor (CLUTTER_CONTAINER (button), label);
 
 }
 
