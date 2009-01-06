@@ -6,6 +6,32 @@
 #include <clutter/clutter.h>
 #include <nbtk/nbtk.h>
 
+void
+toggle_expand (NbtkButton *button, ClutterContainer *table)
+{
+  gboolean x_expand, y_expand;
+  gchar *label;
+
+
+  clutter_container_child_get (table, CLUTTER_ACTOR (button),
+                               "x-expand", &x_expand,
+                               "y-expand", &y_expand,
+                               NULL);
+  x_expand = !x_expand;
+  y_expand = x_expand;
+
+
+  clutter_container_child_set (table, CLUTTER_ACTOR (button),
+                               "x-expand", x_expand,
+                               "y-expand", y_expand,
+                               NULL);
+
+  label = g_strdup_printf ("Expand = %d", x_expand);
+  nbtk_button_set_label (button, label);
+
+  g_free (label);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -38,7 +64,7 @@ main (int argc, char *argv[])
   button1 = nbtk_button_new_with_label ("button1");
   button2 = nbtk_button_new_with_label ("button2");
   button3 = nbtk_button_new_with_label ("button3");
-  button4 = nbtk_button_new_with_label ("button4");
+  button4 = nbtk_button_new_with_label ("Expand = 0");
   button5 = nbtk_button_new_with_label ("button5");
   button6 = nbtk_button_new_with_label ("button6");
 
@@ -59,8 +85,6 @@ main (int argc, char *argv[])
   clutter_actor_set_size (CLUTTER_ACTOR (button2), 20, 20);
   clutter_container_child_set (CLUTTER_CONTAINER (table), CLUTTER_ACTOR (button2),
                                "keep-aspect-ratio", TRUE, NULL);
-  clutter_container_child_set (CLUTTER_CONTAINER (table), CLUTTER_ACTOR (button5),
-                               "x-expand", TRUE, NULL);
 
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (table));
 
@@ -69,6 +93,8 @@ main (int argc, char *argv[])
                               clutter_actor_get_width (CLUTTER_ACTOR (table)) / 2,
                               clutter_actor_get_height (stage) / 2 -
                               clutter_actor_get_height (CLUTTER_ACTOR (table)) / 2);
+
+  g_signal_connect (button4, "clicked", G_CALLBACK (toggle_expand), table);
   clutter_actor_show (stage);
 
   clutter_main ();
