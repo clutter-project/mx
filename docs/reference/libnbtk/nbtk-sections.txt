@@ -127,13 +127,16 @@ NbtkStylePrivate
 <FILE>nbtk-table</FILE>
 <TITLE>NbtkTable</TITLE>
 NbtkTable
+NbtkTableChildOptions
 nbtk_table_new
 nbtk_table_set_col_spacing
 nbtk_table_set_row_spacing
 nbtk_table_get_col_spacing
 nbtk_table_get_row_spacing
 nbtk_table_add_widget
+nbtk_table_add_widget_full
 nbtk_table_add_actor
+nbtk_table_add_actor_full
 nbtk_table_set_widget_colspan
 nbtk_table_set_widget_rowspan
 <SUBSECTION Standard>

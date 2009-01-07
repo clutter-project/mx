@@ -1144,6 +1144,40 @@ nbtk_table_add_actor (NbtkTable   *table,
   clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
 }
 
+void
+nbtk_table_add_actor_full (NbtkTable            *table,
+                           ClutterActor         *actor,
+                           gint                  row,
+                           gint                  column,
+                           gint                  rowspan,
+                           gint                  colspan,
+                           NbtkTableChildOptions options,
+                           gdouble               xalign,
+                           gdouble               yalign)
+{
+  g_return_if_fail (NBTK_IS_TABLE (table));
+  g_return_if_fail (CLUTTER_IS_ACTOR (actor));
+  g_return_if_fail (row >= 0);
+  g_return_if_fail (column >= 0);
+  g_return_if_fail (rowspan >= 1);
+  g_return_if_fail (colspan >= 1);
+  g_return_if_fail ((xalign >= 0) && (xalign <= 1.0));
+  g_return_if_fail ((yalign >= 0) && (yalign <= 1.0));
+  
+  nbtk_table_add_actor (table, actor, row, column);
+  clutter_container_child_set (CLUTTER_CONTAINER (table),
+                               actor,
+                               "row-span", rowspan,
+                               "col-span", colspan,
+                               "keep-aspect-ratio",
+                               options & NBTK_KEEP_ASPECT_RATIO,
+                               "x-expand", options & NBTK_X_EXPAND,
+                               "y-expand", options & NBTK_Y_EXPAND,
+                               "x-align", xalign,
+                               "y-align", yalign,
+                               NULL);
+}
+
 /**
  * nbtk_table_add_widget:
  * @table: a #NbtkTable
@@ -1170,6 +1204,46 @@ nbtk_table_add_widget (NbtkTable  *table,
   nbtk_table_add_actor (table, CLUTTER_ACTOR (widget), row, column);
 }
 
+/**
+ * nbtk_table_add_widget_full:
+ * @table: a #NbtkTable
+ * @widget: a #NbtkWidget
+ * @row: row to insert the widget in
+ * @column: column to insert the widget in
+ * @rowspan: rows to span the widget over
+ * @colspan: columns to span the widget over
+ * @options: a #NbtkTableChildOptions
+ * @xalign: horizontal alignment of the widget
+ * @yalign: vertical alignment of the widget
+ *
+ * Convenience function to add a widget to the table and set all of its 
+ * child properties simultaneously.
+ *
+ * See nbtk_table_add_widget().
+ */
+void
+nbtk_table_add_widget_full (NbtkTable            *table,
+                            NbtkWidget           *widget,
+                            gint                  row,
+                            gint                  column,
+                            gint                  rowspan,
+                            gint                  colspan,
+                            NbtkTableChildOptions options,
+                            gdouble               xalign,
+                            gdouble               yalign)
+{
+  g_return_if_fail (NBTK_IS_WIDGET (widget));
+
+  nbtk_table_add_actor_full (table,
+                             CLUTTER_ACTOR (widget),
+                             row,
+                             column,
+                             rowspan,
+                             colspan,
+                             options,
+                             xalign,
+                             yalign);
+}
 
 /**
  * nbtk_table_set_widget_colspan:
