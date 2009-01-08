@@ -69,6 +69,8 @@ po/stamp-it
 prepare.sh
 stamp-h*
 tests/test-buttons
+tests/test-entry
+tests/test-label
 tests/test-script
 tests/test-styles
 tests/test-table
