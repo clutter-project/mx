@@ -6,6 +6,7 @@ INCLUDES = -I$(top_srcdir)/nbtk
 noinst_PROGRAMS = \
 	test-buttons \
 	test-label \
+	test-entry \
 	test-script  \
 	test-styles  \
 	test-table   \
@@ -17,3 +18,4 @@ test_styles_SOURCES = test-styles.c
 test_table_SOURCES = test-table.c
 test_texture_frame_SOURCES = test-texture-frame.c
 test_label_SOURCES = test-label.c
+test_entry_SOURCES = test-entry.c

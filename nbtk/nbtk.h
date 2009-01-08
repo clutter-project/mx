@@ -22,8 +22,8 @@
 #define __NBTK_H__
 
 
-#include <nbtk-widget.h>
 #include <nbtk-button.h>
+#include <nbtk-entry.h>
 #include <nbtk-enum-types.h>
 #include <nbtk-label.h>
 #include <nbtk-marshal.h>
@@ -33,6 +33,7 @@
 #include <nbtk-texture-cache.h>
 #include <nbtk-texture-frame.h>
 #include <nbtk-types.h>
+#include <nbtk-widget.h>
 
 
 #endif /* __NBTK_H__ */
