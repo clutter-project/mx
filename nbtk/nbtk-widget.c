@@ -502,6 +502,7 @@ nbtk_widget_style_changed (NbtkWidget *self)
   gint border_right;
   gint border_top;
   gint border_bottom;
+  gboolean background_changed = FALSE;
 
   /* cache these values for use in the paint function */
   nbtk_stylable_get (NBTK_STYLABLE (self),
@@ -523,6 +524,7 @@ nbtk_widget_style_changed (NbtkWidget *self)
     {
        clutter_actor_unparent (CLUTTER_ACTOR (priv->bg_image));
        priv->bg_image = NULL;
+       background_changed = TRUE;
     }
 
   if (bg_file)
@@ -543,6 +545,15 @@ nbtk_widget_style_changed (NbtkWidget *self)
       clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image), CLUTTER_ACTOR (self));
 
       g_free (bg_file);
+
+      /* We had a background and now that's been changed */
+      if (background_changed)
+      {
+        /* TODO: Could this be better achieved by just calling allocate on the
+         * background only.
+         */
+        clutter_actor_queue_relayout ((ClutterActor *)self);
+      }
     }
 }
 static void
