@@ -1171,8 +1171,10 @@ nbtk_table_add_actor_full (NbtkTable            *table,
                                "col-span", colspan,
                                "keep-aspect-ratio",
                                options & NBTK_KEEP_ASPECT_RATIO,
-                               "x-expand", options & NBTK_X_EXPAND,
-                               "y-expand", options & NBTK_Y_EXPAND,
+                               "x-expand", (options & NBTK_X_EXPAND) ?
+                                 TRUE : FALSE,
+                               "y-expand", (options & NBTK_Y_EXPAND) ?
+                                 TRUE : FALSE,
                                "x-align", xalign,
                                "y-align", yalign,
                                NULL);
