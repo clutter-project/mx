@@ -153,11 +153,55 @@ nbtk_entry_style_changed (NbtkWidget *self)
     NBTK_WIDGET_CLASS (nbtk_entry_parent_class)->style_changed (self);
 }
 
+static void
+nbtk_entry_allocate (ClutterActor          *actor,
+                     const ClutterActorBox *box,
+                     gboolean               origin_changed)
+{
+  NbtkEntryPrivate *priv;
+  PangoLayout *layout;
+  PangoRectangle rect;
+  gint wu, hu;
+  NbtkPadding padding;
+  gint entry_padding;
+
+  /* ClutterEntry doesn't have any sensible implementation of
+   * get_preferred_height or get_preferred_width, so we have to calculate it
+   * manually here.
+   */
+
+  priv = NBTK_ENTRY (actor)->priv;
+
+  layout = clutter_entry_get_layout (CLUTTER_ENTRY (priv->entry));
+
+  g_object_get (priv->entry, "entry-padding", &entry_padding, NULL);
+
+  pango_layout_get_pixel_extents (layout, NULL, &rect);
+
+  rect.width += entry_padding * 2;
+
+  wu = CLUTTER_UNITS_FROM_INT (rect.x + rect.width);
+  hu = CLUTTER_UNITS_FROM_INT (rect.y + rect.height);
+
+  if (hu > box->y2 - box->y1)
+    hu = box->y2 - box->y1;
+
+  if (wu > box->x2 - box->x1)
+    wu = box->x2 - box->x1;
+
+  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
+
+  clutter_actor_set_sizeu (priv->entry, wu, hu);
+
+  if (CLUTTER_ACTOR_CLASS (nbtk_entry_parent_class)->allocate)
+    CLUTTER_ACTOR_CLASS (nbtk_entry_parent_class)->allocate (actor, box, origin_changed);
+}
 
 static void
 nbtk_entry_class_init (NbtkEntryClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
   NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
@@ -165,6 +209,8 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
 
   gobject_class->set_property = nbtk_entry_set_property;
   gobject_class->get_property = nbtk_entry_get_property;
+
+  actor_class->allocate = nbtk_entry_allocate;
 
   widget_class->style_changed = nbtk_entry_style_changed;
 
@@ -184,6 +230,15 @@ nbtk_entry_init (NbtkEntry *entry)
   entry->priv->entry = g_object_new (CLUTTER_TYPE_ENTRY,
                                      "alignment", PANGO_ALIGN_CENTER,
                                      NULL);
+
+  /* set the default alignment to left aligned */
+  nbtk_widget_set_alignment (NBTK_WIDGET (entry), 0.0, 0.5);
+
+  /* call relayout each time the text-changed to make sure alignment is
+   * correct
+   */
+  g_signal_connect (entry->priv->entry, "text-changed",
+                    G_CALLBACK (clutter_actor_queue_relayout), NULL);
 
   clutter_container_add (CLUTTER_CONTAINER (entry), entry->priv->entry, NULL);
 }
