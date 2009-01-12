@@ -1283,6 +1283,10 @@ nbtk_table_add_actor_full (NbtkTable            *table,
                                  TRUE : FALSE,
                                "x-align", xalign,
                                "y-align", yalign,
+                               "x-fill", (options & NBTK_X_FILL) ?
+                                 TRUE : FALSE,
+                               "y-fill", (options & NBTK_Y_FILL) ?
+                                 TRUE : FALSE,
                                NULL);
 }
 
