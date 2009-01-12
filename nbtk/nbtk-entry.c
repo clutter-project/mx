@@ -186,8 +186,7 @@ nbtk_entry_allocate (ClutterActor          *actor,
   if (hu > box->y2 - box->y1)
     hu = box->y2 - box->y1;
 
-  if (wu > box->x2 - box->x1)
-    wu = box->x2 - box->x1;
+  wu = box->x2 - box->x1;
 
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 

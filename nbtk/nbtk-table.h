@@ -63,7 +63,9 @@ typedef enum
 {
   NBTK_KEEP_ASPECT_RATIO = 1 << 0,
   NBTK_X_EXPAND          = 1 << 1,
-  NBTK_Y_EXPAND          = 1 << 2
+  NBTK_Y_EXPAND          = 1 << 2,
+  NBTK_X_FILL            = 1 << 3,
+  NBTK_Y_FILL            = 1 << 4
 } NbtkTableChildOptions;
 
 GType nbtk_table_get_type (void) G_GNUC_CONST;

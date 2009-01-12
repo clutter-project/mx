@@ -6,7 +6,7 @@
 #include <clutter/clutter.h>
 #include <nbtk/nbtk.h>
 
-void
+static void
 toggle_expand (NbtkButton *button, ClutterContainer *table)
 {
   gboolean x_expand;
@@ -30,13 +30,32 @@ toggle_expand (NbtkButton *button, ClutterContainer *table)
   g_free (label);
 }
 
+static void
+randomise_align (NbtkButton *button, ClutterContainer *table)
+{
+  gdouble x_align, y_align;
+  gchar *label;
+  
+  x_align = g_random_double ();
+  y_align = g_random_double ();
+  
+  clutter_container_child_set (table, CLUTTER_ACTOR (button),
+                               "x-align", x_align,
+                               "y-align", y_align,
+                               NULL);
+
+  label = g_strdup_printf ("Align (%.2lf, %.2lf)", x_align, y_align);
+  nbtk_button_set_label (button, label);
+  g_free (label);
+}
+
 int
 main (int argc, char *argv[])
 {
   ClutterActor *stage;
   NbtkWidget *table;
   NbtkWidget *button1, *button2, *button3, *button4, *button5,
-             *button6, *button7;
+             *button6, *button7, *button8, *button9;
   NbtkPadding padding = {CLUTTER_UNITS_FROM_INT (10),
                          CLUTTER_UNITS_FROM_INT (30),
                          CLUTTER_UNITS_FROM_INT (10),
@@ -65,11 +84,17 @@ main (int argc, char *argv[])
   button4 = nbtk_button_new_with_label ("Expand = 1");
   button5 = nbtk_button_new_with_label ("button5");
   button6 = nbtk_button_new_with_label ("button6");
+  button7 = nbtk_button_new_with_label ("Align (0.50, 0.50)");
+  button8 = nbtk_button_new_with_label ("button8");
+  button9 = nbtk_button_new_with_label ("button9");
 
   nbtk_widget_set_padding (button1, &btn_pad);
   nbtk_widget_set_padding (button2, &btn_pad);
   nbtk_widget_set_padding (button3, &btn_pad);
   nbtk_widget_set_padding (button4, &btn_pad);
+  nbtk_widget_set_padding (button7, &btn_pad);
+  nbtk_widget_set_padding (button8, &btn_pad);
+  nbtk_widget_set_padding (button9, &btn_pad);
 
   nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button1), 0, 0);
   nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button2), 0, 1);
@@ -77,7 +102,11 @@ main (int argc, char *argv[])
   nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button4), 2, 0);
   nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button5), 3, 0);
   nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button6), 3, 1);
+  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button7), 4, 1);
+  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button8), 4, 0);
+  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button9), 5, 0);
   nbtk_table_set_widget_rowspan (NBTK_TABLE (table), NBTK_WIDGET (button1), 2);
+  nbtk_table_set_widget_rowspan (NBTK_TABLE (table), NBTK_WIDGET (button7), 2);
   nbtk_table_set_widget_colspan (NBTK_TABLE (table), NBTK_WIDGET (button4), 2);
 
 
@@ -86,6 +115,16 @@ main (int argc, char *argv[])
                                "x-expand", FALSE, "y-expand", FALSE,
                                NULL);
   clutter_container_child_set (table, CLUTTER_ACTOR (button5),
+                               "x-expand", FALSE, "y-expand", FALSE,
+                               NULL);
+  clutter_container_child_set (table, CLUTTER_ACTOR (button7),
+                               "x-expand", TRUE, "y-expand", TRUE,
+                               "x-fill", FALSE, "y-fill", FALSE,
+                               NULL);
+  clutter_container_child_set (table, CLUTTER_ACTOR (button8),
+                               "x-expand", FALSE, "y-expand", FALSE,
+                               NULL);
+  clutter_container_child_set (table, CLUTTER_ACTOR (button9),
                                "x-expand", FALSE, "y-expand", FALSE,
                                NULL);
 
@@ -103,6 +142,7 @@ main (int argc, char *argv[])
                               clutter_actor_get_height (CLUTTER_ACTOR (table)) / 2);
 
   g_signal_connect (button4, "clicked", G_CALLBACK (toggle_expand), table);
+  g_signal_connect (button7, "clicked", G_CALLBACK (randomise_align), table);
 
   clutter_actor_show (stage);
 

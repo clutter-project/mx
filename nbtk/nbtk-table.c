@@ -96,7 +96,9 @@ enum {
   CHILD_PROP_X_EXPAND,
   CHILD_PROP_Y_EXPAND,
   CHILD_PROP_X_ALIGN,
-  CHILD_PROP_Y_ALIGN
+  CHILD_PROP_Y_ALIGN,
+  CHILD_PROP_X_FILL,
+  CHILD_PROP_Y_FILL,
 };
 
 #define NBTK_TYPE_TABLE_CHILD          (nbtk_table_child_get_type ())
@@ -120,6 +122,8 @@ struct _NbtkTableChild
   gboolean keep_ratio : 1;
   gboolean x_expand : 1;
   gboolean y_expand : 1;
+  gboolean x_fill : 1;
+  gboolean y_fill : 1;
   gdouble x_align;
   gdouble y_align;
 };
@@ -173,6 +177,12 @@ table_child_set_property (GObject      *gobject,
     case CHILD_PROP_Y_ALIGN:
       child->y_align = g_value_get_double (value);
       break;
+    case CHILD_PROP_X_FILL:
+      child->x_fill = g_value_get_boolean (value);
+      break;
+    case CHILD_PROP_Y_FILL:
+      child->y_fill = g_value_get_boolean (value);
+      break;
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -216,6 +226,12 @@ table_child_get_property (GObject    *gobject,
       break;
     case CHILD_PROP_Y_ALIGN:
       g_value_set_double (value, child->y_align);
+      break;
+    case CHILD_PROP_X_FILL:
+      g_value_set_boolean (value, child->x_fill);
+      break;
+    case CHILD_PROP_Y_FILL:
+      g_value_set_boolean (value, child->y_fill);
       break;
 
     default:
@@ -315,7 +331,28 @@ nbtk_table_child_class_init (NbtkTableChildClass *klass)
                                0, 1,
                                0.5,
                                NBTK_PARAM_READWRITE);
+
   g_object_class_install_property (gobject_class, CHILD_PROP_Y_ALIGN, pspec);
+
+  pspec = g_param_spec_boolean ("x-fill",
+                                "X Fill",
+                                "Whether the child should be allocated its "
+                                "entire available space, or whether it should "
+                                "be squashed and aligned.",
+                                TRUE,
+                                NBTK_PARAM_READWRITE);
+
+  g_object_class_install_property (gobject_class, CHILD_PROP_X_FILL, pspec);
+
+  pspec = g_param_spec_boolean ("y-fill",
+                                "Y Fill",
+                                "Whether the child should be allocated its "
+                                "entire available space, or whether it should "
+                                "be squashed and aligned.",
+                                TRUE,
+                                NBTK_PARAM_READWRITE);
+
+  g_object_class_install_property (gobject_class, CHILD_PROP_Y_FILL, pspec);
 }
 
 static void
@@ -329,6 +366,9 @@ nbtk_table_child_init (NbtkTableChild *self)
 
   self->x_expand = TRUE;
   self->y_expand = TRUE;
+  
+  self->x_fill = TRUE;
+  self->y_fill = TRUE;
 }
 
 /* 
@@ -499,6 +539,47 @@ nbtk_table_dispose (GObject *gobject)
   G_OBJECT_CLASS (nbtk_table_parent_class)->dispose (gobject);
 }
 
+/* Utility function to modify a child allocation box with respect to the 
+ * x/y-fill child properties. Expects childbox to contain the available
+ * allocation space.
+ */
+static void
+nbtk_table_allocate_fill (ClutterActor *child,
+                          ClutterActorBox *childbox,
+                          gdouble x_align,
+                          gdouble y_align,
+                          gboolean x_fill,
+                          gboolean y_fill)
+{
+  if (!x_fill)
+    {
+      ClutterUnit width, max_width;
+      max_width = childbox->x2 - childbox->x1;
+      clutter_actor_get_preferred_width (child, -1, NULL, &width);
+      if (width < max_width)
+        {
+          childbox->x1 += CLUTTER_UNITS_FROM_FIXED (
+            CLUTTER_FIXED_MUL (CLUTTER_UNITS_TO_FIXED (max_width - width),
+                               CLUTTER_FLOAT_TO_FIXED (x_align)));
+          childbox->x2 = childbox->x1 + width;
+        }
+    }
+
+  if (!y_fill)
+    {
+      ClutterUnit height, max_height;
+      max_height = childbox->y2 - childbox->y1;
+      clutter_actor_get_preferred_height (child, -1, NULL, &height);
+      if (height < max_height)
+        {
+          childbox->y1 += CLUTTER_UNITS_FROM_FIXED (
+            CLUTTER_FIXED_MUL (CLUTTER_UNITS_TO_FIXED (max_height - height),
+                               CLUTTER_FLOAT_TO_FIXED (y_align)));
+          childbox->y2 = childbox->y1 + height;
+        }
+    }
+}
+
 static void
 nbtk_table_homogeneous_allocate (ClutterActor          *self,
                                 const ClutterActorBox *box,
@@ -526,6 +607,7 @@ nbtk_table_homogeneous_allocate (ClutterActor          *self,
       ClutterActor *child;
       ClutterActorBox childbox;
       gdouble x_align, y_align;
+      gboolean x_fill, y_fill;
 
       child = CLUTTER_ACTOR (list->data);
 
@@ -533,13 +615,16 @@ nbtk_table_homogeneous_allocate (ClutterActor          *self,
       g_object_get (meta, "column", &col, "row", &row,
                     "row-span", &row_span, "col-span", &col_span,
                     "keep-aspect-ratio", &keep_ratio,
-                    "x-align", &x_align, "y-align", &y_align, NULL);
+                    "x-align", &x_align, "y-align", &y_align,
+                    "x-fill", &x_fill, "y-fill", &y_fill, NULL);
 
       childbox.x1 = padding.left + (col_width + col_spacing) * col;
       childbox.x2 = childbox.x1 + (col_width * col_span) + (col_spacing * (col_span - 1));
 
       childbox.y1 = padding.top + (row_height + row_spacing) * row;
       childbox.y2 = childbox.y1 + (row_height * row_span) + (row_spacing * (row_span - 1));
+
+      nbtk_table_allocate_fill (child, &childbox, x_align, y_align, x_fill, y_fill);
 
       if (keep_ratio)
         {
@@ -685,6 +770,7 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
       ClutterActorBox childbox;
       gint child_x, child_y;
       gdouble x_align, y_align;
+      gboolean x_fill, y_fill;
 
       child = CLUTTER_ACTOR (list->data);
 
@@ -692,7 +778,8 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
       g_object_get (meta, "column", &col, "row", &row,
                     "row-span", &row_span, "col-span", &col_span,
                     "keep-aspect-ratio", &keep_ratio,
-                    "x-align", &x_align, "y-align", &y_align, NULL);
+                    "x-align", &x_align, "y-align", &y_align,
+                    "x-fill", &x_fill, "y-fill", &y_fill, NULL);
 
       /* initialise the width and height */
       col_width = min_widths[col];
@@ -742,6 +829,8 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
 
       childbox.y1 = CLUTTER_UNITS_FROM_INT (child_y);
       childbox.y2 = CLUTTER_UNITS_FROM_INT (child_y + row_height);
+
+      nbtk_table_allocate_fill (child, &childbox, x_align, y_align, x_fill, y_fill);
 
       if (keep_ratio)
         {
