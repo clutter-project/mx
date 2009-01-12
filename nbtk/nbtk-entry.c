@@ -180,7 +180,6 @@ nbtk_entry_allocate (ClutterActor          *actor,
 
   rect.width += entry_padding * 2;
 
-  wu = CLUTTER_UNITS_FROM_INT (rect.x + rect.width);
   hu = CLUTTER_UNITS_FROM_INT (rect.y + rect.height);
 
   if (hu > box->y2 - box->y1)
@@ -229,15 +228,6 @@ nbtk_entry_init (NbtkEntry *entry)
   entry->priv->entry = g_object_new (CLUTTER_TYPE_ENTRY,
                                      "alignment", PANGO_ALIGN_CENTER,
                                      NULL);
-
-  /* set the default alignment to left aligned */
-  nbtk_widget_set_alignment (NBTK_WIDGET (entry), 0.0, 0.5);
-
-  /* call relayout each time the text-changed to make sure alignment is
-   * correct
-   */
-  g_signal_connect (entry->priv->entry, "text-changed",
-                    G_CALLBACK (clutter_actor_queue_relayout), NULL);
 
   clutter_container_add (CLUTTER_CONTAINER (entry), entry->priv->entry, NULL);
 }
