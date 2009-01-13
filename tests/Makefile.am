@@ -2,8 +2,8 @@ AM_CFLAGS = $(NBTK_CFLAGS)
 LDADD = $(top_builddir)/nbtk/libnbtk.la
 
 INCLUDES = \
-	-I$(top_srcdir)/nbtk \
-	-I$(top_builddir)/nbtk
+	-I$(top_srcdir) \
+	-I$(top_builddir)
 
 noinst_PROGRAMS = \
 	test-buttons \

@@ -38,7 +38,7 @@ G_BEGIN_DECLS
 typedef struct _NbtkStylable            NbtkStylable; /* dummy typedef */
 typedef struct _NbtkStylableIface       NbtkStylableIface;
 
-#include <nbtk-style.h>
+#include <nbtk/nbtk-style.h>
 
 struct _NbtkStylableIface
 {

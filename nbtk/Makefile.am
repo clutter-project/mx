@@ -1,4 +1,5 @@
 AM_CPPFLAGS = \
+	-I$(top_srcdir) \
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" \
 	-DPACKAGE_SRC_DIR=\""$(srcdir)"\" \
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\" $(NBTK_CFLAGS)

@@ -21,7 +21,7 @@ typedef struct _NbtkStyleClass         NbtkStyleClass;
 
 typedef enum   _NbtkStyleError         NbtkStyleError;
 
-#include <nbtk-stylable.h>
+#include <nbtk/nbtk-stylable.h>
 
 struct _NbtkStyle
 {
