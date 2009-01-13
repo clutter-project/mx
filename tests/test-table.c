@@ -4,7 +4,7 @@
 #include <glib.h>
 
 #include <clutter/clutter.h>
-#include <nbtk/nbtk.h>
+#include <nbtk.h>
 
 void
 toggle_expand (NbtkButton *button, ClutterContainer *table)
