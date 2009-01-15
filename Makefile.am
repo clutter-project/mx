@@ -10,15 +10,6 @@ nbtk-1.0.pc: nbtk.pc
 pkgconfig_DATA = $(pcfiles)
 pkgconfigdir = $(libdir)/pkgconfig
 
-nbtkdocdir = ${prefix}/doc/nbtk
-nbtkdoc_DATA = \
-	README\
-	COPYING\
-	AUTHORS\
-	ChangeLog\
-	INSTALL\
-	NEWS
-
 EXTRA_DIST = $(nbtkdoc_DATA) nbtk.pc.in
 
 CLEANFILES = $(pcfiles)
