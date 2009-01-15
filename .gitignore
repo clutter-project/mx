@@ -71,6 +71,7 @@ stamp-h*
 tests/test-buttons
 tests/test-entry
 tests/test-label
+tests/test-padding
 tests/test-script
 tests/test-styles
 tests/test-table
