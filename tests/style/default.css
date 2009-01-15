@@ -3,6 +3,7 @@ NbtkLabel {
   background-color: yellow;
   font-size: 30;
   font-family: "Times";
+  padding: 10;
 }
 
 NbtkEntry {
