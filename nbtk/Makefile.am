@@ -1,4 +1,5 @@
 AM_CPPFLAGS = \
+	-I$(top_srcdir) \
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" \
 	-DPACKAGE_SRC_DIR=\""$(srcdir)"\" \
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\" $(NBTK_CFLAGS)
@@ -67,7 +68,7 @@ nbtk-enum-types.h: stamp-nbtk-enum-types.h Makefile
 stamp-nbtk-enum-types.h: $(source_h) nbtk-enum-types.h.in
 	( cd $(srcdir) && \
 	  $(GLIB_MKENUMS) \
-	    --template $(srcdir)/nbtk-enum-types.h.in \
+	    --template nbtk-enum-types.h.in \
 	  $(source_h) ) >> xgen-teth && \
 	(cmp xgen-teth nbtk-enum-types.h || cp xgen-teth nbtk-enum-types.h) && \
 	rm -f xgen-teth && \
@@ -76,7 +77,7 @@ stamp-nbtk-enum-types.h: $(source_h) nbtk-enum-types.h.in
 nbtk-enum-types.c: stamp-nbtk-enum-types.h nbtk-enum-types.c.in
 	( cd $(srcdir) && \
 	  $(GLIB_MKENUMS) \
-	    --template $(srcdir)/nbtk-enum-types.c.in \
+	    --template nbtk-enum-types.c.in \
 	  $(source_h) ) >> xgen-tetc && \
 	cp xgen-tetc nbtk-enum-types.c && \
 	rm -f xgen-tetc

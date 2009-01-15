@@ -25,7 +25,7 @@
 
 G_BEGIN_DECLS
 
-#include <nbtk-widget.h>
+#include <nbtk/nbtk-widget.h>
 
 #define NBTK_TYPE_LABEL                (nbtk_label_get_type ())
 #define NBTK_LABEL(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_LABEL, NbtkLabel))

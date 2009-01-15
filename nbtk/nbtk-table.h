@@ -23,7 +23,7 @@
 #ifndef __NBTK_TABLE_H__
 #define __NBTK_TABLE_H__
 
-#include <nbtk-widget.h>
+#include <nbtk/nbtk-widget.h>
 
 G_BEGIN_DECLS
 
