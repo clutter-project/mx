@@ -14,6 +14,7 @@
 #include <ccss/ccss.h>
 
 #include "nbtk-style.h"
+#include "nbtk-types.h"
 #include "nbtk-marshal.h"
 
 enum
@@ -358,13 +359,28 @@ nbtk_style_get_property (NbtkStyle    *style,
         {
           if (G_PARAM_SPEC_VALUE_TYPE (pspec))
             {
+              double number;
+
               if (G_IS_PARAM_SPEC_INT (pspec))
                 {
-                  double number;
-
-                  ccss_style_get_double (ccss_style, pspec->name, &number);
-                  g_value_set_int (&real_value, (int) number);
-                  value_set = TRUE;
+                  if (ccss_style_get_double (ccss_style, pspec->name, &number))
+                    {
+                      g_value_set_int (&real_value, (int) number);
+                      value_set = TRUE;
+                    }
+                }
+              else if (NBTK_TYPE_PADDING == G_PARAM_SPEC_VALUE_TYPE (pspec))
+                {
+                  if (ccss_style_get_double (ccss_style, pspec->name, &number))
+                    {
+                      NbtkPadding padding;
+                      padding.top = CLUTTER_UNITS_FROM_INT ((int) number);
+                      padding.right = CLUTTER_UNITS_FROM_INT ((int) number);
+                      padding.bottom = CLUTTER_UNITS_FROM_INT ((int) number);
+                      padding.left = CLUTTER_UNITS_FROM_INT ((int) number);
+                      g_value_set_boxed (&real_value, &padding);
+                      value_set = TRUE;
+                    }
                 }
               else
                 {

@@ -89,8 +89,9 @@ struct _NbtkWidgetPrivate
 {
   ClutterActor *child;
 
-  NbtkPadding padding;
   NbtkPadding border;
+  NbtkPadding padding;
+  gboolean override_css_padding;
 
   ClutterFixed x_align;
   ClutterFixed y_align;
@@ -497,6 +498,7 @@ static void
 nbtk_widget_style_changed (NbtkWidget *self)
 {
   NbtkWidgetPrivate *priv = self->priv;
+  NbtkPadding *padding = NULL;
   gchar *bg_file;
   gint border_left;
   gint border_right;
@@ -511,7 +513,11 @@ nbtk_widget_style_changed (NbtkWidget *self)
                     "border-bottom-width", &border_bottom,
                     "border-right-width", &border_right,
                     "border-left-width", &border_left,
+                    "padding", &padding,
                     NULL);
+
+  if (padding && !priv->override_css_padding)
+    priv->padding = *padding;
 
   priv->border.left = CLUTTER_UNITS_FROM_INT (border_left);
   priv->border.right = CLUTTER_UNITS_FROM_INT (border_right);
@@ -908,6 +914,13 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
                                 G_PARAM_READWRITE);
       nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
+      pspec = g_param_spec_boxed ("padding",
+                                  "Padding",
+                                  "Padding between the widgets borders and its content",
+                                  NBTK_TYPE_PADDING,
+                                  G_PARAM_READWRITE);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
+
       iface->get_style = nbtk_widget_get_style;
       iface->set_style = nbtk_widget_set_style;
       iface->get_base_style = nbtk_widget_get_base_style;
@@ -938,6 +951,7 @@ nbtk_widget_init (NbtkWidget *actor)
   /* no padding */
   priv->padding.top = priv->padding.bottom = 0;
   priv->padding.right = priv->padding.left = 0;
+  priv->override_css_padding = FALSE;
 
   /* middle align */
   priv->x_align = priv->y_align = CLUTTER_FLOAT_TO_FIXED (0.5);
@@ -952,23 +966,40 @@ nbtk_widget_init (NbtkWidget *actor)
 /**
  * nbtk_widget_set_padding:
  * @actor: a #NbtkWidget
- * @padding: padding for internal children
+ * @padding: padding for internal children or %NULL to clear previously set padding.
  *
  * Sets @padding around @actor.
  */
 void
-nbtk_widget_set_padding (NbtkWidget         *actor,
-                        const NbtkPadding *padding)
+nbtk_widget_set_padding (NbtkWidget          *actor,
+                         const NbtkPadding   *padding)
 {
-  g_return_if_fail (NBTK_IS_WIDGET (actor));
-  g_return_if_fail (padding != NULL);
+  NbtkWidgetPrivate *priv = actor->priv;
 
-  actor->priv->padding = *padding;
+  g_return_if_fail (NBTK_IS_WIDGET (actor));
+
+  actor->priv->override_css_padding = (gboolean) padding;
+
+  if (padding)
+    actor->priv->padding = *padding;
+  else
+    {
+      /* Reset back to CSS-provided padding. */
+      NbtkPadding *css_padding = NULL;
+      nbtk_stylable_get (NBTK_STYLABLE (actor),
+                         "padding", &css_padding,
+                         NULL);
+      if (css_padding)
+        {
+          actor->priv->padding = *css_padding;
+          g_boxed_free (NBTK_TYPE_PADDING, css_padding);
+        }
+    }
 
   g_object_notify (G_OBJECT (actor), "padding");
 
   if (CLUTTER_ACTOR_IS_VISIBLE (actor))
-    clutter_actor_queue_redraw (CLUTTER_ACTOR (actor));
+    clutter_actor_queue_relayout (CLUTTER_ACTOR (actor));
 }
 
 /**

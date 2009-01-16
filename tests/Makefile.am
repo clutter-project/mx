@@ -12,7 +12,8 @@ noinst_PROGRAMS = \
 	test-script  \
 	test-styles  \
 	test-table   \
-	test-texture-frame
+  test-texture-frame \
+  test-padding
 
 test_buttons_SOURCES = test-buttons.c
 test_script_SOURCES = test-script.c
@@ -21,3 +22,4 @@ test_table_SOURCES = test-table.c
 test_texture_frame_SOURCES = test-texture-frame.c
 test_label_SOURCES = test-label.c
 test_entry_SOURCES = test-entry.c
+test_padding_SOURCES = test-padding.c
