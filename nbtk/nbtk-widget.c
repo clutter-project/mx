@@ -85,9 +85,6 @@ G_DEFINE_ABSTRACT_TYPE_WITH_CODE (NbtkWidget, nbtk_widget, CLUTTER_TYPE_ACTOR,
 #define NBTK_WIDGET_GET_PRIVATE(obj) \
         (G_TYPE_INSTANCE_GET_PRIVATE ((obj), NBTK_TYPE_WIDGET, NbtkWidgetPrivate))
 
-static void nbtk_widget_set_padding_impl (NbtkWidget          *actor,
-                                          const NbtkPadding   *padding);
-
 struct _NbtkWidgetPrivate
 {
   ClutterActor *child;
@@ -519,9 +516,8 @@ nbtk_widget_style_changed (NbtkWidget *self)
                     "padding", &padding,
                     NULL);
 
-  if (!priv->override_css_padding) {
-    nbtk_widget_set_padding_impl (self, padding);
-  }
+  if (padding && !priv->override_css_padding)
+    priv->padding = *padding;
 
   priv->border.left = CLUTTER_UNITS_FROM_INT (border_left);
   priv->border.right = CLUTTER_UNITS_FROM_INT (border_right);
@@ -967,11 +963,22 @@ nbtk_widget_init (NbtkWidget *actor)
 
 }
 
-static void
-nbtk_widget_set_padding_impl (NbtkWidget          *actor,
-                              const NbtkPadding   *padding)
+/**
+ * nbtk_widget_set_padding:
+ * @actor: a #NbtkWidget
+ * @padding: padding for internal children or %NULL to clear previously set padding.
+ *
+ * Sets @padding around @actor.
+ */
+void
+nbtk_widget_set_padding (NbtkWidget          *actor,
+                         const NbtkPadding   *padding)
 {
   NbtkWidgetPrivate *priv = actor->priv;
+
+  g_return_if_fail (NBTK_IS_WIDGET (actor));
+
+  actor->priv->override_css_padding = (gboolean) padding;
 
   if (padding)
     actor->priv->padding = *padding;
@@ -993,23 +1000,6 @@ nbtk_widget_set_padding_impl (NbtkWidget          *actor,
 
   if (CLUTTER_ACTOR_IS_VISIBLE (actor))
     clutter_actor_queue_relayout (CLUTTER_ACTOR (actor));
-}
-
-/**
- * nbtk_widget_set_padding:
- * @actor: a #NbtkWidget
- * @padding: padding for internal children or %NULL to clear previously set padding.
- *
- * Sets @padding around @actor.
- */
-void
-nbtk_widget_set_padding (NbtkWidget         *actor,
-                        const NbtkPadding *padding)
-{
-  g_return_if_fail (NBTK_IS_WIDGET (actor));
-
-  nbtk_widget_set_padding_impl (actor, padding);
-  actor->priv->override_css_padding = (gboolean) padding;
 }
 
 /**
