@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include <clutter/clutter.h>
-#include <nbtk.h>
+#include <nbtk/nbtk.h>
 
 gboolean
 set_cb (ClutterActor  *actor,
