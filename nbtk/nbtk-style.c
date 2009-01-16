@@ -363,10 +363,11 @@ nbtk_style_get_property (NbtkStyle    *style,
 
               if (G_IS_PARAM_SPEC_INT (pspec))
                 {
-                  /* FIXME Rob: check return value of ccss_style_get_double(), Thomas? */
-                  ccss_style_get_double (ccss_style, pspec->name, &number);
-                  g_value_set_int (&real_value, (int) number);
-                  value_set = TRUE;
+                  if (ccss_style_get_double (ccss_style, pspec->name, &number))
+                    {
+                      g_value_set_int (&real_value, (int) number);
+                      value_set = TRUE;
+                    }
                 }
               else if (NBTK_TYPE_PADDING == G_PARAM_SPEC_VALUE_TYPE (pspec))
                 {
