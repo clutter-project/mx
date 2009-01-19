@@ -19,8 +19,10 @@ set_cb (ClutterActor  *actor,
   g_object_set (label, "padding", &custom_padding, NULL);
 
   g_object_get (label, "padding", &padding, NULL);
-  printf ("Padding: %d, %d, %d, %d\n", padding->top, padding->right,
-                                       padding->bottom, padding->left);
+  printf ("Padding: %d, %d, %d, %d\n", CLUTTER_UNITS_TO_INT(padding->top),
+                                       CLUTTER_UNITS_TO_INT(padding->right),
+                                       CLUTTER_UNITS_TO_INT(padding->bottom),
+                                       CLUTTER_UNITS_TO_INT(padding->left));
   g_boxed_free (NBTK_TYPE_PADDING, padding);
 
   return TRUE;
@@ -36,8 +38,10 @@ reset_cb (ClutterActor  *actor,
   g_object_set (label, "padding", NULL, NULL);
 
   g_object_get (label, "padding", &padding, NULL);
-  printf ("Padding: %d, %d, %d, %d\n", padding->top, padding->right,
-                                       padding->bottom, padding->left);
+  printf ("Padding: %d, %d, %d, %d\n", CLUTTER_UNITS_TO_INT(padding->top),
+                                       CLUTTER_UNITS_TO_INT(padding->right),
+                                       CLUTTER_UNITS_TO_INT(padding->bottom),
+                                       CLUTTER_UNITS_TO_INT(padding->left));
   g_boxed_free (NBTK_TYPE_PADDING, padding);
 
   return TRUE;
@@ -60,6 +64,7 @@ main (int argc, char *argv[])
   clutter_actor_set_size (stage, 400, 300);
 
   label = nbtk_label_new ("Padding");
+  clutter_actor_set_name (CLUTTER_ACTOR (label), "padded-label");
   clutter_actor_set_position (CLUTTER_ACTOR (label), 50, 50);
   clutter_container_add (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (label), NULL);
 

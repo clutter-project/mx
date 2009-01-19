@@ -3,6 +3,10 @@ NbtkLabel {
   background-color: yellow;
   font-size: 30;
   font-family: "Times";
+}
+
+NbtkLabel#padded-label {
+  padding-left: 50;
   padding: 10;
 }
 

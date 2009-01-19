@@ -369,17 +369,40 @@ nbtk_style_get_property (NbtkStyle    *style,
                       value_set = TRUE;
                     }
                 }
-              else if (NBTK_TYPE_PADDING == G_PARAM_SPEC_VALUE_TYPE (pspec))
+              else if (NBTK_TYPE_PADDING == G_PARAM_SPEC_VALUE_TYPE (pspec) &&
+                       0 == g_strcmp0 ("padding", pspec->name))
                 {
-                  if (ccss_style_get_double (ccss_style, pspec->name, &number))
+                  NbtkPadding padding = { 0, 0, 0, 0 };
+                  int padding_set = 0;
+
+                  if (ccss_style_get_double (ccss_style, "padding-top", &number))
                     {
-                      NbtkPadding padding;
                       padding.top = CLUTTER_UNITS_FROM_INT ((int) number);
+                      padding_set++;
+                    }
+
+                  if (ccss_style_get_double (ccss_style, "padding-right", &number))
+                    {
                       padding.right = CLUTTER_UNITS_FROM_INT ((int) number);
+                      padding_set++;
+                    }
+
+                  if (ccss_style_get_double (ccss_style, "padding-bottom", &number))
+                    {
                       padding.bottom = CLUTTER_UNITS_FROM_INT ((int) number);
+                      padding_set++;
+                    }
+
+                  if (ccss_style_get_double (ccss_style, "padding-left", &number))
+                    {
                       padding.left = CLUTTER_UNITS_FROM_INT ((int) number);
-                      g_value_set_boxed (&real_value, &padding);
-                      value_set = TRUE;
+                      padding_set++;
+                    }
+                    
+                  if (padding_set > 0)
+                    {
+                      g_value_set_boxed (&real_value, &padding);                
+                      value_set = TRUE;                    
                     }
                 }
               else
