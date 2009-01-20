@@ -373,36 +373,36 @@ nbtk_style_get_property (NbtkStyle    *style,
                        0 == g_strcmp0 ("padding", pspec->name))
                 {
                   NbtkPadding padding = { 0, 0, 0, 0 };
-                  int padding_set = 0;
+                  gboolean padding_set = 0;
 
                   if (ccss_style_get_double (ccss_style, "padding-top", &number))
                     {
                       padding.top = CLUTTER_UNITS_FROM_INT ((int) number);
-                      padding_set++;
+                      padding_set = TRUE;
                     }
 
                   if (ccss_style_get_double (ccss_style, "padding-right", &number))
                     {
                       padding.right = CLUTTER_UNITS_FROM_INT ((int) number);
-                      padding_set++;
+                      padding_set = TRUE;
                     }
 
                   if (ccss_style_get_double (ccss_style, "padding-bottom", &number))
                     {
                       padding.bottom = CLUTTER_UNITS_FROM_INT ((int) number);
-                      padding_set++;
+                      padding_set = TRUE;
                     }
 
                   if (ccss_style_get_double (ccss_style, "padding-left", &number))
                     {
                       padding.left = CLUTTER_UNITS_FROM_INT ((int) number);
-                      padding_set++;
+                      padding_set = TRUE;
                     }
-                    
-                  if (padding_set > 0)
+
+                  if (padding_set)
                     {
-                      g_value_set_boxed (&real_value, &padding);                
-                      value_set = TRUE;                    
+                      g_value_set_boxed (&real_value, &padding);
+                      value_set = TRUE;
                     }
                 }
               else
