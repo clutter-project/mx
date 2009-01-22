@@ -25,6 +25,13 @@ PKG_CHECK_MODULES(NBTK, [clutter-0.8 >= 0.8.3 libccss-1])
 # check for gtk-doc
 GTK_DOC_CHECK(1.9)
 
+
+# Make libtool respect the make -s switch (kudos to jacob berman)
+changequote(,)dnl
+LIBTOOL="${LIBTOOL} \$(shell echo \"\$(MFLAGS)\" | awk '/^[^ ]*s/ { print \"--silent\" }')"
+changequote([,])dnl
+
+
 AC_OUTPUT([
 Makefile
 nbtk.pc
