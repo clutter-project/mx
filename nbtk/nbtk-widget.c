@@ -979,8 +979,6 @@ void
 nbtk_widget_set_padding (NbtkWidget        *actor,
                          const NbtkPadding *padding)
 {
-  NbtkWidgetPrivate *priv = actor->priv;
-
   g_return_if_fail (NBTK_IS_WIDGET (actor));
 
   actor->priv->override_css_padding = (gboolean) padding;
