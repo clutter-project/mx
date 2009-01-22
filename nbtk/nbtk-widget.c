@@ -294,6 +294,12 @@ nbtk_widget_dispose (GObject *gobject)
       priv->child = NULL;
     }
 
+  if (priv->bg_color)
+    {
+      clutter_color_free (priv->bg_color);
+      priv->bg_color = NULL;
+    }
+
   G_OBJECT_CLASS (nbtk_widget_parent_class)->dispose (gobject);
 }
 
@@ -507,6 +513,12 @@ nbtk_widget_style_changed (NbtkWidget *self)
   gint border_right;
   gint border_top;
   gint border_bottom;
+
+  if (priv->bg_color)
+    {
+      clutter_color_free (priv->bg_color);
+      priv->bg_color = NULL;
+    }
 
   /* cache these values for use in the paint function */
   nbtk_stylable_get (NBTK_STYLABLE (self),

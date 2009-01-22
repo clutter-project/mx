@@ -95,15 +95,14 @@ struct _NbtkButtonPrivate
 
   ClutterActor     *bg_image;
   ClutterActor     *old_bg;
-  ClutterColor     *bg_color;
 };
 
 static guint button_signals[LAST_SIGNAL] = { 0, };
 
-typedef struct 
+typedef struct
 {
   gint x;
-  gint y;    
+  gint y;
   ClutterActor *actor;
 } Point;
 
@@ -217,15 +216,8 @@ nbtk_button_style_changed (NbtkWidget *button)
       clutter_color_free (real_color);
     }
 
-  if (priv->bg_color)
-    {
-      clutter_color_free (priv->bg_color);
-      priv->bg_color = NULL;
-    }
-
   /* cache these values for use in the paint function */
   nbtk_stylable_get (NBTK_STYLABLE (button),
-                    "background-color", &priv->bg_color,
                     "background-image", &bg_url,
                     "border-top-width", &border_top,
                     "border-bottom-width", &border_bottom,
@@ -331,28 +323,6 @@ nbtk_button_paint (ClutterActor *actor)
       if (priv->old_bg)
         clutter_actor_paint (priv->old_bg);
     }
-  else
-    {
-      ClutterActorBox allocation = { 0, };
-      ClutterColor *bg_color = priv->bg_color;
-      guint w, h;
-
-
-      if (bg_color)
-        {
-          bg_color->alpha = clutter_actor_get_paint_opacity (actor)
-                          * bg_color->alpha
-                          / 255;
-
-          clutter_actor_get_allocation_box (actor, &allocation);
- 
-          w = CLUTTER_UNITS_TO_DEVICE (allocation.x2 - allocation.x1);
-          h = CLUTTER_UNITS_TO_DEVICE (allocation.y2 - allocation.y1);
-
-          cogl_color (bg_color);
-          cogl_rectangle (0, 0, w, h);
-        }
-    }
 
   if (CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->paint)
     CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->paint (CLUTTER_ACTOR (button));
@@ -407,7 +377,7 @@ static gboolean
 nbtk_button_button_press (ClutterActor       *actor,
                           ClutterButtonEvent *event)
 {
-  
+
   if (event->button == 1)
     {
       NbtkButton *button = NBTK_BUTTON (actor);
@@ -670,7 +640,7 @@ nbtk_button_class_init (NbtkButtonClass *klass)
   actor_class->leave_event = nbtk_button_leave;
   actor_class->paint = nbtk_button_paint;
   actor_class->allocate = nbtk_button_allocate;
-  
+
   nbtk_widget_class->style_changed = nbtk_button_style_changed;
 
   pspec = g_param_spec_string ("label",
@@ -793,7 +763,7 @@ nbtk_button_set_label (NbtkButton  *button,
  *
  * Get the toggle mode status of the button.
  *
- * Returns: #TRUE if toggle mode is set, otherwise #FALSE 
+ * Returns: #TRUE if toggle mode is set, otherwise #FALSE
  */
 gboolean
 nbtk_button_get_toggle_mode (NbtkButton *button)
@@ -808,7 +778,7 @@ nbtk_button_get_toggle_mode (NbtkButton *button)
  * @button: a #Nbtkbutton
  * @toggle: #TRUE or #FALSE
  *
- * Enables or disables toggle mode for the button. In toggle mode, the active 
+ * Enables or disables toggle mode for the button. In toggle mode, the active
  * state will be "toggled" when the user clicks the button.
  */
 void
