@@ -79,8 +79,8 @@ static void nbtk_container_iface_init (ClutterContainerIface *iface);
 G_DEFINE_ABSTRACT_TYPE_WITH_CODE (NbtkWidget, nbtk_widget, CLUTTER_TYPE_ACTOR,
                                   G_IMPLEMENT_INTERFACE (NBTK_TYPE_STYLABLE,
                                                          nbtk_stylable_iface_init)
-				  G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
-					                 nbtk_container_iface_init));
+                                  G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
+                                                         nbtk_container_iface_init));
 
 #define NBTK_WIDGET_GET_PRIVATE(obj) \
         (G_TYPE_INSTANCE_GET_PRIVATE ((obj), NBTK_TYPE_WIDGET, NbtkWidgetPrivate))
@@ -106,7 +106,7 @@ struct _NbtkWidgetPrivate
 
 static void
 nbtk_widget_add_actor (ClutterContainer *container,
-                      ClutterActor     *actor)
+                       ClutterActor     *actor)
 {
   NbtkWidgetPrivate *priv = NBTK_WIDGET (container)->priv;
 
@@ -123,7 +123,7 @@ nbtk_widget_add_actor (ClutterContainer *container,
 
 static void
 nbtk_widget_remove_actor (ClutterContainer *container,
-                         ClutterActor     *actor)
+                          ClutterActor     *actor)
 {
   NbtkWidgetPrivate *priv = NBTK_WIDGET (container)->priv;
 
@@ -144,8 +144,8 @@ nbtk_widget_remove_actor (ClutterContainer *container,
 
 static void
 nbtk_widget_foreach (ClutterContainer *container,
-                    ClutterCallback   callback,
-                    gpointer          callback_data)
+                     ClutterCallback   callback,
+                     gpointer          callback_data)
 {
   NbtkWidgetPrivate *priv = NBTK_WIDGET (container)->priv;
 
@@ -189,9 +189,9 @@ nbtk_container_iface_init (ClutterContainerIface *iface)
 
 static void
 nbtk_widget_set_property (GObject      *gobject,
-                         guint         prop_id,
-                         const GValue *value,
-                         GParamSpec   *pspec)
+                          guint         prop_id,
+                          const GValue *value,
+                          GParamSpec   *pspec)
 {
   NbtkWidget *actor = NBTK_WIDGET (gobject);
 
@@ -232,9 +232,9 @@ nbtk_widget_set_property (GObject      *gobject,
 
 static void
 nbtk_widget_get_property (GObject    *gobject,
-                         guint       prop_id,
-                         GValue     *value,
-                         GParamSpec *pspec)
+                          guint       prop_id,
+                          GValue     *value,
+                          GParamSpec *pspec)
 {
   NbtkWidget *actor = NBTK_WIDGET (gobject);
   NbtkWidgetPrivate *priv = actor->priv;
@@ -300,8 +300,8 @@ nbtk_widget_dispose (GObject *gobject)
 
 static void
 nbtk_widget_allocate (ClutterActor          *actor,
-                     const ClutterActorBox *box,
-                     gboolean               origin_changed)
+                      const ClutterActorBox *box,
+                      gboolean               origin_changed)
 {
   NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
   ClutterActorClass *klass;
@@ -372,7 +372,7 @@ nbtk_widget_allocate (ClutterActor          *actor,
 
 static void
 nbtk_widget_pick (ClutterActor       *actor,
-                 const ClutterColor *pick_color)
+                  const ClutterColor *pick_color)
 {
   NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
 
@@ -415,9 +415,9 @@ nbtk_widget_paint (ClutterActor *self)
 
 static void
 nbtk_widget_get_preferred_width (ClutterActor *actor,
-                                ClutterUnit   for_height,
-                                ClutterUnit  *min_width_p,
-                                ClutterUnit  *natural_width_p)
+                                 ClutterUnit   for_height,
+                                 ClutterUnit  *min_width_p,
+                                 ClutterUnit  *natural_width_p)
 {
   NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
   ClutterUnit min_width, natural_width;
@@ -447,9 +447,9 @@ nbtk_widget_get_preferred_width (ClutterActor *actor,
 
 static void
 nbtk_widget_get_preferred_height (ClutterActor *actor,
-                                 ClutterUnit   for_width,
-                                 ClutterUnit  *min_height_p,
-                                 ClutterUnit  *natural_height_p)
+                                  ClutterUnit   for_width,
+                                  ClutterUnit  *min_height_p,
+                                  ClutterUnit  *natural_height_p)
 {
   NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
   ClutterUnit min_height, natural_height;
@@ -478,7 +478,8 @@ nbtk_widget_get_preferred_height (ClutterActor *actor,
 }
 
 static void
-nbtk_widget_parent_set (ClutterActor *widget, ClutterActor *old_parent)
+nbtk_widget_parent_set (ClutterActor *widget,
+                        ClutterActor *old_parent)
 {
   ClutterActor *parent;
 
@@ -681,7 +682,7 @@ nbtk_widget_get_style (NbtkStylable *stylable)
 
 static void
 nbtk_widget_set_style (NbtkStylable *stylable,
-                      NbtkStyle    *style)
+                       NbtkStyle    *style)
 {
   NbtkWidgetPrivate *priv = NBTK_WIDGET (stylable)->priv;
 
@@ -748,8 +749,10 @@ nbtk_widget_get_pseudo_class (NbtkStylable *stylable)
 
 static gboolean
 nbtk_widget_get_viewport (NbtkStylable *stylable,
-                                 gint *x, gint *y,
-                                 gint *width, gint *height)
+                          gint *x,
+                          gint *y,
+                          gint *width,
+                          gint *height)
 {
   g_return_val_if_fail (NBTK_IS_WIDGET (stylable), FALSE);
 
@@ -936,7 +939,9 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
 
 
 static void
-nbtk_widget_name_notify (NbtkWidget *widget, GParamSpec *pspec, gpointer data)
+nbtk_widget_name_notify (NbtkWidget *widget,
+                         GParamSpec *pspec,
+                         gpointer data)
 {
   g_signal_emit_by_name (widget, "style-changed", 0);
 }
@@ -971,8 +976,8 @@ nbtk_widget_init (NbtkWidget *actor)
  * Sets @padding around @actor.
  */
 void
-nbtk_widget_set_padding (NbtkWidget          *actor,
-                         const NbtkPadding   *padding)
+nbtk_widget_set_padding (NbtkWidget        *actor,
+                         const NbtkPadding *padding)
 {
   NbtkWidgetPrivate *priv = actor->priv;
 
@@ -1010,8 +1015,8 @@ nbtk_widget_set_padding (NbtkWidget          *actor,
  * Retrieves the padding aound @actor.
  */
 void
-nbtk_widget_get_padding (NbtkWidget   *actor,
-                        NbtkPadding *padding)
+nbtk_widget_get_padding (NbtkWidget  *actor,
+                         NbtkPadding *padding)
 {
   g_return_if_fail (NBTK_IS_WIDGET (actor));
   g_return_if_fail (padding != NULL);
@@ -1030,8 +1035,8 @@ nbtk_widget_get_padding (NbtkWidget   *actor,
  */
 void
 nbtk_widget_set_alignment (NbtkWidget *actor,
-                          gdouble    x_align,
-                          gdouble    y_align)
+                           gdouble     x_align,
+                           gdouble     y_align)
 {
   NbtkWidgetPrivate *priv;
 
@@ -1071,8 +1076,8 @@ nbtk_widget_set_alignment (NbtkWidget *actor,
  */
 void
 nbtk_widget_get_alignment (NbtkWidget *actor,
-                          gdouble   *x_align,
-                          gdouble   *y_align)
+                           gdouble    *x_align,
+                           gdouble    *y_align)
 {
   NbtkWidgetPrivate *priv;
 
@@ -1099,9 +1104,9 @@ nbtk_widget_get_alignment (NbtkWidget *actor,
  * the internal children.
  */
 void
-nbtk_widget_set_alignmentx (NbtkWidget    *actor,
-                           ClutterFixed  x_align,
-                           ClutterFixed  y_align)
+nbtk_widget_set_alignmentx (NbtkWidget   *actor,
+                            ClutterFixed  x_align,
+                            ClutterFixed  y_align)
 {
   NbtkWidgetPrivate *priv;
 
@@ -1148,9 +1153,9 @@ nbtk_widget_set_alignmentx (NbtkWidget    *actor,
  * the internal children.
  */
 void
-nbtk_widget_get_alignmentx (NbtkWidget    *actor,
-                           ClutterFixed *x_align,
-                           ClutterFixed *y_align)
+nbtk_widget_get_alignmentx (NbtkWidget   *actor,
+                            ClutterFixed *x_align,
+                            ClutterFixed *y_align)
 {
   NbtkWidgetPrivate *priv;
 
