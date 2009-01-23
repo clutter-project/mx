@@ -594,6 +594,7 @@ nbtk_widget_style_changed (NbtkWidget *self)
 
   clutter_actor_queue_relayout ((ClutterActor *)self);
 }
+
 static void
 nbtk_widget_class_init (NbtkWidgetClass *klass)
 {
@@ -1212,6 +1213,14 @@ nbtk_widget_get_alignmentx (NbtkWidget    *actor,
 
   if (y_align)
     *y_align = priv->y_align;
+}
+
+ClutterActor *
+nbtk_widget_get_background_texture (const NbtkWidget *actor)
+{
+  g_return_val_if_fail (actor, NULL);
+
+  return actor->priv->bg_image;
 }
 
 static NbtkBorderImage *

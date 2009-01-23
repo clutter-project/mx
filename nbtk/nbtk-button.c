@@ -95,6 +95,7 @@ struct _NbtkButtonPrivate
 
   ClutterActor     *bg_image;
   ClutterActor     *old_bg;
+  ClutterColor     *bg_color;
 };
 
 static guint button_signals[LAST_SIGNAL] = { 0, };
@@ -198,7 +199,10 @@ nbtk_button_style_changed (NbtkWidget *button)
 {
   ClutterColor *real_color;
   gchar *bg_url = NULL;
+  NbtkTextureCache *texture_cache;
+  ClutterActor *texture;
   NbtkButtonPrivate *priv = NBTK_BUTTON (button)->priv;
+  NbtkBorderImage *border_image = NULL;
   gint border_left;
   gint border_right;
   gint border_top;
@@ -216,40 +220,71 @@ nbtk_button_style_changed (NbtkWidget *button)
       clutter_color_free (real_color);
     }
 
+  if (priv->bg_color)
+    {
+      clutter_color_free (priv->bg_color);
+      priv->bg_color = NULL;
+    }
+
   /* cache these values for use in the paint function */
   nbtk_stylable_get (NBTK_STYLABLE (button),
+                    "background-color", &priv->bg_color,
                     "background-image", &bg_url,
                     "border-top-width", &border_top,
                     "border-bottom-width", &border_bottom,
                     "border-right-width", &border_right,
                     "border-left-width", &border_left,
+                    "border-image", &border_image,
                     NULL);
 
-  if (bg_url)
+  if (priv->bg_image)
+    priv->old_bg = priv->bg_image;
+
+  texture_cache = nbtk_texture_cache_get_default ();
+  if (border_image)
     {
-      NbtkTextureCache *cache;
-      ClutterActor *texture;
+      /* `border-image' takes precedence over `background-image'.
+       * Firefox lets the background-image shine thru when border-image has
+       * alpha an channel, maybe that would be an option for the future. */
+      texture = nbtk_texture_cache_get_texture (texture_cache,
+                                                border_image->image.uri,
+                                                FALSE);
 
-      if (priv->bg_image)
-        priv->old_bg = priv->bg_image;
-
-      cache = nbtk_texture_cache_get_default ();
-
-      /* the TextureFrame doesn't work with texture clones as it only
-       * references the texture data */
-      texture = nbtk_texture_cache_get_texture (cache, bg_url, FALSE);
+      border_left = ccss_position_get_size (&border_image->left,
+                                            border_image->image.width);
+      border_top = ccss_position_get_size (&border_image->top,
+                                           border_image->image.height);
+      border_right = ccss_position_get_size (&border_image->right,
+                                             border_image->image.width);
+      border_bottom = ccss_position_get_size (&border_image->bottom,
+                                              border_image->image.height);
 
       priv->bg_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
                                                border_left,
                                                border_top,
                                                border_right,
                                                border_bottom);
-
-      g_object_unref (texture);
       clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image),
-                                CLUTTER_ACTOR (button));
+                                               CLUTTER_ACTOR (button));
+      g_boxed_free (NBTK_TYPE_BORDER_IMAGE, border_image);
+    }
+  else if (bg_url)
+    {
+      texture = nbtk_texture_cache_get_texture (texture_cache,
+                                                bg_url,
+                                                FALSE);
+      priv->bg_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
+                                               border_left,
+                                               border_top,
+                                               border_right,
+                                               border_bottom);
+      clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image),
+                                               CLUTTER_ACTOR (button));
       g_free (bg_url);
+    }
 
+  if (priv->bg_image)
+    {
       if (G_UNLIKELY (!priv->press_tmpl))
         {
           priv->timeline = clutter_timeline_new_for_duration (priv->transition_duration);
@@ -323,12 +358,32 @@ nbtk_button_paint (ClutterActor *actor)
       if (priv->old_bg)
         clutter_actor_paint (priv->old_bg);
     }
+  else
+    {
+      ClutterActorBox allocation = { 0, };
+      ClutterColor *bg_color = priv->bg_color;
+      guint w, h;
+
+
+      if (bg_color)
+        {
+          bg_color->alpha = clutter_actor_get_paint_opacity (actor)
+                          * bg_color->alpha
+                          / 255;
+
+          clutter_actor_get_allocation_box (actor, &allocation);
+
+          w = CLUTTER_UNITS_TO_DEVICE (allocation.x2 - allocation.x1);
+          h = CLUTTER_UNITS_TO_DEVICE (allocation.y2 - allocation.y1);
+
+          cogl_color (bg_color);
+          cogl_rectangle (0, 0, w, h);
+        }
+    }
 
   if (CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->paint)
     CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->paint (CLUTTER_ACTOR (button));
 }
-
-
 
 static void
 nbtk_button_real_pressed (NbtkButton *button)

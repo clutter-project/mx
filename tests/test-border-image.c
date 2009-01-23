@@ -19,12 +19,13 @@ main (int argc, char *argv[])
 
   stage = clutter_stage_get_default ();
   clutter_actor_set_size (stage, 400, 300);
-/*
+
   button = nbtk_button_new_with_label ("Fancy Button");
   clutter_actor_set_name (CLUTTER_ACTOR (button), "test-border-image");
+  clutter_actor_set_size (CLUTTER_ACTOR (button), -1, 50);
   clutter_actor_set_position (CLUTTER_ACTOR (button), 50, 50);
   clutter_container_add (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (button), NULL);
-*/
+
   label = nbtk_label_new ("Fancy Label");
   clutter_actor_set_name (CLUTTER_ACTOR (label), "test-border-image");
   clutter_actor_set_position (CLUTTER_ACTOR (label), 50, 150);

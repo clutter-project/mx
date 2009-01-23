@@ -19,11 +19,15 @@ NbtkEntry {
 
 NbtkButton {
   color: blue;
-  background-image: url('file://lime-button.png');
+/*  background-image: url('file://lime-button.png'); */
+  border-width: 12;
+  border-image: url('file://border-image.png') 12 stretch stretch;
 }
 
 NbtkButton:hover {
-  background-image: url('file://cyan-button.png');
+/*  background-image: url('file://cyan-button.png'); */
+  border-width: 12;
+  border-image: url('file://border-image-light.png') 12 stretch stretch;
 }
 
 NbtkButton:active {
