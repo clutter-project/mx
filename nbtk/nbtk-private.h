@@ -22,6 +22,7 @@
 #define __NBTK_PRIVATE_H__
 
 #include <glib.h>
+#include "nbtk-widget.h"
 
 G_BEGIN_DECLS
 
@@ -36,5 +37,7 @@ G_BEGIN_DECLS
          G_PARAM_STATIC_NICK | G_PARAM_STATIC_NAME | G_PARAM_STATIC_BLURB)
 
 G_END_DECLS
+
+ClutterActor *_nbtk_widget_get_dnd_clone (NbtkWidget *widget);
 
 #endif /* __NBTK_PRIVATE_H__ */

@@ -63,7 +63,37 @@ struct _NbtkWidgetClass
   /*< private >*/
   ClutterActorClass parent_class;
 
-  void (* style_changed) (NbtkWidget *actor);
+  void (* style_changed) (NbtkWidget *self);
+  void (* dnd_begin)     (NbtkWidget   *self,
+			  ClutterActor *dragged,
+			  ClutterActor *icon,
+			  gint          x,
+			  gint          y);
+  void (* dnd_motion)    (NbtkWidget   *self,
+			  ClutterActor *dragged,
+			  ClutterActor *icon,
+			  gint          x,
+			  gint          y);
+  void (* dnd_end)       (NbtkWidget   *self,
+			  ClutterActor *dragged,
+			  ClutterActor *icon,
+			  gint          x,
+			  gint          y);
+  void (* dnd_dropped)   (NbtkWidget   *self,
+			  ClutterActor *dragged,
+			  ClutterActor *icon,
+			  gint          x,
+			  gint          y);
+  void (* dnd_enter)     (NbtkWidget   *self,
+			  ClutterActor *dragged,
+			  ClutterActor *icon,
+			  gint          x,
+			  gint          y);
+  void (* dnd_leave)     (NbtkWidget   *self,
+			  ClutterActor *dragged,
+			  ClutterActor *icon,
+			  gint          x,
+			  gint          y);
 };
 
 GType      nbtk_widget_get_type       (void) G_GNUC_CONST;
@@ -87,6 +117,10 @@ void       nbtk_widget_get_alignmentx (NbtkWidget         *actor,
                                       ClutterFixed      *y_align);
 void         nbtk_widget_set_style_pseudo_class (NbtkWidget *actor,
                                               const gchar *pseudo_class);
+guint      nbtk_widget_get_dnd_threshold (NbtkWidget *actor);
+void       nbtk_widget_set_dnd_threshold (NbtkWidget *actor, guint threshold);
+void       nbtk_widget_setup_child_dnd (NbtkWidget *actor, ClutterActor *child);
+void       nbtk_widget_undo_child_dnd (NbtkWidget *actor, ClutterActor *child);
 const gchar* nbtk_widget_get_style_pseudo_class (NbtkWidget *actor);
 void         nbtk_widget_set_style_class_name (NbtkWidget  *actor,
                                                const gchar *style_class);

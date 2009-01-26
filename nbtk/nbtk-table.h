@@ -81,7 +81,7 @@ void        nbtk_table_add_actor          (NbtkTable *table, ClutterActor *actor
 void        nbtk_table_add_actor_full     (NbtkTable *table, ClutterActor *actor, gint row, gint column, gint rowspan, gint colspan, NbtkTableChildOptions options, gdouble xalign, gdouble yalign);
 void        nbtk_table_set_widget_colspan (NbtkTable *table, NbtkWidget *widget, gint colspan);
 void        nbtk_table_set_widget_rowspan (NbtkTable *table, NbtkWidget *widget, gint rowspan);
-
+void        nbtk_table_insert_actor_at_position (NbtkTable *table, ClutterActor *actor, gint x, gint y);
 
 G_END_DECLS
 

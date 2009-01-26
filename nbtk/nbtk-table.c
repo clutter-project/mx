@@ -52,7 +52,7 @@ enum
   PROP_COL_SPACING,
   PROP_ROW_SPACING,
 
-  PROP_HOMOGENEOUS
+  PROP_HOMOGENEOUS,
 };
 
 #define NBTK_TABLE_GET_PRIVATE(obj)    \
@@ -71,7 +71,7 @@ struct _NbtkTablePrivate
   gint active_row;
   gint active_col;
 
-  gboolean homogeneous;
+  gboolean homogeneous : 1;
 };
 
 static void nbtk_container_iface_init (ClutterContainerIface *iface);
@@ -240,7 +240,6 @@ table_child_get_property (GObject    *gobject,
     }
 }
 
-
 static void
 nbtk_table_child_class_init (NbtkTableChildClass *klass)
 {
@@ -366,13 +365,13 @@ nbtk_table_child_init (NbtkTableChild *self)
 
   self->x_expand = TRUE;
   self->y_expand = TRUE;
-  
+
   self->x_fill = TRUE;
   self->y_fill = TRUE;
 }
 
-/* 
- * ClutterContainer Implementation 
+/*
+ * ClutterContainer Implementation
  */
 static void
 nbtk_container_add_actor (ClutterContainer *container,
@@ -401,13 +400,15 @@ nbtk_container_remove_actor (ClutterContainer *container,
 
   g_object_ref (actor);
 
+  nbtk_widget_undo_child_dnd (NBTK_WIDGET (container), actor);
+
   priv->children = g_slist_delete_link (priv->children, item);
+
+  g_object_unref (actor);
 
   clutter_actor_unparent (actor);
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
-
-  g_object_unref (actor);
 }
 
 static void
@@ -539,7 +540,7 @@ nbtk_table_dispose (GObject *gobject)
   G_OBJECT_CLASS (nbtk_table_parent_class)->dispose (gobject);
 }
 
-/* Utility function to modify a child allocation box with respect to the 
+/* Utility function to modify a child allocation box with respect to the
  * x/y-fill child properties. Expects childbox to contain the available
  * allocation space.
  */
@@ -705,9 +706,9 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
       meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
 
       g_object_get (meta, "column", &col, "row", &row,
-                    "x-expand", &x_expand, "y-expand", &y_expand, 
+                    "x-expand", &x_expand, "y-expand", &y_expand,
                     "col-span", &col_span, "row-span", &row_span, NULL);
-      
+
       if (x_expand)
         has_expand_cols[col] = TRUE;
       if (y_expand)
@@ -1029,7 +1030,6 @@ nbtk_table_paint (ClutterActor *self)
   NbtkPadding padding = { 0, };
   gint p_left, p_right, p_top, p_bottom;
 
-
   /* make sure the background gets painted first */
   CLUTTER_ACTOR_CLASS (nbtk_table_parent_class)->paint (self);
 
@@ -1044,7 +1044,6 @@ nbtk_table_paint (ClutterActor *self)
     {
       clutter_actor_paint (CLUTTER_ACTOR (list->data));
     }
-
 }
 
 static void
@@ -1065,11 +1064,51 @@ nbtk_table_pick (ClutterActor       *self,
 }
 
 static void
+nbtk_table_dnd_dropped (NbtkWidget   *actor,
+			ClutterActor *dragged,
+			ClutterActor *icon,
+			gint          x,
+			gint          y)
+{
+  ClutterActor *parent;
+  gboolean keep_ratio = FALSE;
+
+  g_object_ref (dragged);
+  parent = clutter_actor_get_parent (dragged);
+
+  if (NBTK_IS_TABLE (parent))
+    {
+      NbtkTableChild *meta;
+
+      meta = NBTK_TABLE_CHILD (
+		clutter_container_get_child_meta (CLUTTER_CONTAINER (parent),
+						  dragged));
+
+      /*
+       * Must do it like this, as meta->keep_ratio is a 1 bit field, and
+       * we can only pass actual TRUE/FALSE values into the property setter.
+       */
+      if (meta->keep_ratio)
+	keep_ratio = TRUE;
+    }
+
+  clutter_container_remove_actor (CLUTTER_CONTAINER (parent), dragged);
+  nbtk_table_insert_actor_at_position (NBTK_TABLE (actor), dragged, x, y);
+
+  clutter_container_child_set (CLUTTER_CONTAINER (actor), dragged,
+			       "keep-aspect-ratio", keep_ratio, NULL);
+
+  g_object_unref (dragged);
+}
+
+static void
 nbtk_table_class_init (NbtkTableClass *klass)
 {
   GParamSpec *pspec;
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
+  NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
+
   /* NbtkWidgetClass *nbtk_widget_class = NBTK_WIDGET_CLASS (klass); */
 
   g_type_class_add_private (klass, sizeof (NbtkTablePrivate));
@@ -1090,6 +1129,8 @@ nbtk_table_class_init (NbtkTableClass *klass)
   actor_class->allocate = nbtk_table_allocate;
   actor_class->get_preferred_width = nbtk_table_get_preferred_width;
   actor_class->get_preferred_height = nbtk_table_get_preferred_height;
+
+  widget_class->dnd_dropped = nbtk_table_dnd_dropped;
 
   pspec = g_param_spec_boolean ("homogeneous",
                                 "Homogeneous",
@@ -1232,6 +1273,7 @@ nbtk_table_add_actor (NbtkTable   *table,
 {
   NbtkTablePrivate *priv;
   ClutterChildMeta *child;
+  guint             dnd_threshold;
 
   g_return_if_fail (NBTK_IS_TABLE (table));
   g_return_if_fail (CLUTTER_IS_ACTOR (actor));
@@ -1246,6 +1288,11 @@ nbtk_table_add_actor (NbtkTable   *table,
   g_object_set (child, "row", row, "column", column, NULL);
 
   priv->children = g_slist_append (priv->children, actor);
+
+  dnd_threshold = nbtk_widget_get_dnd_threshold (NBTK_WIDGET (table));
+
+  if (dnd_threshold > 0)
+    nbtk_widget_setup_child_dnd (NBTK_WIDGET (table), actor);
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
 }
@@ -1269,7 +1316,7 @@ nbtk_table_add_actor_full (NbtkTable            *table,
   g_return_if_fail (colspan >= 1);
   g_return_if_fail ((xalign >= 0) && (xalign <= 1.0));
   g_return_if_fail ((yalign >= 0) && (yalign <= 1.0));
-  
+
   nbtk_table_add_actor (table, actor, row, column);
   clutter_container_child_set (CLUTTER_CONTAINER (table),
                                actor,
@@ -1328,7 +1375,7 @@ nbtk_table_add_widget (NbtkTable  *table,
  * @xalign: horizontal alignment of the widget
  * @yalign: vertical alignment of the widget
  *
- * Convenience function to add a widget to the table and set all of its 
+ * Convenience function to add a widget to the table and set all of its
  * child properties simultaneously.
  *
  * See nbtk_table_add_widget().
@@ -1409,3 +1456,32 @@ nbtk_table_set_widget_rowspan (NbtkTable *table,
                                            CLUTTER_ACTOR (widget));
   g_object_set (meta, "row-span", rowspan, NULL);
 }
+
+/**
+ * nbtk_table_insert_actor_at_position
+ * @table: a #NbtkTable
+ * @actor: a #ClutterActor
+ * @x: screen coordinate of the insertion
+ * @y: screen coordiante of the insertion
+ *
+ * Set the number of rows a widget should span, starting with the current
+ * row and moving down. For example, a widget placed in row 1 with rowspan
+ * set to 3 will occupy rows 1, 2 and 3.
+ */
+void
+nbtk_table_insert_actor_at_position (NbtkTable *table,
+				     ClutterActor *actor, gint x, gint y)
+{
+  NbtkTablePrivate *priv;
+
+  g_return_if_fail (NBTK_IS_TABLE (table));
+  g_return_if_fail (CLUTTER_IS_ACTOR (actor));
+
+  priv = NBTK_TABLE (table)->priv;
+
+  /*
+   * FIXME -- this is just a stub; do something sensible with the coords
+   */
+  nbtk_table_add_actor (NBTK_TABLE (table), actor, priv->n_rows, 0);
+}
+
