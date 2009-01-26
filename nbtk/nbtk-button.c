@@ -932,7 +932,7 @@ nbtk_button_set_tooltip (NbtkButton *button, const gchar *label)
 
   if (label)
     {
-      priv->tooltip = nbtk_tooltip_new (NBTK_WIDGET (button), label);
+      priv->tooltip = nbtk_tooltip_new (CLUTTER_ACTOR (button), label);
     }
   else
     {

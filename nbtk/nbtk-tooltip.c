@@ -60,7 +60,7 @@ enum
 struct _NbtkTooltipPrivate
 {
   ClutterActor *label;
-  ClutterActor *widget;
+  ClutterActor *actor;
 
   ClutterEffectTemplate *hide_template;
 };
@@ -212,7 +212,7 @@ nbtk_tooltip_weak_ref_notify (gpointer tooltip, GObject *obj)
 
 /**
  * nbtk_tooltip_new:
- * @widget: actor the tooltip is attached to
+ * @actor: actor the tooltip is attached to
  * @text: text to set the label to
  *
  * Create a new #NbtkTooltip with the specified label
@@ -220,7 +220,7 @@ nbtk_tooltip_weak_ref_notify (gpointer tooltip, GObject *obj)
  * Returns: a new #NbtkTooltip
  */
 NbtkWidget *
-nbtk_tooltip_new (NbtkWidget *widget, const gchar *text)
+nbtk_tooltip_new (ClutterActor *actor, const gchar *text)
 {
   NbtkTooltip  *tooltip;
 
@@ -231,9 +231,9 @@ nbtk_tooltip_new (NbtkWidget *widget, const gchar *text)
                           NULL);
 
   /* remember the associated widget */
-  tooltip->priv->widget = CLUTTER_ACTOR (widget);
+  tooltip->priv->actor = actor;
 
-  g_object_weak_ref (G_OBJECT (widget), nbtk_tooltip_weak_ref_notify, tooltip);
+  g_object_weak_ref (G_OBJECT (actor), nbtk_tooltip_weak_ref_notify, tooltip);
 
   return NBTK_WIDGET (tooltip);
 }
@@ -294,7 +294,7 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
   g_return_if_fail (NBTK_TOOLTIP (tooltip));
 
   parent = clutter_actor_get_parent (CLUTTER_ACTOR (tooltip));
-  stage = clutter_actor_get_stage (tooltip->priv->widget);
+  stage = clutter_actor_get_stage (tooltip->priv->actor);
 
   /* make sure we're parented on the stage */
   if (G_UNLIKELY (parent != stage))
@@ -312,9 +312,9 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
                                  NULL);
 
   /* place the tooltip under the associated actor */
-  clutter_actor_get_transformed_position (tooltip->priv->widget, &x, &y);
-  clutter_actor_get_anchor_point (tooltip->priv->widget, &ax, &ay);
-  clutter_actor_get_transformed_size (tooltip->priv->widget, &w, &h);
+  clutter_actor_get_transformed_position (tooltip->priv->actor, &x, &y);
+  clutter_actor_get_anchor_point (tooltip->priv->actor, &ax, &ay);
+  clutter_actor_get_transformed_size (tooltip->priv->actor, &w, &h);
 
 
   clutter_actor_move_anchor_point_from_gravity (CLUTTER_ACTOR (tooltip), CLUTTER_GRAVITY_NORTH);

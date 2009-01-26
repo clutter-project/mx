@@ -53,7 +53,7 @@ struct _NbtkTooltipClass
 
 GType nbtk_tooltip_get_type (void) G_GNUC_CONST;
 
-NbtkWidget *          nbtk_tooltip_new       (NbtkWidget  *widget, const gchar *text);
+NbtkWidget *          nbtk_tooltip_new       (ClutterActor *actor, const gchar *text);
 G_CONST_RETURN gchar *nbtk_tooltip_get_label (NbtkTooltip *tooltip);
 void                  nbtk_tooltip_set_label (NbtkTooltip *tooltip,
                                               const gchar *text);
