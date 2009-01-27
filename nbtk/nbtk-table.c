@@ -529,11 +529,25 @@ nbtk_table_finalize (GObject *gobject)
 }
 
 static void
+nbtk_table_unparent_child (ClutterActor *actor, gpointer data)
+{
+  /*
+   * Explicitely hide all contents before unparenting.
+   *
+   * Unparenting causes only unrealization of the actor itself, and not of its
+   * descendants, so this allows us to respond to the "hide" signal on any of
+   * the table descendants before the child itself gets destroyed.
+   */
+  clutter_actor_hide_all (actor);
+  clutter_actor_unparent (actor);
+}
+
+static void
 nbtk_table_dispose (GObject *gobject)
 {
   NbtkTablePrivate *priv = NBTK_TABLE (gobject)->priv;
 
-  g_slist_foreach (priv->children, (GFunc) clutter_actor_unparent, NULL);
+  g_slist_foreach (priv->children, (GFunc) nbtk_table_unparent_child, NULL);
   g_slist_free (priv->children);
   priv->children = NULL;
 
