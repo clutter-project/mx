@@ -1102,6 +1102,26 @@ nbtk_table_dnd_dropped (NbtkWidget   *actor,
 }
 
 static void
+nbtk_table_show_all (ClutterActor *table)
+{
+  NbtkTablePrivate *priv = NBTK_TABLE (table)->priv;
+  GSList *l;
+
+  for (l = priv->children; l; l = l->next)
+    clutter_actor_show_all (CLUTTER_ACTOR (l->data));
+}
+
+static void
+nbtk_table_hide_all (ClutterActor *table)
+{
+  NbtkTablePrivate *priv = NBTK_TABLE (table)->priv;
+  GSList *l;
+
+  for (l = priv->children; l; l = l->next)
+    clutter_actor_hide_all (CLUTTER_ACTOR (l->data));
+}
+
+static void
 nbtk_table_class_init (NbtkTableClass *klass)
 {
   GParamSpec *pspec;
@@ -1129,6 +1149,8 @@ nbtk_table_class_init (NbtkTableClass *klass)
   actor_class->allocate = nbtk_table_allocate;
   actor_class->get_preferred_width = nbtk_table_get_preferred_width;
   actor_class->get_preferred_height = nbtk_table_get_preferred_height;
+  actor_class->show_all = nbtk_table_show_all;
+  actor_class->hide_all = nbtk_table_hide_all;
 
   widget_class->dnd_dropped = nbtk_table_dnd_dropped;
 
