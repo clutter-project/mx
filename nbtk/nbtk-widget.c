@@ -1666,9 +1666,6 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
       g_signal_emit (widget, actor_signals[DND_END], 0,
 		     child, clone, x, y);
 
-      g_object_unref (priv->dnd_dragged);
-      priv->dnd_dragged = NULL;
-
       priv->dnd_clone = NULL;
       g_object_unref (clone);
 
@@ -1690,6 +1687,11 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
                                         nbtk_widget_child_dnd_motion_cb,
                                         data);
 
+  if (priv->dnd_dragged)
+    {
+      g_object_unref (priv->dnd_dragged);
+      priv->dnd_dragged = NULL;
+    }
 
   return retval;
 }
