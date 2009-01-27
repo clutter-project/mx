@@ -40,7 +40,6 @@
 #include <glib.h>
 
 #include <clutter/clutter.h>
-#include <clutter/clutter-container.h>
 
 #include "nbtk-button.h"
 
@@ -49,7 +48,7 @@
 #include "nbtk-texture-frame.h"
 #include "nbtk-texture-cache.h"
 #include "nbtk-tooltip.h"
-#include "nbtk-behaviour-bounce.h"
+//#include "nbtk-behaviour-bounce.h"
 
 enum
 {
@@ -80,8 +79,7 @@ struct _NbtkButtonPrivate
   ClutterActor *icon;
   NbtkWidget   *tooltip;
 
-  ClutterTimeline *timeline;
-  ClutterEffectTemplate *press_tmpl;
+  //ClutterTimeline *timeline;
 
   guint8 old_opacity;
 
@@ -110,16 +108,6 @@ typedef struct
 G_DEFINE_TYPE (NbtkButton, nbtk_button, NBTK_TYPE_WIDGET)
 
 static void
-style_changed_completed_effect (ClutterActor *actor, NbtkButton *button)
-{
-  NbtkButtonPrivate *priv = button->priv;
-
-  if (priv->old_bg)
-    g_object_unref (priv->old_bg);
-  priv->old_bg = NULL;
-}
-
-static void
 nbtk_button_fade_transition (NbtkWidget *button)
 {
   const gchar *pseudo_class;
@@ -128,9 +116,10 @@ nbtk_button_fade_transition (NbtkWidget *button)
   pseudo_class = nbtk_stylable_get_pseudo_class (NBTK_STYLABLE (button));
   if (priv->old_bg && g_strcmp0 ("active", pseudo_class))
     {
-      clutter_effect_fade (priv->press_tmpl, priv->old_bg, 0x00,
-                           (ClutterEffectCompleteFunc) style_changed_completed_effect,
-                           button);
+      clutter_actor_animate (priv->old_bg, CLUTTER_LINEAR,
+                             priv->transition_duration,
+                             "opacity", 0,
+                             NULL);
     }
   else
     {
@@ -184,13 +173,27 @@ nbtk_button_bounce_transition (NbtkWidget *button)
   clutter_actor_get_anchor_point (priv->bg_image, &point->x, &point->y);
   point->actor = CLUTTER_ACTOR (priv->bg_image);
 
-  clutter_actor_move_anchor_point_from_gravity (priv->bg_image, CLUTTER_GRAVITY_CENTER);
+  clutter_actor_move_anchor_point_from_gravity (CLUTTER_ACTOR (button),
+                                                CLUTTER_GRAVITY_CENTER);
 
   if (!g_strcmp0 (pseudo_class, "hover"))
     {
-      nbtk_bounce_scale (priv->bg_image, priv->transition_duration);
+      clutter_actor_set_scale (CLUTTER_ACTOR (button), 0.5, 0.5);
+      clutter_actor_animate (CLUTTER_ACTOR (button), CLUTTER_EASE_OUT_ELASTIC,
+                             priv->transition_duration,
+                             "scale-x", 1.0,
+                             "scale-y", 1.0,
+                             NULL);
       if (priv->icon)
-        nbtk_bounce_scale (CLUTTER_ACTOR (priv->icon), priv->transition_duration);
+        {
+          clutter_actor_set_scale (CLUTTER_ACTOR (priv->icon), 0.5, 0.5);
+          clutter_actor_animate (CLUTTER_ACTOR (priv->icon),
+                                 CLUTTER_EASE_OUT_ELASTIC,
+                                 priv->transition_duration,
+                                 "scale-x", 1.0,
+                                 "scale-y", 1.0,
+                                 NULL);
+        }
     }
 }
 
@@ -258,25 +261,10 @@ nbtk_button_style_changed (NbtkWidget *button)
                                 CLUTTER_ACTOR (button));
       g_free (bg_url);
 
-      if (G_UNLIKELY (!priv->press_tmpl))
-        {
-          priv->timeline = clutter_timeline_new_for_duration (priv->transition_duration);
-          priv->press_tmpl = clutter_effect_template_new (priv->timeline,
-                                                          clutter_sine_inc_func);
-          clutter_effect_template_set_timeline_clone (priv->press_tmpl, FALSE);
-        }
-
-      if (clutter_timeline_is_playing (priv->timeline))
-        {
-          clutter_timeline_stop (priv->timeline);
-        }
-
-
       /* run a transition effect if applicable */
       if (priv->transition_type != NBTK_TRANSITION_NONE
           && priv->transition_duration > 0)
         {
-          clutter_timeline_set_duration (priv->timeline, priv->transition_duration);
 
           switch (priv->transition_type)
             {
@@ -349,7 +337,8 @@ nbtk_button_paint (ClutterActor *actor)
           w = CLUTTER_UNITS_TO_DEVICE (allocation.x2 - allocation.x1);
           h = CLUTTER_UNITS_TO_DEVICE (allocation.y2 - allocation.y1);
 
-          cogl_color (bg_color);
+          cogl_set_source_color4ub (bg_color->red, bg_color->green,
+                                    bg_color->blue, bg_color->alpha);
           cogl_rectangle (0, 0, w, h);
         }
     }
@@ -389,12 +378,11 @@ nbtk_button_construct_child (NbtkButton *button)
   if (!priv->text)
     return;
 
-  label = g_object_new (CLUTTER_TYPE_LABEL,
+  label = g_object_new (CLUTTER_TYPE_TEXT,
                         "text", priv->text,
                         "alignment", PANGO_ALIGN_CENTER,
                         "ellipsize", PANGO_ELLIPSIZE_MIDDLE,
                         "use-markup", TRUE,
-                        "wrap", FALSE,
                         NULL);
 
   priv->label = label;
@@ -587,22 +575,6 @@ nbtk_button_finalize (GObject *gobject)
 static void
 nbtk_button_dispose (GObject *gobject)
 {
-  NbtkButtonPrivate *priv = NBTK_BUTTON (gobject)->priv;
-
-  if (priv->press_tmpl)
-    {
-      if (clutter_timeline_is_playing (priv->timeline))
-        {
-          clutter_timeline_stop (priv->timeline);
-        }
-
-      g_object_unref (priv->press_tmpl);
-      g_object_unref (priv->timeline);
-
-      priv->press_tmpl = NULL;
-      priv->timeline = NULL;
-    }
-
   G_OBJECT_CLASS (nbtk_button_parent_class)->dispose (gobject);
 }
 

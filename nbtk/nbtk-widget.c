@@ -458,7 +458,8 @@ nbtk_widget_paint (ClutterActor *self)
       w = CLUTTER_UNITS_TO_DEVICE (allocation.x2 - allocation.x1);
       h = CLUTTER_UNITS_TO_DEVICE (allocation.y2 - allocation.y1);
 
-      cogl_color (&bg_color);
+      cogl_set_source_color4ub (bg_color.red, bg_color.green,
+                                bg_color.blue, bg_color.alpha);
       cogl_rectangle (0, 0, w, h);
     }
 

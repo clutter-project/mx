@@ -22,7 +22,7 @@
 #ifndef __NBTK_WIDGET_H__
 #define __NBTK_WIDGET_H__
 
-#include <clutter/clutter-actor.h>
+#include <clutter/clutter.h>
 #include <nbtk/nbtk-types.h>
 
 G_BEGIN_DECLS

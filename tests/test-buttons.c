@@ -29,7 +29,7 @@ main (int argc, char *argv[])
   button = nbtk_button_new_with_label ("Hello World!");
   nbtk_button_set_tooltip (NBTK_BUTTON (button), "Hola Mundo!");
   g_object_set (button, "transition-duration", 400,
-                "transition-type", NBTK_TRANSITION_FADE, NULL);
+                "transition-type", NBTK_TRANSITION_BOUNCE, NULL);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 100, 100);

@@ -2,7 +2,7 @@
 #define __NBTK_TYPES_H__
 
 #include <glib-object.h>
-#include <clutter/clutter-units.h>
+#include <clutter/clutter.h>
 
 G_BEGIN_DECLS
 
