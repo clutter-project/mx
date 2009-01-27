@@ -108,40 +108,41 @@ nbtk_texture_frame_paint (ClutterActor *self)
 #define FX(x) CLUTTER_INT_TO_FIXED(x)
 
   /* top left corner */
-  cogl_texture_rectangle (cogl_texture, 
-                          0,
-                          0,
-                          FX(priv->left), /* FIXME: clip if smaller */
-                          FX(priv->top),
-                          0,
-                          0,
-                          tx1,
-                          ty1);
+  cogl_set_source_texture (cogl_texture);
+  cogl_rectangle_with_texture_coords (0,
+                                      0,
+                                      FX(priv->left), /* FIXME: clip if smaller */
+                                      FX(priv->top),
+                                      0,
+                                      0,
+                                      tx1,
+                                      ty1);
 
   /* top middle */
-  cogl_texture_rectangle (cogl_texture,
-                          FX(priv->left),
-                          0,
-                          FX(ex),
-                          FX(priv->top),
-                          tx1,
-                          0,
-                          tx2,
-                          ty1);
+  cogl_set_source_texture (cogl_texture);
+  cogl_rectangle_with_texture_coords (FX(priv->left),
+                                      0,
+                                      FX(ex),
+                                      FX(priv->top),
+                                      tx1,
+                                      0,
+                                      tx2,
+                                      ty1);
 
   /* top right */
-  cogl_texture_rectangle (cogl_texture,
-                          FX(ex),
-                          0,
-                          FX(width),
-                          FX(priv->top),
-                          tx2,
-                          0,
-                          CFX_ONE,
-                          ty1);
+  cogl_set_source_texture (cogl_texture);
+  cogl_rectangle_with_texture_coords (FX(ex),
+                                      0,
+                                      FX(width),
+                                      FX(priv->top),
+                                      tx2,
+                                      0,
+                                      CFX_ONE,
+                                      ty1);
 
   /* mid left */
-  cogl_texture_rectangle (cogl_texture,
+  cogl_set_source_texture (cogl_texture);
+  cogl_rectangle_with_texture_coords (
                           0, 
                           FX(priv->top),
                           FX(priv->left),
@@ -152,7 +153,8 @@ nbtk_texture_frame_paint (ClutterActor *self)
                           ty2);
 
   /* center */
-  cogl_texture_rectangle (cogl_texture,
+  cogl_set_source_texture (cogl_texture);
+  cogl_rectangle_with_texture_coords (
                           FX(priv->left),
                           FX(priv->top),
                           FX(ex),
@@ -163,7 +165,8 @@ nbtk_texture_frame_paint (ClutterActor *self)
                           ty2);
 
   /* mid right */
-  cogl_texture_rectangle (cogl_texture,
+  cogl_set_source_texture (cogl_texture);
+  cogl_rectangle_with_texture_coords (
                           FX(ex),
                           FX(priv->top),
                           FX(width),
@@ -174,7 +177,8 @@ nbtk_texture_frame_paint (ClutterActor *self)
                           ty2);
   
   /* bottom left */
-  cogl_texture_rectangle (cogl_texture,
+  cogl_set_source_texture (cogl_texture);
+  cogl_rectangle_with_texture_coords (
                           0, 
                           FX(ey),
                           FX(priv->left),
@@ -185,7 +189,8 @@ nbtk_texture_frame_paint (ClutterActor *self)
                           CFX_ONE);
 
   /* bottom center */
-  cogl_texture_rectangle (cogl_texture,
+  cogl_set_source_texture (cogl_texture);
+  cogl_rectangle_with_texture_coords (
                           FX(priv->left),
                           FX(ey),
                           FX(ex),
@@ -196,7 +201,8 @@ nbtk_texture_frame_paint (ClutterActor *self)
                           CFX_ONE);
 
   /* bottom right */
-  cogl_texture_rectangle (cogl_texture,
+  cogl_set_source_texture (cogl_texture);
+  cogl_rectangle_with_texture_coords (
                           FX(ex),
                           FX(ey),
                           FX(width),
