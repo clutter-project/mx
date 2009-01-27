@@ -63,6 +63,8 @@ struct _NbtkTooltipPrivate
   ClutterActor *actor;
 
   ClutterEffectTemplate *hide_template;
+
+  guint actor_hide_id;
 };
 
 G_DEFINE_TYPE (NbtkTooltip, nbtk_tooltip, NBTK_TYPE_WIDGET)
@@ -157,6 +159,12 @@ nbtk_tooltip_dispose (GObject *object)
 {
   NbtkTooltipPrivate *priv = NBTK_TOOLTIP (object)->priv;
 
+  if (priv->actor && priv->actor_hide_id)
+    {
+      g_signal_handler_disconnect (priv->actor, priv->actor_hide_id);
+      priv->actor_hide_id = 0;
+    }
+
   g_object_unref (priv->hide_template);
   priv->hide_template = NULL;
 }
@@ -206,8 +214,21 @@ nbtk_tooltip_init (NbtkTooltip *tooltip)
 static void
 nbtk_tooltip_weak_ref_notify (gpointer tooltip, GObject *obj)
 {
+  NbtkTooltip *tip = NBTK_TOOLTIP (tooltip);
+
+  tip->priv->actor = NULL;
+  tip->priv->actor_hide_id = 0;
+
   g_object_ref_sink (G_OBJECT (tooltip));
   g_object_unref (G_OBJECT (tooltip));
+}
+
+static void
+nbtk_tooltip_actor_hide_cb (ClutterActor *actor, gpointer data)
+{
+  ClutterActor *self = CLUTTER_ACTOR (data);
+
+  clutter_actor_hide (self);
 }
 
 /**
@@ -230,10 +251,21 @@ nbtk_tooltip_new (ClutterActor *actor, const gchar *text)
                           "show-on-set-parent", FALSE,
                           NULL);
 
+  /*
+   * FIXME: There should be no initialization done in the _new() function as
+   *        doing so makes it impossible to subclass the class. The actor
+   *        should be a property and all of this should be done in the
+   *        _constructed() virtual.
+   */
+
   /* remember the associated widget */
   tooltip->priv->actor = actor;
 
   g_object_weak_ref (G_OBJECT (actor), nbtk_tooltip_weak_ref_notify, tooltip);
+
+  tooltip->priv->actor_hide_id = g_signal_connect (actor, "hide",
+				    G_CALLBACK (nbtk_tooltip_actor_hide_cb),
+				    tooltip);
 
   return NBTK_WIDGET (tooltip);
 }
@@ -340,7 +372,6 @@ void
 nbtk_tooltip_hide (NbtkTooltip *tooltip)
 {
   g_return_if_fail (NBTK_TOOLTIP (tooltip));
-
 
   clutter_effect_scale (tooltip->priv->hide_template,
                         CLUTTER_ACTOR (tooltip),
