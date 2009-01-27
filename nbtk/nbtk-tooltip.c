@@ -219,8 +219,18 @@ nbtk_tooltip_weak_ref_notify (gpointer tooltip, GObject *obj)
   tip->priv->actor = NULL;
   tip->priv->actor_hide_id = 0;
 
-  g_object_ref_sink (G_OBJECT (tooltip));
-  g_object_unref (G_OBJECT (tooltip));
+  /*
+   * We do not hold any reference on ourselves; if we are still floating, i.e.,
+   * if we have not been shown, we clear the floating reference; if we have
+   * been shown, we unparent ourselves from the stage.
+   */
+  if (!clutter_actor_get_parent (CLUTTER_ACTOR (tooltip)))
+    {
+      g_object_ref_sink (G_OBJECT (tooltip));
+      g_object_unref (G_OBJECT (tooltip));
+    }
+  else
+    clutter_actor_unparent (CLUTTER_ACTOR (tooltip));
 }
 
 static void
