@@ -1534,12 +1534,11 @@ nbtk_widget_child_dnd_motion_cb (ClutterActor *child,
 	}
       else
 	{
-	  ClutterTexture *parent_tx;
+	  ClutterActor *parent_tx;
 
-	  parent_tx = clutter_clone_texture_get_parent_texture (
-						 CLUTTER_CLONE_TEXTURE (child));
+	  parent_tx = clutter_clone_get_source (CLUTTER_CLONE (child));
 
-	  clone = clutter_clone_texture_new (parent_tx);
+	  clone = clutter_clone_new (parent_tx);
 
 	  clutter_actor_get_scale (child, &scale_x, &scale_y);
 	  clutter_actor_set_scale (clone, scale_x, scale_y);
