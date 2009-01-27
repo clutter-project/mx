@@ -544,7 +544,7 @@ nbtk_widget_parent_set (ClutterActor *widget,
   /* don't send the style changed signal if we no longer have a parent actor */
   if (parent)
     {
-      g_signal_emit_by_name (widget, "style-changed", 0);
+      g_signal_emit (widget, actor_signals[STYLE_CHANGED], 0);
     }
 
   if (CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->parent_set)
@@ -1194,7 +1194,7 @@ nbtk_widget_name_notify (NbtkWidget *widget,
                          GParamSpec *pspec,
                          gpointer data)
 {
-  g_signal_emit_by_name (widget, "style-changed", 0);
+  g_signal_emit (widget, actor_signals[STYLE_CHANGED], 0);
 }
 
 static void
