@@ -1,6 +1,7 @@
 /* nbtk-texture-frame.h: Expandible texture actor
  *
- * Copyright (C) 2007 OpenedHand
+ * Copyright (C) 2007, 2008 OpenedHand Ltd
+ * Copyright (C) 2009 Intel Corp.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,50 +19,35 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef _HAVE_NBTK_TEXTURE_FRAME_H
-#define _HAVE_NBTK_TEXTURE_FRAME_H
+#ifndef __NBTK_TEXTURE_FRAME_H__
+#define __NBTK_TEXTURE_FRAME_H__
 
 #include <clutter/clutter.h>
 
 G_BEGIN_DECLS
 
-#define NBTK_TYPE_TEXTURE_FRAME (nbtk_texture_frame_get_type ())
+#define NBTK_TYPE_TEXTURE_FRAME                 (nbtk_texture_frame_get_type ())
+#define NBTK_TEXTURE_FRAME(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_TEXTURE_FRAME, NbtkTextureFrame))
+#define NBTK_TEXTURE_FRAME_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), NBTK_TYPE_TEXTURE_FRAME, NbtkTextureFrameClass))
+#define NBTK_IS_TEXTURE_FRAME(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NBTK_TYPE_TEXTURE_FRAME))
+#define NBTK_IS_TEXTURE_FRAME_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), NBTK_TYPE_TEXTURE_FRAME))
+#define NBTK_TEXTURE_FRAME_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), NBTK_TYPE_TEXTURE_FRAME, NbtkTextureFrameClass))
 
-#define NBTK_TEXTURE_FRAME(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-  NBTK_TYPE_TEXTURE_FRAME, NbtkTextureFrame))
-
-#define NBTK_TEXTURE_FRAME_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST ((klass), \
-  NBTK_TYPE_TEXTURE_FRAME, NbtkTextureFrameClass))
-
-#define NBTK_IS_TEXTURE_FRAME(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
-  NBTK_TYPE_TEXTURE_FRAME))
-
-#define NBTK_IS_TEXTURE_FRAME_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE ((klass), \
-  NBTK_TYPE_TEXTURE_FRAME))
-
-#define NBTK_TEXTURE_FRAME_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-  NBTK_TYPE_TEXTURE_FRAME, NbtkTextureFrameClass))
-
-typedef struct _NbtkTextureFrame        NbtkTextureFrame;
-typedef struct _NbtkTextureFramePrivate NbtkTextureFramePrivate;
-typedef struct _NbtkTextureFrameClass   NbtkTextureFrameClass;
+typedef struct _NbtkTextureFrame                NbtkTextureFrame;
+typedef struct _NbtkTextureFramePrivate         NbtkTextureFramePrivate;
+typedef struct _NbtkTextureFrameClass           NbtkTextureFrameClass;
 
 struct _NbtkTextureFrame
 {
   /*< private >*/
-  ClutterCloneTexture              parent;
+  ClutterActor parent_instance;
   
   NbtkTextureFramePrivate    *priv;
 };
 
 struct _NbtkTextureFrameClass 
 {
-  ClutterCloneTextureClass parent_class;
+  ClutterActorClass parent_class;
 
   /* padding for future expansion */
   void (*_clutter_box_1) (void);
@@ -77,6 +63,10 @@ ClutterActor *nbtk_texture_frame_new      (ClutterTexture *texture,
                                            gint            right,
                                            gint            bottom);
 
+void            nbtk_texture_frame_set_parent_texture (NbtkTextureFrame *frame,
+                                                       ClutterTexture   *texture);
+ClutterTexture *nbtk_texture_frame_get_parent_texture (NbtkTextureFrame *frame);
+
 G_END_DECLS
 
-#endif /* _HAVE_NBTK_TEXTURE_FRAME_H */
+#endif /* __NBTK_TEXTURE_FRAME_H__ */
