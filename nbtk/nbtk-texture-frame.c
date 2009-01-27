@@ -59,6 +59,8 @@ struct _NbtkTextureFramePrivate
   gint top;
   gint right;
   gint bottom;
+
+  CoglHandle material;
 };
 
 static void
@@ -128,15 +130,42 @@ nbtk_texture_frame_get_preferred_height (ClutterActor *self,
 }
 
 static void
+nbtk_texture_frame_realize (ClutterActor *self)
+{
+  NbtkTextureFramePrivate *priv = NBTK_TEXTURE_FRAME (self)->priv;
+
+  if (priv->material != COGL_INVALID_HANDLE)
+    return;
+
+  priv->material = cogl_material_new ();
+
+  CLUTTER_ACTOR_SET_FLAGS (self, CLUTTER_ACTOR_REALIZED);
+}
+
+static void
+nbtk_texture_frame_unrealize (ClutterActor *self)
+{
+  NbtkTextureFramePrivate *priv = NBTK_TEXTURE_FRAME (self)->priv;
+
+  if (priv->material == COGL_INVALID_HANDLE)
+    return;
+
+  cogl_material_unref (priv->material);
+  priv->material = COGL_INVALID_HANDLE;
+
+  CLUTTER_ACTOR_UNSET_FLAGS (self, CLUTTER_ACTOR_REALIZED);
+}
+
+static void
 nbtk_texture_frame_paint (ClutterActor *self)
 {
   NbtkTextureFramePrivate *priv = NBTK_TEXTURE_FRAME (self)->priv;
-  guint width, height;
-  guint tex_width, tex_height;
-  guint ex, ey;
+  ClutterActorBox box = { 0, };
+  gfloat tex_width, tex_height;
+  gfloat ex, ey;
   gfloat tx1, ty1, tx2, ty2;
   CoglHandle cogl_texture;
-  CoglHandle material;
+  guint8 opacity;
 
   /* no need to paint stuff if we don't have a texture */
   if (G_UNLIKELY (priv->parent_texture == NULL))
@@ -155,29 +184,31 @@ nbtk_texture_frame_paint (ClutterActor *self)
   tex_width  = cogl_texture_get_width (cogl_texture);
   tex_height = cogl_texture_get_height (cogl_texture);
 
-  clutter_actor_get_size (self, &width, &height); 
+  clutter_actor_get_allocation_box (self, &box);
 
   tx1 = (gfloat) priv->left / tex_width;
   tx2 = (gfloat) (tex_width - priv->right) / tex_width;
   ty1 = (gfloat) priv->top / tex_height;
   ty2 = (gfloat) (tex_height - priv->bottom) / tex_height;
 
-  ex = width - priv->right;
-  if (ex < 0) 
+  ex = (box.x2 - box.x1) - priv->right;
+  if (ex < 0)
     ex = priv->right; 		/* FIXME ? */
 
-  ey = height - priv->bottom;
-  if (ey < 0) 
+  ey = (box.y2 - box.y1) - priv->bottom;
+  if (ey < 0)
     ey = priv->bottom; 		/* FIXME ? */
 
+  opacity = clutter_actor_get_paint_opacity (self);
+
+  g_assert (priv->material != COGL_INVALID_HANDLE);
+
   /* set the source material using the parent texture's COGL handle */
-  material = cogl_material_new ();
-  cogl_material_set_color4ub (material, 255, 255, 255,
-                              clutter_actor_get_paint_opacity (self));
-  cogl_material_set_layer (material, 0, cogl_texture);
+  cogl_material_set_color4ub (priv->material, 255, 255, 255, opacity);
+  cogl_material_set_layer (priv->material, 0, cogl_texture);
+  cogl_set_source (priv->material);
 
   /* top left corner */
-  cogl_set_source (material);
   cogl_rectangle_with_texture_coords (0, 0,
                                       priv->left, /* FIXME: clip if smaller */
                                       priv->top,
@@ -185,21 +216,18 @@ nbtk_texture_frame_paint (ClutterActor *self)
                                       tx1, ty1);
 
   /* top middle */
-  cogl_set_source (material);
   cogl_rectangle_with_texture_coords (priv->left, 0,
                                       ex, priv->top,
                                       tx1, 0.0,
                                       tx2, ty1);
 
   /* top right */
-  cogl_set_source (material);
   cogl_rectangle_with_texture_coords (ex, 0,
-                                      width, priv->top,
+                                      (box.x2 - box.x1), priv->top,
                                       tx2, 0.0,
                                       1.0, ty1);
 
   /* mid left */
-  cogl_set_source (material);
   cogl_rectangle_with_texture_coords (0, priv->top,
                                       priv->left,
                                       ey,
@@ -207,7 +235,6 @@ nbtk_texture_frame_paint (ClutterActor *self)
                                       tx1, ty2);
 
   /* center */
-  cogl_set_source (material);
   cogl_rectangle_with_texture_coords (priv->left, priv->top,
                                       ex,
                                       ey,
@@ -215,34 +242,30 @@ nbtk_texture_frame_paint (ClutterActor *self)
                                       tx2, ty2);
 
   /* mid right */
-  cogl_set_source (material);
   cogl_rectangle_with_texture_coords (ex, priv->top,
-                                      width,
+                                      (box.x2 - box.x1),
                                       ey,
                                       tx2, ty1,
                                       1.0, ty2);
   
   /* bottom left */
-  cogl_set_source (material);
   cogl_rectangle_with_texture_coords (0, ey,
                                       priv->left,
-                                      height,
+                                      (box.y2 - box.y1),
                                       0.0, ty2,
                                       tx1, 1.0);
 
   /* bottom center */
-  cogl_set_source (material);
   cogl_rectangle_with_texture_coords (priv->left, ey,
                                       ex,
-                                      height,
+                                      (box.y2 - box.y1),
                                       tx1, ty2,
                                       tx2, 1.0);
 
   /* bottom right */
-  cogl_set_source (material);
   cogl_rectangle_with_texture_coords (ex, ey,
-                                      width,
-                                      height,
+                                      (box.x2 - box.x1),
+                                      (box.y2 - box.y1),
                                       tx2, ty2,
                                       1.0, 1.0);
 }
@@ -395,6 +418,12 @@ nbtk_texture_frame_dispose (GObject *gobject)
       priv->parent_texture = NULL;
     }
 
+  if (priv->material)
+    {
+      cogl_material_unref (priv->material);
+      priv->material = COGL_INVALID_HANDLE;
+    }
+
   G_OBJECT_CLASS (nbtk_texture_frame_parent_class)->dispose (gobject);
 }
 
@@ -411,6 +440,8 @@ nbtk_texture_frame_class_init (NbtkTextureFrameClass *klass)
     nbtk_texture_frame_get_preferred_width;
   actor_class->get_preferred_height =
     nbtk_texture_frame_get_preferred_height;
+  actor_class->realize = nbtk_texture_frame_realize;
+  actor_class->unrealize = nbtk_texture_frame_unrealize;
   actor_class->paint = nbtk_texture_frame_paint;
 
   gobject_class->set_property = nbtk_texture_frame_set_property;
@@ -464,6 +495,8 @@ nbtk_texture_frame_init (NbtkTextureFrame *self)
   NbtkTextureFramePrivate *priv;
 
   self->priv = priv = NBTK_TEXTURE_FRAME_GET_PRIVATE (self);
+
+  priv->material = COGL_INVALID_HANDLE;
 }
 
 /**
