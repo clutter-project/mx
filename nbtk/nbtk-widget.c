@@ -1477,27 +1477,151 @@ nbtk_widget_dnd_enter_event_cb (ClutterActor *actor,
 	  g_debug ("Enter event on %p (%s)\n", dest, G_OBJECT_TYPE_NAME (dest));
 
 	  if (priv->dnd_last_dest)
-	    g_signal_emit (priv->dnd_last_dest, actor_signals[DND_LEAVE], 0,
-			   priv->dnd_dragged,
-			   priv->dnd_clone, event->x, event->y);
+	    {
+	      g_object_ref (priv->dnd_last_dest);
+
+	      g_signal_emit (priv->dnd_last_dest, actor_signals[DND_LEAVE], 0,
+			     priv->dnd_dragged,
+			     priv->dnd_clone, event->x, event->y);
+
+	      g_object_unref (priv->dnd_last_dest);
+	    }
+
+	  g_object_ref (dest);
 
 	  g_signal_emit (dest, actor_signals[DND_ENTER], 0,
 			 priv->dnd_dragged,
 			 priv->dnd_clone, event->x, event->y);
+
+	  g_object_unref (dest);
 
 	  priv->dnd_last_dest = dest;
 	}
     }
   else if (priv->dnd_last_dest)
     {
+      g_object_ref (priv->dnd_last_dest);
+
       g_signal_emit (priv->dnd_last_dest, actor_signals[DND_LEAVE], 0,
 		     priv->dnd_dragged,
 		     priv->dnd_clone, event->x, event->y);
+
+      g_object_unref (priv->dnd_last_dest);
 
       priv->dnd_last_dest = NULL;
     }
 
   return TRUE;
+}
+
+static gboolean
+nbtk_widget_child_dnd_motion_cb (ClutterActor *child,
+				 ClutterEvent *event,
+				 gpointer      data);
+
+static gboolean
+nbtk_widget_child_dnd_release_cb (ClutterActor *child,
+				  ClutterEvent *event,
+				  gpointer      data)
+{
+  NbtkWidget *widget = data;
+  NbtkWidgetPrivate *priv;
+  gboolean retval = FALSE;
+
+  if (event->type != CLUTTER_BUTTON_RELEASE)
+    return FALSE;
+
+  priv = NBTK_WIDGET (widget)->priv;
+
+  if (priv->dnd_motion)
+    {
+      ClutterActor *dest;
+      ClutterStage *stage;
+      ClutterActor *clone;
+
+      gint x = event->motion.x;
+      gint y = event->motion.y;
+
+      clone = priv->dnd_clone;
+
+      /*
+       * Hide the clone, so it does not interfer with picking.
+       */
+      clutter_actor_hide (clone);
+
+      stage = CLUTTER_STAGE (clutter_actor_get_stage (child));
+
+      dest = clutter_stage_get_actor_at_pos (stage, x, y);
+
+      if (dest)
+	{
+	  /*
+	   * If the target is not NbtkWidget, or the widget does not have dnd
+	   * enabled, we try to propagate the signal down the ancestry chain.
+	   */
+	  if (!NBTK_IS_WIDGET (dest) ||
+	      !NBTK_WIDGET (dest)->priv->dnd_threshold)
+	    {
+	      dest = clutter_actor_get_parent (dest);
+
+	      while (dest && (!NBTK_IS_WIDGET (dest) ||
+			      !NBTK_WIDGET (dest)->priv->dnd_threshold))
+		dest = clutter_actor_get_parent (dest);
+	    }
+
+	  if (dest)
+	    {
+	      g_object_ref (dest);
+
+	      g_signal_emit (dest, actor_signals[DND_DROPPED], 0, child, clone,
+			     x, y);
+
+	      g_object_unref (dest);
+	    }
+	}
+
+      if (priv->dnd_enter_cb_id)
+	{
+	  g_signal_handler_disconnect (priv->dnd_dragged,
+				       priv->dnd_enter_cb_id);
+	  priv->dnd_enter_cb_id = 0;
+	}
+
+      g_object_ref (widget);
+
+      g_signal_emit (widget, actor_signals[DND_END], 0,
+		     child, clone, x, y);
+
+      g_object_unref (widget);
+
+      priv->dnd_clone = NULL;
+      g_object_unref (clone);
+
+      if (clone != priv->dnd_icon)
+	clutter_actor_destroy (clone);
+      else
+	clutter_actor_unparent (clone);
+
+      retval = TRUE;
+    }
+
+  if (priv->dnd_grab)
+    clutter_ungrab_pointer ();
+
+  priv->dnd_motion = FALSE;
+  priv->dnd_grab = FALSE;
+
+  g_signal_handlers_disconnect_by_func (child,
+                                        nbtk_widget_child_dnd_motion_cb,
+                                        data);
+
+  if (priv->dnd_dragged)
+    {
+      g_object_unref (priv->dnd_dragged);
+      priv->dnd_dragged = NULL;
+    }
+
+  return retval;
 }
 
 static gboolean
@@ -1547,6 +1671,9 @@ nbtk_widget_child_dnd_motion_cb (ClutterActor *child,
 	  clutter_actor_set_size  (clone, child_w, child_h);
 	}
 
+      g_signal_connect (child, "button-release-event",
+			G_CALLBACK (nbtk_widget_child_dnd_release_cb), widget);
+
       priv->dnd_clone = clone;
 
       clutter_actor_set_position (clone, x, y);
@@ -1556,7 +1683,11 @@ nbtk_widget_child_dnd_motion_cb (ClutterActor *child,
 
       clutter_actor_show (clone);
 
+      g_object_ref (widget);
+
       g_signal_emit (widget, actor_signals[DND_BEGIN], 0, child, clone, x, y);
+
+      g_object_unref (widget);
 
       priv->dnd_motion = TRUE;
     }
@@ -1566,8 +1697,12 @@ nbtk_widget_child_dnd_motion_cb (ClutterActor *child,
       clutter_actor_queue_redraw (priv->dnd_clone);
     }
 
+  g_object_ref (widget);
+
   g_signal_emit (widget, actor_signals[DND_MOTION], 0,
 		 child, priv->dnd_clone, x, y);
+
+  g_object_unref (widget);
 
   priv->dnd_x = x;
   priv->dnd_y = y;
@@ -1607,95 +1742,6 @@ nbtk_widget_child_dnd_press_cb (ClutterActor *child,
   return TRUE;
 }
 
-static gboolean
-nbtk_widget_child_dnd_release_cb (ClutterActor *child,
-				  ClutterEvent *event,
-				  gpointer      data)
-{
-  NbtkWidget *widget = data;
-  NbtkWidgetPrivate *priv = NBTK_WIDGET (widget)->priv;
-  gboolean retval = FALSE;
-
-  if (priv->dnd_motion)
-    {
-      ClutterActor *dest;
-      ClutterStage *stage;
-      ClutterActor *clone;
-
-      gint x = event->motion.x;
-      gint y = event->motion.y;
-
-      clone = priv->dnd_clone;
-
-      /*
-       * Hide the clone, so it does not interfer with picking.
-       */
-      clutter_actor_hide (clone);
-
-      stage = CLUTTER_STAGE (clutter_actor_get_stage (child));
-      dest = clutter_stage_get_actor_at_pos (stage, x, y);
-
-      if (dest)
-	{
-	  /*
-	   * If the target is not NbtkWidget, or the widget does not have dnd
-	   * enabled, we try to propagate the signal down the ancestry chain.
-	   */
-	  if (!NBTK_IS_WIDGET (dest) ||
-	      !NBTK_WIDGET (dest)->priv->dnd_threshold)
-	    {
-	      dest = clutter_actor_get_parent (dest);
-
-	      while (dest && (!NBTK_IS_WIDGET (dest) ||
-			      !NBTK_WIDGET (dest)->priv->dnd_threshold))
-		dest = clutter_actor_get_parent (dest);
-	    }
-
-	  if (dest)
-	    g_signal_emit (dest, actor_signals[DND_DROPPED], 0, child, clone,
-			   x, y);
-	}
-
-      if (priv->dnd_enter_cb_id)
-	{
-	  g_signal_handler_disconnect (priv->dnd_dragged,
-				       priv->dnd_enter_cb_id);
-	  priv->dnd_enter_cb_id = 0;
-	}
-
-      g_signal_emit (widget, actor_signals[DND_END], 0,
-		     child, clone, x, y);
-
-      priv->dnd_clone = NULL;
-      g_object_unref (clone);
-
-      if (clone != priv->dnd_icon)
-	clutter_actor_destroy (clone);
-      else
-	clutter_actor_unparent (clone);
-
-      retval = TRUE;
-    }
-
-  if (priv->dnd_grab)
-    clutter_ungrab_pointer ();
-
-  priv->dnd_motion = FALSE;
-  priv->dnd_grab = FALSE;
-
-  g_signal_handlers_disconnect_by_func (child,
-                                        nbtk_widget_child_dnd_motion_cb,
-                                        data);
-
-  if (priv->dnd_dragged)
-    {
-      g_object_unref (priv->dnd_dragged);
-      priv->dnd_dragged = NULL;
-    }
-
-  return retval;
-}
-
 ClutterActor *
 _nbtk_widget_get_dnd_clone (NbtkWidget *widget)
 {
@@ -1718,8 +1764,6 @@ nbtk_widget_setup_child_dnd (NbtkWidget *actor, ClutterActor *child)
 {
   g_signal_connect (child, "button-press-event",
 		    G_CALLBACK (nbtk_widget_child_dnd_press_cb), actor);
-  g_signal_connect (child, "button-release-event",
-		    G_CALLBACK (nbtk_widget_child_dnd_release_cb), actor);
 }
 
 /**
