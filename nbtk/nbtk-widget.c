@@ -22,18 +22,6 @@
  *             Thomas Wood <thomas@linux.intel.com>
  */
 
-/**
- * SECTION:nbtk-widget
- * @short_description: Base class for stylable actors
- *
- * #NbtkWidget is a simple abstract class on top of #ClutterActor. It
- * provides basic themeing properties, support for padding and alignment.
- *
- * Actors in the Nbtk library should subclass #NbtkWidget if they plan
- * to obey to a certain #NbtkStyle or if they implement #ClutterContainer
- * and want to offer basic layout capabilities.
- */
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -50,6 +38,95 @@
 #include "nbtk-stylable.h"
 #include "nbtk-texture-cache.h"
 #include "nbtk-texture-frame.h"
+
+/*
+ * ClutterChildMeta Implementation
+ */
+
+enum {
+  CHILD_PROP_0,
+
+  CHILD_PROP_DND_DISABLED,
+};
+
+G_DEFINE_TYPE (NbtkWidgetChild, nbtk_widget_child, CLUTTER_TYPE_CHILD_META);
+
+static void
+widget_child_set_property (GObject      *gobject,
+			   guint         prop_id,
+			   const GValue *value,
+			   GParamSpec   *pspec)
+{
+  NbtkWidgetChild *child = NBTK_WIDGET_CHILD (gobject);
+
+  switch (prop_id)
+    {
+    case CHILD_PROP_DND_DISABLED:
+      child->dnd_disabled = g_value_get_boolean (value);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
+      break;
+    }
+}
+
+static void
+widget_child_get_property (GObject    *gobject,
+                          guint       prop_id,
+                          GValue     *value,
+                          GParamSpec *pspec)
+{
+  NbtkWidgetChild *child = NBTK_WIDGET_CHILD (gobject);
+
+  switch (prop_id)
+    {
+    case CHILD_PROP_DND_DISABLED:
+      g_value_set_boolean (value, child->dnd_disabled);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
+      break;
+    }
+}
+
+static void
+nbtk_widget_child_class_init (NbtkWidgetChildClass *klass)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  GParamSpec *pspec;
+
+  gobject_class->set_property = widget_child_set_property;
+  gobject_class->get_property = widget_child_get_property;
+
+  pspec = g_param_spec_boolean ("dnd-disabled",
+                                "DND is disabled",
+                                "Indicates that this actor cannot participate "
+                                "in drag and drop.",
+                                FALSE,
+                                NBTK_PARAM_READWRITE);
+
+  g_object_class_install_property (gobject_class, CHILD_PROP_DND_DISABLED,
+				   pspec);
+}
+
+static void
+nbtk_widget_child_init (NbtkWidgetChild *self)
+{
+}
+
+/**
+ * SECTION:nbtk-widget
+ * @short_description: Base class for stylable actors
+ *
+ * #NbtkWidget is a simple abstract class on top of #ClutterActor. It
+ * provides basic themeing properties, support for padding and alignment.
+ *
+ * Actors in the Nbtk library should subclass #NbtkWidget if they plan
+ * to obey to a certain #NbtkStyle or if they implement #ClutterContainer
+ * and want to offer basic layout capabilities.
+ */
 
 enum
 {

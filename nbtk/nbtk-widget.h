@@ -23,9 +23,34 @@
 #define __NBTK_WIDGET_H__
 
 #include <clutter/clutter-actor.h>
+#include <clutter/clutter-child-meta.h>
 #include <nbtk/nbtk-types.h>
 
 G_BEGIN_DECLS
+
+#define NBTK_TYPE_WIDGET_CHILD          (nbtk_widget_child_get_type ())
+#define NBTK_WIDGET_CHILD(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_WIDGET_CHILD, NbtkWidgetChild))
+#define NBTK_IS_WIDGET_CHILD(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NBTK_TYPE_WIDGET_CHILD))
+#define NBTK_WIDGET_CHILD_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), NBTK_TYPE_WIDGET_CHILD, NbtkWidgetChildClass))
+#define NBTK_IS_WIDGET_CHILD_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), NBTK_TYPE_WIDGET_CHILD))
+#define NBTK_WIDGET_CHILD_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), NBTK_TYPE_WIDGET_CHILD, NbtkWidgetChildClass))
+
+typedef struct _NbtkWidgetChild         NbtkWidgetChild;
+typedef struct _NbtkWidgetChildClass    NbtkWidgetChildClass;
+
+struct _NbtkWidgetChild
+{
+  ClutterChildMeta parent_instance;
+
+  gboolean dnd_disabled;
+};
+
+struct _NbtkWidgetChildClass
+{
+  ClutterChildMetaClass parent_class;
+};
+
+GType nbtk_widget_child_get_type (void) G_GNUC_CONST;
 
 #define NBTK_TYPE_WIDGET                 (nbtk_widget_get_type ())
 #define NBTK_WIDGET(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_WIDGET, NbtkWidget))
