@@ -56,16 +56,25 @@ struct _NbtkTextureFrameClass
   void (*_clutter_box_4) (void);
 }; 
 
-GType         nbtk_texture_frame_get_type (void) G_GNUC_CONST;
-ClutterActor *nbtk_texture_frame_new      (ClutterTexture *texture,
-                                           gint            left,
-                                           gint            top,
-                                           gint            right,
-                                           gint            bottom);
-
+GType           nbtk_texture_frame_get_type           (void) G_GNUC_CONST;
+ClutterActor *  nbtk_texture_frame_new                (ClutterTexture   *texture,
+                                                       gfloat            top,
+                                                       gfloat            right,
+                                                       gfloat            bottom,
+                                                       gfloat            left);
 void            nbtk_texture_frame_set_parent_texture (NbtkTextureFrame *frame,
                                                        ClutterTexture   *texture);
 ClutterTexture *nbtk_texture_frame_get_parent_texture (NbtkTextureFrame *frame);
+void            nbtk_texture_frame_set_frame          (NbtkTextureFrame *frame,
+                                                       gfloat            top,
+                                                       gfloat            right,
+                                                       gfloat            bottom,
+                                                       gfloat            left);
+void            nbtk_texture_frame_get_frame          (NbtkTextureFrame *frame,
+                                                       gfloat           *top,
+                                                       gfloat           *right,
+                                                       gfloat           *bottom,
+                                                       gfloat           *left);
 
 G_END_DECLS
 

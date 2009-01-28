@@ -55,10 +55,10 @@ struct _NbtkTextureFramePrivate
 {
   ClutterTexture *parent_texture;
 
-  gint left;
-  gint top;
-  gint right;
-  gint bottom;
+  gfloat left;
+  gfloat top;
+  gfloat right;
+  gfloat bottom;
 
   CoglHandle material;
 };
@@ -66,8 +66,8 @@ struct _NbtkTextureFramePrivate
 static void
 nbtk_texture_frame_get_preferred_width (ClutterActor *self,
                                         ClutterUnit   for_height,
-                                        ClutterUnit   *min_width_p,
-                                        ClutterUnit   *natural_width_p)
+                                        ClutterUnit  *min_width_p,
+                                        ClutterUnit  *natural_width_p)
 {
   NbtkTextureFramePrivate *priv = NBTK_TEXTURE_FRAME (self)->priv;
 
@@ -99,8 +99,8 @@ nbtk_texture_frame_get_preferred_width (ClutterActor *self,
 static void
 nbtk_texture_frame_get_preferred_height (ClutterActor *self,
                                          ClutterUnit   for_width,
-                                         ClutterUnit   *min_height_p,
-                                         ClutterUnit   *natural_height_p)
+                                         ClutterUnit  *min_height_p,
+                                         ClutterUnit  *natural_height_p)
 {
   NbtkTextureFramePrivate *priv = NBTK_TEXTURE_FRAME (self)->priv;
 
@@ -160,11 +160,12 @@ static void
 nbtk_texture_frame_paint (ClutterActor *self)
 {
   NbtkTextureFramePrivate *priv = NBTK_TEXTURE_FRAME (self)->priv;
+  CoglHandle cogl_texture = COGL_INVALID_HANDLE;
   ClutterActorBox box = { 0, };
+  gfloat width, height;
   gfloat tex_width, tex_height;
   gfloat ex, ey;
   gfloat tx1, ty1, tx2, ty2;
-  CoglHandle cogl_texture;
   guint8 opacity;
 
   /* no need to paint stuff if we don't have a texture */
@@ -185,17 +186,19 @@ nbtk_texture_frame_paint (ClutterActor *self)
   tex_height = cogl_texture_get_height (cogl_texture);
 
   clutter_actor_get_allocation_box (self, &box);
+  width = box.x2 - box.x1;
+  height = box.y2 - box.y1;
 
-  tx1 = (gfloat) priv->left / tex_width;
-  tx2 = (gfloat) (tex_width - priv->right) / tex_width;
-  ty1 = (gfloat) priv->top / tex_height;
-  ty2 = (gfloat) (tex_height - priv->bottom) / tex_height;
+  tx1 = priv->left / tex_width;
+  tx2 = (tex_width - priv->right) / tex_width;
+  ty1 = priv->top / tex_height;
+  ty2 = (tex_height - priv->bottom) / tex_height;
 
-  ex = (box.x2 - box.x1) - priv->right;
+  ex = width - priv->right;
   if (ex < 0)
     ex = priv->right; 		/* FIXME ? */
 
-  ey = (box.y2 - box.y1) - priv->bottom;
+  ey = height - priv->bottom;
   if (ey < 0)
     ey = priv->bottom; 		/* FIXME ? */
 
@@ -209,86 +212,63 @@ nbtk_texture_frame_paint (ClutterActor *self)
   cogl_set_source (priv->material);
 
   /* top left corner */
-  cogl_rectangle_with_texture_coords (0, 0,
-                                      priv->left, /* FIXME: clip if smaller */
-                                      priv->top,
+  cogl_rectangle_with_texture_coords (0, 0, priv->left, priv->top,
                                       0.0, 0.0,
                                       tx1, ty1);
 
   /* top middle */
-  cogl_rectangle_with_texture_coords (priv->left, 0,
-                                      ex, priv->top,
+  cogl_rectangle_with_texture_coords (priv->left, 0, ex, priv->top,
                                       tx1, 0.0,
                                       tx2, ty1);
 
   /* top right */
-  cogl_rectangle_with_texture_coords (ex, 0,
-                                      (box.x2 - box.x1), priv->top,
+  cogl_rectangle_with_texture_coords (ex, 0, width, priv->top,
                                       tx2, 0.0,
                                       1.0, ty1);
 
   /* mid left */
-  cogl_rectangle_with_texture_coords (0, priv->top,
-                                      priv->left,
-                                      ey,
+  cogl_rectangle_with_texture_coords (0, priv->top, priv->left, ey,
                                       0.0, ty1,
                                       tx1, ty2);
 
   /* center */
-  cogl_rectangle_with_texture_coords (priv->left, priv->top,
-                                      ex,
-                                      ey,
+  cogl_rectangle_with_texture_coords (priv->left, priv->top, ex, ey,
                                       tx1, ty1,
                                       tx2, ty2);
 
   /* mid right */
-  cogl_rectangle_with_texture_coords (ex, priv->top,
-                                      (box.x2 - box.x1),
-                                      ey,
+  cogl_rectangle_with_texture_coords (ex, priv->top, width, ey,
                                       tx2, ty1,
                                       1.0, ty2);
   
   /* bottom left */
-  cogl_rectangle_with_texture_coords (0, ey,
-                                      priv->left,
-                                      (box.y2 - box.y1),
+  cogl_rectangle_with_texture_coords (0, ey, priv->left, height,
                                       0.0, ty2,
                                       tx1, 1.0);
 
   /* bottom center */
-  cogl_rectangle_with_texture_coords (priv->left, ey,
-                                      ex,
-                                      (box.y2 - box.y1),
+  cogl_rectangle_with_texture_coords (priv->left, ey, ex, height,
                                       tx1, ty2,
                                       tx2, 1.0);
 
   /* bottom right */
-  cogl_rectangle_with_texture_coords (ex, ey,
-                                      (box.x2 - box.x1),
-                                      (box.y2 - box.y1),
+  cogl_rectangle_with_texture_coords (ex, ey, width, height,
                                       tx2, ty2,
                                       1.0, 1.0);
 }
 
 static inline void
 nbtk_texture_frame_set_frame_internal (NbtkTextureFrame *frame,
-                                       gint              left,
-                                       gint              top,
-                                       gint              right,
-                                       gint              bottom)
+                                       gfloat            left,
+                                       gfloat            top,
+                                       gfloat            right,
+                                       gfloat            bottom)
 {
   NbtkTextureFramePrivate *priv = frame->priv;
   GObject *gobject = G_OBJECT (frame);
   gboolean changed = FALSE;
 
   g_object_freeze_notify (gobject);
-
-  if (priv->left != left)
-    {
-      priv->left = left;
-      g_object_notify (gobject, "left");
-      changed = TRUE;
-    }
 
   if (priv->top != top)
     {
@@ -308,6 +288,13 @@ nbtk_texture_frame_set_frame_internal (NbtkTextureFrame *frame,
     {
       priv->bottom = bottom;
       g_object_notify (gobject, "bottom");
+      changed = TRUE;
+    }
+
+  if (priv->left != left)
+    {
+      priv->left = left;
+      g_object_notify (gobject, "left");
       changed = TRUE;
     }
 
@@ -333,36 +320,36 @@ nbtk_texture_frame_set_property (GObject      *gobject,
                                              g_value_get_object (value));
       break;
 
-    case PROP_LEFT:
-      nbtk_texture_frame_set_frame_internal (frame,
-                                             g_value_get_int (value),
-                                             priv->top,
-                                             priv->right,
-                                             priv->bottom);
-      break;
-
     case PROP_TOP:
       nbtk_texture_frame_set_frame_internal (frame,
                                              priv->left,
-                                             g_value_get_int (value),
+                                             g_value_get_float (value),
                                              priv->right,
                                              priv->bottom);
       break;
 
     case PROP_RIGHT:
       nbtk_texture_frame_set_frame_internal (frame,
-                                             priv->left,
                                              priv->top,
-                                             g_value_get_int (value),
-                                             priv->bottom);
+                                             g_value_get_float (value),
+                                             priv->bottom,
+                                             priv->left);
       break;
 
     case PROP_BOTTOM:
       nbtk_texture_frame_set_frame_internal (frame,
-                                             priv->left,
                                              priv->top,
                                              priv->right,
-                                             g_value_get_int (value));
+                                             g_value_get_float (value),
+                                             priv->left);
+      break;
+
+    case PROP_LEFT:
+      nbtk_texture_frame_set_frame_internal (frame,
+                                             priv->top,
+                                             priv->right,
+                                             priv->bottom,
+                                             g_value_get_float (value));
       break;
 
     default:
@@ -386,19 +373,19 @@ nbtk_texture_frame_get_property (GObject    *gobject,
       break;
 
     case PROP_LEFT:
-      g_value_set_int (value, priv->left);
+      g_value_set_float (value, priv->left);
       break;
 
     case PROP_TOP:
-      g_value_set_int (value, priv->top);
+      g_value_set_float (value, priv->top);
       break;
 
     case PROP_RIGHT:
-      g_value_set_int (value, priv->right);
+      g_value_set_float (value, priv->right);
       break;
 
     case PROP_BOTTOM:
-      g_value_set_int (value, priv->bottom);
+      g_value_set_float (value, priv->bottom);
       break;
 
     default:
@@ -456,36 +443,36 @@ nbtk_texture_frame_class_init (NbtkTextureFrameClass *klass)
                                G_PARAM_CONSTRUCT);
   g_object_class_install_property (gobject_class, PROP_PARENT_TEXTURE, pspec);
 
-  pspec = g_param_spec_int ("left",
-                            "Left",
-                            "Left offset",
-			    0, G_MAXINT,
-                            0,
-                            NBTK_PARAM_READWRITE);
+  pspec = g_param_spec_float ("left",
+                              "Left",
+                              "Left offset",
+			      0, G_MAXFLOAT,
+                              0,
+                              NBTK_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_LEFT, pspec);
 
-  pspec = g_param_spec_int ("top",
-                            "Top",
-                            "Top offset",
-                            0, G_MAXINT,
-                            0,
-                            NBTK_PARAM_READWRITE);
+  pspec = g_param_spec_float ("top",
+                              "Top",
+                              "Top offset",
+                              0, G_MAXFLOAT,
+                              0,
+                              NBTK_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_TOP, pspec);
 
-  pspec = g_param_spec_int ("bottom",
-                            "Bottom",
-                            "Bottom offset",
-                            0, G_MAXINT,
-                            0,
-                            NBTK_PARAM_READWRITE);
+  pspec = g_param_spec_float ("bottom",
+                              "Bottom",
+                              "Bottom offset",
+                              0, G_MAXFLOAT,
+                              0,
+                              NBTK_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_BOTTOM, pspec);
 
-  pspec = g_param_spec_int ("right",
-                            "Right",
-                            "Right offset",
-                            0, G_MAXINT,
-                            0,
-                            NBTK_PARAM_READWRITE);
+  pspec = g_param_spec_float ("right",
+                              "Right",
+                              "Right offset",
+                              0, G_MAXFLOAT,
+                              0,
+                              NBTK_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_RIGHT, pspec);
 }
 
@@ -518,10 +505,10 @@ nbtk_texture_frame_init (NbtkTextureFrame *self)
  */
 ClutterActor*
 nbtk_texture_frame_new (ClutterTexture *texture, 
-			gint            left,
-			gint            top,
-			gint            right,
-			gint            bottom)
+			gfloat          left,
+			gfloat          top,
+			gfloat          right,
+			gfloat          bottom)
 {
   g_return_val_if_fail (texture == NULL || CLUTTER_IS_TEXTURE (texture), NULL);
 
@@ -547,23 +534,74 @@ nbtk_texture_frame_set_parent_texture (NbtkTextureFrame *frame,
                                        ClutterTexture   *texture)
 {
   NbtkTextureFramePrivate *priv;
+  gboolean was_visible;
 
   g_return_if_fail (NBTK_IS_TEXTURE_FRAME (frame));
   g_return_if_fail (texture == NULL || CLUTTER_IS_TEXTURE (texture));
 
   priv = frame->priv;
 
+  was_visible = CLUTTER_ACTOR_IS_VISIBLE (frame);
+
+  if (priv->parent_texture == texture)
+    return;
+
   if (priv->parent_texture)
     {
       g_object_unref (priv->parent_texture);
       priv->parent_texture = NULL;
+
+      if (was_visible)
+        clutter_actor_hide (CLUTTER_ACTOR (frame));
     }
 
   if (texture)
-    priv->parent_texture = g_object_ref (texture);
+    {
+      priv->parent_texture = g_object_ref (texture);
 
-  if (CLUTTER_ACTOR_IS_VISIBLE (frame))
-    clutter_actor_queue_redraw (CLUTTER_ACTOR (frame));
+      if (was_visible && CLUTTER_ACTOR_IS_VISIBLE (priv->parent_texture))
+        clutter_actor_show (CLUTTER_ACTOR (frame));
+    }
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (frame));
 
   g_object_notify (G_OBJECT (frame), "parent-texture");
+}
+
+void
+nbtk_texture_frame_set_frame (NbtkTextureFrame *frame,
+                              gfloat            top,
+                              gfloat            right,
+                              gfloat            bottom,
+                              gfloat            left)
+{
+  g_return_if_fail (NBTK_IS_TEXTURE_FRAME (frame));
+
+  nbtk_texture_frame_set_frame_internal (frame, top, right, bottom, left);
+}
+
+void
+nbtk_texture_frame_get_frame (NbtkTextureFrame *frame,
+                              gfloat           *top,
+                              gfloat           *right,
+                              gfloat           *bottom,
+                              gfloat           *left)
+{
+  NbtkTextureFramePrivate *priv;
+
+  g_return_if_fail (NBTK_IS_TEXTURE_FRAME (frame));
+
+  priv = frame->priv;
+
+  if (top)
+    *top = priv->top;
+
+  if (right)
+    *right = priv->right;
+
+  if (bottom)
+    *bottom = priv->bottom;
+
+  if (left)
+    *left = priv->left;
 }
