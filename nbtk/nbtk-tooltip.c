@@ -60,11 +60,9 @@ enum
 struct _NbtkTooltipPrivate
 {
   ClutterActor *label;
-  ClutterActor *actor;
+  ClutterActor *widget;
 
   ClutterEffectTemplate *hide_template;
-
-  guint actor_hide_id;
 };
 
 G_DEFINE_TYPE (NbtkTooltip, nbtk_tooltip, NBTK_TYPE_WIDGET)
@@ -159,12 +157,6 @@ nbtk_tooltip_dispose (GObject *object)
 {
   NbtkTooltipPrivate *priv = NBTK_TOOLTIP (object)->priv;
 
-  if (priv->actor && priv->actor_hide_id)
-    {
-      g_signal_handler_disconnect (priv->actor, priv->actor_hide_id);
-      priv->actor_hide_id = 0;
-    }
-
   g_object_unref (priv->hide_template);
   priv->hide_template = NULL;
 }
@@ -214,36 +206,13 @@ nbtk_tooltip_init (NbtkTooltip *tooltip)
 static void
 nbtk_tooltip_weak_ref_notify (gpointer tooltip, GObject *obj)
 {
-  NbtkTooltip *tip = NBTK_TOOLTIP (tooltip);
-
-  tip->priv->actor = NULL;
-  tip->priv->actor_hide_id = 0;
-
-  /*
-   * We do not hold any reference on ourselves; if we are still floating, i.e.,
-   * if we have not been shown, we clear the floating reference; if we have
-   * been shown, we unparent ourselves from the stage.
-   */
-  if (!clutter_actor_get_parent (CLUTTER_ACTOR (tooltip)))
-    {
-      g_object_ref_sink (G_OBJECT (tooltip));
-      g_object_unref (G_OBJECT (tooltip));
-    }
-  else
-    clutter_actor_unparent (CLUTTER_ACTOR (tooltip));
-}
-
-static void
-nbtk_tooltip_actor_hide_cb (ClutterActor *actor, gpointer data)
-{
-  ClutterActor *self = CLUTTER_ACTOR (data);
-
-  clutter_actor_hide (self);
+  g_object_ref_sink (G_OBJECT (tooltip));
+  g_object_unref (G_OBJECT (tooltip));
 }
 
 /**
  * nbtk_tooltip_new:
- * @actor: actor the tooltip is attached to
+ * @widget: actor the tooltip is attached to
  * @text: text to set the label to
  *
  * Create a new #NbtkTooltip with the specified label
@@ -251,7 +220,7 @@ nbtk_tooltip_actor_hide_cb (ClutterActor *actor, gpointer data)
  * Returns: a new #NbtkTooltip
  */
 NbtkWidget *
-nbtk_tooltip_new (ClutterActor *actor, const gchar *text)
+nbtk_tooltip_new (NbtkWidget *widget, const gchar *text)
 {
   NbtkTooltip  *tooltip;
 
@@ -261,21 +230,10 @@ nbtk_tooltip_new (ClutterActor *actor, const gchar *text)
                           "show-on-set-parent", FALSE,
                           NULL);
 
-  /*
-   * FIXME: There should be no initialization done in the _new() function as
-   *        doing so makes it impossible to subclass the class. The actor
-   *        should be a property and all of this should be done in the
-   *        _constructed() virtual.
-   */
-
   /* remember the associated widget */
-  tooltip->priv->actor = actor;
+  tooltip->priv->widget = CLUTTER_ACTOR (widget);
 
-  g_object_weak_ref (G_OBJECT (actor), nbtk_tooltip_weak_ref_notify, tooltip);
-
-  tooltip->priv->actor_hide_id = g_signal_connect (actor, "hide",
-				    G_CALLBACK (nbtk_tooltip_actor_hide_cb),
-				    tooltip);
+  g_object_weak_ref (G_OBJECT (widget), nbtk_tooltip_weak_ref_notify, tooltip);
 
   return NBTK_WIDGET (tooltip);
 }
@@ -336,7 +294,7 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
   g_return_if_fail (NBTK_TOOLTIP (tooltip));
 
   parent = clutter_actor_get_parent (CLUTTER_ACTOR (tooltip));
-  stage = clutter_actor_get_stage (tooltip->priv->actor);
+  stage = clutter_actor_get_stage (tooltip->priv->widget);
 
   /* make sure we're parented on the stage */
   if (G_UNLIKELY (parent != stage))
@@ -354,9 +312,9 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
                                  NULL);
 
   /* place the tooltip under the associated actor */
-  clutter_actor_get_transformed_position (tooltip->priv->actor, &x, &y);
-  clutter_actor_get_anchor_point (tooltip->priv->actor, &ax, &ay);
-  clutter_actor_get_transformed_size (tooltip->priv->actor, &w, &h);
+  clutter_actor_get_transformed_position (tooltip->priv->widget, &x, &y);
+  clutter_actor_get_anchor_point (tooltip->priv->widget, &ax, &ay);
+  clutter_actor_get_transformed_size (tooltip->priv->widget, &w, &h);
 
 
   clutter_actor_move_anchor_point_from_gravity (CLUTTER_ACTOR (tooltip), CLUTTER_GRAVITY_NORTH);
@@ -382,6 +340,7 @@ void
 nbtk_tooltip_hide (NbtkTooltip *tooltip)
 {
   g_return_if_fail (NBTK_TOOLTIP (tooltip));
+
 
   clutter_effect_scale (tooltip->priv->hide_template,
                         CLUTTER_ACTOR (tooltip),

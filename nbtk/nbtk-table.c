@@ -101,7 +101,41 @@ enum {
   CHILD_PROP_Y_FILL,
 };
 
-G_DEFINE_TYPE (NbtkTableChild, nbtk_table_child, NBTK_TYPE_WIDGET_CHILD);
+#define NBTK_TYPE_TABLE_CHILD          (nbtk_table_child_get_type ())
+#define NBTK_TABLE_CHILD(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_TABLE_CHILD, NbtkTableChild))
+#define NBTK_IS_TABLE_CHILD(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NBTK_TYPE_TABLE_CHILD))
+#define NBTK_TABLE_CHILD_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), NBTK_TYPE_TABLE_CHILD, NbtkTableChildClass))
+#define NBTK_IS_TABLE_CHILD_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), NBTK_TYPE_TABLE_CHILD))
+#define NBTK_TABLE_CHILD_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), NBTK_TYPE_TABLE_CHILD, NbtkTableChildClass))
+
+typedef struct _NbtkTableChild         NbtkTableChild;
+typedef struct _NbtkTableChildClass    NbtkTableChildClass;
+
+struct _NbtkTableChild
+{
+  ClutterChildMeta parent_instance;
+
+  gint col;
+  gint row;
+  gint col_span;
+  gint row_span;
+  gboolean keep_ratio : 1;
+  gboolean x_expand : 1;
+  gboolean y_expand : 1;
+  gboolean x_fill : 1;
+  gboolean y_fill : 1;
+  gdouble x_align;
+  gdouble y_align;
+};
+
+struct _NbtkTableChildClass
+{
+  ClutterChildMetaClass parent_class;
+};
+
+GType nbtk_table_child_get_type (void) G_GNUC_CONST;
+
+G_DEFINE_TYPE (NbtkTableChild, nbtk_table_child, CLUTTER_TYPE_CHILD_META);
 
 static void
 table_child_set_property (GObject      *gobject,
@@ -495,25 +529,11 @@ nbtk_table_finalize (GObject *gobject)
 }
 
 static void
-nbtk_table_unparent_child (ClutterActor *actor, gpointer data)
-{
-  /*
-   * Explicitely hide all contents before unparenting.
-   *
-   * Unparenting causes only unrealization of the actor itself, and not of its
-   * descendants, so this allows us to respond to the "hide" signal on any of
-   * the table descendants before the child itself gets destroyed.
-   */
-  clutter_actor_hide_all (actor);
-  clutter_actor_unparent (actor);
-}
-
-static void
 nbtk_table_dispose (GObject *gobject)
 {
   NbtkTablePrivate *priv = NBTK_TABLE (gobject)->priv;
 
-  g_slist_foreach (priv->children, (GFunc) nbtk_table_unparent_child, NULL);
+  g_slist_foreach (priv->children, (GFunc) clutter_actor_unparent, NULL);
   g_slist_free (priv->children);
   priv->children = NULL;
 
@@ -1082,26 +1102,6 @@ nbtk_table_dnd_dropped (NbtkWidget   *actor,
 }
 
 static void
-nbtk_table_show_all (ClutterActor *table)
-{
-  NbtkTablePrivate *priv = NBTK_TABLE (table)->priv;
-  GSList *l;
-
-  for (l = priv->children; l; l = l->next)
-    clutter_actor_show_all (CLUTTER_ACTOR (l->data));
-}
-
-static void
-nbtk_table_hide_all (ClutterActor *table)
-{
-  NbtkTablePrivate *priv = NBTK_TABLE (table)->priv;
-  GSList *l;
-
-  for (l = priv->children; l; l = l->next)
-    clutter_actor_hide_all (CLUTTER_ACTOR (l->data));
-}
-
-static void
 nbtk_table_class_init (NbtkTableClass *klass)
 {
   GParamSpec *pspec;
@@ -1129,8 +1129,6 @@ nbtk_table_class_init (NbtkTableClass *klass)
   actor_class->allocate = nbtk_table_allocate;
   actor_class->get_preferred_width = nbtk_table_get_preferred_width;
   actor_class->get_preferred_height = nbtk_table_get_preferred_height;
-  actor_class->show_all = nbtk_table_show_all;
-  actor_class->hide_all = nbtk_table_hide_all;
 
   widget_class->dnd_dropped = nbtk_table_dnd_dropped;
 
