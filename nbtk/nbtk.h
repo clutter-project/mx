@@ -22,6 +22,7 @@
 #define __NBTK_H__
 
 
+#include <nbtk/nbtk-behaviour-bounce.h>
 #include <nbtk/nbtk-button.h>
 #include <nbtk/nbtk-entry.h>
 #include <nbtk/nbtk-enum-types.h>

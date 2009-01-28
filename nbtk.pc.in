@@ -7,5 +7,5 @@ Name: Nbtk
 Description: An experimental toolkit for moblin-netbook implementation
 Version: @VERSION@
 Libs: -L${libdir} -lnbtk
-Cflags: -I${includedir}/nbtk
+Cflags: -I${includedir}
 Requires: gobject-2.0 clutter-0.8 libccss-1
