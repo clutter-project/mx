@@ -40,6 +40,42 @@
 #include "nbtk-texture-frame.h"
 
 /*
+ * Forward declaration for sake of NbtkWidgetChild
+ */
+struct _NbtkWidgetPrivate
+{
+  ClutterActor *child;
+
+  NbtkPadding border;
+  NbtkPadding padding;
+  gboolean override_css_padding;
+
+  ClutterFixed x_align;
+  ClutterFixed y_align;
+
+  NbtkStyle *style;
+  gchar *pseudo_class;
+  gchar *style_class;
+
+  ClutterActor *bg_image;
+  ClutterColor *bg_color;
+
+  ClutterActor *dnd_last_dest;
+  ClutterActor *dnd_clone;
+  ClutterActor *dnd_dragged;
+  ClutterActor *dnd_icon;
+
+  guint dnd_threshold;
+  gint  dnd_x;
+  gint  dnd_y;
+
+  guint dnd_enter_cb_id;
+
+  gboolean dnd_motion : 1;
+  gboolean dnd_grab   : 1;
+};
+
+/*
  * ClutterChildMeta Implementation
  */
 
@@ -57,12 +93,33 @@ widget_child_set_property (GObject      *gobject,
 			   const GValue *value,
 			   GParamSpec   *pspec)
 {
-  NbtkWidgetChild *child = NBTK_WIDGET_CHILD (gobject);
+  NbtkWidgetChild *meta = NBTK_WIDGET_CHILD (gobject);
 
   switch (prop_id)
     {
     case CHILD_PROP_DND_DISABLED:
-      child->dnd_disabled = g_value_get_boolean (value);
+      {
+	gboolean was = meta->dnd_disabled;
+	meta->dnd_disabled = g_value_get_boolean (value);
+
+	if (was != meta->dnd_disabled)
+	  {
+	    ClutterActor *child = CLUTTER_CHILD_META(gobject)->actor;
+	    NbtkWidget   *widget =
+	                NBTK_WIDGET (CLUTTER_CHILD_META(gobject)->container);
+
+	    if (was)
+	      {
+		if (widget->priv->dnd_threshold > 0)
+		nbtk_widget_setup_child_dnd (widget, child);
+	      }
+	    else
+	      {
+		nbtk_widget_undo_child_dnd (widget, child);
+	      }
+	  }
+      }
+
       break;
 
     default:
@@ -169,39 +226,6 @@ G_DEFINE_ABSTRACT_TYPE_WITH_CODE (NbtkWidget, nbtk_widget, CLUTTER_TYPE_ACTOR,
 
 #define NBTK_WIDGET_GET_PRIVATE(obj) \
         (G_TYPE_INSTANCE_GET_PRIVATE ((obj), NBTK_TYPE_WIDGET, NbtkWidgetPrivate))
-
-struct _NbtkWidgetPrivate
-{
-  ClutterActor *child;
-
-  NbtkPadding border;
-  NbtkPadding padding;
-  gboolean override_css_padding;
-
-  ClutterFixed x_align;
-  ClutterFixed y_align;
-
-  NbtkStyle *style;
-  gchar *pseudo_class;
-  gchar *style_class;
-
-  ClutterActor *bg_image;
-  ClutterColor *bg_color;
-
-  ClutterActor *dnd_last_dest;
-  ClutterActor *dnd_clone;
-  ClutterActor *dnd_dragged;
-  ClutterActor *dnd_icon;
-
-  guint dnd_threshold;
-  gint  dnd_x;
-  gint  dnd_y;
-
-  guint dnd_enter_cb_id;
-
-  gboolean dnd_motion : 1;
-  gboolean dnd_grab   : 1;
-};
 
 static void
 nbtk_widget_add_actor (ClutterContainer *container,
@@ -1839,6 +1863,14 @@ _nbtk_widget_get_dnd_clone (NbtkWidget *widget)
 void
 nbtk_widget_setup_child_dnd (NbtkWidget *actor, ClutterActor *child)
 {
+  NbtkWidgetChild *meta;
+
+  meta = NBTK_WIDGET_CHILD (
+	clutter_container_get_child_meta (CLUTTER_CONTAINER (actor), child));
+
+  if (!meta || meta->dnd_disabled)
+    return;
+
   g_signal_connect (child, "button-press-event",
 		    G_CALLBACK (nbtk_widget_child_dnd_press_cb), actor);
 }
