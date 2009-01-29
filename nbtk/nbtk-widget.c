@@ -22,18 +22,6 @@
  *             Thomas Wood <thomas@linux.intel.com>
  */
 
-/**
- * SECTION:nbtk-widget
- * @short_description: Base class for stylable actors
- *
- * #NbtkWidget is a simple abstract class on top of #ClutterActor. It
- * provides basic themeing properties, support for padding and alignment.
- *
- * Actors in the Nbtk library should subclass #NbtkWidget if they plan
- * to obey to a certain #NbtkStyle or if they implement #ClutterContainer
- * and want to offer basic layout capabilities.
- */
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -50,6 +38,152 @@
 #include "nbtk-stylable.h"
 #include "nbtk-texture-cache.h"
 #include "nbtk-texture-frame.h"
+
+/*
+ * Forward declaration for sake of NbtkWidgetChild
+ */
+struct _NbtkWidgetPrivate
+{
+  ClutterActor *child;
+
+  NbtkPadding border;
+  NbtkPadding padding;
+  gboolean override_css_padding;
+
+  ClutterFixed x_align;
+  ClutterFixed y_align;
+
+  NbtkStyle *style;
+  gchar *pseudo_class;
+  gchar *style_class;
+
+  ClutterActor *bg_image;
+  ClutterColor *bg_color;
+
+  ClutterActor *dnd_last_dest;
+  ClutterActor *dnd_clone;
+  ClutterActor *dnd_dragged;
+  ClutterActor *dnd_icon;
+
+  guint dnd_threshold;
+  gint  dnd_x;
+  gint  dnd_y;
+
+  guint dnd_enter_cb_id;
+
+  gboolean dnd_motion : 1;
+  gboolean dnd_grab   : 1;
+};
+
+/*
+ * ClutterChildMeta Implementation
+ */
+
+enum {
+  CHILD_PROP_0,
+
+  CHILD_PROP_DND_DISABLED,
+};
+
+G_DEFINE_TYPE (NbtkWidgetChild, nbtk_widget_child, CLUTTER_TYPE_CHILD_META);
+
+static void
+widget_child_set_property (GObject      *gobject,
+			   guint         prop_id,
+			   const GValue *value,
+			   GParamSpec   *pspec)
+{
+  NbtkWidgetChild *meta = NBTK_WIDGET_CHILD (gobject);
+
+  switch (prop_id)
+    {
+    case CHILD_PROP_DND_DISABLED:
+      {
+	gboolean was = meta->dnd_disabled;
+	meta->dnd_disabled = g_value_get_boolean (value);
+
+	if (was != meta->dnd_disabled)
+	  {
+	    ClutterActor *child = CLUTTER_CHILD_META(gobject)->actor;
+	    NbtkWidget   *widget =
+	                NBTK_WIDGET (CLUTTER_CHILD_META(gobject)->container);
+
+	    if (was)
+	      {
+		if (widget->priv->dnd_threshold > 0)
+		nbtk_widget_setup_child_dnd (widget, child);
+	      }
+	    else
+	      {
+		nbtk_widget_undo_child_dnd (widget, child);
+	      }
+	  }
+      }
+
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
+      break;
+    }
+}
+
+static void
+widget_child_get_property (GObject    *gobject,
+                          guint       prop_id,
+                          GValue     *value,
+                          GParamSpec *pspec)
+{
+  NbtkWidgetChild *child = NBTK_WIDGET_CHILD (gobject);
+
+  switch (prop_id)
+    {
+    case CHILD_PROP_DND_DISABLED:
+      g_value_set_boolean (value, child->dnd_disabled);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
+      break;
+    }
+}
+
+static void
+nbtk_widget_child_class_init (NbtkWidgetChildClass *klass)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  GParamSpec *pspec;
+
+  gobject_class->set_property = widget_child_set_property;
+  gobject_class->get_property = widget_child_get_property;
+
+  pspec = g_param_spec_boolean ("dnd-disabled",
+                                "DND is disabled",
+                                "Indicates that this actor cannot participate "
+                                "in drag and drop.",
+                                FALSE,
+                                NBTK_PARAM_READWRITE);
+
+  g_object_class_install_property (gobject_class, CHILD_PROP_DND_DISABLED,
+				   pspec);
+}
+
+static void
+nbtk_widget_child_init (NbtkWidgetChild *self)
+{
+}
+
+/**
+ * SECTION:nbtk-widget
+ * @short_description: Base class for stylable actors
+ *
+ * #NbtkWidget is a simple abstract class on top of #ClutterActor. It
+ * provides basic themeing properties, support for padding and alignment.
+ *
+ * Actors in the Nbtk library should subclass #NbtkWidget if they plan
+ * to obey to a certain #NbtkStyle or if they implement #ClutterContainer
+ * and want to offer basic layout capabilities.
+ */
 
 enum
 {
@@ -92,39 +226,6 @@ G_DEFINE_ABSTRACT_TYPE_WITH_CODE (NbtkWidget, nbtk_widget, CLUTTER_TYPE_ACTOR,
 
 #define NBTK_WIDGET_GET_PRIVATE(obj) \
         (G_TYPE_INSTANCE_GET_PRIVATE ((obj), NBTK_TYPE_WIDGET, NbtkWidgetPrivate))
-
-struct _NbtkWidgetPrivate
-{
-  ClutterActor *child;
-
-  NbtkPadding border;
-  NbtkPadding padding;
-  gboolean override_css_padding;
-
-  ClutterFixed x_align;
-  ClutterFixed y_align;
-
-  NbtkStyle *style;
-  gchar *pseudo_class;
-  gchar *style_class;
-
-  ClutterActor *bg_image;
-  ClutterColor *bg_color;
-
-  ClutterActor *dnd_last_dest;
-  ClutterActor *dnd_clone;
-  ClutterActor *dnd_dragged;
-  ClutterActor *dnd_icon;
-
-  guint dnd_threshold;
-  gint  dnd_x;
-  gint  dnd_y;
-
-  guint dnd_enter_cb_id;
-
-  gboolean dnd_motion : 1;
-  gboolean dnd_grab   : 1;
-};
 
 static void
 nbtk_widget_add_actor (ClutterContainer *container,
@@ -1477,27 +1578,151 @@ nbtk_widget_dnd_enter_event_cb (ClutterActor *actor,
 	  g_debug ("Enter event on %p (%s)\n", dest, G_OBJECT_TYPE_NAME (dest));
 
 	  if (priv->dnd_last_dest)
-	    g_signal_emit (priv->dnd_last_dest, actor_signals[DND_LEAVE], 0,
-			   priv->dnd_dragged,
-			   priv->dnd_clone, event->x, event->y);
+	    {
+	      g_object_ref (priv->dnd_last_dest);
+
+	      g_signal_emit (priv->dnd_last_dest, actor_signals[DND_LEAVE], 0,
+			     priv->dnd_dragged,
+			     priv->dnd_clone, event->x, event->y);
+
+	      g_object_unref (priv->dnd_last_dest);
+	    }
+
+	  g_object_ref (dest);
 
 	  g_signal_emit (dest, actor_signals[DND_ENTER], 0,
 			 priv->dnd_dragged,
 			 priv->dnd_clone, event->x, event->y);
+
+	  g_object_unref (dest);
 
 	  priv->dnd_last_dest = dest;
 	}
     }
   else if (priv->dnd_last_dest)
     {
+      g_object_ref (priv->dnd_last_dest);
+
       g_signal_emit (priv->dnd_last_dest, actor_signals[DND_LEAVE], 0,
 		     priv->dnd_dragged,
 		     priv->dnd_clone, event->x, event->y);
+
+      g_object_unref (priv->dnd_last_dest);
 
       priv->dnd_last_dest = NULL;
     }
 
   return TRUE;
+}
+
+static gboolean
+nbtk_widget_child_dnd_motion_cb (ClutterActor *child,
+				 ClutterEvent *event,
+				 gpointer      data);
+
+static gboolean
+nbtk_widget_child_dnd_release_cb (ClutterActor *child,
+				  ClutterEvent *event,
+				  gpointer      data)
+{
+  NbtkWidget *widget = data;
+  NbtkWidgetPrivate *priv;
+  gboolean retval = FALSE;
+
+  if (event->type != CLUTTER_BUTTON_RELEASE)
+    return FALSE;
+
+  priv = NBTK_WIDGET (widget)->priv;
+
+  if (priv->dnd_motion)
+    {
+      ClutterActor *dest;
+      ClutterStage *stage;
+      ClutterActor *clone;
+
+      gint x = event->motion.x;
+      gint y = event->motion.y;
+
+      clone = priv->dnd_clone;
+
+      /*
+       * Hide the clone, so it does not interfer with picking.
+       */
+      clutter_actor_hide (clone);
+
+      stage = CLUTTER_STAGE (clutter_actor_get_stage (child));
+
+      dest = clutter_stage_get_actor_at_pos (stage, x, y);
+
+      if (dest)
+	{
+	  /*
+	   * If the target is not NbtkWidget, or the widget does not have dnd
+	   * enabled, we try to propagate the signal down the ancestry chain.
+	   */
+	  if (!NBTK_IS_WIDGET (dest) ||
+	      !NBTK_WIDGET (dest)->priv->dnd_threshold)
+	    {
+	      dest = clutter_actor_get_parent (dest);
+
+	      while (dest && (!NBTK_IS_WIDGET (dest) ||
+			      !NBTK_WIDGET (dest)->priv->dnd_threshold))
+		dest = clutter_actor_get_parent (dest);
+	    }
+
+	  if (dest)
+	    {
+	      g_object_ref (dest);
+
+	      g_signal_emit (dest, actor_signals[DND_DROPPED], 0, child, clone,
+			     x, y);
+
+	      g_object_unref (dest);
+	    }
+	}
+
+      if (priv->dnd_enter_cb_id)
+	{
+	  g_signal_handler_disconnect (priv->dnd_dragged,
+				       priv->dnd_enter_cb_id);
+	  priv->dnd_enter_cb_id = 0;
+	}
+
+      g_object_ref (widget);
+
+      g_signal_emit (widget, actor_signals[DND_END], 0,
+		     child, clone, x, y);
+
+      g_object_unref (widget);
+
+      priv->dnd_clone = NULL;
+      g_object_unref (clone);
+
+      if (clone != priv->dnd_icon)
+	clutter_actor_destroy (clone);
+      else
+	clutter_actor_unparent (clone);
+
+      retval = TRUE;
+    }
+
+  if (priv->dnd_grab)
+    clutter_ungrab_pointer ();
+
+  priv->dnd_motion = FALSE;
+  priv->dnd_grab = FALSE;
+
+  g_signal_handlers_disconnect_by_func (child,
+                                        nbtk_widget_child_dnd_motion_cb,
+                                        data);
+
+  if (priv->dnd_dragged)
+    {
+      g_object_unref (priv->dnd_dragged);
+      priv->dnd_dragged = NULL;
+    }
+
+  return retval;
 }
 
 static gboolean
@@ -1547,6 +1772,9 @@ nbtk_widget_child_dnd_motion_cb (ClutterActor *child,
 	  clutter_actor_set_size  (clone, child_w, child_h);
 	}
 
+      g_signal_connect (child, "button-release-event",
+			G_CALLBACK (nbtk_widget_child_dnd_release_cb), widget);
+
       priv->dnd_clone = clone;
 
       clutter_actor_set_position (clone, x, y);
@@ -1556,7 +1784,11 @@ nbtk_widget_child_dnd_motion_cb (ClutterActor *child,
 
       clutter_actor_show (clone);
 
+      g_object_ref (widget);
+
       g_signal_emit (widget, actor_signals[DND_BEGIN], 0, child, clone, x, y);
+
+      g_object_unref (widget);
 
       priv->dnd_motion = TRUE;
     }
@@ -1566,8 +1798,12 @@ nbtk_widget_child_dnd_motion_cb (ClutterActor *child,
       clutter_actor_queue_redraw (priv->dnd_clone);
     }
 
+  g_object_ref (widget);
+
   g_signal_emit (widget, actor_signals[DND_MOTION], 0,
 		 child, priv->dnd_clone, x, y);
+
+  g_object_unref (widget);
 
   priv->dnd_x = x;
   priv->dnd_y = y;
@@ -1607,93 +1843,6 @@ nbtk_widget_child_dnd_press_cb (ClutterActor *child,
   return TRUE;
 }
 
-static gboolean
-nbtk_widget_child_dnd_release_cb (ClutterActor *child,
-				  ClutterEvent *event,
-				  gpointer      data)
-{
-  NbtkWidget *widget = data;
-  NbtkWidgetPrivate *priv = NBTK_WIDGET (widget)->priv;
-  gboolean retval = FALSE;
-
-  if (priv->dnd_motion)
-    {
-      ClutterActor *dest;
-      ClutterStage *stage;
-      ClutterActor *clone;
-
-      gint x = event->motion.x;
-      gint y = event->motion.y;
-
-      clone = priv->dnd_clone;
-
-      /*
-       * Hide the clone, so it does not interfer with picking.
-       */
-      clutter_actor_hide (clone);
-
-      stage = CLUTTER_STAGE (clutter_actor_get_stage (child));
-      dest = clutter_stage_get_actor_at_pos (stage, x, y);
-
-      if (dest)
-	{
-	  /*
-	   * If the target is not NbtkWidget, or the widget does not have dnd
-	   * enabled, we try to propagate the signal down the ancestry chain.
-	   */
-	  if (!NBTK_IS_WIDGET (dest) ||
-	      !NBTK_WIDGET (dest)->priv->dnd_threshold)
-	    {
-	      dest = clutter_actor_get_parent (dest);
-
-	      while (dest && (!NBTK_IS_WIDGET (dest) ||
-			      !NBTK_WIDGET (dest)->priv->dnd_threshold))
-		dest = clutter_actor_get_parent (dest);
-	    }
-
-	  if (dest)
-	    g_signal_emit (dest, actor_signals[DND_DROPPED], 0, child, clone,
-			   x, y);
-	}
-
-      if (priv->dnd_enter_cb_id)
-	{
-	  g_signal_handler_disconnect (priv->dnd_dragged,
-				       priv->dnd_enter_cb_id);
-	  priv->dnd_enter_cb_id = 0;
-	}
-
-      g_signal_emit (widget, actor_signals[DND_END], 0,
-		     child, clone, x, y);
-
-      g_object_unref (priv->dnd_dragged);
-      priv->dnd_dragged = NULL;
-
-      priv->dnd_clone = NULL;
-      g_object_unref (clone);
-
-      if (clone != priv->dnd_icon)
-	clutter_actor_destroy (clone);
-      else
-	clutter_actor_unparent (clone);
-
-      retval = TRUE;
-    }
-
-  if (priv->dnd_grab)
-    clutter_ungrab_pointer ();
-
-  priv->dnd_motion = FALSE;
-  priv->dnd_grab = FALSE;
-
-  g_signal_handlers_disconnect_by_func (child,
-                                        nbtk_widget_child_dnd_motion_cb,
-                                        data);
-
-
-  return retval;
-}
-
 ClutterActor *
 _nbtk_widget_get_dnd_clone (NbtkWidget *widget)
 {
@@ -1714,10 +1863,16 @@ _nbtk_widget_get_dnd_clone (NbtkWidget *widget)
 void
 nbtk_widget_setup_child_dnd (NbtkWidget *actor, ClutterActor *child)
 {
+  NbtkWidgetChild *meta;
+
+  meta = NBTK_WIDGET_CHILD (
+	clutter_container_get_child_meta (CLUTTER_CONTAINER (actor), child));
+
+  if (!meta || meta->dnd_disabled)
+    return;
+
   g_signal_connect (child, "button-press-event",
 		    G_CALLBACK (nbtk_widget_child_dnd_press_cb), actor);
-  g_signal_connect (child, "button-release-event",
-		    G_CALLBACK (nbtk_widget_child_dnd_release_cb), actor);
 }
 
 /**

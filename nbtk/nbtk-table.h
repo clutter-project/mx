@@ -27,6 +27,40 @@
 
 G_BEGIN_DECLS
 
+#define NBTK_TYPE_TABLE_CHILD          (nbtk_table_child_get_type ())
+#define NBTK_TABLE_CHILD(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_TABLE_CHILD, NbtkTableChild))
+#define NBTK_IS_TABLE_CHILD(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NBTK_TYPE_TABLE_CHILD))
+#define NBTK_TABLE_CHILD_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), NBTK_TYPE_TABLE_CHILD, NbtkTableChildClass))
+#define NBTK_IS_TABLE_CHILD_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), NBTK_TYPE_TABLE_CHILD))
+#define NBTK_TABLE_CHILD_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), NBTK_TYPE_TABLE_CHILD, NbtkTableChildClass))
+
+typedef struct _NbtkTableChild         NbtkTableChild;
+typedef struct _NbtkTableChildClass    NbtkTableChildClass;
+
+struct _NbtkTableChild
+{
+  NbtkWidgetChild parent_instance;
+
+  gint col;
+  gint row;
+  gint col_span;
+  gint row_span;
+  gboolean keep_ratio : 1;
+  gboolean x_expand : 1;
+  gboolean y_expand : 1;
+  gboolean x_fill : 1;
+  gboolean y_fill : 1;
+  gdouble x_align;
+  gdouble y_align;
+};
+
+struct _NbtkTableChildClass
+{
+  NbtkWidgetChildClass parent_class;
+};
+
+GType nbtk_table_child_get_type (void) G_GNUC_CONST;
+
 #define NBTK_TYPE_TABLE                (nbtk_table_get_type ())
 #define NBTK_TABLE(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_TABLE, NbtkTable))
 #define NBTK_IS_TABLE(obj)             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NBTK_TYPE_TABLE))
