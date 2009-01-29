@@ -16,17 +16,33 @@ NbtkEntry {
   font-size: 30;
   font-family: "Times";
 }
+
 NbtkButton {
   color: blue;
-  background-image: url('file://lime-button.png');
+/*  background-image: url('file://lime-button.png'); */
+  border-width: 12;
+  border-image: url('file://border-image.png') 12 stretch stretch;
 }
 
 NbtkButton:hover {
-  background-image: url('file://cyan-button.png');
+/*  background-image: url('file://cyan-button.png'); */
+  border-width: 12;
+  border-image: url('file://border-image-light.png') 12 stretch stretch;
 }
 
 NbtkButton:active {
   background-image: url('file://green-button.png');
+}
+
+NbtkButton#test-border-image {
+  color: black;
+  border-image: url('file://border-image.png') 12 stretch stretch;
+}
+
+NbtkLabel#test-border-image {
+  color: black;
+  border-image: url('file://border-image.png') 12 stretch stretch;
+  border-width: 12;
 }
 
 *#red-button {

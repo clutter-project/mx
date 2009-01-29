@@ -100,10 +100,10 @@ struct _NbtkButtonPrivate
 
 static guint button_signals[LAST_SIGNAL] = { 0, };
 
-typedef struct 
+typedef struct
 {
   gint x;
-  gint y;    
+  gint y;
   ClutterActor *actor;
 } Point;
 
@@ -199,7 +199,10 @@ nbtk_button_style_changed (NbtkWidget *button)
 {
   ClutterColor *real_color;
   gchar *bg_url = NULL;
+  NbtkTextureCache *texture_cache;
+  ClutterActor *texture;
   NbtkButtonPrivate *priv = NBTK_BUTTON (button)->priv;
+  NbtkBorderImage *border_image = NULL;
   gint border_left;
   gint border_right;
   gint border_top;
@@ -231,33 +234,57 @@ nbtk_button_style_changed (NbtkWidget *button)
                     "border-bottom-width", &border_bottom,
                     "border-right-width", &border_right,
                     "border-left-width", &border_left,
+                    "border-image", &border_image,
                     NULL);
 
-  if (bg_url)
+  if (priv->bg_image)
+    priv->old_bg = priv->bg_image;
+
+  texture_cache = nbtk_texture_cache_get_default ();
+  if (border_image)
     {
-      NbtkTextureCache *cache;
-      ClutterActor *texture;
+      /* `border-image' takes precedence over `background-image'.
+       * Firefox lets the background-image shine thru when border-image has
+       * alpha an channel, maybe that would be an option for the future. */
+      texture = nbtk_texture_cache_get_texture (texture_cache,
+                                                border_image->image.uri,
+                                                FALSE);
 
-      if (priv->bg_image)
-        priv->old_bg = priv->bg_image;
-
-      cache = nbtk_texture_cache_get_default ();
-
-      /* the TextureFrame doesn't work with texture clones as it only
-       * references the texture data */
-      texture = nbtk_texture_cache_get_texture (cache, bg_url, FALSE);
+      border_left = ccss_position_get_size (&border_image->left,
+                                            border_image->image.width);
+      border_top = ccss_position_get_size (&border_image->top,
+                                           border_image->image.height);
+      border_right = ccss_position_get_size (&border_image->right,
+                                             border_image->image.width);
+      border_bottom = ccss_position_get_size (&border_image->bottom,
+                                              border_image->image.height);
 
       priv->bg_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
                                                border_left,
                                                border_top,
                                                border_right,
                                                border_bottom);
-
-      g_object_unref (texture);
       clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image),
-                                CLUTTER_ACTOR (button));
+                                               CLUTTER_ACTOR (button));
+      g_boxed_free (NBTK_TYPE_BORDER_IMAGE, border_image);
+    }
+  else if (bg_url)
+    {
+      texture = nbtk_texture_cache_get_texture (texture_cache,
+                                                bg_url,
+                                                FALSE);
+      priv->bg_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
+                                               border_left,
+                                               border_top,
+                                               border_right,
+                                               border_bottom);
+      clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image),
+                                               CLUTTER_ACTOR (button));
       g_free (bg_url);
+    }
 
+  if (priv->bg_image)
+    {
       if (G_UNLIKELY (!priv->press_tmpl))
         {
           priv->timeline = clutter_timeline_new_for_duration (priv->transition_duration);
@@ -345,7 +372,7 @@ nbtk_button_paint (ClutterActor *actor)
                           / 255;
 
           clutter_actor_get_allocation_box (actor, &allocation);
- 
+
           w = CLUTTER_UNITS_TO_DEVICE (allocation.x2 - allocation.x1);
           h = CLUTTER_UNITS_TO_DEVICE (allocation.y2 - allocation.y1);
 
@@ -357,8 +384,6 @@ nbtk_button_paint (ClutterActor *actor)
   if (CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->paint)
     CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->paint (CLUTTER_ACTOR (button));
 }
-
-
 
 static void
 nbtk_button_real_pressed (NbtkButton *button)
@@ -407,7 +432,7 @@ static gboolean
 nbtk_button_button_press (ClutterActor       *actor,
                           ClutterButtonEvent *event)
 {
-  
+
   if (event->button == 1)
     {
       NbtkButton *button = NBTK_BUTTON (actor);
@@ -670,7 +695,7 @@ nbtk_button_class_init (NbtkButtonClass *klass)
   actor_class->leave_event = nbtk_button_leave;
   actor_class->paint = nbtk_button_paint;
   actor_class->allocate = nbtk_button_allocate;
-  
+
   nbtk_widget_class->style_changed = nbtk_button_style_changed;
 
   pspec = g_param_spec_string ("label",
@@ -793,7 +818,7 @@ nbtk_button_set_label (NbtkButton  *button,
  *
  * Get the toggle mode status of the button.
  *
- * Returns: #TRUE if toggle mode is set, otherwise #FALSE 
+ * Returns: #TRUE if toggle mode is set, otherwise #FALSE
  */
 gboolean
 nbtk_button_get_toggle_mode (NbtkButton *button)
@@ -808,7 +833,7 @@ nbtk_button_get_toggle_mode (NbtkButton *button)
  * @button: a #Nbtkbutton
  * @toggle: #TRUE or #FALSE
  *
- * Enables or disables toggle mode for the button. In toggle mode, the active 
+ * Enables or disables toggle mode for the button. In toggle mode, the active
  * state will be "toggled" when the user clicks the button.
  */
 void

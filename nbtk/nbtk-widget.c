@@ -451,6 +451,12 @@ nbtk_widget_dispose (GObject *gobject)
       clutter_actor_destroy (clone);
     }
 
+  if (priv->bg_color)
+    {
+      clutter_color_free (priv->bg_color);
+      priv->bg_color = NULL;
+    }
+
   G_OBJECT_CLASS (nbtk_widget_parent_class)->dispose (gobject);
 }
 
@@ -656,12 +662,21 @@ static void
 nbtk_widget_style_changed (NbtkWidget *self)
 {
   NbtkWidgetPrivate *priv = self->priv;
+  NbtkBorderImage *border_image = NULL;
   NbtkPadding *padding = NULL;
+  NbtkTextureCache *texture_cache;
+  ClutterActor *texture;
   gchar *bg_file;
   gint border_left;
   gint border_right;
   gint border_top;
   gint border_bottom;
+
+  if (priv->bg_color)
+    {
+      clutter_color_free (priv->bg_color);
+      priv->bg_color = NULL;
+    }
 
   /* cache these values for use in the paint function */
   nbtk_stylable_get (NBTK_STYLABLE (self),
@@ -671,11 +686,15 @@ nbtk_widget_style_changed (NbtkWidget *self)
                     "border-bottom-width", &border_bottom,
                     "border-right-width", &border_right,
                     "border-left-width", &border_left,
+                    "border-image", &border_image,
                     "padding", &padding,
                     NULL);
 
   if (padding && !priv->override_css_padding)
-    priv->padding = *padding;
+    {
+      priv->padding = *padding;
+      g_boxed_free (NBTK_TYPE_PADDING, padding);
+    }
 
   priv->border.left = CLUTTER_UNITS_FROM_INT (border_left);
   priv->border.right = CLUTTER_UNITS_FROM_INT (border_right);
@@ -688,13 +707,36 @@ nbtk_widget_style_changed (NbtkWidget *self)
        priv->bg_image = NULL;
     }
 
-  if (bg_file)
+  texture_cache = nbtk_texture_cache_get_default ();
+  if (border_image)
     {
-      NbtkTextureCache *texture_cache;
-      ClutterActor *texture;
+      /* `border-image' takes precedence over `background-image'.
+       * Firefox lets the background-image shine thru when border-image has
+       * alpha an channel, maybe that would be an option for the future. */
+      texture = nbtk_texture_cache_get_texture (texture_cache,
+                                                border_image->image.uri,
+                                                FALSE);
 
+      border_left = ccss_position_get_size (&border_image->left,
+                                            border_image->image.width);
+      border_top = ccss_position_get_size (&border_image->top,
+                                           border_image->image.height);
+      border_right = ccss_position_get_size (&border_image->right,
+                                             border_image->image.width);
+      border_bottom = ccss_position_get_size (&border_image->bottom,
+                                              border_image->image.height);
 
-      texture_cache = nbtk_texture_cache_get_default ();
+      priv->bg_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
+                                               border_left,
+                                               border_top,
+                                               border_right,
+                                               border_bottom);
+      clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image),
+                                               CLUTTER_ACTOR (self));
+      g_boxed_free (NBTK_TYPE_BORDER_IMAGE, border_image);
+    }
+  else if (bg_file)
+    {
       texture = nbtk_texture_cache_get_texture (texture_cache,
                                                 bg_file,
                                                 FALSE);
@@ -703,8 +745,8 @@ nbtk_widget_style_changed (NbtkWidget *self)
                                                border_top,
                                                border_right,
                                                border_bottom);
-      clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image), CLUTTER_ACTOR (self));
-
+      clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image),
+                                               CLUTTER_ACTOR (self));
       g_free (bg_file);
     }
 
@@ -1273,6 +1315,13 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
                                   "Padding",
                                   "Padding between the widgets borders and its content",
                                   NBTK_TYPE_PADDING,
+                                  G_PARAM_READWRITE);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
+
+      pspec = g_param_spec_boxed ("border-image",
+                                  "Border image",
+                                  "9-slice image to use for drawing borders and background",
+                                  NBTK_TYPE_BORDER_IMAGE,
                                   G_PARAM_READWRITE);
       nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
@@ -1892,6 +1941,48 @@ nbtk_widget_undo_child_dnd (NbtkWidget *actor, ClutterActor *child)
   g_signal_handlers_disconnect_by_func (child,
                                         nbtk_widget_child_dnd_release_cb,
                                         actor);
+}
+
+ClutterActor *
+nbtk_widget_get_background_texture (const NbtkWidget *actor)
+{
+  g_return_val_if_fail (actor, NULL);
+
+  return actor->priv->bg_image;
+}
+
+static NbtkBorderImage *
+nbtk_border_image_copy (const NbtkBorderImage *border_image)
+{
+  NbtkBorderImage *copy;
+
+  g_return_val_if_fail (border_image != NULL, NULL);
+
+  copy = g_slice_new (NbtkBorderImage);
+  *copy = *border_image;
+
+  return copy;
+}
+
+static void
+nbtk_border_image_free (NbtkBorderImage *border_image)
+{
+  if (G_LIKELY (border_image))
+    g_slice_free (NbtkBorderImage, border_image);
+}
+
+GType
+nbtk_border_image_get_type (void)
+{
+  static GType our_type = 0;
+
+  if (G_UNLIKELY (our_type == 0))
+    our_type =
+      g_boxed_type_register_static (I_("NbtkBorderImage"),
+                                    (GBoxedCopyFunc) nbtk_border_image_copy,
+                                    (GBoxedFreeFunc) nbtk_border_image_free);
+
+  return our_type;
 }
 
 static NbtkPadding *
