@@ -73,6 +73,7 @@ void                  nbtk_button_set_toggle_mode    (NbtkButton *button, gboole
 gboolean              nbtk_button_get_toggle_mode    (NbtkButton *button);
 void                  nbtk_button_set_active         (NbtkButton *button, gboolean active);
 gboolean              nbtk_button_get_active         (NbtkButton *button);
+void                  nbtk_button_set_tooltip        (NbtkButton *button, const gchar *label);
 
 G_END_DECLS
 
