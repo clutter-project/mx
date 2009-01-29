@@ -56,7 +56,7 @@ GType nbtk_label_get_type (void) G_GNUC_CONST;
 NbtkWidget *          nbtk_label_new      (const gchar *text);
 G_CONST_RETURN gchar *nbtk_label_get_text (NbtkLabel *label);
 void                  nbtk_label_set_text (NbtkLabel *label, const gchar *text);
-ClutterActor*         nbtk_label_get_clutter_label (NbtkLabel *label);
+ClutterActor*         nbtk_label_get_clutter_text (NbtkLabel *label);
 
 G_END_DECLS
 
