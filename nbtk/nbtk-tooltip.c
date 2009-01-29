@@ -51,7 +51,8 @@ enum
 {
   PROP_0,
 
-  PROP_LABEL
+  PROP_LABEL,
+  PROP_WIDGET,
 };
 
 #define NBTK_TOOLTIP_GET_PRIVATE(obj)    \
@@ -59,8 +60,8 @@ enum
 
 struct _NbtkTooltipPrivate
 {
-  ClutterActor *label;
-  ClutterActor *widget;
+  NbtkWidget *label;
+  NbtkWidget *widget;
 
   ClutterEffectTemplate *hide_template;
 };
@@ -81,6 +82,10 @@ nbtk_tooltip_set_property (GObject      *gobject,
       nbtk_tooltip_set_label (tooltip, g_value_get_string (value));
       break;
 
+    case PROP_WIDGET:
+      nbtk_tooltip_set_widget (tooltip, g_value_get_pointer (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -99,6 +104,10 @@ nbtk_tooltip_get_property (GObject    *gobject,
     {
     case PROP_LABEL:
       g_value_set_string (value, clutter_label_get_text (CLUTTER_LABEL (priv->label)));
+      break;
+
+    case PROP_WIDGET:
+      g_value_set_pointer (value, priv->widget);
       break;
 
     default:
@@ -182,6 +191,19 @@ nbtk_tooltip_class_init (NbtkTooltipClass *klass)
                                NULL, G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_LABEL, pspec);
 
+  pspec = g_param_spec_pointer ("widget",
+                                "Widget",
+                                "Widget the tooltip is associated with",
+                                G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_WIDGET, pspec);
+}
+
+
+static void
+nbtk_tooltip_weak_ref_notify (gpointer tooltip, GObject *obj)
+{
+  g_object_ref_sink (G_OBJECT (tooltip));
+  g_object_unref (G_OBJECT (tooltip));
 }
 
 static void
@@ -199,16 +221,11 @@ nbtk_tooltip_init (NbtkTooltip *tooltip)
   tooltip->priv->hide_template = clutter_effect_template_new_for_duration (150,
                                                                            clutter_ramp_inc_func);
 
-  clutter_container_add (CLUTTER_CONTAINER (tooltip), tooltip->priv->label, NULL);
+  clutter_container_add_actor (CLUTTER_CONTAINER (tooltip),
+                               CLUTTER_ACTOR (tooltip->priv->label));
+
 }
 
-
-static void
-nbtk_tooltip_weak_ref_notify (gpointer tooltip, GObject *obj)
-{
-  g_object_ref_sink (G_OBJECT (tooltip));
-  g_object_unref (G_OBJECT (tooltip));
-}
 
 /**
  * nbtk_tooltip_new:
@@ -228,12 +245,8 @@ nbtk_tooltip_new (NbtkWidget *widget, const gchar *text)
   tooltip = g_object_new (NBTK_TYPE_TOOLTIP,
                           "label", text,
                           "show-on-set-parent", FALSE,
+                          "widget", widget,
                           NULL);
-
-  /* remember the associated widget */
-  tooltip->priv->widget = CLUTTER_ACTOR (widget);
-
-  g_object_weak_ref (G_OBJECT (widget), nbtk_tooltip_weak_ref_notify, tooltip);
 
   return NBTK_WIDGET (tooltip);
 }
@@ -277,6 +290,53 @@ nbtk_tooltip_set_label (NbtkTooltip *tooltip,
 }
 
 /**
+ * nbtk_tooltip_get_widget:
+ * @tooltip: a #NbtkTooltip
+ *
+ * Get the widget associated with the tooltip
+ *
+ * Returns: the associated tooltip
+ */
+NbtkWidget*
+nbtk_tooltip_get_widget (NbtkTooltip *tooltip)
+{
+  g_return_val_if_fail (NBTK_IS_TOOLTIP (tooltip), NULL);
+
+  return tooltip->priv->widget;
+}
+
+/**
+ * nbtk_tooltip_set_widget:
+ * @tooltip: a #NbtkTooltip
+ * @widget: text to set the widget to
+ *
+ * Sets the text displayed on the tooltip
+ */
+void
+nbtk_tooltip_set_widget (NbtkTooltip *tooltip,
+                         NbtkWidget  *widget)
+{
+  NbtkTooltipPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_TOOLTIP (tooltip));
+
+  priv = tooltip->priv;
+
+  if (G_UNLIKELY (priv->widget))
+    {
+      /* remove the weak ref from the old widget */
+      g_object_weak_unref (G_OBJECT (priv->widget),
+                           nbtk_tooltip_weak_ref_notify,
+                           tooltip);
+    }
+
+  priv->widget = widget;
+
+  g_object_weak_ref (G_OBJECT (widget), nbtk_tooltip_weak_ref_notify, tooltip);
+}
+
+
+/**
  * nbtk_tooltip_show:
  * @tooltip: a #NbtkTooltip
  *
@@ -287,6 +347,7 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
 {
   ClutterActor *parent;
   ClutterActor *stage;
+  ClutterActor *widget = CLUTTER_ACTOR (tooltip->priv->widget);
   gint x, y;
   gint ax, ay;
   guint w, h;
@@ -294,7 +355,7 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
   g_return_if_fail (NBTK_TOOLTIP (tooltip));
 
   parent = clutter_actor_get_parent (CLUTTER_ACTOR (tooltip));
-  stage = clutter_actor_get_stage (tooltip->priv->widget);
+  stage = clutter_actor_get_stage (widget);
 
   /* make sure we're parented on the stage */
   if (G_UNLIKELY (parent != stage))
@@ -312,9 +373,9 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
                                  NULL);
 
   /* place the tooltip under the associated actor */
-  clutter_actor_get_transformed_position (tooltip->priv->widget, &x, &y);
-  clutter_actor_get_anchor_point (tooltip->priv->widget, &ax, &ay);
-  clutter_actor_get_transformed_size (tooltip->priv->widget, &w, &h);
+  clutter_actor_get_transformed_position (widget, &x, &y);
+  clutter_actor_get_anchor_point (widget, &ax, &ay);
+  clutter_actor_get_transformed_size (widget, &w, &h);
 
 
   clutter_actor_move_anchor_point_from_gravity (CLUTTER_ACTOR (tooltip), CLUTTER_GRAVITY_NORTH);
