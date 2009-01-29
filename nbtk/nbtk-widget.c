@@ -448,7 +448,7 @@ nbtk_widget_dispose (GObject *gobject)
     {
       ClutterActor *clone = priv->dnd_clone;
       priv->dnd_clone = NULL;
-      clutter_actor_destroy (clone);
+      clutter_actor_unparent (clone);
     }
 
   if (priv->bg_color)
@@ -1747,10 +1747,7 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
       priv->dnd_clone = NULL;
       g_object_unref (clone);
 
-      if (clone != priv->dnd_icon)
-	clutter_actor_destroy (clone);
-      else
-	clutter_actor_unparent (clone);
+      clutter_actor_unparent (clone);
 
       retval = TRUE;
     }
