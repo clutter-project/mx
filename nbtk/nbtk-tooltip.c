@@ -224,32 +224,9 @@ nbtk_tooltip_init (NbtkTooltip *tooltip)
   clutter_container_add_actor (CLUTTER_CONTAINER (tooltip),
                                CLUTTER_ACTOR (tooltip->priv->label));
 
+  g_object_set (tooltip, "show-on-set-parent", FALSE, NULL);
 }
 
-
-/**
- * nbtk_tooltip_new:
- * @widget: actor the tooltip is attached to
- * @text: text to set the label to
- *
- * Create a new #NbtkTooltip with the specified label
- *
- * Returns: a new #NbtkTooltip
- */
-NbtkWidget *
-nbtk_tooltip_new (NbtkWidget *widget, const gchar *text)
-{
-  NbtkTooltip  *tooltip;
-
-  /* add the tooltip to the stage, but don't allow it to be visible */
-  tooltip = g_object_new (NBTK_TYPE_TOOLTIP,
-                          "label", text,
-                          "show-on-set-parent", FALSE,
-                          "widget", widget,
-                          NULL);
-
-  return NBTK_WIDGET (tooltip);
-}
 
 /**
  * nbtk_tooltip_get_label:
