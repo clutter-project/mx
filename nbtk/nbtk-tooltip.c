@@ -202,8 +202,13 @@ nbtk_tooltip_class_init (NbtkTooltipClass *klass)
 static void
 nbtk_tooltip_weak_ref_notify (gpointer tooltip, GObject *obj)
 {
-  g_object_ref_sink (G_OBJECT (tooltip));
-  g_object_unref (G_OBJECT (tooltip));
+  if (!clutter_actor_get_parent (CLUTTER_ACTOR (tooltip)))
+    {
+      g_object_ref_sink (G_OBJECT (tooltip));
+      g_object_unref (G_OBJECT (tooltip));
+    }
+  else
+    clutter_actor_unparent (CLUTTER_ACTOR (tooltip));
 }
 
 static void
