@@ -457,6 +457,13 @@ nbtk_widget_dispose (GObject *gobject)
       priv->bg_color = NULL;
     }
 
+  if (priv->dnd_dragged)
+    {
+      ClutterActor *dragged = priv->dnd_dragged;
+      priv->dnd_dragged = NULL;
+      g_object_unref (dragged);
+    }
+
   G_OBJECT_CLASS (nbtk_widget_parent_class)->dispose (gobject);
 }
 
@@ -1683,6 +1690,8 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
 
   priv = NBTK_WIDGET (widget)->priv;
 
+  g_object_ref (widget);
+
   if (priv->dnd_motion)
     {
       ClutterActor *dest;
@@ -1702,6 +1711,9 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
       stage = CLUTTER_STAGE (clutter_actor_get_stage (child));
 
       dest = clutter_stage_get_actor_at_pos (stage, x, y);
+
+      g_object_ref (child);
+      g_object_ref (clone);
 
       if (dest)
 	{
@@ -1737,15 +1749,18 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
 	  priv->dnd_enter_cb_id = 0;
 	}
 
-      g_object_ref (widget);
-
       g_signal_emit (widget, actor_signals[DND_END], 0,
 		     child, clone, x, y);
 
-      g_object_unref (widget);
 
-      priv->dnd_clone = NULL;
+      g_object_unref (child);
       g_object_unref (clone);
+
+      if (priv->dnd_clone)
+	{
+	  priv->dnd_clone = NULL;
+	  g_object_unref (clone);
+	}
 
       clutter_actor_unparent (clone);
 
@@ -1764,9 +1779,13 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
 
   if (priv->dnd_dragged)
     {
-      g_object_unref (priv->dnd_dragged);
+      ClutterActor *dragged = priv->dnd_dragged;
+
       priv->dnd_dragged = NULL;
+      g_object_unref (dragged);
     }
+
+  g_object_unref (widget);
 
   return retval;
 }
