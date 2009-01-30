@@ -357,6 +357,8 @@ nbtk_container_add_actor (ClutterContainer *container,
     nbtk_widget_setup_child_dnd (NBTK_WIDGET (container), actor);
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
+
+  g_signal_emit_by_name (container, "actor-added", actor);
 }
 
 static void
@@ -382,12 +384,13 @@ nbtk_container_remove_actor (ClutterContainer *container,
   nbtk_widget_undo_child_dnd (NBTK_WIDGET (container), actor);
 
   priv->children = g_slist_delete_link (priv->children, item);
-
-  g_object_unref (actor);
-
   clutter_actor_unparent (actor);
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
+
+  g_signal_emit_by_name (container, "actor-removed", actor);
+
+  g_object_unref (actor);
 }
 
 static void
