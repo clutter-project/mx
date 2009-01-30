@@ -117,37 +117,48 @@ table_child_set_property (GObject      *gobject,
     case CHILD_PROP_COL:
       child->col = g_value_get_int (value);
       table->priv->n_cols = MAX (table->priv->n_cols, child->col + 1);
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
     case CHILD_PROP_ROW:
       child->row = g_value_get_int (value);
       table->priv->n_rows = MAX (table->priv->n_rows, child->row + 1);
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
     case CHILD_PROP_COL_SPAN:
       child->col_span = g_value_get_int (value);
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
     case CHILD_PROP_ROW_SPAN:
       child->row_span = g_value_get_int (value);
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
     case CHILD_PROP_KEEP_RATIO:
       child->keep_ratio = g_value_get_boolean (value);
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
     case CHILD_PROP_X_EXPAND:
       child->x_expand = g_value_get_boolean (value);
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
     case CHILD_PROP_Y_EXPAND:
       child->y_expand = g_value_get_boolean (value);
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
     case CHILD_PROP_X_ALIGN:
       child->x_align = g_value_get_double (value);
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
     case CHILD_PROP_Y_ALIGN:
       child->y_align = g_value_get_double (value);
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
     case CHILD_PROP_X_FILL:
       child->x_fill = g_value_get_boolean (value);
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
     case CHILD_PROP_Y_FILL:
       child->y_fill = g_value_get_boolean (value);
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
 
     default:
