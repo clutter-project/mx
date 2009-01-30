@@ -1823,10 +1823,32 @@ nbtk_widget_child_dnd_motion_cb (ClutterActor *child,
 	}
       else
 	{
+	  /*
+	   * We desperately need generic actor cloning here.
+	   *
+	   * This just special cases the situation we have in the Switcher.
+	   */
+	  ClutterActor   *inner_child = NULL;
 	  ClutterTexture *parent_tx;
 
-	  parent_tx = clutter_clone_texture_get_parent_texture (
-						 CLUTTER_CLONE_TEXTURE (child));
+	  if (NBTK_IS_WIDGET (child))
+	    inner_child = NBTK_WIDGET (child)->priv->child;
+	  else
+	    inner_child = child;
+
+	  if (!inner_child || (!CLUTTER_IS_TEXTURE (inner_child) &&
+			       !CLUTTER_IS_CLONE_TEXTURE (inner_child)))
+	    {
+	      return FALSE;
+	    }
+
+	  if (CLUTTER_IS_CLONE_TEXTURE (inner_child))
+	    {
+	      parent_tx = clutter_clone_texture_get_parent_texture (
+			                 CLUTTER_CLONE_TEXTURE (inner_child));
+	    }
+	  else
+	    parent_tx = CLUTTER_TEXTURE (inner_child);
 
 	  clone = clutter_clone_texture_new (parent_tx);
 
