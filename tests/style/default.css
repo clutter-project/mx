@@ -19,13 +19,11 @@ NbtkEntry {
 
 NbtkButton {
   color: blue;
-/*  background-image: url('file://lime-button.png'); */
-  border-width: 12;
+  padding: 12;
   border-image: url('file://border-image.png') 12 stretch stretch;
 }
 
 NbtkButton:hover {
-/*  background-image: url('file://cyan-button.png'); */
   border-width: 12;
   border-image: url('file://border-image-light.png') 12 stretch stretch;
 }
@@ -46,15 +44,15 @@ NbtkLabel#test-border-image {
 }
 
 *#red-button {
-  background-image: url('file://red-button.png');
+  border-image: url('file://red-button.png') 0 stretch stretch;
 }
 
 *#blue-button {
-  background-image: url('file://cyan-button.png');
+  border-image: url('file://cyan-button.png') 0 stretch stretch;
 }
 
 *#green-button {
-  background-image: url('file://green-button.png');
+  border-image: url('file://green-button.png') 0 stretch stretch;
 }
 
 NbtkTable {
