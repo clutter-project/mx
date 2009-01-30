@@ -343,7 +343,20 @@ static void
 nbtk_container_add_actor (ClutterContainer *container,
                           ClutterActor     *actor)
 {
+  NbtkTablePrivate *priv = NBTK_TABLE (container)->priv;
+  guint             dnd_threshold;
+
   clutter_actor_set_parent (actor, CLUTTER_ACTOR (container));
+
+
+  priv->children = g_slist_append (priv->children, actor);
+
+  dnd_threshold = nbtk_widget_get_dnd_threshold (NBTK_WIDGET (container));
+
+  if (dnd_threshold > 0)
+    nbtk_widget_setup_child_dnd (NBTK_WIDGET (container), actor);
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
 }
 
 static void
@@ -1259,30 +1272,17 @@ nbtk_table_add_actor (NbtkTable   *table,
                      gint          row,
                      gint          column)
 {
-  NbtkTablePrivate *priv;
-  ClutterChildMeta *child;
-  guint             dnd_threshold;
-
   g_return_if_fail (NBTK_IS_TABLE (table));
   g_return_if_fail (CLUTTER_IS_ACTOR (actor));
   g_return_if_fail (row >= 0);
   g_return_if_fail (column >= 0);
 
-  priv = NBTK_TABLE (table)->priv;
-
   clutter_container_add_actor (CLUTTER_CONTAINER (table), actor);
-  child = clutter_container_get_child_meta (CLUTTER_CONTAINER (table), actor);
+  clutter_container_child_set (CLUTTER_CONTAINER (table), actor,
+                               "row", row,
+                               "column", column,
+                               NULL);
 
-  g_object_set (child, "row", row, "column", column, NULL);
-
-  priv->children = g_slist_append (priv->children, actor);
-
-  dnd_threshold = nbtk_widget_get_dnd_threshold (NBTK_WIDGET (table));
-
-  if (dnd_threshold > 0)
-    nbtk_widget_setup_child_dnd (NBTK_WIDGET (table), actor);
-
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
 }
 
 void
