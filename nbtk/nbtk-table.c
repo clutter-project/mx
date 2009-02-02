@@ -1102,6 +1102,8 @@ nbtk_table_show_all (ClutterActor *table)
 
   for (l = priv->children; l; l = l->next)
     clutter_actor_show_all (CLUTTER_ACTOR (l->data));
+
+  clutter_actor_show (table);
 }
 
 static void
@@ -1109,6 +1111,8 @@ nbtk_table_hide_all (ClutterActor *table)
 {
   NbtkTablePrivate *priv = NBTK_TABLE (table)->priv;
   GSList *l;
+
+  clutter_actor_hide (table);
 
   for (l = priv->children; l; l = l->next)
     clutter_actor_hide_all (CLUTTER_ACTOR (l->data));
