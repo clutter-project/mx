@@ -24,9 +24,8 @@ source_h = \
 	nbtk-behaviour-bounce.h \
 	nbtk-button.h \
 	nbtk-entry.h \
+	nbtk-enum-types.h 	\
 	nbtk-label.h \
-	nbtk-marshal.h \
-	nbtk-private.h \
 	nbtk-stylable.h \
 	nbtk-style.h \
 	nbtk-table.h \
@@ -87,40 +86,25 @@ nbtk-enum-types.c: stamp-nbtk-enum-types.h nbtk-enum-types.c.in
 
 tidyincludedir = $(includedir)/nbtk
 tidyinclude_DATA = \
-        $(source_h) \
-	$(top_builddir)/nbtk/nbtk-enum-types.h
-
+  $(source_h)
 
 lib_LTLIBRARIES = libnbtk.la
 
 libnbtk_la_SOURCES = \
 		$(BUILT_SOURCES) \
+		$(source_h) \
 		nbtk-behaviour-bounce.c \
-		nbtk-behaviour-bounce.h \
 		nbtk-button.c \
-		nbtk-button.h \
 		nbtk-entry.c \
-		nbtk-entry.h \
 		nbtk-label.c \
-		nbtk-label.h \
 		nbtk-private.h \
 		nbtk-stylable.c \
-		nbtk-stylable.h \
 		nbtk-style.c \
-		nbtk-style.h \
 		nbtk-table.c \
-		nbtk-table.h \
 		nbtk-texture-cache.c \
-		nbtk-texture-cache.h \
 		nbtk-texture-frame.c \
-		nbtk-texture-frame.h \
 		nbtk-tooltip.c \
-		nbtk-tooltip.h \
-		nbtk-types.h \
-		nbtk-widget.c \
-		nbtk-widget.h \
-		nbtk.h
+		nbtk-widget.c
 
 
 libnbtk_la_LIBADD = $(NBTK_LIBS)
-
