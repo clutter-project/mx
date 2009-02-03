@@ -88,6 +88,12 @@ struct _NbtkWidgetClass
   /*< private >*/
   ClutterActorClass parent_class;
 
+  /* vfuncs */
+  void (* draw_background) (NbtkWidget   *self,
+                            ClutterActor *background,
+                            ClutterColor *color);
+
+  /* signals */
   void (* style_changed) (NbtkWidget *self);
   void (* dnd_begin)     (NbtkWidget   *self,
 			  ClutterActor *dragged,
@@ -150,6 +156,9 @@ const gchar* nbtk_widget_get_style_pseudo_class (NbtkWidget *actor);
 void         nbtk_widget_set_style_class_name (NbtkWidget  *actor,
                                                const gchar *style_class);
 const gchar* nbtk_widget_get_style_class_name (NbtkWidget  *actor);
+
+/* Only to be used by sub-classes of NbtkWidget */
+ClutterActor *nbtk_widget_get_background (NbtkWidget *actor);
 
 G_END_DECLS
 

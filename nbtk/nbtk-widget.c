@@ -481,9 +481,14 @@ nbtk_widget_allocate (ClutterActor          *actor,
 
   if (priv->bg_image)
     {
-      ClutterActorBox frame_box = {
-          0, 0, box->x2 - box->x1, box->y2 - box->y1
-      };
+      ClutterActorBox frame_box;
+      ClutterUnit ax, ay;
+
+      clutter_actor_get_anchor_pointu (priv->bg_image, &ax, &ay);
+      frame_box.x1 = ax;
+      frame_box.y1 = ay;
+      frame_box.x2 = box->x2 - box->x1 + ax;
+      frame_box.y2 = box->y2 - box->y1 + ay;
 
       clutter_actor_allocate (CLUTTER_ACTOR (priv->bg_image),
                               &frame_box,
@@ -554,20 +559,25 @@ nbtk_widget_pick (ClutterActor       *actor,
 }
 
 static void
-nbtk_widget_paint (ClutterActor *self)
+nbtk_widget_real_draw_background (NbtkWidget   *self,
+                                  ClutterActor *background,
+                                  ClutterColor *color)
 {
-  NbtkWidgetPrivate *priv = NBTK_WIDGET (self)->priv;
-
-  if (priv->bg_color)
+  /* Default implementation just draws the background colour and the image on
+   * top
+   */
+  if (color)
     {
-      ClutterActorBox allocation = { 0, };
-      ClutterColor bg_color = *priv->bg_color;
-      guint w, h;
+      gint w, h;
 
-      bg_color.alpha = clutter_actor_get_paint_opacity (self)
+      ClutterActor *actor = CLUTTER_ACTOR (self);
+      ClutterActorBox allocation = { 0, };
+      ClutterColor bg_color = *color;
+
+      bg_color.alpha = clutter_actor_get_paint_opacity (actor)
                        * bg_color.alpha / 255;
 
-      clutter_actor_get_allocation_box (self, &allocation);
+      clutter_actor_get_allocation_box (actor, &allocation);
 
       w = CLUTTER_UNITS_TO_DEVICE (allocation.x2 - allocation.x1);
       h = CLUTTER_UNITS_TO_DEVICE (allocation.y2 - allocation.y1);
@@ -576,8 +586,17 @@ nbtk_widget_paint (ClutterActor *self)
       cogl_rectangle (0, 0, w, h);
     }
 
-  if (priv->bg_image)
-    clutter_actor_paint (CLUTTER_ACTOR (priv->bg_image));
+  if (background)
+    clutter_actor_paint (background);
+}
+
+static void
+nbtk_widget_paint (ClutterActor *self)
+{
+  NbtkWidgetPrivate *priv = NBTK_WIDGET (self)->priv;
+
+  NBTK_WIDGET_CLASS (G_OBJECT_GET_CLASS (self))->
+    draw_background (NBTK_WIDGET (self), priv->bg_image, priv->bg_color);
 
   if (priv->child && CLUTTER_ACTOR_IS_VISIBLE (priv->child))
     clutter_actor_paint (priv->child);
@@ -808,6 +827,8 @@ nbtk_widget_class_init (NbtkWidgetClass *klass)
   actor_class->get_preferred_height = nbtk_widget_get_preferred_height;
   actor_class->get_preferred_width = nbtk_widget_get_preferred_width;
   actor_class->parent_set = nbtk_widget_parent_set;
+
+  klass->draw_background = nbtk_widget_real_draw_background;
 
   klass->style_changed = nbtk_widget_style_changed;
   klass->dnd_dropped = nbtk_widget_dnd_dropped;
@@ -2056,3 +2077,11 @@ nbtk_padding_get_type (void)
 
   return our_type;
 }
+
+ClutterActor *
+nbtk_widget_get_background (NbtkWidget *actor)
+{
+  NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
+  return priv->bg_image;
+}
+

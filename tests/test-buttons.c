@@ -38,6 +38,8 @@ main (int argc, char *argv[])
   button = nbtk_button_new ();
   nbtk_button_set_icon_from_file (NBTK_BUTTON (button),
                                   "redhand.png");
+  g_object_set (button, "transition-duration", 400,
+                "transition-type", NBTK_TRANSITION_BOUNCE, NULL);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 300, 100);

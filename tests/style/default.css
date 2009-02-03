@@ -24,12 +24,11 @@ NbtkButton {
 }
 
 NbtkButton:hover {
-  border-width: 12;
   border-image: url('file://border-image-light.png') 12 stretch stretch;
 }
 
 NbtkButton:active {
-  background-image: url('file://green-button.png');
+  border-image: url('file://border-image-dark.png') 12 stretch stretch;
 }
 
 NbtkButton#test-border-image {
