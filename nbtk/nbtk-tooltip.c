@@ -182,6 +182,8 @@ nbtk_tooltip_init (NbtkTooltip *tooltip)
                                        NULL);
 
   clutter_container_add (CLUTTER_CONTAINER (tooltip), tooltip->priv->label, NULL);
+
+  clutter_actor_set_reactive (CLUTTER_ACTOR (tooltip), FALSE);
 }
 
 
