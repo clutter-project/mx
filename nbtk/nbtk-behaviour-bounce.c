@@ -210,20 +210,19 @@ nbtk_behaviour_bounce_new (ClutterAlpha   *alpha)
 
 typedef struct BounceClosure
 {
-  ClutterActor             *actor;
+  ClutterTimeline          *timeline;
   ClutterAlpha             *alpha;
   ClutterBehaviour         *behave;
 }
 BounceClosure;
 
 static void
-on_bounce_complete (gpointer         user_data,
-                    GObject         *behaviour)
+on_bounce_destroy (gpointer         user_data)
 {
   BounceClosure *b =  (BounceClosure*)user_data;
 
-  g_object_unref (b->actor);
   g_object_unref (b->behave);
+  g_object_unref (b->timeline);
 
   g_slice_free (BounceClosure, b);
 }
@@ -232,21 +231,32 @@ ClutterTimeline*
 nbtk_bounce_scale (ClutterActor *actor, gint duration)
 {
   BounceClosure *b;
-  ClutterTimeline *timeline;
 
-  timeline = clutter_timeline_new_for_duration (duration);
+  b = g_object_get_data (G_OBJECT (actor), "nbtk-bounce");
+  if (!b)
+    {
+      b = g_slice_new0(BounceClosure);
 
-  b = g_slice_new0(BounceClosure);
-  b->actor  = g_object_ref (actor);
-  b->alpha  = clutter_alpha_new_full (timeline, CLUTTER_ALPHA_SINE_INC,
-                                      NULL, NULL);
-  b->behave = nbtk_behaviour_bounce_new (b->alpha);
+      g_object_set_data_full (G_OBJECT (actor),
+                              "nbtk-bounce",
+                              b,
+                              on_bounce_destroy);
 
-  g_object_weak_ref (G_OBJECT (timeline), on_bounce_complete, b);
+      b->timeline = clutter_timeline_new_for_duration (duration);
+      b->alpha  = clutter_alpha_new_full (b->timeline, CLUTTER_ALPHA_SINE_INC,
+                                          NULL, NULL);
+      b->behave = nbtk_behaviour_bounce_new (b->alpha);
 
-  clutter_behaviour_apply (b->behave, b->actor);
-  clutter_timeline_start (timeline);
+      clutter_behaviour_apply (b->behave, actor);
+      clutter_timeline_start (b->timeline);
+    }
+  else
+    {
+      clutter_timeline_set_duration (b->timeline, duration);
+      clutter_timeline_rewind (b->timeline);
+      clutter_timeline_start (b->timeline);
+    }
 
-  return timeline;
+  return b->timeline;
 }
 

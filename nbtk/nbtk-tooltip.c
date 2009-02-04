@@ -167,8 +167,11 @@ nbtk_tooltip_dispose (GObject *object)
 {
   NbtkTooltipPrivate *priv = NBTK_TOOLTIP (object)->priv;
 
-  g_object_unref (priv->hide_template);
-  priv->hide_template = NULL;
+  if (priv->hide_template)
+    {
+      g_object_unref (priv->hide_template);
+      priv->hide_template = NULL;
+    }
 }
 
 static void
@@ -375,7 +378,7 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
   clutter_actor_show (self);
 
   /* and give it some bounce! */
-  priv->timeline = g_object_ref (nbtk_bounce_scale (self, 500));
+  priv->timeline = nbtk_bounce_scale (self, 500);
 }
 
 /**
@@ -393,12 +396,7 @@ nbtk_tooltip_hide (NbtkTooltip *tooltip)
 
   priv = tooltip->priv;
   if (priv->timeline)
-    {
-      if (clutter_timeline_is_playing (priv->timeline))
-        clutter_timeline_stop (priv->timeline);
-      g_object_unref (priv->timeline);
-      priv->timeline = NULL;
-    }
+    clutter_timeline_stop (priv->timeline);
 
   clutter_actor_move_anchor_point_from_gravity (CLUTTER_ACTOR (tooltip),
                                                 CLUTTER_GRAVITY_NORTH);
