@@ -27,7 +27,6 @@
 #include <nbtk/nbtk-entry.h>
 #include <nbtk/nbtk-enum-types.h>
 #include <nbtk/nbtk-label.h>
-#include <nbtk/nbtk-marshal.h>
 #include <nbtk/nbtk-stylable.h>
 #include <nbtk/nbtk-style.h>
 #include <nbtk/nbtk-table.h>
