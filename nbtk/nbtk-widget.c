@@ -481,14 +481,9 @@ nbtk_widget_allocate (ClutterActor          *actor,
 
   if (priv->bg_image)
     {
-      ClutterActorBox frame_box;
-      ClutterUnit ax, ay;
-
-      clutter_actor_get_anchor_pointu (priv->bg_image, &ax, &ay);
-      frame_box.x1 = ax;
-      frame_box.y1 = ay;
-      frame_box.x2 = box->x2 - box->x1 + ax;
-      frame_box.y2 = box->y2 - box->y1 + ay;
+      ClutterActorBox frame_box = {
+          0, 0, box->x2 - box->x1, box->y2 - box->y1
+      };
 
       clutter_actor_allocate (CLUTTER_ACTOR (priv->bg_image),
                               &frame_box,

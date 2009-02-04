@@ -173,8 +173,6 @@ nbtk_button_bounce_transition (NbtkButton *button)
   if (!bg_image)
     return;
 
-  clutter_actor_move_anchor_point_from_gravity (bg_image, CLUTTER_GRAVITY_CENTER);
-
   if (!g_strcmp0 (pseudo_class, "hover"))
     {
       nbtk_bounce_scale (bg_image, priv->transition_duration);
@@ -200,11 +198,14 @@ nbtk_button_style_changed (NbtkWidget *button)
       clutter_color_free (real_color);
     }
 
-  /* Stop any animation that may have been running */
-  if (priv->timeline && clutter_timeline_is_playing (priv->timeline))
+  /* Remove the old background if it's around */
+  if (priv->old_bg)
     {
-      clutter_timeline_stop (priv->timeline);
-      style_changed_completed_effect (NULL, NBTK_BUTTON (button));
+      if (priv->timeline)
+        clutter_timeline_stop (priv->timeline);
+      
+      clutter_actor_unparent (priv->old_bg);
+      priv->old_bg = NULL;
     }
 
   /* Store old background, NbtkWidget will unparent it */
@@ -215,6 +216,13 @@ nbtk_button_style_changed (NbtkWidget *button)
   /* Chain up to update style bits */
   NBTK_WIDGET_CLASS (nbtk_button_parent_class)->style_changed (button);
   
+  /* Parent old background */
+  if (priv->old_bg)
+    {
+      clutter_actor_set_parent (priv->old_bg, CLUTTER_ACTOR (button));
+      g_object_unref (priv->old_bg);
+    }
+
   /* The animation is deferred until allocation, otherwise setting the 
    * gravity won't work correctly.
    */
@@ -484,17 +492,13 @@ nbtk_button_allocate (ClutterActor          *self,
 
   if (priv->old_bg)
     {
-      ClutterActorBox childbox;
-      ClutterUnit ax, ay;
+      ClutterActorBox frame_box = {
+          0, 0, box->x2 - box->x1, box->y2 - box->y1
+      };
 
-      clutter_actor_get_anchor_pointu (priv->old_bg, &ax, &ay);
-
-      childbox.x1 = ax;
-      childbox.y1 = ay;
-      childbox.x2 = box->x2 - box->x1 +ax;
-      childbox.y2 = box->y2 - box->y1 +ay;
-
-      clutter_actor_allocate (priv->old_bg, &childbox, absolute_origin_changed);
+      clutter_actor_allocate (priv->old_bg,
+                              &frame_box,
+                              absolute_origin_changed);
     }
 
   /* Perform animation (set in style_changed) */
@@ -514,10 +518,6 @@ nbtk_button_allocate (ClutterActor          *self,
           if (priv->transition_type != NBTK_TRANSITION_NONE
               && priv->transition_duration > 0)
             {
-              /* Parent old background */
-              clutter_actor_set_parent (priv->old_bg, self);
-              g_object_unref (priv->old_bg);
-
               /* Startup animation */
               clutter_timeline_set_duration (priv->timeline, priv->transition_duration);
 
@@ -535,8 +535,8 @@ nbtk_button_allocate (ClutterActor          *self,
             }
           else
             {
-              /* no transition, so just unref the old background */
-              g_object_unref (priv->old_bg);
+              /* no transition, so just unparent the old background */
+              clutter_actor_unparent (priv->old_bg);
               priv->old_bg = NULL;
             }
         }

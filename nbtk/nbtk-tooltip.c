@@ -60,8 +60,9 @@ enum
 
 struct _NbtkTooltipPrivate
 {
-  NbtkWidget *label;
-  NbtkWidget *widget;
+  NbtkWidget      *label;
+  NbtkWidget      *widget;
+  ClutterTimeline *timeline;
 
   ClutterEffectTemplate *hide_template;
 };
@@ -327,16 +328,18 @@ nbtk_tooltip_set_widget (NbtkTooltip *tooltip,
 void
 nbtk_tooltip_show (NbtkTooltip *tooltip)
 {
+  NbtkTooltipPrivate *priv;
   ClutterActor *parent;
   ClutterActor *stage;
   ClutterActor *widget = CLUTTER_ACTOR (tooltip->priv->widget);
+  ClutterActor *self = CLUTTER_ACTOR (tooltip);
   gint x, y;
-  gint ax, ay;
   guint w, h;
 
   g_return_if_fail (NBTK_TOOLTIP (tooltip));
 
-  parent = clutter_actor_get_parent (CLUTTER_ACTOR (tooltip));
+  priv = tooltip->priv;
+  parent = clutter_actor_get_parent (self);
   stage = clutter_actor_get_stage (widget);
 
   /* make sure we're parented on the stage */
@@ -346,7 +349,7 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
         {
           g_warning ("NbtkTooltip must be parented directly on the stage");
         }
-      clutter_actor_reparent (CLUTTER_ACTOR (tooltip), stage);
+      clutter_actor_reparent (self, stage);
     }
 
   /* raise the tooltip to the top */
@@ -356,21 +359,23 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
 
   /* place the tooltip under the associated actor */
   clutter_actor_get_transformed_position (widget, &x, &y);
-  clutter_actor_get_anchor_point (widget, &ax, &ay);
   clutter_actor_get_transformed_size (widget, &w, &h);
 
 
-  clutter_actor_move_anchor_point_from_gravity (CLUTTER_ACTOR (tooltip), CLUTTER_GRAVITY_NORTH);
+  clutter_actor_move_anchor_point_from_gravity (self, CLUTTER_GRAVITY_NORTH);
 
-  clutter_actor_set_position (CLUTTER_ACTOR (tooltip),
-                              (x - ax + w / 2),
-                              y - ay + h);
+  clutter_actor_set_position (self,
+                              (x + w / 2),
+                              y + h);
+
+  clutter_actor_move_anchor_point_from_gravity (self,
+                                                CLUTTER_GRAVITY_NORTH_WEST);
 
   /* finally show the tooltip... */
-  clutter_actor_show (CLUTTER_ACTOR (tooltip));
+  clutter_actor_show (self);
 
   /* and give it some bounce! */
-  nbtk_bounce_scale (CLUTTER_ACTOR (tooltip), 500);
+  priv->timeline = g_object_ref (nbtk_bounce_scale (self, 500));
 }
 
 /**
@@ -382,9 +387,21 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
 void
 nbtk_tooltip_hide (NbtkTooltip *tooltip)
 {
+  NbtkTooltipPrivate *priv;
+
   g_return_if_fail (NBTK_TOOLTIP (tooltip));
 
+  priv = tooltip->priv;
+  if (priv->timeline)
+    {
+      if (clutter_timeline_is_playing (priv->timeline))
+        clutter_timeline_stop (priv->timeline);
+      g_object_unref (priv->timeline);
+      priv->timeline = NULL;
+    }
 
+  clutter_actor_move_anchor_point_from_gravity (CLUTTER_ACTOR (tooltip),
+                                                CLUTTER_GRAVITY_NORTH);
   clutter_effect_scale (tooltip->priv->hide_template,
                         CLUTTER_ACTOR (tooltip),
                         0, 0, (ClutterEffectCompleteFunc) clutter_actor_hide, NULL);

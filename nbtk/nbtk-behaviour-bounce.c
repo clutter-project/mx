@@ -59,9 +59,22 @@ bounce_frame_foreach (ClutterBehaviour *behaviour,
                       gpointer          data)
 {
   BounceFrameClosure *closure = data;
+  ClutterUnit         anchor_x, anchor_y;
+  ClutterActorBox     box;
 
   clutter_actor_set_opacity (actor, closure->opacity);
   clutter_actor_set_scalex (actor, closure->scale, closure->scale);
+
+  clutter_actor_get_allocation_box (actor, &box);
+  anchor_x = CLUTTER_UNITS_FROM_FIXED (CLUTTER_FIXED_DIV (
+                CLUTTER_FIXED_MUL (CLUTTER_UNITS_TO_FIXED (box.x2 - box.x1),
+                                   closure->scale - CFX_ONE) / 2,
+                                   closure->scale));
+  anchor_y = CLUTTER_UNITS_FROM_FIXED (CLUTTER_FIXED_DIV (
+                CLUTTER_FIXED_MUL (CLUTTER_UNITS_TO_FIXED (box.y2 - box.y1),
+                                   closure->scale - CFX_ONE) / 2,
+                                   closure->scale));
+  clutter_actor_set_anchor_pointu (actor, anchor_x, anchor_y);
 }
 
 static gfloat 
@@ -198,24 +211,19 @@ nbtk_behaviour_bounce_new (ClutterAlpha   *alpha)
 typedef struct BounceClosure
 {
   ClutterActor             *actor;
-  ClutterTimeline          *timeline;
   ClutterAlpha             *alpha;
   ClutterBehaviour         *behave;
-  gulong                    signal_id;
 }
 BounceClosure;
 
 static void
-on_bounce_complete (ClutterTimeline *timeline,
-		    gpointer         user_data)
+on_bounce_complete (gpointer         user_data,
+                    GObject         *behaviour)
 {
   BounceClosure *b =  (BounceClosure*)user_data;
 
-  g_signal_handler_disconnect (b->timeline, b->signal_id);
-
   g_object_unref (b->actor);
   g_object_unref (b->behave);
-  g_object_unref (b->timeline);
 
   g_slice_free (BounceClosure, b);
 }
@@ -224,26 +232,21 @@ ClutterTimeline*
 nbtk_bounce_scale (ClutterActor *actor, gint duration)
 {
   BounceClosure *b;
+  ClutterTimeline *timeline;
+
+  timeline = clutter_timeline_new_for_duration (duration);
 
   b = g_slice_new0(BounceClosure);
-
-  g_object_ref (actor);
-
-  b->actor    = actor;
-  b->timeline = clutter_timeline_new_for_duration (duration);
-  b->signal_id = g_signal_connect (b->timeline, "completed",
-                                   G_CALLBACK (on_bounce_complete), b);
-
-  b->alpha = clutter_alpha_new_full (b->timeline, CLUTTER_ALPHA_SINE_INC,
-                                     NULL, NULL);
+  b->actor  = g_object_ref (actor);
+  b->alpha  = clutter_alpha_new_full (timeline, CLUTTER_ALPHA_SINE_INC,
+                                      NULL, NULL);
   b->behave = nbtk_behaviour_bounce_new (b->alpha);
 
+  g_object_weak_ref (G_OBJECT (timeline), on_bounce_complete, b);
+
   clutter_behaviour_apply (b->behave, b->actor);
+  clutter_timeline_start (timeline);
 
-  clutter_timeline_start (b->timeline);
-
-  return b->timeline;
+  return timeline;
 }
-
-
 
