@@ -26,7 +26,7 @@
  *
  * #NbtkEntry is a simple widget for displaying text. It derives from
  * #NbtkWidget to add extra style and placement functionality over
- * #ClutterEntry. The internal #ClutterEntry is publicly accessibly to allow
+ * #ClutterText. The internal #ClutterText is publicly accessibly to allow
  * applications to set further properties.
  */
 
@@ -40,13 +40,11 @@
 #include <glib.h>
 
 #include <clutter/clutter.h>
-#include <clutter/clutter-container.h>
 
 #include "nbtk-entry.h"
 
 #include "nbtk-widget.h"
 #include "nbtk-stylable.h"
-#include "nbtk-behaviour-bounce.h"
 
 enum
 {
@@ -97,7 +95,7 @@ nbtk_entry_get_property (GObject    *gobject,
   switch (prop_id)
     {
     case PROP_ENTRY:
-      g_value_set_string (value, clutter_entry_get_text (CLUTTER_ENTRY (priv->entry)));
+      g_value_set_string (value, clutter_text_get_text (CLUTTER_TEXT (priv->entry)));
       break;
 
     default:
@@ -125,7 +123,7 @@ nbtk_entry_style_changed (NbtkWidget *self)
 
   if (color)
     {
-      clutter_entry_set_color (CLUTTER_ENTRY (priv->entry), color);
+      clutter_text_set_color (CLUTTER_TEXT (priv->entry), color);
       clutter_color_free (color);
     }
 
@@ -144,7 +142,7 @@ nbtk_entry_style_changed (NbtkWidget *self)
             font_string = font_name;
         }
 
-      clutter_entry_set_font_name (CLUTTER_ENTRY (priv->entry), font_string);
+      clutter_text_set_font_name (CLUTTER_TEXT (priv->entry), font_string);
       g_free (font_string);
     }
 
@@ -154,52 +152,9 @@ nbtk_entry_style_changed (NbtkWidget *self)
 }
 
 static void
-nbtk_entry_allocate (ClutterActor          *actor,
-                     const ClutterActorBox *box,
-                     gboolean               origin_changed)
-{
-  NbtkEntryPrivate *priv;
-  PangoLayout *layout;
-  PangoRectangle rect;
-  gint wu, hu;
-  NbtkPadding padding;
-  gint entry_padding;
-
-  /* ClutterEntry doesn't have any sensible implementation of
-   * get_preferred_height or get_preferred_width, so we have to calculate it
-   * manually here.
-   */
-
-  priv = NBTK_ENTRY (actor)->priv;
-
-  layout = clutter_entry_get_layout (CLUTTER_ENTRY (priv->entry));
-
-  g_object_get (priv->entry, "entry-padding", &entry_padding, NULL);
-
-  pango_layout_get_pixel_extents (layout, NULL, &rect);
-
-  rect.width += entry_padding * 2;
-
-  hu = CLUTTER_UNITS_FROM_INT (rect.y + rect.height);
-
-  if (hu > box->y2 - box->y1)
-    hu = box->y2 - box->y1;
-
-  wu = box->x2 - box->x1;
-
-  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
-
-  clutter_actor_set_sizeu (priv->entry, wu, hu);
-
-  if (CLUTTER_ACTOR_CLASS (nbtk_entry_parent_class)->allocate)
-    CLUTTER_ACTOR_CLASS (nbtk_entry_parent_class)->allocate (actor, box, origin_changed);
-}
-
-static void
 nbtk_entry_class_init (NbtkEntryClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-  ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
   NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
@@ -207,8 +162,6 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
 
   gobject_class->set_property = nbtk_entry_set_property;
   gobject_class->get_property = nbtk_entry_get_property;
-
-  actor_class->allocate = nbtk_entry_allocate;
 
   widget_class->style_changed = nbtk_entry_style_changed;
 
@@ -225,8 +178,10 @@ nbtk_entry_init (NbtkEntry *entry)
 {
   entry->priv = NBTK_ENTRY_GET_PRIVATE (entry);
 
-  entry->priv->entry = g_object_new (CLUTTER_TYPE_ENTRY,
+  entry->priv->entry = g_object_new (CLUTTER_TYPE_TEXT,
                                      "alignment", PANGO_ALIGN_CENTER,
+                                     "editable", TRUE,
+                                     "reactive", TRUE,
                                      NULL);
 
   clutter_container_add (CLUTTER_CONTAINER (entry), entry->priv->entry, NULL);
@@ -266,7 +221,7 @@ nbtk_entry_get_text (NbtkEntry *entry)
 {
   g_return_val_if_fail (NBTK_IS_ENTRY (entry), NULL);
 
-  return clutter_entry_get_text (CLUTTER_ENTRY (entry->priv->entry));
+  return clutter_text_get_text (CLUTTER_TEXT (entry->priv->entry));
 }
 
 /**
@@ -286,22 +241,22 @@ nbtk_entry_set_text (NbtkEntry *entry,
 
   priv = entry->priv;
 
-  clutter_entry_set_text (CLUTTER_ENTRY (priv->entry), text);
+  clutter_text_set_text (CLUTTER_TEXT (priv->entry), text);
 
   g_object_notify (G_OBJECT (entry), "text");
 }
 
 /**
- * nbtk_entry_get_clutter_entry:
+ * nbtk_entry_get_clutter_text:
  * @entry: a #NbtkEntry
  *
- * Retrieve the internal #ClutterEntry so that extra parameters can be set
+ * Retrieve the internal #ClutterText so that extra parameters can be set
  *
- * Returns: the #ClutterEntry used by #NbtkEntry. The entry is owned by the
+ * Returns: the #ClutterText used by #NbtkEntry. The entry is owned by the
  * #NbtkEntry and should not be unref'ed by the application.
  */
 ClutterActor*
-nbtk_entry_get_clutter_entry (NbtkEntry *entry)
+nbtk_entry_get_clutter_text (NbtkEntry *entry)
 {
   g_return_val_if_fail (NBTK_ENTRY (entry), NULL);
 

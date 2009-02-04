@@ -26,7 +26,7 @@ main (int argc, char *argv[])
   clutter_container_add (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (entry), NULL);
 
   clutter_stage_set_key_focus (CLUTTER_STAGE (stage),
-                               CLUTTER_ACTOR (nbtk_entry_get_clutter_entry (NBTK_ENTRY (entry))));
+                               CLUTTER_ACTOR (nbtk_entry_get_clutter_text (NBTK_ENTRY (entry))));
 
   clutter_actor_show (stage);
 

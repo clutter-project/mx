@@ -26,7 +26,7 @@
  *
  * #NbtkLabel is a simple widget for displaying text. It derives from
  * #NbtkWidget to add extra style and placement functionality over
- * #ClutterLabel. The internal #ClutterLabel is publicly accessibly to allow
+ * #ClutterText. The internal #ClutterText is publicly accessibly to allow
  * applications to set further properties. 
  */
 
@@ -40,13 +40,11 @@
 #include <glib.h>
 
 #include <clutter/clutter.h>
-#include <clutter/clutter-container.h>
 
 #include "nbtk-label.h"
 
 #include "nbtk-widget.h"
 #include "nbtk-stylable.h"
-#include "nbtk-behaviour-bounce.h"
 
 enum
 {
@@ -97,7 +95,7 @@ nbtk_label_get_property (GObject    *gobject,
   switch (prop_id)
     {
     case PROP_LABEL:
-      g_value_set_string (value, clutter_label_get_text (CLUTTER_LABEL (priv->label)));
+      g_value_set_string (value, clutter_text_get_text (CLUTTER_TEXT (priv->label)));
       break;
 
     default:
@@ -125,7 +123,7 @@ nbtk_label_style_changed (NbtkWidget *self)
 
   if (color)
     {
-      clutter_label_set_color (CLUTTER_LABEL (priv->label), color);
+      clutter_text_set_color (CLUTTER_TEXT (priv->label), color);
       clutter_color_free (color);
     }
 
@@ -144,7 +142,7 @@ nbtk_label_style_changed (NbtkWidget *self)
             font_string = font_name;
         }
 
-      clutter_label_set_font_name (CLUTTER_LABEL (priv->label), font_string);
+      clutter_text_set_font_name (CLUTTER_TEXT (priv->label), font_string);
       g_free (font_string);
     }
 
@@ -181,11 +179,10 @@ nbtk_label_init (NbtkLabel *label)
 {
   label->priv = NBTK_LABEL_GET_PRIVATE (label);
 
-  label->priv->label = g_object_new (CLUTTER_TYPE_LABEL,
+  label->priv->label = g_object_new (CLUTTER_TYPE_TEXT,
                                        "alignment", PANGO_ALIGN_CENTER,
                                        "ellipsize", PANGO_ELLIPSIZE_MIDDLE,
                                        "use-markup", TRUE,
-                                       "wrap", FALSE,
                                        NULL);
 
   clutter_container_add (CLUTTER_CONTAINER (label), label->priv->label, NULL);
@@ -225,7 +222,7 @@ nbtk_label_get_text (NbtkLabel *label)
 {
   g_return_val_if_fail (NBTK_IS_LABEL (label), NULL);
 
-  return clutter_label_get_text (CLUTTER_LABEL (label->priv->label));
+  return clutter_text_get_text (CLUTTER_TEXT (label->priv->label));
 }
 
 /**
@@ -245,22 +242,22 @@ nbtk_label_set_text (NbtkLabel *label,
 
   priv = label->priv;
 
-  clutter_label_set_text (CLUTTER_LABEL (priv->label), text);
+  clutter_text_set_text (CLUTTER_TEXT (priv->label), text);
 
   g_object_notify (G_OBJECT (label), "text");
 }
 
 /**
- * nbtk_label_get_clutter_label:
+ * nbtk_label_get_clutter_text:
  * @label: a #NbtkLabel
  *
- * Retrieve the internal #ClutterLabel so that extra parameters can be set
+ * Retrieve the internal #ClutterText so that extra parameters can be set
  *
- * Returns: the #ClutterLabel used by #NbtkLabel. The label is owned by the
+ * Returns: the #ClutterText used by #NbtkLabel. The label is owned by the
  * #NbtkLabel and should not be unref'ed by the application.
  */
 ClutterActor*
-nbtk_label_get_clutter_label (NbtkLabel *label)
+nbtk_label_get_clutter_text (NbtkLabel *label)
 {
   g_return_val_if_fail (NBTK_LABEL (label), NULL);
 

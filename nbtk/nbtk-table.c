@@ -40,7 +40,6 @@
 #include <string.h>
 #include <glib.h>
 #include <clutter/clutter.h>
-#include <clutter/clutter-container.h>
 
 #include "nbtk-private.h"
 #include "nbtk.h"
@@ -688,7 +687,7 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
   for (list = priv->children; list; list = g_slist_next (list))
     {
       gint row, col;
-      gint h_min, h_pref, w_min, w_pref;
+      ClutterUnit h_min, h_pref, w_min, w_pref;
       gboolean x_expand, y_expand;
       ClutterChildMeta *meta;
       ClutterActor *child;
@@ -911,7 +910,7 @@ nbtk_table_get_preferred_width (ClutterActor *self,
   for (list = priv->children; list; list = g_slist_next (list))
     {
       gint col;
-      gint w_min, w_pref;
+      ClutterUnit w_min, w_pref;
       ClutterChildMeta *meta;
       ClutterActor *child;
 
@@ -977,7 +976,7 @@ nbtk_table_get_preferred_height (ClutterActor *self,
   for (list = priv->children; list; list = g_slist_next (list))
     {
       gint row;
-      gint min, pref;
+      ClutterUnit min, pref;
       ClutterChildMeta *meta;
       ClutterActor *child;
 

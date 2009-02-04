@@ -8,8 +8,7 @@
 #include <glib-object.h>
 #include <gobject/gvaluecollector.h>
 
-#include <clutter/clutter-behaviour.h>
-#include <clutter/clutter-color.h>
+#include <clutter/clutter.h>
 
 #include <ccss/ccss.h>
 

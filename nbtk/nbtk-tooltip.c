@@ -39,13 +39,11 @@
 #include <glib.h>
 
 #include <clutter/clutter.h>
-#include <clutter/clutter-container.h>
 
 #include "nbtk-tooltip.h"
 
 #include "nbtk-widget.h"
 #include "nbtk-stylable.h"
-#include "nbtk-behaviour-bounce.h"
 
 enum
 {
@@ -60,11 +58,8 @@ enum
 
 struct _NbtkTooltipPrivate
 {
-  NbtkWidget      *label;
+  ClutterActor    *label;
   NbtkWidget      *widget;
-  ClutterTimeline *timeline;
-
-  ClutterEffectTemplate *hide_template;
 };
 
 G_DEFINE_TYPE (NbtkTooltip, nbtk_tooltip, NBTK_TYPE_WIDGET)
@@ -104,7 +99,7 @@ nbtk_tooltip_get_property (GObject    *gobject,
   switch (prop_id)
     {
     case PROP_LABEL:
-      g_value_set_string (value, clutter_label_get_text (CLUTTER_LABEL (priv->label)));
+      g_value_set_string (value, clutter_text_get_text (CLUTTER_TEXT (priv->label)));
       break;
 
     case PROP_WIDGET:
@@ -136,7 +131,7 @@ nbtk_tooltip_style_changed (NbtkWidget *self)
 
   if (color)
     {
-      clutter_label_set_color (CLUTTER_LABEL (priv->label), color);
+      clutter_text_set_color (CLUTTER_TEXT (priv->label), color);
       clutter_color_free (color);
     }
 
@@ -153,25 +148,13 @@ nbtk_tooltip_style_changed (NbtkWidget *self)
         else
           font_string = font_name;
 
-      clutter_label_set_font_name (CLUTTER_LABEL (priv->label), font_string);
+      clutter_text_set_font_name (CLUTTER_TEXT (priv->label), font_string);
 
       g_free (font_string);
     }
 
   if (NBTK_WIDGET_CLASS (nbtk_tooltip_parent_class)->style_changed)
     NBTK_WIDGET_CLASS (nbtk_tooltip_parent_class)->style_changed (self);
-}
-
-static void
-nbtk_tooltip_dispose (GObject *object)
-{
-  NbtkTooltipPrivate *priv = NBTK_TOOLTIP (object)->priv;
-
-  if (priv->hide_template)
-    {
-      g_object_unref (priv->hide_template);
-      priv->hide_template = NULL;
-    }
 }
 
 static void
@@ -185,7 +168,6 @@ nbtk_tooltip_class_init (NbtkTooltipClass *klass)
 
   gobject_class->set_property = nbtk_tooltip_set_property;
   gobject_class->get_property = nbtk_tooltip_get_property;
-  gobject_class->dispose = nbtk_tooltip_dispose;
 
   widget_class->style_changed = nbtk_tooltip_style_changed;
 
@@ -220,20 +202,18 @@ nbtk_tooltip_init (NbtkTooltip *tooltip)
 {
   tooltip->priv = NBTK_TOOLTIP_GET_PRIVATE (tooltip);
 
-  tooltip->priv->label = g_object_new (CLUTTER_TYPE_LABEL,
+  tooltip->priv->label = g_object_new (CLUTTER_TYPE_TEXT,
                                        "alignment", PANGO_ALIGN_CENTER,
                                        "ellipsize", PANGO_ELLIPSIZE_MIDDLE,
                                        "use-markup", TRUE,
-                                       "wrap", FALSE,
                                        NULL);
-
-  tooltip->priv->hide_template = clutter_effect_template_new_for_duration (150,
-                                                                           clutter_ramp_inc_func);
 
   clutter_container_add_actor (CLUTTER_CONTAINER (tooltip),
                                CLUTTER_ACTOR (tooltip->priv->label));
 
   g_object_set (tooltip, "show-on-set-parent", FALSE, NULL);
+
+  clutter_actor_set_reactive (CLUTTER_ACTOR (tooltip), FALSE);
 }
 
 
@@ -250,7 +230,7 @@ nbtk_tooltip_get_label (NbtkTooltip *tooltip)
 {
   g_return_val_if_fail (NBTK_IS_TOOLTIP (tooltip), NULL);
 
-  return clutter_label_get_text (CLUTTER_LABEL (tooltip->priv->label));
+  return clutter_text_get_text (CLUTTER_TEXT (tooltip->priv->label));
 }
 
 /**
@@ -270,7 +250,7 @@ nbtk_tooltip_set_label (NbtkTooltip *tooltip,
 
   priv = tooltip->priv;
 
-  clutter_label_set_text (CLUTTER_LABEL (priv->label), text);
+  clutter_text_set_text (CLUTTER_TEXT (priv->label), text);
 
   g_object_notify (G_OBJECT (tooltip), "label");
 }
@@ -372,13 +352,21 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
                               y + h);
 
   clutter_actor_move_anchor_point_from_gravity (self,
-                                                CLUTTER_GRAVITY_NORTH_WEST);
+                                                CLUTTER_GRAVITY_NONE);
 
   /* finally show the tooltip... */
   clutter_actor_show (self);
 
   /* and give it some bounce! */
-  priv->timeline = nbtk_bounce_scale (self, 500);
+  g_object_set (G_OBJECT (self),
+                "scale-gravity", CLUTTER_GRAVITY_CENTER,
+                NULL);
+  clutter_actor_set_scale (self, 0.0, 0.0);
+  clutter_actor_animate (self, CLUTTER_EASE_OUT_ELASTIC,
+                         500,
+                         "scale-x", 1.0,
+                         "scale-y", 1.0,
+                         NULL);
 }
 
 /**
@@ -390,17 +378,19 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
 void
 nbtk_tooltip_hide (NbtkTooltip *tooltip)
 {
-  NbtkTooltipPrivate *priv;
+  ClutterAnimation *animation;
 
   g_return_if_fail (NBTK_TOOLTIP (tooltip));
 
-  priv = tooltip->priv;
-  if (priv->timeline)
-    clutter_timeline_stop (priv->timeline);
-
-  clutter_actor_move_anchor_point_from_gravity (CLUTTER_ACTOR (tooltip),
-                                                CLUTTER_GRAVITY_NORTH);
-  clutter_effect_scale (tooltip->priv->hide_template,
-                        CLUTTER_ACTOR (tooltip),
-                        0, 0, (ClutterEffectCompleteFunc) clutter_actor_hide, NULL);
+  g_object_set (G_OBJECT (tooltip),
+                "scale-gravity", CLUTTER_GRAVITY_CENTER,
+                NULL);
+  animation =
+    clutter_actor_animate (CLUTTER_ACTOR (tooltip), CLUTTER_EASE_IN_SINE,
+                           150,
+                           "scale-x", 0.0,
+                           "scale-y", 0.0,
+                           NULL);
+  g_signal_connect_swapped (animation, "completed",
+                            G_CALLBACK (clutter_actor_hide), tooltip);
 }

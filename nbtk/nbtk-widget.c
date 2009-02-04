@@ -577,7 +577,8 @@ nbtk_widget_real_draw_background (NbtkWidget   *self,
       w = CLUTTER_UNITS_TO_DEVICE (allocation.x2 - allocation.x1);
       h = CLUTTER_UNITS_TO_DEVICE (allocation.y2 - allocation.y1);
 
-      cogl_color (&bg_color);
+      cogl_set_source_color4ub (bg_color.red, bg_color.green,
+                                bg_color.blue, bg_color.alpha);
       cogl_rectangle (0, 0, w, h);
     }
 
@@ -1839,34 +1840,11 @@ nbtk_widget_child_dnd_motion_cb (ClutterActor *child,
 	}
       else
 	{
-	  /*
-	   * We desperately need generic actor cloning here.
-	   *
-	   * This just special cases the situation we have in the Switcher.
-	   */
-	  ClutterActor   *inner_child = NULL;
-	  ClutterTexture *parent_tx;
+	  ClutterActor *parent_tx;
 
-	  if (NBTK_IS_WIDGET (child))
-	    inner_child = NBTK_WIDGET (child)->priv->child;
-	  else
-	    inner_child = child;
+	  parent_tx = clutter_clone_get_source (CLUTTER_CLONE (child));
 
-	  if (!inner_child || (!CLUTTER_IS_TEXTURE (inner_child) &&
-			       !CLUTTER_IS_CLONE_TEXTURE (inner_child)))
-	    {
-	      return FALSE;
-	    }
-
-	  if (CLUTTER_IS_CLONE_TEXTURE (inner_child))
-	    {
-	      parent_tx = clutter_clone_texture_get_parent_texture (
-			                 CLUTTER_CLONE_TEXTURE (inner_child));
-	    }
-	  else
-	    parent_tx = CLUTTER_TEXTURE (inner_child);
-
-	  clone = clutter_clone_texture_new (parent_tx);
+	  clone = clutter_clone_new (parent_tx);
 
 	  clutter_actor_get_scale (child, &scale_x, &scale_y);
 	  clutter_actor_set_scale (clone, scale_x, scale_y);
