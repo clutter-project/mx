@@ -1,42 +1,35 @@
-AM_CPPFLAGS = \
-	-I$(top_srcdir) \
-	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" \
-	-DPACKAGE_SRC_DIR=\""$(srcdir)"\" \
-	-DPACKAGE_DATA_DIR=\""$(datadir)"\" $(NBTK_CFLAGS)
+NULL =
 
-AM_CFLAGS =\
-	 -Wall\
-	 -g
-
-# auto-generated header and C files
-
-GLIB_GENMARSHAL = `pkg-config --variable=glib_genmarshal glib-2.0`
-GLIB_MKENUMS = `pkg-config --variable=glib_mkenums glib-2.0`
-
-
-BUILT_SOURCES = \
+BUILT_SOURCES = 		\
 	nbtk-enum-types.h 	\
 	nbtk-enum-types.c 	\
 	nbtk-marshal.h 		\
 	nbtk-marshal.c
 
+# keep sorted alphabetically, please
 source_h = \
-	nbtk-behaviour-bounce.h \
-	nbtk-button.h \
-	nbtk-entry.h \
-	nbtk-enum-types.h 	\
-	nbtk-label.h \
-	nbtk-stylable.h \
-	nbtk-style.h \
-	nbtk-table.h \
-	nbtk-texture-cache.h \
-	nbtk-texture-frame.h \
-	nbtk-tooltip.h \
-	nbtk-types.h \
-	nbtk-widget.h \
-	nbtk.h
+	$(srcdir)/nbtk-behaviour-bounce.h 	\
+	$(srcdir)/nbtk-button.h 		\
+	$(srcdir)/nbtk-entry.h 			\
+	$(srcdir)/nbtk-label.h 			\
+	$(srcdir)/nbtk-stylable.h 		\
+	$(srcdir)/nbtk-style.h 			\
+	$(srcdir)/nbtk-table.h 			\
+	$(srcdir)/nbtk-texture-cache.h 		\
+	$(srcdir)/nbtk-texture-frame.h 		\
+	$(srcdir)/nbtk-tooltip.h		\
+	$(srcdir)/nbtk-types.h 			\
+	$(srcdir)/nbtk-widget.h			\
+	$(NULL)
 
-EXTRA_DIST = nbtk-marshal.list nbtk-enum-types.h.in nbtk-enum-types.c.in
+source_h_priv = \
+	nbtk-private.h
+
+EXTRA_DIST = \
+        nbtk-marshal.list \
+        nbtk-enum-types.h.in \
+        nbtk-enum-types.c.in \
+        nbtk-version.h.in
 
 STAMP_FILES = stamp-nbtk-marshal.h stamp-nbtk-enum-types.h
 
@@ -85,26 +78,50 @@ nbtk-enum-types.c: stamp-nbtk-enum-types.h nbtk-enum-types.c.in
 # libnbtk library
 
 tidyincludedir = $(includedir)/nbtk
-tidyinclude_DATA = \
-  $(source_h)
+tidyinclude_DATA = 				\
+	$(source_h) 				\
+	$(top_srcdir)/nbtk/nbtk.h 		\
+        $(top_builddir)/nbtk/nbtk-version.h     \
+	$(top_builddir)/nbtk/nbtk-enum-types.h	\
+	$(NULL)
 
 lib_LTLIBRARIES = libnbtk.la
 
-libnbtk_la_SOURCES = \
-		$(BUILT_SOURCES) \
-		$(source_h) \
-		nbtk-behaviour-bounce.c \
-		nbtk-button.c \
-		nbtk-entry.c \
-		nbtk-label.c \
-		nbtk-private.h \
-		nbtk-stylable.c \
-		nbtk-style.c \
-		nbtk-table.c \
-		nbtk-texture-cache.c \
-		nbtk-texture-frame.c \
-		nbtk-tooltip.c \
-		nbtk-widget.c
+libnbtk_la_CFLAGS = 							\
+	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" 	\
+	-DPACKAGE_SRC_DIR=\""$(srcdir)"\" 				\
+	-DPACKAGE_DATA_DIR=\""$(datadir)"\"				\
+	-DG_LOG_DOMAIN=\"Nbtk\"						\
+	-DNBTK_COMPILATION						\
+	-DG_DISABLE_DEPRECATED						\
+	-DCLUTTER_DISABLE_DEPRECATED					\
+	$(NBTK_MAINTAINER_CFLAGS)					\
+	$(NBTK_DEBUG_CFLAGS)						\
+	$(NBTK_CFLAGS)							\
+	$(NULL)
 
+libnbtk_la_LDFLAGS = 			\
+	$(NBTK_LT_LDFLAGS)		\
+	-export-dynamic			\
+	-export-symbols-regex "^nbtk.*"	\
+	-rpath $(libdir) 		\
+	$(NULL)
+
+libnbtk_la_SOURCES = 			\
+	$(BUILT_SOURCES) 		\
+	$(source_h) 			\
+	$(source_h_priv) 		\
+	nbtk-behaviour-bounce.c 	\
+	nbtk-button.c 			\
+	nbtk-entry.c 			\
+	nbtk-label.c 			\
+	nbtk-stylable.c 		\
+	nbtk-style.c 			\
+	nbtk-table.c 			\
+	nbtk-texture-cache.c 		\
+	nbtk-texture-frame.c 		\
+	nbtk-tooltip.c 			\
+	nbtk-widget.c			\
+	$(NULL)
 
 libnbtk_la_LIBADD = $(NBTK_LIBS)

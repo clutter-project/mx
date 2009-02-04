@@ -1,0 +1,21 @@
+#ifndef __NBTK_VERSION_H__
+#define __NBTK_VERSION_H__
+
+#define NBTK_MAJOR_VERSION              (@NBTK_MAJOR_VERSION@)
+
+#define NBTK_MINOR_VERSION              (@NBTK_MINOR_VERSION@)
+
+#define NBTK_MICRO_VERSION              (@NBTK_MICRO_VERSION@)
+
+#define NBTK_VERSION_S                  "@NBTK_VERSION@"
+
+#define NBTK_VERSION_HEX                (NBTK_MAJOR_VERSION << 24 | \
+                                         NBTK_MINOR_VERSION << 16 | \
+                                         NBTK_MICRO_VERSION <<  8)
+
+#define NBTK_CHECK_VERSION(major,minor,micro)   \
+        (NBTK_MAJOR_VERSION > (major) || \
+         (NBTK_MAJOR_VERSION == (major) && NBTK_MINOR_VERSION > (minor)) || \
+         (NBTK_MAJOR_VERSION == (major) && NBRK_MINOR_VERSION == (minor) && NBTK_MICRO_VERSION >= (micro)))
+
+#endif /* __NBTK_VERSION_H__ */
