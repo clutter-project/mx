@@ -21,7 +21,7 @@ create_button (ClutterActor *parent,
   padding.left = padding.right = CLUTTER_UNITS_FROM_DEVICE (10); /* 10px */
 
   button = nbtk_button_new_with_label (text);
-  nbtk_widget_set_padding (NBTK_WIDGET (button), &padding);
+  nbtk_bin_set_padding (NBTK_BIN (button), &padding);
   clutter_container_add_actor (CLUTTER_CONTAINER (parent),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), x, y);
