@@ -8,18 +8,18 @@ BUILT_SOURCES = 		\
 
 # keep sorted alphabetically, please
 source_h = \
-	$(srcdir)/nbtk-behaviour-bounce.h 	\
-	$(srcdir)/nbtk-button.h 		\
-	$(srcdir)/nbtk-entry.h 			\
-	$(srcdir)/nbtk-label.h 			\
-	$(srcdir)/nbtk-stylable.h 		\
-	$(srcdir)/nbtk-style.h 			\
-	$(srcdir)/nbtk-table.h 			\
-	$(srcdir)/nbtk-texture-cache.h 		\
-	$(srcdir)/nbtk-texture-frame.h 		\
-	$(srcdir)/nbtk-tooltip.h		\
-	$(srcdir)/nbtk-types.h 			\
-	$(srcdir)/nbtk-widget.h			\
+	$(top_srcdir)/nbtk/nbtk-behaviour-bounce.h 	\
+	$(top_srcdir)/nbtk/nbtk-button.h 		\
+	$(top_srcdir)/nbtk/nbtk-entry.h 		\
+	$(top_srcdir)/nbtk/nbtk-label.h 		\
+	$(top_srcdir)/nbtk/nbtk-stylable.h 		\
+	$(top_srcdir)/nbtk/nbtk-style.h 		\
+	$(top_srcdir)/nbtk/nbtk-table.h 		\
+	$(top_srcdir)/nbtk/nbtk-texture-cache.h 	\
+	$(top_srcdir)/nbtk/nbtk-texture-frame.h 	\
+	$(top_srcdir)/nbtk/nbtk-tooltip.h		\
+	$(top_srcdir)/nbtk/nbtk-types.h 		\
+	$(top_srcdir)/nbtk/nbtk-widget.h		\
 	$(NULL)
 
 source_h_priv = \
@@ -109,8 +109,8 @@ libnbtk_la_LDFLAGS = 			\
 
 libnbtk_la_SOURCES = 			\
 	$(BUILT_SOURCES) 		\
-	$(source_h) 			\
-	$(source_h_priv) 		\
+	$(source_h)			\
+	$(source_h_priv)		\
 	nbtk-behaviour-bounce.c 	\
 	nbtk-button.c 			\
 	nbtk-entry.c 			\
@@ -121,7 +121,9 @@ libnbtk_la_SOURCES = 			\
 	nbtk-texture-cache.c 		\
 	nbtk-texture-frame.c 		\
 	nbtk-tooltip.c 			\
+	nbtk-version.h			\
 	nbtk-widget.c			\
+	nbtk.h				\
 	$(NULL)
 
 libnbtk_la_LIBADD = $(NBTK_LIBS)
