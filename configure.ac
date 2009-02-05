@@ -3,7 +3,7 @@ m4_define([nbtk_minor], [1])
 m4_define([nbtk_micro], [0])
 
 m4_define([nbtk_version], [nbtk_major.nbtk_minor.nbtk_micro])
-m4_define([nbtk_api_version], [nbtk_major.0])
+m4_define([nbtk_api_version], [1.0])
 
 # increase the interface age of 2 for each release
 # set to 0 if the API changes

@@ -77,17 +77,17 @@ nbtk-enum-types.c: stamp-nbtk-enum-types.h nbtk-enum-types.c.in
 
 # libnbtk library
 
-tidyincludedir = $(includedir)/nbtk
-tidyinclude_DATA = 				\
+nbtkincludedir = $(includedir)/nbtk-$(NBTK_API_VERSION)/nbtk
+nbtkinclude_DATA = 				\
 	$(source_h) 				\
 	$(top_srcdir)/nbtk/nbtk.h 		\
 	$(top_builddir)/nbtk/nbtk-version.h     \
 	$(top_builddir)/nbtk/nbtk-enum-types.h	\
 	$(NULL)
 
-lib_LTLIBRARIES = libnbtk.la
+lib_LTLIBRARIES = libnbtk-@NBTK_API_VERSION@.la
 
-libnbtk_la_CFLAGS = 							\
+libnbtk_@NBTK_API_VERSION@_la_CFLAGS =					\
 	-I$(top_srcdir)							\
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" 	\
 	-DPACKAGE_SRC_DIR=\""$(srcdir)"\" 				\
@@ -101,14 +101,14 @@ libnbtk_la_CFLAGS = 							\
 	$(NBTK_CFLAGS)							\
 	$(NULL)
 
-libnbtk_la_LDFLAGS = 			\
+libnbtk_@NBTK_API_VERSION@_la_LDFLAGS = \
 	$(NBTK_LT_LDFLAGS)		\
 	-export-dynamic			\
 	-export-symbols-regex "^nbtk.*"	\
 	-rpath $(libdir) 		\
 	$(NULL)
 
-libnbtk_la_SOURCES = 			\
+libnbtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	$(BUILT_SOURCES) 		\
 	$(source_h)			\
 	$(source_h_priv)		\
@@ -127,4 +127,4 @@ libnbtk_la_SOURCES = 			\
 	nbtk.h				\
 	$(NULL)
 
-libnbtk_la_LIBADD = $(NBTK_LIBS)
+libnbtk_@NBTK_API_VERSION@_la_LIBADD = $(NBTK_LIBS)

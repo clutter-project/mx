@@ -1,20 +1,23 @@
+NULL =
+
 AM_CFLAGS = $(NBTK_CFLAGS)
-LDADD = $(top_builddir)/nbtk/libnbtk.la
+LDADD = $(top_builddir)/nbtk/libnbtk-$(NBTK_API_VERSION).la
 
 INCLUDES = \
 	-I$(top_srcdir) \
 	-I$(top_builddir)
 
-noinst_PROGRAMS = \
-	test-buttons \
-	test-label \
-	test-entry \
-	test-script  \
-	test-styles  \
-	test-table   \
-  test-texture-frame \
-  test-padding \
-  test-border-image
+noinst_PROGRAMS = 		\
+	test-buttons 		\
+	test-label 		\
+	test-entry 		\
+	test-script  		\
+	test-styles  		\
+	test-table   		\
+	test-texture-frame 	\
+	test-padding 		\
+	test-border-image	\
+	$(NULL)
 
 test_buttons_SOURCES = test-buttons.c
 test_script_SOURCES = test-script.c

@@ -2,9 +2,9 @@ SUBDIRS = nbtk tests docs
 
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
 
-pcfiles = nbtk-1.0.pc
+pcfiles = nbtk-$(NBTK_API_VERSION).pc
 
-nbtk-1.0.pc: nbtk.pc
+nbtk-$(NBTK_API_VERSION).pc: nbtk.pc
 	@cp -f $< $@
 
 pkgconfig_DATA = $(pcfiles)

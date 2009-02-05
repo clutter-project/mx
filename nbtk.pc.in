@@ -6,6 +6,6 @@ includedir=${exec_prefix}/include
 Name: Nbtk
 Description: An experimental toolkit for moblin-netbook implementation
 Version: @VERSION@
-Libs: -L${libdir} -lnbtk
-Cflags: -I${includedir}
+Libs: -L${libdir} -lnbtk-@NBTK_API_VERSION@
+Cflags: -I${includedir}/nbtk-@NBTK_API_VERSION@
 Requires: gobject-2.0 clutter-0.8 libccss-1
