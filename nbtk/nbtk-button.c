@@ -90,7 +90,6 @@ struct _NbtkButtonPrivate
 
   ClutterActor     *old_bg;
   ClutterTimeline  *timeline;
-  gboolean          do_animation;
 };
 
 static guint button_signals[LAST_SIGNAL] = { 0, };
@@ -188,11 +187,12 @@ nbtk_button_bounce_transition (NbtkButton *button)
 }
 
 static void
-nbtk_button_style_changed (NbtkWidget *button)
+nbtk_button_style_changed (NbtkWidget *widget)
 {
   ClutterColor *real_color;
   ClutterActor *bg_image;
-  NbtkButtonPrivate *priv = NBTK_BUTTON (button)->priv;
+  NbtkButton *button = NBTK_BUTTON (widget);
+  NbtkButtonPrivate *priv = button->priv;
 
   /* update the label styling */
   if (priv->label)
@@ -217,12 +217,12 @@ nbtk_button_style_changed (NbtkWidget *button)
     }
 
   /* Store background, NbtkWidget will unparent it */
-  bg_image = nbtk_widget_get_background (button);
+  bg_image = nbtk_widget_get_background (widget);
   if (bg_image)
     priv->old_bg = g_object_ref (bg_image);
 
   /* Chain up to update style bits */
-  NBTK_WIDGET_CLASS (nbtk_button_parent_class)->style_changed (button);
+  NBTK_WIDGET_CLASS (nbtk_button_parent_class)->style_changed (widget);
   
   /* Parent old background */
   if (priv->old_bg)
@@ -231,10 +231,38 @@ nbtk_button_style_changed (NbtkWidget *button)
       g_object_unref (priv->old_bg);
     }
 
-  /* The animation is deferred until allocation, otherwise setting the 
-   * gravity won't work correctly.
-   */
-  priv->do_animation = TRUE;
+  /* Do animation */
+  if (priv->old_bg)
+    {
+      if (G_UNLIKELY (!priv->timeline))
+        priv->timeline = clutter_timeline_new_for_duration (priv->transition_duration);
+
+      /* run a transition effect if applicable */
+      if (priv->transition_type != NBTK_TRANSITION_NONE
+          && priv->transition_duration > 0)
+        {
+          /* Startup animation */
+          clutter_timeline_set_duration (priv->timeline, priv->transition_duration);
+
+          switch (priv->transition_type)
+            {
+            default:
+            case NBTK_TRANSITION_FADE:
+              nbtk_button_fade_transition (button);
+              break;
+
+            case NBTK_TRANSITION_BOUNCE:
+              nbtk_button_bounce_transition (button);
+              break;
+            }
+        }
+      else
+        {
+          /* no transition, so just unparent the old background */
+          clutter_actor_unparent (priv->old_bg);
+          priv->old_bg = NULL;
+        }
+    }
 }
 
 static void
@@ -490,44 +518,6 @@ nbtk_button_allocate (ClutterActor          *self,
       clutter_actor_allocate (priv->old_bg,
                               &frame_box,
                               absolute_origin_changed);
-    }
-
-  /* Perform animation (set in style_changed) */
-  if (priv->do_animation)
-    {
-      if (priv->old_bg)
-        {
-          if (G_UNLIKELY (!priv->timeline))
-            priv->timeline = clutter_timeline_new_for_duration (priv->transition_duration);
-
-          /* run a transition effect if applicable */
-          if (priv->transition_type != NBTK_TRANSITION_NONE
-              && priv->transition_duration > 0)
-            {
-              /* Startup animation */
-              clutter_timeline_set_duration (priv->timeline, priv->transition_duration);
-
-              switch (priv->transition_type)
-                {
-                default:
-                case NBTK_TRANSITION_FADE:
-                  nbtk_button_fade_transition (button);
-                  break;
-
-                case NBTK_TRANSITION_BOUNCE:
-                  nbtk_button_bounce_transition (button);
-                  break;
-                }
-            }
-          else
-            {
-              /* no transition, so just unparent the old background */
-              clutter_actor_unparent (priv->old_bg);
-              priv->old_bg = NULL;
-            }
-        }
-
-      priv->do_animation = FALSE;
     }
 }
 
