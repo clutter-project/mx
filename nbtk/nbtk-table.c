@@ -1019,22 +1019,15 @@ nbtk_table_paint (ClutterActor *self)
 {
   NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
   GSList *list;
-  NbtkPadding padding = { 0, };
-  gint p_left, p_right, p_top, p_bottom;
 
   /* make sure the background gets painted first */
   CLUTTER_ACTOR_CLASS (nbtk_table_parent_class)->paint (self);
 
-  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
-  p_left = CLUTTER_UNITS_TO_INT (padding.left);
-  p_right = CLUTTER_UNITS_TO_INT (padding.right);
-  p_top = CLUTTER_UNITS_TO_INT (padding.top);
-  p_bottom = CLUTTER_UNITS_TO_INT (padding.bottom);
-
-
   for (list = priv->children; list; list = g_slist_next (list))
     {
-      clutter_actor_paint (CLUTTER_ACTOR (list->data));
+      ClutterActor *child = CLUTTER_ACTOR (list->data);
+      if (CLUTTER_ACTOR_IS_VISIBLE (child))
+        clutter_actor_paint (child);
     }
 }
 

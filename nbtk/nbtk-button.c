@@ -48,7 +48,6 @@
 #include "nbtk-texture-frame.h"
 #include "nbtk-texture-cache.h"
 #include "nbtk-tooltip.h"
-//#include "nbtk-behaviour-bounce.h"
 
 enum
 {
@@ -78,8 +77,6 @@ struct _NbtkButtonPrivate
   ClutterActor *label;
   ClutterActor *icon;
   NbtkWidget   *tooltip;
-
-  //ClutterTimeline *timeline;
 
   guint8 old_opacity;
 
