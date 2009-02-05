@@ -55,10 +55,10 @@ struct _NbtkTextureFramePrivate
 {
   ClutterTexture *parent_texture;
 
-  gfloat left;
   gfloat top;
   gfloat right;
   gfloat bottom;
+  gfloat left;
 
   CoglHandle material;
 };
@@ -322,10 +322,10 @@ nbtk_texture_frame_set_property (GObject      *gobject,
 
     case PROP_TOP:
       nbtk_texture_frame_set_frame_internal (frame,
-                                             priv->left,
                                              g_value_get_float (value),
                                              priv->right,
-                                             priv->bottom);
+                                             priv->bottom,
+                                             priv->left);
       break;
 
     case PROP_RIGHT:
@@ -505,19 +505,19 @@ nbtk_texture_frame_init (NbtkTextureFrame *self)
  */
 ClutterActor*
 nbtk_texture_frame_new (ClutterTexture *texture, 
-			gfloat          left,
 			gfloat          top,
 			gfloat          right,
-			gfloat          bottom)
+			gfloat          bottom,
+			gfloat          left)
 {
   g_return_val_if_fail (texture == NULL || CLUTTER_IS_TEXTURE (texture), NULL);
 
   return g_object_new (NBTK_TYPE_TEXTURE_FRAME,
  		       "parent-texture", texture,
-		       "left", left,
 		       "top", top,
 		       "right", right,
 		       "bottom", bottom,
+		       "left", left,
 		       NULL);
 }
 
