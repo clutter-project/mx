@@ -12,7 +12,6 @@ G_BEGIN_DECLS
 
 typedef ccss_border_image_t             NbtkBorderImage;
 typedef struct _NbtkPadding             NbtkPadding;
-typedef enum   _NbtkTransitionType      NbtkTransitionType;
 
 struct _NbtkPadding
 {
@@ -25,12 +24,11 @@ struct _NbtkPadding
 GType nbtk_border_image_get_type (void) G_GNUC_CONST;
 GType nbtk_padding_get_type (void) G_GNUC_CONST;
 
-enum _NbtkTransitionType
-{
+typedef enum { /*< prefix=NBTK_TRANSITION >*/
   NBTK_TRANSITION_NONE,
   NBTK_TRANSITION_FADE,
   NBTK_TRANSITION_BOUNCE
-};
+} NbtkTransitionType;
 
 
 G_END_DECLS
