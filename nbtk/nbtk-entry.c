@@ -152,9 +152,35 @@ nbtk_entry_style_changed (NbtkWidget *self)
 }
 
 static void
+nbtk_entry_allocate (ClutterActor          *actor,
+                     const ClutterActorBox *box,
+                     gboolean               absolute_origin_changed)
+{
+  NbtkPadding padding;
+  ClutterActorBox child_box;
+
+  NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
+
+  CLUTTER_ACTOR_CLASS (nbtk_entry_parent_class)->
+    allocate (actor, box, absolute_origin_changed);
+  
+  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
+  
+  child_box.x1 = CLUTTER_UNITS_FROM_DEVICE (
+                   CLUTTER_UNITS_TO_DEVICE (padding.left));
+  child_box.y1 = CLUTTER_UNITS_FROM_DEVICE (
+                   CLUTTER_UNITS_TO_DEVICE (padding.top));
+  child_box.x2 = box->x2 - box->x1 - padding.right;
+  child_box.y2 = box->y2 - box->y1 - padding.bottom;
+  
+  clutter_actor_allocate (priv->entry, &child_box, absolute_origin_changed);
+}
+
+static void
 nbtk_entry_class_init (NbtkEntryClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
   NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
@@ -162,6 +188,8 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
 
   gobject_class->set_property = nbtk_entry_set_property;
   gobject_class->get_property = nbtk_entry_get_property;
+  
+  actor_class->allocate = nbtk_entry_allocate;
 
   widget_class->style_changed = nbtk_entry_style_changed;
 
@@ -179,7 +207,7 @@ nbtk_entry_init (NbtkEntry *entry)
   entry->priv = NBTK_ENTRY_GET_PRIVATE (entry);
 
   entry->priv->entry = g_object_new (CLUTTER_TYPE_TEXT,
-                                     "alignment", PANGO_ALIGN_CENTER,
+                                     "alignment", PANGO_ALIGN_LEFT,
                                      "editable", TRUE,
                                      "reactive", TRUE,
                                      NULL);
