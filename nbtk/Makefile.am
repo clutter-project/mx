@@ -9,6 +9,7 @@ BUILT_SOURCES = 		\
 # keep sorted alphabetically, please
 source_h = \
 	$(top_srcdir)/nbtk/nbtk-adjustment.h		\
+	$(top_srcdir)/nbtk/nbtk-bin.h			\
 	$(top_srcdir)/nbtk/nbtk-button.h 		\
 	$(top_srcdir)/nbtk/nbtk-entry.h 		\
 	$(top_srcdir)/nbtk/nbtk-label.h 		\
@@ -117,6 +118,7 @@ libnbtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	$(source_h)			\
 	$(source_h_priv)		\
 	nbtk-adjustment.c 		\
+	nbtk-bin.c			\
 	nbtk-button.c 			\
 	nbtk-depth-group.c 		\
 	nbtk-depth-group.h 		\
