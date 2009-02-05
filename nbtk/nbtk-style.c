@@ -373,10 +373,13 @@ nbtk_style_get_property (NbtkStyle    *style,
               else if (NBTK_TYPE_BORDER_IMAGE == G_PARAM_SPEC_VALUE_TYPE (pspec) &&
                        0 == g_strcmp0 ("border-image", pspec->name))
                 {
+                  gpointer value;
                   ccss_property_t *border_image = NULL;
                   
-                  if (ccss_style_get_property (ccss_style, "border-image", &border_image))
+                  if (ccss_style_get_property (ccss_style, "border-image", &value))
                     {
+                      ccss_property_t *border_image = value;
+
                       g_value_set_boxed (&real_value, border_image);
                       value_set = TRUE;                    
                     }
