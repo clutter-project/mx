@@ -467,6 +467,15 @@ nbtk_widget_dispose (GObject *gobject)
   G_OBJECT_CLASS (nbtk_widget_parent_class)->dispose (gobject);
 }
 
+static void
+nbtk_widget_finalize (GObject *gobject)
+{
+  NbtkWidget *actor = NBTK_WIDGET (gobject);
+  NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
+
+  g_free (priv->style_class);
+  G_OBJECT_CLASS (nbtk_widget_parent_class)->finalize (gobject);
+}
 
 static void
 nbtk_widget_allocate (ClutterActor          *actor,
@@ -815,6 +824,7 @@ nbtk_widget_class_init (NbtkWidgetClass *klass)
   gobject_class->set_property = nbtk_widget_set_property;
   gobject_class->get_property = nbtk_widget_get_property;
   gobject_class->dispose = nbtk_widget_dispose;
+  gobject_class->finalize = nbtk_widget_finalize;
 
   actor_class->allocate = nbtk_widget_allocate;
   actor_class->pick = nbtk_widget_pick;
