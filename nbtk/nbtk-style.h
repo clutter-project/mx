@@ -1,7 +1,6 @@
 #ifndef __NBTK_STYLE_H__
 #define __NBTK_STYLE_H__
 
-#include <glib-object.h>
 #include <clutter/clutter-actor.h>
 #include <clutter/clutter-alpha.h>
 #include <clutter/clutter-timeline.h>
