@@ -27,7 +27,7 @@
 
 G_BEGIN_DECLS
 
-#include <nbtk/nbtk-widget.h>
+#include <nbtk/nbtk-bin.h>
 
 #define NBTK_TYPE_BUTTON                (nbtk_button_get_type ())
 #define NBTK_BUTTON(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_BUTTON, NbtkButton))
@@ -43,14 +43,14 @@ typedef struct _NbtkButtonClass         NbtkButtonClass;
 struct _NbtkButton
 {
   /*< private >*/
-  NbtkWidget parent_instance;
+  NbtkBin parent_instance;
 
   NbtkButtonPrivate *priv;
 };
 
 struct _NbtkButtonClass
 {
-  NbtkWidgetClass parent_class;
+  NbtkBinClass parent_class;
 
   /* vfuncs, not signals */
   void (* pressed)  (NbtkButton *button);
@@ -62,18 +62,21 @@ struct _NbtkButtonClass
 
 GType nbtk_button_get_type (void) G_GNUC_CONST;
 
-NbtkWidget *          nbtk_button_new            (void);
-NbtkWidget *          nbtk_button_new_with_label (const gchar  *text);
-G_CONST_RETURN gchar *nbtk_button_get_label      (NbtkButton   *button);
-void                  nbtk_button_set_label      (NbtkButton   *button,
-                                                  const gchar  *text);
-void                  nbtk_button_set_icon_from_file (NbtkButton *button,
-                                                      gchar      *filename);
-void                  nbtk_button_set_toggle_mode    (NbtkButton *button, gboolean toggle);
-gboolean              nbtk_button_get_toggle_mode    (NbtkButton *button);
-void                  nbtk_button_set_active         (NbtkButton *button, gboolean active);
-gboolean              nbtk_button_get_active         (NbtkButton *button);
-void                  nbtk_button_set_tooltip        (NbtkButton *button, const gchar *label);
+NbtkWidget *          nbtk_button_new                (void);
+NbtkWidget *          nbtk_button_new_with_label     (const gchar *text);
+G_CONST_RETURN gchar *nbtk_button_get_label          (NbtkButton  *button);
+void                  nbtk_button_set_label          (NbtkButton  *button,
+                                                      const gchar *text);
+void                  nbtk_button_set_icon_from_file (NbtkButton  *button,
+                                                      gchar       *filename);
+void                  nbtk_button_set_toggle_mode    (NbtkButton  *button,
+                                                      gboolean     toggle);
+gboolean              nbtk_button_get_toggle_mode    (NbtkButton  *button);
+void                  nbtk_button_set_active         (NbtkButton  *button,
+                                                      gboolean     active);
+gboolean              nbtk_button_get_active         (NbtkButton  *button);
+void                  nbtk_button_set_tooltip        (NbtkButton  *button,
+                                                      const gchar *label);
 
 G_END_DECLS
 

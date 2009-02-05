@@ -95,7 +95,7 @@ struct _NbtkButtonPrivate
 
 static guint button_signals[LAST_SIGNAL] = { 0, };
 
-G_DEFINE_TYPE (NbtkButton, nbtk_button, NBTK_TYPE_WIDGET)
+G_DEFINE_TYPE (NbtkButton, nbtk_button, NBTK_TYPE_BIN)
 
 static void
 style_changed_completed_anim (ClutterAnimation *animation, NbtkButton *button)
@@ -814,7 +814,8 @@ nbtk_button_set_icon_from_file (NbtkButton *button,
  * Set or remove a tooltip from the button.
  */
 void
-nbtk_button_set_tooltip (NbtkButton *button, const gchar *label)
+nbtk_button_set_tooltip (NbtkButton  *button,
+                         const gchar *label)
 {
   NbtkButtonPrivate *priv;
 
@@ -830,7 +831,5 @@ nbtk_button_set_tooltip (NbtkButton *button, const gchar *label)
                                     NULL);
     }
   else
-    {
-      g_object_unref (priv->tooltip);
-    }
+    g_object_unref (priv->tooltip);
 }
