@@ -23,7 +23,7 @@ GType
 /*** BEGIN value-tail ***/
         { 0, NULL, NULL }
       };
-      enum_type_id = g_@type@_register_static("@EnumName@", values);
+      enum_type_id = g_@type@_register_static (g_intern_static_string ("@EnumName@"), values);
     }
   return enum_type_id;
 }
