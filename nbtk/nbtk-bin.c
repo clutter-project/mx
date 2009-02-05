@@ -39,6 +39,7 @@
 #include "nbtk-bin.h"
 #include "nbtk-enum-types.h"
 #include "nbtk-private.h"
+#include "nbtk-stylable.h"
 
 #define NBTK_BIN_GET_PRIVATE(obj)       (G_TYPE_INSTANCE_GET_PRIVATE ((obj), NBTK_TYPE_BIN, NbtkBinPrivate))
 
@@ -50,6 +51,8 @@ struct _NbtkBinPrivate
 
   NbtkAlignment x_align;
   NbtkAlignment y_align;
+
+  guint padding_set : 1;
 };
 
 enum
@@ -58,15 +61,19 @@ enum
 
   PROP_CHILD,
   PROP_PADDING,
+  PROP_PADDING_SET,
   PROP_X_ALIGN,
   PROP_Y_ALIGN
 };
 
 static void clutter_container_iface_init (ClutterContainerIface *iface);
+static void nbtk_stylable_iface_init     (NbtkStylableIface     *iface);
 
 G_DEFINE_TYPE_WITH_CODE (NbtkBin, nbtk_bin, NBTK_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
-                                                clutter_container_iface_init));
+                                                clutter_container_iface_init)
+                         G_IMPLEMENT_INTERFACE (NBTK_TYPE_STYLABLE,
+                                                nbtk_stylable_iface_init));
 
 static void
 nbtk_bin_get_align_factors (NbtkBin *bin,
@@ -158,10 +165,62 @@ clutter_container_iface_init (ClutterContainerIface *iface)
 }
 
 static void
+nbtk_bin_style_changed (NbtkWidget *self)
+{
+  NbtkBinPrivate *priv = NBTK_BIN (self)->priv;
+
+  /* update the padding from the CSS only if we
+   * don't have a padding set by the user with
+   * nbtk_bin_set_padding()
+   */
+  if (!priv->padding_set)
+    {
+      NbtkPadding *padding = NULL;
+
+      nbtk_stylable_get (NBTK_STYLABLE (self),
+                         "padding", &padding,
+                         NULL);
+
+      if (padding)
+        {
+          priv->padding = *padding;
+
+          g_boxed_free (NBTK_TYPE_PADDING, padding);
+        }
+    }
+
+  /* chain up */
+  NBTK_WIDGET_CLASS (nbtk_bin_parent_class)->style_changed (self);
+}
+
+static void
+nbtk_stylable_iface_init (NbtkStylableIface *iface)
+{
+  static gboolean is_initialized = FALSE;
+
+  if (G_UNLIKELY (!is_initialized))
+    {
+      GParamSpec *pspec;
+
+      pspec = g_param_spec_boxed ("padding",
+                                  "Padding",
+                                  "Padding between the widgets borders "
+                                  "and its content",
+                                  NBTK_TYPE_PADDING,
+                                  G_PARAM_READWRITE);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_BIN, pspec);
+    }
+}
+
+static void
 nbtk_bin_paint (ClutterActor *self)
 {
   NbtkBinPrivate *priv = NBTK_BIN (self)->priv;
 
+  /* allow NbtkWidget to paint the background */
+  CLUTTER_ACTOR_CLASS (nbtk_bin_parent_class)->paint (self);
+
+  /* the pain our child */
   if (priv->child && CLUTTER_ACTOR_IS_VISIBLE (priv->child))
     clutter_actor_paint (priv->child);
 }
@@ -338,7 +397,7 @@ nbtk_bin_dispose (GObject *gobject)
 
   if (priv->child)
     {
-      clutter_actor_destroy (priv->child);
+      clutter_actor_unparent (priv->child);
       priv->child = NULL;
     }
 
@@ -398,6 +457,10 @@ nbtk_bin_get_property (GObject    *gobject,
       g_value_set_boxed (value, &priv->padding);
       break;
 
+    case PROP_PADDING_SET:
+      g_value_set_boolean (value, priv->padding_set);
+      break;
+
     case PROP_X_ALIGN:
       g_value_set_enum (value, priv->x_align);
       break;
@@ -416,6 +479,7 @@ nbtk_bin_class_init (NbtkBinClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
+  NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (NbtkBinPrivate));
@@ -428,6 +492,8 @@ nbtk_bin_class_init (NbtkBinClass *klass)
   actor_class->get_preferred_height = nbtk_bin_get_preferred_height;
   actor_class->allocate = nbtk_bin_allocate;
   actor_class->paint = nbtk_bin_paint;
+
+  widget_class->style_changed = nbtk_bin_style_changed;
 
   /**
    * NbtkBin:child:
@@ -453,6 +519,19 @@ nbtk_bin_class_init (NbtkBinClass *klass)
                               NBTK_TYPE_PADDING,
                               NBTK_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_PADDING, pspec);
+
+  /**
+   * NbtkBin:padding-set:
+   *
+   * Whether the #NbtkBin:padding has been set using
+   * nbtk_bin_set_padding() or by the CSS theme.
+   */
+  pspec = g_param_spec_boolean ("padding-set",
+                                "Padding Set",
+                                "Whether the padding has been set",
+                                FALSE,
+                                NBTK_PARAM_READABLE);
+  g_object_class_install_property (gobject_class, PROP_PADDING_SET, pspec);
 
   /**
    * NbtkBin:x-align:
@@ -572,11 +651,14 @@ nbtk_bin_get_child (NbtkBin *bin)
 /**
  * nbtk_bin_set_padding:
  * @bin: a #NbtkBin
- * @padding: the padding of the bin
+ * @padding: the padding of the bin, or %NULL
  *
  * Sets the padding of #NbtkBin. The padding is the space from
  * the internal border of the #NbtkBin used when allocating the
  * child.
+ *
+ * If @padding is %NULL the default padding provided by the
+ * CSS theme will be used instead.
  */
 void
 nbtk_bin_set_padding (NbtkBin           *bin,
@@ -585,15 +667,36 @@ nbtk_bin_set_padding (NbtkBin           *bin,
   NbtkBinPrivate *priv;
 
   g_return_if_fail (NBTK_IS_BIN (bin));
-  g_return_if_fail (padding != NULL);
 
   priv = bin->priv;
 
-  priv->padding = *padding;
+  if (padding)
+    {
+      priv->padding = *padding;
+      priv->padding_set = TRUE;
+    }
+  else
+    {
+      NbtkPadding *css_padding = NULL;
+
+      /* Reset back to CSS-provided padding. */
+      nbtk_stylable_get (NBTK_STYLABLE (bin),
+                         "padding", &css_padding,
+                         NULL);
+
+      if (css_padding)
+        {
+          priv->padding = *css_padding;
+          priv->padding_set = FALSE;
+
+          g_boxed_free (NBTK_TYPE_PADDING, css_padding);
+        }
+    }
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (bin));
 
   g_object_notify (G_OBJECT (bin), "padding");
+  g_object_notify (G_OBJECT (bin), "padding-set");
 }
 
 /**
@@ -681,4 +784,30 @@ nbtk_bin_get_alignment (NbtkBin       *bin,
 
   if (y_align)
     *y_align = priv->y_align;
+}
+
+static gpointer
+nbtk_padding_copy (gpointer data)
+{
+  return g_slice_dup (NbtkPadding, data);
+}
+
+static void
+nbtk_padding_free (gpointer data)
+{
+  if (G_LIKELY (data))
+    g_slice_free (NbtkPadding, data);
+}
+
+GType
+nbtk_padding_get_type (void)
+{
+  static GType our_type = 0;
+
+  if (G_UNLIKELY (our_type == 0))
+    our_type = g_boxed_type_register_static (I_("NbtkPadding"),
+                                             nbtk_padding_copy,
+                                             nbtk_padding_free);
+
+  return our_type;
 }
