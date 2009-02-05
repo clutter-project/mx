@@ -13,6 +13,7 @@
 
 #include <ccss/ccss.h>
 
+#include "nbtk-stylable.h"
 #include "nbtk-style.h"
 #include "nbtk-types.h"
 #include "nbtk-marshal.h"

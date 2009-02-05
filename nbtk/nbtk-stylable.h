@@ -25,6 +25,7 @@
 #define __NBTK_STYLABLE_H__
 
 #include <glib-object.h>
+#include <nbtk/nbtk-style.h>
 
 G_BEGIN_DECLS
 
@@ -35,10 +36,7 @@ G_BEGIN_DECLS
 #define NBTK_IS_STYLABLE_IFACE(iface)   (G_TYPE_CHECK_CLASS_TYPE ((iface), NBTK_TYPE_STYLABLE))
 #define NBTK_STYLABLE_GET_IFACE(obj)    (G_TYPE_INSTANCE_GET_INTERFACE ((obj), NBTK_TYPE_STYLABLE, NbtkStylableIface))
 
-typedef struct _NbtkStylable            NbtkStylable; /* dummy typedef */
-typedef struct _NbtkStylableIface       NbtkStylableIface;
-
-#include <nbtk/nbtk-style.h>
+/* NbtkStylableIface is defined in nbtk-style.h */
 
 struct _NbtkStylableIface
 {
@@ -56,10 +54,13 @@ struct _NbtkStylableIface
   const gchar  *(*get_style_type)   (NbtkStylable *stylable);
   const gchar  *(*get_style_class)  (NbtkStylable *stylable);
   const gchar  *(*get_pseudo_class) (NbtkStylable *stylable);
-  gchar        *(*get_attribute)    (NbtkStylable *stylable, const gchar *name);
+  gchar        *(*get_attribute)    (NbtkStylable *stylable,
+                                     const gchar  *name);
   gboolean      (*get_viewport)     (NbtkStylable *stylable,
-                                    gint *x, gint *y,
-                                    gint *width, gint *height);
+                                     gint         *x,
+                                     gint         *y,
+                                     gint         *width,
+                                     gint         *height);
 
   /* signals, not vfuncs */
   void (* style_notify) (NbtkStylable *stylable,
@@ -105,10 +106,13 @@ const gchar*  nbtk_stylable_get_style_id      (NbtkStylable *stylable);
 const gchar*  nbtk_stylable_get_style_type    (NbtkStylable *stylable);
 const gchar*  nbtk_stylable_get_style_class   (NbtkStylable *stylable);
 const gchar*  nbtk_stylable_get_pseudo_class  (NbtkStylable *stylable);
-gchar*        nbtk_stylable_get_attribute     (NbtkStylable *stylable, const gchar *name);
+gchar*        nbtk_stylable_get_attribute     (NbtkStylable *stylable,
+                                               const gchar  *name);
 gboolean      nbtk_stylable_get_viewport      (NbtkStylable *stylable,
-                                               gint *x, gint *y,
-                                               gint *width, gint *height);
+                                               gint         *x,
+                                               gint         *y,
+                                               gint         *width,
+                                               gint         *height);
 
 G_END_DECLS
 
