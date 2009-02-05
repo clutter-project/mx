@@ -434,6 +434,12 @@ nbtk_widget_dispose (GObject *gobject)
       priv->child = NULL;
     }
 
+  if (priv->bg_image)
+    {
+      clutter_actor_unparent (priv->bg_image);
+      priv->bg_image = NULL;
+    }
+
   /*
    * If we are using custom dnd icon, release the extra reference we
    * have for it.
