@@ -2070,3 +2070,26 @@ nbtk_widget_get_background (NbtkWidget *actor)
   return priv->bg_image;
 }
 
+void
+nbtk_widget_get_border (NbtkWidget *actor,
+                        NbtkPadding *border)
+{
+  gint border_top, border_bottom;
+  gint border_left, border_right;
+
+  g_return_if_fail (NBTK_IS_WIDGET (actor));
+  g_return_if_fail (border != NULL);
+
+  border_top = border_bottom = border_left = border_right = 0;
+  nbtk_stylable_get (NBTK_STYLABLE (actor),
+                    "border-top-width", &border_top,
+                    "border-bottom-width", &border_bottom,
+                    "border-right-width", &border_right,
+                    "border-left-width", &border_left,
+                    NULL);
+
+  border->top    = CLUTTER_UNITS_FROM_DEVICE (border_top);
+  border->right  = CLUTTER_UNITS_FROM_DEVICE (border_right);
+  border->bottom = CLUTTER_UNITS_FROM_DEVICE (border_bottom);
+  border->left   = CLUTTER_UNITS_FROM_DEVICE (border_left);
+}

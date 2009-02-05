@@ -159,6 +159,9 @@ const gchar* nbtk_widget_get_style_class_name (NbtkWidget  *actor);
 /* Only to be used by sub-classes of NbtkWidget */
 ClutterActor *nbtk_widget_get_background (NbtkWidget *actor);
 
+void       nbtk_widget_get_border     (NbtkWidget         *actor,
+                                       NbtkPadding        *border);
+
 G_END_DECLS
 
 #endif /* __NBTK_WIDGET_H__ */
