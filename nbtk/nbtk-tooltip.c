@@ -62,7 +62,7 @@ struct _NbtkTooltipPrivate
   NbtkWidget      *widget;
 };
 
-G_DEFINE_TYPE (NbtkTooltip, nbtk_tooltip, NBTK_TYPE_WIDGET)
+G_DEFINE_TYPE (NbtkTooltip, nbtk_tooltip, NBTK_TYPE_BIN)
 
 static void
 nbtk_tooltip_set_property (GObject      *gobject,
