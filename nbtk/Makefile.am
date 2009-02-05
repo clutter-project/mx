@@ -23,13 +23,13 @@ source_h = \
 	$(NULL)
 
 source_h_priv = \
-	nbtk-private.h
+	$(top_srcdir)/nbtk/nbtk-private.h
 
 EXTRA_DIST = \
-        nbtk-marshal.list \
-        nbtk-enum-types.h.in \
-        nbtk-enum-types.c.in \
-        nbtk-version.h.in
+	nbtk-marshal.list \
+	nbtk-enum-types.h.in \
+	nbtk-enum-types.c.in \
+	nbtk-version.h.in
 
 STAMP_FILES = stamp-nbtk-marshal.h stamp-nbtk-enum-types.h
 
@@ -81,13 +81,14 @@ tidyincludedir = $(includedir)/nbtk
 tidyinclude_DATA = 				\
 	$(source_h) 				\
 	$(top_srcdir)/nbtk/nbtk.h 		\
-        $(top_builddir)/nbtk/nbtk-version.h     \
+	$(top_builddir)/nbtk/nbtk-version.h     \
 	$(top_builddir)/nbtk/nbtk-enum-types.h	\
 	$(NULL)
 
 lib_LTLIBRARIES = libnbtk.la
 
 libnbtk_la_CFLAGS = 							\
+	-I$(top_srcdir)							\
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" 	\
 	-DPACKAGE_SRC_DIR=\""$(srcdir)"\" 				\
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\"				\
