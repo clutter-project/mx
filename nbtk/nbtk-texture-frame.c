@@ -41,10 +41,10 @@ enum
 
   PROP_PARENT_TEXTURE,
 
-  PROP_LEFT,
   PROP_TOP,
   PROP_RIGHT,
-  PROP_BOTTOM
+  PROP_BOTTOM,
+  PROP_LEFT
 };
 
 G_DEFINE_TYPE (NbtkTextureFrame, nbtk_texture_frame, CLUTTER_TYPE_ACTOR);
@@ -259,10 +259,10 @@ nbtk_texture_frame_paint (ClutterActor *self)
 
 static inline void
 nbtk_texture_frame_set_frame_internal (NbtkTextureFrame *frame,
-                                       gfloat            left,
                                        gfloat            top,
                                        gfloat            right,
-                                       gfloat            bottom)
+                                       gfloat            bottom,
+                                       gfloat            left)
 {
   NbtkTextureFramePrivate *priv = frame->priv;
   GObject *gobject = G_OBJECT (frame);
