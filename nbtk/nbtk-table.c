@@ -525,10 +525,15 @@ static void
 nbtk_table_dispose (GObject *gobject)
 {
   NbtkTablePrivate *priv = NBTK_TABLE (gobject)->priv;
+  GSList *l, *next;
 
-  g_slist_foreach (priv->children, (GFunc) clutter_actor_unparent, NULL);
-  g_slist_free (priv->children);
-  priv->children = NULL;
+  for (l = priv->children; l;)
+    {
+      next = l->next;
+      clutter_container_remove_actor ((ClutterContainer *)gobject,
+                                      CLUTTER_ACTOR (l->data));
+      l = next;
+    }
 
   G_OBJECT_CLASS (nbtk_table_parent_class)->dispose (gobject);
 }
