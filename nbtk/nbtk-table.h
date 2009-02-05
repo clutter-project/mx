@@ -23,6 +23,7 @@
 #ifndef __NBTK_TABLE_H__
 #define __NBTK_TABLE_H__
 
+#include <nbtk/nbtk-types.h>
 #include <nbtk/nbtk-widget.h>
 
 G_BEGIN_DECLS
@@ -109,6 +110,8 @@ void        nbtk_table_set_col_spacing    (NbtkTable *table, gint spacing);
 void        nbtk_table_set_row_spacing    (NbtkTable *table, gint spacing);
 gint        nbtk_table_get_col_spacing    (NbtkTable *table);
 gint        nbtk_table_get_row_spacing    (NbtkTable *table);
+void        nbtk_table_set_padding        (NbtkTable *table, const NbtkPadding *padding);
+void        nbtk_table_get_padding        (NbtkTable *table, NbtkPadding *padding);
 void        nbtk_table_add_widget         (NbtkTable *table, NbtkWidget *widget, gint row, gint column);
 void        nbtk_table_add_widget_full    (NbtkTable *table, NbtkWidget *widget, gint row, gint column, gint rowspan, gint colspan, NbtkTableChildOptions options, gdouble xalign, gdouble yalign);
 void        nbtk_table_add_actor          (NbtkTable *table, ClutterActor *actor, gint row, gint column);
