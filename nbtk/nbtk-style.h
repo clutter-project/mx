@@ -1,9 +1,8 @@
 #ifndef __NBTK_STYLE_H__
 #define __NBTK_STYLE_H__
 
-#include <clutter/clutter-actor.h>
-#include <clutter/clutter-alpha.h>
-#include <clutter/clutter-timeline.h>
+#include <glib-object.h>
+#include <clutter/clutter.h>
 
 G_BEGIN_DECLS
 

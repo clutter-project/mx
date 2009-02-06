@@ -56,7 +56,7 @@ GType nbtk_entry_get_type (void) G_GNUC_CONST;
 NbtkWidget *          nbtk_entry_new      (const gchar *text);
 G_CONST_RETURN gchar *nbtk_entry_get_text (NbtkEntry *entry);
 void                  nbtk_entry_set_text (NbtkEntry *entry, const gchar *text);
-ClutterActor*         nbtk_entry_get_clutter_entry (NbtkEntry *entry);
+ClutterActor*         nbtk_entry_get_clutter_text (NbtkEntry *entry);
 
 G_END_DECLS
 

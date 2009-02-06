@@ -108,7 +108,7 @@ dnl ***************************************************************************
 
 AM_PROG_LIBTOOL
 
-PKG_CHECK_MODULES(NBTK, [clutter-0.8 >= 0.8.3 libccss-1])
+PKG_CHECK_MODULES(NBTK, [clutter-0.9 libccss-1])
 
 # check for gtk-doc
 GTK_DOC_CHECK(1.9)

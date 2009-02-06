@@ -8,7 +8,6 @@ BUILT_SOURCES = 		\
 
 # keep sorted alphabetically, please
 source_h = \
-	$(top_srcdir)/nbtk/nbtk-behaviour-bounce.h 	\
 	$(top_srcdir)/nbtk/nbtk-button.h 		\
 	$(top_srcdir)/nbtk/nbtk-entry.h 		\
 	$(top_srcdir)/nbtk/nbtk-label.h 		\
@@ -112,7 +111,6 @@ libnbtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	$(BUILT_SOURCES) 		\
 	$(source_h)			\
 	$(source_h_priv)		\
-	nbtk-behaviour-bounce.c 	\
 	nbtk-button.c 			\
 	nbtk-entry.c 			\
 	nbtk-label.c 			\

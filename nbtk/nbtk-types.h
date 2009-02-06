@@ -3,7 +3,7 @@
 
 #include <glib-object.h>
 #include <ccss/ccss.h>
-#include <clutter/clutter-units.h>
+#include <clutter/clutter.h>
 
 G_BEGIN_DECLS
 

@@ -40,7 +40,6 @@
 #include <string.h>
 #include <glib.h>
 #include <clutter/clutter.h>
-#include <clutter/clutter-container.h>
 
 #include "nbtk-private.h"
 #include "nbtk.h"
@@ -693,7 +692,7 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
   for (list = priv->children; list; list = g_slist_next (list))
     {
       gint row, col;
-      gint h_min, h_pref, w_min, w_pref;
+      ClutterUnit h_min, h_pref, w_min, w_pref;
       gboolean x_expand, y_expand;
       ClutterChildMeta *meta;
       ClutterActor *child;
@@ -916,7 +915,7 @@ nbtk_table_get_preferred_width (ClutterActor *self,
   for (list = priv->children; list; list = g_slist_next (list))
     {
       gint col;
-      gint w_min, w_pref;
+      ClutterUnit w_min, w_pref;
       ClutterChildMeta *meta;
       ClutterActor *child;
 
@@ -982,7 +981,7 @@ nbtk_table_get_preferred_height (ClutterActor *self,
   for (list = priv->children; list; list = g_slist_next (list))
     {
       gint row;
-      gint min, pref;
+      ClutterUnit min, pref;
       ClutterChildMeta *meta;
       ClutterActor *child;
 
@@ -1025,22 +1024,15 @@ nbtk_table_paint (ClutterActor *self)
 {
   NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
   GSList *list;
-  NbtkPadding padding = { 0, };
-  gint p_left, p_right, p_top, p_bottom;
 
   /* make sure the background gets painted first */
   CLUTTER_ACTOR_CLASS (nbtk_table_parent_class)->paint (self);
 
-  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
-  p_left = CLUTTER_UNITS_TO_INT (padding.left);
-  p_right = CLUTTER_UNITS_TO_INT (padding.right);
-  p_top = CLUTTER_UNITS_TO_INT (padding.top);
-  p_bottom = CLUTTER_UNITS_TO_INT (padding.bottom);
-
-
   for (list = priv->children; list; list = g_slist_next (list))
     {
-      clutter_actor_paint (CLUTTER_ACTOR (list->data));
+      ClutterActor *child = CLUTTER_ACTOR (list->data);
+      if (CLUTTER_ACTOR_IS_VISIBLE (child))
+        clutter_actor_paint (child);
     }
 }
 
