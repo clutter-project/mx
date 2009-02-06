@@ -65,3 +65,7 @@ NbtkTable {
 NbtkTooltip {
   background-color: #ccc5;
 }
+
+NbtkTable NbtkButton {
+  color: yellow;
+}

@@ -16,6 +16,7 @@
 #include "nbtk-style.h"
 #include "nbtk-types.h"
 #include "nbtk-marshal.h"
+#include "nbtk-widget.h"
 
 enum
 {
@@ -47,12 +48,13 @@ typedef struct {
   NbtkStylableIface *iface;
 } nbtk_style_node_t;
 
+static ccss_node_class_t * peek_node_class (void);
+
 static guint style_signals[LAST_SIGNAL] = { 0, };
 
 static NbtkStyle *default_style = NULL;
 
 G_DEFINE_TYPE (NbtkStyle, nbtk_style, G_TYPE_OBJECT);
-
 
 GQuark
 g_style_error_quark (void)
@@ -78,7 +80,7 @@ nbtk_style_load_from_file (NbtkStyle    *style,
                            GError      **error)
 {
   NbtkStylePrivate *priv;
-  GError *internal_error;  
+  GError *internal_error;
   gchar *path;
   GList *l;
 
@@ -129,11 +131,11 @@ nbtk_style_load (NbtkStyle *style)
   const gchar *env_var;
   gchar *rc_file = NULL;
   GError *error;
-  
+
   env_var = g_getenv ("NBTK_RC_FILE");
   if (env_var && *env_var)
     rc_file = g_strdup (env_var);
-  
+
   if (!rc_file)
     rc_file = g_build_filename (g_get_user_config_dir (),
                                 "nbtk",
@@ -152,7 +154,7 @@ nbtk_style_load (NbtkStyle *style)
           g_error_free (error);
         }
     }
-  
+
   g_free (rc_file);
 }
 
@@ -238,7 +240,7 @@ ccss_url (ccss_block_t  *block,
   return strdup (given_path);
 }
 
-static ccss_function_t const ccss_functions[] = 
+static ccss_function_t const ccss_functions[] =
 {
   { "url", ccss_url },
   { NULL }
@@ -277,11 +279,36 @@ nbtk_style_get_default (void)
     return default_style;
 
   default_style = g_object_new (NBTK_TYPE_STYLE, NULL);
-  
+
   return default_style;
 }
 
 /* functions for ccss */
+
+static nbtk_style_node_t *
+get_container (nbtk_style_node_t *node)
+{
+  nbtk_style_node_t *container;
+  ClutterActor      *parent;
+
+  g_return_val_if_fail (node, NULL);
+  g_return_val_if_fail (node->iface, NULL);
+  g_return_val_if_fail (node->stylable, NULL);
+
+  parent = clutter_actor_get_parent (CLUTTER_ACTOR (node->stylable));
+  while (parent && !NBTK_IS_WIDGET (parent))
+    parent = clutter_actor_get_parent (CLUTTER_ACTOR (parent));
+
+  if (!parent)
+    return NULL;
+
+  container = g_new0 (nbtk_style_node_t, 1);
+  ccss_node_init ((ccss_node_t*) container, peek_node_class ());
+  container->iface = node->iface;
+  container->stylable = NBTK_STYLABLE (parent);
+
+  return container;
+}
 
 static const gchar*
 get_style_id (nbtk_style_node_t *node)
@@ -307,10 +334,36 @@ get_pseudo_class (nbtk_style_node_t *node)
   return nbtk_stylable_get_pseudo_class (node->stylable);
 }
 
-const gchar*
+static const gchar*
 get_attribute (nbtk_style_node_t *node, const char *name)
 {
   return nbtk_stylable_get_attribute (node->stylable, name);
+}
+
+static void
+release (nbtk_style_node_t *node)
+{
+  g_return_if_fail (node);
+
+  g_free (node);
+}
+
+static ccss_node_class_t *
+peek_node_class (void)
+{
+  static ccss_node_class_t _node_class = {
+    .is_a             = NULL,
+    .get_container    = (ccss_node_get_container_f) get_container,
+    .get_id           = (ccss_node_get_id_f) get_style_id,
+    .get_type         = (ccss_node_get_type_f) get_style_type,
+    .get_class        = (ccss_node_get_class_f) get_style_class,
+    .get_pseudo_class = (ccss_node_get_pseudo_class_f) get_pseudo_class,
+    .get_viewport     = NULL,// (ccss_node_get_viewport_f) get_viewport,
+    .get_attribute    = (ccss_node_get_attribute_f) get_attribute,
+    .release          = (ccss_node_release_f) release
+  };
+
+  return &_node_class;
 }
 
 void
@@ -336,22 +389,11 @@ nbtk_style_get_property (NbtkStyle    *style,
       NbtkStylableIface *iface = NBTK_STYLABLE_GET_IFACE (stylable);
       ccss_style_t *ccss_style;
       nbtk_style_node_t *ccss_node;
-      ccss_node_class_t ccss_node_class = {
-        .is_a             = NULL,
-        .get_container    = NULL,//(ccss_node_get_container_f) get_container,
-        .get_id           = (ccss_node_get_id_f) get_style_id,
-        .get_type         = (ccss_node_get_type_f) get_style_type,
-        .get_class        = (ccss_node_get_class_f) get_style_class,
-        .get_pseudo_class = (ccss_node_get_pseudo_class_f) get_pseudo_class,
-        .get_viewport     = NULL,// (ccss_node_get_viewport_f) get_viewport,
-        .get_attribute    = (ccss_node_get_attribute_f) get_attribute,
-        .release          = NULL,
-      };
 
       ccss_node = g_new0 (nbtk_style_node_t, 1);
+      ccss_node_init ((ccss_node_t*) ccss_node, peek_node_class ());
       ccss_node->iface = iface;
       ccss_node->stylable = stylable;
-      ccss_node_init ((ccss_node_t*) ccss_node, &ccss_node_class);
 
       ccss_style = ccss_style_new ();
 
@@ -374,13 +416,10 @@ nbtk_style_get_property (NbtkStyle    *style,
                 {
                   gpointer value;
                   ccss_property_t *border_image = NULL;
-                  
-                  if (ccss_style_get_property (ccss_style, "border-image", &value))
+                  if (ccss_style_get_property (ccss_style, "border-image", &border_image))
                     {
-                      ccss_property_t *border_image = value;
-
                       g_value_set_boxed (&real_value, border_image);
-                      value_set = TRUE;                    
+                      value_set = TRUE;
                     }
                 }
               else if (NBTK_TYPE_PADDING == G_PARAM_SPEC_VALUE_TYPE (pspec) &&

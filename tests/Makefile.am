@@ -9,6 +9,7 @@ INCLUDES = \
 
 noinst_PROGRAMS = 		\
 	test-buttons 		\
+	test-container-matching	\
 	test-label 		\
 	test-entry 		\
 	test-script  		\
@@ -28,3 +29,4 @@ test_label_SOURCES = test-label.c
 test_entry_SOURCES = test-entry.c
 test_padding_SOURCES = test-padding.c
 test_border_image_SOURCES = test-border-image.c
+test_container_matching_SOURCES = test-container-matching.c
