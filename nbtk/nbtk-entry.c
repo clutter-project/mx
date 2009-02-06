@@ -207,7 +207,7 @@ nbtk_entry_init (NbtkEntry *entry)
   entry->priv = NBTK_ENTRY_GET_PRIVATE (entry);
 
   entry->priv->entry = g_object_new (CLUTTER_TYPE_TEXT,
-                                     "alignment", PANGO_ALIGN_LEFT,
+                                     "line-alignment", PANGO_ALIGN_LEFT,
                                      "editable", TRUE,
                                      "reactive", TRUE,
                                      NULL);

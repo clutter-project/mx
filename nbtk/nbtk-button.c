@@ -303,7 +303,7 @@ nbtk_button_construct_child (NbtkButton *button)
 
   label = g_object_new (CLUTTER_TYPE_TEXT,
                         "text", priv->text,
-                        "alignment", PANGO_ALIGN_CENTER,
+                        "line-alignment", PANGO_ALIGN_CENTER,
                         "ellipsize", PANGO_ELLIPSIZE_MIDDLE,
                         "use-markup", TRUE,
                         NULL);

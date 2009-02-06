@@ -180,7 +180,7 @@ nbtk_label_init (NbtkLabel *label)
   label->priv = NBTK_LABEL_GET_PRIVATE (label);
 
   label->priv->label = g_object_new (CLUTTER_TYPE_TEXT,
-                                       "alignment", PANGO_ALIGN_CENTER,
+                                       "line-alignment", PANGO_ALIGN_CENTER,
                                        "ellipsize", PANGO_ELLIPSIZE_MIDDLE,
                                        "use-markup", TRUE,
                                        NULL);
