@@ -26,12 +26,16 @@
 #include <nbtk/nbtk-entry.h>
 #include <nbtk/nbtk-enum-types.h>
 #include <nbtk/nbtk-label.h>
+#include <nbtk/nbtk-scrollable.h>
+#include <nbtk/nbtk-scroll-bar.h>
+#include <nbtk/nbtk-scroll-view.h>
 #include <nbtk/nbtk-stylable.h>
 #include <nbtk/nbtk-style.h>
 #include <nbtk/nbtk-table.h>
 #include <nbtk/nbtk-texture-cache.h>
 #include <nbtk/nbtk-texture-frame.h>
 #include <nbtk/nbtk-types.h>
+#include <nbtk/nbtk-viewport.h>
 #include <nbtk/nbtk-widget.h>
 
 

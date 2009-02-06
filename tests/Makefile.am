@@ -18,6 +18,9 @@ noinst_PROGRAMS = 		\
 	test-texture-frame 	\
 	test-padding 		\
 	test-border-image	\
+	test-scroll-bar		\
+	test-scroll-view	\
+	test-viewport
 	$(NULL)
 
 test_buttons_SOURCES = test-buttons.c
@@ -30,3 +33,7 @@ test_entry_SOURCES = test-entry.c
 test_padding_SOURCES = test-padding.c
 test_border_image_SOURCES = test-border-image.c
 test_container_matching_SOURCES = test-container-matching.c
+
+test_scroll_bar_SOURCES = test-scroll-bar.c
+test_scroll_view_SOURCES = test-scroll-view.c
+test_viewport_SOURCES = test-viewport.c

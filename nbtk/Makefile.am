@@ -11,6 +11,9 @@ source_h = \
 	$(top_srcdir)/nbtk/nbtk-button.h 		\
 	$(top_srcdir)/nbtk/nbtk-entry.h 		\
 	$(top_srcdir)/nbtk/nbtk-label.h 		\
+	$(top_srcdir)/nbtk/nbtk-scroll-bar.h 		\
+	$(top_srcdir)/nbtk/nbtk-scroll-view.h 		\
+	$(top_srcdir)/nbtk/nbtk-scrollable.h 		\
 	$(top_srcdir)/nbtk/nbtk-stylable.h 		\
 	$(top_srcdir)/nbtk/nbtk-style.h 		\
 	$(top_srcdir)/nbtk/nbtk-table.h 		\
@@ -19,6 +22,7 @@ source_h = \
 	$(top_srcdir)/nbtk/nbtk-tooltip.h		\
 	$(top_srcdir)/nbtk/nbtk-types.h 		\
 	$(top_srcdir)/nbtk/nbtk-widget.h		\
+	$(top_srcdir)/nbtk/nbtk-viewport.h		\
 	$(NULL)
 
 source_h_priv = \
@@ -111,18 +115,24 @@ libnbtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	$(BUILT_SOURCES) 		\
 	$(source_h)			\
 	$(source_h_priv)		\
+	nbtk-adjustment.c 		\
 	nbtk-button.c 			\
+	nbtk-depth-group.c 		\
+	nbtk-depth-group.h 		\
 	nbtk-entry.c 			\
 	nbtk-label.c 			\
+	nbtk-scroll-bar.c 		\
+	nbtk-scroll-view.c 		\
+	nbtk-scrollable.c 		\
 	nbtk-stylable.c 		\
 	nbtk-style.c 			\
 	nbtk-table.c 			\
 	nbtk-texture-cache.c 		\
 	nbtk-texture-frame.c 		\
 	nbtk-tooltip.c 			\
-	nbtk-version.h			\
+	nbtk-viewport.c 		\
 	nbtk-widget.c			\
-	nbtk.h				\
+	nbtk.h 				\
 	$(NULL)
 
 libnbtk_@NBTK_API_VERSION@_la_LIBADD = $(NBTK_LIBS)
