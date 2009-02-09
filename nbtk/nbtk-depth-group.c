@@ -65,5 +65,5 @@ nbtk_depth_group_init (NbtkDepthGroup *self)
 ClutterActor *
 nbtk_depth_group_new (void)
 {
-  return CLUTTER_ACTOR (g_object_new (NBTK_TYPE_DEPTH_GROUP, NULL));
+  return g_object_new (NBTK_TYPE_DEPTH_GROUP, NULL);
 }
