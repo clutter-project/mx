@@ -59,10 +59,9 @@ enum
 struct _NbtkEntryPrivate
 {
   ClutterActor *entry;
-  ClutterActor *widget;
 };
 
-G_DEFINE_TYPE (NbtkEntry, nbtk_entry, NBTK_TYPE_WIDGET)
+G_DEFINE_TYPE (NbtkEntry, nbtk_entry, NBTK_TYPE_BIN)
 
 static void
 nbtk_entry_set_property (GObject      *gobject,
@@ -164,7 +163,7 @@ nbtk_entry_allocate (ClutterActor          *actor,
   CLUTTER_ACTOR_CLASS (nbtk_entry_parent_class)->
     allocate (actor, box, absolute_origin_changed);
   
-  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
+  nbtk_bin_get_padding (NBTK_BIN (actor), &padding);
   
   child_box.x1 = CLUTTER_UNITS_FROM_DEVICE (
                    CLUTTER_UNITS_TO_DEVICE (padding.left));
