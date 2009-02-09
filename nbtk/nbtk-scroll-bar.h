@@ -24,8 +24,8 @@
 #ifndef __NBTK_SCROLL_BAR_H__
 #define __NBTK_SCROLL_BAR_H__
 
-#include <nbtk/nbtk-widget.h>
 #include <nbtk/nbtk-adjustment.h>
+#include <nbtk/nbtk-bin.h>
 
 G_BEGIN_DECLS
 
@@ -43,30 +43,30 @@ typedef struct _NbtkScrollBarClass     NbtkScrollBarClass;
 struct _NbtkScrollBar
 {
   /*< private >*/
-  NbtkWidget parent_instance;
+  NbtkBin parent_instance;
 
   NbtkScrollBarPrivate *priv;
 };
 
 struct _NbtkScrollBarClass
 {
-  NbtkWidgetClass parent_class;
+  NbtkBinClass parent_class;
 };
 
 GType nbtk_scroll_bar_get_type (void) G_GNUC_CONST;
 
-ClutterActor *  nbtk_scroll_bar_new            (NbtkAdjustment *adjustment);
-ClutterActor *  nbtk_scroll_bar_new_with_handle(NbtkAdjustment *adjustment,
-                                                ClutterActor   *handle);
-void            nbtk_scroll_bar_set_adjustment (NbtkScrollBar  *bar,
-                                                NbtkAdjustment *adjustment);
-NbtkAdjustment *nbtk_scroll_bar_get_adjustment (NbtkScrollBar  *bar);
-void            nbtk_scroll_bar_set_handle     (NbtkScrollBar  *bar,
-                                                ClutterActor   *handle);
-ClutterActor *  nbtk_scroll_bar_get_handle     (NbtkScrollBar  *bar);
-void            nbtk_scroll_bar_set_texture    (NbtkScrollBar  *bar,
-                                                ClutterActor   *texture);
-ClutterActor *  nbtk_scroll_bar_get_texture    (NbtkScrollBar  *bar);
+ClutterActor *  nbtk_scroll_bar_new             (NbtkAdjustment *adjustment);
+ClutterActor *  nbtk_scroll_bar_new_with_handle (NbtkAdjustment *adjustment,
+                                                 ClutterActor   *handle);
+void            nbtk_scroll_bar_set_adjustment  (NbtkScrollBar  *bar,
+                                                 NbtkAdjustment *adjustment);
+NbtkAdjustment *nbtk_scroll_bar_get_adjustment  (NbtkScrollBar  *bar);
+void            nbtk_scroll_bar_set_handle      (NbtkScrollBar  *bar,
+                                                 ClutterActor   *handle);
+ClutterActor *  nbtk_scroll_bar_get_handle      (NbtkScrollBar  *bar);
+void            nbtk_scroll_bar_set_texture     (NbtkScrollBar  *bar,
+                                                 ClutterActor   *texture);
+ClutterActor *  nbtk_scroll_bar_get_texture     (NbtkScrollBar  *bar);
 
 G_END_DECLS
 

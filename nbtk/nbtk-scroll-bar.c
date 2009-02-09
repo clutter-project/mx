@@ -35,7 +35,7 @@
 
 static void nbtk_stylable_iface_init (NbtkStylableIface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (NbtkScrollBar, nbtk_scroll_bar, NBTK_TYPE_WIDGET,
+G_DEFINE_TYPE_WITH_CODE (NbtkScrollBar, nbtk_scroll_bar, NBTK_TYPE_BIN,
                          G_IMPLEMENT_INTERFACE (NBTK_TYPE_STYLABLE,
                                                 nbtk_stylable_iface_init))
 
@@ -234,15 +234,15 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
                                    NULL,
                                    &page_size);
 
-      nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
+      nbtk_bin_get_padding (NBTK_BIN (actor), &padding);
 
       real_width = box->x2 - box->x1 - padding.left - padding.right;
       real_height = box->y2 - box->y1 - padding.top - padding.bottom;
 
       if (upper == lower)
-        increment = CFX_ONE;
+        increment = 1.0;
       else
-        increment = clutter_qdivx (page_size, upper - lower);
+        increment = page_size / (upper - lower);
 
       size = clutter_qmulx (CLUTTER_UNITS_TO_FIXED (real_width), increment);
       if (size > real_width) size = real_width;
