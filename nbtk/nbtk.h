@@ -23,8 +23,10 @@
 
 #define NBTK_H_INSIDE
 
+#include <nbtk/nbtk-adjustment.h>
 #include <nbtk/nbtk-bin.h>
 #include <nbtk/nbtk-button.h>
+#include <nbtk/nbtk-depth-group.h>
 #include <nbtk/nbtk-entry.h>
 #include <nbtk/nbtk-enum-types.h>
 #include <nbtk/nbtk-label.h>
