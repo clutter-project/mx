@@ -8,6 +8,7 @@ BUILT_SOURCES = 		\
 
 # keep sorted alphabetically, please
 source_h = \
+	$(top_srcdir)/nbtk/nbtk-adjustment.h		\
 	$(top_srcdir)/nbtk/nbtk-button.h 		\
 	$(top_srcdir)/nbtk/nbtk-entry.h 		\
 	$(top_srcdir)/nbtk/nbtk-label.h 		\

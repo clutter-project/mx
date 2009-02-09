@@ -764,10 +764,10 @@ nbtk_widget_style_changed (NbtkWidget *self)
                                               border_image->image.height);
 
       priv->bg_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
-                                               border_left,
                                                border_top,
                                                border_right,
-                                               border_bottom);
+                                               border_bottom,
+                                               border_left);
       clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image),
                                                CLUTTER_ACTOR (self));
       g_boxed_free (NBTK_TYPE_BORDER_IMAGE, border_image);
@@ -778,10 +778,10 @@ nbtk_widget_style_changed (NbtkWidget *self)
                                                 bg_file,
                                                 FALSE);
       priv->bg_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
-                                               border_left,
                                                border_top,
                                                border_right,
-                                               border_bottom);
+                                               border_bottom,
+                                               border_left);
       clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image),
                                                CLUTTER_ACTOR (self));
       g_free (bg_file);
