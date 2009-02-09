@@ -169,11 +169,10 @@ nbtk_widget_child_init (NbtkWidgetChild *self)
  * @short_description: Base class for stylable actors
  *
  * #NbtkWidget is a simple abstract class on top of #ClutterActor. It
- * provides basic themeing properties, support for padding and alignment.
+ * provides basic themeing properties.
  *
  * Actors in the Nbtk library should subclass #NbtkWidget if they plan
- * to obey to a certain #NbtkStyle or if they implement #ClutterContainer
- * and want to offer basic layout capabilities.
+ * to obey to a certain #NbtkStyle.
  */
 
 enum
@@ -388,11 +387,10 @@ nbtk_widget_real_draw_background (NbtkWidget         *self,
    */
   if (color)
     {
-      gfloat w, h;
-
       ClutterActor *actor = CLUTTER_ACTOR (self);
       ClutterActorBox allocation = { 0, };
       ClutterColor bg_color = *color;
+      gfloat w, h;
 
       bg_color.alpha = clutter_actor_get_paint_opacity (actor)
                      * bg_color.alpha
