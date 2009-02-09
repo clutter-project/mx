@@ -199,12 +199,14 @@ nbtk_label_init (NbtkLabel *label)
 NbtkWidget *
 nbtk_label_new (const gchar *text)
 {
-  NbtkLabel  *label;
+  NbtkLabel *label;
 
-  /* add the label to the stage, but don't allow it to be visible */
-  label = g_object_new (NBTK_TYPE_LABEL,
+  if (text)
+    label = g_object_new (NBTK_TYPE_LABEL,
                           "text", text,
                           NULL);
+  else
+    label = g_object_new (NBTK_TYPE_LABEL, NULL);
 
   return NBTK_WIDGET (label);
 }
@@ -239,6 +241,7 @@ nbtk_label_set_text (NbtkLabel *label,
   NbtkLabelPrivate *priv;
 
   g_return_if_fail (NBTK_IS_LABEL (label));
+  g_return_if_fail (text != NULL);
 
   priv = label->priv;
 
