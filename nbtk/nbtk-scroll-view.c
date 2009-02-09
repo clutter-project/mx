@@ -31,7 +31,9 @@
 static void clutter_container_iface_init (ClutterContainerIface *iface);
 static void nbtk_stylable_iface_init (NbtkStylableIface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (NbtkScrollView, nbtk_scroll_view, NBTK_TYPE_WIDGET,
+static ClutterContainerIface *nbtk_scroll_view_parent_iface = NULL;
+
+G_DEFINE_TYPE_WITH_CODE (NbtkScrollView, nbtk_scroll_view, NBTK_TYPE_BIN,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
                                                 clutter_container_iface_init)
                          G_IMPLEMENT_INTERFACE (NBTK_TYPE_STYLABLE,
@@ -43,6 +45,10 @@ G_DEFINE_TYPE_WITH_CODE (NbtkScrollView, nbtk_scroll_view, NBTK_TYPE_WIDGET,
 
 struct _NbtkScrollViewPrivate
 {
+  /* a pointer to the child; this is actually stored
+   * inside NbtkBin:child, but we keep it to avoid
+   * calling nbtk_bin_get_child() every time we need it
+   */
   ClutterActor   *child;
 
   ClutterActor   *hscroll;
@@ -56,8 +62,7 @@ enum {
   PROP_0,
 
   PROP_HSCROLL,
-  PROP_VSCROLL,
-  PROP_CHILD,
+  PROP_VSCROLL
 };
 
 static void
@@ -73,9 +78,6 @@ nbtk_scroll_view_get_property (GObject *object, guint property_id,
       break;
     case PROP_VSCROLL :
       g_value_set_object (value, priv->vscroll);
-      break;
-    case PROP_CHILD :
-      g_value_set_object (value, priv->child);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -98,8 +100,7 @@ nbtk_scroll_view_dispose (GObject *object)
 {
   NbtkScrollViewPrivate *priv = NBTK_SCROLL_VIEW (object)->priv;
 
-  if (priv->child)
-    clutter_container_remove_actor (CLUTTER_CONTAINER (object), priv->child);
+  priv->child = NULL;
 
   if (priv->vscroll)
     {
@@ -159,7 +160,7 @@ nbtk_scroll_view_get_preferred_width (ClutterActor *actor,
   if (!priv->child)
     return;
 
-  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
+  nbtk_bin_get_padding (NBTK_BIN (actor), &padding);
   nbtk_stylable_get (NBTK_STYLABLE (actor),
                      "xthickness", &xthickness,
                      NULL);
@@ -205,7 +206,7 @@ nbtk_scroll_view_get_preferred_height (ClutterActor *actor,
   if (!priv->child)
     return;
 
-  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
+  nbtk_bin_get_padding (NBTK_BIN (actor), &padding);
   nbtk_stylable_get (NBTK_STYLABLE (actor),
                      "ythickness", &ythickness,
                      NULL);
@@ -253,7 +254,7 @@ nbtk_scroll_view_allocate (ClutterActor          *actor,
   CLUTTER_ACTOR_CLASS (nbtk_scroll_view_parent_class)->
     allocate (actor, box, absolute_origin_changed);
 
-  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
+  nbtk_bin_get_padding (NBTK_BIN (actor), &padding);
 
   nbtk_stylable_get (NBTK_STYLABLE (actor),
                      "xthickness", &xthickness,
@@ -346,14 +347,6 @@ nbtk_scroll_view_class_init (NbtkScrollViewClass *klass)
                                                        "Vertical scroll indicator",
                                                        NBTK_TYPE_SCROLL_BAR,
                                                        G_PARAM_READABLE));
-
-  g_object_class_install_property (object_class,
-                                   PROP_CHILD,
-                                   g_param_spec_object ("child",
-                                                        "ClutterActor",
-                                                        "Child actor",
-                                                        CLUTTER_TYPE_ACTOR,
-                                                        G_PARAM_READABLE));
 }
 
 static void
@@ -471,62 +464,50 @@ nbtk_scroll_view_init (NbtkScrollView *self)
 }
 
 static void
-nbtk_scroll_view_add_actor (ClutterContainer *container,
-                            ClutterActor     *actor)
+nbtk_scroll_view_add (ClutterContainer *container,
+                      ClutterActor     *actor)
 {
   NbtkScrollView *self = NBTK_SCROLL_VIEW (container);
   NbtkScrollViewPrivate *priv = self->priv;
 
-  if (priv->child)
+  if (NBTK_IS_SCROLLABLE (actor))
     {
-      g_warning ("Attempting to add an actor of type %s to "
-                 "a NbtkScrollView that already contains "
-                 "an actor of type %s.",
-                 g_type_name (G_OBJECT_TYPE (actor)),
-                 g_type_name (G_OBJECT_TYPE (priv->child)));
+      priv->child = actor;
+
+      /* chain up to NbtkBin::add() */
+      nbtk_scroll_view_parent_iface->add (container, actor);
+
+      /* Get adjustments for scroll-bars */
+      g_signal_connect (actor, "notify::hadjustment",
+                        G_CALLBACK (child_hadjustment_notify_cb),
+                        container);
+      g_signal_connect (actor, "notify::vadjustment",
+                        G_CALLBACK (child_vadjustment_notify_cb),
+                        container);
+      child_hadjustment_notify_cb (G_OBJECT (actor), NULL, container);
+      child_vadjustment_notify_cb (G_OBJECT (actor), NULL, container);
     }
   else
     {
-      if (NBTK_IS_SCROLLABLE(actor))
-        {
-          priv->child = actor;
-          clutter_actor_set_parent (actor, CLUTTER_ACTOR (container));
-
-          /* Get adjustments for scroll-bars */
-          g_signal_connect (actor, "notify::hadjustment",
-                            G_CALLBACK (child_hadjustment_notify_cb),
-                            container);
-          g_signal_connect (actor, "notify::vadjustment",
-                            G_CALLBACK (child_vadjustment_notify_cb),
-                            container);
-          child_hadjustment_notify_cb (G_OBJECT (actor), NULL, container);
-          child_vadjustment_notify_cb (G_OBJECT (actor), NULL, container);
-
-          /* Notify that child has been set */
-          g_signal_emit_by_name (container, "actor-added", priv->child);
-          g_object_notify (G_OBJECT (container), "child");
-
-          clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
-        }
-      else
-        {
-          g_warning ("Attempting to add an actor of type %s to "
-                     "a NbtkScrollView, but the actor does "
-                     "not implement NbtkScrollable.",
-                     g_type_name (G_OBJECT_TYPE (actor)));
-        }
+      g_warning ("Attempting to add an actor of type %s to "
+                 "a NbtkScrollView, but the actor does "
+                 "not implement NbtkScrollable.",
+                 g_type_name (G_OBJECT_TYPE (actor)));
     }
 }
 
 static void
-nbtk_scroll_view_remove_actor (ClutterContainer *container,
-                               ClutterActor     *actor)
+nbtk_scroll_view_remove (ClutterContainer *container,
+                         ClutterActor     *actor)
 {
   NbtkScrollViewPrivate *priv = NBTK_SCROLL_VIEW (container)->priv;
 
   if (actor == priv->child)
     {
       g_object_ref (priv->child);
+
+      /* chain up to NbtkBin::remove() */
+      nbtk_scroll_view_parent_iface->remove (container, actor);
 
       g_signal_handlers_disconnect_by_func (priv->child,
                                             child_hadjustment_notify_cb,
@@ -535,102 +516,42 @@ nbtk_scroll_view_remove_actor (ClutterContainer *container,
                                             child_vadjustment_notify_cb,
                                             container);
 
-      clutter_actor_unparent (priv->child);
-
-      g_signal_emit_by_name (container, "actor-removed", priv->child);
-
       g_object_unref (priv->child);
       priv->child = NULL;
-
-      g_object_notify (G_OBJECT (container), "child");
-
-      if (CLUTTER_ACTOR_IS_VISIBLE (container))
-        clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
     }
-}
-
-static void
-nbtk_scroll_view_foreach (ClutterContainer *container,
-                          ClutterCallback   callback,
-                          gpointer          callback_data)
-{
-  NbtkScrollViewPrivate *priv = NBTK_SCROLL_VIEW (container)->priv;
-
-  if (priv->child)
-    callback (priv->child, callback_data);
-}
-
-static void
-nbtk_scroll_view_lower (ClutterContainer *container,
-                        ClutterActor     *actor,
-                        ClutterActor     *sibling)
-{
-  /* single child */
-}
-
-static void
-nbtk_scroll_view_raise (ClutterContainer *container,
-                        ClutterActor     *actor,
-                        ClutterActor     *sibling)
-{
-  /* single child */
-}
-
-static void
-nbtk_scroll_view_sort_depth_order (ClutterContainer *container)
-{
-  /* single child */
 }
 
 static void
 clutter_container_iface_init (ClutterContainerIface *iface)
 {
-  iface->add = nbtk_scroll_view_add_actor;
-  iface->remove = nbtk_scroll_view_remove_actor;
-  iface->foreach = nbtk_scroll_view_foreach;
-  iface->lower = nbtk_scroll_view_lower;
-  iface->raise = nbtk_scroll_view_raise;
-  iface->sort_depth_order = nbtk_scroll_view_sort_depth_order;
+  /* store a pointer to the NbtkBin implementation of
+   * ClutterContainer so that we can chain up when
+   * overriding the methods
+   */
+  nbtk_scroll_view_parent_iface = g_type_interface_peek_parent (iface);
+
+  iface->add = nbtk_scroll_view_add;
+  iface->remove = nbtk_scroll_view_remove;
 }
 
 ClutterActor *
 nbtk_scroll_view_new (void)
 {
-  return CLUTTER_ACTOR (g_object_new (NBTK_TYPE_SCROLL_VIEW, NULL));
+  return g_object_new (NBTK_TYPE_SCROLL_VIEW, NULL);
 }
 
 ClutterActor *
 nbtk_scroll_view_get_hscroll_bar (NbtkScrollView *scroll)
 {
-  NbtkScrollViewPrivate *priv;
-
   g_return_val_if_fail (NBTK_IS_SCROLL_VIEW (scroll), NULL);
 
-  priv = scroll->priv;
-
-  return priv->hscroll;
+  return scroll->priv->hscroll;
 }
 
 ClutterActor *
 nbtk_scroll_view_get_vscroll_bar (NbtkScrollView *scroll)
 {
-  NbtkScrollViewPrivate *priv;
-
   g_return_val_if_fail (NBTK_IS_SCROLL_VIEW (scroll), NULL);
 
-  priv = scroll->priv;
-
-  return priv->vscroll;
-}
-
-ClutterActor *
-nbtk_scroll_view_get_child (NbtkScrollView *scroll)
-{
-  NbtkScrollViewPrivate *priv;
-
-  g_return_val_if_fail (NBTK_IS_SCROLL_VIEW (scroll), NULL);
-
-  priv = scroll->priv;
-
-  return priv->child;
+  return scroll->priv->vscroll;
 }
