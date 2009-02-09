@@ -25,7 +25,7 @@
 
 G_BEGIN_DECLS
 
-#include <nbtk/nbtk-bin.h>
+#include <nbtk/nbtk-widget.h>
 
 #define NBTK_TYPE_ENTRY                (nbtk_entry_get_type ())
 #define NBTK_ENTRY(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_ENTRY, NbtkEntry))
@@ -41,22 +41,23 @@ typedef struct _NbtkEntryClass         NbtkEntryClass;
 struct _NbtkEntry
 {
   /*< private >*/
-  NbtkBin parent_instance;
+  NbtkWidget parent_instance;
 
   NbtkEntryPrivate *priv;
 };
 
 struct _NbtkEntryClass
 {
-  NbtkBinClass parent_class;
+  NbtkWidgetClass parent_class;
 };
 
 GType nbtk_entry_get_type (void) G_GNUC_CONST;
 
-NbtkWidget *          nbtk_entry_new      (const gchar *text);
-G_CONST_RETURN gchar *nbtk_entry_get_text (NbtkEntry *entry);
-void                  nbtk_entry_set_text (NbtkEntry *entry, const gchar *text);
-ClutterActor*         nbtk_entry_get_clutter_text (NbtkEntry *entry);
+NbtkWidget *          nbtk_entry_new              (const gchar *text);
+G_CONST_RETURN gchar *nbtk_entry_get_text         (NbtkEntry   *entry);
+void                  nbtk_entry_set_text         (NbtkEntry   *entry,
+                                                   const gchar *text);
+ClutterActor*         nbtk_entry_get_clutter_text (NbtkEntry   *entry);
 
 G_END_DECLS
 
