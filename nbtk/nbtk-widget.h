@@ -27,21 +27,21 @@
 
 G_BEGIN_DECLS
 
-#define NBTK_TYPE_WIDGET_CHILD          (nbtk_widget_child_get_type ())
-#define NBTK_WIDGET_CHILD(obj)          (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_WIDGET_CHILD, NbtkWidgetChild))
-#define NBTK_IS_WIDGET_CHILD(obj)       (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NBTK_TYPE_WIDGET_CHILD))
-#define NBTK_WIDGET_CHILD_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), NBTK_TYPE_WIDGET_CHILD, NbtkWidgetChildClass))
-#define NBTK_IS_WIDGET_CHILD_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), NBTK_TYPE_WIDGET_CHILD))
-#define NBTK_WIDGET_CHILD_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), NBTK_TYPE_WIDGET_CHILD, NbtkWidgetChildClass))
+#define NBTK_TYPE_WIDGET_CHILD                  (nbtk_widget_child_get_type ())
+#define NBTK_WIDGET_CHILD(obj)                  (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_WIDGET_CHILD, NbtkWidgetChild))
+#define NBTK_IS_WIDGET_CHILD(obj)               (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NBTK_TYPE_WIDGET_CHILD))
+#define NBTK_WIDGET_CHILD_CLASS(klass)          (G_TYPE_CHECK_CLASS_CAST ((klass), NBTK_TYPE_WIDGET_CHILD, NbtkWidgetChildClass))
+#define NBTK_IS_WIDGET_CHILD_CLASS(klass)       (G_TYPE_CHECK_CLASS_TYPE ((klass), NBTK_TYPE_WIDGET_CHILD))
+#define NBTK_WIDGET_CHILD_GET_CLASS(obj)        (G_TYPE_INSTANCE_GET_CLASS ((obj), NBTK_TYPE_WIDGET_CHILD, NbtkWidgetChildClass))
 
-typedef struct _NbtkWidgetChild         NbtkWidgetChild;
-typedef struct _NbtkWidgetChildClass    NbtkWidgetChildClass;
+typedef struct _NbtkWidgetChild                 NbtkWidgetChild;
+typedef struct _NbtkWidgetChildClass            NbtkWidgetChildClass;
 
 struct _NbtkWidgetChild
 {
   ClutterChildMeta parent_instance;
 
-  gboolean dnd_disabled;
+  guint dnd_disabled : 1;
 };
 
 struct _NbtkWidgetChildClass
@@ -88,9 +88,9 @@ struct _NbtkWidgetClass
   ClutterActorClass parent_class;
 
   /* vfuncs */
-  void (* draw_background) (NbtkWidget   *self,
-                            ClutterActor *background,
-                            ClutterColor *color);
+  void (* draw_background) (NbtkWidget         *self,
+                            ClutterActor       *background,
+                            const ClutterColor *color);
 
   /* signals */
   void (* style_changed) (NbtkWidget *self);
@@ -126,41 +126,27 @@ struct _NbtkWidgetClass
 			  gint          y);
 };
 
-GType      nbtk_widget_get_type       (void) G_GNUC_CONST;
+GType nbtk_widget_get_type (void) G_GNUC_CONST;
 
-void       nbtk_widget_set_padding    (NbtkWidget         *actor,
-                                      const NbtkPadding *padding);
-void       nbtk_widget_get_padding    (NbtkWidget         *actor,
-                                      NbtkPadding       *padding);
+void                  nbtk_widget_set_style_pseudo_class (NbtkWidget   *actor,
+                                                          const gchar  *pseudo_class);
+G_CONST_RETURN gchar *nbtk_widget_get_style_pseudo_class (NbtkWidget   *actor);
+void                  nbtk_widget_set_style_class_name   (NbtkWidget   *actor,
+                                                          const gchar  *style_class);
+G_CONST_RETURN gchar *nbtk_widget_get_style_class_name   (NbtkWidget   *actor);
 
-void       nbtk_widget_set_alignment  (NbtkWidget         *actor,
-                                      gdouble            x_align,
-                                      gdouble            y_align);
-void       nbtk_widget_get_alignment  (NbtkWidget         *actor,
-                                      gdouble           *x_align,
-                                      gdouble           *y_align);
-void       nbtk_widget_set_alignmentx (NbtkWidget         *actor,
-                                      ClutterFixed       x_align,
-                                      ClutterFixed       y_align);
-void       nbtk_widget_get_alignmentx (NbtkWidget         *actor,
-                                      ClutterFixed      *x_align,
-                                      ClutterFixed      *y_align);
-void         nbtk_widget_set_style_pseudo_class (NbtkWidget *actor,
-                                              const gchar *pseudo_class);
-guint      nbtk_widget_get_dnd_threshold (NbtkWidget *actor);
-void       nbtk_widget_set_dnd_threshold (NbtkWidget *actor, guint threshold);
-void       nbtk_widget_setup_child_dnd (NbtkWidget *actor, ClutterActor *child);
-void       nbtk_widget_undo_child_dnd (NbtkWidget *actor, ClutterActor *child);
-const gchar* nbtk_widget_get_style_pseudo_class (NbtkWidget *actor);
-void         nbtk_widget_set_style_class_name (NbtkWidget  *actor,
-                                               const gchar *style_class);
-const gchar* nbtk_widget_get_style_class_name (NbtkWidget  *actor);
+guint                 nbtk_widget_get_dnd_threshold      (NbtkWidget   *actor);
+void                  nbtk_widget_set_dnd_threshold      (NbtkWidget   *actor,
+                                                          guint         threshold);
+void                  nbtk_widget_setup_child_dnd        (NbtkWidget   *actor,
+                                                          ClutterActor *child);
+void                  nbtk_widget_undo_child_dnd         (NbtkWidget   *actor,
+                                                          ClutterActor *child);
 
 /* Only to be used by sub-classes of NbtkWidget */
-ClutterActor *nbtk_widget_get_background (NbtkWidget *actor);
-
-void       nbtk_widget_get_border     (NbtkWidget         *actor,
-                                       NbtkPadding        *border);
+ClutterActor *nbtk_widget_get_background (NbtkWidget  *actor);
+void          nbtk_widget_get_border     (NbtkWidget  *actor,
+                                          NbtkPadding *border);
 
 G_END_DECLS
 
