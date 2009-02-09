@@ -53,7 +53,6 @@ struct _NbtkWidgetPrivate
   ClutterActor *bg_image;
   ClutterColor *bg_color;
 
-  ClutterActor *dnd_child;
   ClutterActor *dnd_last_dest;
   ClutterActor *dnd_clone;
   ClutterActor *dnd_dragged;
@@ -298,12 +297,6 @@ nbtk_widget_dispose (GObject *gobject)
     {
       g_object_unref (priv->style);
       priv->style = NULL;
-    }
-
-  if (priv->dnd_child)
-    {
-      g_object_unref (priv->dnd_child);
-      priv->dnd_child = NULL;
     }
 
   if (priv->bg_image)
