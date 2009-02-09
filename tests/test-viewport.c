@@ -127,6 +127,15 @@ add_rects (ClutterActor *stage, ClutterActor *group)
     }
 }
 
+static void
+on_group_paint (ClutterActor *actor,
+                gpointer      data)
+{
+  gboolean enable = GPOINTER_TO_UINT (data);
+
+  cogl_enable_depth_test (enable);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -142,7 +151,13 @@ main (int argc, char **argv)
 
   viewport = nbtk_viewport_new ();
   clutter_actor_set_clip (viewport, 0, 0, 800, 600);
-  group = nbtk_depth_group_new ();
+  group = clutter_group_new ();
+  g_signal_connect (group, "paint",
+                    G_CALLBACK (on_group_paint),
+                    GUINT_TO_POINTER (TRUE));
+  g_signal_connect_after (group, "paint",
+                          G_CALLBACK (on_group_paint),
+                          GUINT_TO_POINTER (FALSE));
   add_rects (stage, group);
   clutter_container_add_actor (CLUTTER_CONTAINER (viewport), group);
   g_signal_connect (viewport, "notify::x-origin",
