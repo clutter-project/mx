@@ -53,15 +53,14 @@ enum
   PROP_LABEL
 };
 
-#define NBTK_LABEL_GET_PRIVATE(obj)    \
-        (G_TYPE_INSTANCE_GET_PRIVATE ((obj), NBTK_TYPE_LABEL, NbtkLabelPrivate))
+#define NBTK_LABEL_GET_PRIVATE(obj)     (G_TYPE_INSTANCE_GET_PRIVATE ((obj), NBTK_TYPE_LABEL, NbtkLabelPrivate))
 
 struct _NbtkLabelPrivate
 {
   ClutterActor *label;
 };
 
-G_DEFINE_TYPE (NbtkLabel, nbtk_label, NBTK_TYPE_BIN)
+G_DEFINE_TYPE (NbtkLabel, nbtk_label, NBTK_TYPE_WIDGET);
 
 static void
 nbtk_label_set_property (GObject      *gobject,
@@ -106,13 +105,11 @@ nbtk_label_get_property (GObject    *gobject,
 static void
 nbtk_label_style_changed (NbtkWidget *self)
 {
+  NbtkLabelPrivate *priv = NBTK_LABEL (self)->priv;
   ClutterColor *color = NULL;
-  NbtkLabelPrivate *priv;
   gchar *font_name;
   gchar *font_string;
   gint font_size;
-
-  priv = NBTK_LABEL (self)->priv;
 
   nbtk_stylable_get (NBTK_STYLABLE (self),
                      "color", &color,
@@ -145,16 +142,73 @@ nbtk_label_style_changed (NbtkWidget *self)
       g_free (font_string);
     }
 
-
   if (NBTK_WIDGET_CLASS (nbtk_label_parent_class)->style_changed)
     NBTK_WIDGET_CLASS (nbtk_label_parent_class)->style_changed (self);
 }
 
+static void
+nbtk_label_get_preferred_width (ClutterActor *actor,
+                                ClutterUnit   for_height,
+                                ClutterUnit  *min_width_p,
+                                ClutterUnit  *natural_width_p)
+{
+  NbtkLabelPrivate *priv = NBTK_LABEL (actor)->priv;
+
+  clutter_actor_get_preferred_width (priv->label, for_height,
+                                     min_width_p,
+                                     natural_width_p);
+}
+
+static void
+nbtk_label_get_preferred_height (ClutterActor *actor,
+                                 ClutterUnit   for_width,
+                                 ClutterUnit  *min_height_p,
+                                 ClutterUnit  *natural_height_p)
+{
+  NbtkLabelPrivate *priv = NBTK_LABEL (actor)->priv;
+
+  clutter_actor_get_preferred_height (priv->label, for_width,
+                                      min_height_p,
+                                      natural_height_p);
+}
+
+static void
+nbtk_label_allocate (ClutterActor          *actor,
+                     const ClutterActorBox *box,
+                     gboolean               absolute_origin_changed)
+{
+  NbtkLabelPrivate *priv = NBTK_LABEL (actor)->priv;
+  ClutterActorClass *parent_class;
+  ClutterActorBox child_box;
+
+  parent_class = CLUTTER_ACTOR_CLASS (nbtk_label_parent_class);
+  parent_class->allocate (actor, box, absolute_origin_changed);
+  
+  child_box.x1 = 0;
+  child_box.y1 = 0;
+  child_box.x2 = box->x2 - box->x1;
+  child_box.y2 = box->y2 - box->y1;
+  
+  clutter_actor_allocate (priv->label, &child_box, absolute_origin_changed);
+}
+
+static void
+nbtk_label_paint (ClutterActor *actor)
+{
+  NbtkLabelPrivate *priv = NBTK_LABEL (actor)->priv;
+  ClutterActorClass *parent_class;
+
+  parent_class = CLUTTER_ACTOR_CLASS (nbtk_label_parent_class);
+  parent_class->paint (actor);
+
+  clutter_actor_paint (priv->label);
+}
 
 static void
 nbtk_label_class_init (NbtkLabelClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
   NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
@@ -162,6 +216,11 @@ nbtk_label_class_init (NbtkLabelClass *klass)
 
   gobject_class->set_property = nbtk_label_set_property;
   gobject_class->get_property = nbtk_label_get_property;
+
+  actor_class->paint = nbtk_label_paint;
+  actor_class->allocate = nbtk_label_allocate;
+  actor_class->get_preferred_width = nbtk_label_get_preferred_width;
+  actor_class->get_preferred_height = nbtk_label_get_preferred_height;
 
   widget_class->style_changed = nbtk_label_style_changed;
 
@@ -176,15 +235,16 @@ nbtk_label_class_init (NbtkLabelClass *klass)
 static void
 nbtk_label_init (NbtkLabel *label)
 {
-  label->priv = NBTK_LABEL_GET_PRIVATE (label);
+  NbtkLabelPrivate *priv;
 
-  label->priv->label = g_object_new (CLUTTER_TYPE_TEXT,
-                                       "line-alignment", PANGO_ALIGN_CENTER,
-                                       "ellipsize", PANGO_ELLIPSIZE_MIDDLE,
-                                       "use-markup", TRUE,
-                                       NULL);
+  label->priv = priv = NBTK_LABEL_GET_PRIVATE (label);
 
-  clutter_container_add (CLUTTER_CONTAINER (label), label->priv->label, NULL);
+  priv->label = g_object_new (CLUTTER_TYPE_TEXT,
+                              "line-alignment", PANGO_ALIGN_CENTER,
+                              "ellipsize", PANGO_ELLIPSIZE_MIDDLE,
+                              "use-markup", TRUE,
+                              NULL);
+  clutter_actor_set_parent (priv->label, CLUTTER_ACTOR (label));
 }
 
 /**
@@ -198,14 +258,7 @@ nbtk_label_init (NbtkLabel *label)
 NbtkWidget *
 nbtk_label_new (const gchar *text)
 {
-  NbtkLabel  *label;
-
-  /* add the label to the stage, but don't allow it to be visible */
-  label = g_object_new (NBTK_TYPE_LABEL,
-                          "text", text,
-                          NULL);
-
-  return NBTK_WIDGET (label);
+  return g_object_new (NBTK_TYPE_LABEL, "text", text, NULL);
 }
 
 /**

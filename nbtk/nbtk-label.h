@@ -25,7 +25,7 @@
 
 G_BEGIN_DECLS
 
-#include <nbtk/nbtk-bin.h>
+#include <nbtk/nbtk-widget.h>
 
 #define NBTK_TYPE_LABEL                (nbtk_label_get_type ())
 #define NBTK_LABEL(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_LABEL, NbtkLabel))
@@ -41,22 +41,23 @@ typedef struct _NbtkLabelClass         NbtkLabelClass;
 struct _NbtkLabel
 {
   /*< private >*/
-  NbtkBin parent_instance;
+  NbtkWidget parent_instance;
 
   NbtkLabelPrivate *priv;
 };
 
 struct _NbtkLabelClass
 {
-  NbtkBinClass parent_class;
+  NbtkWidgetClass parent_class;
 };
 
 GType nbtk_label_get_type (void) G_GNUC_CONST;
 
-NbtkWidget *          nbtk_label_new      (const gchar *text);
-G_CONST_RETURN gchar *nbtk_label_get_text (NbtkLabel *label);
-void                  nbtk_label_set_text (NbtkLabel *label, const gchar *text);
-ClutterActor*         nbtk_label_get_clutter_text (NbtkLabel *label);
+NbtkWidget *          nbtk_label_new              (const gchar *text);
+G_CONST_RETURN gchar *nbtk_label_get_text         (NbtkLabel   *label);
+void                  nbtk_label_set_text         (NbtkLabel   *label,
+                                                   const gchar *text);
+ClutterActor *        nbtk_label_get_clutter_text (NbtkLabel   *label);
 
 G_END_DECLS
 
