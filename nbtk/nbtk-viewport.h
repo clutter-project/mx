@@ -21,6 +21,10 @@
  * Port to Nbtk by: Robert Staudinger <robsta@openedhand.com>
  */
 
+#if !defined(NBTK_H_INSIDE) && !defined(NBTK_COMPILATION)
+#error "Only <nbtk/nbtk.h> can be included directly.h"
+#endif
+
 #ifndef __NBTK_VIEWPORT_H__
 #define __NBTK_VIEWPORT_H__
 
