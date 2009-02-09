@@ -59,10 +59,9 @@ enum
 struct _NbtkLabelPrivate
 {
   ClutterActor *label;
-  ClutterActor *widget;
 };
 
-G_DEFINE_TYPE (NbtkLabel, nbtk_label, NBTK_TYPE_WIDGET)
+G_DEFINE_TYPE (NbtkLabel, nbtk_label, NBTK_TYPE_BIN)
 
 static void
 nbtk_label_set_property (GObject      *gobject,
