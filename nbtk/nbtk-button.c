@@ -523,13 +523,15 @@ nbtk_button_allocate (ClutterActor          *self,
 }
 
 static void
-nbtk_button_draw_background (NbtkWidget   *self,
-                             ClutterActor *background,
-                             ClutterColor *color)
+nbtk_button_draw_background (NbtkWidget         *self,
+                             ClutterActor       *background,
+                             const ClutterColor *color)
 {
   NbtkButtonPrivate *priv = NBTK_BUTTON (self)->priv;
+  NbtkWidgetClass *parent_class;
 
-  NBTK_WIDGET_CLASS (nbtk_button_parent_class)->draw_background (self, background, color);
+  parent_class = NBTK_WIDGET_CLASS (nbtk_button_parent_class);
+  parent_class->draw_background (self, background, color);
   
   if (priv->old_bg)
     clutter_actor_paint (priv->old_bg);
