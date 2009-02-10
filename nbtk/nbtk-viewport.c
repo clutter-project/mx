@@ -25,6 +25,7 @@
 #include "config.h"
 #endif
 
+#include <string.h>
 #include <clutter/clutter.h>
 
 #include "nbtk-viewport.h"
@@ -193,8 +194,8 @@ nbtk_viewport_dispose (GObject *gobject)
 }
 
 static gboolean
-get_natural_size (NbtkViewport    *self,
-                  ClutterActorBox *box)
+get_natural_child_size (NbtkViewport    *self,
+                        ClutterActorBox *box)
 {
   GList *children = clutter_container_get_children (CLUTTER_CONTAINER (self));
 
@@ -204,7 +205,7 @@ get_natural_size (NbtkViewport    *self,
        * let it grow as big as it wants. */
       ClutterActor        *child;
       ClutterRequestMode   mode;
-      ClutterUnit          natural_width, natural_height;
+      ClutterUnit          x, y, natural_width, natural_height;
 
       child = CLUTTER_ACTOR (children->data);
       g_list_free (children), children = NULL;
@@ -225,10 +226,12 @@ get_natural_size (NbtkViewport    *self,
                                              &natural_width);
         }
 
-      box->x1 = 0;
-      box->y1 = 0;
-      box->x2 = natural_width;
-      box->y2 = natural_height;
+      clutter_actor_get_positionu (child, &x, &y);
+
+      box->x1 = x;
+      box->y1 = y;
+      box->x2 = x + natural_width;
+      box->y2 = y + natural_height;
 
       return TRUE;
     }
@@ -265,15 +268,23 @@ nbtk_viewport_allocate (ClutterActor          *self,
                         gboolean               absolute_origin_changed)
 {
   NbtkViewportPrivate   *priv = NBTK_VIEWPORT (self)->priv;
-  const ClutterActorBox *natural_box = box;
-  ClutterActorBox        child_box;
+  ClutterActorBox natural_box, child_box;
 
-  if (get_natural_size (NBTK_VIEWPORT (self), &child_box))
-    natural_box = &child_box;
+  if (get_natural_child_size (NBTK_VIEWPORT (self), &child_box))
+    {
+      natural_box.x1 = box->x1;
+      natural_box.y1 = box->y1;
+      natural_box.x2 = MAX (child_box.x2, box->x2);
+      natural_box.y2 = MAX (child_box.y2, box->y2);
+    }
+  else
+    {
+      memcpy (&natural_box, box, sizeof (natural_box));
+    }
 
   /* Chain up. */
   CLUTTER_ACTOR_CLASS (nbtk_viewport_parent_class)->
-    allocate (self, natural_box, absolute_origin_changed);
+    allocate (self, &natural_box, absolute_origin_changed);
 
   /* Refresh adjustments */
   if (priv->sync_adjustments)
@@ -284,7 +295,7 @@ nbtk_viewport_allocate (ClutterActor          *self,
         {
           g_object_set (G_OBJECT (priv->hadjustment),
                        "lower", 0.0,
-                       "upper", CLUTTER_UNITS_TO_FLOAT (natural_box->x2 - natural_box->x1),
+                       "upper", CLUTTER_UNITS_TO_FLOAT (natural_box.x2 - natural_box.x1),
                        NULL);
 
           /* Make sure value is clamped */
@@ -296,7 +307,7 @@ nbtk_viewport_allocate (ClutterActor          *self,
         {
           g_object_set (G_OBJECT (priv->vadjustment),
                        "lower", 0.0,
-                       "upper", CLUTTER_UNITS_TO_FLOAT (natural_box->y2 - natural_box->y1),
+                       "upper", CLUTTER_UNITS_TO_FLOAT (natural_box.y2 - natural_box.y1),
                        NULL);
 
           prev_value = nbtk_adjustment_get_valuex (priv->vadjustment);
