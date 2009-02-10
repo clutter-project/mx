@@ -28,7 +28,7 @@ struct _DragContext
   gfloat last_x;
   gfloat last_y;
 
-  ClutterModifierType modifiers;
+  guint emit_press : 1;
 };
 
 enum
@@ -99,6 +99,7 @@ on_draggable_motion (ClutterActor       *actor,
   DragContext *context = data;
   ClutterUnit event_x, event_y;
   ClutterUnit actor_x, actor_y;
+  gfloat delta_x, delta_y;
   gboolean res;
 
   event_x = CLUTTER_UNITS_FROM_DEVICE (event->x);
@@ -115,9 +116,27 @@ on_draggable_motion (ClutterActor       *actor,
   context->last_x = CLUTTER_UNITS_TO_FLOAT (actor_x);
   context->last_y = CLUTTER_UNITS_TO_FLOAT (actor_y);
 
+  delta_x = context->last_x - context->press_x;
+  delta_y = context->last_y - context->press_y;
+
+  if (context->emit_press)
+    {
+      if (delta_x >= context->threshold || delta_y >= context->threshold)
+        {
+          context->emit_press = FALSE;
+          g_signal_emit (context->draggable, draggable_signals[DRAG_BEGIN], 0,
+                         context->press_x,
+                         context->press_y,
+                         context->press_button,
+                         context->press_modifiers);
+        }
+      else
+        return FALSE;
+    }
+
   g_signal_emit (context->draggable, draggable_signals[DRAG_MOTION], 0,
-                 context->last_x - context->press_x,
-                 context->last_y - context->press_y);
+                 delta_x,
+                 delta_y);
 
   return TRUE;
 }
@@ -151,6 +170,7 @@ on_draggable_press (ClutterActor       *actor,
   context->last_y = context->press_y;
   context->press_button = event->button;
   context->press_modifiers = event->modifier_state;
+  context->emit_press = FALSE;
 
   g_object_get (G_OBJECT (draggable),
                 "drag-threshold", &context->threshold,
@@ -166,11 +186,16 @@ on_draggable_press (ClutterActor       *actor,
                     "button-release-event", G_CALLBACK (on_draggable_release),
                     context);
 
-  g_signal_emit (draggable, draggable_signals[DRAG_BEGIN], 0,
-                 context->press_x,
-                 context->press_y,
-                 context->press_button,
-                 context->press_modifiers);
+  if (context->threshold == 0)
+    {
+      g_signal_emit (draggable, draggable_signals[DRAG_BEGIN], 0,
+                     context->press_x,
+                     context->press_y,
+                     context->press_button,
+                     context->press_modifiers);
+    }
+  else
+    context->emit_press = TRUE;
 
   return FALSE;
 }
