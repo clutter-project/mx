@@ -226,6 +226,99 @@ NbtkBehaviourBouncePrivate
 </SECTION>
 
 <SECTION>
+<FILE>nbtk-adjustment</FILE>
+<TITLE>NbtkAdjustment</TITLE>
+NbtkAdjustment
+NbtkAdjustmentClass
+nbtk_adjustment_new
+nbtk_adjustment_newx
+nbtk_adjustment_get_value
+nbtk_adjustment_get_valuex
+nbtk_adjustment_set_value
+nbtk_adjustment_set_valuex
+nbtk_adjustment_clamp_page
+nbtk_adjustment_clamp_pagex
+nbtk_adjustment_set_values
+nbtk_adjustment_set_valuesx
+nbtk_adjustment_get_values
+nbtk_adjustment_get_valuesx
+nbtk_adjustment_interpolate
+nbtk_adjustment_interpolatex
+nbtk_adjustment_get_elastic
+nbtk_adjustment_set_elastic
+nbtk_adjustment_clamp
+<SUBSECTION Standard>
+nbtk_adjustment_get_type
+NBTK_TYPE_ADJUSTMENT
+NBTK_ADJUSTMENT
+NBTK_IS_ADJUSTMENT
+NBTK_ADJUSTMENT_CLASS
+NBTK_IS_ADJUSTMENT_CLASS
+NBTK_ADJUSTMENT_GET_CLASS
+<SUBSECTION Private>
+NbtkAdjustmentPrivate
+</SECTION>
+
+<SECTION>
+<FILE>nbtk-scrollable</FILE>
+<TITLE>NbtkScrollable</TITLE>
+NbtkScrollable
+NbtkScrollableInterface
+nbtk_scrollable_set_adjustments
+nbtk_scrollable_get_adjustments
+<SUBSECTION Standard>
+nbtk_scrollable_get_type
+NBTK_TYPE_SCROLLABLE
+NBTK_SCROLLABLE
+NBTK_IS_SCROLLABLE
+NBTK_SCROLLABLE_GET_INTERFACE
+</SECTION>
+
+<SECTION>
+<FILE>nbtk-scroll-bar</FILE>
+<TITLE>NbtkScrollBar</TITLE>
+NbtkScrollBar
+NbtkScrollBarClass
+nbtk_scroll_bar_new
+nbtk_scroll_bar_new_with_handle
+nbtk_scroll_bar_set_adjustment
+nbtk_scroll_bar_get_adjustment
+nbtk_scroll_bar_set_handle
+nbtk_scroll_bar_get_handle
+nbtk_scroll_bar_set_texture
+nbtk_scroll_bar_get_texture
+<SUBSECTION Standard>
+nbtk_scroll_bar_get_type
+NBTK_TYPE_SCROLL_BAR
+NBTK_SCROLL_BAR
+NBTK_IS_SCROLL_BAR
+NBTK_SCROLL_BAR_CLASS
+NBTK_SCROLL_BAR_GET_CLASS
+<SUBSECTION Private>
+NbtkScrollBarPrivate
+</SECTION>
+
+<SECTION>
+<FILE>nbtk-scroll-view</FILE>
+<TITLE>NbtkScrollView</TITLE>
+NbtkScrollView
+NbtkScrollViewClass
+nbtk_scroll_view_new
+nbtk_scroll_view_get_hscroll_bar
+nbtk_scroll_view_get_vscroll_bar
+nbtk_scroll_view_get_child
+<SUBSECTION Standard>
+nbtk_scroll_view_get_type
+NBTK_TYPE_SCROLL_VIEW
+NBTK_SCROLL_VIEW
+NBTK_IS_SCROLL_VIEW
+NBTK_SCROLL_VIEW_CLASS
+NBTK_SCROLL_VIEW_GET_CLASS
+<SUBSECTION Private>
+NbtkScrollViewPrivate
+</SECTION>
+
+<SECTION>
 <FILE>nbtk-types</FILE>
 NbtkPadding
 <SUBSECTION Standard>
@@ -233,3 +326,24 @@ NBTK_TYPE_PADDING
 nbtk_padding_get_type
 </SECTION>
 
+<SECTION>
+<FILE>nbtk-viewport</FILE>
+<TITLE>NbtkViewport</TITLE>
+NbtkViewport
+NbtkViewportClass
+nbtk_viewport_new
+nbtk_viewport_set_originu
+nbtk_viewport_set_origin
+nbtk_viewport_get_originu
+nbtk_viewport_get_origin
+<SUBSECTION Standard>
+nbtk_viewport_get_type
+NBTK_TYPE_VIEWPORT
+NBTK_VIEWPORT
+NBTK_IS_VIEWPORT
+NBTK_VIEWPORT_CLASS
+NBTK_IS_VIEWPORT_CLASS
+NBTK_VIEWPORT_GET_CLASS
+<SUBSECTION Private>
+NbtkViewportPrivate
+</SECTION>
