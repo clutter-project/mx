@@ -61,6 +61,7 @@ on_draggable_release (ClutterActor       *actor,
   DragContext *context = data;
   ClutterUnit event_x, event_y;
   ClutterUnit actor_x, actor_y;
+  ClutterActor *stage;
   gboolean res;
 
   event_x = CLUTTER_UNITS_FROM_DEVICE (event->x);
@@ -88,6 +89,9 @@ on_draggable_release (ClutterActor       *actor,
                  context->last_x,
                  context->last_y);
 
+  stage = clutter_actor_get_stage (actor);
+  g_object_set_data (G_OBJECT (stage), "nbtk-drag-actor", NULL);
+
   return TRUE;
 }
 
@@ -100,6 +104,7 @@ on_draggable_motion (ClutterActor       *actor,
   ClutterUnit event_x, event_y;
   ClutterUnit actor_x, actor_y;
   gfloat delta_x, delta_y;
+  ClutterActor *stage;
   gboolean res;
 
   event_x = CLUTTER_UNITS_FROM_DEVICE (event->x);
@@ -135,12 +140,18 @@ on_draggable_motion (ClutterActor       *actor,
     {
       if (delta_x >= context->threshold || delta_y >= context->threshold)
         {
+          ClutterActor *stage;
+
           context->emit_press = FALSE;
+
           g_signal_emit (context->draggable, draggable_signals[DRAG_BEGIN], 0,
                          context->press_x,
                          context->press_y,
                          context->press_button,
                          context->press_modifiers);
+
+          stage = clutter_actor_get_stage (actor);
+          g_object_set_data (G_OBJECT (stage), "nbtk-drag-actor", actor);
         }
       else
         return FALSE;
@@ -200,11 +211,16 @@ on_draggable_press (ClutterActor       *actor,
 
   if (context->threshold == 0)
     {
+      ClutterActor *stage;
+
       g_signal_emit (draggable, draggable_signals[DRAG_BEGIN], 0,
                      context->press_x,
                      context->press_y,
                      context->press_button,
                      context->press_modifiers);
+
+      stage = clutter_actor_get_stage (actor);
+      g_object_set_data (G_OBJECT (stage), "nbtk-drag-actor", actor);
     }
   else
     context->emit_press = TRUE;
