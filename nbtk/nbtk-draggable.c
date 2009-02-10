@@ -116,8 +116,20 @@ on_draggable_motion (ClutterActor       *actor,
   context->last_x = CLUTTER_UNITS_TO_FLOAT (actor_x);
   context->last_y = CLUTTER_UNITS_TO_FLOAT (actor_y);
 
-  delta_x = context->last_x - context->press_x;
-  delta_y = context->last_y - context->press_y;
+  delta_x = delta_y = 0;
+
+  if (context->axis == 0)
+    {
+      delta_x = context->last_x - context->press_x;
+      delta_y = context->last_y - context->press_y;
+    }
+  else
+    {
+      if (context->axis == NBTK_X_AXIS)
+        delta_x = context->last_x - context->press_x;
+      else
+        delta_y = context->last_y - context->press_y;
+    }
 
   if (context->emit_press)
     {
