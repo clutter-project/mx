@@ -223,7 +223,7 @@ drag_context_create (NbtkDraggable *draggable)
 
   context->draggable = draggable;
   context->threshold = 0;
-  context->axis = NBTK_X_AXIS | NBTK_Y_AXIS;
+  context->axis = 0;
   context->containment = NBTK_DISABLE_CONTAINMENT;
   context->containment_area = NULL;
 
@@ -323,13 +323,13 @@ nbtk_draggable_base_init (gpointer g_iface)
                                   NBTK_PARAM_READWRITE);
       g_object_interface_install_property (g_iface, pspec);
 
-      pspec = g_param_spec_flags ("axis",
-                                  "Axis",
-                                  "The axis along which the dragging "
-                                  "should be performed",
-                                  NBTK_TYPE_DRAG_AXIS,
-                                  NBTK_X_AXIS | NBTK_Y_AXIS,
-                                  NBTK_PARAM_READWRITE);
+      pspec = g_param_spec_enum ("axis",
+                                 "Axis",
+                                 "The axis along which the dragging "
+                                 "should be performed",
+                                 NBTK_TYPE_DRAG_AXIS,
+                                 0,
+                                 NBTK_PARAM_READWRITE);
       g_object_interface_install_property (g_iface, pspec);
 
       draggable_signals[DRAG_BEGIN] =

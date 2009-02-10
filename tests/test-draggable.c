@@ -125,7 +125,7 @@ draggable_rectangle_set_property (GObject      *gobject,
       break;
 
     case PROP_AXIS:
-      rect->axis = g_value_get_flags (value);
+      rect->axis = g_value_get_enum (value);
       break;
 
     case PROP_CONTAINMENT_TYPE:
@@ -172,7 +172,7 @@ draggable_rectangle_get_property (GObject    *gobject,
       break;
 
     case PROP_AXIS:
-      g_value_set_flags (value, rect->axis);
+      g_value_set_enum (value, rect->axis);
       break;
 
     case PROP_CONTAINMENT_TYPE:
@@ -222,7 +222,7 @@ static void
 draggable_rectangle_init (DraggableRectangle *self)
 {
   self->threshold = 0;
-  self->axis = NBTK_X_AXIS | NBTK_Y_AXIS;
+  self->axis = 0;
   self->containment = NBTK_DISABLE_CONTAINMENT;
   self->is_enabled = FALSE;
 }
@@ -246,6 +246,7 @@ main (int argc, char *argv[])
   clutter_actor_set_size (draggable, 100, 100);
   clutter_actor_set_position (draggable, 350, 250);
   clutter_actor_set_reactive (draggable, TRUE);
+  nbtk_draggable_set_drag_threshold (NBTK_DRAGGABLE (draggable), 10);
   nbtk_draggable_enable (NBTK_DRAGGABLE (draggable));
 
   clutter_actor_show_all (stage);

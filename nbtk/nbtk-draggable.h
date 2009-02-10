@@ -19,8 +19,9 @@ typedef struct _NbtkDraggable           NbtkDraggable; /* dummy typedef */
 typedef struct _NbtkDraggableIface      NbtkDraggableIface;
 
 typedef enum {
-  NBTK_X_AXIS = (1 << 0),
-  NBTK_Y_AXIS = (1 << 1)
+  NBTK_NO_AXIS,
+  NBTK_X_AXIS,
+  NBTK_Y_AXIS
 } NbtkDragAxis;
 
 typedef enum {
