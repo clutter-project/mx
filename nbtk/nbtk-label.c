@@ -303,7 +303,9 @@ nbtk_label_init (NbtkLabel *label)
 NbtkWidget *
 nbtk_label_new (const gchar *text)
 {
-  return g_object_new (NBTK_TYPE_LABEL, "text", text, NULL);
+  return g_object_new (NBTK_TYPE_LABEL,
+                       "text", (text != NULL && *text != '\0') ? text : "",
+                       NULL);
 }
 
 /**
@@ -336,6 +338,7 @@ nbtk_label_set_text (NbtkLabel *label,
   NbtkLabelPrivate *priv;
 
   g_return_if_fail (NBTK_IS_LABEL (label));
+  g_return_if_fail (text != NULL);
 
   priv = label->priv;
 

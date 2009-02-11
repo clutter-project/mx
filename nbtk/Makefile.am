@@ -120,8 +120,6 @@ libnbtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	nbtk-adjustment.c 		\
 	nbtk-bin.c			\
 	nbtk-button.c 			\
-	nbtk-depth-group.c 		\
-	nbtk-depth-group.h 		\
 	nbtk-entry.c 			\
 	nbtk-label.c 			\
 	nbtk-scroll-bar.c 		\

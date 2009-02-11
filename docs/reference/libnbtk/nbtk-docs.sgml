@@ -13,9 +13,13 @@
 
   <chapter>
     <title>libnbtk</title>
+    <xi:include href="xml/nbtk-adjustment.xml"/>
     <xi:include href="xml/nbtk-button.xml"/>
     <xi:include href="xml/nbtk-enum-types.xml"/>
     <xi:include href="xml/nbtk-label.xml"/>
+    <xi:include href="xml/nbtk-scroll-bar.xml"/>
+    <xi:include href="xml/nbtk-scroll-view.xml"/>
+    <xi:include href="xml/nbtk-scrollable.xml"/>
     <xi:include href="xml/nbtk-stylable.xml"/>
     <xi:include href="xml/nbtk-style.xml"/>
     <xi:include href="xml/nbtk-table.xml"/>
@@ -23,6 +27,7 @@
     <xi:include href="xml/nbtk-texture-frame.xml"/>
     <xi:include href="xml/nbtk-tooltip.xml"/>
     <xi:include href="xml/nbtk-types.xml"/>
+    <xi:include href="xml/nbtk-viewport.xml"/>
     <xi:include href="xml/nbtk-widget.xml"/>
   </chapter>
 </book>

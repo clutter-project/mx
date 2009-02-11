@@ -25,6 +25,7 @@
 #include "config.h"
 #endif
 
+#include <string.h>
 #include <clutter/clutter.h>
 
 #include "nbtk-viewport.h"
@@ -42,7 +43,7 @@ static void scrollable_get_adjustments (NbtkScrollable  *scrollable,
                                         NbtkAdjustment **hadjustment,
                                         NbtkAdjustment **vadjustment);
 
-G_DEFINE_TYPE_WITH_CODE (NbtkViewport, nbtk_viewport, CLUTTER_TYPE_GROUP,
+G_DEFINE_TYPE_WITH_CODE (NbtkViewport, nbtk_viewport, NBTK_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (NBTK_TYPE_SCROLLABLE,
                                                 scrollable_interface_init))
 
@@ -192,6 +193,52 @@ nbtk_viewport_dispose (GObject *gobject)
   G_OBJECT_CLASS (nbtk_viewport_parent_class)->dispose (gobject);
 }
 
+static gboolean
+get_natural_child_size (NbtkViewport    *self,
+                        ClutterActorBox *box)
+{
+  GList *children = clutter_container_get_children (CLUTTER_CONTAINER (self));
+
+  if (children)
+    {
+      /* NbtkWidget is a single-child container,
+       * let it grow as big as it wants. */
+      ClutterActor        *child;
+      ClutterRequestMode   mode;
+      ClutterUnit          x, y, natural_width, natural_height;
+
+      child = CLUTTER_ACTOR (children->data);
+      g_list_free (children), children = NULL;
+
+      g_object_get (G_OBJECT (child), "request-mode", &mode, NULL);
+      if (mode == CLUTTER_REQUEST_HEIGHT_FOR_WIDTH)
+        {
+          clutter_actor_get_preferred_width (child, -1, NULL,
+                                             &natural_width);
+          clutter_actor_get_preferred_height (child, natural_width, NULL,
+                                              &natural_height);
+        }
+      else
+        {
+          clutter_actor_get_preferred_height (child, -1, NULL,
+                                              &natural_height);
+          clutter_actor_get_preferred_width (child, natural_height, NULL,
+                                             &natural_width);
+        }
+
+      clutter_actor_get_positionu (child, &x, &y);
+
+      box->x1 = x;
+      box->y1 = y;
+      box->x2 = x + natural_width;
+      box->y2 = y + natural_height;
+
+      return TRUE;
+    }
+
+    return FALSE;
+}
+
 static void
 nbtk_viewport_paint (ClutterActor *self)
 {
@@ -220,22 +267,35 @@ nbtk_viewport_allocate (ClutterActor          *self,
                         const ClutterActorBox *box,
                         gboolean               absolute_origin_changed)
 {
-  ClutterFixed prev_value;
+  NbtkViewportPrivate   *priv = NBTK_VIEWPORT (self)->priv;
+  ClutterActorBox natural_box, child_box;
 
-  NbtkViewportPrivate *priv = NBTK_VIEWPORT (self)->priv;
+  if (get_natural_child_size (NBTK_VIEWPORT (self), &child_box))
+    {
+      natural_box.x1 = box->x1;
+      natural_box.y1 = box->y1;
+      natural_box.x2 = MAX (child_box.x2, box->x2);
+      natural_box.y2 = MAX (child_box.y2, box->y2);
+    }
+  else
+    {
+      memcpy (&natural_box, box, sizeof (natural_box));
+    }
 
-  /* Chain up */
+  /* Chain up. */
   CLUTTER_ACTOR_CLASS (nbtk_viewport_parent_class)->
-    allocate (self, box, absolute_origin_changed);
+    allocate (self, &natural_box, absolute_origin_changed);
 
   /* Refresh adjustments */
   if (priv->sync_adjustments)
     {
+      ClutterFixed prev_value;
+
       if (priv->hadjustment)
         {
           g_object_set (G_OBJECT (priv->hadjustment),
                        "lower", 0.0,
-                       "upper", CLUTTER_UNITS_TO_FLOAT (box->x2 - box->x1),
+                       "upper", CLUTTER_UNITS_TO_FLOAT (natural_box.x2 - natural_box.x1),
                        NULL);
 
           /* Make sure value is clamped */
@@ -247,7 +307,7 @@ nbtk_viewport_allocate (ClutterActor          *self,
         {
           g_object_set (G_OBJECT (priv->vadjustment),
                        "lower", 0.0,
-                       "upper", CLUTTER_UNITS_TO_FLOAT (box->y2 - box->y1),
+                       "upper", CLUTTER_UNITS_TO_FLOAT (natural_box.y2 - natural_box.y1),
                        NULL);
 
           prev_value = nbtk_adjustment_get_valuex (priv->vadjustment);
