@@ -68,20 +68,25 @@ main (int argc, char *argv[])
 
 
 
-  clutter_container_child_set (table, CLUTTER_ACTOR (button1),
+  clutter_container_child_set (CLUTTER_CONTAINER (table),
+                               CLUTTER_ACTOR (button1),
                                "x-expand", FALSE, "y-expand", FALSE,
                                NULL);
-  clutter_container_child_set (table, CLUTTER_ACTOR (button5),
+  clutter_container_child_set (CLUTTER_CONTAINER (table),
+                               CLUTTER_ACTOR (button5),
                                "x-expand", FALSE, "y-expand", FALSE,
                                NULL);
-  clutter_container_child_set (table, CLUTTER_ACTOR (button7),
+  clutter_container_child_set (CLUTTER_CONTAINER (table),
+                               CLUTTER_ACTOR (button7),
                                "x-expand", TRUE, "y-expand", TRUE,
                                "x-fill", FALSE, "y-fill", FALSE,
                                NULL);
-  clutter_container_child_set (table, CLUTTER_ACTOR (button8),
+  clutter_container_child_set (CLUTTER_CONTAINER (table),
+                               CLUTTER_ACTOR (button8),
                                "x-expand", FALSE, "y-expand", FALSE,
                                NULL);
-  clutter_container_child_set (table, CLUTTER_ACTOR (button9),
+  clutter_container_child_set (CLUTTER_CONTAINER (table),
+                               CLUTTER_ACTOR (button9),
                                "x-expand", FALSE, "y-expand", FALSE,
                                NULL);
 
