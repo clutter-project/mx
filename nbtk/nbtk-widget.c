@@ -453,8 +453,17 @@ nbtk_widget_dispose (GObject *gobject)
   if (priv->dnd_clone)
     {
       ClutterActor *clone = priv->dnd_clone;
+      ClutterActor *parent = clutter_actor_get_parent (clone);
+
       priv->dnd_clone = NULL;
-      clutter_actor_unparent (clone);
+
+      if (parent)
+        {
+          if (CLUTTER_IS_CONTAINER (parent))
+            clutter_container_remove_actor (CLUTTER_CONTAINER (parent), clone);
+          else
+            clutter_actor_unparent (clone);
+        }
     }
 
   if (priv->bg_color)
@@ -1787,13 +1796,23 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
 
 
       g_object_unref (child);
-      g_object_unref (clone);
+      g_object_unref (clone); /* The extra ref we got above for emision. */
 
       if (priv->dnd_clone)
 	{
-	  priv->dnd_clone = NULL;
-	  g_object_unref (clone);
-	}
+          ClutterActor *parent = clutter_actor_get_parent (clone);
+
+          priv->dnd_clone = NULL;
+
+          if (parent)
+            {
+              if (CLUTTER_IS_CONTAINER (parent))
+                clutter_container_remove_actor (CLUTTER_CONTAINER (parent),
+                                                clone);
+              else
+                clutter_actor_unparent (clone);
+            }
+        }
 
       clutter_actor_unparent (clone);
 
