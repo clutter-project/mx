@@ -17,11 +17,20 @@ struct _DroppableGroup
   ClutterGroup parent_instance;
 
   ClutterActor *background;
+
+  guint is_enabled : 1;
 };
 
 struct _DroppableGroupClass
 {
   ClutterGroupClass parent_class;
+};
+
+enum
+{
+  DROP_PROP_0,
+
+  DROP_PROP_ENABLED
 };
 
 static const ClutterColor default_background_color = { 204, 204, 0, 255 };
@@ -120,12 +129,64 @@ on_actor_added (ClutterContainer *container,
 }
 
 static void
+droppable_group_set_property (GObject      *gobject,
+                              guint         prop_id,
+                              const GValue *value,
+                              GParamSpec   *pspec)
+{
+  DroppableGroup *group = DROPPABLE_GROUP (gobject);
+
+  switch (prop_id)
+    {
+    case DROP_PROP_ENABLED:
+      group->is_enabled = g_value_get_boolean (value);
+      if (group->is_enabled)
+        nbtk_droppable_enable (NBTK_DROPPABLE (gobject));
+      else
+        nbtk_droppable_disable (NBTK_DROPPABLE (gobject));
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
+      break;
+    }
+}
+
+static void
+droppable_group_get_property (GObject    *gobject,
+                              guint       prop_id,
+                              GValue     *value,
+                              GParamSpec *pspec)
+{
+  DroppableGroup *group = DROPPABLE_GROUP (gobject);
+
+  switch (prop_id)
+    {
+    case DROP_PROP_ENABLED:
+      g_value_set_boolean (value, group->is_enabled);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
+      break;
+    }
+}
+
+
+
+static void
 droppable_group_class_init (DroppableGroupClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
 
+  gobject_class->set_property = droppable_group_set_property;
+  gobject_class->get_property = droppable_group_get_property;
   gobject_class->dispose = droppable_group_dispose;
+
+  g_object_class_override_property (gobject_class,
+                                    DROP_PROP_ENABLED,
+                                    "enabled");
 }
 
 static void
@@ -175,13 +236,13 @@ struct _DraggableRectangleClass
 
 enum
 {
-  PROP_0,
+  DRAG_PROP_0,
 
-  PROP_DRAG_THRESHOLD,
-  PROP_AXIS,
-  PROP_CONTAINMENT_TYPE,
-  PROP_CONTAINMENT_AREA,
-  PROP_ENABLED
+  DRAG_PROP_DRAG_THRESHOLD,
+  DRAG_PROP_AXIS,
+  DRAG_PROP_CONTAINMENT_TYPE,
+  DRAG_PROP_CONTAINMENT_AREA,
+  DRAG_PROP_ENABLED
 };
 
 static void nbtk_draggable_iface_init (NbtkDraggableIface *iface);
@@ -256,19 +317,19 @@ draggable_rectangle_set_property (GObject      *gobject,
 
   switch (prop_id)
     {
-    case PROP_DRAG_THRESHOLD:
+    case DRAG_PROP_DRAG_THRESHOLD:
       rect->threshold = g_value_get_uint (value);
       break;
 
-    case PROP_AXIS:
+    case DRAG_PROP_AXIS:
       rect->axis = g_value_get_enum (value);
       break;
 
-    case PROP_CONTAINMENT_TYPE:
+    case DRAG_PROP_CONTAINMENT_TYPE:
       rect->containment = g_value_get_enum (value);
       break;
 
-    case PROP_CONTAINMENT_AREA:
+    case DRAG_PROP_CONTAINMENT_AREA:
       {
         ClutterActorBox *box = g_value_get_boxed (value);
 
@@ -279,7 +340,7 @@ draggable_rectangle_set_property (GObject      *gobject,
       }
       break;
 
-    case PROP_ENABLED:
+    case DRAG_PROP_ENABLED:
       rect->is_enabled = g_value_get_boolean (value);
       if (rect->is_enabled)
         nbtk_draggable_enable (NBTK_DRAGGABLE (gobject));
@@ -303,23 +364,23 @@ draggable_rectangle_get_property (GObject    *gobject,
 
   switch (prop_id)
     {
-    case PROP_DRAG_THRESHOLD:
+    case DRAG_PROP_DRAG_THRESHOLD:
       g_value_set_uint (value, rect->threshold);
       break;
 
-    case PROP_AXIS:
+    case DRAG_PROP_AXIS:
       g_value_set_enum (value, rect->axis);
       break;
 
-    case PROP_CONTAINMENT_TYPE:
+    case DRAG_PROP_CONTAINMENT_TYPE:
       g_value_set_enum (value, rect->containment);
       break;
 
-    case PROP_CONTAINMENT_AREA:
+    case DRAG_PROP_CONTAINMENT_AREA:
       g_value_set_boxed (value, &rect->area);
       break;
 
-    case PROP_ENABLED:
+    case DRAG_PROP_ENABLED:
       g_value_set_boolean (value, rect->is_enabled);
       break;
 
@@ -341,19 +402,19 @@ draggable_rectangle_class_init (DraggableRectangleClass *klass)
   actor_class->parent_set = draggable_rectangle_parent_set;
 
   g_object_class_override_property (gobject_class,
-                                    PROP_DRAG_THRESHOLD,
+                                    DRAG_PROP_DRAG_THRESHOLD,
                                     "drag-threshold");
   g_object_class_override_property (gobject_class,
-                                    PROP_AXIS,
+                                    DRAG_PROP_AXIS,
                                     "axis");
   g_object_class_override_property (gobject_class,
-                                    PROP_CONTAINMENT_TYPE,
+                                    DRAG_PROP_CONTAINMENT_TYPE,
                                     "containment-type");
   g_object_class_override_property (gobject_class,
-                                    PROP_CONTAINMENT_AREA,
+                                    DRAG_PROP_CONTAINMENT_AREA,
                                     "containment-area");
   g_object_class_override_property (gobject_class,
-                                    PROP_ENABLED,
+                                    DRAG_PROP_ENABLED,
                                     "enabled");
 }
 
