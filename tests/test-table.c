@@ -49,6 +49,17 @@ randomise_align (NbtkButton *button, ClutterContainer *table)
   g_free (label);
 }
 
+void
+stage_size_notify_cb (ClutterActor *stage,
+                      GParamSpec *pspec,
+                      ClutterActor *table)
+{
+  gint width, height;
+
+  clutter_actor_get_size (stage, &width, &height);
+  clutter_actor_set_size (table, width-10, height-10);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -72,11 +83,18 @@ main (int argc, char *argv[])
                              "style/default.css", NULL);
 
   stage = clutter_stage_get_default ();
+  clutter_stage_set_user_resizable (stage, TRUE);
 
   table = nbtk_table_new ();
   nbtk_widget_set_padding (table, &padding);
   nbtk_table_set_col_spacing (NBTK_TABLE (table), 10);
   nbtk_table_set_row_spacing (NBTK_TABLE (table), 10);
+
+
+  g_signal_connect (stage, "notify::width",
+                    stage_size_notify_cb, table);
+  g_signal_connect (stage, "notify::height",
+                    stage_size_notify_cb, table);
 
   button1 = nbtk_button_new_with_label ("button1");
   button2 = nbtk_button_new_with_label ("button2");
@@ -139,12 +157,7 @@ main (int argc, char *argv[])
 
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (table));
 
-  clutter_actor_set_size (CLUTTER_ACTOR (table), 300, 300);
-  clutter_actor_set_position (CLUTTER_ACTOR (table),
-                              clutter_actor_get_width (stage) / 2 -
-                              clutter_actor_get_width (CLUTTER_ACTOR (table)) / 2,
-                              clutter_actor_get_height (stage) / 2 -
-                              clutter_actor_get_height (CLUTTER_ACTOR (table)) / 2);
+  clutter_actor_set_position (CLUTTER_ACTOR (table), 5, 5);
 
   g_signal_connect (button4, "clicked", G_CALLBACK (toggle_expand), table);
   g_signal_connect (button7, "clicked", G_CALLBACK (randomise_align), table);
