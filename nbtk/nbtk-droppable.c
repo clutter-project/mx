@@ -183,8 +183,16 @@ nbtk_droppable_base_init (gpointer g_iface)
     {
       NbtkDroppableIface *iface = g_iface;
       GType iface_type = G_TYPE_FROM_INTERFACE (g_iface);
+      GParamSpec *pspec;
 
       is_initialized = TRUE;
+
+      pspec = g_param_spec_boolean ("enabled",
+                                    "Enabled",
+                                    "Whether the Droppable is enabled",
+                                    FALSE,
+                                    NBTK_PARAM_READWRITE);
+      g_object_interface_install_property (g_iface, pspec);
 
       droppable_signals[OVER_IN] =
         g_signal_new (I_("over-in"),
