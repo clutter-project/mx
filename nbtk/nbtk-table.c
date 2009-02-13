@@ -668,6 +668,7 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
   gint row_spacing, col_spacing, extra_col_width, extra_row_height;
   gint total_min_width, total_min_height, i, table_width, table_height;
   gint *min_widths, *min_heights;
+  gint total_expandable_cols, total_expandable_rows;
   NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
   NbtkPadding padding = { 0, };
   gboolean *has_expand_cols;
@@ -731,32 +732,33 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
    * with the x/y expand property set. */
   for (i = 0; i < priv->n_cols; i++)
     if (has_expand_cols[i])
-      expanded_cols++;
+      expanded_cols += min_widths[i];
 
   for (i = 0; i < priv->n_rows; i++)
     if (has_expand_rows[i])
-      expanded_rows++;
+      expanded_rows += min_heights[i];
 
-  if (expanded_cols)
-    extra_col_width = (table_width - total_min_width) / expanded_cols;
-  else
-    extra_col_width = 0;
+  extra_col_width = table_width - total_min_width;
+  extra_row_height = table_height - total_min_height;
 
-  if (expanded_rows)
-    extra_row_height = (table_height - total_min_height) / expanded_rows;
-  else
-    extra_row_height = 0;
-
-  /* If the current column is expanded give it the extra space. */
+  /* distribute the extra space proprotionally amongst columns/rows with expand
+   * set to TRUE
+   */
   if (extra_col_width)
     for (i = 0; i < priv->n_cols; i++)
       if (has_expand_cols[i])
-        min_widths[i] += extra_col_width;
+        min_widths[i] =
+          MAX (0,
+               min_widths[i]
+              + (extra_col_width * (min_widths[i] / (float) expanded_cols)));
 
   if (extra_row_height)
     for (i = 0; i < priv->n_rows; i++)
       if (has_expand_rows[i])
-        min_heights[i] += extra_row_height;
+        min_heights[i] =
+          MAX (0,
+               min_heights[i]
+               + (extra_row_height * (min_heights[i] / (float) expanded_rows)));
 
   for (list = priv->children; list; list = g_slist_next (list))
     {
@@ -827,6 +829,7 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
 
       childbox.y1 = CLUTTER_UNITS_FROM_INT (child_y);
       childbox.y2 = CLUTTER_UNITS_FROM_INT (child_y + row_height);
+
 
       nbtk_table_allocate_fill (child, &childbox, x_align, y_align, x_fill, y_fill);
 
