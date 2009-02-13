@@ -54,6 +54,7 @@ struct _NbtkWidgetPrivate
   ClutterColor *bg_color;
 
   ClutterActor *dnd_last_dest;
+  gpointer      dnd_last_dest_data;
   ClutterActor *dnd_clone;
   ClutterActor *dnd_dragged;
   ClutterActor *dnd_icon;
@@ -320,9 +321,17 @@ nbtk_widget_dispose (GObject *gobject)
   if (priv->dnd_clone)
     {
       ClutterActor *clone = priv->dnd_clone;
+      ClutterActor *parent = clutter_actor_get_parent (clone);
 
       priv->dnd_clone = NULL;
-      clutter_actor_unparent (clone);
+
+      if (parent)
+        {
+          if (CLUTTER_IS_CONTAINER (parent))
+            clutter_container_remove_actor (CLUTTER_CONTAINER (parent), clone);
+          else
+            clutter_actor_unparent (clone);
+        }
     }
 
   if (priv->bg_color)
@@ -1129,6 +1138,15 @@ nbtk_widget_set_dnd_threshold (NbtkWidget *actor, guint threshold)
     }
 }
 
+static void
+nbtk_widget_dnd_last_dest_weak_cb (gpointer data, GObject *last_dest)
+{
+  NbtkWidgetPrivate *priv = NBTK_WIDGET (data)->priv;
+
+  priv->dnd_last_dest = NULL;
+  priv->dnd_last_dest_data = NULL;
+}
+
 static gboolean
 nbtk_widget_dnd_enter_event_cb (ClutterActor *actor,
 				ClutterCrossingEvent *event,
@@ -1166,7 +1184,16 @@ nbtk_widget_dnd_enter_event_cb (ClutterActor *actor,
 
 	  g_object_unref (dest);
 
+          if (priv->dnd_last_dest)
+            g_object_weak_unref (G_OBJECT (priv->dnd_last_dest),
+                                 nbtk_widget_dnd_last_dest_weak_cb,
+                                 priv->dnd_last_dest_data);
+
 	  priv->dnd_last_dest = dest;
+          priv->dnd_last_dest_data = data;
+
+          g_object_weak_ref (G_OBJECT (dest),
+                             nbtk_widget_dnd_last_dest_weak_cb, data);
 	}
     }
   else if (priv->dnd_last_dest)
@@ -1177,9 +1204,14 @@ nbtk_widget_dnd_enter_event_cb (ClutterActor *actor,
 		     priv->dnd_dragged,
 		     priv->dnd_clone, event->x, event->y);
 
+      g_object_weak_unref (G_OBJECT (priv->dnd_last_dest),
+                           nbtk_widget_dnd_last_dest_weak_cb,
+                           priv->dnd_last_dest_data);
+
       g_object_unref (priv->dnd_last_dest);
 
       priv->dnd_last_dest = NULL;
+      priv->dnd_last_dest_data = NULL;
     }
 
   return TRUE;
@@ -1263,18 +1295,46 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
 	  priv->dnd_enter_cb_id = 0;
 	}
 
+      if (priv->dnd_last_dest)
+        {
+          g_object_ref (priv->dnd_last_dest);
+
+          g_signal_emit (priv->dnd_last_dest, actor_signals[DND_LEAVE], 0,
+                         priv->dnd_dragged,
+                         priv->dnd_clone, event->button.x, event->button.y);
+
+          g_object_weak_unref (G_OBJECT (priv->dnd_last_dest),
+                               nbtk_widget_dnd_last_dest_weak_cb,
+                               priv->dnd_last_dest_data);
+
+          g_object_unref (priv->dnd_last_dest);
+
+          priv->dnd_last_dest = NULL;
+          priv->dnd_last_dest_data = NULL;
+        }
+
       g_signal_emit (widget, actor_signals[DND_END], 0,
 		     child, clone, x, y);
 
 
       g_object_unref (child);
-      g_object_unref (clone);
+      g_object_unref (clone); /* The extra ref we got above for emision. */
 
       if (priv->dnd_clone)
 	{
-	  priv->dnd_clone = NULL;
-	  g_object_unref (clone);
-	}
+          ClutterActor *parent = clutter_actor_get_parent (clone);
+
+          priv->dnd_clone = NULL;
+
+          if (parent)
+            {
+              if (CLUTTER_IS_CONTAINER (parent))
+                clutter_container_remove_actor (CLUTTER_CONTAINER (parent),
+                                                clone);
+              else
+                clutter_actor_unparent (clone);
+            }
+        }
 
       clutter_actor_unparent (clone);
 
@@ -1329,7 +1389,14 @@ nbtk_widget_child_dnd_motion_cb (ClutterActor *child,
       gdouble scale_x, scale_y;
       guint child_w, child_h;
 
+      if (priv->dnd_last_dest)
+        g_warning ("There should be no last destination set at this point\n");
+
       priv->dnd_last_dest = CLUTTER_ACTOR (widget);
+      priv->dnd_last_dest_data = data;
+
+      g_object_weak_ref (G_OBJECT (priv->dnd_last_dest),
+                         nbtk_widget_dnd_last_dest_weak_cb, data);
 
       if (priv->dnd_icon)
 	{
