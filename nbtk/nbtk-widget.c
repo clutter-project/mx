@@ -1657,6 +1657,14 @@ nbtk_widget_set_dnd_threshold (NbtkWidget *actor, guint threshold)
     }
 }
 
+static void
+nbtk_widget_dnd_last_dest_weak_cb (gpointer data, GObject *last_dest)
+{
+  NbtkWidgetPrivate *priv = NBTK_WIDGET (data)->priv;
+
+  priv->dnd_last_dest = NULL;
+}
+
 static gboolean
 nbtk_widget_dnd_enter_event_cb (ClutterActor *actor,
 				ClutterCrossingEvent *event,
@@ -1694,7 +1702,13 @@ nbtk_widget_dnd_enter_event_cb (ClutterActor *actor,
 
 	  g_object_unref (dest);
 
+          if (priv->dnd_last_dest)
+            g_object_weak_unref (priv->dnd_last_dest,
+                                 nbtk_widget_dnd_last_dest_weak_cb, data);
+
 	  priv->dnd_last_dest = dest;
+
+          g_object_weak_ref (dest, nbtk_widget_dnd_last_dest_weak_cb, data);
 	}
     }
   else if (priv->dnd_last_dest)
@@ -1704,6 +1718,9 @@ nbtk_widget_dnd_enter_event_cb (ClutterActor *actor,
       g_signal_emit (priv->dnd_last_dest, actor_signals[DND_LEAVE], 0,
 		     priv->dnd_dragged,
 		     priv->dnd_clone, event->x, event->y);
+
+      g_object_weak_unref (priv->dnd_last_dest,
+                           nbtk_widget_dnd_last_dest_weak_cb, data);
 
       g_object_unref (priv->dnd_last_dest);
 
@@ -1867,7 +1884,18 @@ nbtk_widget_child_dnd_motion_cb (ClutterActor *child,
       gdouble scale_x, scale_y;
       guint child_w, child_h;
 
+      if (priv->dnd_last_dest)
+        {
+          g_object_weak_unref (priv->dnd_last_dest,
+                               nbtk_widget_dnd_last_dest_weak_cb, data);
+
+          priv->dnd_last_dest = NULL;
+        }
+
       priv->dnd_last_dest = CLUTTER_ACTOR (widget);
+
+      g_object_weak_ref (priv->dnd_last_dest,
+                         nbtk_widget_dnd_last_dest_weak_cb, data);
 
       if (priv->dnd_icon)
 	{
