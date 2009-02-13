@@ -416,6 +416,8 @@ nbtk_draggable_get_type (void)
       our_type = g_type_register_static (G_TYPE_INTERFACE,
                                          I_("NbtkDraggable"),
                                          &draggable_info, 0);
+
+      g_type_interface_add_prerequisite (our_type, CLUTTER_TYPE_ACTOR);
     }
 
   return our_type;
