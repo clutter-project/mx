@@ -61,6 +61,7 @@ struct _NbtkWidgetPrivate
   ClutterColor *bg_color;
 
   ClutterActor *dnd_last_dest;
+  gpointer      dnd_last_dest_data;
   ClutterActor *dnd_clone;
   ClutterActor *dnd_dragged;
   ClutterActor *dnd_icon;
@@ -1663,6 +1664,7 @@ nbtk_widget_dnd_last_dest_weak_cb (gpointer data, GObject *last_dest)
   NbtkWidgetPrivate *priv = NBTK_WIDGET (data)->priv;
 
   priv->dnd_last_dest = NULL;
+  priv->dnd_last_dest_data = NULL;
 }
 
 static gboolean
@@ -1704,9 +1706,11 @@ nbtk_widget_dnd_enter_event_cb (ClutterActor *actor,
 
           if (priv->dnd_last_dest)
             g_object_weak_unref (G_OBJECT (priv->dnd_last_dest),
-                                 nbtk_widget_dnd_last_dest_weak_cb, data);
+                                 nbtk_widget_dnd_last_dest_weak_cb,
+                                 priv->dnd_last_dest_data);
 
 	  priv->dnd_last_dest = dest;
+          priv->dnd_last_dest_data = data;
 
           g_object_weak_ref (G_OBJECT (dest),
                              nbtk_widget_dnd_last_dest_weak_cb, data);
@@ -1721,11 +1725,13 @@ nbtk_widget_dnd_enter_event_cb (ClutterActor *actor,
 		     priv->dnd_clone, event->x, event->y);
 
       g_object_weak_unref (G_OBJECT (priv->dnd_last_dest),
-                           nbtk_widget_dnd_last_dest_weak_cb, data);
+                           nbtk_widget_dnd_last_dest_weak_cb,
+                           priv->dnd_last_dest_data);
 
       g_object_unref (priv->dnd_last_dest);
 
       priv->dnd_last_dest = NULL;
+      priv->dnd_last_dest_data = NULL;
     }
 
   return TRUE;
@@ -1818,10 +1824,13 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
                          priv->dnd_clone, event->button.x, event->button.y);
 
           g_object_weak_unref (G_OBJECT (priv->dnd_last_dest),
-                               nbtk_widget_dnd_last_dest_weak_cb, data);
+                               nbtk_widget_dnd_last_dest_weak_cb,
+                               priv->dnd_last_dest_data);
 
           g_object_unref (priv->dnd_last_dest);
-          priv->dnd_last_dest = dest;
+
+          priv->dnd_last_dest = NULL;
+          priv->dnd_last_dest_data = NULL;
         }
 
       g_signal_emit (widget, actor_signals[DND_END], 0,
@@ -1901,14 +1910,10 @@ nbtk_widget_child_dnd_motion_cb (ClutterActor *child,
       guint child_w, child_h;
 
       if (priv->dnd_last_dest)
-        {
-          g_object_weak_unref (G_OBJECT (priv->dnd_last_dest),
-                               nbtk_widget_dnd_last_dest_weak_cb, data);
-
-          priv->dnd_last_dest = NULL;
-        }
+        g_warning ("There should be no last destination set at this point\n");
 
       priv->dnd_last_dest = CLUTTER_ACTOR (widget);
+      priv->dnd_last_dest_data = data;
 
       g_object_weak_ref (G_OBJECT (priv->dnd_last_dest),
                          nbtk_widget_dnd_last_dest_weak_cb, data);
