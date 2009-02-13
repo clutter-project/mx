@@ -5,6 +5,147 @@
 #include <clutter/clutter.h>
 #include <nbtk/nbtk.h>
 
+#define DROPPABLE_TYPE_GROUP            (droppable_group_get_type ())
+#define DROPPABLE_GROUP(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), DROPPABLE_TYPE_GROUP, DroppableGroup))
+#define DROPPABLE_IS_GROUP(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), DROPPABLE_TYPE_GROUP))
+
+typedef struct _DroppableGroup          DroppableGroup;
+typedef struct _DroppableGroupClass     DroppableGroupClass;
+
+struct _DroppableGroup
+{
+  ClutterGroup parent_instance;
+
+  ClutterActor *background;
+};
+
+struct _DroppableGroupClass
+{
+  ClutterGroupClass parent_class;
+};
+
+static const ClutterColor default_background_color = { 204, 204, 0, 255 };
+
+static void nbtk_droppable_iface_init (NbtkDroppableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE (DroppableGroup, droppable_group, CLUTTER_TYPE_GROUP,
+                         G_IMPLEMENT_INTERFACE (NBTK_TYPE_DROPPABLE,
+                                                nbtk_droppable_iface_init));
+
+static void
+droppable_group_dispose (GObject *gobject)
+{
+  DroppableGroup *group = DROPPABLE_GROUP (gobject);
+
+  if (group->background)
+    {
+      clutter_actor_destroy (group->background);
+      group->background = NULL;
+    }
+
+  G_OBJECT_CLASS (droppable_group_parent_class)->dispose (gobject);
+}
+
+static void
+droppable_group_over_in (NbtkDroppable *droppable,
+                         NbtkDraggable *draggable)
+{
+  g_debug (G_STRLOC ": over-in");
+  clutter_actor_animate (CLUTTER_ACTOR (droppable),
+                         CLUTTER_EASE_IN_CUBIC,
+                         250,
+                         "opacity", 255,
+                         NULL);
+}
+
+static void
+droppable_group_over_out (NbtkDroppable *droppable,
+                          NbtkDraggable *draggable)
+{
+  g_debug (G_STRLOC ": over-out");
+  clutter_actor_animate (CLUTTER_ACTOR (droppable),
+                         CLUTTER_EASE_IN_CUBIC,
+                         250,
+                         "opacity", 128,
+                         NULL);
+}
+
+static void
+droppable_group_drop (NbtkDroppable       *droppable,
+                      NbtkDraggable       *draggable,
+                      gfloat               event_x,
+                      gfloat               event_y,
+                      gint                 button,
+                      ClutterModifierType  modifiers)
+{
+  g_debug ("%s: dropped %s on %s at %.2f, %.2f",
+           G_STRLOC,
+           G_OBJECT_TYPE_NAME (draggable),
+           G_OBJECT_TYPE_NAME (droppable),
+           event_x, event_y);
+
+  nbtk_draggable_disable (draggable);
+  nbtk_droppable_disable (droppable);
+
+  g_object_ref (draggable);
+
+  clutter_actor_reparent (CLUTTER_ACTOR (draggable),
+                          CLUTTER_ACTOR (droppable));
+
+  g_object_unref (draggable);
+
+  clutter_actor_animate (CLUTTER_ACTOR (draggable),
+                         CLUTTER_EASE_OUT_BOUNCE,
+                         250,
+                         "x", 25,
+                         "y", 25,
+                         "width", 150,
+                         "height", 150,
+                         NULL);
+}
+
+static void
+nbtk_droppable_iface_init (NbtkDroppableIface *iface)
+{
+  iface->over_in = droppable_group_over_in;
+  iface->over_out = droppable_group_over_out;
+  iface->drop = droppable_group_drop;
+}
+
+static void
+on_actor_added (ClutterContainer *container,
+                ClutterActor     *actor)
+{
+  g_debug ("%s: added child `%s'", G_STRLOC, G_OBJECT_TYPE_NAME (actor));
+}
+
+static void
+droppable_group_class_init (DroppableGroupClass *klass)
+{
+  GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
+
+  gobject_class->dispose = droppable_group_dispose;
+}
+
+static void
+droppable_group_init (DroppableGroup *group)
+{
+  clutter_actor_set_opacity (CLUTTER_ACTOR (group), 128);
+
+  group->background = clutter_rectangle_new ();
+  clutter_container_add_actor (CLUTTER_CONTAINER (group),
+                               group->background);
+
+  clutter_rectangle_set_color (CLUTTER_RECTANGLE (group->background),
+                               &default_background_color);
+
+  clutter_actor_set_size (group->background, 200, 200);
+
+  g_signal_connect (group, "actor-added",
+                    G_CALLBACK (on_actor_added), NULL);
+}
+
 #define DRAGGABLE_TYPE_RECTANGLE        (draggable_rectangle_get_type ())
 #define DRAGGABLE_RECTANGLE(obj)        (G_TYPE_CHECK_INSTANCE_CAST ((obj), DRAGGABLE_TYPE_RECTANGLE, DraggableRectangle))
 #define DRAGGABLE_IS_RECTANGLE(obj)     (G_TYPE_CHECK_INSTANCE_TYPE ((obj), DRAGGABLE_TYPE_RECTANGLE))
@@ -60,17 +201,9 @@ draggable_rectangle_drag_begin (NbtkDraggable       *draggable,
 {
   ClutterActor *self = CLUTTER_ACTOR (draggable);
 
-  g_debug ("%s: drag begin at %.2f, %.2f",
-           G_STRLOC,
-           event_x,
-           event_y);
-
-  clutter_actor_set_opacity (self, 224);
-  clutter_actor_set_rotationu (self, CLUTTER_Y_AXIS,
-                               30.0,
-                               clutter_actor_get_widthu (self) / 2,
-                               0,
-                               clutter_actor_get_heightu (self) / 2);
+  clutter_actor_animate (self, CLUTTER_EASE_OUT_CUBIC, 250,
+                         "opacity", 224,
+                         NULL);
 }
 
 static void
@@ -78,11 +211,6 @@ draggable_rectangle_drag_motion (NbtkDraggable *draggable,
                                  gfloat         delta_x,
                                  gfloat         delta_y)
 {
-  g_debug ("%s: drag motion (dx: %.2f, dy: %.2f)",
-           G_STRLOC,
-           delta_x,
-           delta_y);
-
   clutter_actor_move_byu (CLUTTER_ACTOR (draggable), delta_x, delta_y);
 }
 
@@ -93,13 +221,9 @@ draggable_rectangle_drag_end (NbtkDraggable *draggable,
 {
   ClutterActor *self = CLUTTER_ACTOR (draggable);
 
-  g_debug ("%s: drag end at %.2f, %.2f",
-           G_STRLOC,
-           event_x,
-           event_y);
-
-  clutter_actor_set_opacity (self, 255);
-  clutter_actor_set_rotationu (self, CLUTTER_Y_AXIS, 0, 0, 0, 0);
+  clutter_actor_animate (self, CLUTTER_EASE_OUT_CUBIC, 250,
+                         "opacity", 255,
+                         NULL);
 }
 
 static void
@@ -108,6 +232,18 @@ nbtk_draggable_iface_init (NbtkDraggableIface *iface)
   iface->drag_begin = draggable_rectangle_drag_begin;
   iface->drag_motion = draggable_rectangle_drag_motion;
   iface->drag_end = draggable_rectangle_drag_end;
+}
+
+static void
+draggable_rectangle_parent_set (ClutterActor *actor,
+                                ClutterActor *old_parent)
+{
+  ClutterActor *new_parent = clutter_actor_get_parent (actor);
+
+  g_debug ("%s: old_parent: %s, new_parent: %s",
+           G_STRLOC,
+           old_parent ? G_OBJECT_TYPE_NAME (old_parent) : "none",
+           new_parent ? G_OBJECT_TYPE_NAME (new_parent) : "none");
 }
 
 static void
@@ -197,9 +333,12 @@ static void
 draggable_rectangle_class_init (DraggableRectangleClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
 
   gobject_class->set_property = draggable_rectangle_set_property;
   gobject_class->get_property = draggable_rectangle_get_property;
+
+  actor_class->parent_set = draggable_rectangle_parent_set;
 
   g_object_class_override_property (gobject_class,
                                     PROP_DRAG_THRESHOLD,
@@ -231,22 +370,28 @@ int
 main (int argc, char *argv[])
 {
   ClutterActor *stage;
-  ClutterActor *draggable;
+  ClutterActor *draggable, *droppable;
   ClutterColor rect_color = { 204, 204, 204, 255 };
 
   clutter_init (&argc, &argv);
 
   stage = clutter_stage_get_default ();
-  clutter_stage_set_title (CLUTTER_STAGE (stage), "Draggable Example");
+  clutter_stage_set_title (CLUTTER_STAGE (stage), "Droppable Example");
   clutter_actor_set_size (stage, 800, 600);
 
-  draggable = g_object_new (DRAGGABLE_TYPE_RECTANGLE, NULL);
+  droppable = g_object_new (DROPPABLE_TYPE_GROUP, NULL);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), droppable);
+  clutter_actor_set_position (droppable, 500, 200);
+  clutter_actor_set_reactive (droppable, TRUE);
+  nbtk_droppable_enable (NBTK_DROPPABLE (droppable));
+
+  draggable = g_object_new (DRAGGABLE_TYPE_RECTANGLE,
+                            "color", &rect_color,
+                            NULL);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), draggable);
-  clutter_rectangle_set_color (CLUTTER_RECTANGLE (draggable), &rect_color);
   clutter_actor_set_size (draggable, 100, 100);
-  clutter_actor_set_position (draggable, 350, 250);
+  clutter_actor_set_position (draggable, 100, 250);
   clutter_actor_set_reactive (draggable, TRUE);
-  nbtk_draggable_set_axis (NBTK_DRAGGABLE (draggable), NBTK_X_AXIS);
   nbtk_draggable_enable (NBTK_DRAGGABLE (draggable));
 
   clutter_actor_show_all (stage);

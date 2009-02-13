@@ -11,6 +11,7 @@ noinst_PROGRAMS = 		\
 	test-buttons 		\
 	test-container-matching	\
 	test-draggable		\
+	test-droppable		\
 	test-label 		\
 	test-entry 		\
 	test-script  		\
@@ -42,3 +43,4 @@ test_scroll_view_SOURCES = test-scroll-view.c
 test_viewport_SOURCES = test-viewport.c
 
 test_draggable_SOURCES = test-draggable.c
+test_droppable_SOURCES = test-droppable.c

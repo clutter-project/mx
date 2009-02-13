@@ -92,7 +92,7 @@ on_draggable_release (ClutterActor       *actor,
   stage = clutter_actor_get_stage (actor);
   g_object_set_data (G_OBJECT (stage), "nbtk-drag-actor", NULL);
 
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean
@@ -161,7 +161,7 @@ on_draggable_motion (ClutterActor       *actor,
                  delta_x,
                  delta_y);
 
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean

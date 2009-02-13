@@ -12,6 +12,7 @@ source_h = \
 	$(top_srcdir)/nbtk/nbtk-bin.h			\
 	$(top_srcdir)/nbtk/nbtk-button.h 		\
 	$(top_srcdir)/nbtk/nbtk-draggable.h 		\
+	$(top_srcdir)/nbtk/nbtk-droppable.h 		\
 	$(top_srcdir)/nbtk/nbtk-entry.h 		\
 	$(top_srcdir)/nbtk/nbtk-label.h 		\
 	$(top_srcdir)/nbtk/nbtk-scroll-bar.h 		\
@@ -122,6 +123,7 @@ libnbtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	nbtk-bin.c			\
 	nbtk-button.c 			\
 	nbtk-draggable.c		\
+	nbtk-droppable.c		\
 	nbtk-entry.c 			\
 	nbtk-label.c 			\
 	nbtk-scroll-bar.c 		\
