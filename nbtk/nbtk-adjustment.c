@@ -38,6 +38,10 @@ G_DEFINE_TYPE (NbtkAdjustment, nbtk_adjustment, G_TYPE_OBJECT)
 
 struct _NbtkAdjustmentPrivate
 {
+  /* Do not sanity-check values while constructing,
+   * not all properties may be set yet. */
+  gboolean is_constructing : 1;
+
   ClutterFixed lower;
   ClutterFixed upper;
   ClutterFixed value;
@@ -80,16 +84,35 @@ enum
 
 static guint signals[LAST_SIGNAL] = { 0, };
 
-static void nbtk_adjustment_set_lower          (NbtkAdjustment *adjustment,
-                                                gdouble         lower);
-static void nbtk_adjustment_set_upper          (NbtkAdjustment *adjustment,
-                                                gdouble         upper);
-static void nbtk_adjustment_set_step_increment (NbtkAdjustment *adjustment,
-                                                gdouble         step);
-static void nbtk_adjustment_set_page_increment (NbtkAdjustment *adjustment,
-                                                gdouble         page);
-static void nbtk_adjustment_set_page_size      (NbtkAdjustment *adjustment,
-                                                gdouble         size);
+static gboolean nbtk_adjustment_set_lower          (NbtkAdjustment *adjustment,
+                                                    gdouble         lower);
+static gboolean nbtk_adjustment_set_upper          (NbtkAdjustment *adjustment,
+                                                    gdouble         upper);
+static gboolean nbtk_adjustment_set_step_increment (NbtkAdjustment *adjustment,
+                                                    gdouble         step);
+static gboolean nbtk_adjustment_set_page_increment (NbtkAdjustment *adjustment,
+                                                    gdouble         page);
+static gboolean nbtk_adjustment_set_page_size      (NbtkAdjustment *adjustment,
+                                                    gdouble         size);
+
+static void
+nbtk_adjustment_constructed (GObject *object)
+{
+  GObjectClass *g_class;
+  NbtkAdjustment *self = NBTK_ADJUSTMENT (object);
+
+  g_class = G_OBJECT_CLASS (nbtk_adjustment_parent_class);
+  /* The docs say we're suppose to chain up, but would crash without
+   * some extra care. */
+  if (g_class && g_class->constructed &&
+      g_class->constructed != nbtk_adjustment_constructed)
+    {
+      g_class->constructed (object);
+    }
+
+  NBTK_ADJUSTMENT (self)->priv->is_constructing = FALSE;
+  nbtk_adjustment_clamp_pagex (self, self->priv->lower, self->priv->upper);
+}
 
 static void
 nbtk_adjustment_get_property (GObject    *object,
@@ -219,6 +242,7 @@ nbtk_adjustment_class_init (NbtkAdjustmentClass *klass)
 
   g_type_class_add_private (klass, sizeof (NbtkAdjustmentPrivate));
 
+  object_class->constructed = nbtk_adjustment_constructed;
   object_class->get_property = nbtk_adjustment_get_property;
   object_class->set_property = nbtk_adjustment_set_property;
   object_class->dispose = nbtk_adjustment_dispose;
@@ -231,7 +255,8 @@ nbtk_adjustment_class_init (NbtkAdjustmentClass *klass)
                                                         -G_MAXDOUBLE,
                                                         G_MAXDOUBLE,
                                                         0.0,
-                                                        NBTK_PARAM_READWRITE));
+                                                        NBTK_PARAM_READWRITE |
+                                                        G_PARAM_CONSTRUCT));
   g_object_class_install_property (object_class,
                                    PROP_UPPER,
                                    g_param_spec_double ("upper",
@@ -240,7 +265,8 @@ nbtk_adjustment_class_init (NbtkAdjustmentClass *klass)
                                                         -G_MAXDOUBLE,
                                                         G_MAXDOUBLE,
                                                         0.0,
-                                                        NBTK_PARAM_READWRITE));
+                                                        NBTK_PARAM_READWRITE |
+                                                        G_PARAM_CONSTRUCT));
   g_object_class_install_property (object_class,
                                    PROP_VALUE,
                                    g_param_spec_double ("value",
@@ -249,7 +275,8 @@ nbtk_adjustment_class_init (NbtkAdjustmentClass *klass)
                                                         -G_MAXDOUBLE,
                                                         G_MAXDOUBLE,
                                                         0.0,
-                                                        NBTK_PARAM_READWRITE));
+                                                        NBTK_PARAM_READWRITE |
+                                                        G_PARAM_CONSTRUCT));
   g_object_class_install_property (object_class,
                                    PROP_STEP_INC,
                                    g_param_spec_double ("step-increment",
@@ -258,7 +285,8 @@ nbtk_adjustment_class_init (NbtkAdjustmentClass *klass)
                                                         -G_MAXDOUBLE,
                                                         G_MAXDOUBLE,
                                                         0.0,
-                                                        NBTK_PARAM_READWRITE));
+                                                        NBTK_PARAM_READWRITE |
+                                                        G_PARAM_CONSTRUCT));
   g_object_class_install_property (object_class,
                                    PROP_PAGE_INC,
                                    g_param_spec_double ("page-increment",
@@ -267,7 +295,8 @@ nbtk_adjustment_class_init (NbtkAdjustmentClass *klass)
                                                         -G_MAXDOUBLE,
                                                         G_MAXDOUBLE,
                                                         0.0,
-                                                        NBTK_PARAM_READWRITE));
+                                                        NBTK_PARAM_READWRITE |
+                                                        G_PARAM_CONSTRUCT));
   g_object_class_install_property (object_class,
                                    PROP_PAGE_SIZE,
                                    g_param_spec_double ("page-size",
@@ -276,7 +305,8 @@ nbtk_adjustment_class_init (NbtkAdjustmentClass *klass)
                                                         -G_MAXDOUBLE,
                                                         G_MAXDOUBLE,
                                                         0.0,
-                                                        NBTK_PARAM_READWRITE));
+                                                        NBTK_PARAM_READWRITE |
+                                                        G_PARAM_CONSTRUCT));
   g_object_class_install_property (object_class,
                                    PROP_ELASTIC,
                                    g_param_spec_boolean ("elastic",
@@ -286,7 +316,8 @@ nbtk_adjustment_class_init (NbtkAdjustmentClass *klass)
                                                          "'elastic' way and "
                                                          "stop clamping value.",
                                                          FALSE,
-                                                         NBTK_PARAM_READWRITE));
+                                                        NBTK_PARAM_READWRITE |
+                                                        G_PARAM_CONSTRUCT));
 
   signals[CHANGED] =
     g_signal_new ("changed",
@@ -302,6 +333,8 @@ static void
 nbtk_adjustment_init (NbtkAdjustment *self)
 {
   self->priv = ADJUSTMENT_PRIVATE (self);
+
+  self->priv->is_constructing = TRUE;
 }
 
 NbtkAdjustment *
@@ -384,9 +417,13 @@ nbtk_adjustment_set_valuex (NbtkAdjustment *adjustment,
 
   stop_interpolation (adjustment);
 
-  if (!priv->elastic)
-    value = CLAMP (value, priv->lower, MAX (priv->lower,
-                                            priv->upper - priv->page_size));
+  /* Defer clamp until after construction. */
+  if (!priv->is_constructing)
+    {
+      if (!priv->elastic)
+        value = CLAMP (value, priv->lower, MAX (priv->lower,
+                                                priv->upper - priv->page_size));
+    }
 
   if (priv->value != value)
     {
@@ -447,7 +484,7 @@ nbtk_adjustment_clamp_page (NbtkAdjustment *adjustment,
                                CLUTTER_FLOAT_TO_FIXED (upper));
 }
 
-static void
+static gboolean
 nbtk_adjustment_set_lower (NbtkAdjustment *adjustment,
                            gdouble         lower)
 {
@@ -462,11 +499,19 @@ nbtk_adjustment_set_lower (NbtkAdjustment *adjustment,
 
       g_object_notify (G_OBJECT (adjustment), "lower");
 
-      nbtk_adjustment_clamp_pagex (adjustment, priv->lower, priv->upper);
+      /* Defer clamp until after construction. */
+      if (!priv->is_constructing)
+        {
+          nbtk_adjustment_clamp_pagex (adjustment, priv->lower, priv->upper);
+        }
+
+      return TRUE;
     }
+
+  return FALSE;
 }
 
-static void
+static gboolean
 nbtk_adjustment_set_upper (NbtkAdjustment *adjustment,
                            gdouble         upper)
 {
@@ -481,11 +526,19 @@ nbtk_adjustment_set_upper (NbtkAdjustment *adjustment,
 
       g_object_notify (G_OBJECT (adjustment), "upper");
 
-      nbtk_adjustment_clamp_pagex (adjustment, priv->lower, priv->upper);
+      /* Defer clamp until after construction. */
+      if (!priv->is_constructing)
+        {
+          nbtk_adjustment_clamp_pagex (adjustment, priv->lower, priv->upper);
+        }
+
+      return TRUE;
     }
+
+  return FALSE;
 }
 
-static void
+static gboolean
 nbtk_adjustment_set_step_increment (NbtkAdjustment *adjustment,
                                     gdouble         step)
 {
@@ -499,10 +552,14 @@ nbtk_adjustment_set_step_increment (NbtkAdjustment *adjustment,
       g_signal_emit (adjustment, signals[CHANGED], 0);
 
       g_object_notify (G_OBJECT (adjustment), "step-increment");
+
+      return TRUE;
     }
+
+  return FALSE;
 }
 
-static void
+static gboolean
 nbtk_adjustment_set_page_increment (NbtkAdjustment *adjustment,
                                     gdouble        page)
 {
@@ -516,10 +573,14 @@ nbtk_adjustment_set_page_increment (NbtkAdjustment *adjustment,
       g_signal_emit (adjustment, signals[CHANGED], 0);
 
       g_object_notify (G_OBJECT (adjustment), "page-increment");
+
+      return TRUE;
     }
+
+  return FALSE;
 }
 
-static void
+static gboolean
 nbtk_adjustment_set_page_size (NbtkAdjustment *adjustment,
                                gdouble         size)
 {
@@ -534,8 +595,16 @@ nbtk_adjustment_set_page_size (NbtkAdjustment *adjustment,
 
       g_object_notify (G_OBJECT (adjustment), "page_size");
 
-      nbtk_adjustment_clamp_pagex (adjustment, priv->lower, priv->upper);
+      /* Well explicitely clamp after construction. */
+      if (!priv->is_constructing)
+        {
+          nbtk_adjustment_clamp_pagex (adjustment, priv->lower, priv->upper);
+        }
+
+      return TRUE;
     }
+
+  return FALSE;
 }
 
 void
@@ -560,47 +629,16 @@ nbtk_adjustment_set_valuesx (NbtkAdjustment *adjustment,
 
   g_object_freeze_notify (G_OBJECT (adjustment));
 
-  if (priv->lower != lower)
+  emit_changed |= nbtk_adjustment_set_lower (adjustment, lower);
+  emit_changed |= nbtk_adjustment_set_upper (adjustment, upper);
+  emit_changed |= nbtk_adjustment_set_step_increment (adjustment, step_increment);
+  emit_changed |= nbtk_adjustment_set_page_increment (adjustment, page_increment);
+  emit_changed |= nbtk_adjustment_set_page_size (adjustment, page_size);
+  if (value != priv->value)
     {
-      priv->lower = lower;
+      nbtk_adjustment_set_valuex (adjustment, value);
       emit_changed = TRUE;
-
-      g_object_notify (G_OBJECT (adjustment), "lower");
     }
-
-  if (priv->upper != upper)
-    {
-      priv->upper = upper;
-      emit_changed = TRUE;
-
-      g_object_notify (G_OBJECT (adjustment), "upper");
-    }
-
-  if (priv->step_increment != step_increment)
-    {
-      priv->step_increment = step_increment;
-      emit_changed = TRUE;
-
-      g_object_notify (G_OBJECT (adjustment), "step-increment");
-    }
-
-  if (priv->page_increment != page_increment)
-    {
-      priv->page_increment = page_increment;
-      emit_changed = TRUE;
-
-      g_object_notify (G_OBJECT (adjustment), "page-increment");
-    }
-
-  if (priv->page_size != page_size)
-    {
-      priv->page_size = page_size;
-      emit_changed = TRUE;
-
-      g_object_notify (G_OBJECT (adjustment), "page-size");
-    }
-
-  nbtk_adjustment_set_valuex (adjustment, value);
 
   if (emit_changed)
     g_signal_emit (G_OBJECT (adjustment), signals[CHANGED], 0);
