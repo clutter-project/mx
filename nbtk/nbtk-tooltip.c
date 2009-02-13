@@ -194,7 +194,15 @@ nbtk_tooltip_weak_ref_notify (gpointer tooltip, GObject *obj)
       g_object_unref (G_OBJECT (tooltip));
     }
   else
-    clutter_actor_unparent (CLUTTER_ACTOR (tooltip));
+    {
+      ClutterActor *actor = CLUTTER_ACTOR (tooltip);
+      ClutterActor *parent = clutter_actor_get_parent (actor);
+
+      if (CLUTTER_IS_CONTAINER (parent))
+        clutter_container_remove_actor (CLUTTER_CONTAINER (parent), actor);
+      else
+        clutter_actor_unparent (actor);
+    }
 }
 
 static void
