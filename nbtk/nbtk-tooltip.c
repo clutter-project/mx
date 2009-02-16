@@ -331,11 +331,20 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
   gint x, y;
   guint w, h;
 
+  if (!widget)
+    return;
+
   g_return_if_fail (NBTK_TOOLTIP (tooltip));
 
   priv = tooltip->priv;
   parent = clutter_actor_get_parent (self);
   stage = clutter_actor_get_stage (widget);
+
+  if (!stage)
+    {
+      g_warning ("NbtkTooltip associated widget is not on any stage.");
+      return;
+    }
 
   /* make sure we're parented on the stage */
   if (G_UNLIKELY (parent != stage))
