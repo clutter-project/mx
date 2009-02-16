@@ -1751,7 +1751,7 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
   NbtkWidgetPrivate *priv;
   gboolean retval = FALSE;
 
-  if (event->type != CLUTTER_BUTTON_RELEASE)
+  if (event->type != CLUTTER_BUTTON_RELEASE || event->button.button != 1)
     return FALSE;
 
   priv = NBTK_WIDGET (widget)->priv;
@@ -1981,7 +1981,7 @@ nbtk_widget_child_dnd_press_cb (ClutterActor *child,
   NbtkWidgetPrivate *priv = NBTK_WIDGET (widget)->priv;
   guint threshold = priv->dnd_threshold;
 
-  if (!threshold)
+  if (!threshold || event->button.button != 1)
     return FALSE;
 
   priv->dnd_x = event->button.x;
