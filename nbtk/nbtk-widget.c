@@ -1856,8 +1856,6 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
             }
         }
 
-      clutter_actor_unparent (clone);
-
       retval = TRUE;
     }
 
