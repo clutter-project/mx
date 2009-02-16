@@ -1779,7 +1779,7 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
       dest = clutter_stage_get_actor_at_pos (stage, x, y);
 
       g_object_ref (child);
-      g_object_ref (clone);
+      /* We do not need reference on the clone, as we already have one.*/
 
       if (dest)
 	{
@@ -1838,7 +1838,7 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
 
 
       g_object_unref (child);
-      g_object_unref (clone); /* The extra ref we got above for emision. */
+      g_object_unref (clone); /* The extra ref we got when we created it. */
 
       if (priv->dnd_clone)
 	{
