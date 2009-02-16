@@ -188,6 +188,10 @@ nbtk_tooltip_class_init (NbtkTooltipClass *klass)
 static void
 nbtk_tooltip_weak_ref_notify (gpointer tooltip, GObject *obj)
 {
+  NbtkTooltipPrivate *priv = NBTK_TOOLTIP (tooltip)->priv;
+
+  priv->widget = NULL;
+
   if (!clutter_actor_get_parent (CLUTTER_ACTOR (tooltip)))
     {
       g_object_ref_sink (G_OBJECT (tooltip));
