@@ -60,8 +60,9 @@ draggable_rectangle_drag_begin (NbtkDraggable       *draggable,
 {
   ClutterActor *self = CLUTTER_ACTOR (draggable);
 
-  g_debug ("%s: drag begin at %.2f, %.2f",
+  g_debug ("%s: drag of '%s' begin at %.2f, %.2f",
            G_STRLOC,
+           clutter_actor_get_name (self),
            event_x,
            event_y);
 
@@ -78,8 +79,9 @@ draggable_rectangle_drag_motion (NbtkDraggable *draggable,
                                  gfloat         delta_x,
                                  gfloat         delta_y)
 {
-  g_debug ("%s: drag motion (dx: %.2f, dy: %.2f)",
+  g_debug ("%s: drag motion of '%s' (dx: %.2f, dy: %.2f)",
            G_STRLOC,
+           clutter_actor_get_name (CLUTTER_ACTOR (draggable)),
            delta_x,
            delta_y);
 
@@ -93,8 +95,9 @@ draggable_rectangle_drag_end (NbtkDraggable *draggable,
 {
   ClutterActor *self = CLUTTER_ACTOR (draggable);
 
-  g_debug ("%s: drag end at %.2f, %.2f",
+  g_debug ("%s: drag of '%s' end at %.2f, %.2f",
            G_STRLOC,
+           clutter_actor_get_name (CLUTTER_ACTOR (draggable)),
            event_x,
            event_y);
 
@@ -244,9 +247,20 @@ main (int argc, char *argv[])
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), draggable);
   clutter_rectangle_set_color (CLUTTER_RECTANGLE (draggable), &rect_color);
   clutter_actor_set_size (draggable, 100, 100);
-  clutter_actor_set_position (draggable, 350, 250);
+  clutter_actor_set_position (draggable, 350, 100);
   clutter_actor_set_reactive (draggable, TRUE);
+  clutter_actor_set_name (draggable, "h-handle");
   nbtk_draggable_set_axis (NBTK_DRAGGABLE (draggable), NBTK_X_AXIS);
+  nbtk_draggable_enable (NBTK_DRAGGABLE (draggable));
+
+  draggable = g_object_new (DRAGGABLE_TYPE_RECTANGLE, NULL);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), draggable);
+  clutter_rectangle_set_color (CLUTTER_RECTANGLE (draggable), &rect_color);
+  clutter_actor_set_size (draggable, 100, 100);
+  clutter_actor_set_position (draggable, 350, 300);
+  clutter_actor_set_reactive (draggable, TRUE);
+  clutter_actor_set_name (draggable, "v-handle");
+  nbtk_draggable_set_axis (NBTK_DRAGGABLE (draggable), NBTK_Y_AXIS);
   nbtk_draggable_enable (NBTK_DRAGGABLE (draggable));
 
   clutter_actor_show_all (stage);
