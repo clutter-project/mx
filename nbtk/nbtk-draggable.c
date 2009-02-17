@@ -28,7 +28,8 @@ struct _DragContext
   gfloat last_x;
   gfloat last_y;
 
-  guint emit_press : 1;
+  guint emit_delayed_press : 1;
+  guint in_drag            : 1;
 };
 
 enum
@@ -43,26 +44,22 @@ enum
 static GQuark quark_draggable_context = 0;
 static guint draggable_signals[LAST_SIGNAL] = { 0, };
 
-static gboolean on_draggable_press   (ClutterActor       *actor,
-                                      ClutterButtonEvent *event,
-                                      gpointer            dummy);
-static gboolean on_draggable_motion  (ClutterActor       *actor,
-                                      ClutterMotionEvent *event,
-                                      gpointer            dummy);
-static gboolean on_draggable_release (ClutterActor       *actor,
-                                      ClutterButtonEvent *event,
-                                      gpointer            dummy);
+static gboolean on_stage_capture (ClutterActor *stage,
+                                  ClutterEvent *event,
+                                  DragContext  *context);
 
 static gboolean
-on_draggable_release (ClutterActor       *actor,
-                      ClutterButtonEvent *event,
-                      gpointer            data)
+draggable_release (DragContext        *context,
+                   ClutterButtonEvent *event)
 {
-  DragContext *context = data;
+  ClutterActor *actor = CLUTTER_ACTOR (context->draggable);
+  ClutterActor *stage;
   ClutterUnit event_x, event_y;
   ClutterUnit actor_x, actor_y;
-  ClutterActor *stage;
   gboolean res;
+
+  if (!context->in_drag)
+    return FALSE;
 
   event_x = CLUTTER_UNITS_FROM_DEVICE (event->x);
   event_y = CLUTTER_UNITS_FROM_DEVICE (event->y);
@@ -75,37 +72,39 @@ on_draggable_release (ClutterActor       *actor,
   if (!res)
     return FALSE;
 
+  stage = clutter_actor_get_stage (actor);
+
   context->last_x = CLUTTER_UNITS_TO_FLOAT (actor_x);
   context->last_y = CLUTTER_UNITS_TO_FLOAT (actor_y);
 
-  g_signal_handlers_disconnect_by_func (actor,
-                                        G_CALLBACK (on_draggable_motion),
-                                        data);
-  g_signal_handlers_disconnect_by_func (actor,
-                                        G_CALLBACK (on_draggable_release),
-                                        data);
+  context->in_drag = FALSE;
+
+  g_signal_handlers_disconnect_by_func (stage,
+                                        G_CALLBACK (on_stage_capture),
+                                        context);
 
   g_signal_emit (context->draggable, draggable_signals[DRAG_END], 0,
                  context->last_x,
                  context->last_y);
 
-  stage = clutter_actor_get_stage (actor);
   g_object_set_data (G_OBJECT (stage), "nbtk-drag-actor", NULL);
 
   return FALSE;
 }
 
 static gboolean
-on_draggable_motion (ClutterActor       *actor,
-                     ClutterMotionEvent *event,
-                     gpointer            data)
+draggable_motion (DragContext        *context,
+                  ClutterMotionEvent *event)
 {
-  DragContext *context = data;
+  NbtkDraggable *draggable = NBTK_DRAGGABLE (context->draggable);
+  ClutterActor *actor = CLUTTER_ACTOR (draggable);
   ClutterUnit event_x, event_y;
   ClutterUnit actor_x, actor_y;
   gfloat delta_x, delta_y;
-  ClutterActor *stage;
   gboolean res;
+
+  if (!context->in_drag)
+    return FALSE;
 
   event_x = CLUTTER_UNITS_FROM_DEVICE (event->x);
   event_y = CLUTTER_UNITS_FROM_DEVICE (event->y);
@@ -136,13 +135,13 @@ on_draggable_motion (ClutterActor       *actor,
         delta_y = context->last_y - context->press_y;
     }
 
-  if (context->emit_press)
+  if (context->emit_delayed_press)
     {
       if (delta_x >= context->threshold || delta_y >= context->threshold)
         {
           ClutterActor *stage;
 
-          context->emit_press = FALSE;
+          context->emit_delayed_press = FALSE;
 
           g_signal_emit (context->draggable, draggable_signals[DRAG_BEGIN], 0,
                          context->press_x,
@@ -165,12 +164,36 @@ on_draggable_motion (ClutterActor       *actor,
 }
 
 static gboolean
+on_stage_capture (ClutterActor *stage,
+                  ClutterEvent *event,
+                  DragContext  *context)
+{
+  switch (event->type)
+    {
+    case CLUTTER_MOTION:
+      if (context->in_drag)
+        return draggable_motion (context, (ClutterMotionEvent *) event);
+      break;
+
+    case CLUTTER_BUTTON_RELEASE:
+      if (context->in_drag)
+        return draggable_release (context, (ClutterButtonEvent *) event);
+      break;
+
+    default:
+      break;
+    }
+
+  return FALSE;
+}
+
+static gboolean
 on_draggable_press (ClutterActor       *actor,
                     ClutterButtonEvent *event,
-                    gpointer            dummy)
+                    DragContext        *context)
 {
-  NbtkDraggable *draggable = NBTK_DRAGGABLE (actor);
-  DragContext *context;
+  NbtkDraggable *draggable = context->draggable;
+  ClutterActor *stage;
   ClutterUnit event_x, event_y;
   ClutterUnit actor_x, actor_y;
   gboolean res;
@@ -186,14 +209,15 @@ on_draggable_press (ClutterActor       *actor,
   if (!res)
     return FALSE;
 
-  context = g_object_get_qdata (G_OBJECT (draggable), quark_draggable_context);
+  stage = clutter_actor_get_stage (actor);
+
   context->press_x = CLUTTER_UNITS_TO_FLOAT (actor_x);
   context->press_y = CLUTTER_UNITS_TO_FLOAT (actor_y);
   context->last_x = context->press_x;
   context->last_y = context->press_y;
   context->press_button = event->button;
   context->press_modifiers = event->modifier_state;
-  context->emit_press = FALSE;
+  context->emit_delayed_press = FALSE;
 
   g_object_get (G_OBJECT (draggable),
                 "drag-threshold", &context->threshold,
@@ -202,28 +226,24 @@ on_draggable_press (ClutterActor       *actor,
                 "containment-area", &context->containment_area,
                 NULL);
 
-  g_signal_connect (actor,
-                    "motion-event", G_CALLBACK (on_draggable_motion),
-                    context);
-  g_signal_connect (actor,
-                    "button-release-event", G_CALLBACK (on_draggable_release),
-                    context);
-
   if (context->threshold == 0)
     {
-      ClutterActor *stage;
-
       g_signal_emit (draggable, draggable_signals[DRAG_BEGIN], 0,
                      context->press_x,
                      context->press_y,
                      context->press_button,
                      context->press_modifiers);
 
-      stage = clutter_actor_get_stage (actor);
       g_object_set_data (G_OBJECT (stage), "nbtk-drag-actor", actor);
     }
   else
-    context->emit_press = TRUE;
+    context->emit_delayed_press = TRUE;
+
+  context->in_drag = TRUE;
+
+  g_signal_connect_after (stage,
+                          "captured-event", G_CALLBACK (on_stage_capture),
+                          context);
 
   return FALSE;
 }
@@ -234,6 +254,8 @@ drag_context_free (gpointer data)
   if (G_LIKELY (data))
     {
       DragContext *context = data;
+
+      g_object_unref (context->draggable);
 
       if (context->containment_area)
         g_boxed_free (CLUTTER_TYPE_ACTOR_BOX, context->containment_area);
@@ -249,12 +271,15 @@ drag_context_create (NbtkDraggable *draggable)
 
   context = g_slice_new (DragContext);
 
-  context->draggable = draggable;
+  context->draggable = g_object_ref (draggable);
   context->threshold = 0;
   context->axis = 0;
   context->containment = NBTK_DISABLE_CONTAINMENT;
   context->containment_area = NULL;
+  context->in_drag = FALSE;
+  context->emit_delayed_press = FALSE;
 
+  /* attach the context to the draggable */
   g_object_set_qdata_full (G_OBJECT (draggable), quark_draggable_context,
                            context,
                            drag_context_free);
@@ -266,10 +291,19 @@ static void
 nbtk_draggable_real_enable (NbtkDraggable *draggable)
 {
   DragContext *context;
+  ClutterActor *stage;
 
   context = g_object_get_qdata (G_OBJECT (draggable), quark_draggable_context);
   if (G_UNLIKELY (context != NULL))
     return;
+
+  stage = clutter_actor_get_stage (CLUTTER_ACTOR (draggable));
+  if (G_UNLIKELY (stage == NULL))
+    {
+      g_warning ("Draggable actors can only be enabled when they "
+                 "on the stage");
+      return;
+    }
 
   context = drag_context_create (draggable);
   g_signal_connect (draggable,
@@ -283,19 +317,19 @@ static void
 nbtk_draggable_real_disable (NbtkDraggable *draggable)
 {
   DragContext *context;
+  ClutterActor *stage;
 
   context = g_object_get_qdata (G_OBJECT (draggable), quark_draggable_context);
   if (G_UNLIKELY (context == NULL))
     return;
 
+  stage = clutter_actor_get_stage (CLUTTER_ACTOR (draggable));
+
   g_signal_handlers_disconnect_by_func (draggable,
                                         G_CALLBACK (on_draggable_press),
                                         context);
-  g_signal_handlers_disconnect_by_func (draggable,
-                                        G_CALLBACK (on_draggable_motion),
-                                        context);
-  g_signal_handlers_disconnect_by_func (draggable,
-                                        G_CALLBACK (on_draggable_release),
+  g_signal_handlers_disconnect_by_func (stage,
+                                        G_CALLBACK (on_stage_capture),
                                         context);
 
   g_object_set_qdata (G_OBJECT (draggable), quark_draggable_context, NULL);
