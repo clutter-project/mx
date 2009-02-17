@@ -197,12 +197,46 @@ draggable_rectangle_get_property (GObject    *gobject,
 }
 
 static void
+draggable_rectangle_paint (ClutterActor *actor)
+{
+  ClutterUnit text_x, text_y;
+  ClutterActorBox box = { 0, };
+  gint layout_width, layout_height;
+  CoglColor color = { 0, };
+  PangoLayout *layout;
+  const gchar *name;
+
+  CLUTTER_ACTOR_CLASS (draggable_rectangle_parent_class)->paint (actor);
+
+  name = clutter_actor_get_name (actor);
+
+  clutter_actor_get_allocation_box (actor, &box);
+
+  layout = clutter_actor_create_pango_layout (actor, name);
+  pango_layout_get_size (layout, &layout_width, &layout_height);
+
+  text_x = ((box.x2 - box.x1) - (layout_width / 1024)) / 2;
+  text_y = ((box.y2 - box.y1) - (layout_height / 1024)) / 2;
+
+  cogl_color_set_from_4ub (&color, 0, 0, 0, 255);
+  cogl_pango_render_layout (layout,
+                            (int) text_x,
+                            (int) text_y,
+                            &color, 0);
+
+  g_object_unref (layout);
+}
+
+static void
 draggable_rectangle_class_init (DraggableRectangleClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
 
   gobject_class->set_property = draggable_rectangle_set_property;
   gobject_class->get_property = draggable_rectangle_get_property;
+
+  actor_class->paint = draggable_rectangle_paint;
 
   g_object_class_override_property (gobject_class,
                                     PROP_DRAG_THRESHOLD,
