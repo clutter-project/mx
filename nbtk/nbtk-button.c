@@ -187,25 +187,59 @@ nbtk_button_bounce_transition (NbtkButton *button)
     }
 }
 
+static inline void
+nbtk_button_update_label_style (NbtkButton *button)
+{
+  NbtkWidget *widget = NBTK_WIDGET (button);
+  NbtkButtonPrivate *priv = button->priv;
+  ClutterColor *real_color = NULL;
+  gchar *font_string = NULL;
+  gchar *font_name = NULL;
+  gint font_size = 0;
+
+  nbtk_stylable_get (NBTK_STYLABLE (button),
+                     "color", &real_color,
+                     "font-family", &font_name,
+                     "font-size", &font_size,
+                     NULL);
+
+  if (font_name || font_size)
+    {
+      if (font_name && font_size)
+        font_string = g_strdup_printf ("%s %dpx", font_name, font_size);
+      else
+        {
+          if (font_size)
+            font_string = g_strdup_printf ("%dpx", font_size);
+          else
+            font_string = font_name;
+        }
+
+      clutter_text_set_font_name (CLUTTER_TEXT (priv->label), font_string);
+
+      if (font_string != font_name)
+        g_free (font_string);
+    }
+
+  g_free (font_name);
+
+  if (real_color)
+    {
+      clutter_text_set_color (CLUTTER_TEXT (priv->label), real_color);
+      clutter_color_free (real_color);
+    }
+}
+
 static void
 nbtk_button_style_changed (NbtkWidget *widget)
 {
-  ClutterColor *real_color;
-  ClutterActor *bg_image;
   NbtkButton *button = NBTK_BUTTON (widget);
   NbtkButtonPrivate *priv = button->priv;
+  ClutterActor *bg_image;
 
   /* update the label styling */
   if (priv->label)
-    {
-      nbtk_stylable_get (NBTK_STYLABLE (button),
-                         "color", &real_color,
-                         NULL);
-      g_object_set (G_OBJECT (priv->label),
-                    "color", real_color,
-                    NULL);
-      clutter_color_free (real_color);
-    }
+    nbtk_button_update_label_style (button);
 
   /* Remove the old background if it's around */
   if (priv->old_bg)
@@ -311,6 +345,8 @@ nbtk_button_construct_child (NbtkButton *button)
   priv->label = label;
 
   clutter_container_add_actor (CLUTTER_CONTAINER (button), label);
+
+  nbtk_button_update_label_style (button);
 }
 
 static gboolean
