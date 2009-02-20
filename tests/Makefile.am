@@ -15,7 +15,8 @@ noinst_PROGRAMS = 		\
 	test-script  		\
 	test-styles  		\
 	test-table   		\
-	test-table-2 \
+	test-table-2            \
+	test-table-3            \
 	test-texture-frame 	\
 	test-padding 		\
 	test-border-image	\
