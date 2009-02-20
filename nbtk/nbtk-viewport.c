@@ -32,6 +32,7 @@
 #include "nbtk-adjustment.h"
 #include "nbtk-scrollable.h"
 #include "nbtk-private.h"
+#include "nbtk-bin.h"
 
 static void scrollable_interface_init (NbtkScrollableInterface *iface);
 
@@ -43,7 +44,7 @@ static void scrollable_get_adjustments (NbtkScrollable  *scrollable,
                                         NbtkAdjustment **hadjustment,
                                         NbtkAdjustment **vadjustment);
 
-G_DEFINE_TYPE_WITH_CODE (NbtkViewport, nbtk_viewport, NBTK_TYPE_WIDGET,
+G_DEFINE_TYPE_WITH_CODE (NbtkViewport, nbtk_viewport, NBTK_TYPE_BIN,
                          G_IMPLEMENT_INTERFACE (NBTK_TYPE_SCROLLABLE,
                                                 scrollable_interface_init))
 
