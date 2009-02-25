@@ -353,13 +353,13 @@ move_slider (NbtkScrollBar *bar, gint x, gint y, gboolean interpolate)
   if (!priv->adjustment)
     return;
 
-  if (!clutter_actor_transform_stage_point (CLUTTER_ACTOR(bar),
+  if (!clutter_actor_transform_stage_point (priv->trough,
                                             CLUTTER_UNITS_FROM_DEVICE(x),
                                             CLUTTER_UNITS_FROM_DEVICE(y),
                                             &ux, NULL))
     return;
 
-  width = clutter_actor_get_widthu (CLUTTER_ACTOR (bar)) -
+  width = clutter_actor_get_widthu (priv->trough) -
           clutter_actor_get_widthu (priv->handle);
 
   if (width == 0)
@@ -398,9 +398,9 @@ move_slider (NbtkScrollBar *bar, gint x, gint y, gboolean interpolate)
 }
 
 static gboolean
-motion_event_cb (NbtkScrollBar *bar,
+motion_event_cb (ClutterActor *trough,
                  ClutterMotionEvent *event,
-                 gpointer user_data)
+                 NbtkScrollBar *bar)
 {
   move_slider (bar, event->x, event->y, FALSE);
 
@@ -408,9 +408,9 @@ motion_event_cb (NbtkScrollBar *bar,
 }
 
 static gboolean
-button_release_event_cb (NbtkScrollBar *bar,
+button_release_event_cb (ClutterActor *trough,
                          ClutterButtonEvent *event,
-                         gpointer user_data)
+                         NbtkScrollBar *bar)
 {
   if (event->button != 1)
     return FALSE;
@@ -435,18 +435,18 @@ button_press_event_cb (ClutterActor       *actor,
   if (event->button != 1)
     return FALSE;
 
-  if (!clutter_actor_transform_stage_point (actor,
+  if (!clutter_actor_transform_stage_point (priv->trough,
                                             CLUTTER_UNITS_FROM_DEVICE(event->x),
                                             CLUTTER_UNITS_FROM_DEVICE(event->y),
                                             &priv->x_origin, NULL))
     return FALSE;
 
-  g_signal_connect_after (bar, "motion-event",
-                          G_CALLBACK (motion_event_cb), NULL);
-  g_signal_connect_after (bar, "button-release-event",
-                          G_CALLBACK (button_release_event_cb), NULL);
+  g_signal_connect_after (priv->trough, "motion-event",
+                          G_CALLBACK (motion_event_cb), bar);
+  g_signal_connect_after (priv->trough, "button-release-event",
+                          G_CALLBACK (button_release_event_cb), bar);
 
-  clutter_grab_pointer (CLUTTER_ACTOR (bar));
+  clutter_grab_pointer (priv->trough);
 
   return TRUE;
 }
