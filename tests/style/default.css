@@ -72,6 +72,7 @@ NbtkTable NbtkButton {
 
 NbtkScrollBar {
   background-color: darkgrey;
+  padding: 2;
 }
 
 NbtkScrollBar *#trough {

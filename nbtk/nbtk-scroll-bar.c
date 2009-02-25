@@ -258,8 +258,10 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
       /* Get initial position right.
        * Need to account for the fact that the handle is only a "clutter"-child
        * of the trough, not an "nbtk" one. */
-      if (handle_box.x1 == 0.)
+      if (handle_box.x1 <= 0.)
         handle_box.x1 = trough_box.x1;
+
+      handle_box.y1 = clutter_actor_get_yu (priv->trough);
 
       handle_box.x2 = handle_box.x1 +
                       MIN (max_sizeu,
@@ -537,7 +539,7 @@ nbtk_scroll_bar_refresh (NbtkScrollBar *bar)
 {
   ClutterActor *actor = CLUTTER_ACTOR (bar);
   NbtkScrollBarPrivate *priv = bar->priv;
-  ClutterUnit width, button_width, handle_offset;
+  ClutterUnit width, button_width, handle_offset_x, handle_offset_y;
   ClutterFixed lower, upper, value, page_size;
   ClutterFixed x, position;
 
@@ -552,13 +554,14 @@ nbtk_scroll_bar_refresh (NbtkScrollBar *bar)
 
   /* Need to account for the fact that the handle is only a "clutter"-child
    * of the trough, not an "nbtk" one. */
-  handle_offset = clutter_actor_get_xu (priv->trough);
+  handle_offset_x = clutter_actor_get_xu (priv->trough);
+  handle_offset_y = clutter_actor_get_yu (priv->trough);
 
   if (upper - page_size <= lower)
     {
       clutter_actor_set_position (CLUTTER_ACTOR (priv->handle),
-                                  handle_offset,
-                                  0);
+                                  handle_offset_x,
+                                  handle_offset_y);
       priv->refresh_source = 0;
       return FALSE;
     }
@@ -571,8 +574,8 @@ nbtk_scroll_bar_refresh (NbtkScrollBar *bar)
   /* Set padding on trough */
   x = clutter_qmulx (position, CLUTTER_UNITS_TO_FIXED (width - button_width));
   clutter_actor_set_positionu (CLUTTER_ACTOR (priv->handle),
-                               CLUTTER_UNITS_FROM_FIXED (x) + handle_offset,
-                               0);
+                               CLUTTER_UNITS_FROM_FIXED (x) + handle_offset_x,
+                               handle_offset_y);
 
   clutter_actor_queue_redraw (actor);
 
