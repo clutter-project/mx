@@ -28,6 +28,7 @@
 #include <clutter/clutter.h>
 
 #include "nbtk-scroll-bar.h"
+#include "nbtk-button.h"
 #include "nbtk-marshal.h"
 #include "nbtk-stylable.h"
 #include "nbtk-tile.h"
@@ -44,13 +45,15 @@ G_DEFINE_TYPE_WITH_CODE (NbtkScrollBar, nbtk_scroll_bar, NBTK_TYPE_WIDGET,
 
 struct _NbtkScrollBarPrivate
 {
-  NbtkAdjustment *adjustment;
-  guint           refresh_source;
+  NbtkAdjustment  *adjustment;
+  guint            refresh_source;
 
-  ClutterUnit     x_origin;
+  ClutterUnit      x_origin;
 
-  ClutterActor   *trough;
-  ClutterActor   *handle;
+  ClutterActor    *bw_stepper;
+  ClutterActor    *fw_stepper;
+  ClutterActor    *trough;
+  ClutterActor    *handle;
 };
 
 enum
@@ -129,6 +132,12 @@ nbtk_scroll_bar_dispose (GObject *gobject)
       priv->handle = NULL;
     }
 
+  clutter_actor_unparent (priv->bw_stepper);
+  priv->bw_stepper = NULL;
+
+  clutter_actor_unparent (priv->fw_stepper);
+  priv->fw_stepper = NULL;
+
   clutter_actor_unparent (priv->trough);
   priv->trough = NULL;
 
@@ -141,6 +150,10 @@ nbtk_scroll_bar_paint (ClutterActor *actor)
   NbtkScrollBarPrivate *priv = NBTK_SCROLL_BAR (actor)->priv;
 
   CLUTTER_ACTOR_CLASS (nbtk_scroll_bar_parent_class)->paint (actor);
+
+  clutter_actor_paint (priv->bw_stepper);
+
+  clutter_actor_paint (priv->fw_stepper);
 
   clutter_actor_paint (priv->trough);
 
@@ -155,6 +168,10 @@ nbtk_scroll_bar_pick (ClutterActor       *actor,
   NbtkScrollBarPrivate *priv = NBTK_SCROLL_BAR (actor)->priv;
 
   CLUTTER_ACTOR_CLASS (nbtk_scroll_bar_parent_class)->pick (actor, pick_color);
+
+  clutter_actor_paint (priv->bw_stepper);
+
+  clutter_actor_paint (priv->fw_stepper);
 
   clutter_actor_paint (priv->trough);
 
@@ -171,7 +188,8 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
 {
   NbtkScrollBarPrivate *priv = NBTK_SCROLL_BAR (actor)->priv;
   NbtkPadding padding;
-  ClutterActorBox trough_box;
+  ClutterActorBox bw_box, fw_box, trough_box;
+  ClutterUnit inner_height;
 
   /* Chain up */
   CLUTTER_ACTOR_CLASS (nbtk_scroll_bar_parent_class)->
@@ -179,10 +197,27 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
 
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 
-  trough_box.x1 = padding.left;
+  inner_height = clutter_actor_get_heightu (actor) - padding.top - padding.bottom;
+
+  /* Backward stepper */
+  bw_box.x1 = padding.left;
+  bw_box.y1 = padding.top;
+  bw_box.x2 = bw_box.x1 + inner_height;
+  bw_box.y2 = bw_box.y1 + inner_height;
+  clutter_actor_allocate (priv->bw_stepper, &bw_box, absolute_origin_changed);
+
+  /* Forward stepper */
+  fw_box.x1 = clutter_actor_get_widthu (actor) - padding.right - inner_height;
+  fw_box.y1 = padding.top;
+  fw_box.x2 = fw_box.x1 + inner_height;
+  fw_box.y2 = fw_box.y1 + inner_height;
+  clutter_actor_allocate (priv->fw_stepper, &fw_box, absolute_origin_changed);
+
+  /* Trough. */
+  trough_box.x1 = bw_box.x2;
   trough_box.y1 = padding.top;
-  trough_box.x2 = clutter_actor_get_widthu (actor) -  padding.right;
-  trough_box.y2 = clutter_actor_get_heightu (actor) -  padding.bottom;
+  trough_box.x2 = fw_box.x1;
+  trough_box.y2 = trough_box.y1 + inner_height;
   clutter_actor_allocate (priv->trough, &trough_box, absolute_origin_changed);
 
   if (priv->adjustment)
@@ -456,10 +491,23 @@ nbtk_scroll_bar_init (NbtkScrollBar *self)
 {
   self->priv = NBTK_SCROLL_BAR_GET_PRIVATE (self);
 
+  self->priv->bw_stepper = (ClutterActor *) nbtk_button_new ();
+  clutter_actor_set_name (CLUTTER_ACTOR (self->priv->bw_stepper), "backward-stepper");
+  clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->bw_stepper),
+                            CLUTTER_ACTOR (self));
+  /* TODO hook up "clicked" */
+
+  self->priv->fw_stepper = (ClutterActor *) nbtk_button_new ();
+  clutter_actor_set_name (CLUTTER_ACTOR (self->priv->fw_stepper), "forward-stepper");
+  clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->fw_stepper),
+                            CLUTTER_ACTOR (self));
+  /* TODO hook up "clicked" */
+
   self->priv->trough = (ClutterActor *) nbtk_tile_new ();
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->trough), "trough");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->trough),
                             CLUTTER_ACTOR (self));
+  /* TODO hook up "clicked" */
 
   self->priv->handle = (ClutterActor *) nbtk_tile_new ();
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->handle), "handle");
