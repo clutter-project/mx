@@ -74,6 +74,6 @@ NbtkScrollBar {
   background-color: lightgrey;
 }
 
-NbtkScrollBar > NbtkTile {
+NbtkScrollBar > *#handle {
   background-color: black;
 }

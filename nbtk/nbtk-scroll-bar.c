@@ -135,8 +135,6 @@ static void
 nbtk_scroll_bar_paint (ClutterActor *actor)
 {
   NbtkScrollBarPrivate *priv = NBTK_SCROLL_BAR (actor)->priv;
-  ClutterColor bg_color;
-  guint w, h;
 
   CLUTTER_ACTOR_CLASS (nbtk_scroll_bar_parent_class)->paint (actor);
 
@@ -447,6 +445,8 @@ nbtk_scroll_bar_init (NbtkScrollBar *self)
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->handle), "handle");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->handle),
                             CLUTTER_ACTOR (self));
+  g_signal_connect (self->priv->handle, "button-press-event",
+                    G_CALLBACK (button_press_event_cb), self);
 }
 
 ClutterActor *
