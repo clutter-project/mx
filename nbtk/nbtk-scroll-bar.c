@@ -224,7 +224,7 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
     {
       ClutterUnit real_width, real_height, min_sizeu, max_sizeu;
       ClutterFixed lower, upper, page_size, size, increment;
-      ClutterActorBox child_box;
+      ClutterActorBox handle_box;
       guint min_size, max_size;
 
       nbtk_adjustment_get_valuesx (priv->adjustment,
@@ -235,8 +235,8 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
                                    NULL,
                                    &page_size);
 
-      real_width = box->x2 - box->x1 - padding.left - padding.right;
-      real_height = box->y2 - box->y1 - padding.top - padding.bottom;
+      real_width = trough_box.x2 - trough_box.x1;
+      real_height = trough_box.y2 - trough_box.y1;
 
       if (upper == lower)
         increment = CFX_ONE;
@@ -253,15 +253,22 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
       min_sizeu = CLUTTER_UNITS_FROM_INT (min_size);
       max_sizeu = CLUTTER_UNITS_FROM_INT (max_size);
 
-      clutter_actor_get_positionu (priv->handle, &child_box.x1, &child_box.y1);
-      child_box.x2 = child_box.x1 +
+      clutter_actor_get_positionu (priv->handle, &handle_box.x1, &handle_box.y1);
+
+      /* Get initial position right.
+       * Need to account for the fact that the handle is only a "clutter"-child
+       * of the trough, not an "nbtk" one. */
+      if (handle_box.x1 == 0.)
+        handle_box.x1 = trough_box.x1;
+
+      handle_box.x2 = handle_box.x1 +
                       MIN (max_sizeu,
                            MAX (min_sizeu,
                                 CLUTTER_UNITS_FROM_FIXED (size)));
-      child_box.y2 = child_box.y1 + real_height;
+      handle_box.y2 = handle_box.y1 + real_height;
 
       clutter_actor_allocate (priv->handle,
-                              &child_box,
+                              &handle_box,
                               absolute_origin_changed);
     }
 }
@@ -530,7 +537,7 @@ nbtk_scroll_bar_refresh (NbtkScrollBar *bar)
 {
   ClutterActor *actor = CLUTTER_ACTOR (bar);
   NbtkScrollBarPrivate *priv = bar->priv;
-  ClutterUnit width, button_width;
+  ClutterUnit width, button_width, handle_offset;
   ClutterFixed lower, upper, value, page_size;
   ClutterFixed x, position;
 
@@ -543,14 +550,20 @@ nbtk_scroll_bar_refresh (NbtkScrollBar *bar)
                                NULL,
                                &page_size);
 
+  /* Need to account for the fact that the handle is only a "clutter"-child
+   * of the trough, not an "nbtk" one. */
+  handle_offset = clutter_actor_get_xu (priv->trough);
+
   if (upper - page_size <= lower)
     {
-      clutter_actor_set_position (CLUTTER_ACTOR (priv->handle), 0, 0);
+      clutter_actor_set_position (CLUTTER_ACTOR (priv->handle),
+                                  handle_offset,
+                                  0);
       priv->refresh_source = 0;
       return FALSE;
     }
 
-  width = clutter_actor_get_widthu (actor);
+  width = clutter_actor_get_widthu (priv->trough);
   button_width = clutter_actor_get_widthu (priv->handle);
 
   position = clutter_qdivx (value - lower, upper - lower - page_size);
@@ -558,7 +571,7 @@ nbtk_scroll_bar_refresh (NbtkScrollBar *bar)
   /* Set padding on trough */
   x = clutter_qmulx (position, CLUTTER_UNITS_TO_FIXED (width - button_width));
   clutter_actor_set_positionu (CLUTTER_ACTOR (priv->handle),
-                               CLUTTER_UNITS_FROM_FIXED (x),
+                               CLUTTER_UNITS_FROM_FIXED (x) + handle_offset,
                                0);
 
   clutter_actor_queue_redraw (actor);
