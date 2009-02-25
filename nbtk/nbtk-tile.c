@@ -1,7 +1,7 @@
 /* nbtk-tile.c: Plain instatiable widget actor.
  *
  * Copyright (C) 2009 Intel Corporation
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -34,18 +34,55 @@
 
 #include "nbtk-tile.h"
 
+#define NBTK_TILE_GET_PRIVATE(obj)    \
+        (G_TYPE_INSTANCE_GET_PRIVATE ((obj), NBTK_TYPE_TILE, NbtkTilePrivate))
+
+struct _NbtkTilePrivate
+{
+  guint is_hover : 1;
+};
+
 G_DEFINE_TYPE (NbtkTile, nbtk_tile, NBTK_TYPE_WIDGET)
+
+static gboolean
+nbtk_tile_enter (ClutterActor         *actor,
+                 ClutterCrossingEvent *event)
+{
+  NbtkTile *self = NBTK_TILE (actor);
+
+  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (self), "hover");
+  self->priv->is_hover = 1;
+
+  return FALSE;
+}
+
+static gboolean
+nbtk_tile_leave (ClutterActor         *actor,
+                 ClutterCrossingEvent *event)
+{
+  NbtkTile *self = NBTK_TILE (actor);
+
+  self->priv->is_hover = 0;
+  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (self), NULL);
+
+  return FALSE;
+}
 
 static void
 nbtk_tile_class_init (NbtkTileClass *klass)
 {
-  /* Nothing to do here. */
+  ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
+
+  g_type_class_add_private (klass, sizeof (NbtkTilePrivate));
+
+  actor_class->enter_event = nbtk_tile_enter;
+  actor_class->leave_event = nbtk_tile_leave;
 }
 
 static void
 nbtk_tile_init (NbtkTile *tile)
 {
-  /* Nothing to do here. */
+  tile->priv = NBTK_TILE_GET_PRIVATE (tile);
 }
 
 /**
@@ -60,4 +97,3 @@ nbtk_tile_new (void)
 {
   return g_object_new (NBTK_TYPE_TILE, NULL);
 }
-

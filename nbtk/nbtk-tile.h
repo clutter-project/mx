@@ -1,7 +1,7 @@
 /* nbtk-tile.h: Plain instatiable widget actor.
  *
  * Copyright (C) 2009 Intel Corporation
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -42,6 +42,8 @@ struct _NbtkTile
 {
   /*< private >*/
   NbtkWidget parent_instance;
+
+  NbtkTilePrivate *priv;
 };
 
 struct _NbtkTileClass
