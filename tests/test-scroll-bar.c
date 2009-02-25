@@ -99,10 +99,6 @@ main (int argc, char **argv)
   frame = nbtk_texture_frame_new (CLUTTER_TEXTURE(tex), 20, 20, 20, 20);
   scroll = nbtk_scroll_bar_new_with_handle (adjustment, frame);
 
-  frame = nbtk_texture_frame_new (CLUTTER_TEXTURE(tex), 20, 20, 20, 20);
-  clutter_actor_show (frame);
-  nbtk_scroll_bar_set_texture (NBTK_SCROLL_BAR(scroll), frame);
-
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), scroll);
 
   clutter_actor_set_position (scroll, 0, 0);

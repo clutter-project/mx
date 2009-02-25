@@ -30,6 +30,7 @@
 #include "nbtk-scroll-bar.h"
 #include "nbtk-marshal.h"
 #include "nbtk-stylable.h"
+#include "nbtk-tile.h"
 #include "nbtk-enum-types.h"
 #include "nbtk-private.h"
 
@@ -49,18 +50,12 @@ struct _NbtkScrollBarPrivate
   ClutterUnit     x_origin;
 
   ClutterActor   *handle;
-  ClutterActor   *texture;
-
-  ClutterColor    bg_color;
-
 };
 
 enum
 {
   PROP_0,
 
-  PROP_HANDLE,
-  PROP_TEXTURE,
   PROP_ADJUSTMENT
 };
 
@@ -83,14 +78,6 @@ nbtk_scroll_bar_get_property (GObject    *gobject,
       g_value_set_object (value, priv->adjustment);
       break;
 
-    case PROP_TEXTURE:
-      g_value_set_object (value, priv->texture);
-      break;
-
-    case PROP_HANDLE:
-      g_value_set_object (value, priv->handle);
-      break;
-
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -109,14 +96,6 @@ nbtk_scroll_bar_set_property (GObject      *gobject,
     {
     case PROP_ADJUSTMENT:
       nbtk_scroll_bar_set_adjustment (bar, g_value_get_object (value));
-      break;
-
-    case PROP_HANDLE:
-      nbtk_scroll_bar_set_handle (bar, g_value_get_object (value));
-      break;
-
-    case PROP_TEXTURE:
-      nbtk_scroll_bar_set_texture (bar, g_value_get_object (value));
       break;
 
     default:
@@ -140,12 +119,6 @@ nbtk_scroll_bar_dispose (GObject *gobject)
   if (priv->adjustment)
     nbtk_scroll_bar_set_adjustment (bar, NULL);
 
-  if (priv->texture)
-    {
-      clutter_actor_destroy (priv->texture);
-      priv->texture = NULL;
-    }
-
   if (priv->handle)
     {
       g_signal_handlers_disconnect_by_func (priv->handle,
@@ -162,27 +135,10 @@ static void
 nbtk_scroll_bar_paint (ClutterActor *actor)
 {
   NbtkScrollBarPrivate *priv = NBTK_SCROLL_BAR (actor)->priv;
+  ClutterColor bg_color;
+  guint w, h;
 
-  if (priv->texture && CLUTTER_ACTOR_IS_VISIBLE (priv->texture))
-    clutter_actor_paint (priv->texture);
-  else
-    {
-      ClutterColor bg_color;
-      guint w, h;
-
-      clutter_actor_get_size (actor, &w, &h);
-
-      bg_color = priv->bg_color;
-      bg_color.alpha = clutter_actor_get_opacity (actor)
-                     * priv->bg_color.alpha
-                     / 255;
-
-      cogl_set_source_color4ub (bg_color.red,
-                                bg_color.green,
-                                bg_color.blue,
-                                bg_color.alpha);
-      cogl_rectangle (0, 0, w, h);
-    }
+  CLUTTER_ACTOR_CLASS (nbtk_scroll_bar_parent_class)->paint (actor);
 
   if (priv->handle && CLUTTER_ACTOR_IS_VISIBLE (priv->handle))
     clutter_actor_paint (priv->handle);
@@ -212,11 +168,6 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
   /* Chain up */
   CLUTTER_ACTOR_CLASS (nbtk_scroll_bar_parent_class)->
     allocate (actor, box, absolute_origin_changed);
-
-  if (priv->texture)
-    clutter_actor_set_sizeu (priv->texture,
-                             box->x2 - box->x1,
-                             box->y2 - box->y1);
 
   if (priv->adjustment)
     {
@@ -274,13 +225,6 @@ on_style_change (NbtkStyle     *style,
   NbtkScrollBarPrivate *priv = bar->priv;
   ClutterColor *color = NULL;
 
-  nbtk_stylable_get (NBTK_STYLABLE (bar), "background-color", &color, NULL);
-  if (color)
-    {
-      priv->bg_color = *color;
-      clutter_color_free (color);
-    }
-
   if (CLUTTER_IS_RECTANGLE (priv->handle))
     {
       nbtk_stylable_get (NBTK_STYLABLE (bar), "color", &color, NULL);
@@ -319,9 +263,6 @@ nbtk_scroll_bar_constructor (GType                  type,
   bar  = NBTK_SCROLL_BAR (obj);
   priv = NBTK_SCROLL_BAR_GET_PRIVATE (bar);
 
-  if (!priv->handle)
-    nbtk_scroll_bar_set_handle (bar, NULL);
-
   g_signal_connect (bar, "notify::reactive",
                     G_CALLBACK (bar_reactive_notify_cb), NULL);
   g_signal_connect (nbtk_stylable_get_style (NBTK_STYLABLE (bar)),
@@ -358,15 +299,6 @@ nbtk_scroll_bar_class_init (NbtkScrollBarClass *klass)
                                  "Adjustment",
                                  "The adjustment",
                                  NBTK_TYPE_ADJUSTMENT,
-                                 NBTK_PARAM_READWRITE));
-
-  g_object_class_install_property
-           (object_class,
-            PROP_HANDLE,
-            g_param_spec_object ("handle",
-                                 "Handle",
-                                 "Actor to use for the scrollbars handle",
-                                 CLUTTER_TYPE_ACTOR,
                                  NBTK_PARAM_READWRITE));
 }
 
@@ -510,6 +442,11 @@ static void
 nbtk_scroll_bar_init (NbtkScrollBar *self)
 {
   self->priv = NBTK_SCROLL_BAR_GET_PRIVATE (self);
+
+  self->priv->handle = nbtk_tile_new ();
+  clutter_actor_set_name (CLUTTER_ACTOR (self->priv->handle), "handle");
+  clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->handle),
+                            CLUTTER_ACTOR (self));
 }
 
 ClutterActor *
@@ -628,107 +565,4 @@ nbtk_scroll_bar_get_adjustment (NbtkScrollBar *bar)
   g_return_val_if_fail (NBTK_IS_SCROLL_BAR (bar), NULL);
 
   return bar->priv->adjustment;
-}
-
-void
-nbtk_scroll_bar_set_handle (NbtkScrollBar *bar,
-                            ClutterActor *handle)
-{
-  NbtkScrollBarPrivate *priv;
-
-  g_return_if_fail (NBTK_IS_SCROLL_BAR (bar));
-  g_return_if_fail (!handle || CLUTTER_IS_ACTOR (handle));
-
-  priv = bar->priv;
-
-  if (handle && (priv->handle == handle))
-    return;
-
-  if (priv->handle)
-    {
-      g_signal_handlers_disconnect_by_func (priv->handle,
-                                            G_CALLBACK (button_press_event_cb),
-                                            bar);
-
-      clutter_actor_unparent (priv->handle);
-      priv->handle = NULL;
-    }
-
-  if (!handle)
-    {
-      /* default handle */
-      ClutterColor *color;
-
-      handle = clutter_rectangle_new ();
-
-      nbtk_stylable_get (NBTK_STYLABLE (bar), "background-color", &color, NULL);
-      if (color)
-        {
-          clutter_rectangle_set_color (CLUTTER_RECTANGLE (handle), color);
-          clutter_color_free (color);
-        }
-    }
-
-  priv->handle = handle;
-  clutter_actor_set_parent (priv->handle, CLUTTER_ACTOR (bar));
-
-  clutter_actor_show (priv->handle);
-  clutter_actor_set_reactive (priv->handle, TRUE);
-
-  g_signal_connect_after (priv->handle, "button-press-event",
-                          G_CALLBACK (button_press_event_cb), bar);
-
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (bar));
-
-  g_object_notify (G_OBJECT (bar), "handle");
-}
-
-ClutterActor *
-nbtk_scroll_bar_get_handle (NbtkScrollBar *bar)
-{
-  g_return_val_if_fail (NBTK_IS_SCROLL_BAR (bar), NULL);
-
-  return bar->priv->handle;
-}
-
-void
-nbtk_scroll_bar_set_texture (NbtkScrollBar *bar,
-                             ClutterActor  *texture)
-{
-  NbtkScrollBarPrivate *priv;
-
-  g_return_if_fail (NBTK_IS_SCROLL_BAR (bar));
-  g_return_if_fail (texture == NULL || CLUTTER_IS_ACTOR (texture));
-
-  priv = bar->priv;
-
-  if (priv->texture)
-    {
-      clutter_actor_unparent (priv->texture);
-      priv->texture = NULL;
-    }
-
-  if (texture)
-    {
-      ClutterUnit width, height;
-
-      clutter_actor_get_sizeu (CLUTTER_ACTOR (bar), &width, &height);
-
-      priv->texture = texture;
-      clutter_actor_set_parent (priv->texture, CLUTTER_ACTOR (bar));
-
-      clutter_actor_set_positionu (priv->texture, 0, 0);
-      clutter_actor_set_sizeu (priv->texture, width, height);
-    }
-
-  if (CLUTTER_ACTOR_IS_VISIBLE (bar))
-    clutter_actor_queue_redraw (CLUTTER_ACTOR (bar));
-}
-
-ClutterActor *
-nbtk_scroll_bar_get_texture (NbtkScrollBar *bar)
-{
-  g_return_val_if_fail (NBTK_IS_SCROLL_BAR (bar), NULL);
-
-  return bar->priv->texture;
 }

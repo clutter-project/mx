@@ -69,3 +69,11 @@ NbtkTooltip {
 NbtkTable NbtkButton {
   color: yellow;
 }
+
+NbtkScrollBar {
+  background-color: lightgrey;
+}
+
+NbtkScrollBar > NbtkTile {
+  background-color: black;
+}

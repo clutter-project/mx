@@ -61,12 +61,6 @@ ClutterActor *  nbtk_scroll_bar_new_with_handle(NbtkAdjustment *adjustment,
 void            nbtk_scroll_bar_set_adjustment (NbtkScrollBar  *bar,
                                                 NbtkAdjustment *adjustment);
 NbtkAdjustment *nbtk_scroll_bar_get_adjustment (NbtkScrollBar  *bar);
-void            nbtk_scroll_bar_set_handle     (NbtkScrollBar  *bar,
-                                                ClutterActor   *handle);
-ClutterActor *  nbtk_scroll_bar_get_handle     (NbtkScrollBar  *bar);
-void            nbtk_scroll_bar_set_texture    (NbtkScrollBar  *bar,
-                                                ClutterActor   *texture);
-ClutterActor *  nbtk_scroll_bar_get_texture    (NbtkScrollBar  *bar);
 
 G_END_DECLS
 
