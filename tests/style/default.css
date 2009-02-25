@@ -82,3 +82,7 @@ NbtkScrollBar *#trough {
 NbtkScrollBar *#handle {
   background-color: black;
 }
+
+NbtkScrollBar *#handle:hover {
+  background-color: red;
+}

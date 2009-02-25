@@ -48,6 +48,8 @@ struct _NbtkScrollBarPrivate
   NbtkAdjustment  *adjustment;
   guint            refresh_source;
 
+  gulong           motion_handler;
+  gulong           release_handler;
   ClutterUnit      x_origin;
 
   ClutterActor    *bw_stepper;
@@ -459,8 +461,17 @@ button_release_event_cb (ClutterActor *trough,
   if (event->button != 1)
     return FALSE;
 
-  g_signal_handlers_disconnect_by_func (bar, motion_event_cb, NULL);
-  g_signal_handlers_disconnect_by_func (bar, button_release_event_cb, NULL);
+  if (bar->priv->motion_handler)
+    {
+      g_signal_handler_disconnect (bar->priv->trough, bar->priv->motion_handler);
+      bar->priv->motion_handler = 0;
+    }
+
+  if (bar->priv->release_handler)
+    {
+      g_signal_handler_disconnect (bar->priv->trough, bar->priv->release_handler);
+      bar->priv->release_handler = 0;
+    }
 
   move_slider (bar, event->x, event->y, FALSE);
 
@@ -485,10 +496,14 @@ button_press_event_cb (ClutterActor       *actor,
                                             &priv->x_origin, NULL))
     return FALSE;
 
-  g_signal_connect_after (priv->trough, "motion-event",
-                          G_CALLBACK (motion_event_cb), bar);
-  g_signal_connect_after (priv->trough, "button-release-event",
-                          G_CALLBACK (button_release_event_cb), bar);
+  priv->motion_handler = g_signal_connect_after (priv->trough,
+                                                 "motion-event",
+                                                 G_CALLBACK (motion_event_cb),
+                                                 bar);
+  priv->release_handler = g_signal_connect_after (priv->trough,
+                                                  "button-release-event",
+                                                  G_CALLBACK (button_release_event_cb),
+                                                  bar);
 
   clutter_grab_pointer (priv->trough);
 
