@@ -49,6 +49,7 @@ struct _NbtkScrollBarPrivate
 
   ClutterUnit     x_origin;
 
+  ClutterActor   *trough;
   ClutterActor   *handle;
 };
 
@@ -128,6 +129,9 @@ nbtk_scroll_bar_dispose (GObject *gobject)
       priv->handle = NULL;
     }
 
+  clutter_actor_unparent (priv->trough);
+  priv->trough = NULL;
+
   G_OBJECT_CLASS (nbtk_scroll_bar_parent_class)->dispose (gobject);
 }
 
@@ -137,6 +141,8 @@ nbtk_scroll_bar_paint (ClutterActor *actor)
   NbtkScrollBarPrivate *priv = NBTK_SCROLL_BAR (actor)->priv;
 
   CLUTTER_ACTOR_CLASS (nbtk_scroll_bar_parent_class)->paint (actor);
+
+  clutter_actor_paint (priv->trough);
 
   if (priv->handle && CLUTTER_ACTOR_IS_VISIBLE (priv->handle))
     clutter_actor_paint (priv->handle);
@@ -150,6 +156,8 @@ nbtk_scroll_bar_pick (ClutterActor       *actor,
 
   CLUTTER_ACTOR_CLASS (nbtk_scroll_bar_parent_class)->pick (actor, pick_color);
 
+  clutter_actor_paint (priv->trough);
+
   if (priv->handle &&
       CLUTTER_ACTOR_IS_VISIBLE (priv->handle) &&
       priv->adjustment)
@@ -162,10 +170,20 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
                           gboolean               absolute_origin_changed)
 {
   NbtkScrollBarPrivate *priv = NBTK_SCROLL_BAR (actor)->priv;
+  NbtkPadding padding;
+  ClutterActorBox trough_box;
 
   /* Chain up */
   CLUTTER_ACTOR_CLASS (nbtk_scroll_bar_parent_class)->
     allocate (actor, box, absolute_origin_changed);
+
+  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
+
+  trough_box.x1 = padding.left;
+  trough_box.y1 = padding.top;
+  trough_box.x2 = clutter_actor_get_widthu (actor) -  padding.right;
+  trough_box.y2 = clutter_actor_get_heightu (actor) -  padding.bottom;
+  clutter_actor_allocate (priv->trough, &trough_box, absolute_origin_changed);
 
   if (priv->adjustment)
     {
@@ -173,7 +191,6 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
       ClutterFixed lower, upper, page_size, size, increment;
       ClutterActorBox child_box;
       guint min_size, max_size;
-      NbtkPadding padding;
 
       nbtk_adjustment_get_valuesx (priv->adjustment,
                                    NULL,
@@ -182,8 +199,6 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
                                    NULL,
                                    NULL,
                                    &page_size);
-
-      nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 
       real_width = box->x2 - box->x1 - padding.left - padding.right;
       real_height = box->y2 - box->y1 - padding.top - padding.bottom;
@@ -441,10 +456,15 @@ nbtk_scroll_bar_init (NbtkScrollBar *self)
 {
   self->priv = NBTK_SCROLL_BAR_GET_PRIVATE (self);
 
-  self->priv->handle = nbtk_tile_new ();
+  self->priv->trough = (ClutterActor *) nbtk_tile_new ();
+  clutter_actor_set_name (CLUTTER_ACTOR (self->priv->trough), "trough");
+  clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->trough),
+                            CLUTTER_ACTOR (self));
+
+  self->priv->handle = (ClutterActor *) nbtk_tile_new ();
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->handle), "handle");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->handle),
-                            CLUTTER_ACTOR (self));
+                            self->priv->trough);
   g_signal_connect (self->priv->handle, "button-press-event",
                     G_CALLBACK (button_press_event_cb), self);
 }
