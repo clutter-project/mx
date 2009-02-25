@@ -56,8 +56,6 @@ struct _NbtkScrollBarClass
 GType nbtk_scroll_bar_get_type (void) G_GNUC_CONST;
 
 ClutterActor *  nbtk_scroll_bar_new            (NbtkAdjustment *adjustment);
-ClutterActor *  nbtk_scroll_bar_new_with_handle(NbtkAdjustment *adjustment,
-                                                ClutterActor   *handle);
 void            nbtk_scroll_bar_set_adjustment (NbtkScrollBar  *bar,
                                                 NbtkAdjustment *adjustment);
 NbtkAdjustment *nbtk_scroll_bar_get_adjustment (NbtkScrollBar  *bar);

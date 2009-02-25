@@ -477,17 +477,6 @@ nbtk_scroll_bar_new (NbtkAdjustment *adjustment)
                        NULL);
 }
 
-ClutterActor *
-nbtk_scroll_bar_new_with_handle (NbtkAdjustment *adjustment,
-                                 ClutterActor   *handle)
-{
-  return g_object_new (NBTK_TYPE_SCROLL_BAR,
-                       "adjustment", adjustment,
-                       "handle", handle,
-                       NULL);
-}
-
-
 static gboolean
 nbtk_scroll_bar_refresh (NbtkScrollBar *bar)
 {
