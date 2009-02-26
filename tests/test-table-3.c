@@ -17,7 +17,7 @@ main (int     argc,
                              "style/default.css", NULL);
 
   stage = clutter_stage_get_default ();
-  clutter_actor_set_size (stage, 640, 480);
+  clutter_actor_set_size (stage, 640, 1000);
 
   table = nbtk_table_new ();
   nbtk_table_set_col_spacing (NBTK_TABLE (table), 10);
@@ -48,6 +48,7 @@ main (int     argc,
   nbtk_table_add_widget (NBTK_TABLE (table), label, 2, 0);
 
   nbtk_label_set_text (label2, "Really really long long long long long long long long long long long long long long long long long long (ooooh this is verrrrrrry long!) long longlong long long longlong long long long \nlong longlong long long long longlonglonglonglonglonglonglonglonglonglonglonglong long long long long long long long long long Loooooooooooooooong text");
+  nbtk_widget_set_alignment (label2, 0.0, 0.0);
 
   clutter_actor_show (stage);
   clutter_main ();
