@@ -556,9 +556,7 @@ nbtk_table_allocate_fill (ClutterActor *child,
       clutter_actor_get_preferred_width (child, -1, NULL, &width);
       if (width < max_width)
         {
-          childbox->x1 += CLUTTER_UNITS_FROM_FIXED (
-            CLUTTER_FIXED_MUL (CLUTTER_UNITS_TO_FIXED (max_width - width),
-                               CLUTTER_FLOAT_TO_FIXED (x_align)));
+          childbox->x1 +=  (max_width - width) * x_align;
           childbox->x2 = childbox->x1 + width;
         }
     }
@@ -570,9 +568,7 @@ nbtk_table_allocate_fill (ClutterActor *child,
       clutter_actor_get_preferred_height (child, -1, NULL, &height);
       if (height < max_height)
         {
-          childbox->y1 += CLUTTER_UNITS_FROM_FIXED (
-            CLUTTER_FIXED_MUL (CLUTTER_UNITS_TO_FIXED (max_height - height),
-                               CLUTTER_FLOAT_TO_FIXED (y_align)));
+          childbox->y1 += (max_height - height) * y_align;
           childbox->y2 = childbox->y1 + height;
         }
     }
