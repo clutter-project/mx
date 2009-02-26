@@ -1756,8 +1756,6 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
 
   priv = NBTK_WIDGET (widget)->priv;
 
-  g_object_ref (widget);
-
   if (priv->dnd_motion)
     {
       ClutterActor *dest;
@@ -1981,6 +1979,8 @@ nbtk_widget_child_dnd_press_cb (ClutterActor *child,
 
   if (!threshold || event->button.button != 1)
     return FALSE;
+
+  g_object_ref (data);
 
   priv->dnd_x = event->button.x;
   priv->dnd_y = event->button.y;
