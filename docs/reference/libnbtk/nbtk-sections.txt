@@ -106,6 +106,39 @@ NbtkEntryPrivate
 </SECTION>
 
 <SECTION>
+<FILE>nbtk-grid</FILE>
+<TITLE>NbtkGrid</TITLE>
+NbtkGrid
+nbtk_grid_new
+nbtk_grid_set_end_align
+nbtk_grid_get_end_align
+nbtk_grid_set_homogenous_rows
+nbtk_grid_get_homogenous_rows
+nbtk_grid_set_homogenous_columns
+nbtk_grid_get_homogenous_columns
+nbtk_grid_set_column_major
+nbtk_grid_get_column_major
+nbtk_grid_set_row_gap
+nbtk_grid_get_row_gap
+nbtk_grid_set_column_gap
+nbtk_grid_get_column_gap
+nbtk_grid_set_valign
+nbtk_grid_get_valign
+nbtk_grid_set_halign
+nbtk_grid_get_halign
+<SUBSECTION Standard>
+NBTK_GRID
+NBTK_IS_GRID
+NBTK_TYPE_GRID
+nbtk_grid_get_type
+NBTK_GRID_CLASS
+NBTK_IS_GRID_CLASS
+NBTK_GRID_GET_CLASS
+<SUBSECTION Private>
+NbtkGridPrivate
+</SECTION>
+
+<SECTION>
 <FILE>nbtk-texture-frame</FILE>
 <TITLE>NbtkTextureFrame</TITLE>
 NbtkTextureFrame
