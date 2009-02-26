@@ -86,6 +86,26 @@ NbtkButtonPrivate
 </SECTION>
 
 <SECTION>
+<FILE>nbtk-entry</FILE>
+<TITLE>NbtkEntry</TITLE>
+NbtkEntry
+nbtk_entry_new
+nbtk_entry_get_text
+nbtk_entry_set_text
+nbtk_entry_get_clutter_text
+<SUBSECTION Standard>
+NBTK_ENTRY
+NBTK_IS_ENTRY
+NBTK_TYPE_ENTRY
+nbtk_entry_get_type
+NBTK_ENTRY_CLASS
+NBTK_IS_ENTRY_CLASS
+NBTK_ENTRY_GET_CLASS
+<SUBSECTION Private>
+NbtkEntryPrivate
+</SECTION>
+
+<SECTION>
 <FILE>nbtk-texture-frame</FILE>
 <TITLE>NbtkTextureFrame</TITLE>
 NbtkTextureFrame
