@@ -1906,7 +1906,13 @@ nbtk_widget_child_dnd_motion_cb (ClutterActor *child,
       guint child_w, child_h;
 
       if (priv->dnd_last_dest)
-        g_warning ("There should be no last destination set at this point\n");
+        {
+          g_warning ("There should be no last destination set at this point\n");
+
+          g_object_weak_unref (G_OBJECT (priv->dnd_last_dest),
+                               nbtk_widget_dnd_last_dest_weak_cb,
+                               priv->dnd_last_dest_data);
+        }
 
       priv->dnd_last_dest = CLUTTER_ACTOR (widget);
       priv->dnd_last_dest_data = data;
