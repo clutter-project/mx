@@ -632,6 +632,8 @@ nbtk_grid_paint (ClutterActor *actor)
   NbtkGridPrivate *priv = layout->priv;
   GList *child_item;
 
+  CLUTTER_ACTOR_CLASS (nbtk_grid_parent_class)->paint (actor);
+
   for (child_item = priv->list;
        child_item != NULL;
        child_item = child_item->next)
