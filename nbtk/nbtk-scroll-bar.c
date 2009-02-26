@@ -514,6 +514,44 @@ button_press_event_cb (ClutterActor       *actor,
 }
 
 static void
+backward_stepper_clicked (NbtkButton    *stepper,
+                          NbtkScrollBar *self)
+{
+  gdouble value;
+  gdouble step_increment;
+
+  g_return_if_fail (self);
+
+  if (NULL == self->priv->adjustment)
+    return;
+
+  nbtk_adjustment_get_values (self->priv->adjustment,
+                              &value, NULL, NULL,
+                              &step_increment, NULL, NULL);
+
+  nbtk_adjustment_set_value (self->priv->adjustment, value - step_increment);
+}
+
+static void
+forward_stepper_clicked (NbtkButton    *stepper,
+                         NbtkScrollBar *self)
+{
+  gdouble value;
+  gdouble step_increment;
+
+  g_return_if_fail (self);
+
+  if (NULL == self->priv->adjustment)
+    return;
+
+  nbtk_adjustment_get_values (self->priv->adjustment,
+                              &value, NULL, NULL,
+                              &step_increment, NULL, NULL);
+
+  nbtk_adjustment_set_value (self->priv->adjustment, value + step_increment);
+}
+
+static void
 nbtk_scroll_bar_init (NbtkScrollBar *self)
 {
   self->priv = NBTK_SCROLL_BAR_GET_PRIVATE (self);
@@ -522,19 +560,20 @@ nbtk_scroll_bar_init (NbtkScrollBar *self)
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->bw_stepper), "backward-stepper");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->bw_stepper),
                             CLUTTER_ACTOR (self));
-  /* TODO hook up "clicked" */
+  g_signal_connect (self->priv->bw_stepper, "clicked",
+                    G_CALLBACK (backward_stepper_clicked), self);
 
   self->priv->fw_stepper = (ClutterActor *) nbtk_button_new ();
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->fw_stepper), "forward-stepper");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->fw_stepper),
                             CLUTTER_ACTOR (self));
-  /* TODO hook up "clicked" */
+  g_signal_connect (self->priv->fw_stepper, "clicked",
+                    G_CALLBACK (forward_stepper_clicked), self);
 
   self->priv->trough = (ClutterActor *) nbtk_tile_new ();
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->trough), "trough");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->trough),
                             CLUTTER_ACTOR (self));
-  /* TODO hook up "clicked" */
 
   self->priv->handle = (ClutterActor *) nbtk_tile_new ();
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->handle), "handle");
