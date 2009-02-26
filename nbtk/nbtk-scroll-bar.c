@@ -490,11 +490,14 @@ button_press_event_cb (ClutterActor       *actor,
   if (event->button != 1)
     return FALSE;
 
-  if (!clutter_actor_transform_stage_point (priv->trough,
+  if (!clutter_actor_transform_stage_point (priv->handle,
                                             CLUTTER_UNITS_FROM_DEVICE(event->x),
                                             CLUTTER_UNITS_FROM_DEVICE(event->y),
                                             &priv->x_origin, NULL))
     return FALSE;
+
+  /* Account for the scrollbar-trough-handle nesting. */
+  priv->x_origin += clutter_actor_get_xu (priv->trough);
 
   priv->motion_handler = g_signal_connect_after (priv->trough,
                                                  "motion-event",
