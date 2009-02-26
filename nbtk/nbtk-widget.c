@@ -1683,8 +1683,6 @@ nbtk_widget_dnd_enter_event_cb (ClutterActor *actor,
     {
       if (dest != priv->dnd_last_dest)
 	{
-	  g_debug ("Enter event on %p (%s)\n", dest, G_OBJECT_TYPE_NAME (dest));
-
 	  if (priv->dnd_last_dest)
 	    {
 	      g_object_ref (priv->dnd_last_dest);
