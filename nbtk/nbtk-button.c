@@ -190,7 +190,6 @@ nbtk_button_bounce_transition (NbtkButton *button)
 static inline void
 nbtk_button_update_label_style (NbtkButton *button)
 {
-  NbtkWidget *widget = NBTK_WIDGET (button);
   NbtkButtonPrivate *priv = button->priv;
   ClutterColor *real_color = NULL;
   gchar *font_string = NULL;
