@@ -665,6 +665,12 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
   gint extra_col_width, n_expanded_cols = 0, expanded_cols = 0;
   gint *min_widths = g_new0 (gint, priv->n_cols);
   GSList *list;
+  NbtkPadding padding;
+
+  /* take off the padding values to calculate the allocatable width */
+  nbtk_widget_get_padding (NBTK_WIDGET (table), &padding);
+
+  for_width -= CLUTTER_UNITS_TO_INT (padding.left + padding.right);
 
   for (list = priv->children; list; list = g_slist_next (list))
     {
@@ -751,7 +757,8 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
   table_height = CLUTTER_UNITS_TO_INT (box->y2 - box->y1 - padding.top - padding.bottom);
   table_width = CLUTTER_UNITS_TO_INT (box->x2 - box->x1 - padding.right - padding.left);
 
-  min_widths = nbtk_table_calculate_col_widths (NBTK_TABLE (self), table_width);
+  min_widths = nbtk_table_calculate_col_widths (NBTK_TABLE (self),
+                                                CLUTTER_UNITS_TO_INT (box->x2 - box->x1));
 
   /* calculate minimum row widths and column heights */
   for (list = priv->children; list; list = g_slist_next (list))
@@ -1063,6 +1070,8 @@ nbtk_table_get_preferred_height (ClutterActor *self,
 
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
+
+  /* start off with padding plus row spacing */
   total_min_height = padding.top + padding.bottom + (priv->n_rows - 1) *
                      CLUTTER_UNITS_FROM_DEVICE (priv->row_spacing);
   total_pref_height = total_min_height;
