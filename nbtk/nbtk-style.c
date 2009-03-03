@@ -421,8 +421,13 @@ nbtk_style_get_property (NbtkStyle    *style,
                                                &css_value))
                     {
                       ccss_property_t *border_image = css_value;
-                      g_value_set_boxed (&real_value, border_image);
-                      value_set = TRUE;
+                      if (border_image &&
+                          border_image->type != CCSS_PROPERTY_STATE_UNSET &&
+                          border_image->type != CCSS_PROPERTY_STATE_NONE)
+                        {
+                          g_value_set_boxed (&real_value, border_image);
+                          value_set = TRUE;
+                        }
                     }
                 }
               else if (NBTK_TYPE_PADDING == G_PARAM_SPEC_VALUE_TYPE (pspec) &&
