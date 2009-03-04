@@ -97,13 +97,26 @@ static guint button_signals[LAST_SIGNAL] = { 0, };
 
 G_DEFINE_TYPE (NbtkButton, nbtk_button, NBTK_TYPE_WIDGET)
 
+static void destroy_old_bg (NbtkButton *button);
+
 static void
 style_changed_completed_anim (ClutterAnimation *animation, NbtkButton *button)
+{
+  destroy_old_bg (button);
+}
+
+static void
+destroy_old_bg (NbtkButton *button)
 {
   NbtkButtonPrivate *priv = button->priv;
 
   if (priv->old_bg)
     {
+      if (priv->timeline)
+        clutter_timeline_stop (priv->timeline);
+      g_signal_handlers_disconnect_by_func (priv->old_bg,
+                                            style_changed_completed_anim,
+                                            button);
       clutter_actor_unparent (priv->old_bg);
       priv->old_bg = NULL;
     }
@@ -129,11 +142,7 @@ nbtk_button_fade_transition (NbtkButton *button)
   else
     {
       /* remove the old image to perform instant transition when pressed */
-      if (priv->old_bg)
-        {
-          clutter_actor_unparent (priv->old_bg);
-          priv->old_bg = NULL;
-        }
+      destroy_old_bg (button);
     }
 }
 
@@ -148,11 +157,7 @@ nbtk_button_bounce_transition (NbtkButton *button)
 
   pseudo_class = nbtk_stylable_get_pseudo_class (NBTK_STYLABLE (button));
 
-  if (priv->old_bg)
-    {
-      clutter_actor_unparent (priv->old_bg);
-      priv->old_bg = NULL;
-    }
+  destroy_old_bg (button);
 
   if (!g_strcmp0 (pseudo_class, "active"))
     {
@@ -241,14 +246,7 @@ nbtk_button_style_changed (NbtkWidget *widget)
     nbtk_button_update_label_style (button);
 
   /* Remove the old background if it's around */
-  if (priv->old_bg)
-    {
-      if (priv->timeline)
-        clutter_timeline_stop (priv->timeline);
-      
-      clutter_actor_unparent (priv->old_bg);
-      priv->old_bg = NULL;
-    }
+  destroy_old_bg (button);
 
   /* Store background, NbtkWidget will unparent it */
   bg_image = nbtk_widget_get_background (widget);
@@ -292,9 +290,8 @@ nbtk_button_style_changed (NbtkWidget *widget)
         }
       else
         {
-          /* no transition, so just unparent the old background */
-          clutter_actor_unparent (priv->old_bg);
-          priv->old_bg = NULL;
+          /* no transition, so just remove the old background */
+          destroy_old_bg (button);
         }
     }
 }
@@ -542,11 +539,7 @@ nbtk_button_dispose (GObject *gobject)
       priv->timeline = NULL;
     }
 
-  if (priv->old_bg)
-    {
-      clutter_actor_unparent (priv->old_bg);
-      priv->old_bg = NULL;
-    }
+  destroy_old_bg (button);
 
   G_OBJECT_CLASS (nbtk_button_parent_class)->dispose (gobject);
 }
