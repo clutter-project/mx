@@ -90,7 +90,8 @@ struct _NbtkButtonPrivate
   guint transition_type;
 
   ClutterActor     *old_bg;
-  ClutterTimeline  *timeline;
+  ClutterAnimation *animation;
+  gulong            transition_id;
 };
 
 static guint button_signals[LAST_SIGNAL] = { 0, };
@@ -112,11 +113,13 @@ destroy_old_bg (NbtkButton *button)
 
   if (priv->old_bg)
     {
-      if (priv->timeline)
-        clutter_timeline_stop (priv->timeline);
-      g_signal_handlers_disconnect_by_func (priv->old_bg,
-                                            style_changed_completed_anim,
-                                            button);
+      if (priv->transition_id && priv->animation)
+        {
+          g_signal_handler_disconnect (priv->animation, priv->transition_id);
+          priv->transition_id = 0;
+          priv->animation = NULL;
+        }
+
       clutter_actor_unparent (priv->old_bg);
       priv->old_bg = NULL;
     }
@@ -131,13 +134,14 @@ nbtk_button_fade_transition (NbtkButton *button)
   pseudo_class = nbtk_stylable_get_pseudo_class (NBTK_STYLABLE (button));
   if (priv->old_bg && g_strcmp0 ("active", pseudo_class))
     {
-      ClutterAnimation *animation =
+      priv->animation =
         clutter_actor_animate (priv->old_bg, CLUTTER_LINEAR,
                                priv->transition_duration,
                                "opacity", 0,
                                NULL);
-      g_signal_connect (animation, "completed",
-                        G_CALLBACK (style_changed_completed_anim), button);
+      priv->transition_id =
+        g_signal_connect (priv->animation, "completed",
+                          G_CALLBACK (style_changed_completed_anim), button);
     }
   else
     {
@@ -266,16 +270,11 @@ nbtk_button_style_changed (NbtkWidget *widget)
   /* Do animation */
   if (priv->old_bg)
     {
-      if (G_UNLIKELY (!priv->timeline))
-        priv->timeline = clutter_timeline_new_for_duration (priv->transition_duration);
-
       /* run a transition effect if applicable */
       if (priv->transition_type != NBTK_TRANSITION_NONE
           && priv->transition_duration > 0)
         {
           /* Startup animation */
-          clutter_timeline_set_duration (priv->timeline, priv->transition_duration);
-
           switch (priv->transition_type)
             {
             default:
@@ -531,13 +530,6 @@ nbtk_button_dispose (GObject *gobject)
 {
   NbtkButton *button = NBTK_BUTTON (gobject);
   NbtkButtonPrivate *priv = button->priv;
-
-  if (priv->timeline)
-    {
-      clutter_timeline_stop (priv->timeline);
-      g_object_unref (priv->timeline);
-      priv->timeline = NULL;
-    }
 
   destroy_old_bg (button);
 
