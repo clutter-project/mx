@@ -1983,7 +1983,7 @@ nbtk_widget_child_dnd_press_cb (ClutterActor *child,
   NbtkWidgetPrivate *priv = NBTK_WIDGET (widget)->priv;
   guint threshold = priv->dnd_threshold;
 
-  if (!threshold || event->button.button != 1)
+  if (!threshold || event->button.button != 1 || event->button.click_count > 1)
     return FALSE;
 
   g_object_ref (data);
