@@ -755,7 +755,9 @@ nbtk_widget_style_changed (NbtkWidget *self)
     }
 
   texture_cache = nbtk_texture_cache_get_default ();
-  if (border_image)
+
+  /* Check if the URL is actually present, not garbage in the property */
+  if (border_image && border_image->image.uri)
     {
       /* `border-image' takes precedence over `background-image'.
        * Firefox lets the background-image shine thru when border-image has
