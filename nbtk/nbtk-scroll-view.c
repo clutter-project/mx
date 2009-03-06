@@ -128,6 +128,8 @@ nbtk_scroll_view_paint (ClutterActor *actor)
 {
   NbtkScrollViewPrivate *priv = NBTK_SCROLL_VIEW (actor)->priv;
 
+  CLUTTER_ACTOR_CLASS (nbtk_scroll_view_parent_class)->paint (actor);
+
   if (priv->child && CLUTTER_ACTOR_IS_VISIBLE (priv->child))
     clutter_actor_paint (priv->child);
   if (CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))

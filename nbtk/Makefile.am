@@ -12,6 +12,7 @@ source_h = \
 	$(top_srcdir)/nbtk/nbtk-bin.h			\
 	$(top_srcdir)/nbtk/nbtk-button.h 		\
 	$(top_srcdir)/nbtk/nbtk-entry.h 		\
+	$(top_srcdir)/nbtk/nbtk-grid.h \
 	$(top_srcdir)/nbtk/nbtk-label.h 		\
 	$(top_srcdir)/nbtk/nbtk-scroll-bar.h 		\
 	$(top_srcdir)/nbtk/nbtk-scroll-view.h 		\
@@ -19,6 +20,7 @@ source_h = \
 	$(top_srcdir)/nbtk/nbtk-stylable.h 		\
 	$(top_srcdir)/nbtk/nbtk-style.h 		\
 	$(top_srcdir)/nbtk/nbtk-table.h 		\
+	$(top_srcdir)/nbtk/nbtk-tile.h 			\
 	$(top_srcdir)/nbtk/nbtk-texture-cache.h 	\
 	$(top_srcdir)/nbtk/nbtk-texture-frame.h 	\
 	$(top_srcdir)/nbtk/nbtk-tooltip.h		\
@@ -121,6 +123,7 @@ libnbtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	nbtk-bin.c			\
 	nbtk-button.c 			\
 	nbtk-entry.c 			\
+	nbtk-grid.c 			\
 	nbtk-label.c 			\
 	nbtk-scroll-bar.c 		\
 	nbtk-scroll-view.c 		\
@@ -128,6 +131,7 @@ libnbtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	nbtk-stylable.c 		\
 	nbtk-style.c 			\
 	nbtk-table.c 			\
+	nbtk-tile.c 			\
 	nbtk-texture-cache.c 		\
 	nbtk-texture-frame.c 		\
 	nbtk-tooltip.c 			\

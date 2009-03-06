@@ -492,7 +492,9 @@ nbtk_widget_style_changed (NbtkWidget *self)
     }
 
   texture_cache = nbtk_texture_cache_get_default ();
-  if (border_image)
+
+  /* Check if the URL is actually present, not garbage in the property */
+  if (border_image && border_image->image.uri)
     {
       /* `border-image' takes precedence over `background-image'.
        * Firefox lets the background-image shine thru when border-image has
@@ -1163,8 +1165,6 @@ nbtk_widget_dnd_enter_event_cb (ClutterActor *actor,
     {
       if (dest != priv->dnd_last_dest)
 	{
-	  g_debug ("Enter event on %p (%s)\n", dest, G_OBJECT_TYPE_NAME (dest));
-
 	  if (priv->dnd_last_dest)
 	    {
 	      g_object_ref (priv->dnd_last_dest);
@@ -1231,12 +1231,10 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
   NbtkWidgetPrivate *priv;
   gboolean retval = FALSE;
 
-  if (event->type != CLUTTER_BUTTON_RELEASE)
+  if (event->type != CLUTTER_BUTTON_RELEASE || event->button.button != 1)
     return FALSE;
 
   priv = NBTK_WIDGET (widget)->priv;
-
-  g_object_ref (widget);
 
   if (priv->dnd_motion)
     {
@@ -1259,7 +1257,7 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
       dest = clutter_stage_get_actor_at_pos (stage, x, y);
 
       g_object_ref (child);
-      g_object_ref (clone);
+      /* We do not need reference on the clone, as we already have one.*/
 
       if (dest)
 	{
@@ -1318,7 +1316,7 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
 
 
       g_object_unref (child);
-      g_object_unref (clone); /* The extra ref we got above for emision. */
+      g_object_unref (clone); /* The extra ref we got when we created it. */
 
       if (priv->dnd_clone)
 	{
@@ -1335,8 +1333,6 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
                 clutter_actor_unparent (clone);
             }
         }
-
-      clutter_actor_unparent (clone);
 
       retval = TRUE;
     }
@@ -1390,7 +1386,13 @@ nbtk_widget_child_dnd_motion_cb (ClutterActor *child,
       guint child_w, child_h;
 
       if (priv->dnd_last_dest)
-        g_warning ("There should be no last destination set at this point\n");
+        {
+          g_warning ("There should be no last destination set at this point\n");
+
+          g_object_weak_unref (G_OBJECT (priv->dnd_last_dest),
+                               nbtk_widget_dnd_last_dest_weak_cb,
+                               priv->dnd_last_dest_data);
+        }
 
       priv->dnd_last_dest = CLUTTER_ACTOR (widget);
       priv->dnd_last_dest_data = data;
@@ -1461,8 +1463,10 @@ nbtk_widget_child_dnd_press_cb (ClutterActor *child,
   NbtkWidgetPrivate *priv = NBTK_WIDGET (widget)->priv;
   guint threshold = priv->dnd_threshold;
 
-  if (!threshold)
+  if (!threshold || event->button.button != 1 || event->button.click_count > 1)
     return FALSE;
+
+  g_object_ref (data);
 
   priv->dnd_x = event->button.x;
   priv->dnd_y = event->button.y;

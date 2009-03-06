@@ -264,7 +264,10 @@ nbtk_texture_cache_get_texture_if_exists (NbtkTextureCache *self,
 				          gboolean          want_clone)
 {
   NbtkTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE(self);
-  ClutterActor *res;
+  ClutterActor *res = NULL;
+
+  if (!path)
+    return res;
 
   res = g_hash_table_lookup (priv->cache, path);
 
@@ -286,6 +289,8 @@ nbtk_texture_cache_get_texture (NbtkTextureCache *self,
 				gboolean          want_clone)
 {
   ClutterActor *res;
+
+  g_return_val_if_fail (path != NULL, NULL);
 
   res = nbtk_texture_cache_get_texture_if_exists (self, path, want_clone);
 
@@ -430,7 +435,9 @@ nbtk_texture_cache_get_texture_async (NbtkTextureCache *self,
 {
   ClutterActor *texture;
   NbtkTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE (self);
-  
+
+  g_return_if_fail (path != NULL);
+
   texture = nbtk_texture_cache_get_texture_if_exists (self, path, FALSE);
 
   if (texture || !priv->thread_pool)

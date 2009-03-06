@@ -26,6 +26,7 @@
 #include <nbtk/nbtk-button.h>
 #include <nbtk/nbtk-entry.h>
 #include <nbtk/nbtk-enum-types.h>
+#include <nbtk/nbtk-grid.h>
 #include <nbtk/nbtk-label.h>
 #include <nbtk/nbtk-scrollable.h>
 #include <nbtk/nbtk-scroll-bar.h>
@@ -35,6 +36,7 @@
 #include <nbtk/nbtk-table.h>
 #include <nbtk/nbtk-texture-cache.h>
 #include <nbtk/nbtk-texture-frame.h>
+#include <nbtk/nbtk-tile.h>
 #include <nbtk/nbtk-types.h>
 #include <nbtk/nbtk-viewport.h>
 #include <nbtk/nbtk-widget.h>

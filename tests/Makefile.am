@@ -12,15 +12,18 @@ noinst_PROGRAMS = 		\
 	test-container-matching	\
 	test-label 		\
 	test-entry 		\
+	test-grid \
 	test-script  		\
 	test-styles  		\
 	test-table   		\
-	test-table-2 \
+	test-table-2            \
+	test-table-3            \
 	test-texture-frame 	\
 	test-padding 		\
 	test-border-image	\
 	test-scroll-bar		\
 	test-scroll-view	\
+	test-scroll-view-2	\
 	test-viewport
 	$(NULL)
 
@@ -32,10 +35,12 @@ test_table_2_SOURCES = test-table-2.c
 test_texture_frame_SOURCES = test-texture-frame.c
 test_label_SOURCES = test-label.c
 test_entry_SOURCES = test-entry.c
+test_grid_SOURCES = test-grid.c
 test_padding_SOURCES = test-padding.c
 test_border_image_SOURCES = test-border-image.c
 test_container_matching_SOURCES = test-container-matching.c
 
 test_scroll_bar_SOURCES = test-scroll-bar.c
 test_scroll_view_SOURCES = test-scroll-view.c
+test_scroll_view_2_SOURCES = test-scroll-view-2.c
 test_viewport_SOURCES = test-viewport.c

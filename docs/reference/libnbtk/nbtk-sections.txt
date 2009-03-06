@@ -86,6 +86,59 @@ NbtkButtonPrivate
 </SECTION>
 
 <SECTION>
+<FILE>nbtk-entry</FILE>
+<TITLE>NbtkEntry</TITLE>
+NbtkEntry
+nbtk_entry_new
+nbtk_entry_get_text
+nbtk_entry_set_text
+nbtk_entry_get_clutter_text
+<SUBSECTION Standard>
+NBTK_ENTRY
+NBTK_IS_ENTRY
+NBTK_TYPE_ENTRY
+nbtk_entry_get_type
+NBTK_ENTRY_CLASS
+NBTK_IS_ENTRY_CLASS
+NBTK_ENTRY_GET_CLASS
+<SUBSECTION Private>
+NbtkEntryPrivate
+</SECTION>
+
+<SECTION>
+<FILE>nbtk-grid</FILE>
+<TITLE>NbtkGrid</TITLE>
+NbtkGrid
+nbtk_grid_new
+nbtk_grid_set_end_align
+nbtk_grid_get_end_align
+nbtk_grid_set_homogenous_rows
+nbtk_grid_get_homogenous_rows
+nbtk_grid_set_homogenous_columns
+nbtk_grid_get_homogenous_columns
+nbtk_grid_set_column_major
+nbtk_grid_get_column_major
+nbtk_grid_set_row_gap
+nbtk_grid_get_row_gap
+nbtk_grid_set_column_gap
+nbtk_grid_get_column_gap
+nbtk_grid_set_valign
+nbtk_grid_get_valign
+nbtk_grid_set_halign
+nbtk_grid_get_halign
+<SUBSECTION Standard>
+NBTK_GRID
+NBTK_IS_GRID
+NBTK_TYPE_GRID
+nbtk_grid_get_type
+NBTK_GRID_CLASS
+NBTK_IS_GRID_CLASS
+NBTK_GRID_GET_CLASS
+<SUBSECTION Private>
+NbtkGridPrivate
+</SECTION>
+
+<SECTION>
 <FILE>nbtk-texture-frame</FILE>
 <TITLE>NbtkTextureFrame</TITLE>
 NbtkTextureFrame
@@ -149,6 +202,21 @@ NBTK_IS_TABLE_CLASS
 NBTK_TABLE_GET_CLASS
 <SUBSECTION Private>
 NbtkTablePrivate
+</SECTION>
+
+<SECTION>
+<FILE>nbtk-tile</FILE>
+<TITLE>NbtkTile</TITLE>
+NbtkTile
+nbtk_tile_new
+<SUBSECTION Standard>
+NBTK_TILE
+NBTK_IS_TILE
+NBTK_TYPE_TILE
+nbtk_tile_get_type
+NBTK_TILE_CLASS
+NBTK_IS_TILE_CLASS
+NBTK_TILE_GET_CLASS
 </SECTION>
 
 <SECTION>

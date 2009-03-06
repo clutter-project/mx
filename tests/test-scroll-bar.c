@@ -68,7 +68,6 @@ main (int argc, char **argv)
 {
   NbtkAdjustment *adjustment;
   ClutterActor *stage, *scroll, *viewport;
-  ClutterActor  *tex, *frame;
   ClutterColor stage_color = { 0x34, 0x39, 0x39, 0xff };
 
   clutter_init (&argc, &argv);
@@ -92,16 +91,7 @@ main (int argc, char **argv)
   clutter_actor_set_position (scroll, 0, 500);
   clutter_actor_set_size (scroll, 800, 100);
 
-  tex = g_object_new (CLUTTER_TYPE_TEXTURE,
-		      "filename", "frame.png",
-		      "disable-slicing", TRUE,
-		      NULL);
-  frame = nbtk_texture_frame_new (CLUTTER_TEXTURE(tex), 20, 20, 20, 20);
-  scroll = nbtk_scroll_bar_new_with_handle (adjustment, frame);
-
-  frame = nbtk_texture_frame_new (CLUTTER_TEXTURE(tex), 20, 20, 20, 20);
-  clutter_actor_show (frame);
-  nbtk_scroll_bar_set_texture (NBTK_SCROLL_BAR(scroll), frame);
+  scroll = nbtk_scroll_bar_new (adjustment);
 
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), scroll);
 

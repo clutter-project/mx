@@ -16,6 +16,8 @@
     <xi:include href="xml/nbtk-adjustment.xml"/>
     <xi:include href="xml/nbtk-button.xml"/>
     <xi:include href="xml/nbtk-enum-types.xml"/>
+    <xi:include href="xml/nbtk-entry.xml"/>
+    <xi:include href="xml/nbtk-grid.xml"/>
     <xi:include href="xml/nbtk-label.xml"/>
     <xi:include href="xml/nbtk-scroll-bar.xml"/>
     <xi:include href="xml/nbtk-scroll-view.xml"/>
@@ -23,6 +25,7 @@
     <xi:include href="xml/nbtk-stylable.xml"/>
     <xi:include href="xml/nbtk-style.xml"/>
     <xi:include href="xml/nbtk-table.xml"/>
+    <xi:include href="xml/nbtk-tile.xml"/>
     <xi:include href="xml/nbtk-texture-cache.xml"/>
     <xi:include href="xml/nbtk-texture-frame.xml"/>
     <xi:include href="xml/nbtk-tooltip.xml"/>

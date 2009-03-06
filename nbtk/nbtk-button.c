@@ -90,20 +90,36 @@ struct _NbtkButtonPrivate
   guint transition_type;
 
   ClutterActor     *old_bg;
-  ClutterTimeline  *timeline;
+  ClutterAnimation *animation;
+  gulong            transition_id;
 };
 
 static guint button_signals[LAST_SIGNAL] = { 0, };
 
 G_DEFINE_TYPE (NbtkButton, nbtk_button, NBTK_TYPE_BIN)
 
+static void destroy_old_bg (NbtkButton *button);
+
 static void
 style_changed_completed_anim (ClutterAnimation *animation, NbtkButton *button)
+{
+  destroy_old_bg (button);
+}
+
+static void
+destroy_old_bg (NbtkButton *button)
 {
   NbtkButtonPrivate *priv = button->priv;
 
   if (priv->old_bg)
     {
+      if (priv->transition_id && priv->animation)
+        {
+          g_signal_handler_disconnect (priv->animation, priv->transition_id);
+          priv->transition_id = 0;
+          priv->animation = NULL;
+        }
+
       clutter_actor_unparent (priv->old_bg);
       priv->old_bg = NULL;
     }
@@ -118,22 +134,19 @@ nbtk_button_fade_transition (NbtkButton *button)
   pseudo_class = nbtk_stylable_get_pseudo_class (NBTK_STYLABLE (button));
   if (priv->old_bg && g_strcmp0 ("active", pseudo_class))
     {
-      ClutterAnimation *animation =
+      priv->animation =
         clutter_actor_animate (priv->old_bg, CLUTTER_LINEAR,
                                priv->transition_duration,
                                "opacity", 0,
                                NULL);
-      g_signal_connect (animation, "completed",
-                        G_CALLBACK (style_changed_completed_anim), button);
+      priv->transition_id =
+        g_signal_connect (priv->animation, "completed",
+                          G_CALLBACK (style_changed_completed_anim), button);
     }
   else
     {
       /* remove the old image to perform instant transition when pressed */
-      if (priv->old_bg)
-        {
-          clutter_actor_unparent (priv->old_bg);
-          priv->old_bg = NULL;
-        }
+      destroy_old_bg (button);
     }
 }
 
@@ -148,11 +161,7 @@ nbtk_button_bounce_transition (NbtkButton *button)
 
   pseudo_class = nbtk_stylable_get_pseudo_class (NBTK_STYLABLE (button));
 
-  if (priv->old_bg)
-    {
-      clutter_actor_unparent (priv->old_bg);
-      priv->old_bg = NULL;
-    }
+  destroy_old_bg (button);
 
   if (!g_strcmp0 (pseudo_class, "active"))
     {
@@ -187,35 +196,61 @@ nbtk_button_bounce_transition (NbtkButton *button)
     }
 }
 
+static inline void
+nbtk_button_update_label_style (NbtkButton *button)
+{
+  NbtkButtonPrivate *priv = button->priv;
+  ClutterColor *real_color = NULL;
+  gchar *font_string = NULL;
+  gchar *font_name = NULL;
+  gint font_size = 0;
+
+  nbtk_stylable_get (NBTK_STYLABLE (button),
+                     "color", &real_color,
+                     "font-family", &font_name,
+                     "font-size", &font_size,
+                     NULL);
+
+  if (font_name || font_size)
+    {
+      if (font_name && font_size)
+        font_string = g_strdup_printf ("%s %dpx", font_name, font_size);
+      else
+        {
+          if (font_size)
+            font_string = g_strdup_printf ("%dpx", font_size);
+          else
+            font_string = font_name;
+        }
+
+      clutter_text_set_font_name (CLUTTER_TEXT (priv->label), font_string);
+
+      if (font_string != font_name)
+        g_free (font_string);
+    }
+
+  g_free (font_name);
+
+  if (real_color)
+    {
+      clutter_text_set_color (CLUTTER_TEXT (priv->label), real_color);
+      clutter_color_free (real_color);
+    }
+}
+
 static void
 nbtk_button_style_changed (NbtkWidget *widget)
 {
-  ClutterColor *real_color;
-  ClutterActor *bg_image;
   NbtkButton *button = NBTK_BUTTON (widget);
   NbtkButtonPrivate *priv = button->priv;
+  ClutterActor *bg_image;
 
   /* update the label styling */
   if (priv->label)
-    {
-      nbtk_stylable_get (NBTK_STYLABLE (button),
-                         "color", &real_color,
-                         NULL);
-      g_object_set (G_OBJECT (priv->label),
-                    "color", real_color,
-                    NULL);
-      clutter_color_free (real_color);
-    }
+    nbtk_button_update_label_style (button);
 
   /* Remove the old background if it's around */
-  if (priv->old_bg)
-    {
-      if (priv->timeline)
-        clutter_timeline_stop (priv->timeline);
-      
-      clutter_actor_unparent (priv->old_bg);
-      priv->old_bg = NULL;
-    }
+  destroy_old_bg (button);
 
   /* Store background, NbtkWidget will unparent it */
   bg_image = nbtk_widget_get_background (widget);
@@ -235,16 +270,11 @@ nbtk_button_style_changed (NbtkWidget *widget)
   /* Do animation */
   if (priv->old_bg)
     {
-      if (G_UNLIKELY (!priv->timeline))
-        priv->timeline = clutter_timeline_new_for_duration (priv->transition_duration);
-
       /* run a transition effect if applicable */
       if (priv->transition_type != NBTK_TRANSITION_NONE
           && priv->transition_duration > 0)
         {
           /* Startup animation */
-          clutter_timeline_set_duration (priv->timeline, priv->transition_duration);
-
           switch (priv->transition_type)
             {
             default:
@@ -259,9 +289,8 @@ nbtk_button_style_changed (NbtkWidget *widget)
         }
       else
         {
-          /* no transition, so just unparent the old background */
-          clutter_actor_unparent (priv->old_bg);
-          priv->old_bg = NULL;
+          /* no transition, so just remove the old background */
+          destroy_old_bg (button);
         }
     }
 }
@@ -311,6 +340,8 @@ nbtk_button_construct_child (NbtkButton *button)
   priv->label = label;
 
   clutter_container_add_actor (CLUTTER_CONTAINER (button), label);
+
+  nbtk_button_update_label_style (button);
 }
 
 static gboolean
@@ -497,6 +528,11 @@ nbtk_button_finalize (GObject *gobject)
 static void
 nbtk_button_dispose (GObject *gobject)
 {
+  NbtkButton *button = NBTK_BUTTON (gobject);
+  NbtkButtonPrivate *priv = button->priv;
+
+  destroy_old_bg (button);
+
   G_OBJECT_CLASS (nbtk_button_parent_class)->dispose (gobject);
 }
 
