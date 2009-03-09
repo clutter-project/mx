@@ -572,6 +572,18 @@ nbtk_button_draw_background (NbtkWidget   *self,
 }
 
 static void
+nbtk_button_hide (ClutterActor *actor)
+{
+  NbtkButton *button = (NbtkButton *) actor;
+
+  /* hide the tooltip, if there is one */
+  if (button->priv->tooltip)
+    nbtk_tooltip_hide (NBTK_TOOLTIP (button->priv->tooltip));
+
+  CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->hide (actor);
+}
+
+static void
 nbtk_button_class_init (NbtkButtonClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -594,6 +606,7 @@ nbtk_button_class_init (NbtkButtonClass *klass)
   actor_class->enter_event = nbtk_button_enter;
   actor_class->leave_event = nbtk_button_leave;
   actor_class->allocate = nbtk_button_allocate;
+  actor_class->hide = nbtk_button_hide;
 
   nbtk_widget_class->style_changed = nbtk_button_style_changed;
   nbtk_widget_class->draw_background = nbtk_button_draw_background;
