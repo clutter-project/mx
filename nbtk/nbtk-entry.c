@@ -204,6 +204,8 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
 static void
 nbtk_entry_init (NbtkEntry *entry)
 {
+  ClutterColor cursor = { 0x0, 0x9c, 0xcf, 0xff };
+
   entry->priv = NBTK_ENTRY_GET_PRIVATE (entry);
 
   entry->priv->entry = g_object_new (CLUTTER_TYPE_TEXT,
@@ -211,6 +213,7 @@ nbtk_entry_init (NbtkEntry *entry)
                                      "activatable", TRUE,
                                      "editable", TRUE,
                                      "reactive", TRUE,
+                                     "cursor-color", &cursor,
                                      NULL);
 
   clutter_container_add (CLUTTER_CONTAINER (entry), entry->priv->entry, NULL);
