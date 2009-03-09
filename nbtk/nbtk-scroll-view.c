@@ -33,7 +33,7 @@ static void nbtk_stylable_iface_init (NbtkStylableIface *iface);
 
 static ClutterContainerIface *nbtk_scroll_view_parent_iface = NULL;
 
-G_DEFINE_TYPE_WITH_CODE (NbtkScrollView, nbtk_scroll_view, NBTK_TYPE_BIN,
+G_DEFINE_TYPE_WITH_CODE (NbtkScrollView, nbtk_scroll_view, NBTK_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
                                                 clutter_container_iface_init)
                          G_IMPLEMENT_INTERFACE (NBTK_TYPE_STYLABLE,
@@ -477,7 +477,7 @@ nbtk_scroll_view_add (ClutterContainer *container,
       priv->child = actor;
 
       /* chain up to NbtkBin::add() */
-      nbtk_scroll_view_parent_iface->add (container, actor);
+      // nbtk_scroll_view_parent_iface->add (container, actor);
 
       /* Get adjustments for scroll-bars */
       g_signal_connect (actor, "notify::hadjustment",
