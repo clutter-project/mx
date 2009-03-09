@@ -537,6 +537,8 @@ nbtk_table_dispose (GObject *gobject)
   G_OBJECT_CLASS (nbtk_table_parent_class)->dispose (gobject);
 }
 
+#define CLAMP_TO_PIXEL(x) CLUTTER_UNITS_FROM_INT (CLUTTER_UNITS_TO_INT (x))
+
 /* Utility function to modify a child allocation box with respect to the
  * x/y-fill child properties. Expects childbox to contain the available
  * allocation space.
@@ -556,7 +558,7 @@ nbtk_table_allocate_fill (ClutterActor *child,
       clutter_actor_get_preferred_width (child, -1, NULL, &width);
       if (width < max_width)
         {
-          childbox->x1 +=  (max_width - width) * x_align;
+          childbox->x1 += CLAMP_TO_PIXEL((max_width - width) * x_align);
           childbox->x2 = childbox->x1 + width;
         }
     }
@@ -568,7 +570,7 @@ nbtk_table_allocate_fill (ClutterActor *child,
       clutter_actor_get_preferred_height (child, -1, NULL, &height);
       if (height < max_height)
         {
-          childbox->y1 += (max_height - height) * y_align;
+          childbox->y1 += CLAMP_TO_PIXEL ((max_height - height) * y_align);
           childbox->y2 = childbox->y1 + height;
         }
     }
