@@ -4,6 +4,12 @@
 #include <clutter/clutter.h>
 #include <nbtk/nbtk.h>
 
+void
+button_clicked_cb (NbtkButton *button, gchar *name)
+{
+  printf ("%s button clicked!\n", name);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -27,6 +33,9 @@ main (int argc, char *argv[])
   clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
 
   button = nbtk_button_new_with_label ("Hello World!");
+  g_signal_connect (button, "clicked",
+                    G_CALLBACK (button_clicked_cb),
+                    "hello");
   nbtk_button_set_tooltip (NBTK_BUTTON (button), "Hola Mundo!");
   g_object_set (button, "transition-duration", 400,
                 "transition-type", NBTK_TRANSITION_FADE, NULL);
@@ -36,6 +45,9 @@ main (int argc, char *argv[])
   nbtk_widget_set_padding (NBTK_WIDGET (button), &padding);
 
   button = nbtk_button_new ();
+  g_signal_connect (button, "clicked",
+                    G_CALLBACK (button_clicked_cb),
+                    "icon");
   nbtk_button_set_icon_from_file (NBTK_BUTTON (button),
                                   "redhand.png");
   g_object_set (button, "transition-duration", 400,
@@ -46,6 +58,9 @@ main (int argc, char *argv[])
   nbtk_widget_set_padding (NBTK_WIDGET (button), &padding);
 
   button = nbtk_button_new_with_label ("Toggle");
+  g_signal_connect (button, "clicked",
+                    G_CALLBACK (button_clicked_cb),
+                    "toggle");
   nbtk_button_set_toggle_mode (NBTK_BUTTON (button), TRUE);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
