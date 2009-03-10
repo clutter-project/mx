@@ -139,12 +139,6 @@ void       nbtk_widget_set_alignment  (NbtkWidget         *actor,
 void       nbtk_widget_get_alignment  (NbtkWidget         *actor,
                                       gdouble           *x_align,
                                       gdouble           *y_align);
-void       nbtk_widget_set_alignmentx (NbtkWidget         *actor,
-                                      ClutterFixed       x_align,
-                                      ClutterFixed       y_align);
-void       nbtk_widget_get_alignmentx (NbtkWidget         *actor,
-                                      ClutterFixed      *x_align,
-                                      ClutterFixed      *y_align);
 void         nbtk_widget_set_style_pseudo_class (NbtkWidget *actor,
                                               const gchar *pseudo_class);
 guint      nbtk_widget_get_dnd_threshold (NbtkWidget *actor);

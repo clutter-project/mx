@@ -177,8 +177,7 @@ nbtk_scroll_view_get_preferred_width (ClutterActor *actor,
     {
       ClutterUnit natural_height;
 
-      clutter_actor_get_preferred_height (priv->child,
-                                          -CLUTTER_UNITS_FROM_FIXED (CFX_ONE),
+      clutter_actor_get_preferred_height (priv->child, -1.0,
                                           NULL,
                                           &natural_height);
       if (for_height < natural_height)
@@ -223,8 +222,7 @@ nbtk_scroll_view_get_preferred_height (ClutterActor *actor,
     {
       ClutterUnit natural_width;
 
-      clutter_actor_get_preferred_width (priv->child,
-                                         -CLUTTER_UNITS_FROM_FIXED (CFX_ONE),
+      clutter_actor_get_preferred_width (priv->child, -1.0,
                                          NULL,
                                          &natural_width);
       if (for_width < natural_width)
@@ -388,13 +386,16 @@ child_adjustment_changed_cb (NbtkAdjustment *adjustment,
                              ClutterActor   *bar)
 {
   NbtkScrollView *scroll;
-  ClutterFixed lower, upper, page_size;
+  gdouble lower, upper, page_size;
 
   scroll = NBTK_SCROLL_VIEW (clutter_actor_get_parent (bar));
 
   /* Determine if this scroll-bar should be visible */
-  nbtk_adjustment_get_valuesx (adjustment, NULL, &lower, &upper,
-                               NULL, NULL, &page_size);
+  nbtk_adjustment_get_values (adjustment, NULL,
+                              &lower, &upper,
+                              NULL, NULL,
+                              &page_size);
+
   if ((upper - lower) > page_size)
     clutter_actor_show (bar);
   else
@@ -420,7 +421,7 @@ child_hadjustment_notify_cb (GObject *gobject,
                                           child_adjustment_changed_cb,
                                           priv->hscroll);
 
-  nbtk_scrollable_get_adjustments (NBTK_SCROLLABLE(actor), &hadjust, NULL);
+  nbtk_scrollable_get_adjustments (NBTK_SCROLLABLE (actor), &hadjust, NULL);
   if (hadjust)
     {
       nbtk_scroll_bar_set_adjustment (NBTK_SCROLL_BAR(priv->hscroll), hadjust);

@@ -50,8 +50,8 @@ struct _NbtkWidgetPrivate
   NbtkPadding padding;
   gboolean override_css_padding;
 
-  ClutterFixed x_align;
-  ClutterFixed y_align;
+  gfloat x_align;
+  gfloat y_align;
 
   NbtkStyle *style;
   gchar *pseudo_class;
@@ -326,13 +326,11 @@ nbtk_widget_set_property (GObject      *gobject,
       break;
 
     case PROP_X_ALIGN:
-      actor->priv->x_align =
-        CLUTTER_FIXED_TO_FLOAT (g_value_get_double (value));
+      actor->priv->x_align = g_value_get_double (value);
       break;
 
     case PROP_Y_ALIGN:
-      actor->priv->y_align =
-        CLUTTER_FIXED_TO_FLOAT (g_value_get_double (value));
+      actor->priv->y_align = g_value_get_double (value);
       break;
 
     case PROP_STYLE:
@@ -384,11 +382,11 @@ nbtk_widget_get_property (GObject    *gobject,
       break;
 
     case PROP_X_ALIGN:
-      g_value_set_double (value, CLUTTER_FIXED_TO_FLOAT (priv->x_align));
+      g_value_set_double (value, priv->x_align);
       break;
 
     case PROP_Y_ALIGN:
-      g_value_set_double (value, CLUTTER_FIXED_TO_FLOAT (priv->y_align));
+      g_value_set_double (value, priv->y_align);
       break;
 
     case PROP_STYLE:
@@ -517,12 +515,12 @@ nbtk_widget_allocate (ClutterActor          *actor,
 
   if (priv->child)
     {
-      ClutterFixed x_align, y_align;
       ClutterUnit available_width, available_height;
       ClutterUnit child_width, child_height;
       ClutterActorBox child_box = { 0, };
+      gdouble x_align, y_align;
 
-      nbtk_widget_get_alignmentx (NBTK_WIDGET (actor), &x_align, &y_align);
+      nbtk_widget_get_alignment (NBTK_WIDGET (actor), &x_align, &y_align);
 
       available_width  = box->x2 - box->x1
                        - priv->padding.left - priv->padding.right
@@ -547,16 +545,17 @@ nbtk_widget_allocate (ClutterActor          *actor,
 
       if (child_height > available_height)
         child_height = available_height;
-      child_box.x1 = CLUTTER_FIXED_MUL ((available_width - child_width),
-                                        x_align)
-                   + priv->padding.left + priv->border.left;
-      child_box.y1 = CLUTTER_FIXED_MUL ((available_height - child_height),
-                                        y_align)
-                   + priv->padding.top + priv->border.top;
 
       /* align the co-ordinates to device units to prevent allocation on sub-pixels */
-      child_box.x1 = CLUTTER_UNITS_FROM_DEVICE ((CLUTTER_UNITS_TO_DEVICE (child_box.x1)));
-      child_box.y1 = CLUTTER_UNITS_FROM_DEVICE ((CLUTTER_UNITS_TO_DEVICE (child_box.y1)));
+      child_box.x1 = ((available_width - child_width) * x_align)
+                   + priv->padding.left
+                   + priv->border.left;
+      child_box.y1 = ((available_height - child_height) * y_align)
+                   + priv->padding.top
+                   + priv->border.top;
+
+      child_box.x1 = CLUTTER_UNITS_FROM_DEVICE (CLUTTER_UNITS_TO_DEVICE (child_box.x1));
+      child_box.y1 = CLUTTER_UNITS_FROM_DEVICE (CLUTTER_UNITS_TO_DEVICE (child_box.y1));
 
       child_box.x2 = child_box.x1 + child_width;
       child_box.y2 = child_box.y1 + child_height;
@@ -1412,7 +1411,7 @@ nbtk_widget_init (NbtkWidget *actor)
   priv->override_css_padding = FALSE;
 
   /* middle align */
-  priv->x_align = priv->y_align = CLUTTER_FLOAT_TO_FIXED (0.5);
+  priv->x_align = priv->y_align = 0.5;
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (actor), TRUE);
 
@@ -1493,83 +1492,12 @@ nbtk_widget_set_alignment (NbtkWidget *actor,
 
   g_return_if_fail (NBTK_IS_WIDGET (actor));
 
-  g_object_ref (actor);
   g_object_freeze_notify (G_OBJECT (actor));
 
   priv = actor->priv;
 
   x_align = CLAMP (x_align, 0.0, 1.0);
   y_align = CLAMP (y_align, 0.0, 1.0);
-
-  priv->x_align = CLUTTER_FLOAT_TO_FIXED (x_align);
-  g_object_notify (G_OBJECT (actor), "x-align");
-
-  priv->y_align = CLUTTER_FLOAT_TO_FIXED (y_align);
-  g_object_notify (G_OBJECT (actor), "y-align");
-
-  if (CLUTTER_ACTOR_IS_VISIBLE (actor))
-    clutter_actor_queue_redraw (CLUTTER_ACTOR (actor));
-
-  g_object_thaw_notify (G_OBJECT (actor));
-  g_object_unref (actor);
-}
-
-/**
- * nbtk_widget_get_alignment:
- * @actor: a #NbtkWidget
- * @x_align: return location for the relative alignment on the X axis,
- *   or %NULL
- * @y_align: return location for the relative alignment on the Y axis,
- *   or %NULL
- *
- * Retrieves the alignment, relative to the @actor's width and height, of
- * the internal children.
- */
-void
-nbtk_widget_get_alignment (NbtkWidget *actor,
-                           gdouble    *x_align,
-                           gdouble    *y_align)
-{
-  NbtkWidgetPrivate *priv;
-
-  g_return_if_fail (NBTK_IS_WIDGET (actor));
-
-  priv = actor->priv;
-
-  if (x_align)
-    *x_align = CLUTTER_FIXED_TO_FLOAT (priv->x_align);
-
-  if (y_align)
-    *y_align = CLUTTER_FIXED_TO_FLOAT (priv->y_align);
-}
-
-/**
- * nbtk_widget_set_alignmentx:
- * @actor: a #NbtkWidget
- * @x_align: relative alignment on the X axis
- * @y_align: relative alignment on the Y axis
- *
- * Fixed point version of nbtk_widget_set_alignment().
- *
- * Sets the alignment, relative to the @actor's width and height, of
- * the internal children.
- */
-void
-nbtk_widget_set_alignmentx (NbtkWidget   *actor,
-                            ClutterFixed  x_align,
-                            ClutterFixed  y_align)
-{
-  NbtkWidgetPrivate *priv;
-
-  g_return_if_fail (NBTK_IS_WIDGET (actor));
-
-  g_object_ref (actor);
-  g_object_freeze_notify (G_OBJECT (actor));
-
-  priv = actor->priv;
-
-  x_align = CLAMP (x_align, 0, CFX_ONE);
-  y_align = CLAMP (y_align, 0, CFX_ONE);
 
   if (priv->x_align != x_align)
     {
@@ -1587,26 +1515,23 @@ nbtk_widget_set_alignmentx (NbtkWidget   *actor,
     clutter_actor_queue_redraw (CLUTTER_ACTOR (actor));
 
   g_object_thaw_notify (G_OBJECT (actor));
-  g_object_unref (actor);
 }
 
 /**
- * nbtk_widget_get_alignmentx:
+ * nbtk_widget_get_alignment:
  * @actor: a #NbtkWidget
  * @x_align: return location for the relative alignment on the X axis,
  *   or %NULL
  * @y_align: return location for the relative alignment on the Y axis,
  *   or %NULL
  *
- * Fixed point version of nbtk_widget_get_alignment().
- *
  * Retrieves the alignment, relative to the @actor's width and height, of
  * the internal children.
  */
 void
-nbtk_widget_get_alignmentx (NbtkWidget   *actor,
-                            ClutterFixed *x_align,
-                            ClutterFixed *y_align)
+nbtk_widget_get_alignment (NbtkWidget *actor,
+                           gdouble    *x_align,
+                           gdouble    *y_align)
 {
   NbtkWidgetPrivate *priv;
 
