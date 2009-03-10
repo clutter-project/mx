@@ -544,7 +544,6 @@ static void
 nbtk_button_dispose (GObject *gobject)
 {
   NbtkButton *button = NBTK_BUTTON (gobject);
-  NbtkButtonPrivate *priv = button->priv;
 
   destroy_old_bg (button);
 
