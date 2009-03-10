@@ -55,6 +55,14 @@ NbtkLabel#test-border-image {
   border-image: url('file://green-button.png') 0 stretch stretch;
 }
 
+*#style-button {
+    background-image: url('file://green-button.png');
+}
+
+*#style-button:hover {
+    background-image: url('file://red-button.png');
+}
+
 NbtkTable {
   color: #aee;
   background-color: #ddd;
