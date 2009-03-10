@@ -85,6 +85,7 @@ struct _NbtkButtonPrivate
   guint is_hover : 1;
   guint is_active : 1;
   guint is_toggle : 1;
+  guint is_icon_set : 1; /* TRUE if the icon was set by the application */
 
   guint transition_duration;
   guint transition_type;
@@ -244,10 +245,24 @@ nbtk_button_style_changed (NbtkWidget *widget)
   NbtkButton *button = NBTK_BUTTON (widget);
   NbtkButtonPrivate *priv = button->priv;
   ClutterActor *bg_image;
+  gchar *bg_image_file;
 
   /* update the label styling */
   if (priv->label)
     nbtk_button_update_label_style (button);
+
+  nbtk_stylable_get (NBTK_STYLABLE (widget),
+                     "background-image", &bg_image_file,
+                     NULL);
+
+  /* load the new "background-image"
+     TODO: check if it has actually changed */
+  if (!priv->is_icon_set && bg_image_file)
+    {
+      nbtk_button_set_icon_from_file (button, bg_image_file);
+      priv->is_icon_set = FALSE;
+    }
+  g_free (bg_image_file);
 
   /* Remove the old background if it's around */
   destroy_old_bg (button);
@@ -830,6 +845,7 @@ nbtk_button_set_icon_from_file (NbtkButton *button,
       if (priv->icon)
         clutter_container_remove_actor (CLUTTER_CONTAINER (button),
                                         priv->icon);
+      priv->is_icon_set = FALSE;
     }
 
   priv->icon = clutter_texture_new_from_file (filename, &err);
@@ -853,6 +869,7 @@ nbtk_button_set_icon_from_file (NbtkButton *button,
     }
 
   clutter_container_add_actor (CLUTTER_CONTAINER (button), priv->icon);
+  priv->is_icon_set = TRUE;
 }
 
 /**
