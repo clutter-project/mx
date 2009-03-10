@@ -476,9 +476,11 @@ nbtk_style_get_property (NbtkStyle    *style,
                     {
                       if (CLUTTER_IS_PARAM_SPEC_COLOR (pspec))
                         {
-                          ClutterColor color;
-                          clutter_color_parse (string, &color);
+                          ClutterColor color = { 0, };
+
+                          clutter_color_from_string (&color, string);
                           clutter_value_set_color (&real_value, &color);
+
                           value_set = TRUE;
                         }
                       else
