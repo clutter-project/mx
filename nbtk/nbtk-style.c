@@ -407,7 +407,15 @@ nbtk_style_get_property (NbtkStyle    *style,
                 {
                   if (ccss_style_get_double (ccss_style, pspec->name, &number))
                     {
-                      g_value_set_int (&real_value, (int) number);
+                      g_value_set_int (&real_value, (gint) number);
+                      value_set = TRUE;
+                    }
+                }
+              else if (G_IS_PARAM_SPEC_UINT (pspec))
+                {
+                  if (ccss_style_get_double (ccss_style, pspec->name, &number))
+                    {
+                      g_value_set_uint (&real_value, (guint) number);
                       value_set = TRUE;
                     }
                 }
