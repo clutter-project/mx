@@ -785,6 +785,8 @@ nbtk_widget_style_changed (NbtkWidget *self)
     }
   else if (bg_file)
     {
+      g_warning ("Use of \"background-image\" to set the border image is deprecated. "
+                 "Please use \"border-image\" instead.");
       texture = nbtk_texture_cache_get_texture (texture_cache,
                                                 bg_file,
                                                 FALSE);
