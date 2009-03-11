@@ -765,7 +765,7 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
   /* calculate minimum row widths and column heights */
   for (list = priv->children; list; list = g_slist_next (list))
     {
-      gint row, col;
+      gint row, col, cell_width, i;
       ClutterUnit h_min, h_pref;
       gboolean x_expand, y_expand;
       ClutterChildMeta *meta;
@@ -785,7 +785,12 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
       if (y_expand)
         has_expand_rows[row] = TRUE;
 
-      clutter_actor_get_preferred_height (child, min_widths[col], &h_min, &h_pref);
+      /* calculate the cell width by including any spanned columns */
+      cell_width = 0;
+      for (i = 0; i < col_span; i++)
+        cell_width += min_widths[col + i];
+
+      clutter_actor_get_preferred_height (child, cell_width, &h_min, &h_pref);
 
       if (row_span == 1 && h_pref > min_heights[row])
         min_heights[row] = CLUTTER_UNITS_TO_INT (h_pref);
@@ -1051,7 +1056,7 @@ nbtk_table_get_preferred_height (ClutterActor *self,
   /* calculate minimum row heights */
   for (list = priv->children; list; list = g_slist_next (list))
     {
-      gint row, col;
+      gint row, col, col_span, i, cell_width;
       ClutterUnit min, pref;
       ClutterChildMeta *meta;
       ClutterActor *child;
@@ -1060,9 +1065,19 @@ nbtk_table_get_preferred_height (ClutterActor *self,
 
       meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
 
-      g_object_get (meta, "row", &row, "column", &col, NULL);
+      g_object_get (meta,
+                    "row", &row,
+                    "column", &col, "col-span", &col_span,
+                    NULL);
 
-      clutter_actor_get_preferred_height (child, CLUTTER_UNITS_FROM_INT (min_widths[col]), &min, &pref);
+      cell_width = 0;
+      for (i = 0; i < col_span; i++)
+        cell_width += min_widths[col + i];
+
+
+      clutter_actor_get_preferred_height (child,
+              CLUTTER_UNITS_FROM_INT (cell_width), &min, &pref);
+
       if (min > min_heights[row])
         min_heights[row] = min;
       if (pref > pref_heights[row])
