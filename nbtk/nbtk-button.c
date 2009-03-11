@@ -245,24 +245,10 @@ nbtk_button_style_changed (NbtkWidget *widget)
   NbtkButton *button = NBTK_BUTTON (widget);
   NbtkButtonPrivate *priv = button->priv;
   ClutterActor *bg_image;
-  gchar *bg_image_file;
 
   /* update the label styling */
   if (priv->label)
     nbtk_button_update_label_style (button);
-
-  nbtk_stylable_get (NBTK_STYLABLE (widget),
-                     "background-image", &bg_image_file,
-                     NULL);
-
-  /* load the new "background-image"
-     TODO: check if it has actually changed */
-  if (!priv->is_icon_set && bg_image_file)
-    {
-      nbtk_button_set_icon_from_file (button, bg_image_file);
-      priv->is_icon_set = FALSE;
-    }
-  g_free (bg_image_file);
 
   /* Remove the old background if it's around */
   destroy_old_bg (button);
