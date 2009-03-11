@@ -57,7 +57,8 @@ struct _NbtkWidgetPrivate
   gchar *pseudo_class;
   gchar *style_class;
 
-  ClutterActor *bg_image;
+  ClutterActor *border_image;
+  ClutterActor *background_image;
   ClutterColor *bg_color;
 
   ClutterActor *dnd_last_dest;
@@ -433,10 +434,10 @@ nbtk_widget_dispose (GObject *gobject)
       priv->child = NULL;
     }
 
-  if (priv->bg_image)
+  if (priv->border_image)
     {
-      clutter_actor_unparent (priv->bg_image);
-      priv->bg_image = NULL;
+      clutter_actor_unparent (priv->border_image);
+      priv->border_image = NULL;
     }
 
   /*
@@ -502,13 +503,34 @@ nbtk_widget_allocate (ClutterActor          *actor,
   klass = CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class);
   klass->allocate (actor, box, origin_changed);
 
-  if (priv->bg_image)
+  if (priv->border_image)
     {
       ClutterActorBox frame_box = {
           0, 0, box->x2 - box->x1, box->y2 - box->y1
       };
 
-      clutter_actor_allocate (CLUTTER_ACTOR (priv->bg_image),
+      clutter_actor_allocate (CLUTTER_ACTOR (priv->border_image),
+                              &frame_box,
+                              origin_changed);
+    }
+
+  if (priv->background_image)
+    {
+      gint w, h;
+      ClutterActorBox frame_box = {
+          0, 0, box->x2 - box->x1, box->y2 - box->y1
+      };
+
+      clutter_actor_get_size (CLUTTER_ACTOR (priv->background_image), &w, &h);
+
+      /* TODO: scale the background into the allocated bounds */
+      /* center the background on the widget */
+      frame_box.x1 = ((box->x2 - box->x1) / 2) - (w / 2);
+      frame_box.y1 = ((box->y2 - box->y1) / 2) - (h / 2);
+      frame_box.x2 = frame_box.x1 + w;
+      frame_box.y2 = frame_box.y1 + h;
+
+      clutter_actor_allocate (CLUTTER_ACTOR (priv->background_image),
                               &frame_box,
                               origin_changed);
     }
@@ -616,7 +638,10 @@ nbtk_widget_paint (ClutterActor *self)
   NbtkWidgetPrivate *priv = NBTK_WIDGET (self)->priv;
 
   NBTK_WIDGET_CLASS (G_OBJECT_GET_CLASS (self))->
-    draw_background (NBTK_WIDGET (self), priv->bg_image, priv->bg_color);
+    draw_background (NBTK_WIDGET (self), priv->border_image, priv->bg_color);
+
+  if (priv->background_image)
+    clutter_actor_paint (priv->background_image);
 
   if (priv->child && CLUTTER_ACTOR_IS_VISIBLE (priv->child))
     clutter_actor_paint (priv->child);
@@ -747,10 +772,15 @@ nbtk_widget_style_changed (NbtkWidget *self)
   priv->border.top = CLUTTER_UNITS_FROM_INT (border_top);
   priv->border.bottom = CLUTTER_UNITS_FROM_INT (border_bottom);
 
-  if (priv->bg_image)
+  if (priv->border_image)
     {
-       clutter_actor_unparent (CLUTTER_ACTOR (priv->bg_image));
-       priv->bg_image = NULL;
+       clutter_actor_unparent (CLUTTER_ACTOR (priv->border_image));
+       priv->border_image = NULL;
+    }
+  if (priv->background_image)
+    {
+      clutter_actor_unparent (CLUTTER_ACTOR (priv->background_image));
+      priv->background_image = NULL;
     }
 
   texture_cache = nbtk_texture_cache_get_default ();
@@ -774,29 +804,23 @@ nbtk_widget_style_changed (NbtkWidget *self)
       border_bottom = ccss_position_get_size (&border_image->bottom,
                                               border_image->image.height);
 
-      priv->bg_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
+      priv->border_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
                                                border_top,
                                                border_right,
                                                border_bottom,
                                                border_left);
-      clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image),
+      clutter_actor_set_parent (CLUTTER_ACTOR (priv->border_image),
                                                CLUTTER_ACTOR (self));
       g_boxed_free (NBTK_TYPE_BORDER_IMAGE, border_image);
     }
-  else if (bg_file)
+  if (bg_file)
     {
-      g_warning ("Use of \"background-image\" to set the border image is deprecated. "
-                 "Please use \"border-image\" instead.");
       texture = nbtk_texture_cache_get_texture (texture_cache,
                                                 bg_file,
                                                 FALSE);
-      priv->bg_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
-                                               border_top,
-                                               border_right,
-                                               border_bottom,
-                                               border_left);
-      clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image),
-                                               CLUTTER_ACTOR (self));
+      priv->background_image = texture;
+      clutter_actor_set_parent (CLUTTER_ACTOR (priv->background_image),
+                                CLUTTER_ACTOR (self));
       g_free (bg_file);
     }
 
@@ -1991,7 +2015,7 @@ nbtk_widget_get_background_texture (const NbtkWidget *actor)
 {
   g_return_val_if_fail (actor, NULL);
 
-  return actor->priv->bg_image;
+  return actor->priv->border_image;
 }
 
 static NbtkBorderImage *
@@ -2066,6 +2090,6 @@ ClutterActor *
 nbtk_widget_get_background (NbtkWidget *actor)
 {
   NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
-  return priv->bg_image;
+  return priv->border_image;
 }
 
