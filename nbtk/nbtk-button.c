@@ -269,30 +269,27 @@ nbtk_button_style_changed (NbtkWidget *widget)
     }
 
   /* Do animation */
-  if (priv->old_bg)
+  /* run a transition effect if applicable */
+  if (priv->transition_type != NBTK_TRANSITION_NONE
+      && priv->transition_duration > 0)
     {
-      /* run a transition effect if applicable */
-      if (priv->transition_type != NBTK_TRANSITION_NONE
-          && priv->transition_duration > 0)
+      /* Startup animation */
+      switch (priv->transition_type)
         {
-          /* Startup animation */
-          switch (priv->transition_type)
-            {
-            default:
-            case NBTK_TRANSITION_FADE:
-              nbtk_button_fade_transition (button);
-              break;
+        default:
+        case NBTK_TRANSITION_FADE:
+          nbtk_button_fade_transition (button);
+          break;
 
-            case NBTK_TRANSITION_BOUNCE:
-              nbtk_button_bounce_transition (button);
-              break;
-            }
+        case NBTK_TRANSITION_BOUNCE:
+          nbtk_button_bounce_transition (button);
+          break;
         }
-      else
-        {
-          /* no transition, so just remove the old background */
-          destroy_old_bg (button);
-        }
+    }
+  else
+    {
+      /* no transition, so just remove the old background */
+      destroy_old_bg (button);
     }
 }
 
