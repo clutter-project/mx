@@ -25,6 +25,7 @@ noinst_PROGRAMS = 		\
 	test-scroll-bar		\
 	test-scroll-view	\
 	test-scroll-view-2	\
+	test-scroll-view-3	\
 	test-viewport
 	$(NULL)
 
@@ -45,4 +46,5 @@ test_container_matching_SOURCES = test-container-matching.c
 test_scroll_bar_SOURCES = test-scroll-bar.c
 test_scroll_view_SOURCES = test-scroll-view.c
 test_scroll_view_2_SOURCES = test-scroll-view-2.c
+test_scroll_view_3_SOURCES = test-scroll-view-3.c
 test_viewport_SOURCES = test-viewport.c

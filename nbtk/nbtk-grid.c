@@ -91,6 +91,14 @@ static void nbtk_grid_allocate (ClutterActor *self,
                                            const ClutterActorBox *box,
                                            gboolean absolute_origin_changed);
 
+static void
+nbtk_grid_do_allocate (ClutterActor *self,
+                       const ClutterActorBox *box,
+                       gboolean absolute_origin_changed,
+                       gboolean calculate_extents_only,
+                       ClutterUnit *actual_width,
+                       ClutterUnit *actual_height);
+
 G_DEFINE_TYPE_WITH_CODE (NbtkGrid, nbtk_grid,
                          NBTK_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
@@ -670,15 +678,24 @@ nbtk_grid_get_preferred_width (ClutterActor *self,
 {
   NbtkGrid *layout = (NbtkGrid *) self;
   NbtkGridPrivate *priv = layout->priv;
-  ClutterUnit natural_width;
+  ClutterUnit actual_width, actual_height;
+  ClutterActorBox box;
+  
+  box.x1 = 0;
+  box.y1 = 0;
+  box.x2 = CLUTTER_MAXUNIT;
+  box.y2 = for_height;
+  
+  nbtk_grid_do_allocate (self, &box, FALSE,
+                         TRUE, &actual_width, &actual_height);
 
-  natural_width = CLUTTER_UNITS_FROM_INT (200);
   if (min_width_p)
-    *min_width_p = natural_width;
+    *min_width_p = actual_width;
   if (natural_width_p)
-    *natural_width_p = natural_width;
+    *natural_width_p = actual_width;
 
-  priv->pref_width = natural_width;
+  priv->for_height = for_height;
+  priv->pref_width = actual_width;
 }
 
 static void
@@ -689,17 +706,24 @@ nbtk_grid_get_preferred_height (ClutterActor *self,
 {
   NbtkGrid *layout = (NbtkGrid *) self;
   NbtkGridPrivate *priv = layout->priv;
-  ClutterUnit natural_height;
-
-  natural_height = CLUTTER_UNITS_FROM_INT (200);
-
-  priv->for_width = for_width;
-  priv->pref_height = natural_height;
+  ClutterUnit actual_width, actual_height;
+  ClutterActorBox box;
+  
+  box.x1 = 0;
+  box.y1 = 0;
+  box.x2 = for_width;
+  box.y2 = CLUTTER_MAXUNIT;
+  
+  nbtk_grid_do_allocate (self, &box, FALSE,
+                         TRUE, &actual_width, &actual_height);
 
   if (min_height_p)
-    *min_height_p = natural_height;
+    *min_height_p = actual_height;
   if (natural_height_p)
-    *natural_height_p = natural_height;
+    *natural_height_p = actual_height;
+
+  priv->for_width = for_width;
+  priv->pref_height = actual_height;
 }
 
 static ClutterUnit
@@ -821,9 +845,12 @@ compute_row_start (GList           *siblings,
 }
 
 static void
-nbtk_grid_allocate (ClutterActor          *self,
-                              const ClutterActorBox *box,
-                              gboolean               absolute_origin_changed)
+nbtk_grid_do_allocate (ClutterActor          *self,
+                       const ClutterActorBox *box,
+                       gboolean               absolute_origin_changed,
+                       gboolean               calculate_extents_only,
+                       ClutterUnit           *actual_width,
+                       ClutterUnit           *actual_height)
 {
   NbtkGrid *layout = (NbtkGrid *) self;
   NbtkGridPrivate *priv = layout->priv;
@@ -839,22 +866,30 @@ nbtk_grid_allocate (ClutterActor          *self,
   gdouble  aalign;
   gdouble  balign;
 
+  if (actual_width)
+    *actual_width = 0;
+
+  if (actual_height)
+    *actual_height = 0;
+
   current_a = current_b = next_b = 0;
 
   GList *iter;
 
   /* chain up to set actor->allocation */
-  CLUTTER_ACTOR_CLASS (nbtk_grid_parent_class)
-    ->allocate (self, box, absolute_origin_changed);
+  if (!calculate_extents_only)
+    {
+      CLUTTER_ACTOR_CLASS (nbtk_grid_parent_class)
+        ->allocate (self, box, absolute_origin_changed);
+
+      /* Make sure we have calculated the preferred size */
+      /* what does this do? */
+      clutter_actor_get_preferred_size (self, NULL, NULL, NULL, NULL);
+    }
 
   priv->alloc_width = box->x2 - box->x1;
   priv->alloc_height = box->y2 - box->y1;
   priv->absolute_origin_changed = absolute_origin_changed;
-
-  /* Make sure we have calculated the preferred size */
-  /* what does this do? */
-  clutter_actor_get_preferred_size (self, NULL, NULL, NULL, NULL);
-
 
   if (priv->column_major)
     {
@@ -989,9 +1024,17 @@ nbtk_grid_allocate (ClutterActor          *self,
             }
 
           /* update the allocation */
-          clutter_actor_allocate (CLUTTER_ACTOR (child),
-                                  &child_box,
-                                  absolute_origin_changed);
+          if (!calculate_extents_only)
+            clutter_actor_allocate (CLUTTER_ACTOR (child),
+                                    &child_box,
+                                    absolute_origin_changed);
+
+          /* update extents */
+          if (actual_width && child_box.x2 > *actual_width)
+            *actual_width = child_box.x2;
+
+          if (actual_height && child_box.y2 > *actual_height)
+            *actual_height = child_box.y2;
 
           if (homogenous_a)
             {
@@ -1004,3 +1047,12 @@ nbtk_grid_allocate (ClutterActor          *self,
         }
     }
 }
+
+static void
+nbtk_grid_allocate (ClutterActor          *self,
+                    const ClutterActorBox *box,
+                    gboolean               absolute_origin_changed)
+{
+  nbtk_grid_do_allocate (self, box, absolute_origin_changed, FALSE, NULL, NULL);
+}
+
