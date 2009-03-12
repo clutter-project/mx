@@ -523,12 +523,47 @@ nbtk_widget_allocate (ClutterActor          *actor,
 
       clutter_actor_get_size (CLUTTER_ACTOR (priv->background_image), &w, &h);
 
-      /* TODO: scale the background into the allocated bounds */
-      /* center the background on the widget */
-      frame_box.x1 = ((box->x2 - box->x1) / 2) - (w / 2);
-      frame_box.y1 = ((box->y2 - box->y1) / 2) - (h / 2);
-      frame_box.x2 = frame_box.x1 + w;
-      frame_box.y2 = frame_box.y1 + h;
+      /* scale the background into the allocated bounds */
+      if (w > frame_box.x2 || h > frame_box.y2)
+        {
+          gint new_h, new_w, offset;
+          gint box_w, box_h;
+
+          box_w = CLUTTER_UNITS_TO_INT (frame_box.x2);
+          box_h = CLUTTER_UNITS_TO_INT (frame_box.y2);
+
+          /* scale to fit */
+          new_h = ((double) h / w) * ((double) box_w);
+          new_w = ((double) w / h) * ((double) box_h);
+
+          if (new_h > box_h)
+            {
+              /* center for new width */
+              offset = ((box_w) - new_w) * 0.5;
+              frame_box.x1 = offset;
+              frame_box.x2 = offset + new_w;
+
+              frame_box.y2 = box_h;
+            }
+          else
+            {
+              /* center for new height */
+              offset = ((box_h) - new_h) * 0.5;
+              frame_box.y1 = offset;
+              frame_box.y2 = offset + new_h;
+
+              frame_box.x2 = box_w;
+            }
+
+        }
+      else
+        {
+          /* center the background on the widget */
+          frame_box.x1 = ((box->x2 - box->x1) / 2) - (w / 2);
+          frame_box.y1 = ((box->y2 - box->y1) / 2) - (h / 2);
+          frame_box.x2 = frame_box.x1 + w;
+          frame_box.y2 = frame_box.y1 + h;
+        }
 
       clutter_actor_allocate (CLUTTER_ACTOR (priv->background_image),
                               &frame_box,
