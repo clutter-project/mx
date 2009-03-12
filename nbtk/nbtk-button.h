@@ -55,6 +55,7 @@ struct _NbtkButtonClass
   /* vfuncs, not signals */
   void (* pressed)  (NbtkButton *button);
   void (* released) (NbtkButton *button);
+  gboolean (* transition) (NbtkButton *button, ClutterActor *old_bg);
 
   /* signals */
   void (* clicked) (NbtkButton *button);

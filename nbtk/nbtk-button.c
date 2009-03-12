@@ -57,8 +57,7 @@ enum
   PROP_LABEL,
   PROP_TOGGLE,
   PROP_ACTIVE,
-  PROP_TRANSITION,
-  PROP_TRANS_TYPE
+  PROP_TRANSITION
 };
 
 enum
@@ -87,12 +86,10 @@ struct _NbtkButtonPrivate
   guint is_toggle : 1;
   guint is_icon_set : 1; /* TRUE if the icon was set by the application */
 
-  guint transition_duration;
-  guint transition_type;
+  gint transition_duration;
 
   ClutterActor     *old_bg;
   ClutterAnimation *animation;
-  gulong            transition_id;
 };
 
 static guint button_signals[LAST_SIGNAL] = { 0, };
@@ -102,98 +99,14 @@ G_DEFINE_TYPE (NbtkButton, nbtk_button, NBTK_TYPE_WIDGET)
 static void destroy_old_bg (NbtkButton *button);
 
 static void
-style_changed_completed_anim (ClutterAnimation *animation, NbtkButton *button)
-{
-  destroy_old_bg (button);
-}
-
-static void
 destroy_old_bg (NbtkButton *button)
 {
   NbtkButtonPrivate *priv = button->priv;
 
   if (priv->old_bg)
     {
-      if (priv->transition_id && priv->animation)
-        {
-          g_signal_handler_disconnect (priv->animation, priv->transition_id);
-          priv->transition_id = 0;
-          priv->animation = NULL;
-        }
-
       clutter_actor_unparent (priv->old_bg);
       priv->old_bg = NULL;
-    }
-}
-
-static void
-nbtk_button_fade_transition (NbtkButton *button)
-{
-  const gchar *pseudo_class;
-  NbtkButtonPrivate *priv = button->priv;
-
-  pseudo_class = nbtk_stylable_get_pseudo_class (NBTK_STYLABLE (button));
-  if (priv->old_bg && g_strcmp0 ("active", pseudo_class))
-    {
-      priv->animation =
-        clutter_actor_animate (priv->old_bg, CLUTTER_LINEAR,
-                               priv->transition_duration,
-                               "opacity", 0,
-                               NULL);
-      priv->transition_id =
-        g_signal_connect (priv->animation, "completed",
-                          G_CALLBACK (style_changed_completed_anim), button);
-    }
-  else
-    {
-      /* remove the old image to perform instant transition when pressed */
-      destroy_old_bg (button);
-    }
-}
-
-
-static void
-nbtk_button_bounce_transition (NbtkButton *button)
-{
-  const gchar *pseudo_class;
-  static gboolean was_active = FALSE;
-  ClutterActor *bg_image;
-  NbtkButtonPrivate *priv = button->priv;
-
-  pseudo_class = nbtk_stylable_get_pseudo_class (NBTK_STYLABLE (button));
-
-  destroy_old_bg (button);
-
-  if (!g_strcmp0 (pseudo_class, "active"))
-    {
-      was_active = TRUE;
-      return;
-    }
-  else
-    {
-      if (was_active)
-        {
-          was_active = FALSE;
-          return;
-        }
-    }
-
-
-  bg_image = nbtk_widget_get_background (NBTK_WIDGET (button));
-  if (!bg_image)
-    return;
-
-  if (!g_strcmp0 (pseudo_class, "hover"))
-    {
-      g_object_set (G_OBJECT (bg_image),
-		    "scale-gravity", CLUTTER_GRAVITY_CENTER,
-		    NULL);
-      clutter_actor_set_scale (bg_image, 0.5, 0.5);
-      clutter_actor_animate (bg_image, CLUTTER_EASE_OUT_ELASTIC,
-                             priv->transition_duration,
-                             "scale-x", 1.0,
-                             "scale-y", 1.0,
-                             NULL);
     }
 }
 
@@ -270,21 +183,10 @@ nbtk_button_style_changed (NbtkWidget *widget)
 
   /* Do animation */
   /* run a transition effect if applicable */
-  if (priv->transition_type != NBTK_TRANSITION_NONE
-      && priv->transition_duration > 0)
+  if (NBTK_BUTTON_GET_CLASS (button)->transition)
     {
-      /* Startup animation */
-      switch (priv->transition_type)
-        {
-        default:
-        case NBTK_TRANSITION_FADE:
-          nbtk_button_fade_transition (button);
-          break;
-
-        case NBTK_TRANSITION_BOUNCE:
-          nbtk_button_bounce_transition (button);
-          break;
-        }
+      if (NBTK_BUTTON_GET_CLASS (button)->transition (button, priv->old_bg))
+        destroy_old_bg (button);
     }
   else
     {
@@ -471,9 +373,7 @@ nbtk_button_set_property (GObject      *gobject,
     case PROP_TRANSITION:
       priv->transition_duration = g_value_get_int (value);
       break;
-    case PROP_TRANS_TYPE:
-      priv->transition_type = g_value_get_int (value);
-      break;
+
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -503,9 +403,7 @@ nbtk_button_get_property (GObject    *gobject,
     case PROP_TRANSITION:
       g_value_set_int (value, priv->transition_duration);
       break;
-    case PROP_TRANS_TYPE:
-      g_value_set_int (value, priv->transition_type);
-      break;
+
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -629,14 +527,9 @@ nbtk_button_class_init (NbtkButtonClass *klass)
   pspec = g_param_spec_int ("transition-duration",
                             "Transition Duration",
                             "Duration of the state transition effect",
-                            0, G_MAXINT, 0, G_PARAM_READWRITE);
+                            0, G_MAXINT, 250, G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_TRANSITION, pspec);
 
-  pspec = g_param_spec_int ("transition-type",
-                            "Transition Type",
-                            "Type of transition to run on state changes",
-                            0, G_MAXINT, 0, G_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class, PROP_TRANS_TYPE, pspec);
 
   button_signals[CLICKED] =
     g_signal_new ("clicked",
@@ -652,6 +545,7 @@ static void
 nbtk_button_init (NbtkButton *button)
 {
   button->priv = NBTK_BUTTON_GET_PRIVATE (button);
+  button->priv->transition_duration = 250;
 }
 
 /**
