@@ -18,17 +18,17 @@ NbtkEntry {
   padding-left: 10;
 }
 
-NbtkButton {
+NbtkButton, NbtkFadeButton {
   color: blue;
   padding: 12;
   border-image: url('file://border-image.png') 12 stretch stretch;
 }
 
-NbtkButton:hover {
+NbtkButton:hover, NbtkFadeButton:hover {
   border-image: url('file://border-image-light.png') 12 stretch stretch;
 }
 
-NbtkButton:active {
+NbtkButton:active, NbtkFadeButton:active {
   border-image: url('file://border-image-dark.png') 12 stretch stretch;
 }
 

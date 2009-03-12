@@ -32,13 +32,10 @@ main (int argc, char *argv[])
   stage = clutter_stage_get_default ();
   clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
 
-  button = nbtk_button_new_with_label ("Hello World!");
+  button = nbtk_fade_button_new_with_label ("Fade World!");
   g_signal_connect (button, "clicked",
                     G_CALLBACK (button_clicked_cb),
-                    "hello");
-  nbtk_button_set_tooltip (NBTK_BUTTON (button), "Hola Mundo!");
-  g_object_set (button, "transition-duration", 400,
-                "transition-type", NBTK_TRANSITION_FADE, NULL);
+                    "fade");
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 100, 100);
@@ -51,8 +48,6 @@ main (int argc, char *argv[])
                     "icon");
   nbtk_button_set_icon_from_file (NBTK_BUTTON (button),
                                   "redhand.png");
-  g_object_set (button, "transition-duration", 400,
-                "transition-type", NBTK_TRANSITION_BOUNCE, NULL);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 300, 100);
