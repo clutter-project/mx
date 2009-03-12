@@ -177,6 +177,14 @@ nbtk_entry_allocate (ClutterActor          *actor,
 }
 
 static void
+nbtk_entry_focus_in (ClutterActor *actor)
+{
+  NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
+
+  clutter_actor_grab_key_focus (priv->entry);
+}
+
+static void
 nbtk_entry_class_init (NbtkEntryClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -190,6 +198,7 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
   gobject_class->get_property = nbtk_entry_get_property;
   
   actor_class->allocate = nbtk_entry_allocate;
+  actor_class->focus_in = nbtk_entry_focus_in;
 
   widget_class->style_changed = nbtk_entry_style_changed;
 
