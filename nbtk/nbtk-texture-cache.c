@@ -304,8 +304,12 @@ nbtk_texture_cache_get_texture (NbtkTextureCache *self,
       
       if (want_clone)
         {
-          res = clutter_clone_new (res);
+          ClutterActor *clone;
+
+          clone = clutter_clone_new (res);
           g_object_unref (res);
+
+          res = clone;
         }
     }
 
