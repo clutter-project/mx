@@ -39,9 +39,10 @@ static void add_one (ClutterActor *container)
 {
   ClutterActor *rectangle;
   ClutterColor  color = {0x0,0x0,0x0,0xff};
-  clutter_color_from_hls (&color, g_random_int_range (0, 256),
-                                  g_random_int_range (70, 180),
-                                  g_random_int_range (200, 230));
+  clutter_color_from_hls (&color,
+                          g_random_double_range (0.0, 360.0),
+                          g_random_double_range (0.0, 1.0),
+                          g_random_double_range (0.0, 1.0));
 
   rectangle  = clutter_rectangle_new_with_color (&color);
 
