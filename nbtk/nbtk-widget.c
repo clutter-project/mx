@@ -852,10 +852,18 @@ nbtk_widget_style_changed (NbtkWidget *self)
     {
       texture = nbtk_texture_cache_get_texture (texture_cache,
                                                 bg_file,
-                                                FALSE);
+                                                TRUE);
       priv->background_image = texture;
-      clutter_actor_set_parent (CLUTTER_ACTOR (priv->background_image),
-                                CLUTTER_ACTOR (self));
+
+      if (!texture)
+        {
+          g_warning ("Could not load %s", bg_file);
+        }
+      else
+        {
+          clutter_actor_set_parent (CLUTTER_ACTOR (priv->background_image),
+                                    CLUTTER_ACTOR (self));
+        }
       g_free (bg_file);
     }
 
