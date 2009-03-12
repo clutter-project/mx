@@ -926,6 +926,9 @@ nbtk_grid_do_allocate (ClutterActor          *self,
           ClutterUnit natural_width;
           ClutterUnit natural_height;
 
+          if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+            continue;
+
           /* each child will get as much space as they require */
           clutter_actor_get_preferred_size (CLUTTER_ACTOR (child),
                                             NULL, NULL,
@@ -949,6 +952,9 @@ nbtk_grid_do_allocate (ClutterActor          *self,
       ClutterActor *child = iter->data;
       ClutterUnit natural_a;
       ClutterUnit natural_b;
+
+      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
 
       /* each child will get as much space as they require */
       clutter_actor_get_preferred_size (CLUTTER_ACTOR (child),
