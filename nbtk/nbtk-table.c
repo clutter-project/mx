@@ -78,6 +78,7 @@ struct _NbtkTablePrivate
   GArray *pref_heights_u;
 
   GArray *has_expand_cols;
+  GArray *has_expand_rows;
 
   GArray *col_widths;
 };
@@ -533,6 +534,7 @@ nbtk_table_finalize (GObject *gobject)
   g_array_free (priv->pref_heights_u, TRUE);
 
   g_array_free (priv->has_expand_cols, TRUE);
+  g_array_free (priv->has_expand_rows, TRUE);
 
   g_array_free (priv->col_widths, TRUE);
 
@@ -778,8 +780,13 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
   row_spacing = (priv->row_spacing);
 
   min_heights = g_new0 (gint, priv->n_rows);
-  has_expand_cols = g_new0 (gboolean, priv->n_cols);
-  has_expand_rows = g_new0 (gboolean, priv->n_rows);
+
+  g_array_set_size (priv->has_expand_cols, 0);
+  g_array_set_size (priv->has_expand_cols, priv->n_cols);
+  has_expand_cols = (gboolean *)priv->has_expand_cols->data;
+  g_array_set_size (priv->has_expand_rows, 0);
+  g_array_set_size (priv->has_expand_rows, priv->n_rows);
+  has_expand_rows = (gboolean *)priv->has_expand_rows->data;
 
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
@@ -962,8 +969,6 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
     }
 
   g_free (min_heights);
-  g_free (has_expand_cols);
-  g_free (has_expand_rows);
 }
 
 static void
@@ -1323,6 +1328,9 @@ nbtk_table_init (NbtkTable *table)
                                              sizeof (ClutterUnit));
 
   table->priv->has_expand_cols = g_array_new (FALSE,
+                                              TRUE,
+                                              sizeof (gboolean));
+  table->priv->has_expand_rows = g_array_new (FALSE,
                                               TRUE,
                                               sizeof (gboolean));
 
