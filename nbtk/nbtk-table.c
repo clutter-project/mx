@@ -78,6 +78,8 @@ struct _NbtkTablePrivate
   GArray *pref_heights_u;
 
   GArray *has_expand_cols;
+
+  GArray *col_widths;
 };
 
 static void nbtk_container_iface_init (ClutterContainerIface *iface);
@@ -532,6 +534,8 @@ nbtk_table_finalize (GObject *gobject)
 
   g_array_free (priv->has_expand_cols, TRUE);
 
+  g_array_free (priv->col_widths, TRUE);
+
   G_OBJECT_CLASS (nbtk_table_parent_class)->finalize (gobject);
 }
 
@@ -680,13 +684,17 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
   NbtkTablePrivate *priv = table->priv;
   gboolean *has_expand_cols;
   gint extra_col_width, n_expanded_cols = 0, expanded_cols = 0;
-  gint *col_widths = g_new0 (gint, priv->n_cols);
+  gint *col_widths;
   GSList *list;
   NbtkPadding padding;
 
   g_array_set_size (priv->has_expand_cols, 0);
   g_array_set_size (priv->has_expand_cols, priv->n_cols);
   has_expand_cols = (gboolean *)priv->has_expand_cols->data;
+
+  g_array_set_size (priv->col_widths, 0);
+  g_array_set_size (priv->col_widths, priv->n_cols);
+  col_widths = (gint *)priv->col_widths->data;
 
   /* take off the padding values to calculate the allocatable width */
   nbtk_widget_get_padding (NBTK_WIDGET (table), &padding);
@@ -953,7 +961,6 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
       clutter_actor_allocate (child, &childbox, absolute_origin_changed);
     }
 
-  g_free (min_widths);
   g_free (min_heights);
   g_free (has_expand_cols);
   g_free (has_expand_rows);
@@ -1115,7 +1122,6 @@ nbtk_table_get_preferred_height (ClutterActor *self,
       if (pref > pref_heights[row])
         pref_heights[row] = pref;
     }
-  g_free (min_widths);
 
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
@@ -1315,10 +1321,15 @@ nbtk_table_init (NbtkTable *table)
   table->priv->pref_heights_u = g_array_new (FALSE,
                                              TRUE,
                                              sizeof (ClutterUnit));
+
   table->priv->has_expand_cols = g_array_new (FALSE,
                                               TRUE,
                                               sizeof (gboolean));
 
+
+  table->priv->col_widths = g_array_new (FALSE,
+                                         TRUE,
+                                         sizeof (gint));
 }
 
 /*** Public Functions ***/
