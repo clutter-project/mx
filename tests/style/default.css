@@ -64,18 +64,17 @@ NbtkLabel#test-border-image {
 }
 
 *#style-button {
-    background-image: url('file://green-button.png');
+  border-image: url('file://green-button.png') 0;
 }
 
 *#style-button:hover {
-    background-image: url('file://red-button.png');
+  border-image: url('file://red-button.png') 0;
 }
 
 NbtkTable {
   color: #aee;
   background-color: #ddd;
-  background-image: url('file://rounded-corner.png');
-  border-width: 30 30 30 30;
+  border-image: url('file://rounded-corner.png') 30;
 }
 
 NbtkTooltip {
