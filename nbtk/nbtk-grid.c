@@ -540,10 +540,10 @@ nbtk_grid_free_actor_data (gpointer data)
   g_slice_free (NbtkGridActorData, data);
 }
 
-ClutterActor *
+NbtkWidget *
 nbtk_grid_new (void)
 {
-  ClutterActor *self = g_object_new (NBTK_TYPE_GRID, NULL);
+  NbtkWidget *self = g_object_new (NBTK_TYPE_GRID, NULL);
 
   return self;
 }

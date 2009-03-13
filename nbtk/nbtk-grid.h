@@ -67,7 +67,7 @@ struct _NbtkGrid
 
 GType nbtk_grid_get_type (void) G_GNUC_CONST;
 
-ClutterActor *nbtk_grid_new                    (void);
+NbtkWidget   *nbtk_grid_new                    (void);
 void          nbtk_grid_set_end_align          (NbtkGrid    *self,
                                                 gboolean     value);
 gboolean      nbtk_grid_get_end_align          (NbtkGrid    *self);

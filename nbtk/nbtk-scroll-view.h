@@ -55,7 +55,7 @@ struct _NbtkScrollViewClass
 
 GType nbtk_scroll_view_get_type (void) G_GNUC_CONST;
 
-ClutterActor *nbtk_scroll_view_new             (void);
+NbtkWidget *  nbtk_scroll_view_new             (void);
 
 ClutterActor *nbtk_scroll_view_get_hscroll_bar (NbtkScrollView *scroll);
 ClutterActor *nbtk_scroll_view_get_vscroll_bar (NbtkScrollView *scroll);

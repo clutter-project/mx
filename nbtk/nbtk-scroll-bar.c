@@ -583,7 +583,7 @@ nbtk_scroll_bar_init (NbtkScrollBar *self)
                     G_CALLBACK (button_press_event_cb), self);
 }
 
-ClutterActor *
+NbtkWidget *
 nbtk_scroll_bar_new (NbtkAdjustment *adjustment)
 {
   return g_object_new (NBTK_TYPE_SCROLL_BAR,

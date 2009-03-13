@@ -580,7 +580,7 @@ nbtk_viewport_init (NbtkViewport *self)
                     G_CALLBACK (clip_notify_cb), self);
 }
 
-ClutterActor *
+NbtkWidget *
 nbtk_viewport_new (void)
 {
   return g_object_new (NBTK_TYPE_VIEWPORT, NULL);

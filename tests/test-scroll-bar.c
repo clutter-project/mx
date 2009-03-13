@@ -77,7 +77,7 @@ main (int argc, char **argv)
   clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
   clutter_actor_set_size (stage, 800, 600);
 
-  viewport = nbtk_viewport_new ();
+  viewport = (ClutterActor *) nbtk_viewport_new ();
   clutter_actor_set_clip (viewport, 0, 0, 800, 600);
   g_signal_connect (viewport, "notify::x-origin",
                     G_CALLBACK (viewport_x_origin_notify_cb), viewport);
@@ -87,12 +87,12 @@ main (int argc, char **argv)
   nbtk_scrollable_get_adjustments (NBTK_SCROLLABLE (viewport),
                                    &adjustment, NULL);
 
-  scroll = nbtk_scroll_bar_new (adjustment);
+  scroll = (ClutterActor *) nbtk_scroll_bar_new (adjustment);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), scroll);
   clutter_actor_set_position (scroll, 0, 500);
   clutter_actor_set_size (scroll, 800, 100);
 
-  scroll = nbtk_scroll_bar_new (adjustment);
+  scroll = (ClutterActor *) nbtk_scroll_bar_new (adjustment);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), scroll);
   clutter_actor_set_position (scroll, 0, 0);
   clutter_actor_set_size (scroll, 800, 50);

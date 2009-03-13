@@ -89,7 +89,7 @@ main (int argc, char **argv)
   clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
   clutter_actor_set_size (stage, 800, 600);
 
-  viewport = nbtk_viewport_new ();
+  viewport = (ClutterActor *) nbtk_viewport_new ();
   group = clutter_group_new ();
   g_signal_connect (group, "paint",
                     G_CALLBACK (on_group_paint),
@@ -109,7 +109,7 @@ main (int argc, char **argv)
   upper += RECT_W - RECT_GAP;
   g_object_set (G_OBJECT (hadjust), "lower", lower, "upper", upper, NULL);
 
-  scroll = nbtk_scroll_view_new ();
+  scroll = (ClutterActor *) nbtk_scroll_view_new ();
 
   clutter_container_add_actor (CLUTTER_CONTAINER (scroll), viewport);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), scroll);

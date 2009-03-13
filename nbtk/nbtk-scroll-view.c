@@ -596,10 +596,10 @@ clutter_container_iface_init (ClutterContainerIface *iface)
   iface->sort_depth_order = nbtk_scroll_view_sort_depth_order;
 }
 
-ClutterActor *
+NbtkWidget *
 nbtk_scroll_view_new (void)
 {
-  return CLUTTER_ACTOR (g_object_new (NBTK_TYPE_SCROLL_VIEW, NULL));
+  return NBTK_WIDGET (g_object_new (NBTK_TYPE_SCROLL_VIEW, NULL));
 }
 
 ClutterActor *
