@@ -462,8 +462,8 @@ nbtk_scroll_view_init (NbtkScrollView *self)
 {
   NbtkScrollViewPrivate *priv = self->priv = SCROLL_VIEW_PRIVATE (self);
 
-  priv->hscroll = nbtk_scroll_bar_new (NULL);
-  priv->vscroll = nbtk_scroll_bar_new (NULL);
+  priv->hscroll = CLUTTER_ACTOR (nbtk_scroll_bar_new (NULL));
+  priv->vscroll = CLUTTER_ACTOR (nbtk_scroll_bar_new (NULL));
 
   clutter_actor_set_parent (priv->hscroll, CLUTTER_ACTOR (self));
   clutter_actor_set_parent (priv->vscroll, CLUTTER_ACTOR (self));
