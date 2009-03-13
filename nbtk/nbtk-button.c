@@ -167,7 +167,7 @@ nbtk_button_style_changed (NbtkWidget *widget)
   destroy_old_bg (button);
 
   /* Store background, NbtkWidget will unparent it */
-  bg_image = nbtk_widget_get_background (widget);
+  bg_image = nbtk_widget_get_border_image (widget);
   if (bg_image)
     priv->old_bg = g_object_ref (bg_image);
 
