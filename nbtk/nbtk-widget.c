@@ -2130,9 +2130,15 @@ nbtk_padding_get_type (void)
 }
 
 ClutterActor *
-nbtk_widget_get_background (NbtkWidget *actor)
+nbtk_widget_get_border_image (NbtkWidget *actor)
 {
   NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
   return priv->border_image;
 }
 
+ClutterActor *
+nbtk_widget_get_background_image (NbtkWidget *actor)
+{
+  NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
+  return priv->background_image;
+}
