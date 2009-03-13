@@ -74,6 +74,8 @@ struct _NbtkTablePrivate
 
   GArray *min_widths_u;
   GArray *pref_widths_u;
+  GArray *min_heights_u;
+  GArray *pref_heights_u;
 };
 
 static void nbtk_container_iface_init (ClutterContainerIface *iface);
@@ -522,6 +524,9 @@ nbtk_table_finalize (GObject *gobject)
 
   g_array_free (priv->min_widths_u, TRUE);
   g_array_free (priv->pref_widths_u, TRUE);
+
+  g_array_free (priv->min_heights_u, TRUE);
+  g_array_free (priv->pref_heights_u, TRUE);
 
   G_OBJECT_CLASS (nbtk_table_parent_class)->finalize (gobject);
 }
@@ -1058,11 +1063,19 @@ nbtk_table_get_preferred_height (ClutterActor *self,
     return;
   }
 
+  /* Setting size to zero and then what we want it to be causes a clear if
+   * clear flag is set (which it should be.)
+   */
+  g_array_set_size (priv->min_heights_u, 0);
+  g_array_set_size (priv->pref_heights_u, 0);
+  g_array_set_size (priv->min_heights_u, priv->n_rows);
+  g_array_set_size (priv->pref_heights_u, priv->n_rows);
+
   /* use min_widths to help allocation of height-for-width widgets */
   min_widths = nbtk_table_calculate_col_widths (NBTK_TABLE (self), for_width);
 
-  min_heights = g_new0 (ClutterUnit, priv->n_rows);
-  pref_heights = g_new0 (ClutterUnit, priv->n_rows);
+  min_heights = (ClutterUnit *)priv->min_heights_u->data;
+  pref_heights = (ClutterUnit *)priv->pref_heights_u->data;
 
   /* calculate minimum row heights */
   for (list = priv->children; list; list = g_slist_next (list))
@@ -1109,9 +1122,6 @@ nbtk_table_get_preferred_height (ClutterActor *self,
       total_min_height += min_heights[i];
       total_pref_height += pref_heights[i];
     }
-
-  g_free (min_heights);
-  g_free (pref_heights);
 
   if (min_height_p)
     *min_height_p = total_min_height;
@@ -1291,6 +1301,12 @@ nbtk_table_init (NbtkTable *table)
   table->priv->pref_widths_u = g_array_new (FALSE,
                                             TRUE,
                                             sizeof (ClutterUnit));
+  table->priv->min_heights_u = g_array_new (FALSE,
+                                            TRUE,
+                                            sizeof (ClutterUnit));
+  table->priv->pref_heights_u = g_array_new (FALSE,
+                                             TRUE,
+                                             sizeof (ClutterUnit));
 }
 
 /*** Public Functions ***/
