@@ -680,7 +680,7 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
   NbtkTablePrivate *priv = table->priv;
   gboolean *has_expand_cols;
   gint extra_col_width, n_expanded_cols = 0, expanded_cols = 0;
-  gint *min_widths = g_new0 (gint, priv->n_cols);
+  gint *col_widths = g_new0 (gint, priv->n_cols);
   GSList *list;
   NbtkPadding padding;
 
@@ -714,21 +714,21 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
         has_expand_cols[col] = TRUE;
 
       clutter_actor_get_preferred_width (child, -1, &w_min, &w_pref);
-      if (col_span == 1 && w_pref > min_widths[col])
-        min_widths[col] = CLUTTER_UNITS_TO_INT (w_pref);
+      if (col_span == 1 && w_pref > col_widths[col])
+        col_widths[col] = CLUTTER_UNITS_TO_INT (w_pref);
 
     }
 
   total_min_width = priv->col_spacing * (priv->n_cols - 1);
   for (i = 0; i < priv->n_cols; i++)
-    total_min_width += min_widths[i];
+    total_min_width += col_widths[i];
 
   /* calculate the remaining space and distribute it evenly onto all rows/cols
    * with the x/y expand property set. */
   for (i = 0; i < priv->n_cols; i++)
     if (has_expand_cols[i])
       {
-        expanded_cols += min_widths[i];
+        expanded_cols += col_widths[i];
         n_expanded_cols++;
       }
 
@@ -739,15 +739,15 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
       if (has_expand_cols[i])
        {
           if (extra_col_width < 0)
-            min_widths[i] =
+            col_widths[i] =
               MAX (0,
-                   min_widths[i]
-                  + (extra_col_width * (min_widths[i] / (float) expanded_cols)));
+                   col_widths[i]
+                  + (extra_col_width * (col_widths[i] / (float) expanded_cols)));
           else
-            min_widths[i] += extra_col_width / n_expanded_cols;
+            col_widths[i] += extra_col_width / n_expanded_cols;
         }
 
-  return min_widths;
+  return col_widths;
 }
 
 static void
