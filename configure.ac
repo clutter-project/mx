@@ -11,6 +11,7 @@ m4_define([nbtk_interface_age], [0])
 m4_define([nbtk_binary_age], [m4_eval(100 * nbtk_minor + nbtk_micro)])
 
 AC_INIT([nbtk], [nbtk_version])
+AC_CONFIG_MACRO_DIR([build/autotools])
 
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 
@@ -113,8 +114,14 @@ PKG_CHECK_MODULES(NBTK, [clutter-0.9 libccss-1])
 # check for gtk-doc
 GTK_DOC_CHECK(1.9)
 
-AC_OUTPUT([
+SHAVE_INIT([build/autotools], [enable])
+
+AC_CONFIG_FILES([
 Makefile
+build/Makefile
+build/autotools/Makefile
+build/autotools/shave
+build/autotools/shave-libtool
 nbtk.pc
 docs/Makefile
 docs/reference/Makefile
@@ -123,3 +130,5 @@ nbtk/Makefile
 nbtk/nbtk-version.h
 tests/Makefile
 ])
+
+AC_OUTPUT

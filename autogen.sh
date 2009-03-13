@@ -18,6 +18,12 @@ if test -z $GTKDOCIZE; then
         echo "EXTRA_DIST =" > gtk-doc.make
 else
         gtkdocize || exit $?
+        sed -e 's#) --mode=compile#) --tag=CC --mode=compile#' gtk-doc.make \
+          > gtk-doc.temp \
+                && mv gtk-doc.temp gtk-doc.make
+        sed -e 's#) --mode=link#) --tag=CC --mode=link#' gtk-doc.make \
+          > gtk-doc.temp \
+                && mv gtk-doc.temp gtk-doc.make
 fi
 
 GLIB_GETTEXTIZE=`which glib-gettextize`
