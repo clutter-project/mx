@@ -674,7 +674,7 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
 {
   gint total_min_width, i;
   NbtkTablePrivate *priv = table->priv;
-  ClutterUnit *has_expand_cols = g_new0 (ClutterUnit, priv->n_cols);
+  gboolean *has_expand_cols = g_new0 (gboolean, priv->n_cols);
   gint extra_col_width, n_expanded_cols = 0, expanded_cols = 0;
   gint *min_widths = g_new0 (gint, priv->n_cols);
   GSList *list;
