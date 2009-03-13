@@ -152,6 +152,7 @@ const gchar* nbtk_widget_get_style_class_name (NbtkWidget  *actor);
 
 /* Only to be used by sub-classes of NbtkWidget */
 ClutterActor *nbtk_widget_get_background (NbtkWidget *actor);
+ClutterActor *nbtk_widget_get_border_image (NbtkWidget *actor);
 
 G_END_DECLS
 
