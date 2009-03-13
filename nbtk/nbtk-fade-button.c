@@ -41,13 +41,13 @@ nbtk_fade_button_init (NbtkFadeButton *self)
 {
 }
 
-NbtkFadeButton*
+NbtkWidget*
 nbtk_fade_button_new (void)
 {
   return g_object_new (NBTK_TYPE_FADE_BUTTON, NULL);
 }
 
-NbtkFadeButton*
+NbtkWidget*
 nbtk_fade_button_new_with_label (const gchar *text)
 {
   return g_object_new (NBTK_TYPE_FADE_BUTTON,

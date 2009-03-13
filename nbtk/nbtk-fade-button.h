@@ -35,8 +35,8 @@ typedef struct {
 
 GType nbtk_fade_button_get_type (void);
 
-NbtkFadeButton* nbtk_fade_button_new (void);
-NbtkFadeButton* nbtk_fade_button_new_with_label (const gchar *text);
+NbtkWidget* nbtk_fade_button_new (void);
+NbtkWidget* nbtk_fade_button_new_with_label (const gchar *text);
 
 G_END_DECLS
 
