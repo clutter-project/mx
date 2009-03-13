@@ -2053,14 +2053,6 @@ nbtk_widget_undo_child_dnd (NbtkWidget *actor, ClutterActor *child)
                                         actor);
 }
 
-ClutterActor *
-nbtk_widget_get_background_texture (const NbtkWidget *actor)
-{
-  g_return_val_if_fail (actor, NULL);
-
-  return actor->priv->border_image;
-}
-
 static NbtkBorderImage *
 nbtk_border_image_copy (const NbtkBorderImage *border_image)
 {
