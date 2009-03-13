@@ -76,6 +76,8 @@ struct _NbtkTablePrivate
   GArray *pref_widths_u;
   GArray *min_heights_u;
   GArray *pref_heights_u;
+
+  GArray *has_expand_cols;
 };
 
 static void nbtk_container_iface_init (ClutterContainerIface *iface);
@@ -528,6 +530,8 @@ nbtk_table_finalize (GObject *gobject)
   g_array_free (priv->min_heights_u, TRUE);
   g_array_free (priv->pref_heights_u, TRUE);
 
+  g_array_free (priv->has_expand_cols, TRUE);
+
   G_OBJECT_CLASS (nbtk_table_parent_class)->finalize (gobject);
 }
 
@@ -674,11 +678,15 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
 {
   gint total_min_width, i;
   NbtkTablePrivate *priv = table->priv;
-  gboolean *has_expand_cols = g_new0 (gboolean, priv->n_cols);
+  gboolean *has_expand_cols;
   gint extra_col_width, n_expanded_cols = 0, expanded_cols = 0;
   gint *min_widths = g_new0 (gint, priv->n_cols);
   GSList *list;
   NbtkPadding padding;
+
+  g_array_set_size (priv->has_expand_cols, 0);
+  g_array_set_size (priv->has_expand_cols, priv->n_cols);
+  has_expand_cols = (gboolean *)priv->has_expand_cols->data;
 
   /* take off the padding values to calculate the allocatable width */
   nbtk_widget_get_padding (NBTK_WIDGET (table), &padding);
@@ -1307,6 +1315,10 @@ nbtk_table_init (NbtkTable *table)
   table->priv->pref_heights_u = g_array_new (FALSE,
                                              TRUE,
                                              sizeof (ClutterUnit));
+  table->priv->has_expand_cols = g_array_new (FALSE,
+                                              TRUE,
+                                              sizeof (gboolean));
+
 }
 
 /*** Public Functions ***/
