@@ -8,7 +8,6 @@ static gboolean
 nbtk_button_fade_transition (NbtkButton *button, ClutterActor *old_bg)
 {
   const gchar *pseudo_class;
-  NbtkButtonPrivate *priv = button->priv;
 
   pseudo_class = nbtk_stylable_get_pseudo_class (NBTK_STYLABLE (button));
   if (old_bg && g_strcmp0 ("active", pseudo_class))
