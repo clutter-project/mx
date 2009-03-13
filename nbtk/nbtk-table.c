@@ -71,6 +71,9 @@ struct _NbtkTablePrivate
   gint active_col;
 
   gboolean homogeneous : 1;
+
+  GArray *min_widths_u;
+  GArray *pref_widths_u;
 };
 
 static void nbtk_container_iface_init (ClutterContainerIface *iface);
@@ -515,7 +518,10 @@ nbtk_table_get_property (GObject    *gobject,
 static void
 nbtk_table_finalize (GObject *gobject)
 {
-  /* NbtkTablePrivate *priv = NBTK_TABLE (gobject)->priv; */
+  NbtkTablePrivate *priv = NBTK_TABLE (gobject)->priv;
+
+  g_array_free (priv->min_widths_u, TRUE);
+  g_array_free (priv->pref_widths_u, TRUE);
 
   G_OBJECT_CLASS (nbtk_table_parent_class)->finalize (gobject);
 }
@@ -980,8 +986,16 @@ nbtk_table_get_preferred_width (ClutterActor *self,
     return;
   }
 
-  min_widths = g_new0 (ClutterUnit, priv->n_cols);
-  pref_widths = g_new0 (ClutterUnit, priv->n_cols);
+  /* Setting size to zero and then what we want it to be causes a clear if
+   * clear flag is set (which it should be.)
+   */
+  g_array_set_size (priv->min_widths_u, 0);
+  g_array_set_size (priv->pref_widths_u, 0);
+  g_array_set_size (priv->min_widths_u, priv->n_cols);
+  g_array_set_size (priv->pref_widths_u, priv->n_cols);
+
+  min_widths = (ClutterUnit *)priv->min_widths_u->data;
+  pref_widths = (ClutterUnit *)priv->pref_widths_u->data;
 
   /* calculate minimum row widths */
   for (list = priv->children; list; list = g_slist_next (list))
@@ -1016,9 +1030,6 @@ nbtk_table_get_preferred_width (ClutterActor *self,
       total_min_width += min_widths[i];
       total_pref_width += pref_widths[i];
     }
-
-  g_free (min_widths);
-  g_free (pref_widths);
 
   if (min_width_p)
     *min_width_p = total_min_width;
@@ -1273,6 +1284,13 @@ nbtk_table_init (NbtkTable *table)
 
   table->priv->n_cols = 0;
   table->priv->n_rows = 0;
+
+  table->priv->min_widths_u = g_array_new (FALSE,
+                                           TRUE,
+                                           sizeof (ClutterUnit));
+  table->priv->pref_widths_u = g_array_new (FALSE,
+                                            TRUE,
+                                            sizeof (ClutterUnit));
 }
 
 /*** Public Functions ***/
