@@ -516,7 +516,7 @@ nbtk_widget_allocate (ClutterActor          *actor,
 
   if (priv->background_image)
     {
-      gint w, h;
+      guint w, h;
       ClutterActorBox frame_box = {
           0, 0, box->x2 - box->x1, box->y2 - box->y1
       };
