@@ -12,6 +12,7 @@ noinst_PROGRAMS = 		\
 	test-container-matching	\
 	test-label 		\
 	test-entry 		\
+	test-expander \
 	test-grid \
 	test-script  		\
 	test-styles  		\
@@ -30,6 +31,7 @@ noinst_PROGRAMS = 		\
 	$(NULL)
 
 test_buttons_SOURCES = test-buttons.c
+test_expander_SOURCES = test-expander.c
 test_script_SOURCES = test-script.c
 test_styles_SOURCES = test-styles.c
 test_table_SOURCES = test-table.c

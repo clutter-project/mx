@@ -37,6 +37,14 @@ NbtkButton#test-border-image {
   border-image: url('file://border-image.png') 12 stretch stretch;
 }
 
+NbtkExpander {
+  background-color: blue;
+}
+
+NbtkExpander > NbtkTile {
+  background-color: red;
+}
+
 NbtkLabel#test-border-image {
   color: black;
   border-image: url('file://border-image.png') 12 stretch stretch;
