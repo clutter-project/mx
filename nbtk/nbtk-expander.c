@@ -308,6 +308,14 @@ nbtk_expander_init (NbtkExpander *self)
   clutter_actor_hide (self->priv->payload_tile);
 }
 
+const gchar *
+nbtk_expander_get_label (NbtkExpander *self)
+{
+  g_return_val_if_fail (self, NULL);
+
+  return nbtk_button_get_label (NBTK_BUTTON (self->priv->header_button));
+}
+
 static void
 get_payload_child_cb (ClutterActor   *actor,
                       ClutterActor  **actor_return_location)
