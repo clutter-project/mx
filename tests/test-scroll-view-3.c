@@ -7,8 +7,8 @@
 int
 main (int argc, char *argv[])
 {
-  NbtkWidget *scroll, *view, *grid, *label;
-  ClutterActor *stage;
+  NbtkWidget *scroll, *view, *label;
+  ClutterActor *stage, *grid;
   int i;
 
   clutter_init (&argc, &argv);

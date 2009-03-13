@@ -8,9 +8,7 @@ int
 main (int argc, char *argv[])
 {
   NbtkWidget *button, *label;
-  ClutterColor stage_color =  { 0xff, 0xff, 0xff, 0xff };
   ClutterActor *stage;
-  GError *err = NULL;
 
   clutter_init (&argc, &argv);
 

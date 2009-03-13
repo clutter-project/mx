@@ -9,7 +9,6 @@ main (int argc, char *argv[])
 {
   NbtkWidget *expander, *label;
   ClutterActor *stage;
-  GError *err = NULL;
 
   clutter_init (&argc, &argv);
 

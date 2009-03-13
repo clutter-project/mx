@@ -13,7 +13,6 @@ create_button (ClutterActor *parent,
                gint          x,
                gint          y)
 {
-  NbtkStyle *style = NULL;
   NbtkWidget *button;
   NbtkPadding padding = { 0, };
 

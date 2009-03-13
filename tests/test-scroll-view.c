@@ -26,7 +26,7 @@ viewport_x_origin_notify_cb (NbtkViewport *viewport,
       gdouble pos;
       ClutterActor *actor;
 
-      actor = (ClutterActor *)c->data;
+      actor = CLUTTER_ACTOR (c->data);
 
       /* Get actor position with respect to viewport origin */
       x = clutter_actor_get_x (actor) - origin_x;
