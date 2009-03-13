@@ -48,3 +48,16 @@ test_scroll_view_SOURCES = test-scroll-view.c
 test_scroll_view_2_SOURCES = test-scroll-view-2.c
 test_scroll_view_3_SOURCES = test-scroll-view-3.c
 test_viewport_SOURCES = test-viewport.c
+
+EXTRA_DIST = \
+        redhand.png rounded-corner.png \
+        style/border-image-dark.png \
+        style/border-image-light.png \
+        style/border-image.png \
+        style/cyan-button.png \
+        style/default.css \
+        style/green-button.png \
+        style/lime-button.png \
+        style/red-button.png \
+        style/redhand.png \
+        style/rounded-corner.png
