@@ -3,14 +3,8 @@
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
-PROJECT=Nbtk
-TEST_TYPE=-d
-FILE=nbtk
-
-test $TEST_TYPE $FILE || {
-        echo "You must run this script in the top-level $PROJECT directory"
-        exit 1
-}
+olddir=`pwd`
+cd $srcdir
 
 GTKDOCIZE=`which gtkdocize`
 if test -z $GTKDOCIZE; then
@@ -42,4 +36,7 @@ else
         autoreconf -v --install || exit $?
 fi
 
-./configure "$@" && echo "Now type 'make' to compile $PROJECT."
+cd $olddir
+
+$srcdir/configure --enable-maintainer-mode "$@" && \
+  echo "Now type 'make' to compile $PROJECT."
