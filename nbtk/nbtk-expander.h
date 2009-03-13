@@ -52,7 +52,9 @@ struct _NbtkExpanderClass
 
 GType nbtk_expander_get_type (void) G_GNUC_CONST;
 
-NbtkWidget *          nbtk_expander_new            (const gchar *label);
+NbtkWidget *    nbtk_expander_new       (const gchar *label);
+
+ClutterActor *  nbtk_expander_get_child (NbtkExpander *self);
 
 G_END_DECLS
 

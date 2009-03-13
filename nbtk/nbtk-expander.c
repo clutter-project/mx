@@ -109,6 +109,72 @@ nbtk_expander_finalize (GObject *gobject)
 }
 
 static void
+nbtk_expander_get_preferred_width (ClutterActor *actor,
+                                   ClutterUnit   for_height,
+                                   ClutterUnit  *min_width_p,
+                                   ClutterUnit  *natural_width_p)
+{
+  NbtkExpanderPrivate *priv = NBTK_EXPANDER (actor)->priv;
+  NbtkPadding padding;
+  ClutterUnit header_min, header_natural;
+  ClutterUnit payload_min, payload_natural;
+
+  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
+  
+  clutter_actor_get_preferred_width (priv->header_button, for_height,
+                                     &header_min, &header_natural);  
+
+  payload_min = 0;
+  payload_natural = 0;
+  if (nbtk_button_get_checked (NBTK_BUTTON (priv->header_button)))
+    {
+      clutter_actor_get_preferred_width (priv->payload_tile, for_height,
+                                         &payload_min, &payload_natural);
+    }
+
+  if (min_width_p)
+    *min_width_p = MAX (header_min, payload_min) 
+                    + padding.left + padding.right;
+
+  if (natural_width_p)
+    *natural_width_p = MAX (header_natural, payload_natural)
+                        + padding.left + padding.right;
+}
+
+static void
+nbtk_expander_get_preferred_height (ClutterActor *actor,
+                                    ClutterUnit   for_width,
+                                    ClutterUnit  *min_height_p,
+                                    ClutterUnit  *natural_height_p)
+{
+  NbtkExpanderPrivate *priv = NBTK_EXPANDER (actor)->priv;
+  NbtkPadding padding;
+  ClutterUnit header_min, header_natural;
+  ClutterUnit payload_min, payload_natural;
+
+  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
+
+  clutter_actor_get_preferred_height (priv->header_button, for_width,
+                                      &header_min, &header_natural);  
+
+  payload_min = 0;
+  payload_natural = 0;
+  if (nbtk_button_get_checked (NBTK_BUTTON (priv->header_button)))
+    {
+      clutter_actor_get_preferred_height (priv->payload_tile, for_width,
+                                          &payload_min, &payload_natural);
+    }
+
+  if (min_height_p)
+    *min_height_p = header_min + payload_min
+                   + padding.top + padding.bottom;
+
+  if (natural_height_p)
+    *natural_height_p = header_natural + payload_natural
+                       + padding.top + padding.bottom;
+}
+
+static void
 nbtk_expander_allocate (ClutterActor          *actor,
                         const ClutterActorBox *box,
                         gboolean               origin_changed)
@@ -208,6 +274,8 @@ nbtk_expander_class_init (NbtkExpanderClass *klass)
   gobject_class->get_property = nbtk_expander_get_property;
   gobject_class->set_property = nbtk_expander_set_property;
 
+  actor_class->get_preferred_height = nbtk_expander_get_preferred_height;
+  actor_class->get_preferred_width = nbtk_expander_get_preferred_width;
   actor_class->allocate = nbtk_expander_allocate;
   actor_class->paint = nbtk_expander_paint;
   actor_class->pick = nbtk_expander_pick;
@@ -238,6 +306,29 @@ nbtk_expander_init (NbtkExpander *self)
   self->priv->payload_tile = (ClutterActor *) nbtk_tile_new ();
   clutter_actor_set_parent (self->priv->payload_tile, CLUTTER_ACTOR (self));
   clutter_actor_hide (self->priv->payload_tile);
+}
+
+static void
+get_payload_child_cb (ClutterActor   *actor,
+                      ClutterActor  **actor_return_location)
+{
+  /* Iterating over a single-child container. */
+  *actor_return_location = actor;
+}
+
+/* FIXME: this can go away once we have NbtkBin */
+ClutterActor *
+nbtk_expander_get_child (NbtkExpander *self)
+{
+  ClutterActor *child;
+  
+  g_return_val_if_fail (self, NULL);
+
+  child = NULL;
+  clutter_container_foreach (CLUTTER_CONTAINER (self->priv->payload_tile),
+                             (ClutterCallback) get_payload_child_cb, &child);
+                             
+  return child;
 }
 
 /**

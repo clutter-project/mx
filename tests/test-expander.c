@@ -29,6 +29,9 @@ main (int argc, char *argv[])
 
   clutter_actor_show (stage);
 
+  label = NBTK_WIDGET (nbtk_expander_get_child (NBTK_EXPANDER (expander)));
+  printf ("Payload label: '%s'\n", nbtk_label_get_text (NBTK_LABEL (label)));
+
   clutter_main ();
 
   return EXIT_SUCCESS;
