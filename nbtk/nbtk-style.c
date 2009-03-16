@@ -1,3 +1,13 @@
+/**
+ * SECTION:nbtk-style
+ * @short_description: a data store for style properties
+ *
+ * #NbtkStyle is a property data store that can read properties from a style
+ * sheet. It is queried with objects that implement the NbtkStylable
+ * interface.
+ */
+
+
 #ifndef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -271,14 +281,29 @@ nbtk_style_init (NbtkStyle *style)
   nbtk_style_load (style);
 }
 
-/* need to unref */
+/**
+ * nbtk_style_new:
+ *
+ * Creates a new #NbtkStyle object. This must be freed using #g_object_unref
+ * when no longer required.
+ *
+ * Returns: a newly allocated #NbtkStyle
+ */
 NbtkStyle *
 nbtk_style_new (void)
 {
   return g_object_new (NBTK_TYPE_STYLE, NULL);
 }
 
-/* never ref/unref */
+/**
+ * nbtk_style_get_default:
+ *
+ * Return the default NbtkStyle object. This includes the current theme (if
+ * any).
+ *
+ * Returns: a #NbtkStyle object. This must not be freed or unref'd by
+ * applications
+ */
 NbtkStyle *
 nbtk_style_get_default (void)
 {
@@ -372,6 +397,16 @@ peek_node_class (void)
 
   return &_node_class;
 }
+
+/**
+ * nbtk_style_get_property:
+ * @style: the style data store object
+ * @stylable: a stylable to retreive the data for
+ * @pspec: a #GParamSpec describing the property required
+ * @value: a #GValue to place the return value in
+ *
+ * Requests the property described in @pspec for the specified stylable
+ */
 
 void
 nbtk_style_get_property (NbtkStyle    *style,
