@@ -75,6 +75,7 @@ struct _NbtkWidgetPrivate
 
   gboolean dnd_motion : 1;
   gboolean dnd_grab   : 1;
+  gboolean is_stylable : 1;
 };
 
 /*
@@ -199,6 +200,8 @@ enum
   PROP_STYLE_CLASS,
   PROP_DND_THRESHOLD,
   PROP_DND_ICON,
+
+  PROP_STYLABLE,
 };
 
 enum
@@ -356,6 +359,14 @@ nbtk_widget_set_property (GObject      *gobject,
       g_object_ref (actor->priv->dnd_icon);
       break;
 
+    case PROP_STYLABLE:
+      if (actor->priv->is_stylable != g_value_get_boolean (value))
+        {
+          actor->priv->is_stylable = g_value_get_boolean (value);
+          clutter_actor_queue_relayout ((ClutterActor *)gobject);
+        }
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -408,6 +419,10 @@ nbtk_widget_get_property (GObject    *gobject,
 
     case PROP_DND_ICON:
       g_value_set_object (value, priv->dnd_icon);
+      break;
+
+    case PROP_STYLABLE:
+      g_value_set_boolean (value, priv->is_stylable);
       break;
 
     default:
@@ -778,6 +793,10 @@ nbtk_widget_style_changed (NbtkWidget *self)
   gint border_top;
   gint border_bottom;
 
+  /* application has request this widget is not stylable */
+  if (!priv->is_stylable)
+    return;
+
   if (priv->bg_color)
     {
       clutter_color_free (priv->bg_color);
@@ -905,6 +924,7 @@ nbtk_widget_class_init (NbtkWidgetClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
+  GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (NbtkWidgetPrivate));
 
@@ -1030,6 +1050,22 @@ nbtk_widget_class_init (NbtkWidgetClass *klass)
 							"Icon to use for DND",
 							CLUTTER_TYPE_ACTOR,
 							NBTK_PARAM_READWRITE));
+
+
+
+  /**
+   * NbtkWidget:stylable:
+   *
+   * Enable or disable styling of the widget
+   */
+  pspec = g_param_spec_boolean ("stylable",
+                                "Stylable",
+                                "Whether the table should be styled",
+                                TRUE,
+                                NBTK_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class,
+                                   PROP_STYLABLE,
+                                   pspec);
 
   /**
    * NbtkWidget::style-changed:
@@ -1481,6 +1517,8 @@ nbtk_widget_init (NbtkWidget *actor)
 
   /* middle align */
   priv->x_align = priv->y_align = 0.5;
+
+  priv->is_stylable = TRUE;
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (actor), TRUE);
 
