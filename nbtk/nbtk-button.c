@@ -49,6 +49,7 @@
 #include "nbtk-texture-frame.h"
 #include "nbtk-texture-cache.h"
 #include "nbtk-tooltip.h"
+#include "nbtk-table.h"
 
 enum
 {
@@ -76,6 +77,7 @@ struct _NbtkButtonPrivate
 
   ClutterActor *label;
   ClutterActor *icon;
+  NbtkWidget   *table;
   NbtkWidget   *tooltip;
 
   guint8 old_opacity;
@@ -213,35 +215,6 @@ nbtk_button_real_released (NbtkButton *button)
   else
     nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "hover");
 
-}
-
-static void
-nbtk_button_construct_child (NbtkButton *button)
-{
-  NbtkButtonPrivate *priv = button->priv;
-  ClutterActor *label;
-
-  if (!priv->text)
-    return;
-
-  if (priv->icon)
-    {
-      clutter_container_remove_actor (CLUTTER_CONTAINER (button), priv->icon);
-      priv->icon = NULL;
-    }
-
-  label = g_object_new (CLUTTER_TYPE_TEXT,
-                        "text", priv->text,
-                        "line-alignment", PANGO_ALIGN_CENTER,
-                        "ellipsize", PANGO_ELLIPSIZE_MIDDLE,
-                        "use-markup", TRUE,
-                        NULL);
-
-  priv->label = label;
-
-  clutter_container_add_actor (CLUTTER_CONTAINER (button), label);
-
-  nbtk_button_update_label_style (button);
 }
 
 static gboolean
@@ -547,6 +520,10 @@ nbtk_button_init (NbtkButton *button)
 {
   button->priv = NBTK_BUTTON_GET_PRIVATE (button);
   button->priv->transition_duration = 250;
+
+  button->priv->table = g_object_new (NBTK_TYPE_TABLE, "stylable", FALSE, NULL);
+  clutter_container_add_actor (CLUTTER_CONTAINER (button),
+                               CLUTTER_ACTOR (button->priv->table));
 }
 
 /**
@@ -610,9 +587,34 @@ nbtk_button_set_label (NbtkButton  *button,
   priv = button->priv;
 
   g_free (priv->text);
-  priv->text = g_strdup (text);
 
-  nbtk_button_construct_child (button);
+  if (text)
+    priv->text = g_strdup (text);
+  else
+    priv->text = g_strdup ("");
+
+  if (priv->label)
+    {
+      clutter_text_set_text (CLUTTER_TEXT (priv->label), priv->text);
+    }
+  else
+    {
+      priv->label = g_object_new (CLUTTER_TYPE_TEXT,
+                                  "text", priv->text,
+                                  "line-alignment", PANGO_ALIGN_CENTER,
+                                  "ellipsize", PANGO_ELLIPSIZE_MIDDLE,
+                                  "use-markup", TRUE,
+                                  NULL);
+      nbtk_table_add_actor (NBTK_TABLE (priv->table), priv->label, 0, 1);
+      clutter_container_child_set (CLUTTER_CONTAINER (priv->table),
+                                   priv->label,
+                                   "y-align", 0.5,
+                                   "y-fill", FALSE,
+                                   NULL);
+    }
+
+
+  nbtk_button_update_label_style (button);
 
   g_object_notify (G_OBJECT (button), "label");
 }
@@ -720,12 +722,20 @@ nbtk_button_set_icon_from_file (NbtkButton *button,
   if (filename == NULL)
     {
       if (priv->icon)
-        clutter_container_remove_actor (CLUTTER_CONTAINER (button),
+        clutter_container_remove_actor (CLUTTER_CONTAINER (priv->table),
                                         priv->icon);
       priv->is_icon_set = FALSE;
     }
 
-  priv->icon = clutter_texture_new_from_file (filename, &err);
+  if (!priv->icon)
+    {
+      priv->icon = clutter_texture_new_from_file (filename, &err);
+      nbtk_table_add_actor (NBTK_TABLE (priv->table), priv->icon, 0, 0);
+    }
+  else
+    {
+      clutter_texture_set_from_file (CLUTTER_TEXTURE (priv->icon), filename, &err);
+    }
 
   if (err)
     {
@@ -735,17 +745,7 @@ nbtk_button_set_icon_from_file (NbtkButton *button,
     }
 
 
-  /* remove the label if present */
-  if (priv->label)
-    {
-      clutter_container_remove_actor (CLUTTER_CONTAINER (button),
-                                      priv->label);
-      g_free (priv->text);
-      priv->label = NULL;
-      priv->text = NULL;
-    }
 
-  clutter_container_add_actor (CLUTTER_CONTAINER (button), priv->icon);
   priv->is_icon_set = TRUE;
 }
 
