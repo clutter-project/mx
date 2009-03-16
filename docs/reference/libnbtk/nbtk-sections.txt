@@ -290,24 +290,6 @@ NbtkTooltipPrivate
 </SECTION>
 
 <SECTION>
-<FILE>nbtk-behaviour-bounce</FILE>
-<TITLE>NbtkBehaviourBounce</TITLE>
-NbtkBehaviourBounce
-nbtk_behaviour_bounce_new
-nbtk_bounce_scale
-<SUBSECTION Standard>
-NBTK_BEHAVIOUR_BOUNCE
-NBTK_IS_BEHAVIOUR_BOUNCE
-NBTK_TYPE_BEHAVIOUR_BOUNCE
-nbtk_behaviour_bounce_get_type
-NBTK_BEHAVIOUR_BOUNCE_CLASS
-NBTK_IS_BEHAVIOUR_BOUNCE_CLASS
-NBTK_BEHAVIOUR_BOUNCE_GET_CLASS
-<SUBSECTION Private>
-NbtkBehaviourBouncePrivate
-</SECTION>
-
-<SECTION>
 <FILE>nbtk-adjustment</FILE>
 <TITLE>NbtkAdjustment</TITLE>
 NbtkAdjustment
