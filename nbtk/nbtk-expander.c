@@ -295,6 +295,7 @@ nbtk_expander_init (NbtkExpander *self)
   self->priv->header_button = (ClutterActor *)
                                 g_object_new (NBTK_TYPE_BUTTON,
                                               "toggle-mode", TRUE,
+                                              "x-align", 0,
                                               NULL);
   clutter_actor_set_parent (self->priv->header_button, CLUTTER_ACTOR (self));
 /*
