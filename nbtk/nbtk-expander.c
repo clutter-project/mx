@@ -298,10 +298,6 @@ nbtk_expander_init (NbtkExpander *self)
                                               "x-align", 0,
                                               NULL);
   clutter_actor_set_parent (self->priv->header_button, CLUTTER_ACTOR (self));
-/*
-  g_signal_connect_swapped (self->priv->header_button, "clicked",
-                            G_CALLBACK (nbtk_expander_toggled), self);
-*/
 
   /* Initially invisible, for consistency with the un-toggled button. */
   self->priv->payload_tile = (ClutterActor *) nbtk_tile_new ();

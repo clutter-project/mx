@@ -17,6 +17,7 @@
     <xi:include href="xml/nbtk-button.xml"/>
     <xi:include href="xml/nbtk-enum-types.xml"/>
     <xi:include href="xml/nbtk-entry.xml"/>
+    <xi:include href="xml/nbtk-expander.xml"/>
     <xi:include href="xml/nbtk-grid.xml"/>
     <xi:include href="xml/nbtk-label.xml"/>
     <xi:include href="xml/nbtk-scroll-bar.xml"/>
