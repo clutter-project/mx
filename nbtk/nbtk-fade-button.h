@@ -25,7 +25,14 @@ G_BEGIN_DECLS
 #define NBTK_FADE_BUTTON_GET_CLASS(obj) \
   (G_TYPE_INSTANCE_GET_CLASS ((obj), NBTK_TYPE_FADE_BUTTON, NbtkFadeButtonClass))
 
+/**
+ * NbtkFadeButton:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
 typedef struct {
+  /*< private >*/
   NbtkButton parent;
 } NbtkFadeButton;
 

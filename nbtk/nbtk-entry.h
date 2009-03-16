@@ -38,6 +38,12 @@ typedef struct _NbtkEntry              NbtkEntry;
 typedef struct _NbtkEntryPrivate       NbtkEntryPrivate;
 typedef struct _NbtkEntryClass         NbtkEntryClass;
 
+/**
+ * NbtkEntry:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
 struct _NbtkEntry
 {
   /*< private >*/

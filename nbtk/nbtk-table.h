@@ -72,6 +72,12 @@ typedef struct _NbtkTable              NbtkTable;
 typedef struct _NbtkTablePrivate       NbtkTablePrivate;
 typedef struct _NbtkTableClass         NbtkTableClass;
 
+/**
+ * NbtkTable:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
 struct _NbtkTable
 {
   /*< private >*/

@@ -40,6 +40,13 @@ typedef struct _NbtkButton              NbtkButton;
 typedef struct _NbtkButtonPrivate       NbtkButtonPrivate;
 typedef struct _NbtkButtonClass         NbtkButtonClass;
 
+/**
+ * NbtkButton:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
+
 struct _NbtkButton
 {
   /*< private >*/

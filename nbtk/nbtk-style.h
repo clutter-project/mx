@@ -25,6 +25,12 @@ typedef enum { /*< prefix=NBTK_STYLE_ERROR >*/
   NBTK_STYLE_ERROR_INVALID_FILE
 } NbtkStyleError;
 
+/**
+ * NbtkStyle:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
 struct _NbtkStyle
 {
   /*< private >*/

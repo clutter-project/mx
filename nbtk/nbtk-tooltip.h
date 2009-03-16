@@ -38,6 +38,12 @@ typedef struct _NbtkTooltip              NbtkTooltip;
 typedef struct _NbtkTooltipPrivate       NbtkTooltipPrivate;
 typedef struct _NbtkTooltipClass         NbtkTooltipClass;
 
+/**
+ * NbtkTooltip:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
 struct _NbtkTooltip
 {
   /*< private >*/
