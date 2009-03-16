@@ -803,7 +803,7 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
   /* calculate minimum row widths and column heights */
   for (list = priv->children; list; list = g_slist_next (list))
     {
-      gint row, col, cell_width, i;
+      gint row, col, cell_width;
       ClutterUnit h_min, h_pref;
       gboolean x_expand, y_expand;
       ClutterChildMeta *meta;
@@ -1102,7 +1102,7 @@ nbtk_table_get_preferred_height (ClutterActor *self,
   /* calculate minimum row heights */
   for (list = priv->children; list; list = g_slist_next (list))
     {
-      gint row, col, col_span, i, cell_width;
+      gint row, col, col_span, cell_width;
       ClutterUnit min, pref;
       ClutterChildMeta *meta;
       ClutterActor *child;
