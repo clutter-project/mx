@@ -273,7 +273,6 @@ NBTK_STYLABLE_GET_IFACE
 <FILE>nbtk-tooltip</FILE>
 <TITLE>NbtkTooltip</TITLE>
 NbtkTooltip
-nbtk_tooltip_new
 nbtk_tooltip_get_label
 nbtk_tooltip_set_label
 nbtk_tooltip_show
