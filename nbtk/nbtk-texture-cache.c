@@ -219,7 +219,7 @@ nbtk_texture_cache_get_default (void)
   return  __cache_singleton;
 }
 
-void
+static void
 on_texure_finalized (gpointer data,
 		     GObject *where_the_object_was)
 {
