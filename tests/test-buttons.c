@@ -48,6 +48,7 @@ main (int argc, char *argv[])
                     "icon");
   nbtk_button_set_icon_from_file (NBTK_BUTTON (button),
                                   "redhand.png");
+  nbtk_button_set_label (NBTK_BUTTON (button), "Red Hand");
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 300, 100);
