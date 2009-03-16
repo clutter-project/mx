@@ -164,6 +164,14 @@ nbtk_texture_cache_class_init (NbtkTextureCacheClass *klass)
 				-1, G_MAXINT, 1,
 				G_PARAM_READWRITE));
 
+  /**
+   * NbtkTextureCache::loaded:
+   * @self: the object that received the signal
+   * @path: path to the image that has been loaded
+   * @texture: the texture that has been loaded
+   *
+   * Emitted when a texture has completed loading asynchronously
+   */
   signals[LOADED] =
     g_signal_new ("loaded",
                   G_TYPE_FROM_CLASS (klass),
@@ -173,6 +181,13 @@ nbtk_texture_cache_class_init (NbtkTextureCacheClass *klass)
                   _nbtk_marshal_VOID__STRING_OBJECT,
                   G_TYPE_NONE, 2, G_TYPE_STRING, CLUTTER_TYPE_TEXTURE);
 
+  /**
+   * NbtkTextureCache::error-loading:
+   * @self: the object that received the signal
+   * @error: a #GError describing the error encountered when loading the image
+   *
+   * Emitted when there is an error in loading any texture asynchronously
+   */
   signals[ERROR_LOADING] =
     g_signal_new ("error-loading",
                   G_TYPE_FROM_CLASS (klass),

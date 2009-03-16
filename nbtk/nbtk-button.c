@@ -505,6 +505,14 @@ nbtk_button_class_init (NbtkButtonClass *klass)
   g_object_class_install_property (gobject_class, PROP_TRANSITION, pspec);
 
 
+  /**
+   * NbtkButton::clicked:
+   * @button: the object that received the signal
+   *
+   * Emitted when the user activates the button, either with a mouse press and
+   * release or with the keyboard.
+   */
+
   button_signals[CLICKED] =
     g_signal_new ("clicked",
                   G_TYPE_FROM_CLASS (klass),

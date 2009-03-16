@@ -181,6 +181,13 @@ nbtk_style_class_init (NbtkStyleClass *klass)
 
   gobject_class->finalize = nbtk_style_finalize;
 
+  /**
+   * NbtkStyle::changed:
+   *
+   * Indicates that the style data has changed in some way. For example, a new
+   * stylesheet may have been loaded.
+   */
+
   style_signals[CHANGED] =
     g_signal_new ("changed",
                   G_TYPE_FROM_CLASS (klass),

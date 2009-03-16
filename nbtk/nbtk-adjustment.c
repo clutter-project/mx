@@ -319,6 +319,11 @@ nbtk_adjustment_class_init (NbtkAdjustmentClass *klass)
                                                         NBTK_PARAM_READWRITE |
                                                         G_PARAM_CONSTRUCT));
 
+  /**
+   * NbtkAdjustment::changed:
+   *
+   * Emitted when any of the adjustment values have changed
+   */
   signals[CHANGED] =
     g_signal_new ("changed",
                   G_TYPE_FROM_CLASS (klass),
