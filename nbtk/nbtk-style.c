@@ -523,28 +523,3 @@ nbtk_style_get_property (NbtkStyle    *style,
   g_value_unset (&real_value);
 }
 
-void
-nbtk_style_set_property (NbtkStyle    *style,
-                         const gchar  *property_name,
-                         const GValue *value)
-{
-  /*
-  StyleProperty *property;
-
-  g_return_if_fail (NBTK_IS_STYLE (style));
-  g_return_if_fail (property_name != NULL);
-  g_return_if_fail (value != NULL);
-
-  property = nbtk_style_find_property (style, property_name);
-  if (!property)
-    {
-      g_warning ("No style property named `%s' found.", property_name);
-      return;
-    }
-
-  g_value_copy (value, &property->value);
-
-  g_signal_emit (style, style_signals[CHANGED], 0);
-   */
-  g_warning ("nbtk_style_set_property() not yet implemented");
-}

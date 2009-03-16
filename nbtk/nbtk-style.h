@@ -58,9 +58,6 @@ void             nbtk_style_get_property   (NbtkStyle     *style,
                                             NbtkStylable  *stylable,
                                             GParamSpec    *pspec,
                                             GValue        *value);
-void             nbtk_style_set_property   (NbtkStyle     *style,
-                                            const gchar   *property_name,
-                                            const GValue  *value);
 
 G_END_DECLS
 
