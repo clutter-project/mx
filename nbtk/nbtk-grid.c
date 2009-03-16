@@ -38,8 +38,6 @@ typedef struct _NbtkGridActorData NbtkGridActorData;
 static void nbtk_grid_dispose             (GObject *object);
 static void nbtk_grid_finalize            (GObject *object);
 
-static void nbtk_grid_finalize            (GObject *object);
-
 static void nbtk_grid_set_property        (GObject      *object,
                                            guint         prop_id,
                                            const GValue *value,

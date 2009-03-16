@@ -92,7 +92,7 @@ AC_ARG_ENABLE([maintainer-flags],
               enable_maintainer_flags=maintainer_flags_default)
 
 if test "x$enable_maintainer_flags" = "xyes"; then
-  NBTK_MAINTAINER_CFLAGS="-Werror -Wall -Wshadow -Wcast-align -Wno-uninitialized -Wempty-body -Wformat-security -Winit-self"
+  NBTK_MAINTAINER_CFLAGS="-Werror -Wall -Wshadow -Wcast-align -Wno-uninitialized -Wempty-body -Wformat-security -Winit-self -Wmissing-declarations -Wredundant-decls -Wunreachable-code "
 fi
 AC_SUBST(NBTK_MAINTAINER_CFLAGS)
 

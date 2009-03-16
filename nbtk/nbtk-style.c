@@ -56,7 +56,7 @@ static NbtkStyle *default_style = NULL;
 
 G_DEFINE_TYPE (NbtkStyle, nbtk_style, G_TYPE_OBJECT);
 
-GQuark
+static GQuark
 g_style_error_quark (void)
 {
   return g_quark_from_static_string ("nbtk-style-error-quark");
