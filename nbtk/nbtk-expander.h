@@ -54,8 +54,12 @@ GType nbtk_expander_get_type (void) G_GNUC_CONST;
 
 NbtkWidget *    nbtk_expander_new       (const gchar *label);
 
-const gchar *   nbtk_expander_get_label (NbtkExpander *self);
-ClutterActor *  nbtk_expander_get_child (NbtkExpander *self);
+gboolean        nbtk_expander_get_expanded  (NbtkExpander *self);
+void            nbtk_expander_set_expanded  (NbtkExpander *self,
+                                             gboolean      expanded);
+
+ClutterActor *  nbtk_expander_get_child     (NbtkExpander *self);
+const gchar *   nbtk_expander_get_label     (NbtkExpander *self);
 
 G_END_DECLS
 

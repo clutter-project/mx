@@ -41,7 +41,13 @@ enum
 {
   PROP_0,
 
+  PROP_EXPANDED,
   PROP_LABEL
+};
+
+enum
+{
+  LAST_SIGNAL
 };
 
 struct _NbtkExpanderPrivate
@@ -66,9 +72,14 @@ nbtk_expander_get_property (GObject    *gobject,
 
   switch (prop_id)
     {
+    case PROP_EXPANDED:
+      g_value_set_boolean (value, 
+                           nbtk_expander_get_expanded (NBTK_EXPANDER (gobject)));
+      break;
     case PROP_LABEL:
       g_value_set_string (value,
-                          nbtk_button_get_label (NBTK_BUTTON (priv->header_button)));
+                          nbtk_button_get_label (
+                              NBTK_BUTTON (priv->header_button)));
       break;
 
     default:
@@ -87,6 +98,10 @@ nbtk_expander_set_property (GObject      *gobject,
 
   switch (prop_id)
     {
+    case PROP_EXPANDED:
+      nbtk_expander_set_expanded (NBTK_EXPANDER (gobject),
+                                  g_value_get_boolean (value));
+      break;
     case PROP_LABEL:
       nbtk_button_set_label (NBTK_BUTTON (priv->header_button),
                              g_value_get_string (value));
@@ -242,24 +257,13 @@ nbtk_expander_pick (ClutterActor       *actor,
     clutter_actor_paint (priv->payload_tile);
 }
 
-#if 0 /* Strangely this only works for the first click. */
 static void
-nbtk_expander_toggled (NbtkExpander *self,
-                       NbtkButton   *header_button)
+button_checked_cb (NbtkButton     *button,
+                   GParamSpec     *pspec,
+                   NbtkExpander   *self)
 {
-  NbtkExpanderPrivate *priv = self->priv;
-  gboolean checked;
-
-  g_object_get (header_button, "checked", &checked, NULL);
-printf ("%s() %d\n", __FUNCTION__, checked);
-  if (checked)
-    clutter_actor_show (priv->payload_tile);
-  else
-    clutter_actor_hide (priv->payload_tile);
-
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+  g_object_notify (G_OBJECT (self), "expanded");
 }
-#endif
 
 static void
 nbtk_expander_class_init (NbtkExpanderClass *klass)
@@ -280,6 +284,12 @@ nbtk_expander_class_init (NbtkExpanderClass *klass)
   actor_class->paint = nbtk_expander_paint;
   actor_class->pick = nbtk_expander_pick;
 
+  pspec = g_param_spec_string ("expanded",
+                               "Expanded",
+                               "Expansion state of the widget",
+                               FALSE, G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_EXPANDED, pspec);
+
   pspec = g_param_spec_string ("label",
                                "Label",
                                "Label of the header",
@@ -298,6 +308,8 @@ nbtk_expander_init (NbtkExpander *self)
                                               "x-align", 0.,
                                               NULL);
   clutter_actor_set_parent (self->priv->header_button, CLUTTER_ACTOR (self));
+  g_signal_connect (self->priv->header_button, "notify::checked",
+                    G_CALLBACK (button_checked_cb), self);
 
   /* Initially invisible, for consistency with the un-toggled button. */
   self->priv->payload_tile = (ClutterActor *) g_object_new (NBTK_TYPE_TILE,
@@ -307,20 +319,44 @@ nbtk_expander_init (NbtkExpander *self)
   clutter_actor_hide (self->priv->payload_tile);
 }
 
-const gchar *
-nbtk_expander_get_label (NbtkExpander *self)
-{
-  g_return_val_if_fail (self, NULL);
-
-  return nbtk_button_get_label (NBTK_BUTTON (self->priv->header_button));
-}
-
 static void
 get_payload_child_cb (ClutterActor   *actor,
                       ClutterActor  **actor_return_location)
 {
   /* Iterating over a single-child container. */
   *actor_return_location = actor;
+}
+
+/**
+ * nbtk_expander_new:
+ *
+ * Create a new expander.
+ *
+ * Returns: a new #NbtkExpander
+ */
+NbtkWidget *
+nbtk_expander_new (const gchar *label)
+{
+  return g_object_new (NBTK_TYPE_EXPANDER,
+                       "label", label,
+                       NULL);
+}
+
+gboolean
+nbtk_expander_get_expanded (NbtkExpander *self)
+{
+  g_return_val_if_fail (self, FALSE);
+  
+  return nbtk_button_get_checked (NBTK_BUTTON (self->priv->header_button));
+}
+
+void
+nbtk_expander_set_expanded (NbtkExpander *self,
+                            gboolean      expanded)
+{
+  g_return_if_fail (self);
+  
+  nbtk_button_set_checked (NBTK_BUTTON (self->priv->header_button), expanded);
 }
 
 /* FIXME: this can go away once we have NbtkBin */
@@ -338,19 +374,12 @@ nbtk_expander_get_child (NbtkExpander *self)
   return child;
 }
 
-/**
- * nbtk_expander_new:
- *
- * Create a new expander.
- *
- * Returns: a new #NbtkExpander
- */
-NbtkWidget *
-nbtk_expander_new (const gchar *label)
+const gchar *
+nbtk_expander_get_label (NbtkExpander *self)
 {
-  return g_object_new (NBTK_TYPE_EXPANDER,
-                       "label", label,
-                       NULL);
+  g_return_val_if_fail (self, NULL);
+
+  return nbtk_button_get_label (NBTK_BUTTON (self->priv->header_button));
 }
 
 /*
