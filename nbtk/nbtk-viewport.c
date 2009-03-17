@@ -195,21 +195,18 @@ nbtk_viewport_dispose (GObject *gobject)
 }
 
 static ClutterActor *
-get_natural_child_sizeu (NbtkViewport    *self,
-                         ClutterUnit    *natural_width,
-                         ClutterUnit    *natural_height)
+get_child_and_natural_size (NbtkViewport  *self,
+                            ClutterUnit   *natural_width,
+                            ClutterUnit   *natural_height)
 {
-  GList *children = clutter_container_get_children (CLUTTER_CONTAINER (self));
+  /* NbtkBin is a single-child container,
+    * let it grow as big as it wants. */
+  ClutterActor        *child;
+  ClutterRequestMode   mode;
 
-  if (children)
+  child = nbtk_bin_get_child (NBTK_BIN (self));
+  if (child)
     {
-      /* NbtkWidget is a single-child container,
-       * let it grow as big as it wants. */
-      ClutterActor        *child;
-      ClutterRequestMode   mode;
-
-      child = CLUTTER_ACTOR (children->data);
-      g_list_free (children), children = NULL;
 
       g_object_get (G_OBJECT (child), "request-mode", &mode, NULL);
       if (mode == CLUTTER_REQUEST_HEIGHT_FOR_WIDTH)
@@ -273,7 +270,9 @@ nbtk_viewport_allocate (ClutterActor          *self,
   natural_box.x1 = 0;
   natural_box.y1 = 0;
 
-  if (NULL != (child = get_natural_child_sizeu (NBTK_VIEWPORT (self), &natural_width, &natural_height)))
+  if (NULL != (child = get_child_and_natural_size (NBTK_VIEWPORT (self),
+                                                   &natural_width,
+                                                   &natural_height)))
     {
       natural_box.x2 = natural_width;
       natural_box.y2 = natural_height;
