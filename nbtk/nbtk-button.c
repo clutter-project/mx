@@ -96,7 +96,7 @@ struct _NbtkButtonPrivate
 
 static guint button_signals[LAST_SIGNAL] = { 0, };
 
-G_DEFINE_TYPE (NbtkButton, nbtk_button, NBTK_TYPE_WIDGET)
+G_DEFINE_TYPE (NbtkButton, nbtk_button, NBTK_TYPE_BIN)
 
 static void destroy_old_bg (NbtkButton *button);
 
@@ -427,13 +427,15 @@ nbtk_button_allocate (ClutterActor          *self,
 }
 
 static void
-nbtk_button_draw_background (NbtkWidget   *self,
-                             ClutterActor *background,
-                             ClutterColor *color)
+nbtk_button_draw_background (NbtkWidget         *self,
+                             ClutterActor       *background,
+                             const ClutterColor *color)
 {
   NbtkButtonPrivate *priv = NBTK_BUTTON (self)->priv;
+  NbtkWidgetClass *parent_class;
 
-  NBTK_WIDGET_CLASS (nbtk_button_parent_class)->draw_background (self, background, color);
+  parent_class = NBTK_WIDGET_CLASS (nbtk_button_parent_class);
+  parent_class->draw_background (self, background, color);
   
   if (priv->old_bg)
     clutter_actor_paint (priv->old_bg);
@@ -765,7 +767,8 @@ nbtk_button_set_icon_from_file (NbtkButton *button,
  * Set or remove a tooltip from the button.
  */
 void
-nbtk_button_set_tooltip (NbtkButton *button, const gchar *label)
+nbtk_button_set_tooltip (NbtkButton  *button,
+                         const gchar *label)
 {
   NbtkButtonPrivate *priv;
 
@@ -781,7 +784,5 @@ nbtk_button_set_tooltip (NbtkButton *button, const gchar *label)
                                     NULL);
     }
   else
-    {
-      g_object_unref (priv->tooltip);
-    }
+    g_object_unref (priv->tooltip);
 }

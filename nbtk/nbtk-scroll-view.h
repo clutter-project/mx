@@ -24,8 +24,7 @@
 #ifndef __NBTK_SCROLL_VIEW_H__
 #define __NBTK_SCROLL_VIEW_H__
 
-#include <glib-object.h>
-#include <nbtk/nbtk-widget.h>
+#include <nbtk/nbtk-bin.h>
 
 G_BEGIN_DECLS
 
@@ -43,14 +42,14 @@ typedef struct _NbtkScrollViewClass     NbtkScrollViewClass;
 struct _NbtkScrollView
 {
   /*< private >*/
-  NbtkWidget parent;
+  NbtkBin parent_instance;
 
   NbtkScrollViewPrivate *priv;
 };
 
 struct _NbtkScrollViewClass
 {
-  NbtkWidgetClass parent_class;
+  NbtkBinClass parent_class;
 };
 
 GType nbtk_scroll_view_get_type (void) G_GNUC_CONST;

@@ -39,7 +39,7 @@ main (int argc, char *argv[])
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 100, 100);
-  nbtk_widget_set_padding (NBTK_WIDGET (button), &padding);
+  nbtk_bin_set_padding (NBTK_BIN (button), &padding);
 
   button = nbtk_button_new ();
   clutter_actor_set_name (CLUTTER_ACTOR (button), "style-button");
@@ -52,7 +52,7 @@ main (int argc, char *argv[])
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 300, 100);
-  nbtk_widget_set_padding (NBTK_WIDGET (button), &padding);
+  nbtk_bin_set_padding (NBTK_BIN (button), &padding);
 
   button = nbtk_button_new_with_label ("Toggle");
   g_signal_connect (button, "clicked",
@@ -62,7 +62,7 @@ main (int argc, char *argv[])
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 100, 200);
-  nbtk_widget_set_padding (NBTK_WIDGET (button), &padding);
+  nbtk_bin_set_padding (NBTK_BIN (button), &padding);
 
   button = nbtk_button_new ();
   g_signal_connect (button, "clicked",

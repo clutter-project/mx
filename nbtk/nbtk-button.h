@@ -27,7 +27,7 @@
 
 G_BEGIN_DECLS
 
-#include <nbtk/nbtk-widget.h>
+#include <nbtk/nbtk-bin.h>
 
 #define NBTK_TYPE_BUTTON                (nbtk_button_get_type ())
 #define NBTK_BUTTON(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_BUTTON, NbtkButton))
@@ -50,14 +50,14 @@ typedef struct _NbtkButtonClass         NbtkButtonClass;
 struct _NbtkButton
 {
   /*< private >*/
-  NbtkWidget parent_instance;
+  NbtkBin parent_instance;
 
   NbtkButtonPrivate *priv;
 };
 
 struct _NbtkButtonClass
 {
-  NbtkWidgetClass parent_class;
+  NbtkBinClass parent_class;
 
   /* vfuncs, not signals */
   void (* pressed)  (NbtkButton *button);

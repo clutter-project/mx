@@ -58,7 +58,7 @@ struct _NbtkExpanderPrivate
 
 static void nbtk_container_iface_init (ClutterContainerIface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (NbtkExpander, nbtk_expander, NBTK_TYPE_WIDGET,
+G_DEFINE_TYPE_WITH_CODE (NbtkExpander, nbtk_expander, NBTK_TYPE_BIN,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
                                                 nbtk_container_iface_init));
 
@@ -134,7 +134,7 @@ nbtk_expander_get_preferred_width (ClutterActor *actor,
   ClutterUnit header_min, header_natural;
   ClutterUnit payload_min, payload_natural;
 
-  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
+  nbtk_bin_get_padding (NBTK_BIN (actor), &padding);
   
   clutter_actor_get_preferred_width (priv->header_button, for_height,
                                      &header_min, &header_natural);  
@@ -167,7 +167,7 @@ nbtk_expander_get_preferred_height (ClutterActor *actor,
   ClutterUnit header_min, header_natural;
   ClutterUnit payload_min, payload_natural;
 
-  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
+  nbtk_bin_get_padding (NBTK_BIN (actor), &padding);
 
   clutter_actor_get_preferred_height (priv->header_button, for_width,
                                       &header_min, &header_natural);  
@@ -201,7 +201,7 @@ nbtk_expander_allocate (ClutterActor          *actor,
   CLUTTER_ACTOR_CLASS (nbtk_expander_parent_class)
     ->allocate (actor, box, origin_changed);
 
-  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
+  nbtk_bin_get_padding (NBTK_BIN (actor), &padding);
 
   /* Header button. */
   header_box.x1 = padding.left;

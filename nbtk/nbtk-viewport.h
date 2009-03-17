@@ -25,7 +25,7 @@
 #define __NBTK_VIEWPORT_H__
 
 #include <clutter/clutter.h>
-#include <nbtk/nbtk-widget.h>
+#include <nbtk/nbtk-bin.h>
 
 G_BEGIN_DECLS
 
@@ -42,14 +42,14 @@ typedef struct _NbtkViewportClass     NbtkViewportClass;
 
 struct _NbtkViewport
 {
-  NbtkWidget parent;
+  NbtkBin parent;
 
   NbtkViewportPrivate *priv;
 };
 
 struct _NbtkViewportClass
 {
-  NbtkWidgetClass parent_class;
+  NbtkBinClass parent_class;
 };
 
 GType nbtk_viewport_get_type (void) G_GNUC_CONST;

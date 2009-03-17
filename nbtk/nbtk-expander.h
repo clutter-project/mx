@@ -40,14 +40,14 @@ typedef struct _NbtkExpanderClass         NbtkExpanderClass;
 struct _NbtkExpander
 {
   /*< private >*/
-  NbtkWidget parent_instance;
+  NbtkBin parent_instance;
 
   NbtkExpanderPrivate *priv;
 };
 
 struct _NbtkExpanderClass
 {
-  NbtkWidgetClass parent_class;
+  NbtkBinClass parent_class;
 };
 
 GType nbtk_expander_get_type (void) G_GNUC_CONST;

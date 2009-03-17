@@ -25,7 +25,7 @@
 
 G_BEGIN_DECLS
 
-#include <nbtk/nbtk-widget.h>
+#include <nbtk/nbtk-bin.h>
 
 #define NBTK_TYPE_TOOLTIP                (nbtk_tooltip_get_type ())
 #define NBTK_TOOLTIP(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_TOOLTIP, NbtkTooltip))
@@ -47,14 +47,14 @@ typedef struct _NbtkTooltipClass         NbtkTooltipClass;
 struct _NbtkTooltip
 {
   /*< private >*/
-  NbtkWidget parent_instance;
+  NbtkBin parent_instance;
 
   NbtkTooltipPrivate *priv;
 };
 
 struct _NbtkTooltipClass
 {
-  NbtkWidgetClass parent_class;
+  NbtkBinClass parent_class;
 };
 
 GType nbtk_tooltip_get_type (void) G_GNUC_CONST;
