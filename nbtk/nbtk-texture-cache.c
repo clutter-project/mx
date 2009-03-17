@@ -164,6 +164,14 @@ nbtk_texture_cache_class_init (NbtkTextureCacheClass *klass)
 				-1, G_MAXINT, 1,
 				G_PARAM_READWRITE));
 
+  /**
+   * NbtkTextureCache::loaded:
+   * @self: the object that received the signal
+   * @path: path to the image that has been loaded
+   * @texture: the texture that has been loaded
+   *
+   * Emitted when a texture has completed loading asynchronously
+   */
   signals[LOADED] =
     g_signal_new ("loaded",
                   G_TYPE_FROM_CLASS (klass),
@@ -173,6 +181,13 @@ nbtk_texture_cache_class_init (NbtkTextureCacheClass *klass)
                   _nbtk_marshal_VOID__STRING_OBJECT,
                   G_TYPE_NONE, 2, G_TYPE_STRING, CLUTTER_TYPE_TEXTURE);
 
+  /**
+   * NbtkTextureCache::error-loading:
+   * @self: the object that received the signal
+   * @error: a #GError describing the error encountered when loading the image
+   *
+   * Emitted when there is an error in loading any texture asynchronously
+   */
   signals[ERROR_LOADING] =
     g_signal_new ("error-loading",
                   G_TYPE_FROM_CLASS (klass),
@@ -219,7 +234,7 @@ nbtk_texture_cache_get_default (void)
   return  __cache_singleton;
 }
 
-void
+static void
 on_texure_finalized (gpointer data,
 		     GObject *where_the_object_was)
 {
@@ -264,7 +279,10 @@ nbtk_texture_cache_get_texture_if_exists (NbtkTextureCache *self,
 				          gboolean          want_clone)
 {
   NbtkTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE(self);
-  ClutterActor *res;
+  ClutterActor *res = NULL;
+
+  if (!path)
+    return res;
 
   res = g_hash_table_lookup (priv->cache, path);
 
@@ -287,6 +305,8 @@ nbtk_texture_cache_get_texture (NbtkTextureCache *self,
 {
   ClutterActor *res;
 
+  g_return_val_if_fail (path != NULL, NULL);
+
   res = nbtk_texture_cache_get_texture_if_exists (self, path, want_clone);
 
   if (!res)
@@ -299,8 +319,12 @@ nbtk_texture_cache_get_texture (NbtkTextureCache *self,
       
       if (want_clone)
         {
-          res = clutter_clone_new (res);
+          ClutterActor *clone;
+
+          clone = clutter_clone_new (res);
           g_object_unref (res);
+
+          res = clone;
         }
     }
 
@@ -430,7 +454,9 @@ nbtk_texture_cache_get_texture_async (NbtkTextureCache *self,
 {
   ClutterActor *texture;
   NbtkTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE (self);
-  
+
+  g_return_if_fail (path != NULL);
+
   texture = nbtk_texture_cache_get_texture_if_exists (self, path, FALSE);
 
   if (texture || !priv->thread_pool)

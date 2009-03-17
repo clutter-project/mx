@@ -284,11 +284,11 @@ nbtk_label_init (NbtkLabel *label)
 
   label->priv = priv = NBTK_LABEL_GET_PRIVATE (label);
 
-  priv->label = g_object_new (CLUTTER_TYPE_TEXT,
-                              "line-alignment", PANGO_ALIGN_CENTER,
-                              "ellipsize", PANGO_ELLIPSIZE_MIDDLE,
-                              "use-markup", TRUE,
-                              NULL);
+  label->priv->label = g_object_new (CLUTTER_TYPE_TEXT,
+                                     "ellipsize", PANGO_ELLIPSIZE_END,
+                                     "use-markup", TRUE,
+                                     NULL);
+
   clutter_actor_set_parent (priv->label, CLUTTER_ACTOR (label));
 }
 

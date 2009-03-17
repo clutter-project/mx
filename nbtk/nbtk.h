@@ -30,10 +30,13 @@
 #include <nbtk/nbtk-droppable.h>
 #include <nbtk/nbtk-entry.h>
 #include <nbtk/nbtk-enum-types.h>
+#include <nbtk/nbtk-expander.h>
+#include <nbtk/nbtk-fade-button.h>
+#include <nbtk/nbtk-grid.h>
 #include <nbtk/nbtk-label.h>
-#include <nbtk/nbtk-scrollable.h>
 #include <nbtk/nbtk-scroll-bar.h>
 #include <nbtk/nbtk-scroll-view.h>
+#include <nbtk/nbtk-scrollable.h>
 #include <nbtk/nbtk-stylable.h>
 #include <nbtk/nbtk-style.h>
 #include <nbtk/nbtk-table.h>

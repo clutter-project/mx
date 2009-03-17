@@ -7,11 +7,9 @@
 int
 main (int argc, char *argv[])
 {
-  NbtkWidget *button;
-  ClutterColor stage_color =  { 0xff, 0xff, 0xff, 0xff };
   ClutterActor *stage, *texture, *frame;
   GError *err = NULL;
-
+  
   clutter_init (&argc, &argv);
 
   stage = clutter_stage_get_default ();
@@ -21,7 +19,7 @@ main (int argc, char *argv[])
 
   if (err)
     {
-      g_critical (err->message);
+      g_critical ("%s", err->message);
       return 1;
     }
 

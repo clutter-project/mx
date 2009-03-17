@@ -1,0 +1,21 @@
+#include <nbtk/nbtk.h>
+
+nbtk_adjustment_get_type
+nbtk_button_get_type
+nbtk_entry_get_type
+nbtk_expander_get_type
+nbtk_grid_get_type
+nbtk_label_get_type
+nbtk_padding_get_type
+nbtk_scrollable_get_type
+nbtk_scroll_bar_get_type
+nbtk_scroll_view_get_type
+nbtk_stylable_get_type
+nbtk_style_get_type
+nbtk_table_get_type
+nbtk_texture_cache_get_type
+nbtk_texture_frame_get_type
+nbtk_tooltip_get_type
+nbtk_viewport_get_type
+nbtk_widget_get_type
+

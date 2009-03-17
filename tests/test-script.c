@@ -4,6 +4,7 @@
 #include <glib.h>
 
 #include <clutter/clutter.h>
+#include <nbtk/nbtk.h>
 
 static ClutterScript *script = NULL;
 

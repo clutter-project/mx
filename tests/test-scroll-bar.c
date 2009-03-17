@@ -68,7 +68,6 @@ main (int argc, char **argv)
 {
   NbtkAdjustment *adjustment;
   ClutterActor *stage, *scroll, *viewport;
-  ClutterActor  *tex, *frame;
   ClutterColor stage_color = { 0x34, 0x39, 0x39, 0xff };
 
   clutter_init (&argc, &argv);
@@ -78,7 +77,7 @@ main (int argc, char **argv)
   clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
   clutter_actor_set_size (stage, 800, 600);
 
-  viewport = nbtk_viewport_new ();
+  viewport = (ClutterActor *) nbtk_viewport_new ();
   clutter_actor_set_clip (viewport, 0, 0, 800, 600);
   g_signal_connect (viewport, "notify::x-origin",
                     G_CALLBACK (viewport_x_origin_notify_cb), viewport);
@@ -87,24 +86,14 @@ main (int argc, char **argv)
 
   nbtk_scrollable_get_adjustments (NBTK_SCROLLABLE (viewport),
                                    &adjustment, NULL);
-  scroll = nbtk_scroll_bar_new (adjustment);
+
+  scroll = (ClutterActor *) nbtk_scroll_bar_new (adjustment);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), scroll);
   clutter_actor_set_position (scroll, 0, 500);
   clutter_actor_set_size (scroll, 800, 100);
 
-  tex = g_object_new (CLUTTER_TYPE_TEXTURE,
-		      "filename", "frame.png",
-		      "disable-slicing", TRUE,
-		      NULL);
-  frame = nbtk_texture_frame_new (CLUTTER_TEXTURE(tex), 20, 20, 20, 20);
-  scroll = nbtk_scroll_bar_new_with_handle (adjustment, frame);
-
-  frame = nbtk_texture_frame_new (CLUTTER_TEXTURE(tex), 20, 20, 20, 20);
-  clutter_actor_show (frame);
-  nbtk_scroll_bar_set_texture (NBTK_SCROLL_BAR(scroll), frame);
-
+  scroll = (ClutterActor *) nbtk_scroll_bar_new (adjustment);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), scroll);
-
   clutter_actor_set_position (scroll, 0, 0);
   clutter_actor_set_size (scroll, 800, 50);
   clutter_actor_set_rotation (scroll, CLUTTER_Z_AXIS, 5.0, 0, 0, 0);

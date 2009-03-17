@@ -3,14 +3,8 @@
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
-PROJECT=Nbtk
-TEST_TYPE=-d
-FILE=nbtk
-
-test $TEST_TYPE $FILE || {
-        echo "You must run this script in the top-level $PROJECT directory"
-        exit 1
-}
+olddir=`pwd`
+cd $srcdir
 
 GTKDOCIZE=`which gtkdocize`
 if test -z $GTKDOCIZE; then
@@ -18,6 +12,12 @@ if test -z $GTKDOCIZE; then
         echo "EXTRA_DIST =" > gtk-doc.make
 else
         gtkdocize || exit $?
+        sed -e 's#) --mode=compile#) --tag=CC --mode=compile#' gtk-doc.make \
+          > gtk-doc.temp \
+                && mv gtk-doc.temp gtk-doc.make
+        sed -e 's#) --mode=link#) --tag=CC --mode=link#' gtk-doc.make \
+          > gtk-doc.temp \
+                && mv gtk-doc.temp gtk-doc.make
 fi
 
 GLIB_GETTEXTIZE=`which glib-gettextize`
@@ -36,4 +36,7 @@ else
         autoreconf -v --install || exit $?
 fi
 
-./configure "$@" && echo "Now type 'make' to compile $PROJECT."
+cd $olddir
+
+$srcdir/configure --enable-maintainer-mode "$@" && \
+  echo "Now type 'make' to compile $PROJECT."

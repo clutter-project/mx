@@ -221,6 +221,14 @@ nbtk_entry_allocate (ClutterActor          *actor,
 }
 
 static void
+nbtk_entry_focus_in (ClutterActor *actor)
+{
+  NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
+
+  clutter_actor_grab_key_focus (priv->entry);
+}
+
+static void
 nbtk_entry_paint (ClutterActor *actor)
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
@@ -267,6 +275,7 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
   actor_class->get_preferred_width = nbtk_entry_get_preferred_width;
   actor_class->get_preferred_height = nbtk_entry_get_preferred_height;
   actor_class->allocate = nbtk_entry_allocate;
+  actor_class->focus_in = nbtk_entry_focus_in;
   actor_class->paint = nbtk_entry_paint;
 
   widget_class->style_changed = nbtk_entry_style_changed;
@@ -283,15 +292,17 @@ static void
 nbtk_entry_init (NbtkEntry *entry)
 {
   NbtkEntryPrivate *priv;
+  ClutterColor cursor = { 0x0, 0x9c, 0xcf, 0xff };
 
-  entry->priv = priv = NBTK_ENTRY_GET_PRIVATE (entry);
+  entry->priv = NBTK_ENTRY_GET_PRIVATE (entry);
 
-  priv->entry = g_object_new (CLUTTER_TYPE_TEXT,
-                              "line-alignment", PANGO_ALIGN_LEFT,
-                              "activatable", TRUE,
-                              "editable", TRUE,
-                              "reactive", TRUE,
-                              NULL);
+  entry->priv->entry = g_object_new (CLUTTER_TYPE_TEXT,
+                                     "line-alignment", PANGO_ALIGN_LEFT,
+                                     "activatable", TRUE,
+                                     "editable", TRUE,
+                                     "reactive", TRUE,
+                                     "cursor-color", &cursor,
+                                     NULL);
 
   clutter_actor_set_parent (priv->entry, CLUTTER_ACTOR (entry));
 }

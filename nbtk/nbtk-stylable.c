@@ -405,7 +405,7 @@ nbtk_stylable_set_property_internal (NbtkStylable       *stylable,
                                pspec->name,
                                NULL);
 
-      nbtk_style_set_property (style, real_name, &tmp_value);
+      // XXX nbtk_style_set_property (style, real_name, &tmp_value);
       g_object_notify_queue_add (G_OBJECT (stylable), nqueue, pspec);
 
       g_free (real_name);

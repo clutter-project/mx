@@ -18,23 +18,31 @@ NbtkEntry {
   padding-left: 10;
 }
 
-NbtkButton {
+NbtkButton, NbtkFadeButton {
   color: blue;
   padding: 12;
   border-image: url('file://border-image.png') 12 stretch stretch;
 }
 
-NbtkButton:hover {
+NbtkButton:hover, NbtkFadeButton:hover {
   border-image: url('file://border-image-light.png') 12 stretch stretch;
 }
 
-NbtkButton:active {
+NbtkButton:active, NbtkFadeButton:active {
   border-image: url('file://border-image-dark.png') 12 stretch stretch;
 }
 
 NbtkButton#test-border-image {
   color: black;
   border-image: url('file://border-image.png') 12 stretch stretch;
+}
+
+NbtkExpander {
+  background-color: blue;
+}
+
+NbtkExpander > NbtkBin {
+  background-color: red;
 }
 
 NbtkLabel#test-border-image {
@@ -55,11 +63,18 @@ NbtkLabel#test-border-image {
   border-image: url('file://green-button.png') 0 stretch stretch;
 }
 
+*#style-button {
+  border-image: url('file://green-button.png') 0;
+}
+
+*#style-button:hover {
+  border-image: url('file://red-button.png') 0;
+}
+
 NbtkTable {
   color: #aee;
   background-color: #ddd;
-  background-image: url('file://rounded-corner.png');
-  border-width: 30 30 30 30;
+  border-image: url('file://rounded-corner.png') 30;
 }
 
 NbtkTooltip {
@@ -68,4 +83,21 @@ NbtkTooltip {
 
 NbtkTable NbtkButton {
   color: yellow;
+}
+
+NbtkScrollBar {
+  background-color: darkgrey;
+  padding: 2;
+}
+
+NbtkScrollBar *#trough {
+  background-color: lightgrey;
+}
+
+NbtkScrollBar *#handle {
+  background-color: black;
+}
+
+NbtkScrollBar *#handle:hover {
+  background-color: red;
 }

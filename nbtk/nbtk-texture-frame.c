@@ -211,50 +211,57 @@ nbtk_texture_frame_paint (ClutterActor *self)
   cogl_material_set_layer (priv->material, 0, cogl_texture);
   cogl_set_source (priv->material);
 
-  /* top left corner */
-  cogl_rectangle_with_texture_coords (0, 0, priv->left, priv->top,
-                                      0.0, 0.0,
-                                      tx1, ty1);
+  {
+    GLfloat rectangles[] =
+      {
+        /* top left corner */
+        0, 0, priv->left, priv->top,
+        0.0, 0.0,
+        tx1, ty1,
 
-  /* top middle */
-  cogl_rectangle_with_texture_coords (priv->left, 0, ex, priv->top,
-                                      tx1, 0.0,
-                                      tx2, ty1);
+        /* top middle */
+        priv->left, 0, ex, priv->top,
+        tx1, 0.0,
+        tx2, ty1,
 
-  /* top right */
-  cogl_rectangle_with_texture_coords (ex, 0, width, priv->top,
-                                      tx2, 0.0,
-                                      1.0, ty1);
+        /* top right */
+        ex, 0, width, priv->top,
+        tx2, 0.0,
+        1.0, ty1,
 
-  /* mid left */
-  cogl_rectangle_with_texture_coords (0, priv->top, priv->left, ey,
-                                      0.0, ty1,
-                                      tx1, ty2);
+        /* mid left */
+        0, priv->top, priv->left, ey,
+        0.0, ty1,
+        tx1, ty2,
 
-  /* center */
-  cogl_rectangle_with_texture_coords (priv->left, priv->top, ex, ey,
-                                      tx1, ty1,
-                                      tx2, ty2);
+        /* center */
+        priv->left, priv->top, ex, ey,
+        tx1, ty1,
+        tx2, ty2,
 
-  /* mid right */
-  cogl_rectangle_with_texture_coords (ex, priv->top, width, ey,
-                                      tx2, ty1,
-                                      1.0, ty2);
-  
-  /* bottom left */
-  cogl_rectangle_with_texture_coords (0, ey, priv->left, height,
-                                      0.0, ty2,
-                                      tx1, 1.0);
+        /* mid right */
+        ex, priv->top, width, ey,
+        tx2, ty1,
+        1.0, ty2,
 
-  /* bottom center */
-  cogl_rectangle_with_texture_coords (priv->left, ey, ex, height,
-                                      tx1, ty2,
-                                      tx2, 1.0);
+        /* bottom left */
+        0, ey, priv->left, height,
+        0.0, ty2,
+        tx1, 1.0,
 
-  /* bottom right */
-  cogl_rectangle_with_texture_coords (ex, ey, width, height,
-                                      tx2, ty2,
-                                      1.0, 1.0);
+        /* bottom center */
+        priv->left, ey, ex, height,
+        tx1, ty2,
+        tx2, 1.0,
+
+        /* bottom right */
+        ex, ey, width, height,
+        tx2, ty2,
+        1.0, 1.0
+      };
+
+    cogl_rectangles_with_texture_coords (rectangles, 9);
+  }
 }
 
 static inline void

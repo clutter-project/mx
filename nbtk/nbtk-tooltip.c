@@ -188,13 +188,25 @@ nbtk_tooltip_class_init (NbtkTooltipClass *klass)
 static void
 nbtk_tooltip_weak_ref_notify (gpointer tooltip, GObject *obj)
 {
+  NbtkTooltipPrivate *priv = NBTK_TOOLTIP (tooltip)->priv;
+
+  priv->widget = NULL;
+
   if (!clutter_actor_get_parent (CLUTTER_ACTOR (tooltip)))
     {
       g_object_ref_sink (G_OBJECT (tooltip));
       g_object_unref (G_OBJECT (tooltip));
     }
   else
-    clutter_actor_unparent (CLUTTER_ACTOR (tooltip));
+    {
+      ClutterActor *actor = CLUTTER_ACTOR (tooltip);
+      ClutterActor *parent = clutter_actor_get_parent (actor);
+
+      if (CLUTTER_IS_CONTAINER (parent))
+        clutter_container_remove_actor (CLUTTER_CONTAINER (parent), actor);
+      else
+        clutter_actor_unparent (actor);
+    }
 }
 
 static void
@@ -319,11 +331,20 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
   gint x, y;
   guint w, h;
 
+  if (!widget)
+    return;
+
   g_return_if_fail (NBTK_TOOLTIP (tooltip));
 
   priv = tooltip->priv;
   parent = clutter_actor_get_parent (self);
   stage = clutter_actor_get_stage (widget);
+
+  if (!stage)
+    {
+      g_warning ("NbtkTooltip associated widget is not on any stage.");
+      return;
+    }
 
   /* make sure we're parented on the stage */
   if (G_UNLIKELY (parent != stage))

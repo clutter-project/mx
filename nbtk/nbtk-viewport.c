@@ -32,6 +32,7 @@
 #include "nbtk-adjustment.h"
 #include "nbtk-scrollable.h"
 #include "nbtk-private.h"
+#include "nbtk-bin.h"
 
 static void scrollable_interface_init (NbtkScrollableInterface *iface);
 
@@ -43,7 +44,7 @@ static void scrollable_get_adjustments (NbtkScrollable  *scrollable,
                                         NbtkAdjustment **hadjustment,
                                         NbtkAdjustment **vadjustment);
 
-G_DEFINE_TYPE_WITH_CODE (NbtkViewport, nbtk_viewport, NBTK_TYPE_WIDGET,
+G_DEFINE_TYPE_WITH_CODE (NbtkViewport, nbtk_viewport, NBTK_TYPE_BIN,
                          G_IMPLEMENT_INTERFACE (NBTK_TYPE_SCROLLABLE,
                                                 scrollable_interface_init))
 
@@ -193,9 +194,10 @@ nbtk_viewport_dispose (GObject *gobject)
   G_OBJECT_CLASS (nbtk_viewport_parent_class)->dispose (gobject);
 }
 
-static gboolean
-get_natural_child_size (NbtkViewport    *self,
-                        ClutterActorBox *box)
+static ClutterActor *
+get_natural_child_sizeu (NbtkViewport    *self,
+                         ClutterUnit    *natural_width,
+                         ClutterUnit    *natural_height)
 {
   GList *children = clutter_container_get_children (CLUTTER_CONTAINER (self));
 
@@ -205,7 +207,6 @@ get_natural_child_size (NbtkViewport    *self,
        * let it grow as big as it wants. */
       ClutterActor        *child;
       ClutterRequestMode   mode;
-      ClutterUnit          x, y, natural_width, natural_height;
 
       child = CLUTTER_ACTOR (children->data);
       g_list_free (children), children = NULL;
@@ -214,29 +215,22 @@ get_natural_child_size (NbtkViewport    *self,
       if (mode == CLUTTER_REQUEST_HEIGHT_FOR_WIDTH)
         {
           clutter_actor_get_preferred_width (child, -1, NULL,
-                                             &natural_width);
-          clutter_actor_get_preferred_height (child, natural_width, NULL,
-                                              &natural_height);
+                                             natural_width);
+          clutter_actor_get_preferred_height (child, *natural_width, NULL,
+                                              natural_height);
         }
       else
         {
           clutter_actor_get_preferred_height (child, -1, NULL,
-                                              &natural_height);
-          clutter_actor_get_preferred_width (child, natural_height, NULL,
-                                             &natural_width);
+                                              natural_height);
+          clutter_actor_get_preferred_width (child, *natural_height, NULL,
+                                             natural_width);
         }
 
-      clutter_actor_get_positionu (child, &x, &y);
-
-      box->x1 = x;
-      box->y1 = y;
-      box->x2 = x + natural_width;
-      box->y2 = y + natural_height;
-
-      return TRUE;
+      return child;
     }
 
-    return FALSE;
+    return NULL;
 }
 
 static void
@@ -268,28 +262,33 @@ nbtk_viewport_allocate (ClutterActor          *self,
                         gboolean               absolute_origin_changed)
 {
   NbtkViewportPrivate   *priv = NBTK_VIEWPORT (self)->priv;
-  ClutterActorBox natural_box, child_box;
-
-  if (get_natural_child_size (NBTK_VIEWPORT (self), &child_box))
-    {
-      natural_box.x1 = box->x1;
-      natural_box.y1 = box->y1;
-      natural_box.x2 = MAX (child_box.x2, box->x2);
-      natural_box.y2 = MAX (child_box.y2, box->y2);
-    }
-  else
-    {
-      memcpy (&natural_box, box, sizeof (natural_box));
-    }
+  ClutterActor          *child;
+  ClutterActorBox natural_box;
+  ClutterUnit     natural_width, natural_height;
 
   /* Chain up. */
   CLUTTER_ACTOR_CLASS (nbtk_viewport_parent_class)->
-    allocate (self, &natural_box, absolute_origin_changed);
+    allocate (self, box, absolute_origin_changed);
+
+  natural_box.x1 = 0;
+  natural_box.y1 = 0;
+
+  if (NULL != (child = get_natural_child_sizeu (NBTK_VIEWPORT (self), &natural_width, &natural_height)))
+    {
+      natural_box.x2 = natural_width;
+      natural_box.y2 = natural_height;
+      clutter_actor_allocate (child, &natural_box, absolute_origin_changed);
+    }
+  else
+    {
+      natural_box.x2 = box->x2 - box->x1;
+      natural_box.y2 = box->y2 - box->y1;
+    }
 
   /* Refresh adjustments */
   if (priv->sync_adjustments)
     {
-      ClutterFixed prev_value;
+      gdouble prev_value;
 
       if (priv->hadjustment)
         {
@@ -299,8 +298,8 @@ nbtk_viewport_allocate (ClutterActor          *self,
                        NULL);
 
           /* Make sure value is clamped */
-          prev_value = nbtk_adjustment_get_valuex (priv->hadjustment);
-          nbtk_adjustment_set_valuex (priv->hadjustment, prev_value);
+          prev_value = nbtk_adjustment_get_value (priv->hadjustment);
+          nbtk_adjustment_set_value (priv->hadjustment, prev_value);
         }
 
       if (priv->vadjustment)
@@ -310,8 +309,8 @@ nbtk_viewport_allocate (ClutterActor          *self,
                        "upper", CLUTTER_UNITS_TO_FLOAT (natural_box.y2 - natural_box.y1),
                        NULL);
 
-          prev_value = nbtk_adjustment_get_valuex (priv->vadjustment);
-          nbtk_adjustment_set_valuex (priv->vadjustment, prev_value);
+          prev_value = nbtk_adjustment_get_value (priv->vadjustment);
+          nbtk_adjustment_set_value (priv->vadjustment, prev_value);
         }
     }
 }
@@ -386,12 +385,12 @@ hadjustment_value_notify_cb (NbtkAdjustment *adjustment,
                              NbtkViewport   *viewport)
 {
   NbtkViewportPrivate *priv = viewport->priv;
-  ClutterFixed value;
+  gdouble value;
 
-  value = nbtk_adjustment_get_valuex (adjustment);
+  value = nbtk_adjustment_get_value (adjustment);
 
   nbtk_viewport_set_originu (viewport,
-                             CLUTTER_UNITS_FROM_FIXED (value),
+                             CLUTTER_UNITS_FROM_FLOAT (value),
                              priv->y,
                              priv->z);
 }
@@ -401,13 +400,13 @@ vadjustment_value_notify_cb (NbtkAdjustment *adjustment, GParamSpec *arg1,
                              NbtkViewport *viewport)
 {
   NbtkViewportPrivate *priv = viewport->priv;
-  ClutterFixed value;
+  gdouble value;
 
-  value = nbtk_adjustment_get_valuex (adjustment);
+  value = nbtk_adjustment_get_value (adjustment);
 
   nbtk_viewport_set_originu (viewport,
                              priv->x,
-                             CLUTTER_UNITS_FROM_FIXED (value),
+                             CLUTTER_UNITS_FROM_FLOAT (value),
                              priv->z);
 }
 
@@ -467,10 +466,16 @@ scrollable_get_adjustments (NbtkScrollable *scrollable,
                             NbtkAdjustment **vadjustment)
 {
   NbtkViewportPrivate *priv;
+  ClutterActor *actor, *stage;
 
   g_return_if_fail (NBTK_IS_VIEWPORT (scrollable));
 
-  priv = ((NbtkViewport *)scrollable)->priv;
+  priv = ((NbtkViewport *) scrollable)->priv;
+
+  actor = CLUTTER_ACTOR (scrollable);
+  stage = clutter_actor_get_stage (actor);
+  if (G_UNLIKELY (stage == NULL))
+    stage = clutter_stage_get_default ();
 
   if (hadjustment)
     {
@@ -479,21 +484,23 @@ scrollable_get_adjustments (NbtkScrollable *scrollable,
       else
         {
           NbtkAdjustment *adjustment;
-          ClutterFixed width, stage_width, increment;
+          gdouble width, stage_width, increment;
 
-          width = CLUTTER_UNITS_TO_FIXED(clutter_actor_get_widthu (CLUTTER_ACTOR(scrollable)));
-          stage_width = CLUTTER_UNITS_TO_FIXED(clutter_actor_get_widthu (clutter_stage_get_default ()));
-          increment = MAX (CFX_ONE, MIN(stage_width, width));
+          width = CLUTTER_UNITS_TO_FLOAT (clutter_actor_get_widthu (actor));
+          stage_width = CLUTTER_UNITS_TO_FLOAT (clutter_actor_get_widthu (stage));
+          increment = MAX (1.0, MIN (stage_width, width));
 
-          adjustment = nbtk_adjustment_newx (CLUTTER_UNITS_TO_FIXED(priv->x),
-                                             0,
-                                             width,
-                                             CFX_ONE,
-                                             increment,
-                                             increment);
+          adjustment = nbtk_adjustment_new (CLUTTER_UNITS_TO_FLOAT (priv->x),
+                                            0,
+                                            width,
+                                            1.0,
+                                            increment,
+                                            increment);
+
           scrollable_set_adjustments (scrollable,
                                       adjustment,
                                       priv->vadjustment);
+
           *hadjustment = adjustment;
         }
     }
@@ -505,21 +512,23 @@ scrollable_get_adjustments (NbtkScrollable *scrollable,
       else
         {
           NbtkAdjustment *adjustment;
-          ClutterFixed height, stage_height, increment;
+          gdouble height, stage_height, increment;
 
-          height = CLUTTER_UNITS_TO_FIXED(clutter_actor_get_heightu (CLUTTER_ACTOR(scrollable)));
-          stage_height = CLUTTER_UNITS_TO_FIXED(clutter_actor_get_heightu (clutter_stage_get_default ()));
-          increment = MAX (CFX_ONE, MIN(stage_height, height));
+          height = CLUTTER_UNITS_TO_FLOAT (clutter_actor_get_heightu (actor));
+          stage_height = CLUTTER_UNITS_TO_FLOAT (clutter_actor_get_heightu (stage));
+          increment = MAX (1.0, MIN (stage_height, height));
 
-          adjustment = nbtk_adjustment_newx (CLUTTER_UNITS_TO_FIXED(priv->y),
-                                             0,
-                                             height,
-                                             CFX_ONE,
-                                             increment,
-                                             increment);
+          adjustment = nbtk_adjustment_new (CLUTTER_UNITS_TO_FLOAT (priv->y),
+                                            0,
+                                            height,
+                                            1.0,
+                                            increment,
+                                            increment);
+
           scrollable_set_adjustments (scrollable,
                                       priv->hadjustment,
                                       adjustment);
+
           *vadjustment = adjustment;
         }
     }
@@ -572,7 +581,7 @@ nbtk_viewport_init (NbtkViewport *self)
                     G_CALLBACK (clip_notify_cb), self);
 }
 
-ClutterActor *
+NbtkWidget *
 nbtk_viewport_new (void)
 {
   return g_object_new (NBTK_TYPE_VIEWPORT, NULL);
@@ -598,8 +607,8 @@ nbtk_viewport_set_originu (NbtkViewport *viewport,
       g_object_notify (G_OBJECT (viewport), "x-origin");
 
       if (priv->hadjustment)
-        nbtk_adjustment_set_valuex (priv->hadjustment,
-                                    CLUTTER_UNITS_TO_FIXED (x));
+        nbtk_adjustment_set_value (priv->hadjustment,
+                                   CLUTTER_UNITS_TO_FLOAT (x));
     }
 
   if (y != priv->y)
@@ -608,8 +617,8 @@ nbtk_viewport_set_originu (NbtkViewport *viewport,
       g_object_notify (G_OBJECT (viewport), "y-origin");
 
       if (priv->vadjustment)
-        nbtk_adjustment_set_valuex (priv->vadjustment,
-                                    CLUTTER_UNITS_TO_FIXED (y));
+        nbtk_adjustment_set_value (priv->vadjustment,
+                                   CLUTTER_UNITS_TO_FLOAT (y));
     }
 
   if (z != priv->z)

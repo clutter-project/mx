@@ -29,6 +29,12 @@ typedef enum { /*< prefix=NBTK_STYLE_ERROR >*/
   NBTK_STYLE_ERROR_INVALID_FILE
 } NbtkStyleError;
 
+/**
+ * NbtkStyle:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
 struct _NbtkStyle
 {
   /*< private >*/
@@ -56,9 +62,6 @@ void             nbtk_style_get_property   (NbtkStyle     *style,
                                             NbtkStylable  *stylable,
                                             GParamSpec    *pspec,
                                             GValue        *value);
-void             nbtk_style_set_property   (NbtkStyle     *style,
-                                            const gchar   *property_name,
-                                            const GValue  *value);
 
 G_END_DECLS
 

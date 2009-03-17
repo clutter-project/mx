@@ -1,5 +1,6 @@
-SUBDIRS = nbtk tests docs
+SUBDIRS = nbtk tests docs build
 
+ACLOCAL_AMFLAGS = -I build/autotools
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
 
 pcfiles = nbtk-$(NBTK_API_VERSION).pc

@@ -149,7 +149,7 @@ main (int argc, char **argv)
   clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
   clutter_actor_set_size (stage, 800, 600);
 
-  viewport = nbtk_viewport_new ();
+  viewport = (ClutterActor *) nbtk_viewport_new ();
   clutter_actor_set_clip (viewport, 0, 0, 800, 600);
   group = clutter_group_new ();
   g_signal_connect (group, "paint",

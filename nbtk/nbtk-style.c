@@ -1,3 +1,13 @@
+/**
+ * SECTION:nbtk-style
+ * @short_description: a data store for style properties
+ *
+ * #NbtkStyle is a property data store that can read properties from a style
+ * sheet. It is queried with objects that implement the NbtkStylable
+ * interface.
+ */
+
+
 #ifndef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -56,7 +66,7 @@ static NbtkStyle *default_style = NULL;
 
 G_DEFINE_TYPE (NbtkStyle, nbtk_style, G_TYPE_OBJECT);
 
-GQuark
+static GQuark
 g_style_error_quark (void)
 {
   return g_quark_from_static_string ("nbtk-style-error-quark");
@@ -181,6 +191,13 @@ nbtk_style_class_init (NbtkStyleClass *klass)
 
   gobject_class->finalize = nbtk_style_finalize;
 
+  /**
+   * NbtkStyle::changed:
+   *
+   * Indicates that the style data has changed in some way. For example, a new
+   * stylesheet may have been loaded.
+   */
+
   style_signals[CHANGED] =
     g_signal_new ("changed",
                   G_TYPE_FROM_CLASS (klass),
@@ -264,14 +281,29 @@ nbtk_style_init (NbtkStyle *style)
   nbtk_style_load (style);
 }
 
-/* need to unref */
+/**
+ * nbtk_style_new:
+ *
+ * Creates a new #NbtkStyle object. This must be freed using #g_object_unref
+ * when no longer required.
+ *
+ * Returns: a newly allocated #NbtkStyle
+ */
 NbtkStyle *
 nbtk_style_new (void)
 {
   return g_object_new (NBTK_TYPE_STYLE, NULL);
 }
 
-/* never ref/unref */
+/**
+ * nbtk_style_get_default:
+ *
+ * Return the default NbtkStyle object. This includes the current theme (if
+ * any).
+ *
+ * Returns: a #NbtkStyle object. This must not be freed or unref'd by
+ * applications
+ */
 NbtkStyle *
 nbtk_style_get_default (void)
 {
@@ -366,6 +398,16 @@ peek_node_class (void)
   return &_node_class;
 }
 
+/**
+ * nbtk_style_get_property:
+ * @style: the style data store object
+ * @stylable: a stylable to retreive the data for
+ * @pspec: a #GParamSpec describing the property required
+ * @value: a #GValue to place the return value in
+ *
+ * Requests the property described in @pspec for the specified stylable
+ */
+
 void
 nbtk_style_get_property (NbtkStyle    *style,
                          NbtkStylable *stylable,
@@ -407,25 +449,35 @@ nbtk_style_get_property (NbtkStyle    *style,
                 {
                   if (ccss_style_get_double (ccss_style, pspec->name, &number))
                     {
-                      g_value_set_int (&real_value, (int) number);
+                      g_value_set_int (&real_value, (gint) number);
+                      value_set = TRUE;
+                    }
+                }
+              else if (G_IS_PARAM_SPEC_UINT (pspec))
+                {
+                  if (ccss_style_get_double (ccss_style, pspec->name, &number))
+                    {
+                      g_value_set_uint (&real_value, (guint) number);
                       value_set = TRUE;
                     }
                 }
               else if (NBTK_TYPE_BORDER_IMAGE == G_PARAM_SPEC_VALUE_TYPE (pspec) &&
                        0 == g_strcmp0 ("border-image", pspec->name))
                 {
-                  gpointer property_value;
-                  gboolean res;
+                  gpointer css_value;
 
-                  res = ccss_style_get_property (ccss_style,
-                                                 "border-image",
-                                                 &property_value);
-                  if (res)
+                  if (ccss_style_get_property (ccss_style,
+                                               "border-image",
+                                               &css_value))
                     {
-                      ccss_property_t *border_image = property_value;
-
-                      g_value_set_boxed (&real_value, border_image);
-                      value_set = TRUE;
+                      ccss_property_t *border_image = css_value;
+                      if (border_image &&
+                          border_image->type != CCSS_PROPERTY_STATE_UNSET &&
+                          border_image->type != CCSS_PROPERTY_STATE_NONE)
+                        {
+                          g_value_set_boxed (&real_value, border_image);
+                          value_set = TRUE;
+                        }
                     }
                 }
               else if (NBTK_TYPE_PADDING == G_PARAM_SPEC_VALUE_TYPE (pspec) &&
@@ -474,9 +526,11 @@ nbtk_style_get_property (NbtkStyle    *style,
                     {
                       if (CLUTTER_IS_PARAM_SPEC_COLOR (pspec))
                         {
-                          ClutterColor color;
-                          clutter_color_parse (string, &color);
+                          ClutterColor color = { 0, };
+
+                          clutter_color_from_string (&color, string);
                           clutter_value_set_color (&real_value, &color);
+
                           value_set = TRUE;
                         }
                       else
@@ -504,28 +558,3 @@ nbtk_style_get_property (NbtkStyle    *style,
   g_value_unset (&real_value);
 }
 
-void
-nbtk_style_set_property (NbtkStyle    *style,
-                         const gchar  *property_name,
-                         const GValue *value)
-{
-  /*
-  StyleProperty *property;
-
-  g_return_if_fail (NBTK_IS_STYLE (style));
-  g_return_if_fail (property_name != NULL);
-  g_return_if_fail (value != NULL);
-
-  property = nbtk_style_find_property (style, property_name);
-  if (!property)
-    {
-      g_warning ("No style property named `%s' found.", property_name);
-      return;
-    }
-
-  g_value_copy (value, &property->value);
-
-  g_signal_emit (style, style_signals[CHANGED], 0);
-   */
-  g_warning ("nbtk_style_set_property() not yet implemented");
-}

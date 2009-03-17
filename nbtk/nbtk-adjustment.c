@@ -42,18 +42,18 @@ struct _NbtkAdjustmentPrivate
    * not all properties may be set yet. */
   gboolean is_constructing : 1;
 
-  ClutterFixed lower;
-  ClutterFixed upper;
-  ClutterFixed value;
-  ClutterFixed step_increment;
-  ClutterFixed page_increment;
-  ClutterFixed page_size;
+  gdouble lower;
+  gdouble upper;
+  gdouble value;
+  gdouble step_increment;
+  gdouble page_increment;
+  gdouble page_size;
 
   /* For interpolation */
   ClutterTimeline *interpolation;
-  ClutterFixed     dx;
-  ClutterFixed     old_position;
-  ClutterFixed     new_position;
+  gdouble dx;
+  gdouble old_position;
+  gdouble new_position;
 
   /* For elasticity */
   gboolean      elastic;
@@ -111,41 +111,41 @@ nbtk_adjustment_constructed (GObject *object)
     }
 
   NBTK_ADJUSTMENT (self)->priv->is_constructing = FALSE;
-  nbtk_adjustment_clamp_pagex (self, self->priv->lower, self->priv->upper);
+  nbtk_adjustment_clamp_page (self, self->priv->lower, self->priv->upper);
 }
 
 static void
-nbtk_adjustment_get_property (GObject    *object,
+nbtk_adjustment_get_property (GObject    *gobject,
                               guint       prop_id,
                               GValue     *value,
                               GParamSpec *pspec)
 {
-  NbtkAdjustmentPrivate *priv = NBTK_ADJUSTMENT (object)->priv;
+  NbtkAdjustmentPrivate *priv = NBTK_ADJUSTMENT (gobject)->priv;
 
   switch (prop_id)
     {
     case PROP_LOWER:
-      g_value_set_double (value, CLUTTER_FIXED_TO_DOUBLE (priv->lower));
+      g_value_set_double (value, priv->lower);
       break;
 
     case PROP_UPPER:
-      g_value_set_double (value, CLUTTER_FIXED_TO_DOUBLE (priv->upper));
+      g_value_set_double (value, priv->upper);
       break;
 
     case PROP_VALUE:
-      g_value_set_double (value, CLUTTER_FIXED_TO_DOUBLE (priv->value));
+      g_value_set_double (value, priv->value);
       break;
 
     case PROP_STEP_INC:
-      g_value_set_double (value, CLUTTER_FIXED_TO_DOUBLE (priv->step_increment));
+      g_value_set_double (value, priv->step_increment);
       break;
 
     case PROP_PAGE_INC:
-      g_value_set_double (value, CLUTTER_FIXED_TO_DOUBLE (priv->page_increment));
+      g_value_set_double (value, priv->page_increment);
       break;
 
     case PROP_PAGE_SIZE:
-      g_value_set_double (value, CLUTTER_FIXED_TO_DOUBLE (priv->page_size));
+      g_value_set_double (value, priv->page_size);
       break;
 
     case PROP_ELASTIC:
@@ -153,18 +153,18 @@ nbtk_adjustment_get_property (GObject    *object,
       break;
 
     default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
     }
 }
 
 static void
-nbtk_adjustment_set_property (GObject      *object,
+nbtk_adjustment_set_property (GObject      *gobject,
                               guint         prop_id,
                               const GValue *value,
                               GParamSpec   *pspec)
 {
-  NbtkAdjustment *adj = NBTK_ADJUSTMENT (object);
+  NbtkAdjustment *adj = NBTK_ADJUSTMENT (gobject);
 
   switch (prop_id)
     {
@@ -197,7 +197,7 @@ nbtk_adjustment_set_property (GObject      *object,
       break;
 
     default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
     }
 }
@@ -319,6 +319,11 @@ nbtk_adjustment_class_init (NbtkAdjustmentClass *klass)
                                                         NBTK_PARAM_READWRITE |
                                                         G_PARAM_CONSTRUCT));
 
+  /**
+   * NbtkAdjustment::changed:
+   *
+   * Emitted when any of the adjustment values have changed
+   */
   signals[CHANGED] =
     g_signal_new ("changed",
                   G_TYPE_FROM_CLASS (klass),
@@ -355,32 +360,8 @@ nbtk_adjustment_new (gdouble value,
                        NULL);
 }
 
-NbtkAdjustment *
-nbtk_adjustment_newx (ClutterFixed value,
-                      ClutterFixed lower,
-                      ClutterFixed upper,
-                      ClutterFixed step_increment,
-                      ClutterFixed page_increment,
-                      ClutterFixed page_size)
-{
-  NbtkAdjustment *retval;
-  NbtkAdjustmentPrivate *priv;
-
-  retval = g_object_new (NBTK_TYPE_ADJUSTMENT, NULL);
-  priv = retval->priv;
-
-  priv->value = value;
-  priv->lower = lower;
-  priv->upper = upper;
-  priv->step_increment = step_increment;
-  priv->page_increment = page_increment;
-  priv->page_size = page_size;
-
-  return retval;
-}
-
-ClutterFixed
-nbtk_adjustment_get_valuex (NbtkAdjustment *adjustment)
+gdouble
+nbtk_adjustment_get_value (NbtkAdjustment *adjustment)
 {
   NbtkAdjustmentPrivate *priv;
 
@@ -388,26 +369,19 @@ nbtk_adjustment_get_valuex (NbtkAdjustment *adjustment)
 
   priv = adjustment->priv;
 
-  if (adjustment->priv->interpolation)
+  if (priv->interpolation)
     {
-      return MAX (priv->lower, MIN (priv->upper - priv->page_size,
-                                    adjustment->priv->new_position));
+      return MAX (priv->lower,
+                  MIN (priv->upper - priv->page_size,
+                       priv->new_position));
     }
   else
-    return adjustment->priv->value;
-}
-
-gdouble
-nbtk_adjustment_get_value (NbtkAdjustment *adjustment)
-{
-  g_return_val_if_fail (NBTK_IS_ADJUSTMENT (adjustment), 0.0);
-
-  return CLUTTER_FIXED_TO_FLOAT (adjustment->priv->value);
+    return priv->value;
 }
 
 void
-nbtk_adjustment_set_valuex (NbtkAdjustment *adjustment,
-                            ClutterFixed    value)
+nbtk_adjustment_set_value (NbtkAdjustment *adjustment,
+                           gdouble         value)
 {
   NbtkAdjustmentPrivate *priv;
 
@@ -421,31 +395,26 @@ nbtk_adjustment_set_valuex (NbtkAdjustment *adjustment,
   if (!priv->is_constructing)
     {
       if (!priv->elastic)
-        value = CLAMP (value, priv->lower, MAX (priv->lower,
-                                                priv->upper - priv->page_size));
+        value = CLAMP (value,
+                       priv->lower,
+                       MAX (priv->lower, priv->upper - priv->page_size));
     }
 
   if (priv->value != value)
     {
       priv->value = value;
+
       g_object_notify (G_OBJECT (adjustment), "value");
     }
 }
 
 void
-nbtk_adjustment_set_value (NbtkAdjustment *adjustment,
-                           gdouble         value)
+nbtk_adjustment_clamp_page (NbtkAdjustment *adjustment,
+                            gdouble         lower,
+                            gdouble         upper)
 {
-  nbtk_adjustment_set_valuex (adjustment, CLUTTER_FLOAT_TO_FIXED (value));
-}
-
-void
-nbtk_adjustment_clamp_pagex (NbtkAdjustment *adjustment,
-                             ClutterFixed    lower,
-                             ClutterFixed    upper)
-{
-  gboolean changed;
   NbtkAdjustmentPrivate *priv;
+  gboolean changed;
 
   g_return_if_fail (NBTK_IS_ADJUSTMENT (adjustment));
 
@@ -474,26 +443,15 @@ nbtk_adjustment_clamp_pagex (NbtkAdjustment *adjustment,
     g_object_notify (G_OBJECT (adjustment), "value");
 }
 
-void
-nbtk_adjustment_clamp_page (NbtkAdjustment *adjustment,
-                            gdouble         lower,
-                            gdouble         upper)
-{
-  nbtk_adjustment_clamp_pagex (adjustment,
-                               CLUTTER_FLOAT_TO_FIXED (lower),
-                               CLUTTER_FLOAT_TO_FIXED (upper));
-}
-
 static gboolean
 nbtk_adjustment_set_lower (NbtkAdjustment *adjustment,
                            gdouble         lower)
 {
   NbtkAdjustmentPrivate *priv = adjustment->priv;
-  ClutterFixed value = CLUTTER_FLOAT_TO_FIXED (lower);
 
-  if (priv->lower != value)
+  if (priv->lower != lower)
     {
-      priv->lower = value;
+      priv->lower = lower;
 
       g_signal_emit (adjustment, signals[CHANGED], 0);
 
@@ -501,9 +459,7 @@ nbtk_adjustment_set_lower (NbtkAdjustment *adjustment,
 
       /* Defer clamp until after construction. */
       if (!priv->is_constructing)
-        {
-          nbtk_adjustment_clamp_pagex (adjustment, priv->lower, priv->upper);
-        }
+        nbtk_adjustment_clamp_page (adjustment, priv->lower, priv->upper);
 
       return TRUE;
     }
@@ -516,11 +472,10 @@ nbtk_adjustment_set_upper (NbtkAdjustment *adjustment,
                            gdouble         upper)
 {
   NbtkAdjustmentPrivate *priv = adjustment->priv;
-  ClutterFixed value = CLUTTER_FLOAT_TO_FIXED (upper);
 
-  if (priv->upper != value)
+  if (priv->upper != upper)
     {
-      priv->upper = value;
+      priv->upper = upper;
 
       g_signal_emit (adjustment, signals[CHANGED], 0);
 
@@ -528,9 +483,7 @@ nbtk_adjustment_set_upper (NbtkAdjustment *adjustment,
 
       /* Defer clamp until after construction. */
       if (!priv->is_constructing)
-        {
-          nbtk_adjustment_clamp_pagex (adjustment, priv->lower, priv->upper);
-        }
+        nbtk_adjustment_clamp_page (adjustment, priv->lower, priv->upper);
 
       return TRUE;
     }
@@ -543,11 +496,10 @@ nbtk_adjustment_set_step_increment (NbtkAdjustment *adjustment,
                                     gdouble         step)
 {
   NbtkAdjustmentPrivate *priv = adjustment->priv;
-  ClutterFixed value = CLUTTER_FLOAT_TO_FIXED (step);
 
-  if (priv->step_increment != value)
+  if (priv->step_increment != step)
     {
-      priv->step_increment = value;
+      priv->step_increment = step;
 
       g_signal_emit (adjustment, signals[CHANGED], 0);
 
@@ -561,14 +513,13 @@ nbtk_adjustment_set_step_increment (NbtkAdjustment *adjustment,
 
 static gboolean
 nbtk_adjustment_set_page_increment (NbtkAdjustment *adjustment,
-                                    gdouble        page)
+                                    gdouble         page)
 {
   NbtkAdjustmentPrivate *priv = adjustment->priv;
-  ClutterFixed value = CLUTTER_FLOAT_TO_FIXED (page);
 
-  if (priv->page_increment != value)
+  if (priv->page_increment != page)
     {
-      priv->page_increment = value;
+      priv->page_increment = page;
 
       g_signal_emit (adjustment, signals[CHANGED], 0);
 
@@ -585,11 +536,10 @@ nbtk_adjustment_set_page_size (NbtkAdjustment *adjustment,
                                gdouble         size)
 {
   NbtkAdjustmentPrivate *priv = adjustment->priv;
-  ClutterFixed value = CLUTTER_FLOAT_TO_FIXED (size);
 
-  if (priv->page_size != value)
+  if (priv->page_size != size)
     {
-      priv->page_size = value;
+      priv->page_size = size;
 
       g_signal_emit (adjustment, signals[CHANGED], 0);
 
@@ -597,9 +547,7 @@ nbtk_adjustment_set_page_size (NbtkAdjustment *adjustment,
 
       /* Well explicitely clamp after construction. */
       if (!priv->is_constructing)
-        {
-          nbtk_adjustment_clamp_pagex (adjustment, priv->lower, priv->upper);
-        }
+        nbtk_adjustment_clamp_page (adjustment, priv->lower, priv->upper);
 
       return TRUE;
     }
@@ -608,13 +556,13 @@ nbtk_adjustment_set_page_size (NbtkAdjustment *adjustment,
 }
 
 void
-nbtk_adjustment_set_valuesx (NbtkAdjustment *adjustment,
-                             ClutterFixed    value,
-                             ClutterFixed    lower,
-                             ClutterFixed    upper,
-                             ClutterFixed    step_increment,
-                             ClutterFixed    page_increment,
-                             ClutterFixed    page_size)
+nbtk_adjustment_set_values (NbtkAdjustment *adjustment,
+                            gdouble         value,
+                            gdouble         lower,
+                            gdouble         upper,
+                            gdouble         step_increment,
+                            gdouble         page_increment,
+                            gdouble         page_size)
 {
   NbtkAdjustmentPrivate *priv;
   gboolean emit_changed = FALSE;
@@ -634,9 +582,10 @@ nbtk_adjustment_set_valuesx (NbtkAdjustment *adjustment,
   emit_changed |= nbtk_adjustment_set_step_increment (adjustment, step_increment);
   emit_changed |= nbtk_adjustment_set_page_increment (adjustment, page_increment);
   emit_changed |= nbtk_adjustment_set_page_size (adjustment, page_size);
+
   if (value != priv->value)
     {
-      nbtk_adjustment_set_valuex (adjustment, value);
+      nbtk_adjustment_set_value (adjustment, value);
       emit_changed = TRUE;
     }
 
@@ -644,58 +593,6 @@ nbtk_adjustment_set_valuesx (NbtkAdjustment *adjustment,
     g_signal_emit (G_OBJECT (adjustment), signals[CHANGED], 0);
 
   g_object_thaw_notify (G_OBJECT (adjustment));
-}
-
-void
-nbtk_adjustment_set_values (NbtkAdjustment *adjustment,
-                            gdouble         value,
-                            gdouble         lower,
-                            gdouble         upper,
-                            gdouble         step_increment,
-                            gdouble         page_increment,
-                            gdouble         page_size)
-{
-  nbtk_adjustment_set_valuesx (adjustment,
-                               CLUTTER_FLOAT_TO_FIXED (value),
-                               CLUTTER_FLOAT_TO_FIXED (lower),
-                               CLUTTER_FLOAT_TO_FIXED (upper),
-                               CLUTTER_FLOAT_TO_FIXED (step_increment),
-                               CLUTTER_FLOAT_TO_FIXED (page_increment),
-                               CLUTTER_FLOAT_TO_FIXED (page_size));
-}
-
-void
-nbtk_adjustment_get_valuesx (NbtkAdjustment *adjustment,
-                             ClutterFixed   *value,
-                             ClutterFixed   *lower,
-                             ClutterFixed   *upper,
-                             ClutterFixed   *step_increment,
-                             ClutterFixed   *page_increment,
-                             ClutterFixed   *page_size)
-{
-  NbtkAdjustmentPrivate *priv;
-
-  g_return_if_fail (NBTK_IS_ADJUSTMENT (adjustment));
-
-  priv = adjustment->priv;
-
-  if (lower)
-    *lower = priv->lower;
-
-  if (upper)
-    *upper = priv->upper;
-
-  if (value)
-    *value = nbtk_adjustment_get_valuex (adjustment);
-
-  if (step_increment)
-    *step_increment = priv->step_increment;
-
-  if (page_increment)
-    *page_increment = priv->page_increment;
-
-  if (page_size)
-    *page_size = priv->page_size;
 }
 
 void
@@ -714,22 +611,22 @@ nbtk_adjustment_get_values (NbtkAdjustment *adjustment,
   priv = adjustment->priv;
 
   if (lower)
-    *lower = CLUTTER_FIXED_TO_DOUBLE (priv->lower);
+    *lower = priv->lower;
 
   if (upper)
-    *upper = CLUTTER_FIXED_TO_DOUBLE (priv->upper);
+    *upper = priv->upper;
 
   if (value)
-    *value = CLUTTER_FIXED_TO_DOUBLE (nbtk_adjustment_get_valuex (adjustment));
+    *value = nbtk_adjustment_get_value (adjustment);
 
   if (step_increment)
-    *step_increment = CLUTTER_FIXED_TO_DOUBLE (priv->step_increment);
+    *step_increment = priv->step_increment;
 
   if (page_increment)
-    *page_increment = CLUTTER_FIXED_TO_DOUBLE (priv->page_increment);
+    *page_increment = priv->page_increment;
 
   if (page_size)
-    *page_size = CLUTTER_FIXED_TO_DOUBLE (priv->page_size);
+    *page_size = priv->page_size;
 }
 
 static void
@@ -740,19 +637,20 @@ interpolation_new_frame_cb (ClutterTimeline *timeline,
   NbtkAdjustmentPrivate *priv = adjustment->priv;
 
   priv->interpolation = NULL;
+
   if (priv->elastic)
     {
       gdouble progress = clutter_alpha_get_alpha (priv->bounce_alpha) / 1.0;
-      gdouble dx = CLUTTER_FIXED_TO_FLOAT (priv->old_position) +
-        CLUTTER_FIXED_TO_FLOAT (priv->new_position - priv->old_position) *
-        progress;
+      gdouble dx = priv->old_position
+                 + (priv->new_position - priv->old_position)
+                 * progress;
+
       nbtk_adjustment_set_value (adjustment, dx);
     }
   else
-    nbtk_adjustment_set_valuex (adjustment,
-                                priv->old_position +
-                                clutter_qmulx (CLUTTER_INT_TO_FIXED (frame_num),
-                                               priv->dx));
+    nbtk_adjustment_set_value (adjustment,
+                               priv->old_position + (frame_num * priv->dx));
+
   priv->interpolation = timeline;
 }
 
@@ -763,8 +661,7 @@ interpolation_completed_cb (ClutterTimeline *timeline,
   NbtkAdjustmentPrivate *priv = adjustment->priv;
 
   stop_interpolation (adjustment);
-  nbtk_adjustment_set_valuex (adjustment,
-                              priv->new_position);
+  nbtk_adjustment_set_value (adjustment, priv->new_position);
 }
 
 /* Note, there's super-optimal code that does a similar thing in
@@ -790,10 +687,10 @@ bounce_alpha_func (ClutterAlpha *alpha,
 */
 
 void
-nbtk_adjustment_interpolatex (NbtkAdjustment *adjustment,
-                              ClutterFixed    value,
-                              guint           n_frames,
-                              guint           fps)
+nbtk_adjustment_interpolate (NbtkAdjustment *adjustment,
+                             gdouble         value,
+                             guint           n_frames,
+                             guint           fps)
 {
   NbtkAdjustmentPrivate *priv = adjustment->priv;
 
@@ -801,15 +698,16 @@ nbtk_adjustment_interpolatex (NbtkAdjustment *adjustment,
 
   if (n_frames <= 1)
     {
-      nbtk_adjustment_set_valuex (adjustment, value);
+      nbtk_adjustment_set_value (adjustment, value);
       return;
     }
 
   priv->old_position = priv->value;
   priv->new_position = value;
 
-  priv->dx = clutter_qdivx (priv->new_position - priv->old_position,
-                            CLUTTER_INT_TO_FIXED (n_frames));
+  priv->dx = (priv->new_position - priv->old_position)
+           / (gdouble) n_frames;
+
   priv->interpolation = clutter_timeline_new (n_frames, fps);
 
   if (priv->elastic)
@@ -826,18 +724,6 @@ nbtk_adjustment_interpolatex (NbtkAdjustment *adjustment,
                     adjustment);
 
   clutter_timeline_start (priv->interpolation);
-}
-
-void
-nbtk_adjustment_interpolate (NbtkAdjustment *adjustment,
-                              gdouble        value,
-                              guint          n_frames,
-                              guint          fps)
-{
-  nbtk_adjustment_interpolatex (adjustment,
-                                CLUTTER_FLOAT_TO_FIXED (value),
-                                n_frames,
-                                fps);
 }
 
 gboolean
@@ -860,22 +746,20 @@ nbtk_adjustment_clamp (NbtkAdjustment *adjustment,
                        guint           fps)
 {
   NbtkAdjustmentPrivate *priv = adjustment->priv;
-  ClutterFixed dest = priv->value;
+  gdouble dest = priv->value;
 
   if (priv->value < priv->lower)
     dest = priv->lower;
+
   if (priv->value > priv->upper - priv->page_size)
     dest = priv->upper - priv->page_size;
 
   if (dest != priv->value)
     {
       if (interpolate)
-        nbtk_adjustment_interpolatex (adjustment,
-                                      dest,
-                                      n_frames,
-                                      fps);
+        nbtk_adjustment_interpolate (adjustment, dest, n_frames, fps);
       else
-        nbtk_adjustment_set_valuex (adjustment, dest);
+        nbtk_adjustment_set_value (adjustment, dest);
 
       return TRUE;
     }

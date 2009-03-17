@@ -128,6 +128,8 @@ nbtk_scroll_view_paint (ClutterActor *actor)
 {
   NbtkScrollViewPrivate *priv = NBTK_SCROLL_VIEW (actor)->priv;
 
+  CLUTTER_ACTOR_CLASS (nbtk_scroll_view_parent_class)->paint (actor);
+
   if (priv->child && CLUTTER_ACTOR_IS_VISIBLE (priv->child))
     clutter_actor_paint (priv->child);
   if (CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
@@ -176,8 +178,7 @@ nbtk_scroll_view_get_preferred_width (ClutterActor *actor,
     {
       ClutterUnit natural_height;
 
-      clutter_actor_get_preferred_height (priv->child,
-                                          -CLUTTER_UNITS_FROM_FIXED (CFX_ONE),
+      clutter_actor_get_preferred_height (priv->child, -1.0,
                                           NULL,
                                           &natural_height);
       if (for_height < natural_height)
@@ -222,8 +223,7 @@ nbtk_scroll_view_get_preferred_height (ClutterActor *actor,
     {
       ClutterUnit natural_width;
 
-      clutter_actor_get_preferred_width (priv->child,
-                                         -CLUTTER_UNITS_FROM_FIXED (CFX_ONE),
+      clutter_actor_get_preferred_width (priv->child, -1.0,
                                          NULL,
                                          &natural_width);
       if (for_width < natural_width)
@@ -379,13 +379,16 @@ child_adjustment_changed_cb (NbtkAdjustment *adjustment,
                              ClutterActor   *bar)
 {
   NbtkScrollView *scroll;
-  ClutterFixed lower, upper, page_size;
+  gdouble lower, upper, page_size;
 
   scroll = NBTK_SCROLL_VIEW (clutter_actor_get_parent (bar));
 
   /* Determine if this scroll-bar should be visible */
-  nbtk_adjustment_get_valuesx (adjustment, NULL, &lower, &upper,
-                               NULL, NULL, &page_size);
+  nbtk_adjustment_get_values (adjustment, NULL,
+                              &lower, &upper,
+                              NULL, NULL,
+                              &page_size);
+
   if ((upper - lower) > page_size)
     clutter_actor_show (bar);
   else
@@ -411,7 +414,7 @@ child_hadjustment_notify_cb (GObject *gobject,
                                           child_adjustment_changed_cb,
                                           priv->hscroll);
 
-  nbtk_scrollable_get_adjustments (NBTK_SCROLLABLE(actor), &hadjust, NULL);
+  nbtk_scrollable_get_adjustments (NBTK_SCROLLABLE (actor), &hadjust, NULL);
   if (hadjust)
     {
       nbtk_scroll_bar_set_adjustment (NBTK_SCROLL_BAR(priv->hscroll), hadjust);
@@ -452,8 +455,8 @@ nbtk_scroll_view_init (NbtkScrollView *self)
 {
   NbtkScrollViewPrivate *priv = self->priv = SCROLL_VIEW_PRIVATE (self);
 
-  priv->hscroll = nbtk_scroll_bar_new (NULL);
-  priv->vscroll = nbtk_scroll_bar_new (NULL);
+  priv->hscroll = CLUTTER_ACTOR (nbtk_scroll_bar_new (NULL));
+  priv->vscroll = CLUTTER_ACTOR (nbtk_scroll_bar_new (NULL));
 
   clutter_actor_set_parent (priv->hscroll, CLUTTER_ACTOR (self));
   clutter_actor_set_parent (priv->vscroll, CLUTTER_ACTOR (self));
@@ -475,7 +478,7 @@ nbtk_scroll_view_add (ClutterContainer *container,
       priv->child = actor;
 
       /* chain up to NbtkBin::add() */
-      nbtk_scroll_view_parent_iface->add (container, actor);
+      // nbtk_scroll_view_parent_iface->add (container, actor);
 
       /* Get adjustments for scroll-bars */
       g_signal_connect (actor, "notify::hadjustment",
@@ -534,7 +537,7 @@ clutter_container_iface_init (ClutterContainerIface *iface)
   iface->remove = nbtk_scroll_view_remove;
 }
 
-ClutterActor *
+NbtkWidget *
 nbtk_scroll_view_new (void)
 {
   return g_object_new (NBTK_TYPE_SCROLL_VIEW, NULL);

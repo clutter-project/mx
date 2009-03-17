@@ -49,6 +49,7 @@
 #include "nbtk-texture-frame.h"
 #include "nbtk-texture-cache.h"
 #include "nbtk-tooltip.h"
+#include "nbtk-table.h"
 
 enum
 {
@@ -57,8 +58,7 @@ enum
   PROP_LABEL,
   PROP_TOGGLE,
   PROP_ACTIVE,
-  PROP_TRANSITION,
-  PROP_TRANS_TYPE
+  PROP_TRANSITION
 };
 
 enum
@@ -77,28 +77,31 @@ struct _NbtkButtonPrivate
 
   ClutterActor *label;
   ClutterActor *icon;
+  NbtkWidget   *table;
   NbtkWidget   *tooltip;
 
   guint8 old_opacity;
 
   guint is_pressed : 1;
   guint is_hover : 1;
-  guint is_active : 1;
+  guint is_checked : 1;
   guint is_toggle : 1;
+  guint is_icon_set : 1; /* TRUE if the icon was set by the application */
 
-  guint transition_duration;
-  guint transition_type;
+  gint transition_duration;
 
   ClutterActor     *old_bg;
-  ClutterTimeline  *timeline;
+  ClutterAnimation *animation;
 };
 
 static guint button_signals[LAST_SIGNAL] = { 0, };
 
 G_DEFINE_TYPE (NbtkButton, nbtk_button, NBTK_TYPE_BIN)
 
+static void destroy_old_bg (NbtkButton *button);
+
 static void
-style_changed_completed_anim (ClutterAnimation *animation, NbtkButton *button)
+destroy_old_bg (NbtkButton *button)
 {
   NbtkButtonPrivate *priv = button->priv;
 
@@ -109,116 +112,64 @@ style_changed_completed_anim (ClutterAnimation *animation, NbtkButton *button)
     }
 }
 
-static void
-nbtk_button_fade_transition (NbtkButton *button)
+static inline void
+nbtk_button_update_label_style (NbtkButton *button)
 {
-  const gchar *pseudo_class;
   NbtkButtonPrivate *priv = button->priv;
+  ClutterColor *real_color = NULL;
+  gchar *font_string = NULL;
+  gchar *font_name = NULL;
+  gint font_size = 0;
 
-  pseudo_class = nbtk_stylable_get_pseudo_class (NBTK_STYLABLE (button));
-  if (priv->old_bg && g_strcmp0 ("active", pseudo_class))
+  nbtk_stylable_get (NBTK_STYLABLE (button),
+                     "color", &real_color,
+                     "font-family", &font_name,
+                     "font-size", &font_size,
+                     NULL);
+
+  if (font_name || font_size)
     {
-      ClutterAnimation *animation =
-        clutter_actor_animate (priv->old_bg, CLUTTER_LINEAR,
-                               priv->transition_duration,
-                               "opacity", 0,
-                               NULL);
-      g_signal_connect (animation, "completed",
-                        G_CALLBACK (style_changed_completed_anim), button);
-    }
-  else
-    {
-      /* remove the old image to perform instant transition when pressed */
-      if (priv->old_bg)
+      if (font_name && font_size)
+        font_string = g_strdup_printf ("%s %dpx", font_name, font_size);
+      else
         {
-          clutter_actor_unparent (priv->old_bg);
-          priv->old_bg = NULL;
+          if (font_size)
+            font_string = g_strdup_printf ("%dpx", font_size);
+          else
+            font_string = font_name;
         }
-    }
-}
 
+      clutter_text_set_font_name (CLUTTER_TEXT (priv->label), font_string);
 
-static void
-nbtk_button_bounce_transition (NbtkButton *button)
-{
-  const gchar *pseudo_class;
-  static gboolean was_active = FALSE;
-  ClutterActor *bg_image;
-  NbtkButtonPrivate *priv = button->priv;
-
-  pseudo_class = nbtk_stylable_get_pseudo_class (NBTK_STYLABLE (button));
-
-  if (priv->old_bg)
-    {
-      clutter_actor_unparent (priv->old_bg);
-      priv->old_bg = NULL;
+      if (font_string != font_name)
+        g_free (font_string);
     }
 
-  if (!g_strcmp0 (pseudo_class, "active"))
-    {
-      was_active = TRUE;
-      return;
-    }
-  else
-    {
-      if (was_active)
-        {
-          was_active = FALSE;
-          return;
-        }
-    }
+  g_free (font_name);
 
-
-  bg_image = nbtk_widget_get_background (NBTK_WIDGET (button));
-  if (!bg_image)
-    return;
-
-  if (!g_strcmp0 (pseudo_class, "hover"))
+  if (real_color)
     {
-      g_object_set (G_OBJECT (bg_image),
-		    "scale-gravity", CLUTTER_GRAVITY_CENTER,
-		    NULL);
-      clutter_actor_set_scale (bg_image, 0.5, 0.5);
-      clutter_actor_animate (bg_image, CLUTTER_EASE_OUT_ELASTIC,
-                             priv->transition_duration,
-                             "scale-x", 1.0,
-                             "scale-y", 1.0,
-                             NULL);
+      clutter_text_set_color (CLUTTER_TEXT (priv->label), real_color);
+      clutter_color_free (real_color);
     }
 }
 
 static void
 nbtk_button_style_changed (NbtkWidget *widget)
 {
-  ClutterColor *real_color;
-  ClutterActor *bg_image;
   NbtkButton *button = NBTK_BUTTON (widget);
   NbtkButtonPrivate *priv = button->priv;
+  ClutterActor *bg_image;
 
   /* update the label styling */
   if (priv->label)
-    {
-      nbtk_stylable_get (NBTK_STYLABLE (button),
-                         "color", &real_color,
-                         NULL);
-      g_object_set (G_OBJECT (priv->label),
-                    "color", real_color,
-                    NULL);
-      clutter_color_free (real_color);
-    }
+    nbtk_button_update_label_style (button);
 
   /* Remove the old background if it's around */
-  if (priv->old_bg)
-    {
-      if (priv->timeline)
-        clutter_timeline_stop (priv->timeline);
-      
-      clutter_actor_unparent (priv->old_bg);
-      priv->old_bg = NULL;
-    }
+  destroy_old_bg (button);
 
   /* Store background, NbtkWidget will unparent it */
-  bg_image = nbtk_widget_get_background (widget);
+  bg_image = nbtk_widget_get_border_image (widget);
   if (bg_image)
     priv->old_bg = g_object_ref (bg_image);
 
@@ -233,36 +184,16 @@ nbtk_button_style_changed (NbtkWidget *widget)
     }
 
   /* Do animation */
-  if (priv->old_bg)
+  /* run a transition effect if applicable */
+  if (NBTK_BUTTON_GET_CLASS (button)->transition)
     {
-      if (G_UNLIKELY (!priv->timeline))
-        priv->timeline = clutter_timeline_new_for_duration (priv->transition_duration);
-
-      /* run a transition effect if applicable */
-      if (priv->transition_type != NBTK_TRANSITION_NONE
-          && priv->transition_duration > 0)
-        {
-          /* Startup animation */
-          clutter_timeline_set_duration (priv->timeline, priv->transition_duration);
-
-          switch (priv->transition_type)
-            {
-            default:
-            case NBTK_TRANSITION_FADE:
-              nbtk_button_fade_transition (button);
-              break;
-
-            case NBTK_TRANSITION_BOUNCE:
-              nbtk_button_bounce_transition (button);
-              break;
-            }
-        }
-      else
-        {
-          /* no transition, so just unparent the old background */
-          clutter_actor_unparent (priv->old_bg);
-          priv->old_bg = NULL;
-        }
+      if (NBTK_BUTTON_GET_CLASS (button)->transition (button, priv->old_bg))
+        destroy_old_bg (button);
+    }
+  else
+    {
+      /* no transition, so just remove the old background */
+      destroy_old_bg (button);
     }
 }
 
@@ -277,40 +208,13 @@ nbtk_button_real_released (NbtkButton *button)
 {
   NbtkButtonPrivate *priv = button->priv;
 
-  if (priv->is_active)
-    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "active");
+  if (priv->is_checked)
+    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "checked");
   else if (!priv->is_hover)
     nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), NULL);
   else
     nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "hover");
 
-}
-
-static void
-nbtk_button_construct_child (NbtkButton *button)
-{
-  NbtkButtonPrivate *priv = button->priv;
-  ClutterActor *label;
-
-  if (!priv->text)
-    return;
-
-  if (priv->icon)
-    {
-      clutter_container_remove_actor (CLUTTER_CONTAINER (button), priv->icon);
-      priv->icon = NULL;
-    }
-
-  label = g_object_new (CLUTTER_TYPE_TEXT,
-                        "text", priv->text,
-                        "line-alignment", PANGO_ALIGN_CENTER,
-                        "ellipsize", PANGO_ELLIPSIZE_MIDDLE,
-                        "use-markup", TRUE,
-                        NULL);
-
-  priv->label = label;
-
-  clutter_container_add_actor (CLUTTER_CONTAINER (button), label);
 }
 
 static gboolean
@@ -352,7 +256,7 @@ nbtk_button_button_release (ClutterActor       *actor,
 
       if (button->priv->is_toggle)
         {
-          nbtk_button_set_active (button, !button->priv->is_active);
+          nbtk_button_set_checked (button, !button->priv->is_checked);
           if (button->priv->tooltip)
             nbtk_tooltip_hide (NBTK_TOOLTIP (button->priv->tooltip));
         }
@@ -376,7 +280,7 @@ nbtk_button_enter (ClutterActor         *actor,
 {
   NbtkButton *button = NBTK_BUTTON (actor);
 
-  if (!button->priv->is_active)
+  if (!button->priv->is_checked)
     nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "hover");
 
   button->priv->is_hover = 1;
@@ -408,8 +312,8 @@ nbtk_button_leave (ClutterActor         *actor,
         klass->released (button);
     }
 
-  if (button->priv->is_active)
-    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "active");
+  if (button->priv->is_checked)
+    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "checked");
   else
     nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), NULL);
 
@@ -437,14 +341,12 @@ nbtk_button_set_property (GObject      *gobject,
       nbtk_button_set_toggle_mode (button, g_value_get_boolean (value));
       break;
     case PROP_ACTIVE:
-      nbtk_button_set_active (button, g_value_get_boolean (value));
+      nbtk_button_set_checked (button, g_value_get_boolean (value));
       break;
     case PROP_TRANSITION:
       priv->transition_duration = g_value_get_int (value);
       break;
-    case PROP_TRANS_TYPE:
-      priv->transition_type = g_value_get_int (value);
-      break;
+
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -469,14 +371,12 @@ nbtk_button_get_property (GObject    *gobject,
       g_value_set_boolean (value, priv->is_toggle);
       break;
     case PROP_ACTIVE:
-      g_value_set_boolean (value, priv->is_active);
+      g_value_set_boolean (value, priv->is_checked);
       break;
     case PROP_TRANSITION:
       g_value_set_int (value, priv->transition_duration);
       break;
-    case PROP_TRANS_TYPE:
-      g_value_set_int (value, priv->transition_type);
-      break;
+
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -497,6 +397,10 @@ nbtk_button_finalize (GObject *gobject)
 static void
 nbtk_button_dispose (GObject *gobject)
 {
+  NbtkButton *button = NBTK_BUTTON (gobject);
+
+  destroy_old_bg (button);
+
   G_OBJECT_CLASS (nbtk_button_parent_class)->dispose (gobject);
 }
 
@@ -538,6 +442,18 @@ nbtk_button_draw_background (NbtkWidget         *self,
 }
 
 static void
+nbtk_button_hide (ClutterActor *actor)
+{
+  NbtkButton *button = (NbtkButton *) actor;
+
+  /* hide the tooltip, if there is one */
+  if (button->priv->tooltip)
+    nbtk_tooltip_hide (NBTK_TOOLTIP (button->priv->tooltip));
+
+  CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->hide (actor);
+}
+
+static void
 nbtk_button_class_init (NbtkButtonClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -560,6 +476,7 @@ nbtk_button_class_init (NbtkButtonClass *klass)
   actor_class->enter_event = nbtk_button_enter;
   actor_class->leave_event = nbtk_button_leave;
   actor_class->allocate = nbtk_button_allocate;
+  actor_class->hide = nbtk_button_hide;
 
   nbtk_widget_class->style_changed = nbtk_button_style_changed;
   nbtk_widget_class->draw_background = nbtk_button_draw_background;
@@ -576,23 +493,27 @@ nbtk_button_class_init (NbtkButtonClass *klass)
                                 FALSE, G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_TOGGLE, pspec);
 
-  pspec = g_param_spec_boolean ("active",
-                                "Active",
-                                "Indicates whether the button is \"pressed\"",
+  pspec = g_param_spec_boolean ("checked",
+                                "Checked",
+                                "Indicates if a toggle button is \"on\""
+                                " or \"off\"",
                                 FALSE, G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_ACTIVE, pspec);
 
   pspec = g_param_spec_int ("transition-duration",
                             "Transition Duration",
                             "Duration of the state transition effect",
-                            0, G_MAXINT, 0, G_PARAM_READWRITE);
+                            0, G_MAXINT, 250, G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_TRANSITION, pspec);
 
-  pspec = g_param_spec_int ("transition-type",
-                            "Transition Type",
-                            "Type of transition to run on state changes",
-                            0, G_MAXINT, 0, G_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class, PROP_TRANS_TYPE, pspec);
+
+  /**
+   * NbtkButton::clicked:
+   * @button: the object that received the signal
+   *
+   * Emitted when the user activates the button, either with a mouse press and
+   * release or with the keyboard.
+   */
 
   button_signals[CLICKED] =
     g_signal_new ("clicked",
@@ -608,6 +529,11 @@ static void
 nbtk_button_init (NbtkButton *button)
 {
   button->priv = NBTK_BUTTON_GET_PRIVATE (button);
+  button->priv->transition_duration = 250;
+
+  button->priv->table = g_object_new (NBTK_TYPE_TABLE, "stylable", FALSE, NULL);
+  clutter_container_add_actor (CLUTTER_CONTAINER (button),
+                               CLUTTER_ACTOR (button->priv->table));
 }
 
 /**
@@ -671,9 +597,34 @@ nbtk_button_set_label (NbtkButton  *button,
   priv = button->priv;
 
   g_free (priv->text);
-  priv->text = g_strdup (text);
 
-  nbtk_button_construct_child (button);
+  if (text)
+    priv->text = g_strdup (text);
+  else
+    priv->text = g_strdup ("");
+
+  if (priv->label)
+    {
+      clutter_text_set_text (CLUTTER_TEXT (priv->label), priv->text);
+    }
+  else
+    {
+      priv->label = g_object_new (CLUTTER_TYPE_TEXT,
+                                  "text", priv->text,
+                                  "line-alignment", PANGO_ALIGN_CENTER,
+                                  "ellipsize", PANGO_ELLIPSIZE_MIDDLE,
+                                  "use-markup", TRUE,
+                                  NULL);
+      nbtk_table_add_actor (NBTK_TABLE (priv->table), priv->label, 0, 1);
+      clutter_container_child_set (CLUTTER_CONTAINER (priv->table),
+                                   priv->label,
+                                   "y-align", 0.5,
+                                   "y-fill", FALSE,
+                                   NULL);
+    }
+
+
+  nbtk_button_update_label_style (button);
 
   g_object_notify (G_OBJECT (button), "label");
 }
@@ -714,41 +665,41 @@ nbtk_button_set_toggle_mode (NbtkButton  *button,
 }
 
 /**
- * nbtk_button_get_active:
+ * nbtk_button_get_checked:
  * @button: a #NbtkButton
  *
- * Get the active (pressed) state of the button.
+ * Get the state of the button that is in toggle mode.
  *
- * Returns: #TRUE if the button is pressed, or #FALSE if not
+ * Returns: #TRUE if the button is checked, or #FALSE if not
  */
 gboolean
-nbtk_button_get_active (NbtkButton *button)
+nbtk_button_get_checked (NbtkButton *button)
 {
   g_return_val_if_fail (NBTK_IS_BUTTON (button), FALSE);
 
-  return button->priv->is_active;
+  return button->priv->is_checked;
 }
 
 /**
- * nbtk_button_set_active:
+ * nbtk_button_set_checked:
  * @button: a #Nbtkbutton
- * @active: #TRUE or #FALSE
+ * @checked: #TRUE or #FALSE
  *
  * Sets the pressed state of the button. This is only really useful if the
  * button has #toggle-mode mode set to #TRUE.
  */
 void
-nbtk_button_set_active (NbtkButton  *button,
-                        gboolean     active)
+nbtk_button_set_checked (NbtkButton  *button,
+                         gboolean     checked)
 {
   g_return_if_fail (NBTK_IS_BUTTON (button));
 
-  if (button->priv->is_active != active)
+  if (button->priv->is_checked != checked)
     {
-      button->priv->is_active = active;
+      button->priv->is_checked = checked;
 
-      if (active)
-        nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "active");
+      if (checked)
+        nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "checked");
       else
         if (button->priv->is_hover)
           nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "hover");
@@ -756,7 +707,7 @@ nbtk_button_set_active (NbtkButton  *button,
           nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), NULL);
     }
 
-  g_object_notify (G_OBJECT (button), "active");
+  g_object_notify (G_OBJECT (button), "checked");
 }
 
 /**
@@ -781,11 +732,20 @@ nbtk_button_set_icon_from_file (NbtkButton *button,
   if (filename == NULL)
     {
       if (priv->icon)
-        clutter_container_remove_actor (CLUTTER_CONTAINER (button),
+        clutter_container_remove_actor (CLUTTER_CONTAINER (priv->table),
                                         priv->icon);
+      priv->is_icon_set = FALSE;
     }
 
-  priv->icon = clutter_texture_new_from_file (filename, &err);
+  if (!priv->icon)
+    {
+      priv->icon = clutter_texture_new_from_file (filename, &err);
+      nbtk_table_add_actor (NBTK_TABLE (priv->table), priv->icon, 0, 0);
+    }
+  else
+    {
+      clutter_texture_set_from_file (CLUTTER_TEXTURE (priv->icon), filename, &err);
+    }
 
   if (err)
     {
@@ -795,17 +755,8 @@ nbtk_button_set_icon_from_file (NbtkButton *button,
     }
 
 
-  /* remove the label if present */
-  if (priv->label)
-    {
-      clutter_container_remove_actor (CLUTTER_CONTAINER (button),
-                                      priv->label);
-      g_free (priv->text);
-      priv->label = NULL;
-      priv->text = NULL;
-    }
 
-  clutter_container_add_actor (CLUTTER_CONTAINER (button), priv->icon);
+  priv->is_icon_set = TRUE;
 }
 
 /**

@@ -50,7 +50,8 @@ struct _NbtkWidgetPrivate
   gchar *pseudo_class;
   gchar *style_class;
 
-  ClutterActor *bg_image;
+  ClutterActor *border_image;
+  ClutterActor *background_image;
   ClutterColor *bg_color;
 
   ClutterActor *dnd_last_dest;
@@ -67,6 +68,7 @@ struct _NbtkWidgetPrivate
 
   gboolean dnd_motion : 1;
   gboolean dnd_grab   : 1;
+  gboolean is_stylable : 1;
 };
 
 /*
@@ -185,6 +187,8 @@ enum
   PROP_STYLE_CLASS,
   PROP_DND_THRESHOLD,
   PROP_DND_ICON,
+
+  PROP_STYLABLE,
 };
 
 enum
@@ -203,7 +207,6 @@ enum
 static guint actor_signals[LAST_SIGNAL] = { 0, };
 
 static void nbtk_stylable_iface_init (NbtkStylableIface *iface);
-static void nbtk_container_iface_init (ClutterContainerIface *iface);
 
 
 G_DEFINE_ABSTRACT_TYPE_WITH_CODE (NbtkWidget, nbtk_widget, CLUTTER_TYPE_ACTOR,
@@ -244,6 +247,14 @@ nbtk_widget_set_property (GObject      *gobject,
       g_object_ref (actor->priv->dnd_icon);
       break;
 
+    case PROP_STYLABLE:
+      if (actor->priv->is_stylable != g_value_get_boolean (value))
+        {
+          actor->priv->is_stylable = g_value_get_boolean (value);
+          clutter_actor_queue_relayout ((ClutterActor *)gobject);
+        }
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -281,6 +292,10 @@ nbtk_widget_get_property (GObject    *gobject,
       g_value_set_object (value, priv->dnd_icon);
       break;
 
+    case PROP_STYLABLE:
+      g_value_set_boolean (value, priv->is_stylable);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -299,10 +314,10 @@ nbtk_widget_dispose (GObject *gobject)
       priv->style = NULL;
     }
 
-  if (priv->bg_image)
+  if (priv->border_image)
     {
-      clutter_actor_unparent (priv->bg_image);
-      priv->bg_image = NULL;
+      clutter_actor_unparent (priv->border_image);
+      priv->border_image = NULL;
     }
 
   /*
@@ -371,7 +386,7 @@ nbtk_widget_allocate (ClutterActor          *actor,
   klass = CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class);
   klass->allocate (actor, box, origin_changed);
 
-  if (priv->bg_image)
+  if (priv->border_image)
     {
       ClutterActorBox frame_box = {
         0,
@@ -380,7 +395,63 @@ nbtk_widget_allocate (ClutterActor          *actor,
         box->y2 - box->y1
       };
 
-      clutter_actor_allocate (CLUTTER_ACTOR (priv->bg_image),
+      clutter_actor_allocate (CLUTTER_ACTOR (priv->border_image),
+                              &frame_box,
+                              origin_changed);
+    }
+
+  if (priv->background_image)
+    {
+      guint w, h;
+      ClutterActorBox frame_box = {
+          0, 0, box->x2 - box->x1, box->y2 - box->y1
+      };
+
+      clutter_actor_get_size (CLUTTER_ACTOR (priv->background_image), &w, &h);
+
+      /* scale the background into the allocated bounds */
+      if (w > frame_box.x2 || h > frame_box.y2)
+        {
+          gint new_h, new_w, offset;
+          gint box_w, box_h;
+
+          box_w = CLUTTER_UNITS_TO_INT (frame_box.x2);
+          box_h = CLUTTER_UNITS_TO_INT (frame_box.y2);
+
+          /* scale to fit */
+          new_h = ((double) h / w) * ((double) box_w);
+          new_w = ((double) w / h) * ((double) box_h);
+
+          if (new_h > box_h)
+            {
+              /* center for new width */
+              offset = ((box_w) - new_w) * 0.5;
+              frame_box.x1 = offset;
+              frame_box.x2 = offset + new_w;
+
+              frame_box.y2 = box_h;
+            }
+          else
+            {
+              /* center for new height */
+              offset = ((box_h) - new_h) * 0.5;
+              frame_box.y1 = offset;
+              frame_box.y2 = offset + new_h;
+
+              frame_box.x2 = box_w;
+            }
+
+        }
+      else
+        {
+          /* center the background on the widget */
+          frame_box.x1 = ((box->x2 - box->x1) / 2) - (w / 2);
+          frame_box.y1 = ((box->y2 - box->y1) / 2) - (h / 2);
+          frame_box.x2 = frame_box.x1 + w;
+          frame_box.y2 = frame_box.y1 + h;
+        }
+
+      clutter_actor_allocate (CLUTTER_ACTOR (priv->background_image),
                               &frame_box,
                               origin_changed);
     }
@@ -428,8 +499,11 @@ nbtk_widget_paint (ClutterActor *self)
   NbtkWidgetClass *klass = NBTK_WIDGET_GET_CLASS (self);
 
   klass->draw_background (NBTK_WIDGET (self),
-                          priv->bg_image,
+                          priv->border_image,
                           priv->bg_color);
+
+  if (priv->background_image)
+    clutter_actor_paint (priv->background_image);
 }
 
 static void
@@ -463,6 +537,10 @@ nbtk_widget_style_changed (NbtkWidget *self)
   gint border_top;
   gint border_bottom;
 
+  /* application has request this widget is not stylable */
+  if (!priv->is_stylable)
+    return;
+
   if (priv->bg_color)
     {
       clutter_color_free (priv->bg_color);
@@ -485,14 +563,21 @@ nbtk_widget_style_changed (NbtkWidget *self)
   priv->border.bottom = border_bottom;
   priv->border.left   = border_left;
 
-  if (priv->bg_image)
+  if (priv->border_image)
     {
-       clutter_actor_unparent (CLUTTER_ACTOR (priv->bg_image));
-       priv->bg_image = NULL;
+       clutter_actor_unparent (CLUTTER_ACTOR (priv->border_image));
+       priv->border_image = NULL;
+    }
+  if (priv->background_image)
+    {
+      clutter_actor_unparent (CLUTTER_ACTOR (priv->background_image));
+      priv->background_image = NULL;
     }
 
   texture_cache = nbtk_texture_cache_get_default ();
-  if (border_image)
+
+  /* Check if the URL is actually present, not garbage in the property */
+  if (border_image && border_image->image.uri)
     {
       /* `border-image' takes precedence over `background-image'.
        * Firefox lets the background-image shine thru when border-image has
@@ -510,28 +595,31 @@ nbtk_widget_style_changed (NbtkWidget *self)
       border_bottom = ccss_position_get_size (&border_image->bottom,
                                               border_image->image.height);
 
-      priv->bg_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
+      priv->border_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
                                                border_top,
                                                border_right,
                                                border_bottom,
                                                border_left);
-      clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image),
-                                CLUTTER_ACTOR (self));
-
+      clutter_actor_set_parent (CLUTTER_ACTOR (priv->border_image),
+                                               CLUTTER_ACTOR (self));
       g_boxed_free (NBTK_TYPE_BORDER_IMAGE, border_image);
     }
-  else if (bg_file)
+  if (bg_file)
     {
       texture = nbtk_texture_cache_get_texture (texture_cache,
                                                 bg_file,
-                                                FALSE);
-      priv->bg_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
-                                               border_top,
-                                               border_right,
-                                               border_bottom,
-                                               border_left);
-      clutter_actor_set_parent (CLUTTER_ACTOR (priv->bg_image),
-                                CLUTTER_ACTOR (self));
+                                                TRUE);
+      priv->background_image = texture;
+
+      if (!texture)
+        {
+          g_warning ("Could not load %s", bg_file);
+        }
+      else
+        {
+          clutter_actor_set_parent (CLUTTER_ACTOR (priv->background_image),
+                                    CLUTTER_ACTOR (self));
+        }
       g_free (bg_file);
     }
 
@@ -572,6 +660,7 @@ nbtk_widget_class_init (NbtkWidgetClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
+  GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (NbtkWidgetPrivate));
 
@@ -645,6 +734,22 @@ nbtk_widget_class_init (NbtkWidgetClass *klass)
 							"Icon to use for DND",
 							CLUTTER_TYPE_ACTOR,
 							NBTK_PARAM_READWRITE));
+
+
+
+  /**
+   * NbtkWidget:stylable:
+   *
+   * Enable or disable styling of the widget
+   */
+  pspec = g_param_spec_boolean ("stylable",
+                                "Stylable",
+                                "Whether the table should be styled",
+                                TRUE,
+                                NBTK_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class,
+                                   PROP_STYLABLE,
+                                   pspec);
 
   /**
    * NbtkWidget::style-changed:
@@ -1091,6 +1196,7 @@ nbtk_widget_init (NbtkWidget *actor)
   NbtkWidgetPrivate *priv;
 
   actor->priv = priv = NBTK_WIDGET_GET_PRIVATE (actor);
+  priv->is_stylable = TRUE;
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (actor), TRUE);
 
@@ -1163,8 +1269,6 @@ nbtk_widget_dnd_enter_event_cb (ClutterActor *actor,
     {
       if (dest != priv->dnd_last_dest)
 	{
-	  g_debug ("Enter event on %p (%s)\n", dest, G_OBJECT_TYPE_NAME (dest));
-
 	  if (priv->dnd_last_dest)
 	    {
 	      g_object_ref (priv->dnd_last_dest);
@@ -1231,12 +1335,10 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
   NbtkWidgetPrivate *priv;
   gboolean retval = FALSE;
 
-  if (event->type != CLUTTER_BUTTON_RELEASE)
+  if (event->type != CLUTTER_BUTTON_RELEASE || event->button.button != 1)
     return FALSE;
 
   priv = NBTK_WIDGET (widget)->priv;
-
-  g_object_ref (widget);
 
   if (priv->dnd_motion)
     {
@@ -1259,7 +1361,7 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
       dest = clutter_stage_get_actor_at_pos (stage, x, y);
 
       g_object_ref (child);
-      g_object_ref (clone);
+      /* We do not need reference on the clone, as we already have one.*/
 
       if (dest)
 	{
@@ -1318,7 +1420,7 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
 
 
       g_object_unref (child);
-      g_object_unref (clone); /* The extra ref we got above for emision. */
+      g_object_unref (clone); /* The extra ref we got when we created it. */
 
       if (priv->dnd_clone)
 	{
@@ -1335,8 +1437,6 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
                 clutter_actor_unparent (clone);
             }
         }
-
-      clutter_actor_unparent (clone);
 
       retval = TRUE;
     }
@@ -1390,7 +1490,13 @@ nbtk_widget_child_dnd_motion_cb (ClutterActor *child,
       guint child_w, child_h;
 
       if (priv->dnd_last_dest)
-        g_warning ("There should be no last destination set at this point\n");
+        {
+          g_warning ("There should be no last destination set at this point\n");
+
+          g_object_weak_unref (G_OBJECT (priv->dnd_last_dest),
+                               nbtk_widget_dnd_last_dest_weak_cb,
+                               priv->dnd_last_dest_data);
+        }
 
       priv->dnd_last_dest = CLUTTER_ACTOR (widget);
       priv->dnd_last_dest_data = data;
@@ -1461,8 +1567,10 @@ nbtk_widget_child_dnd_press_cb (ClutterActor *child,
   NbtkWidgetPrivate *priv = NBTK_WIDGET (widget)->priv;
   guint threshold = priv->dnd_threshold;
 
-  if (!threshold)
+  if (!threshold || event->button.button != 1 || event->button.click_count > 1)
     return FALSE;
+
+  g_object_ref (data);
 
   priv->dnd_x = event->button.x;
   priv->dnd_y = event->button.y;
@@ -1535,14 +1643,6 @@ nbtk_widget_undo_child_dnd (NbtkWidget *actor, ClutterActor *child)
                                         actor);
 }
 
-ClutterActor *
-nbtk_widget_get_background_texture (const NbtkWidget *actor)
-{
-  g_return_val_if_fail (actor, NULL);
-
-  return actor->priv->bg_image;
-}
-
 static NbtkBorderImage *
 nbtk_border_image_copy (const NbtkBorderImage *border_image)
 {
@@ -1577,13 +1677,6 @@ nbtk_border_image_get_type (void)
   return our_type;
 }
 
-ClutterActor *
-nbtk_widget_get_background (NbtkWidget *actor)
-{
-  NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
-  return priv->bg_image;
-}
-
 void
 nbtk_widget_get_border (NbtkWidget *actor,
                         NbtkPadding *border)
@@ -1606,4 +1699,18 @@ nbtk_widget_get_border (NbtkWidget *actor,
   border->right  = CLUTTER_UNITS_FROM_DEVICE (border_right);
   border->bottom = CLUTTER_UNITS_FROM_DEVICE (border_bottom);
   border->left   = CLUTTER_UNITS_FROM_DEVICE (border_left);
+}
+
+ClutterActor *
+nbtk_widget_get_border_image (NbtkWidget *actor)
+{
+  NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
+  return priv->border_image;
+}
+
+ClutterActor *
+nbtk_widget_get_background_image (NbtkWidget *actor)
+{
+  NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
+  return priv->background_image;
 }

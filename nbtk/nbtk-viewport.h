@@ -28,8 +28,8 @@
 #ifndef __NBTK_VIEWPORT_H__
 #define __NBTK_VIEWPORT_H__
 
-#include <glib-object.h>
 #include <clutter/clutter.h>
+#include <nbtk/nbtk-bin.h>
 
 G_BEGIN_DECLS
 
@@ -46,19 +46,19 @@ typedef struct _NbtkViewportClass     NbtkViewportClass;
 
 struct _NbtkViewport
 {
-  ClutterGroup parent;
+  NbtkBin parent;
 
   NbtkViewportPrivate *priv;
 };
 
 struct _NbtkViewportClass
 {
-  ClutterGroupClass parent_class;
+  NbtkBinClass parent_class;
 };
 
 GType nbtk_viewport_get_type (void) G_GNUC_CONST;
 
-ClutterActor * nbtk_viewport_new         (void);
+NbtkWidget *   nbtk_viewport_new         (void);
 
 void           nbtk_viewport_set_originu (NbtkViewport *viewport,
                                           ClutterUnit   x,

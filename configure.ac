@@ -1,6 +1,6 @@
 m4_define([nbtk_major], [0])
 m4_define([nbtk_minor], [1])
-m4_define([nbtk_micro], [0])
+m4_define([nbtk_micro], [6])
 
 m4_define([nbtk_version], [nbtk_major.nbtk_minor.nbtk_micro])
 m4_define([nbtk_api_version], [1.0])
@@ -11,6 +11,7 @@ m4_define([nbtk_interface_age], [0])
 m4_define([nbtk_binary_age], [m4_eval(100 * nbtk_minor + nbtk_micro)])
 
 AC_INIT([nbtk], [nbtk_version])
+AC_CONFIG_MACRO_DIR([build/autotools])
 
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 
@@ -91,7 +92,7 @@ AC_ARG_ENABLE([maintainer-flags],
               enable_maintainer_flags=maintainer_flags_default)
 
 if test "x$enable_maintainer_flags" = "xyes"; then
-  NBTK_MAINTAINER_CFLAGS="-Werror -Wall -Wshadow -Wcast-align -Wno-uninitialized -Wempty-body -Wformat-security -Winit-self"
+  NBTK_MAINTAINER_CFLAGS="-Werror -Wall -Wshadow -Wcast-align -Wno-uninitialized -Wempty-body -Wformat-security -Winit-self -Wmissing-declarations -Wredundant-decls -Wunreachable-code "
 fi
 AC_SUBST(NBTK_MAINTAINER_CFLAGS)
 
@@ -113,8 +114,14 @@ PKG_CHECK_MODULES(NBTK, [clutter-0.9 libccss-1])
 # check for gtk-doc
 GTK_DOC_CHECK(1.9)
 
-AC_OUTPUT([
+SHAVE_INIT([build/autotools], [enable])
+
+AC_CONFIG_FILES([
 Makefile
+build/Makefile
+build/autotools/Makefile
+build/autotools/shave
+build/autotools/shave-libtool
 nbtk.pc
 docs/Makefile
 docs/reference/Makefile
@@ -123,3 +130,5 @@ nbtk/Makefile
 nbtk/nbtk-version.h
 tests/Makefile
 ])
+
+AC_OUTPUT

@@ -82,24 +82,12 @@ NbtkAdjustment *nbtk_adjustment_new          (gdouble         value,
                                               gdouble         step_increment,
                                               gdouble         page_increment,
                                               gdouble         page_size);
-NbtkAdjustment *nbtk_adjustment_newx         (ClutterFixed    value,
-                                              ClutterFixed    lower,
-                                              ClutterFixed    upper,
-                                              ClutterFixed    step_increment,
-                                              ClutterFixed    page_increment,
-                                              ClutterFixed    page_size);
 gdouble         nbtk_adjustment_get_value    (NbtkAdjustment *adjustment);
-ClutterFixed    nbtk_adjustment_get_valuex   (NbtkAdjustment *adjustment);
 void            nbtk_adjustment_set_value    (NbtkAdjustment *adjustment,
                                               gdouble         value);
-void            nbtk_adjustment_set_valuex   (NbtkAdjustment *adjustment,
-                                              ClutterFixed    value);
 void            nbtk_adjustment_clamp_page   (NbtkAdjustment *adjustment,
                                               gdouble         lower,
                                               gdouble         upper);
-void            nbtk_adjustment_clamp_pagex  (NbtkAdjustment *adjustment,
-                                              ClutterFixed    lower,
-                                              ClutterFixed    upper);
 void            nbtk_adjustment_set_values   (NbtkAdjustment *adjustment,
                                               gdouble         value,
                                               gdouble         lower,
@@ -107,13 +95,6 @@ void            nbtk_adjustment_set_values   (NbtkAdjustment *adjustment,
                                               gdouble         step_increment,
                                               gdouble         page_increment,
                                               gdouble         page_size);
-void            nbtk_adjustment_set_valuesx  (NbtkAdjustment *adjustment,
-                                              ClutterFixed    value,
-                                              ClutterFixed    lower,
-                                              ClutterFixed    upper,
-                                              ClutterFixed    step_increment,
-                                              ClutterFixed    page_increment,
-                                              ClutterFixed    page_size);
 void            nbtk_adjustment_get_values   (NbtkAdjustment *adjustment,
                                               gdouble        *value,
                                               gdouble        *lower,
@@ -121,20 +102,9 @@ void            nbtk_adjustment_get_values   (NbtkAdjustment *adjustment,
                                               gdouble        *step_increment,
                                               gdouble        *page_increment,
                                               gdouble        *page_size);
-void            nbtk_adjustment_get_valuesx  (NbtkAdjustment *adjustment,
-                                              ClutterFixed   *value,
-                                              ClutterFixed   *lower,
-                                              ClutterFixed   *upper,
-                                              ClutterFixed   *step_increment,
-                                              ClutterFixed   *page_increment,
-                                              ClutterFixed   *page_size);
 
 void            nbtk_adjustment_interpolate  (NbtkAdjustment *adjustment,
                                               gdouble         value,
-                                              guint           n_frames,
-                                              guint           fps);
-void            nbtk_adjustment_interpolatex (NbtkAdjustment *adjustment,
-                                              ClutterFixed    value,
                                               guint           n_frames,
                                               guint           fps);
 

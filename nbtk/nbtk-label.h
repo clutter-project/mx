@@ -42,6 +42,12 @@ typedef struct _NbtkLabel              NbtkLabel;
 typedef struct _NbtkLabelPrivate       NbtkLabelPrivate;
 typedef struct _NbtkLabelClass         NbtkLabelClass;
 
+/**
+ * NbtkLabel:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
 struct _NbtkLabel
 {
   /*< private >*/

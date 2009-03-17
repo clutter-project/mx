@@ -54,7 +54,7 @@ stage_size_notify_cb (ClutterActor *stage,
                       GParamSpec *pspec,
                       ClutterActor *table)
 {
-  gint width, height;
+  guint width, height;
 
   clutter_actor_get_size (stage, &width, &height);
   clutter_actor_set_size (table, width-10, height-10);
@@ -83,7 +83,7 @@ main (int argc, char *argv[])
                              "style/default.css", NULL);
 
   stage = clutter_stage_get_default ();
-  clutter_stage_set_user_resizable (stage, TRUE);
+  clutter_stage_set_user_resizable (CLUTTER_STAGE (stage), TRUE);
 
   table = nbtk_table_new ();
   nbtk_table_set_padding (NBTK_TABLE (table), &padding);
@@ -92,9 +92,9 @@ main (int argc, char *argv[])
 
 
   g_signal_connect (stage, "notify::width",
-                    stage_size_notify_cb, table);
+                    G_CALLBACK (stage_size_notify_cb), table);
   g_signal_connect (stage, "notify::height",
-                    stage_size_notify_cb, table);
+                    G_CALLBACK (stage_size_notify_cb), table);
 
   button1 = nbtk_button_new_with_label ("button1");
   button2 = nbtk_button_new_with_label ("button2");

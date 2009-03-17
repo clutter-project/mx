@@ -77,6 +77,12 @@ typedef struct _NbtkTable              NbtkTable;
 typedef struct _NbtkTablePrivate       NbtkTablePrivate;
 typedef struct _NbtkTableClass         NbtkTableClass;
 
+/**
+ * NbtkTable:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
 struct _NbtkTable
 {
   /*< private >*/
@@ -95,6 +101,8 @@ struct _NbtkTableClass
  * @NBTK_KEEP_ASPECT_RATIO: whether to respect the widget's aspect ratio
  * @NBTK_X_EXPAND: whether to allocate extra space on the widget's x-axis
  * @NBTK_Y_EXPAND: whether to allocate extra space on the widget's y-axis
+ * @NBTK_X_FILL: whether to stretch the child to fill the cell horizontally
+ * @NBTK_Y_FILL: whether to stretch the child to fill the cell vertically
  *
  * Denotes the child properties an NbtkTable child will have.
  */
