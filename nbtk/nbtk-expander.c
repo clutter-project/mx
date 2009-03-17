@@ -30,9 +30,9 @@
 
 #include <clutter/clutter.h>
 
+#include "nbtk-bin.h"
 #include "nbtk-button.h"
 #include "nbtk-expander.h"
-#include "nbtk-tile.h"
 
 #define NBTK_EXPANDER_GET_PRIVATE(obj)    \
         (G_TYPE_INSTANCE_GET_PRIVATE ((obj), NBTK_TYPE_EXPANDER, NbtkExpanderPrivate))
@@ -53,7 +53,7 @@ enum
 struct _NbtkExpanderPrivate
 {
   ClutterActor *header_button;
-  ClutterActor *payload_tile;
+  ClutterActor *payload_bin;
 };
 
 static void nbtk_container_iface_init (ClutterContainerIface *iface);
@@ -143,7 +143,7 @@ nbtk_expander_get_preferred_width (ClutterActor *actor,
   payload_natural = 0;
   if (nbtk_button_get_checked (NBTK_BUTTON (priv->header_button)))
     {
-      clutter_actor_get_preferred_width (priv->payload_tile, for_height,
+      clutter_actor_get_preferred_width (priv->payload_bin, for_height,
                                          &payload_min, &payload_natural);
     }
 
@@ -176,7 +176,7 @@ nbtk_expander_get_preferred_height (ClutterActor *actor,
   payload_natural = 0;
   if (nbtk_button_get_checked (NBTK_BUTTON (priv->header_button)))
     {
-      clutter_actor_get_preferred_height (priv->payload_tile, for_width,
+      clutter_actor_get_preferred_height (priv->payload_bin, for_width,
                                           &payload_min, &payload_natural);
     }
 
@@ -220,12 +220,12 @@ nbtk_expander_allocate (ClutterActor          *actor,
       payload_box.y1 = header_box.y2;
       payload_box.x2 = header_box.x2;
       payload_box.y2 = payload_box.x1 +
-                       clutter_actor_get_height (priv->payload_tile);
+                       clutter_actor_get_height (priv->payload_bin);
 
       /* Sanity check. */
       payload_box.y2 = MAX (payload_box.y1, payload_box.y2);
 
-      clutter_actor_allocate (priv->payload_tile, &payload_box, origin_changed);
+      clutter_actor_allocate (priv->payload_bin, &payload_box, origin_changed);
     }
 }
 
@@ -239,7 +239,7 @@ nbtk_expander_paint (ClutterActor *actor)
   clutter_actor_paint (priv->header_button);
 
   if (nbtk_button_get_checked (NBTK_BUTTON (priv->header_button)))
-    clutter_actor_paint (priv->payload_tile);
+    clutter_actor_paint (priv->payload_bin);
 }
 
 
@@ -254,7 +254,7 @@ nbtk_expander_pick (ClutterActor       *actor,
   clutter_actor_paint (priv->header_button);
 
   if (nbtk_button_get_checked (NBTK_BUTTON (priv->header_button)))
-    clutter_actor_paint (priv->payload_tile);
+    clutter_actor_paint (priv->payload_bin);
 }
 
 static void
@@ -312,11 +312,11 @@ nbtk_expander_init (NbtkExpander *self)
                     G_CALLBACK (button_checked_cb), self);
 
   /* Initially invisible, for consistency with the un-toggled button. */
-  self->priv->payload_tile = (ClutterActor *) g_object_new (NBTK_TYPE_TILE,
+  self->priv->payload_bin = (ClutterActor *) g_object_new (NBTK_TYPE_BIN,
                                                             "x-align", 0.,
                                                             NULL);
-  clutter_actor_set_parent (self->priv->payload_tile, CLUTTER_ACTOR (self));
-  clutter_actor_hide (self->priv->payload_tile);
+  clutter_actor_set_parent (self->priv->payload_bin, CLUTTER_ACTOR (self));
+  clutter_actor_hide (self->priv->payload_bin);
 }
 
 static void
@@ -368,7 +368,7 @@ nbtk_expander_get_child (NbtkExpander *self)
   g_return_val_if_fail (self, NULL);
 
   child = NULL;
-  clutter_container_foreach (CLUTTER_CONTAINER (self->priv->payload_tile),
+  clutter_container_foreach (CLUTTER_CONTAINER (self->priv->payload_bin),
                              (ClutterCallback) get_payload_child_cb, &child);
                              
   return child;
@@ -392,7 +392,7 @@ nbtk_expander_add_actor (ClutterContainer *container,
 {
   NbtkExpanderPrivate *priv = NBTK_EXPANDER (container)->priv;
 
-  clutter_container_add (CLUTTER_CONTAINER (priv->payload_tile),
+  clutter_container_add (CLUTTER_CONTAINER (priv->payload_bin),
                          actor, NULL);
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
@@ -424,13 +424,13 @@ nbtk_expander_remove_actor (ClutterContainer *container,
    * if the "actor-removed" signal should be emitted. */
   match_data.actor = actor;
   match_data.actor_found = FALSE;
-  clutter_container_foreach (CLUTTER_CONTAINER (priv->payload_tile),
+  clutter_container_foreach (CLUTTER_CONTAINER (priv->payload_bin),
                              (ClutterCallback) match_child_cb,
                              &match_data);
 
   if (match_data.actor_found)
     {
-      clutter_container_remove (CLUTTER_CONTAINER (priv->payload_tile),
+      clutter_container_remove (CLUTTER_CONTAINER (priv->payload_bin),
                                 actor, NULL);
       g_signal_emit_by_name (container, "actor-removed", actor);
     }
@@ -443,7 +443,7 @@ nbtk_expander_foreach (ClutterContainer *container,
 {
   NbtkExpanderPrivate *priv = NBTK_EXPANDER (container)->priv;
 
-  clutter_container_foreach (CLUTTER_CONTAINER (priv->payload_tile),
+  clutter_container_foreach (CLUTTER_CONTAINER (priv->payload_bin),
                              callback, callback_data);
 }
 

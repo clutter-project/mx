@@ -41,7 +41,7 @@ NbtkExpander {
   background-color: blue;
 }
 
-NbtkExpander > NbtkTile {
+NbtkExpander > NbtkBin {
   background-color: red;
 }
 

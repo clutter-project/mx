@@ -205,21 +205,6 @@ NbtkTablePrivate
 </SECTION>
 
 <SECTION>
-<FILE>nbtk-tile</FILE>
-<TITLE>NbtkTile</TITLE>
-NbtkTile
-nbtk_tile_new
-<SUBSECTION Standard>
-NBTK_TILE
-NBTK_IS_TILE
-NBTK_TYPE_TILE
-nbtk_tile_get_type
-NBTK_TILE_CLASS
-NBTK_IS_TILE_CLASS
-NBTK_TILE_GET_CLASS
-</SECTION>
-
-<SECTION>
 <FILE>nbtk-expander</FILE>
 <TITLE>NbtkExpander</TITLE>
 NbtkExpander

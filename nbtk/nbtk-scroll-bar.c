@@ -28,10 +28,10 @@
 #include <clutter/clutter.h>
 
 #include "nbtk-scroll-bar.h"
+#include "nbtk-bin.h"
 #include "nbtk-button.h"
 #include "nbtk-marshal.h"
 #include "nbtk-stylable.h"
-#include "nbtk-tile.h"
 #include "nbtk-enum-types.h"
 #include "nbtk-private.h"
 
@@ -570,12 +570,12 @@ nbtk_scroll_bar_init (NbtkScrollBar *self)
   g_signal_connect (self->priv->fw_stepper, "clicked",
                     G_CALLBACK (forward_stepper_clicked), self);
 
-  self->priv->trough = (ClutterActor *) nbtk_tile_new ();
+  self->priv->trough = (ClutterActor *) nbtk_bin_new ();
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->trough), "trough");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->trough),
                             CLUTTER_ACTOR (self));
 
-  self->priv->handle = (ClutterActor *) nbtk_tile_new ();
+  self->priv->handle = (ClutterActor *) nbtk_bin_new ();
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->handle), "handle");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->handle),
                             self->priv->trough);
