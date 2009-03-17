@@ -319,14 +319,6 @@ nbtk_expander_init (NbtkExpander *self)
   clutter_actor_hide (self->priv->payload_bin);
 }
 
-static void
-get_payload_child_cb (ClutterActor   *actor,
-                      ClutterActor  **actor_return_location)
-{
-  /* Iterating over a single-child container. */
-  *actor_return_location = actor;
-}
-
 /**
  * nbtk_expander_new:
  *
@@ -359,19 +351,12 @@ nbtk_expander_set_expanded (NbtkExpander *self,
   nbtk_button_set_checked (NBTK_BUTTON (self->priv->header_button), expanded);
 }
 
-/* FIXME: this can go away once we have NbtkBin */
 ClutterActor *
 nbtk_expander_get_child (NbtkExpander *self)
 {
-  ClutterActor *child;
-  
   g_return_val_if_fail (self, NULL);
 
-  child = NULL;
-  clutter_container_foreach (CLUTTER_CONTAINER (self->priv->payload_bin),
-                             (ClutterCallback) get_payload_child_cb, &child);
-                             
-  return child;
+  return nbtk_bin_get_child (NBTK_BIN (self->priv->payload_bin));
 }
 
 const gchar *
