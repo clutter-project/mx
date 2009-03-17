@@ -1298,6 +1298,27 @@ nbtk_table_hide_all (ClutterActor *table)
 }
 
 static void
+nbtk_table_style_changed (NbtkWidget *self)
+{
+  NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
+  NbtkPadding *padding;
+
+  nbtk_stylable_get (NBTK_STYLABLE (self),
+                     "padding", &padding,
+                     NULL);
+
+  if (padding)
+    {
+      priv->padding = *padding;
+      g_boxed_free (NBTK_TYPE_PADDING, padding);
+    }
+
+  /* chain up to apply further style properties */
+  NBTK_WIDGET_CLASS (nbtk_table_parent_class)->style_changed (self);
+
+}
+
+static void
 nbtk_table_class_init (NbtkTableClass *klass)
 {
   GParamSpec *pspec;
@@ -1329,6 +1350,7 @@ nbtk_table_class_init (NbtkTableClass *klass)
   actor_class->hide_all = nbtk_table_hide_all;
 
   widget_class->dnd_dropped = nbtk_table_dnd_dropped;
+  widget_class->style_changed = nbtk_table_style_changed;
 
   pspec = g_param_spec_boolean ("homogeneous",
                                 "Homogeneous",
@@ -1718,36 +1740,9 @@ void
 nbtk_table_set_padding (NbtkTable         *table,
                         const NbtkPadding *padding)
 {
-  NbtkTablePrivate *priv;
-
   g_return_if_fail (NBTK_IS_TABLE (table));
 
-  priv = table->priv;
-
-  if (padding)
-    {
-      priv->padding = *padding;
-      priv->padding_set = TRUE;
-    }
-  else
-    {
-      NbtkPadding *css_padding = NULL;
-
-      /* Reset back to CSS-provided padding. */
-      nbtk_stylable_get (NBTK_STYLABLE (table),
-                         "padding", &css_padding,
-                         NULL);
-
-      if (css_padding)
-        {
-          priv->padding = *css_padding;
-          priv->padding_set = FALSE;
-
-          g_boxed_free (NBTK_TYPE_PADDING, css_padding);
-        }
-    }
-
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
+  g_warning ("%s is deprecated. Please set padding using a stylesheet.", __FUNCTION__);
 }
 
 void
