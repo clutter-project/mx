@@ -23,7 +23,11 @@ static GQuark quark_drop_context = 0;
 
 struct _DropContext
 {
-  NbtkDroppable *droppable;
+  ClutterActor *stage;
+
+  GSList *targets;
+
+  NbtkDroppable *last_target;
 
   guint is_over : 1;
 };
@@ -33,12 +37,10 @@ on_stage_capture (ClutterActor *actor,
                   ClutterEvent *event,
                   DropContext  *context)
 {
-  NbtkDroppable *droppable = context->droppable;
+  NbtkDroppable *droppable;
   NbtkDraggable *draggable;
-  ClutterActor *drop_actor;
   ClutterActor *target;
   gint event_x, event_y;
-  gboolean was_on_over;
 
   if (!(event->type == CLUTTER_MOTION ||
         event->type == CLUTTER_BUTTON_RELEASE))
@@ -66,79 +68,83 @@ on_stage_capture (ClutterActor *actor,
   if (G_UNLIKELY (target == NULL))
     return FALSE;
 
-  /* fast path: if we are on the stage and we were on our actor
-   * before, the we should simply emit ::over-out now
-   */
-  if (target == actor)
+  if (target == context->stage)
     {
-      if (context->is_over)
+      /* fast path: we are on the stage and we were on a droppable
+       * emit ::over-out and unset the last target
+       */
+      if (context->last_target != NULL)
         {
-          g_signal_emit (droppable, droppable_signals[OVER_OUT], 0, draggable);
-          context->is_over = FALSE;
+          g_signal_emit (context->last_target,
+                         droppable_signals[OVER_OUT], 0,
+                         draggable);
+
+          context->last_target = NULL;
         }
 
       return FALSE;
     }
 
-  /* we might have been dropped on a composite actor */
+  droppable = NULL;
   if (!NBTK_IS_DROPPABLE (target))
     {
-      ClutterActor *parent;
+      ClutterActor *parent = target;
 
-      do
+      /* check if we're not on a child of a droppable */
+      while (parent != NULL)
         {
-          parent = clutter_actor_get_parent (target);
-          target = parent;
-
-          if (NBTK_IS_DROPPABLE (parent))
-            break;
+          parent = clutter_actor_get_parent (parent);
+          if (parent != NULL &&
+              NBTK_IS_DROPPABLE (parent) &&
+              nbtk_droppable_accept_drop (NBTK_DROPPABLE (parent), draggable))
+            {
+              droppable = NBTK_DROPPABLE (parent);
+              break;
+            }
         }
-      while (parent != NULL);
-
-      if (parent == NULL)
-        return FALSE;
+    }
+  else
+    {
+      if (nbtk_droppable_accept_drop (NBTK_DROPPABLE (target), draggable))
+        droppable = NBTK_DROPPABLE (target);
     }
 
-  was_on_over = context->is_over;
-
-  if (target == CLUTTER_ACTOR (droppable))
-    context->is_over = TRUE;
-  else
-    context->is_over = FALSE;
-
-  if (!nbtk_droppable_accept_drop (droppable, draggable))
+  if (droppable == NULL)
     return FALSE;
 
   if (event->type == CLUTTER_MOTION)
     {
-      if (was_on_over && !context->is_over)
-        g_signal_emit (droppable, droppable_signals[OVER_OUT], 0, draggable);
-      else if (context->is_over)
-        g_signal_emit (droppable, droppable_signals[OVER_IN], 0, draggable);
+      if (context->last_target == NULL)
+        {
+          context->last_target = droppable;
+          g_signal_emit (context->last_target,
+                         droppable_signals[OVER_IN], 0,
+                         draggable);
+        }
     }
   else if (event->type == CLUTTER_BUTTON_RELEASE)
     {
-      ClutterUnit x, y;
-      ClutterUnit event_x, event_y;
-      gboolean res = FALSE;
+      ClutterUnit drop_x, drop_y;
+      gboolean res;
+      ClutterActor *last_target = CLUTTER_ACTOR (context->last_target);
 
-      x = CLUTTER_UNITS_FROM_DEVICE (event->button.x);
-      y = CLUTTER_UNITS_FROM_DEVICE (event->button.y);
-
-      res = clutter_actor_transform_stage_point (CLUTTER_ACTOR (droppable),
-                                                 x, y,
-                                                 &event_x, &event_y);
+      drop_x = drop_y = 0;
+      res = clutter_actor_transform_stage_point (last_target,
+                                                 event_x, event_y,
+                                                 &drop_x, &drop_y);
       if (!res)
         return FALSE;
 
-      g_signal_emit (droppable, droppable_signals[DROP], 0,
+      g_signal_emit (context->last_target,
+                     droppable_signals[DROP], 0,
                      draggable,
-                     event_x, event_y,
+                     CLUTTER_UNITS_TO_FLOAT (drop_x),
+                     CLUTTER_UNITS_TO_FLOAT (drop_y),
                      event->button.button,
                      event->button.modifier_state);
+
+      context->last_target = NULL;
     }
-  else
-    g_assert_not_reached ();
 
   return FALSE;
 }
@@ -150,21 +156,32 @@ drop_context_destroy (gpointer data)
     {
       DropContext *context = data;
 
-      g_object_unref (context->droppable);
+      g_slist_free (context->targets);
+      g_object_unref (context->stage);
       g_slice_free (DropContext, context);
     }
 }
 
+static void
+drop_context_update (DropContext   *context,
+                     NbtkDroppable *droppable)
+{
+  context->targets = g_slist_prepend (context->targets, droppable);
+}
+
 static DropContext *
-drop_context_create (NbtkDroppable *droppable)
+drop_context_create (ClutterActor  *stage,
+                     NbtkDroppable *droppable)
 {
   DropContext *retval;
 
   retval = g_slice_new (DropContext);
-  retval->droppable = g_object_ref (droppable);
+  retval->stage = g_object_ref (stage);
+  retval->targets = g_slist_prepend (NULL, droppable);
+  retval->last_target = NULL;
   retval->is_over = FALSE;
 
-  g_object_set_qdata_full (G_OBJECT (droppable), quark_drop_context,
+  g_object_set_qdata_full (G_OBJECT (stage), quark_drop_context,
                            retval,
                            drop_context_destroy);
 
@@ -180,18 +197,22 @@ nbtk_droppable_real_enable (NbtkDroppable *droppable)
   stage = clutter_actor_get_stage (CLUTTER_ACTOR (droppable));
   if (G_UNLIKELY (stage == NULL))
     {
-      g_warning ("A NbtkDroppable must have a parent.");
+      g_warning ("A NbtkDroppable must be on the stage before "
+                 "being enabled.");
       return;
     }
 
-  context = g_object_get_qdata (G_OBJECT (droppable), quark_drop_context);
-  if (G_UNLIKELY (context != NULL))
-    return;
+  context = g_object_get_qdata (G_OBJECT (stage), quark_drop_context);
+  if (context == NULL)
+    {
+      context = drop_context_create (stage, droppable);
 
-  context = drop_context_create (droppable);
-  g_signal_connect_after (stage, "captured-event",
-                          G_CALLBACK (on_stage_capture),
-                          context);
+      g_signal_connect_after (stage, "captured-event",
+                              G_CALLBACK (on_stage_capture),
+                              context);
+    }
+  else
+    drop_context_update (context, droppable);
 }
 
 static void
@@ -202,20 +223,21 @@ nbtk_droppable_real_disable (NbtkDroppable *droppable)
 
   stage = clutter_actor_get_stage (CLUTTER_ACTOR (droppable));
   if (G_UNLIKELY (stage == NULL))
-    {
-      g_warning ("A NbtkDroppable must have a parent.");
-      return;
-    }
+    return;
 
-  context = g_object_get_qdata (G_OBJECT (droppable), quark_drop_context);
+  context = g_object_get_qdata (G_OBJECT (stage), quark_drop_context);
   if (G_UNLIKELY (context == NULL))
     return;
 
-  g_signal_handlers_disconnect_by_func (stage,
-                                        G_CALLBACK (on_stage_capture),
-                                        context);
+  context->targets = g_slist_remove (context->targets, droppable);
+  if (context->targets == NULL)
+    {
+      g_signal_handlers_disconnect_by_func (stage,
+                                            G_CALLBACK (on_stage_capture),
+                                            context);
 
-  g_object_set_qdata (G_OBJECT (droppable), quark_drop_context, NULL);
+      g_object_set_qdata (G_OBJECT (droppable), quark_drop_context, NULL);
+    }
 }
 
 static gboolean
