@@ -67,14 +67,6 @@ main (int argc, char *argv[])
   NbtkWidget *table;
   NbtkWidget *button1, *button2, *button3, *button4, *button5,
              *button6, *button7, *button8, *button9;
-  NbtkPadding padding = {CLUTTER_UNITS_FROM_INT (10),
-                         CLUTTER_UNITS_FROM_INT (30),
-                         CLUTTER_UNITS_FROM_INT (10),
-                         CLUTTER_UNITS_FROM_INT (10)};
-  NbtkPadding btn_pad = {CLUTTER_UNITS_FROM_INT (10),
-                         CLUTTER_UNITS_FROM_INT (10),
-                         CLUTTER_UNITS_FROM_INT (10),
-                         CLUTTER_UNITS_FROM_INT (10)};
 
   clutter_init (&argc, &argv);
 
@@ -86,7 +78,6 @@ main (int argc, char *argv[])
   clutter_stage_set_user_resizable (CLUTTER_STAGE (stage), TRUE);
 
   table = nbtk_table_new ();
-  nbtk_table_set_padding (NBTK_TABLE (table), &padding);
   nbtk_table_set_col_spacing (NBTK_TABLE (table), 10);
   nbtk_table_set_row_spacing (NBTK_TABLE (table), 10);
 
@@ -105,14 +96,6 @@ main (int argc, char *argv[])
   button7 = nbtk_button_new_with_label ("Align (0.50, 0.50)");
   button8 = nbtk_button_new_with_label ("button8");
   button9 = nbtk_button_new_with_label ("button9");
-
-  nbtk_bin_set_padding (NBTK_BIN (button1), &btn_pad);
-  nbtk_bin_set_padding (NBTK_BIN (button2), &btn_pad);
-  nbtk_bin_set_padding (NBTK_BIN (button3), &btn_pad);
-  nbtk_bin_set_padding (NBTK_BIN (button4), &btn_pad);
-  nbtk_bin_set_padding (NBTK_BIN (button7), &btn_pad);
-  nbtk_bin_set_padding (NBTK_BIN (button8), &btn_pad);
-  nbtk_bin_set_padding (NBTK_BIN (button9), &btn_pad);
 
   nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button1), 0, 0);
   nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button2), 0, 1);

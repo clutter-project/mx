@@ -75,6 +75,7 @@ NbtkTable {
   color: #aee;
   background-color: #ddd;
   border-image: url('file://rounded-corner.png') 30;
+  padding: 10;
 }
 
 NbtkTooltip {
