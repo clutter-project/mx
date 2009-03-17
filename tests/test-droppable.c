@@ -5,6 +5,8 @@
 #include <clutter/clutter.h>
 #include <nbtk/nbtk.h>
 
+/* Droppable */
+
 #define DROPPABLE_TYPE_GROUP            (droppable_group_get_type ())
 #define DROPPABLE_GROUP(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), DROPPABLE_TYPE_GROUP, DroppableGroup))
 #define DROPPABLE_IS_GROUP(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), DROPPABLE_TYPE_GROUP))
@@ -87,30 +89,22 @@ droppable_group_drop (NbtkDroppable       *droppable,
                       gint                 button,
                       ClutterModifierType  modifiers)
 {
-  g_debug ("%s: dropped %s on %s at %.2f, %.2f",
+  ClutterActor *self = CLUTTER_ACTOR (droppable);
+  ClutterActor *child = CLUTTER_ACTOR (draggable);
+
+  g_debug ("%s: dropped %s on '%s' (%s) at %.2f, %.2f",
            G_STRLOC,
            G_OBJECT_TYPE_NAME (draggable),
+           clutter_actor_get_name (self),
            G_OBJECT_TYPE_NAME (droppable),
            event_x, event_y);
 
-  nbtk_draggable_disable (draggable);
-  nbtk_droppable_disable (droppable);
-
   g_object_ref (draggable);
 
-  clutter_actor_reparent (CLUTTER_ACTOR (draggable),
-                          CLUTTER_ACTOR (droppable));
+  clutter_actor_reparent (child, self);
+  clutter_actor_set_position (CLUTTER_ACTOR (draggable), 50, 50);
 
   g_object_unref (draggable);
-
-  clutter_actor_animate (CLUTTER_ACTOR (draggable),
-                         CLUTTER_EASE_OUT_BOUNCE,
-                         250,
-                         "x", 25,
-                         "y", 25,
-                         "width", 150,
-                         "height", 150,
-                         NULL);
 }
 
 static void
@@ -172,8 +166,6 @@ droppable_group_get_property (GObject    *gobject,
     }
 }
 
-
-
 static void
 droppable_group_class_init (DroppableGroupClass *klass)
 {
@@ -206,6 +198,8 @@ droppable_group_init (DroppableGroup *group)
   g_signal_connect (group, "actor-added",
                     G_CALLBACK (on_actor_added), NULL);
 }
+
+/* Draggable */
 
 #define DRAGGABLE_TYPE_RECTANGLE        (draggable_rectangle_get_type ())
 #define DRAGGABLE_RECTANGLE(obj)        (G_TYPE_CHECK_INSTANCE_CAST ((obj), DRAGGABLE_TYPE_RECTANGLE, DraggableRectangle))
@@ -261,6 +255,16 @@ draggable_rectangle_drag_begin (NbtkDraggable       *draggable,
                                 ClutterModifierType  modifiers)
 {
   ClutterActor *self = CLUTTER_ACTOR (draggable);
+  ClutterActor *stage = clutter_actor_get_stage (self);
+  gint orig_x, orig_y;
+
+  g_object_ref (self);
+
+  clutter_actor_get_transformed_position (self, &orig_x, &orig_y);
+  clutter_actor_reparent (self, stage);
+  clutter_actor_set_position (self, orig_x, orig_y);
+
+  g_object_unref (self);
 
   clutter_actor_animate (self, CLUTTER_EASE_OUT_CUBIC, 250,
                          "opacity", 224,
@@ -301,9 +305,10 @@ draggable_rectangle_parent_set (ClutterActor *actor,
 {
   ClutterActor *new_parent = clutter_actor_get_parent (actor);
 
-  g_debug ("%s: old_parent: %s, new_parent: %s",
+  g_debug ("%s: old_parent: %s, new_parent: %s (%s)",
            G_STRLOC,
            old_parent ? G_OBJECT_TYPE_NAME (old_parent) : "none",
+           new_parent ? clutter_actor_get_name (new_parent) : "Unknown",
            new_parent ? G_OBJECT_TYPE_NAME (new_parent) : "none");
 }
 
@@ -427,6 +432,8 @@ draggable_rectangle_init (DraggableRectangle *self)
   self->is_enabled = FALSE;
 }
 
+/* main */
+
 int
 main (int argc, char *argv[])
 {
@@ -442,8 +449,16 @@ main (int argc, char *argv[])
 
   droppable = g_object_new (DROPPABLE_TYPE_GROUP, NULL);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), droppable);
-  clutter_actor_set_position (droppable, 500, 200);
+  clutter_actor_set_position (droppable, 500, 50);
   clutter_actor_set_reactive (droppable, TRUE);
+  clutter_actor_set_name (droppable, "Drop Target 1");
+  nbtk_droppable_enable (NBTK_DROPPABLE (droppable));
+
+  droppable = g_object_new (DROPPABLE_TYPE_GROUP, NULL);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), droppable);
+  clutter_actor_set_position (droppable, 500, 350);
+  clutter_actor_set_reactive (droppable, TRUE);
+  clutter_actor_set_name (droppable, "Drop Target 2");
   nbtk_droppable_enable (NBTK_DROPPABLE (droppable));
 
   draggable = g_object_new (DRAGGABLE_TYPE_RECTANGLE,
