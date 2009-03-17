@@ -7,6 +7,8 @@
 #include "nbtk-marshal.h"
 #include "nbtk-private.h"
 
+typedef struct _DropContext     DropContext;
+
 enum
 {
   OVER_IN,
@@ -17,18 +19,26 @@ enum
 };
 
 static guint droppable_signals[LAST_SIGNAL] = { 0, };
+static GQuark quark_drop_context = 0;
+
+struct _DropContext
+{
+  NbtkDroppable *droppable;
+
+  guint is_over : 1;
+};
 
 static gboolean
-on_stage_capture (ClutterActor  *actor,
-                  ClutterEvent  *event,
-                  NbtkDroppable *droppable)
+on_stage_capture (ClutterActor *actor,
+                  ClutterEvent *event,
+                  DropContext  *context)
 {
-  static gboolean on_over = FALSE;
-  gboolean was_on_over;
+  NbtkDroppable *droppable = context->droppable;
   NbtkDraggable *draggable;
   ClutterActor *drop_actor;
   ClutterActor *target;
   gint event_x, event_y;
+  gboolean was_on_over;
 
   if (!(event->type == CLUTTER_MOTION ||
         event->type == CLUTTER_BUTTON_RELEASE))
@@ -61,10 +71,10 @@ on_stage_capture (ClutterActor  *actor,
    */
   if (target == actor)
     {
-      if (on_over)
+      if (context->is_over)
         {
           g_signal_emit (droppable, droppable_signals[OVER_OUT], 0, draggable);
-          on_over = FALSE;
+          context->is_over = FALSE;
         }
 
       return FALSE;
@@ -89,21 +99,21 @@ on_stage_capture (ClutterActor  *actor,
         return FALSE;
     }
 
-  was_on_over = on_over;
+  was_on_over = context->is_over;
 
   if (target == CLUTTER_ACTOR (droppable))
-    on_over = TRUE;
+    context->is_over = TRUE;
   else
-    on_over = FALSE;
+    context->is_over = FALSE;
 
   if (!nbtk_droppable_accept_drop (droppable, draggable))
     return FALSE;
 
   if (event->type == CLUTTER_MOTION)
     {
-      if (was_on_over && !on_over)
+      if (was_on_over && !context->is_over)
         g_signal_emit (droppable, droppable_signals[OVER_OUT], 0, draggable);
-      else if (on_over)
+      else if (context->is_over)
         g_signal_emit (droppable, droppable_signals[OVER_IN], 0, draggable);
     }
   else if (event->type == CLUTTER_BUTTON_RELEASE)
@@ -134,9 +144,38 @@ on_stage_capture (ClutterActor  *actor,
 }
 
 static void
+drop_context_destroy (gpointer data)
+{
+  if (G_LIKELY (data != NULL))
+    {
+      DropContext *context = data;
+
+      g_object_unref (context->droppable);
+      g_slice_free (DropContext, context);
+    }
+}
+
+static DropContext *
+drop_context_create (NbtkDroppable *droppable)
+{
+  DropContext *retval;
+
+  retval = g_slice_new (DropContext);
+  retval->droppable = g_object_ref (droppable);
+  retval->is_over = FALSE;
+
+  g_object_set_qdata_full (G_OBJECT (droppable), quark_drop_context,
+                           retval,
+                           drop_context_destroy);
+
+  return retval;
+}
+
+static void
 nbtk_droppable_real_enable (NbtkDroppable *droppable)
 {
   ClutterActor *stage;
+  DropContext *context;
 
   stage = clutter_actor_get_stage (CLUTTER_ACTOR (droppable));
   if (G_UNLIKELY (stage == NULL))
@@ -145,15 +184,21 @@ nbtk_droppable_real_enable (NbtkDroppable *droppable)
       return;
     }
 
+  context = g_object_get_qdata (G_OBJECT (droppable), quark_drop_context);
+  if (G_UNLIKELY (context != NULL))
+    return;
+
+  context = drop_context_create (droppable);
   g_signal_connect_after (stage, "captured-event",
                           G_CALLBACK (on_stage_capture),
-                          droppable);
+                          context);
 }
 
 static void
 nbtk_droppable_real_disable (NbtkDroppable *droppable)
 {
   ClutterActor *stage;
+  DropContext *context;
 
   stage = clutter_actor_get_stage (CLUTTER_ACTOR (droppable));
   if (G_UNLIKELY (stage == NULL))
@@ -162,15 +207,22 @@ nbtk_droppable_real_disable (NbtkDroppable *droppable)
       return;
     }
 
+  context = g_object_get_qdata (G_OBJECT (droppable), quark_drop_context);
+  if (G_UNLIKELY (context == NULL))
+    return;
+
   g_signal_handlers_disconnect_by_func (stage,
                                         G_CALLBACK (on_stage_capture),
-                                        droppable);
+                                        context);
+
+  g_object_set_qdata (G_OBJECT (droppable), quark_drop_context, NULL);
 }
 
 static gboolean
 nbtk_droppable_real_accept_drop (NbtkDroppable *droppable,
                                  NbtkDraggable *draggable)
 {
+  /* we always accept by default */
   return TRUE;
 }
 
@@ -186,6 +238,9 @@ nbtk_droppable_base_init (gpointer g_iface)
       GParamSpec *pspec;
 
       is_initialized = TRUE;
+
+      quark_drop_context =
+        g_quark_from_static_string ("nbtk-droppable-context");
 
       pspec = g_param_spec_boolean ("enabled",
                                     "Enabled",
