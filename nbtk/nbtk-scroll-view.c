@@ -478,7 +478,7 @@ nbtk_scroll_view_add (ClutterContainer *container,
       priv->child = actor;
 
       /* chain up to NbtkBin::add() */
-      // nbtk_scroll_view_parent_iface->add (container, actor);
+      nbtk_scroll_view_parent_iface->add (container, actor);
 
       /* Get adjustments for scroll-bars */
       g_signal_connect (actor, "notify::hadjustment",
