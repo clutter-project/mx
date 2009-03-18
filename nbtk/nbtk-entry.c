@@ -241,6 +241,19 @@ nbtk_entry_paint (ClutterActor *actor)
 }
 
 static void
+nbtk_entry_pick (ClutterActor *actor, const ClutterColor *c)
+{
+  NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
+  ClutterActorBox box;
+  
+  clutter_actor_get_allocation_box (actor, &box);
+  cogl_set_source_color4ub (c->red, c->green, c->blue, c->alpha);
+  cogl_rectangle (box.x1, box.y1, box.x2, box.y2);
+
+  clutter_actor_paint (priv->entry);
+}
+
+static void
 nbtk_stylable_iface_init (NbtkStylableIface *iface)
 {
   static gboolean is_initialized = FALSE;
@@ -279,6 +292,7 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
   actor_class->allocate = nbtk_entry_allocate;
   actor_class->focus_in = nbtk_entry_focus_in;
   actor_class->paint = nbtk_entry_paint;
+  actor_class->pick = nbtk_entry_pick;
 
   widget_class->style_changed = nbtk_entry_style_changed;
 
