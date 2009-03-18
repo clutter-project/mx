@@ -293,8 +293,8 @@ nbtk_bin_allocate (ClutterActor          *self,
 
       if (natural_height > available_height)
         {
-          if (min_width > available_height)
-            natural_height = available_width;
+          if (min_height > available_height)
+            natural_height = available_height;
           else
             natural_height = min_height;
         }
