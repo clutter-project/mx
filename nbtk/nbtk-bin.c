@@ -494,6 +494,7 @@ nbtk_bin_class_init (NbtkBinClass *klass)
   actor_class->get_preferred_height = nbtk_bin_get_preferred_height;
   actor_class->allocate = nbtk_bin_allocate;
   actor_class->paint = nbtk_bin_paint;
+  actor_class->pick = nbtk_bin_pick;
 
   widget_class->style_changed = nbtk_bin_style_changed;
 
