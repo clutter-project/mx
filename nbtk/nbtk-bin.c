@@ -327,7 +327,7 @@ nbtk_bin_get_preferred_width (ClutterActor *self,
   nbtk_widget_get_border (NBTK_WIDGET (self), &border);
 
   min_width     = 0;
-  natural_width = priv->padding.top + priv->padding.bottom
+  natural_width = priv->padding.left + priv->padding.right
                 + border.top
                 + border.bottom;
 
@@ -366,7 +366,7 @@ nbtk_bin_get_preferred_height (ClutterActor *self,
   nbtk_widget_get_border (NBTK_WIDGET (self), &border);
 
   min_height     = 0;
-  natural_height = priv->padding.left + priv->padding.right
+  natural_height = priv->padding.top + priv->padding.bottom
                  + border.left
                  + border.right;
 
