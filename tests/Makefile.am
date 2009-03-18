@@ -8,6 +8,7 @@ INCLUDES = \
 	-I$(top_builddir)
 
 noinst_PROGRAMS = 		\
+	test-bin 		\
 	test-buttons 		\
 	test-container-matching	\
 	test-label 		\
@@ -29,6 +30,7 @@ noinst_PROGRAMS = 		\
 	test-viewport
 	$(NULL)
 
+test_bin_SOURCES = test-bin.c
 test_buttons_SOURCES = test-buttons.c
 test_expander_SOURCES = test-expander.c
 test_script_SOURCES = test-script.c
