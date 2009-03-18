@@ -1090,95 +1090,90 @@ nbtk_widget_set_style_pseudo_class (NbtkWidget  *actor,
 static void
 nbtk_stylable_iface_init (NbtkStylableIface *iface)
 {
-  static gboolean is_initialized = FALSE;
+  GParamSpec *pspec;
+  ClutterColor color = { 0x00, 0x00, 0x00, 0xff };
+  ClutterColor bg_color = { 0xff, 0xff, 0xff, 0x00 };
 
-  if (!is_initialized)
-    {
-      GParamSpec *pspec;
-      ClutterColor color = { 0x00, 0x00, 0x00, 0xff };
-      ClutterColor bg_color = { 0xff, 0xff, 0xff, 0x00 };
+  pspec = clutter_param_spec_color ("background-color",
+                              "Background Color",
+                              "The background color of an actor",
+                              &bg_color,
+                              G_PARAM_READWRITE);
+  nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
-      pspec = clutter_param_spec_color ("background-color",
-                                  "Background Color",
-                                  "The background color of an actor",
-                                  &bg_color,
-                                  G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
+  pspec = clutter_param_spec_color ("color",
+                              "Text Color",
+                              "The color of the text of an actor",
+                              &color,
+                              G_PARAM_READWRITE);
+  nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
-      pspec = clutter_param_spec_color ("color",
-                                  "Text Color",
-                                  "The color of the text of an actor",
-                                  &color,
-                                  G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
+  pspec = g_param_spec_string ("background-image",
+                               "Background Image",
+                               "Background image filename",
+                               NULL,
+                               G_PARAM_READWRITE);
+  nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
-      pspec = g_param_spec_string ("background-image",
-                                   "Background Image",
-                                   "Background image filename",
-                                   NULL,
-                                   G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
+  pspec = g_param_spec_string ("font-family",
+                               "Font Family",
+                               "Name of the font to use",
+                               "Sans",
+                               G_PARAM_READWRITE);
+  nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
-      pspec = g_param_spec_string ("font-family",
-                                   "Font Family",
-                                   "Name of the font to use",
-                                   "Sans",
-                                   G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
+  pspec = g_param_spec_int ("font-size",
+                            "Font Size",
+                            "Size of the font to use in pixels",
+                            0, G_MAXINT, 12,
+                            G_PARAM_READWRITE);
+  nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
-      pspec = g_param_spec_int ("font-size",
-                                "Font Size",
-                                "Size of the font to use in pixels",
-                                0, G_MAXINT, 12,
-                                G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
+  pspec = g_param_spec_int ("border-left-width",
+                            "Border Left Width",
+                            "Left border of the image",
+                            0, G_MAXINT, 0,
+                            G_PARAM_READWRITE);
+  nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
-      pspec = g_param_spec_int ("border-left-width",
-                                "Border Left Width",
-                                "Left border of the image",
-                                0, G_MAXINT, 0,
-                                G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
+  pspec = g_param_spec_int ("border-right-width",
+                            "Border Right Width",
+                            "Right border of the image",
+                            0, G_MAXINT, 0,
+                            G_PARAM_READWRITE);
+  nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
-      pspec = g_param_spec_int ("border-right-width",
-                                "Border Right Width",
-                                "Right border of the image",
-                                0, G_MAXINT, 0,
-                                G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
+  pspec = g_param_spec_int ("border-top-width",
+                            "Border Top Width",
+                            "Top border of the image",
+                            0, G_MAXINT, 0,
+                            G_PARAM_READWRITE);
+  nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
-      pspec = g_param_spec_int ("border-top-width",
-                                "Border Top Width",
-                                "Top border of the image",
-                                0, G_MAXINT, 0,
-                                G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
+  pspec = g_param_spec_int ("border-bottom-width",
+                            "Border Bottom Width",
+                            "Bottom border of the image",
+                            0, G_MAXINT, 0,
+                            G_PARAM_READWRITE);
+  nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
-      pspec = g_param_spec_int ("border-bottom-width",
-                                "Border Bottom Width",
-                                "Bottom border of the image",
-                                0, G_MAXINT, 0,
-                                G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
+  pspec = g_param_spec_boxed ("border-image",
+                              "Border image",
+                              "9-slice image to use for drawing borders and background",
+                              NBTK_TYPE_BORDER_IMAGE,
+                              G_PARAM_READWRITE);
+  nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
-      pspec = g_param_spec_boxed ("border-image",
-                                  "Border image",
-                                  "9-slice image to use for drawing borders and background",
-                                  NBTK_TYPE_BORDER_IMAGE,
-                                  G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
-
-      iface->get_style = nbtk_widget_get_style;
-      iface->set_style = nbtk_widget_set_style;
-      iface->get_base_style = nbtk_widget_get_base_style;
-      iface->get_container = nbtk_widget_get_container;
-      iface->get_style_id = nbtk_widget_get_style_id;
-      iface->get_style_type = nbtk_widget_get_style_type;
-      iface->get_style_class = nbtk_widget_get_style_class;
-      iface->get_pseudo_class = nbtk_widget_get_pseudo_class;
-      /* iface->get_attribute = nbtk_widget_get_attribute; */
-      iface->get_viewport = nbtk_widget_get_viewport;
-    }
+  iface->get_style = nbtk_widget_get_style;
+  iface->set_style = nbtk_widget_set_style;
+  iface->get_base_style = nbtk_widget_get_base_style;
+  iface->get_container = nbtk_widget_get_container;
+  iface->get_style_id = nbtk_widget_get_style_id;
+  iface->get_style_type = nbtk_widget_get_style_type;
+  iface->get_style_class = nbtk_widget_get_style_class;
+  iface->get_pseudo_class = nbtk_widget_get_pseudo_class;
+  /* iface->get_attribute = nbtk_widget_get_attribute; */
+  iface->get_viewport = nbtk_widget_get_viewport;
 }
 
 
