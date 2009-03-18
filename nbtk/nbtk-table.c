@@ -49,7 +49,6 @@ enum
   PROP_0,
 
   PROP_PADDING,
-  PROP_PADDING_SET,
 
   PROP_COL_SPACING,
   PROP_ROW_SPACING,
@@ -87,7 +86,6 @@ struct _NbtkTablePrivate
   GArray *min_heights;
 
   guint homogeneous : 1;
-  guint padding_set : 1;
 };
 
 static void nbtk_container_iface_init (ClutterContainerIface *iface);
@@ -552,10 +550,6 @@ nbtk_table_get_property (GObject    *gobject,
 
     case PROP_PADDING:
       g_value_set_boxed (value, &priv->padding);
-      break;
-
-    case PROP_PADDING_SET:
-      g_value_set_boolean (value, priv->padding_set);
       break;
 
     default:
@@ -1386,15 +1380,6 @@ nbtk_table_class_init (NbtkTableClass *klass)
                               NBTK_PARAM_READWRITE);
   g_object_class_install_property (gobject_class,
                                    PROP_PADDING,
-                                   pspec);
-
-  pspec = g_param_spec_boolean ("padding-set",
-                                "Padding Set",
-                                "Whether the padding is set",
-                                FALSE,
-                                NBTK_PARAM_READABLE);
-  g_object_class_install_property (gobject_class,
-                                   PROP_PADDING_SET,
                                    pspec);
 }
 
