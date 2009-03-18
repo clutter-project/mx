@@ -145,7 +145,9 @@ void                  nbtk_widget_undo_child_dnd         (NbtkWidget   *actor,
 
 /* Only to be used by sub-classes of NbtkWidget */
 ClutterActor *nbtk_widget_get_background_image (NbtkWidget *actor);
-ClutterActor *nbtk_widget_get_border_image (NbtkWidget *actor);
+ClutterActor *nbtk_widget_get_border_image     (NbtkWidget *actor);
+void          nbtk_widget_get_padding          (NbtkWidget  *widget,
+                                                NbtkPadding *padding);
 
 G_END_DECLS
 

@@ -45,6 +45,7 @@
 struct _NbtkWidgetPrivate
 {
   NbtkPadding border;
+  NbtkPadding padding;
 
   NbtkStyle *style;
   gchar *pseudo_class;
@@ -536,6 +537,7 @@ nbtk_widget_style_changed (NbtkWidget *self)
   gint border_right;
   gint border_top;
   gint border_bottom;
+  NbtkPadding *padding = NULL;
 
   /* application has request this widget is not stylable */
   if (!priv->is_stylable)
@@ -556,12 +558,19 @@ nbtk_widget_style_changed (NbtkWidget *self)
                     "border-bottom-width", &border_bottom,
                     "border-left-width", &border_left,
                     "border-image", &border_image,
+                    "padding", &padding,
                     NULL);
 
   priv->border.top    = border_top;
   priv->border.right  = border_right;
   priv->border.bottom = border_bottom;
   priv->border.left   = border_left;
+
+  if (padding)
+    {
+      priv->padding = *padding;
+      g_boxed_free (NBTK_TYPE_PADDING, padding);
+    }
 
   if (priv->border_image)
     {
@@ -1170,6 +1179,14 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
                                   G_PARAM_READWRITE);
       nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
+      pspec = g_param_spec_boxed ("padding",
+                                  "Padding",
+                                  "Padding between the widget's borders "
+                                  "and its content",
+                                  NBTK_TYPE_PADDING,
+                                  G_PARAM_READWRITE);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
+
       iface->get_style = nbtk_widget_get_style;
       iface->set_style = nbtk_widget_set_style;
       iface->get_base_style = nbtk_widget_get_base_style;
@@ -1715,4 +1732,14 @@ nbtk_widget_get_background_image (NbtkWidget *actor)
 {
   NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
   return priv->background_image;
+}
+
+void
+nbtk_widget_get_padding (NbtkWidget *widget,
+                         NbtkPadding *padding)
+{
+  g_return_if_fail (NBTK_IS_WIDGET (widget));
+  g_return_if_fail (padding != NULL);
+
+  *padding = widget->priv->padding;
 }
