@@ -577,7 +577,7 @@ nbtk_scroll_bar_init (NbtkScrollBar *self)
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->trough),
                             CLUTTER_ACTOR (self));
 
-  self->priv->handle = (ClutterActor *) nbtk_bin_new ();
+  self->priv->handle = (ClutterActor *) nbtk_button_new ();
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->handle), "handle");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->handle),
                             self->priv->trough);
