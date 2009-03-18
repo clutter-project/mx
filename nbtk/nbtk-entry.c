@@ -244,11 +244,8 @@ static void
 nbtk_entry_pick (ClutterActor *actor, const ClutterColor *c)
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
-  ClutterActorBox box;
-  
-  clutter_actor_get_allocation_box (actor, &box);
-  cogl_set_source_color4ub (c->red, c->green, c->blue, c->alpha);
-  cogl_rectangle (box.x1, box.y1, box.x2, box.y2);
+
+  CLUTTER_ACTOR_CLASS (nbtk_entry_parent_class)->pick (actor, c);
 
   clutter_actor_paint (priv->entry);
 }
