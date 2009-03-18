@@ -202,6 +202,8 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
     {
       GParamSpec *pspec;
 
+      is_initialized = TRUE;
+
       pspec = g_param_spec_boxed ("padding",
                                   "Padding",
                                   "Padding between the widgets borders "

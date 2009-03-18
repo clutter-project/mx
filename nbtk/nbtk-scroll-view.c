@@ -358,6 +358,8 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
     {
       GParamSpec *pspec;
 
+      is_initialized = TRUE;
+
       pspec = g_param_spec_uint ("xthickness",
                                   "Vertical scroll-bar thickness",
                                   "Thickness of vertical scrollbar, in px",

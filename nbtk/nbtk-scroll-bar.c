@@ -372,6 +372,8 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
     {
       GParamSpec *pspec;
 
+      is_initialized = TRUE;
+
       pspec = g_param_spec_uint ("min-size",
                                  "Minimum grabber size",
                                  "Minimum size of the scroll grabber, in px",
