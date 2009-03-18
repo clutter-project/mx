@@ -257,7 +257,9 @@ nbtk_bin_allocate (ClutterActor          *self,
     {
       ClutterUnit natural_width, natural_height;
       ClutterUnit min_width, min_height;
+      ClutterUnit child_width, child_height;
       ClutterUnit available_width, available_height;
+      ClutterRequestMode request;
       ClutterActorBox allocation = { 0, };
       NbtkPadding border = { 0, };
       gdouble x_align, y_align;
@@ -279,36 +281,46 @@ nbtk_bin_allocate (ClutterActor          *self,
       if (available_height < 0)
         available_height = 0;
 
-      clutter_actor_get_preferred_size (priv->child,
-                                        &min_width,
-                                        &min_height,
-                                        &natural_width,
-                                        &natural_height);
+      request = CLUTTER_REQUEST_HEIGHT_FOR_WIDTH;
+      g_object_get (G_OBJECT (priv->child), "request-mode", &request, NULL);
 
-      if (natural_width > available_width)
+      if (request == CLUTTER_REQUEST_HEIGHT_FOR_WIDTH)
         {
-          if (min_width > available_width)
-            natural_width = available_width;
-          else
-            natural_width = min_width;
+          clutter_actor_get_preferred_width (priv->child, available_height,
+                                             &min_width,
+                                             &natural_width);
+
+          child_width = CLAMP (natural_width, min_width, available_width);
+
+          clutter_actor_get_preferred_height (priv->child, child_width,
+                                              &min_height,
+                                              &natural_height);
+
+          child_height = CLAMP (natural_height, min_height, available_height);
+        }
+      else if (request == CLUTTER_REQUEST_WIDTH_FOR_HEIGHT)
+        {
+          clutter_actor_get_preferred_height (priv->child, available_width,
+                                              &min_height,
+                                              &natural_height);
+
+          child_height = CLAMP (natural_height, min_height, available_height);
+
+          clutter_actor_get_preferred_width (priv->child, child_height,
+                                             &min_width,
+                                             &natural_width);
+
+          child_width = CLAMP (natural_width, min_width, available_width);
         }
 
-      if (natural_height > available_height)
-        {
-          if (min_height > available_height)
-            natural_height = available_height;
-          else
-            natural_height = min_height;
-        }
-
-      allocation.x1 = (int) ((available_width - natural_width) * x_align
+      allocation.x1 = (int) ((available_width - child_width) * x_align
                     + priv->padding.left
                     + border.left);
-      allocation.y1 = (int) ((available_height - natural_height) * y_align
+      allocation.y1 = (int) ((available_height - child_height) * y_align
                     + priv->padding.top
                     + border.top);
-      allocation.x2 = allocation.x1 + natural_width;
-      allocation.y2 = allocation.y1 + natural_height;
+      allocation.x2 = allocation.x1 + child_width;
+      allocation.y2 = allocation.y1 + child_height;
 
       clutter_actor_allocate (priv->child, &allocation, origin_changed);
     }
