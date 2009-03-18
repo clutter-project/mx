@@ -294,15 +294,15 @@ nbtk_entry_init (NbtkEntry *entry)
   NbtkEntryPrivate *priv;
   ClutterColor cursor = { 0x0, 0x9c, 0xcf, 0xff };
 
-  entry->priv = NBTK_ENTRY_GET_PRIVATE (entry);
+  priv = entry->priv = NBTK_ENTRY_GET_PRIVATE (entry);
 
-  entry->priv->entry = g_object_new (CLUTTER_TYPE_TEXT,
-                                     "line-alignment", PANGO_ALIGN_LEFT,
-                                     "activatable", TRUE,
-                                     "editable", TRUE,
-                                     "reactive", TRUE,
-                                     "cursor-color", &cursor,
-                                     NULL);
+  priv->entry = g_object_new (CLUTTER_TYPE_TEXT,
+                              "line-alignment", PANGO_ALIGN_LEFT,
+                              "activatable", TRUE,
+                              "editable", TRUE,
+                              "reactive", TRUE,
+                              "cursor-color", &cursor,
+                              NULL);
 
   clutter_actor_set_parent (priv->entry, CLUTTER_ACTOR (entry));
 }
