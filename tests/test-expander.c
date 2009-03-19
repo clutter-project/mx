@@ -26,7 +26,6 @@ main (int argc, char *argv[])
   clutter_actor_set_size (stage, 400, 200);
 
   expander = nbtk_expander_new ("Test");
-  clutter_actor_set_width (CLUTTER_ACTOR (expander), 100);
   clutter_actor_set_position (CLUTTER_ACTOR (expander), 50, 50);
   clutter_container_add (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (expander), NULL);
 
