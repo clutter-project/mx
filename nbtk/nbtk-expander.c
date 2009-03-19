@@ -128,6 +128,19 @@ nbtk_expander_set_property (GObject      *gobject,
     }
 }
 
+typedef struct {
+  ClutterActor *actor;
+  gboolean      is_child;
+} child_data_t;
+
+static void
+is_child_cb (ClutterActor *actor,
+             child_data_t *child_data)
+{
+  if (actor == child_data->actor)
+    child_data->is_child = TRUE;
+}
+
 static void
 button_checked_cb (NbtkButton     *button,
                    GParamSpec     *pspec,
@@ -144,9 +157,17 @@ button_checked_cb (NbtkButton     *button,
     }
   else
     {
-      clutter_container_remove (CLUTTER_CONTAINER (self->priv->table),
-                                self->priv->payload_bin, NULL);
-      clutter_actor_hide (self->priv->payload_bin);
+      child_data_t child_data;
+      child_data.actor = self->priv->payload_bin;
+      child_data.is_child = FALSE;
+      clutter_container_foreach (CLUTTER_CONTAINER (self->priv->table),
+                                 (ClutterCallback) is_child_cb, &child_data);
+      if (child_data.is_child)
+        {
+          clutter_container_remove (CLUTTER_CONTAINER (self->priv->table),
+                                    self->priv->payload_bin, NULL);
+          clutter_actor_hide (self->priv->payload_bin);        
+        }
     }
 
   g_object_notify (G_OBJECT (self), "expanded");
@@ -211,7 +232,7 @@ nbtk_expander_init (NbtkExpander *self)
   nbtk_table_add_widget_full (NBTK_TABLE (self->priv->table),
                               NBTK_WIDGET (self->priv->header_button),
                               0, 0, 1, 1,
-                              NBTK_X_EXPAND | NBTK_X_FILL,
+                              NBTK_X_EXPAND | NBTK_X_FILL | NBTK_Y_EXPAND | NBTK_Y_FILL,
                               0., 0.);
   g_signal_connect (self->priv->header_button, "notify::checked",
                     G_CALLBACK (button_checked_cb), self);
