@@ -4,6 +4,13 @@
 #include <clutter/clutter.h>
 #include <nbtk/nbtk.h>
 
+static void
+clicked_cb (NbtkButton  *button,
+            gpointer     user_data)
+{
+  printf ("Payload label: '%s'\n", nbtk_button_get_label (NBTK_BUTTON (button)));
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -23,14 +30,15 @@ main (int argc, char *argv[])
   clutter_actor_set_position (CLUTTER_ACTOR (expander), 50, 50);
   clutter_container_add (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (expander), NULL);
 
-  label = nbtk_label_new ("Payload");
+  label = nbtk_button_new_with_label ("Payload");
   clutter_container_add (CLUTTER_CONTAINER (expander),
                          CLUTTER_ACTOR (label), NULL);
+  g_signal_connect (label, "clicked", G_CALLBACK (clicked_cb), NULL);
 
   clutter_actor_show (stage);
 
   label = NBTK_WIDGET (nbtk_expander_get_child (NBTK_EXPANDER (expander)));
-  printf ("Payload label: '%s'\n", nbtk_label_get_text (NBTK_LABEL (label)));
+  printf ("Payload label: '%s'\n", nbtk_button_get_label (NBTK_BUTTON (label)));
 
   clutter_main ();
 
