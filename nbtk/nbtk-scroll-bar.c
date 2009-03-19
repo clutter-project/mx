@@ -197,7 +197,7 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
   CLUTTER_ACTOR_CLASS (nbtk_scroll_bar_parent_class)->
     allocate (actor, box, absolute_origin_changed);
 
-  nbtk_bin_get_padding (NBTK_BIN (actor), &padding);
+  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 
   inner_height = clutter_actor_get_heightu (actor) - padding.top - padding.bottom;
 

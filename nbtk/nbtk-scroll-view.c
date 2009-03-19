@@ -162,7 +162,7 @@ nbtk_scroll_view_get_preferred_width (ClutterActor *actor,
   if (!priv->child)
     return;
 
-  nbtk_bin_get_padding (NBTK_BIN (actor), &padding);
+  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
   nbtk_stylable_get (NBTK_STYLABLE (actor),
                      "xthickness", &xthickness,
                      NULL);
@@ -207,7 +207,7 @@ nbtk_scroll_view_get_preferred_height (ClutterActor *actor,
   if (!priv->child)
     return;
 
-  nbtk_bin_get_padding (NBTK_BIN (actor), &padding);
+  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
   nbtk_stylable_get (NBTK_STYLABLE (actor),
                      "ythickness", &ythickness,
                      NULL);
@@ -254,7 +254,7 @@ nbtk_scroll_view_allocate (ClutterActor          *actor,
   CLUTTER_ACTOR_CLASS (nbtk_scroll_view_parent_class)->
     allocate (actor, box, absolute_origin_changed);
 
-  nbtk_bin_get_padding (NBTK_BIN (actor), &padding);
+  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 
   nbtk_stylable_get (NBTK_STYLABLE (actor),
                      "xthickness", &xthickness,
