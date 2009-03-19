@@ -83,14 +83,6 @@ AC_SUBST(NBTK_DEBUG_CFLAGS)
 
 dnl = Enable strict compiler flags =========================================
 
-# use strict compiler flags only on stable releases
-m4_define([maintainer_flags_default],
-          m4_if(m4_eval(nbtk_minor % 2), [0], [yes], [no]))
-AC_ARG_ENABLE([maintainer-flags],
-              AC_HELP_STRING([--enable-maintainer-flags=@<:@no/yes@:>@],
-                             [Use strict compiler flags @<:@default=maintainer_flags_default@:>@]),,
-              enable_maintainer_flags=maintainer_flags_default)
-
 if test "x$enable_maintainer_flags" = "xyes"; then
   NBTK_MAINTAINER_CFLAGS="-Werror -Wall -Wshadow -Wcast-align -Wno-uninitialized -Wempty-body -Wformat-security -Winit-self -Wmissing-declarations -Wredundant-decls -Wunreachable-code "
 fi
