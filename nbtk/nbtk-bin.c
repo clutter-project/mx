@@ -588,7 +588,7 @@ nbtk_bin_set_child (NbtkBin *bin,
 
   if (child)
     {
-      priv->child = g_object_ref_sink (child);
+      priv->child = child;
       clutter_actor_set_parent (child, CLUTTER_ACTOR (bin));
 
       g_signal_emit_by_name (bin, "actor-removed", priv->child);
