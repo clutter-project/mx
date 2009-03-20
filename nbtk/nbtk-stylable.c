@@ -397,7 +397,7 @@ nbtk_stylable_set_property_internal (NbtkStylable       *stylable,
     }
   else
     {
-      // NbtkStyle *style = nbtk_stylable_get_style (stylable);
+      NbtkStyle *style = nbtk_stylable_get_style (stylable);
       gchar *real_name;
 
       real_name = g_strconcat (g_param_spec_get_qdata (pspec, quark_real_owner),
