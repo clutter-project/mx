@@ -369,52 +369,6 @@ nbtk_stylable_find_property (NbtkStylable *stylable,
 }
 
 static inline void
-nbtk_stylable_set_property_internal (NbtkStylable       *stylable,
-                                     GParamSpec         *pspec,
-                                     const GValue       *value,
-                                     GObjectNotifyQueue *nqueue)
-{
-  GValue tmp_value = { 0, };
-
-  g_value_init (&tmp_value, G_PARAM_SPEC_VALUE_TYPE (pspec));
-
-  if (!g_value_transform (value, &tmp_value))
-    g_warning ("unable to set property `%s' of type `%s' from value of type `%s'",
-               pspec->name,
-               g_type_name (G_PARAM_SPEC_VALUE_TYPE (pspec)),
-               G_VALUE_TYPE_NAME (value));
-  else if (g_param_value_validate (pspec, &tmp_value) &&
-           !(pspec->flags & G_PARAM_LAX_VALIDATION))
-    {
-      gchar *contents = g_strdup_value_contents (value);
-
-      g_warning ("value \"%s\" of type `%s' is invalid or out of range for property `%s' of type `%s'",
-                 contents,
-                 G_VALUE_TYPE_NAME (value),
-                 pspec->name,
-                 g_type_name (G_PARAM_SPEC_VALUE_TYPE (pspec)));
-      g_free (contents);
-    }
-  else
-    {
-      NbtkStyle *style = nbtk_stylable_get_style (stylable);
-      gchar *real_name;
-
-      real_name = g_strconcat (g_param_spec_get_qdata (pspec, quark_real_owner),
-                               "::",
-                               pspec->name,
-                               NULL);
-
-      // XXX nbtk_style_set_property (style, real_name, &tmp_value);
-      g_object_notify_queue_add (G_OBJECT (stylable), nqueue, pspec);
-
-      g_free (real_name);
-    }
-
-  g_value_unset (&tmp_value);
-}
-
-static inline void
 nbtk_stylable_get_property_internal (NbtkStylable *stylable,
                                      GParamSpec   *pspec,
                                      GValue       *value)
@@ -488,50 +442,16 @@ nbtk_stylable_get_property (NbtkStylable *stylable,
  * @value: an initialized #GValue
  *
  * Sets the property @property_name with @value.
+ *
+ * @Deprecated: this function is deprecated and should not be used
  */
 void
 nbtk_stylable_set_property (NbtkStylable *stylable,
                             const gchar  *property_name,
                             const GValue *value)
 {
-  GObjectNotifyQueue *nqueue;
-  GParamSpec *pspec;
-
-  g_return_if_fail (NBTK_IS_STYLABLE (stylable));
-  g_return_if_fail (property_name != NULL);
-  g_return_if_fail (value != NULL);
-
-  g_object_ref (stylable);
-
-  nqueue = g_object_notify_queue_freeze (G_OBJECT (stylable),
-                                         &property_notify_context);
-
-  pspec = nbtk_stylable_find_property (stylable, property_name);
-  if (!pspec)
-    {
-      g_warning ("Stylable class `%s' doesn't have a property named `%s'",
-                 g_type_name (G_OBJECT_TYPE (stylable)),
-                 property_name);
-    }
-  else if (!(pspec->flags & G_PARAM_WRITABLE))
-    {
-      g_warning ("Style property `%s' of class `%s' is not readable",
-                 pspec->name,
-                 g_type_name (G_OBJECT_TYPE (stylable)));
-    }
-  else if (G_VALUE_TYPE (value) != G_PARAM_SPEC_VALUE_TYPE (pspec))
-    {
-      g_warning ("Passed value is not of the requested type `%s' for "
-                 "the style property `%s' of class `%s'",
-                 g_type_name (G_PARAM_SPEC_VALUE_TYPE (pspec)),
-                 pspec->name,
-                 g_type_name (G_OBJECT_TYPE (stylable)));
-    }
-  else
-    nbtk_stylable_set_property_internal (stylable, pspec, value, nqueue);
-
-  g_object_notify_queue_thaw (G_OBJECT (stylable), nqueue);
-  g_object_unref (stylable);
+  g_warning ("%s is deprecated and will be removed in future versions",
+             __FUNCTION__);
 }
 
 static void
@@ -586,67 +506,6 @@ nbtk_stylable_get_valist (NbtkStylable *stylable,
       name = va_arg (varargs, gchar*);
     }
 
-  g_object_unref (stylable);
-}
-
-static void
-nbtk_stylable_set_valist (NbtkStylable *stylable,
-                          const gchar  *first_property_name,
-                          va_list       varargs)
-{
-  GObjectNotifyQueue *nqueue;
-  const gchar *name;
-
-  g_object_ref (stylable);
-
-  nqueue = g_object_notify_queue_freeze (G_OBJECT (stylable),
-                                         &property_notify_context);
-
-  name = first_property_name;
-
-  while (name)
-    {
-      GParamSpec *pspec;
-      GValue value = { 0, };
-      gchar *error;
-
-      pspec = nbtk_stylable_find_property (stylable, name);
-      if (!pspec)
-        {
-          g_warning ("%s: no style property named `%s' found for class `%s'",
-                     G_STRLOC,
-                     name,
-                     g_type_name (G_OBJECT_TYPE (stylable)));
-          break;
-        }
-
-      if (!(pspec->flags & G_PARAM_WRITABLE) ||
-          (pspec->flags & G_PARAM_CONSTRUCT_ONLY))
-        {
-          g_warning ("Style property `%s' of class `%s' is not writable",
-                     pspec->name,
-                     g_type_name (G_OBJECT_TYPE (stylable)));
-          break;
-        }
-
-      g_value_init (&value, G_PARAM_SPEC_VALUE_TYPE (pspec));
-
-      G_VALUE_COLLECT (&value, varargs, 0, &error);
-      if (error)
-        {
-          g_warning ("%s: %s", G_STRLOC, error);
-          g_free (error);
-          g_value_unset (&value);
-          break;
-        }
-
-      nbtk_stylable_set_property_internal (stylable, pspec, &value, nqueue);
-      g_value_unset (&value);
-
-      name = va_arg (varargs, gchar*);
-    }
-
-  g_object_notify_queue_thaw (G_OBJECT (stylable), nqueue);
   g_object_unref (stylable);
 }
 
@@ -712,14 +571,8 @@ nbtk_stylable_set (NbtkStylable *stylable,
                    const gchar  *first_property_name,
                    ...)
 {
-  va_list args;
-
-  g_return_if_fail (NBTK_IS_STYLABLE (stylable));
-  g_return_if_fail (first_property_name != NULL);
-
-  va_start (args, first_property_name);
-  nbtk_stylable_set_valist (stylable, first_property_name, args);
-  va_end (args);
+  g_warning ("%s is deprecated and will be removed in future versions",
+             __FUNCTION__);
 }
 
 /**
