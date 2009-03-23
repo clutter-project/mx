@@ -299,7 +299,6 @@ nbtk_button_leave (ClutterActor         *actor,
 
   button->priv->is_hover = 0;
 
-
   if (button->priv->is_pressed)
     {
       NbtkButtonClass *klass = NBTK_BUTTON_GET_CLASS (button);
@@ -531,7 +530,10 @@ nbtk_button_init (NbtkButton *button)
   button->priv = NBTK_BUTTON_GET_PRIVATE (button);
   button->priv->transition_duration = 250;
 
-  button->priv->table = g_object_new (NBTK_TYPE_TABLE, "stylable", FALSE, NULL);
+  button->priv->table = g_object_new (NBTK_TYPE_TABLE,
+                                      "stylable", FALSE,
+                                      "reactive", FALSE,
+                                      NULL);
   clutter_container_add_actor (CLUTTER_CONTAINER (button),
                                CLUTTER_ACTOR (button->priv->table));
 }
