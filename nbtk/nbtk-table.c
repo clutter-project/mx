@@ -61,8 +61,6 @@ enum
 
 struct _NbtkTablePrivate
 {
-  NbtkPadding padding;
-
   GSList *children;
 
   gint col_spacing;
@@ -89,13 +87,10 @@ struct _NbtkTablePrivate
 };
 
 static void nbtk_container_iface_init (ClutterContainerIface *iface);
-static void nbtk_stylable_iface_init  (NbtkStylableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (NbtkTable, nbtk_table, NBTK_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
-                                                nbtk_container_iface_init)
-                         G_IMPLEMENT_INTERFACE (NBTK_TYPE_STYLABLE,
-                                                nbtk_stylable_iface_init));
+                                                nbtk_container_iface_init));
 
 
 /*
@@ -468,28 +463,6 @@ nbtk_container_iface_init (ClutterContainerIface *iface)
   iface->child_meta_type = NBTK_TYPE_TABLE_CHILD;
 }
 
-/* NbtkStylable Iface Implementation */
-static void
-nbtk_stylable_iface_init (NbtkStylableIface *iface)
-{
-  static gboolean is_initialized = FALSE;
-
-  if (G_UNLIKELY (!is_initialized))
-    {
-      GParamSpec *pspec;
-
-      is_initialized = TRUE;
-
-      pspec = g_param_spec_boxed ("padding",
-                                  "Padding",
-                                  "Padding between the widgets borders "
-                                  "and its content",
-                                  NBTK_TYPE_PADDING,
-                                  G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_TABLE, pspec);
-    }
-}
-
 /* NbtkTable Class Implementation */
 
 static void
@@ -535,6 +508,7 @@ nbtk_table_get_property (GObject    *gobject,
                           GParamSpec *pspec)
 {
   NbtkTablePrivate *priv = NBTK_TABLE (gobject)->priv;
+  NbtkPadding padding;
 
   switch (prop_id)
     {
@@ -551,7 +525,8 @@ nbtk_table_get_property (GObject    *gobject,
       break;
 
     case PROP_PADDING:
-      g_value_set_boxed (value, &priv->padding);
+      nbtk_table_get_padding (NBTK_TABLE (gobject), &padding);
+      g_value_set_boxed (value, &padding);
       break;
 
     default:
@@ -645,16 +620,19 @@ nbtk_table_homogeneous_allocate (ClutterActor          *self,
   ClutterUnit col_width, row_height;
   gint row_spacing, col_spacing;
   NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
+  NbtkPadding padding;
+
+  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
   col_spacing = CLUTTER_UNITS_FROM_DEVICE (priv->col_spacing);
   row_spacing = CLUTTER_UNITS_FROM_DEVICE (priv->row_spacing);
 
   col_width = (box->x2 - box->x1
-               - priv->padding.left - priv->padding.right
+               - padding.left - padding.right
                - (col_spacing * (priv->n_cols - 1)))
             / priv->n_cols;
   row_height = (box->y2 - box->y1
-                - priv->padding.top - priv->padding.bottom
+                - padding.top - padding.bottom
                 - (row_spacing * (priv->n_rows - 1)))
              / priv->n_rows;
 
@@ -677,10 +655,10 @@ nbtk_table_homogeneous_allocate (ClutterActor          *self,
                     "x-align", &x_align, "y-align", &y_align,
                     "x-fill", &x_fill, "y-fill", &y_fill, NULL);
 
-      childbox.x1 = priv->padding.left + (col_width + col_spacing) * col;
+      childbox.x1 = padding.left + (col_width + col_spacing) * col;
       childbox.x2 = childbox.x1 + (col_width * col_span) + (col_spacing * (col_span - 1));
 
-      childbox.y1 = priv->padding.top + (row_height + row_spacing) * row;
+      childbox.y1 = padding.top + (row_height + row_spacing) * row;
       childbox.y2 = childbox.y1 + (row_height * row_span) + (row_spacing * (row_span - 1));
 
       nbtk_table_allocate_fill (child, &childbox, x_align, y_align, x_fill, y_fill);
@@ -816,6 +794,9 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
   gboolean *has_expand_cols;
   gboolean *has_expand_rows;
   gint expanded_rows = 0;
+  NbtkPadding padding;
+
+  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
   col_spacing = (priv->col_spacing);
   row_spacing = (priv->row_spacing);
@@ -832,11 +813,11 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
   min_heights = (gboolean *)priv->min_heights->data;
 
   table_height = CLUTTER_UNITS_TO_INT (box->y2 - box->y1
-                                       - priv->padding.top
-                                       - priv->padding.bottom);
+                                       - padding.top
+                                       - padding.bottom);
   table_width = CLUTTER_UNITS_TO_INT (box->x2 - box->x1
-                                      - priv->padding.right
-                                      - priv->padding.left);
+                                      - padding.right
+                                      - padding.left);
 
   min_widths = nbtk_table_calculate_col_widths (NBTK_TABLE (self),
                                                 CLUTTER_UNITS_TO_INT (box->x2 - box->x1));
@@ -966,13 +947,13 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
       row_height += row_spacing * (row_span - 1);
 
       /* calculate child x */
-      child_x = CLUTTER_UNITS_TO_INT (priv->padding.left)
+      child_x = CLUTTER_UNITS_TO_INT (padding.left)
               + col_spacing * col;
       for (i = 0; i < col; i++)
         child_x += min_widths[i];
 
       /* calculate child y */
-      child_y = CLUTTER_UNITS_TO_INT (priv->padding.top)
+      child_y = CLUTTER_UNITS_TO_INT (padding.top)
               + row_spacing * row;
       for (i = 0; i < row; i++)
         child_y += min_heights[i];
@@ -1051,6 +1032,9 @@ nbtk_table_get_preferred_width (ClutterActor *self,
   NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
   GSList *list;
   gint i;
+  NbtkPadding padding;
+
+  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
   if (priv->n_cols < 1)
   {
@@ -1092,8 +1076,8 @@ nbtk_table_get_preferred_width (ClutterActor *self,
         pref_widths[col] = w_pref;
     }
 
-  total_min_width = priv->padding.left
-                  + priv->padding.right
+  total_min_width = padding.left
+                  + padding.right
                   + (priv->n_cols - 1)
                   * CLUTTER_UNITS_FROM_DEVICE (priv->col_spacing);
   total_pref_width = total_min_width;
@@ -1294,27 +1278,6 @@ nbtk_table_hide_all (ClutterActor *table)
 }
 
 static void
-nbtk_table_style_changed (NbtkWidget *self)
-{
-  NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
-  NbtkPadding *padding;
-
-  nbtk_stylable_get (NBTK_STYLABLE (self),
-                     "padding", &padding,
-                     NULL);
-
-  if (padding)
-    {
-      priv->padding = *padding;
-      g_boxed_free (NBTK_TYPE_PADDING, padding);
-    }
-
-  /* chain up to apply further style properties */
-  NBTK_WIDGET_CLASS (nbtk_table_parent_class)->style_changed (self);
-
-}
-
-static void
 nbtk_table_class_init (NbtkTableClass *klass)
 {
   GParamSpec *pspec;
@@ -1346,7 +1309,6 @@ nbtk_table_class_init (NbtkTableClass *klass)
   actor_class->hide_all = nbtk_table_hide_all;
 
   widget_class->dnd_dropped = nbtk_table_dnd_dropped;
-  widget_class->style_changed = nbtk_table_style_changed;
 
   pspec = g_param_spec_boolean ("homogeneous",
                                 "Homogeneous",
@@ -1739,5 +1701,8 @@ nbtk_table_get_padding (NbtkTable   *table,
   g_return_if_fail (NBTK_TABLE (table));
   g_return_if_fail (padding != NULL);
 
-  *padding = table->priv->padding;
+  g_warning ("%s is deprecated. Please use nbtk_widget_get_padding",
+             __FUNCTION__);
+
+  nbtk_widget_get_padding ((NbtkWidget*) table, padding);
 }
