@@ -760,6 +760,40 @@ nbtk_button_set_icon_from_file (NbtkButton *button,
 }
 
 /**
+ * nbtk_button_set_icon:
+ * @button: a #NbtkButton
+ * @icon: #ClutterActor to us as icon
+ *
+ * Sets the icon of the button to the actor specified in @icon.
+ * If @icon is %NULL, the current icon is removed.
+ */
+void
+nbtk_button_set_icon (NbtkButton    *button,
+                      ClutterActor  *icon)
+{
+  NbtkButtonPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_BUTTON (button));
+
+  priv = button->priv;
+
+  if (priv->icon)
+    {
+      clutter_container_remove_actor (CLUTTER_CONTAINER (priv->table),
+                                      priv->icon);
+      priv->icon = NULL;
+      priv->is_icon_set = FALSE;
+    }
+
+  priv->icon = icon;
+  if (priv->icon)
+    {
+      nbtk_table_add_actor (NBTK_TABLE (priv->table), priv->icon, 0, 0);
+      priv->is_icon_set = TRUE;    
+    }
+}
+
+/**
  * nbtk_button_set_tooltip:
  * @button: a #NbtkButton
  * @label: text to display in the tooltip, or NULL to unset the tooltip
