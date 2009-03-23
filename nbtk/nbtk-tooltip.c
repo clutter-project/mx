@@ -172,10 +172,17 @@ nbtk_tooltip_get_preferred_width (ClutterActor *self,
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
   arrow_image = nbtk_widget_get_background_image (NBTK_WIDGET (self));
-  clutter_actor_get_preferred_height (arrow_image,
-                                      -1,
-                                      NULL,
-                                      &arrow_height);
+  if (arrow_image)
+    {
+      clutter_actor_get_preferred_height (arrow_image,
+                                          -1,
+                                          NULL,
+                                          &arrow_height);
+    }
+  else
+    {
+      arrow_height = 0;
+    }
 
   if (for_height > -1)
     {
@@ -186,10 +193,18 @@ nbtk_tooltip_get_preferred_width (ClutterActor *self,
       label_height = -1;
     }
 
-  clutter_actor_get_preferred_width (priv->label,
-                                     label_height,
-                                     &min_label_w,
-                                     &natural_label_w);
+  if (priv->label)
+    {
+      clutter_actor_get_preferred_width (priv->label,
+                                         label_height,
+                                         &min_label_w,
+                                         &natural_label_w);
+    }
+  else
+    {
+      min_label_w = 0;
+      natural_label_w = 0;
+    }
 
 
   if (min_width_p)
@@ -217,10 +232,18 @@ nbtk_tooltip_get_preferred_height (ClutterActor *self,
   NbtkPadding padding;
 
   arrow_image = nbtk_widget_get_background_image (NBTK_WIDGET (self));
-  clutter_actor_get_preferred_height (arrow_image,
-                                      -1,
-                                      NULL,
-                                      &arrow_height);
+
+  if (arrow_image)
+    {
+      clutter_actor_get_preferred_height (arrow_image,
+                                          -1,
+                                          NULL,
+                                          &arrow_height);
+    }
+  else
+    {
+      arrow_height = 0;
+    }
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
   if (for_width > -1)
@@ -232,10 +255,18 @@ nbtk_tooltip_get_preferred_height (ClutterActor *self,
       label_width = -1;
     }
 
-  clutter_actor_get_preferred_height (priv->label,
-                                      label_width,
-                                      &min_label_h,
-                                      &natural_label_h);
+  if (priv->label)
+    {
+      clutter_actor_get_preferred_height (priv->label,
+                                          label_width,
+                                          &min_label_h,
+                                          &natural_label_h);
+    }
+  else
+    {
+      min_label_h = 0;
+      natural_label_h = 0;
+    }
 
   if (min_height_p)
     {
@@ -269,16 +300,24 @@ nbtk_tooltip_allocate (ClutterActor          *self,
 
   arrow_image = nbtk_widget_get_background_image (NBTK_WIDGET (self));
 
-  clutter_actor_get_preferred_height (arrow_image, -1, NULL, &arrow_height);
-  clutter_actor_get_preferred_width (arrow_image, -1, NULL, &arrow_width);
+  if (arrow_image)
+    {
+      clutter_actor_get_preferred_height (arrow_image, -1, NULL, &arrow_height);
+      clutter_actor_get_preferred_width (arrow_image, -1, NULL, &arrow_width);
 
-  arrow_box.x1 = CLUTTER_UNITS_FROM_INT (CLUTTER_UNITS_TO_INT (((box->x2 - box->x1) / 2
-                                        - (arrow_width / 2))));
-  arrow_box.y1 = 0;
-  arrow_box.x2 = arrow_box.x1 + arrow_width;
-  arrow_box.y2 = arrow_box.y1 + arrow_height;
+      arrow_box.x1 = CLUTTER_UNITS_FROM_INT (CLUTTER_UNITS_TO_INT (((box->x2 - box->x1) / 2
+                                            - (arrow_width / 2))));
+      arrow_box.y1 = 0;
+      arrow_box.x2 = arrow_box.x1 + arrow_width;
+      arrow_box.y2 = arrow_box.y1 + arrow_height;
 
-  clutter_actor_allocate (arrow_image, &arrow_box, origin_changed);
+      clutter_actor_allocate (arrow_image, &arrow_box, origin_changed);
+    }
+  else
+    {
+      arrow_height = 0;
+      arrow_width = 0;
+    }
 
   child_box.x1 = child_box.y1 = 0;
   child_box.x2 = (box->x2 - box->x1);
@@ -291,13 +330,16 @@ nbtk_tooltip_allocate (ClutterActor          *self,
   if (border_image)
     clutter_actor_allocate (border_image, &child_box, origin_changed);
 
-  /* now remove the padding */
-  child_box.y1 += padding.top;
-  child_box.x1 += padding.left;
-  child_box.x2 -= padding.right;
-  child_box.y2 -= padding.bottom;
+  if (priv->label)
+    {
+      /* now remove the padding */
+      child_box.y1 += padding.top;
+      child_box.x1 += padding.left;
+      child_box.x2 -= padding.right;
+      child_box.y2 -= padding.bottom;
 
-  clutter_actor_allocate (priv->label, &child_box, origin_changed);
+      clutter_actor_allocate (priv->label, &child_box, origin_changed);
+    }
 }
 
 
