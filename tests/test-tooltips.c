@@ -41,6 +41,15 @@ main (int argc, char *argv[])
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 200, 100);
 
+
+  button = nbtk_button_new_with_label ("Testing Long Text");
+  nbtk_button_set_tooltip (NBTK_BUTTON (button),
+                           "Here is some really"
+                           " long text to test the handling in NbtkTooltip");
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage),
+                               CLUTTER_ACTOR (button));
+  clutter_actor_set_position (CLUTTER_ACTOR (button), 200, 100);
+
   clutter_actor_show (stage);
 
   clutter_main ();

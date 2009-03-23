@@ -83,7 +83,10 @@ NbtkTable {
 }
 
 NbtkTooltip {
-  background-color: #ccc5;
+  color: white;
+  padding: 4 10 12 10;
+  background-image: url('file://tooltip-arrow.png');
+  border-image: url('file://tooltip-background.png') 4 11 12 11;
 }
 
 NbtkTable NbtkButton {
