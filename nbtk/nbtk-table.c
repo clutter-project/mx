@@ -719,7 +719,7 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
   col_widths = (gint *)priv->col_widths->data;
 
   /* take off the padding values to calculate the allocatable width */
-  nbtk_table_get_padding (table, &padding);
+  nbtk_widget_get_padding (NBTK_WIDGET (table), &padding);
 
   for_width -= CLUTTER_UNITS_TO_INT (padding.left + padding.right);
 
@@ -1153,7 +1153,7 @@ nbtk_table_get_preferred_height (ClutterActor *self,
         pref_heights[row] = pref;
     }
 
-  nbtk_table_get_padding (NBTK_TABLE (self), &padding);
+  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
   /* start off with padding plus row spacing */
   total_min_height = padding.top + padding.bottom + (priv->n_rows - 1) *
