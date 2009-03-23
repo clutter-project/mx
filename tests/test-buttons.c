@@ -15,7 +15,6 @@ main (int argc, char *argv[])
 {
   NbtkWidget *button;
   ClutterColor stage_color =  { 0xff, 0xff, 0xff, 0xff };
-  ClutterColor icon_color =  { 0x00, 0xff, 0xff, 0xff };
   ClutterActor *stage, *icon;
 
   clutter_init (&argc, &argv);
@@ -48,8 +47,9 @@ main (int argc, char *argv[])
   clutter_actor_set_position (CLUTTER_ACTOR (button), 300, 100);
 
   button = nbtk_button_new_with_label ("icon actor");
-  icon = clutter_rectangle_new_with_color (&icon_color);
-  clutter_actor_set_size (icon, 32, 32);
+  icon = (ClutterActor *) nbtk_bin_new ();
+  clutter_actor_set_name (icon, "button-icon");
+  clutter_actor_set_size (icon, 16, 16);
   nbtk_button_set_icon (NBTK_BUTTON (button), icon);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));

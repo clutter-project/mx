@@ -33,6 +33,7 @@
 #include "nbtk-bin.h"
 #include "nbtk-button.h"
 #include "nbtk-expander.h"
+#include "nbtk-stylable.h"
 #include "nbtk-table.h"
 
 #define NBTK_EXPANDER_GET_PRIVATE(obj)    \
@@ -88,7 +89,7 @@ nbtk_expander_get_property (GObject    *gobject,
   switch (prop_id)
     {
     case PROP_EXPANDED:
-      g_value_set_boolean (value, 
+      g_value_set_boolean (value,
                            nbtk_expander_get_expanded (NBTK_EXPANDER (gobject)));
       break;
     case PROP_LABEL:
@@ -166,12 +167,12 @@ button_checked_cb (NbtkButton     *button,
         {
           clutter_container_remove (CLUTTER_CONTAINER (self->priv->table),
                                     self->priv->payload_bin, NULL);
-          clutter_actor_hide (self->priv->payload_bin);        
+          clutter_actor_hide (self->priv->payload_bin);
         }
     }
 
   g_object_notify (G_OBJECT (self), "expanded");
-  
+
   clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
 }
 
@@ -213,6 +214,9 @@ nbtk_expander_class_init (NbtkExpanderClass *klass)
 static void
 nbtk_expander_init (NbtkExpander *self)
 {
+  ClutterActor  *button_icon;
+  GValue         background_image = { 0, };
+
   self->priv = NBTK_EXPANDER_GET_PRIVATE (self);
 
   g_return_if_fail (nbtk_expander_parent_iface);
@@ -223,6 +227,7 @@ nbtk_expander_init (NbtkExpander *self)
   self->priv->table = (ClutterActor *) nbtk_table_new ();
   nbtk_expander_parent_iface->add (CLUTTER_CONTAINER (self), self->priv->table);
 
+  /* Header */
   self->priv->header_button = (ClutterActor *)
                                 g_object_new (NBTK_TYPE_BUTTON,
                                               "toggle-mode", TRUE,
@@ -237,7 +242,38 @@ nbtk_expander_init (NbtkExpander *self)
   g_signal_connect (self->priv->header_button, "notify::checked",
                     G_CALLBACK (button_checked_cb), self);
 
-  /* Initially invisible, for consistency with the un-toggled button. */
+  /* Icon */
+  button_icon = (ClutterActor *) nbtk_bin_new ();
+  clutter_actor_set_name (button_icon, "nbtk-expander-header-icon");
+  nbtk_button_set_icon (NBTK_BUTTON (self->priv->header_button), button_icon);
+  /* Icon size. */
+  g_value_init (&background_image, G_TYPE_STRING);
+  nbtk_stylable_get_property (NBTK_STYLABLE (button_icon),
+                              "background-image", &background_image);
+  if (g_value_get_string (&background_image))
+    {
+      GError        *error = NULL;
+      ClutterActor  *background_texture = clutter_texture_new_from_file (
+                                            g_value_get_string (&background_image),
+                                            &error);
+      if (error)
+        {
+          g_warning ("%s", error->message);
+          g_error_free (error);
+        }
+      else
+        {
+          gint width, height;
+          clutter_texture_get_base_size (CLUTTER_TEXTURE (background_texture),
+                                         &width, &height);
+          clutter_actor_set_size (button_icon, width, height);
+          g_object_unref (background_texture);
+        }
+      g_value_unset (&background_image);
+    }
+
+  /* Payload container.
+   * Initially invisible, for consistency with the un-toggled button. */
   self->priv->payload_bin = (ClutterActor *) g_object_new (NBTK_TYPE_BIN,
                                                             "x-align", 0.,
                                                             NULL);
@@ -266,7 +302,7 @@ gboolean
 nbtk_expander_get_expanded (NbtkExpander *self)
 {
   g_return_val_if_fail (self, FALSE);
-  
+
   return nbtk_button_get_checked (NBTK_BUTTON (self->priv->header_button));
 }
 
@@ -275,7 +311,7 @@ nbtk_expander_set_expanded (NbtkExpander *self,
                             gboolean      expanded)
 {
   g_return_if_fail (self);
-  
+
   nbtk_button_set_checked (NBTK_BUTTON (self->priv->header_button), expanded);
 }
 

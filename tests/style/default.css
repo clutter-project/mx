@@ -1,6 +1,3 @@
-NbtkBin {
-  background-color: black;
-}
 
 NbtkLabel {
   color: red;
@@ -41,8 +38,28 @@ NbtkButton#test-border-image {
   border-image: url('file://border-image.png') 12 stretch stretch;
 }
 
+NbtkButton NbtkBin#button-icon {
+  background-color: green;
+}
+
+NbtkButton NbtkBin#button-icon:hover {
+  background-color: yellow;
+}
+
 NbtkExpander {
   background-color: blue;
+}
+
+NbtkExpander *#nbtk-expander-header-icon {
+  background-image: url('file://expander-icon.png');
+}
+
+NbtkExpander *#nbtk-expander-header-icon:hover {
+  background-image: url('file://expander-icon-hover.png');
+}
+
+NbtkExpander *#nbtk-expander-header-icon:checked {
+  background-image: url('file://expander-icon-checked.png');
 }
 
 NbtkExpander > NbtkBin {
@@ -83,10 +100,7 @@ NbtkTable {
 }
 
 NbtkTooltip {
-  color: white;
-  padding: 4 10 12 10;
-  background-image: url('file://tooltip-arrow.png');
-  border-image: url('file://tooltip-background.png') 4 11 12 11;
+  background-color: #ccc5;
 }
 
 NbtkTable NbtkButton {

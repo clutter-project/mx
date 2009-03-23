@@ -58,6 +58,9 @@ EXTRA_DIST = \
         style/border-image.png \
         style/cyan-button.png \
         style/default.css \
+        style/expander-icon-checked.png \
+        style/expander-icon-hover.png \
+        style/expander-icon.png \
         style/green-button.png \
         style/lime-button.png \
         style/red-button.png \

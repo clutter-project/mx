@@ -112,6 +112,18 @@ destroy_old_bg (NbtkButton *button)
     }
 }
 
+static void
+nbtk_button_set_style_pseudo_class (NbtkButton  *button,
+                                    const gchar *pseudo_class)
+{
+  NbtkButtonPrivate *priv = button->priv;
+
+  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), pseudo_class);
+
+  if (NBTK_IS_WIDGET (priv->icon))
+    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (priv->icon), pseudo_class);
+}
+
 static inline void
 nbtk_button_update_label_style (NbtkButton *button)
 {
@@ -175,7 +187,7 @@ nbtk_button_style_changed (NbtkWidget *widget)
 
   /* Chain up to update style bits */
   NBTK_WIDGET_CLASS (nbtk_button_parent_class)->style_changed (widget);
-  
+
   /* Parent old background */
   if (priv->old_bg)
     {
@@ -200,7 +212,7 @@ nbtk_button_style_changed (NbtkWidget *widget)
 static void
 nbtk_button_real_pressed (NbtkButton *button)
 {
-  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "active");
+  nbtk_button_set_style_pseudo_class (button, "active");
 }
 
 static void
@@ -209,11 +221,11 @@ nbtk_button_real_released (NbtkButton *button)
   NbtkButtonPrivate *priv = button->priv;
 
   if (priv->is_checked)
-    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "checked");
+    nbtk_button_set_style_pseudo_class (button, "checked");
   else if (!priv->is_hover)
-    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), NULL);
+    nbtk_button_set_style_pseudo_class (button, NULL);
   else
-    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "hover");
+    nbtk_button_set_style_pseudo_class (button, "hover");
 
 }
 
@@ -281,7 +293,7 @@ nbtk_button_enter (ClutterActor         *actor,
   NbtkButton *button = NBTK_BUTTON (actor);
 
   if (!button->priv->is_checked)
-    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "hover");
+    nbtk_button_set_style_pseudo_class (button, "hover");
 
   button->priv->is_hover = 1;
 
@@ -312,9 +324,9 @@ nbtk_button_leave (ClutterActor         *actor,
     }
 
   if (button->priv->is_checked)
-    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "checked");
+    nbtk_button_set_style_pseudo_class (button, "checked");
   else
-    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), NULL);
+    nbtk_button_set_style_pseudo_class (button, NULL);
 
   if (button->priv->tooltip)
     nbtk_tooltip_hide (NBTK_TOOLTIP (button->priv->tooltip));
@@ -435,7 +447,7 @@ nbtk_button_draw_background (NbtkWidget         *self,
 
   parent_class = NBTK_WIDGET_CLASS (nbtk_button_parent_class);
   parent_class->draw_background (self, background, color);
-  
+
   if (priv->old_bg)
     clutter_actor_paint (priv->old_bg);
 }
@@ -701,12 +713,12 @@ nbtk_button_set_checked (NbtkButton  *button,
       button->priv->is_checked = checked;
 
       if (checked)
-        nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "checked");
+        nbtk_button_set_style_pseudo_class (button, "checked");
       else
         if (button->priv->is_hover)
-          nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "hover");
+          nbtk_button_set_style_pseudo_class (button, "hover");
         else
-          nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), NULL);
+          nbtk_button_set_style_pseudo_class (button, NULL);
     }
 
   g_object_notify (G_OBJECT (button), "checked");
@@ -791,7 +803,7 @@ nbtk_button_set_icon (NbtkButton    *button,
   if (priv->icon)
     {
       nbtk_table_add_actor (NBTK_TABLE (priv->table), priv->icon, 0, 0);
-      priv->is_icon_set = TRUE;    
+      priv->is_icon_set = TRUE;
     }
 }
 
