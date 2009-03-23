@@ -791,7 +791,6 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
   gint *min_widths, *min_heights;
   gint n_expanded_rows = 0;
   NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
-  gboolean *has_expand_cols;
   gboolean *has_expand_rows;
   gint expanded_rows = 0;
   NbtkPadding padding;
@@ -801,9 +800,6 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
   col_spacing = (priv->col_spacing);
   row_spacing = (priv->row_spacing);
 
-  g_array_set_size (priv->has_expand_cols, 0);
-  g_array_set_size (priv->has_expand_cols, priv->n_cols);
-  has_expand_cols = (gboolean *)priv->has_expand_cols->data;
   g_array_set_size (priv->has_expand_rows, 0);
   g_array_set_size (priv->has_expand_rows, priv->n_rows);
   has_expand_rows = (gboolean *)priv->has_expand_rows->data;
@@ -842,8 +838,6 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
                     "col-span", &col_span, "row-span", &row_span,
                     NULL);
 
-      if (x_expand)
-        has_expand_cols[col] = TRUE;
       if (y_expand)
         has_expand_rows[row] = TRUE;
 
