@@ -938,7 +938,6 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
               row_height += row_spacing;
             }
         }
-      row_height += row_spacing * (row_span - 1);
 
       /* calculate child x */
       child_x = CLUTTER_UNITS_TO_INT (padding.left)
