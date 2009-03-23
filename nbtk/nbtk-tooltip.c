@@ -58,11 +58,11 @@ enum
 
 struct _NbtkTooltipPrivate
 {
-  ClutterActor    *label;
-  NbtkWidget      *widget;
+  ClutterActor     *label;
+  NbtkWidget       *widget;
 };
 
-G_DEFINE_TYPE (NbtkTooltip, nbtk_tooltip, NBTK_TYPE_BIN)
+G_DEFINE_TYPE (NbtkTooltip, nbtk_tooltip, NBTK_TYPE_WIDGET);
 
 static void
 nbtk_tooltip_set_property (GObject      *gobject,
@@ -158,16 +158,184 @@ nbtk_tooltip_style_changed (NbtkWidget *self)
 }
 
 static void
+nbtk_tooltip_get_preferred_width (ClutterActor *self,
+                                  ClutterUnit   for_height,
+                                  ClutterUnit  *min_width_p,
+                                  ClutterUnit  *natural_width_p)
+{
+  NbtkTooltipPrivate *priv = NBTK_TOOLTIP (self)->priv;
+  ClutterUnit min_label_w, natural_label_w;
+  ClutterUnit label_height, arrow_height;
+  ClutterActor *arrow_image;
+  NbtkPadding padding;
+
+  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
+
+  arrow_image = nbtk_widget_get_background_image (NBTK_WIDGET (self));
+  clutter_actor_get_preferred_height (arrow_image,
+                                      -1,
+                                      NULL,
+                                      &arrow_height);
+
+  if (for_height > -1)
+    {
+      label_height = for_height - arrow_height - padding.top - padding.bottom;
+    }
+  else
+    {
+      label_height = -1;
+    }
+
+  clutter_actor_get_preferred_width (priv->label,
+                                     label_height,
+                                     &min_label_w,
+                                     &natural_label_w);
+
+
+  if (min_width_p)
+    {
+      *min_width_p = padding.left + padding.right + min_label_w;
+    }
+
+  if (natural_width_p)
+    {
+      *natural_width_p = padding.left + padding.right + natural_label_w;
+    }
+}
+
+static void
+nbtk_tooltip_get_preferred_height (ClutterActor *self,
+                                   ClutterUnit   for_width,
+                                   ClutterUnit  *min_height_p,
+                                   ClutterUnit  *natural_height_p)
+{
+  NbtkTooltipPrivate *priv = NBTK_TOOLTIP (self)->priv;
+  ClutterUnit arrow_height;
+  ClutterUnit min_label_h, natural_label_h;
+  ClutterUnit label_width;
+  ClutterActor *arrow_image;
+  NbtkPadding padding;
+
+  arrow_image = nbtk_widget_get_background_image (NBTK_WIDGET (self));
+  clutter_actor_get_preferred_height (arrow_image,
+                                      -1,
+                                      NULL,
+                                      &arrow_height);
+  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
+
+  if (for_width > -1)
+    {
+      label_width = for_width - padding.left - padding.right;
+    }
+  else
+    {
+      label_width = -1;
+    }
+
+  clutter_actor_get_preferred_height (priv->label,
+                                      label_width,
+                                      &min_label_h,
+                                      &natural_label_h);
+
+  if (min_height_p)
+    {
+      *min_height_p = padding.top + padding.bottom
+                      + arrow_height + min_label_h;
+    }
+
+  if (natural_height_p)
+    {
+      *natural_height_p = padding.top + padding.bottom
+                          + arrow_height + natural_label_h;
+    }
+}
+
+static void
+nbtk_tooltip_allocate (ClutterActor          *self,
+                       const ClutterActorBox *box,
+                       gboolean               origin_changed)
+{
+  NbtkTooltipPrivate *priv = NBTK_TOOLTIP (self)->priv;
+  ClutterActorBox child_box, arrow_box;
+  ClutterUnit arrow_height, arrow_width;
+  ClutterActor *border_image, *arrow_image;
+  NbtkPadding padding;
+
+  CLUTTER_ACTOR_CLASS (nbtk_tooltip_parent_class)->allocate (self,
+                                                             box,
+                                                             origin_changed);
+
+  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
+
+  arrow_image = nbtk_widget_get_background_image (NBTK_WIDGET (self));
+
+  clutter_actor_get_preferred_height (arrow_image, -1, NULL, &arrow_height);
+  clutter_actor_get_preferred_width (arrow_image, -1, NULL, &arrow_width);
+
+  arrow_box.x1 = CLUTTER_UNITS_FROM_INT (CLUTTER_UNITS_TO_INT (((box->x2 - box->x1) / 2
+                                        - (arrow_width / 2))));
+  arrow_box.y1 = 0;
+  arrow_box.x2 = arrow_box.x1 + arrow_width;
+  arrow_box.y2 = arrow_box.y1 + arrow_height;
+
+  clutter_actor_allocate (arrow_image, &arrow_box, origin_changed);
+
+  child_box.x1 = child_box.y1 = 0;
+  child_box.x2 = (box->x2 - box->x1);
+  child_box.y2 = (box->y2 - box->y1);
+
+  /* remove the space that is used by the arrow */
+  child_box.y1 += arrow_height;
+
+  border_image = nbtk_widget_get_border_image (NBTK_WIDGET (self));
+  if (border_image)
+    clutter_actor_allocate (border_image, &child_box, origin_changed);
+
+  /* now remove the padding */
+  child_box.y1 += padding.top;
+  child_box.x1 += padding.left;
+  child_box.x2 -= padding.right;
+  child_box.y2 -= padding.bottom;
+
+  clutter_actor_allocate (priv->label, &child_box, origin_changed);
+}
+
+
+static void
+nbtk_tooltip_paint (ClutterActor *self)
+{
+  ClutterActor *border_image, *arrow_image;
+  NbtkTooltipPrivate *priv = NBTK_TOOLTIP (self)->priv;
+
+  border_image = nbtk_widget_get_border_image (NBTK_WIDGET (self));
+  if (border_image)
+    clutter_actor_paint (border_image);
+
+  arrow_image = nbtk_widget_get_background_image (NBTK_WIDGET (self));
+  if (arrow_image)
+    clutter_actor_paint (arrow_image);
+
+  clutter_actor_paint (priv->label);
+
+}
+
+static void
 nbtk_tooltip_class_init (NbtkTooltipClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
+  ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (NbtkTooltipPrivate));
 
   gobject_class->set_property = nbtk_tooltip_set_property;
   gobject_class->get_property = nbtk_tooltip_get_property;
+
+  actor_class->get_preferred_width = nbtk_tooltip_get_preferred_width;
+  actor_class->get_preferred_height = nbtk_tooltip_get_preferred_height;
+  actor_class->allocate = nbtk_tooltip_allocate;
+  actor_class->paint = nbtk_tooltip_paint;
 
   widget_class->style_changed = nbtk_tooltip_style_changed;
 
@@ -220,8 +388,8 @@ nbtk_tooltip_init (NbtkTooltip *tooltip)
                                        "use-markup", TRUE,
                                        NULL);
 
-  clutter_container_add_actor (CLUTTER_CONTAINER (tooltip),
-                               CLUTTER_ACTOR (tooltip->priv->label));
+  clutter_actor_set_parent (CLUTTER_ACTOR (tooltip->priv->label),
+                            CLUTTER_ACTOR (tooltip));
 
   g_object_set (tooltip, "show-on-set-parent", FALSE, NULL);
 
@@ -330,11 +498,17 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
   ClutterActor *self = CLUTTER_ACTOR (tooltip);
   gint x, y;
   guint w, h;
+  ClutterAnimation *animation;
 
   if (!widget)
     return;
 
   g_return_if_fail (NBTK_TOOLTIP (tooltip));
+
+  /* make sure we're not currently already animating (e.g. hiding) */
+  animation = clutter_actor_get_animation (CLUTTER_ACTOR (tooltip));
+  if (animation)
+    clutter_animation_completed (animation);
 
   priv = tooltip->priv;
   parent = clutter_actor_get_parent (self);
@@ -376,7 +550,7 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
                                                 CLUTTER_GRAVITY_NONE);
 
   /* finally show the tooltip... */
-  clutter_actor_show (self);
+  CLUTTER_ACTOR_CLASS (nbtk_tooltip_parent_class)->show (self);
 
   /* and give it some bounce! */
   g_object_set (G_OBJECT (self),
@@ -388,6 +562,16 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
                          "scale-x", 1.0,
                          "scale-y", 1.0,
                          NULL);
+}
+
+static void
+nbtk_tooltip_hide_complete (ClutterAnimation *animation,
+                            ClutterActor     *actor)
+{
+  CLUTTER_ACTOR_CLASS (nbtk_tooltip_parent_class)->hide (actor);
+  g_signal_handlers_disconnect_by_func (actor,
+                                        nbtk_tooltip_hide_complete,
+                                        actor);
 }
 
 /**
@@ -403,6 +587,11 @@ nbtk_tooltip_hide (NbtkTooltip *tooltip)
 
   g_return_if_fail (NBTK_TOOLTIP (tooltip));
 
+  /* make sure we're not currently already animating (e.g. hiding) */
+  animation = clutter_actor_get_animation (CLUTTER_ACTOR (tooltip));
+  if (animation)
+    clutter_animation_completed (animation);
+
   g_object_set (G_OBJECT (tooltip),
                 "scale-gravity", CLUTTER_GRAVITY_CENTER,
                 NULL);
@@ -412,6 +601,6 @@ nbtk_tooltip_hide (NbtkTooltip *tooltip)
                            "scale-x", 0.0,
                            "scale-y", 0.0,
                            NULL);
-  g_signal_connect_swapped (animation, "completed",
-                            G_CALLBACK (clutter_actor_hide), tooltip);
+  g_signal_connect (animation, "completed",
+                    G_CALLBACK (nbtk_tooltip_hide_complete), tooltip);
 }
