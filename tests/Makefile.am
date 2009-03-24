@@ -13,7 +13,6 @@ noinst_PROGRAMS = 		\
 	test-container-matching	\
 	test-label 		\
 	test-entry 		\
-	test-expander \
 	test-grid \
 	test-script  		\
 	test-styles  		\
@@ -32,7 +31,6 @@ noinst_PROGRAMS = 		\
 
 test_bin_SOURCES = test-bin.c
 test_buttons_SOURCES = test-buttons.c
-test_expander_SOURCES = test-expander.c
 test_script_SOURCES = test-script.c
 test_styles_SOURCES = test-styles.c
 test_table_SOURCES = test-table.c
@@ -58,9 +56,6 @@ EXTRA_DIST = \
         style/border-image.png \
         style/cyan-button.png \
         style/default.css \
-        style/expander-icon-checked.png \
-        style/expander-icon-hover.png \
-        style/expander-icon.png \
         style/green-button.png \
         style/lime-button.png \
         style/red-button.png \

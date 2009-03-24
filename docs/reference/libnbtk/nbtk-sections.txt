@@ -206,21 +206,6 @@ NbtkTablePrivate
 </SECTION>
 
 <SECTION>
-<FILE>nbtk-expander</FILE>
-<TITLE>NbtkExpander</TITLE>
-NbtkExpander
-nbtk_expander_new
-<SUBSECTION Standard>
-NBTK_EXPANDER
-NBTK_IS_EXPANDER
-NBTK_TYPE_EXPANDER
-nbtk_expander_get_type
-NBTK_EXPANDER_CLASS
-NBTK_IS_EXPANDER_CLASS
-NBTK_EXPANDER_GET_CLASS
-</SECTION>
-
-<SECTION>
 <FILE>nbtk-stylable</FILE>
 NbtkStylable
 NbtkStylableIface

@@ -46,26 +46,6 @@ NbtkButton NbtkBin#button-icon:hover {
   background-color: yellow;
 }
 
-NbtkExpander {
-  background-color: blue;
-}
-
-NbtkExpander *#nbtk-expander-header-icon {
-  background-image: url('file://expander-icon.png');
-}
-
-NbtkExpander *#nbtk-expander-header-icon:hover {
-  background-image: url('file://expander-icon-hover.png');
-}
-
-NbtkExpander *#nbtk-expander-header-icon:checked {
-  background-image: url('file://expander-icon-checked.png');
-}
-
-NbtkExpander > NbtkBin {
-  background-color: red;
-}
-
 NbtkLabel#test-border-image {
   color: black;
   border-image: url('file://border-image.png') 12 stretch stretch;
