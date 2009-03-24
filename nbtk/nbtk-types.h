@@ -52,20 +52,6 @@ typedef enum {
   NBTK_ALIGN_CENTER
 } NbtkAlignment;
 
-/**
- * NbtkTransitionType:
- * @NBTK_TRANSITION_NONE: no transition
- * @NBTK_TRANSITION_FADE: fading
- * @NBTK_TRANSITION_BOUNCE: bouncing
- *
- * Types of transition
- */
-typedef enum { /*< prefix=NBTK_TRANSITION >*/
-  NBTK_TRANSITION_NONE,
-  NBTK_TRANSITION_FADE,
-  NBTK_TRANSITION_BOUNCE
-} NbtkTransitionType;
-
 G_END_DECLS
 
 #endif /* __NBTK_TYPES_H__ */
