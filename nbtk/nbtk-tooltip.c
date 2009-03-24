@@ -58,8 +58,10 @@ enum
 
 struct _NbtkTooltipPrivate
 {
-  ClutterActor     *label;
-  NbtkWidget       *widget;
+  ClutterActor *label;
+  NbtkWidget   *widget;
+
+  gint          arrow_offset;
 };
 
 G_DEFINE_TYPE (NbtkTooltip, nbtk_tooltip, NBTK_TYPE_WIDGET);
@@ -305,8 +307,7 @@ nbtk_tooltip_allocate (ClutterActor          *self,
       clutter_actor_get_preferred_height (arrow_image, -1, NULL, &arrow_height);
       clutter_actor_get_preferred_width (arrow_image, -1, NULL, &arrow_width);
 
-      arrow_box.x1 = CLUTTER_UNITS_FROM_INT (CLUTTER_UNITS_TO_INT (((box->x2 - box->x1) / 2
-                                            - (arrow_width / 2))));
+      arrow_box.x1 = CLUTTER_UNITS_FROM_INT (priv->arrow_offset) - (int) (arrow_width / 2);
       arrow_box.y1 = 0;
       arrow_box.x2 = arrow_box.x1 + arrow_width;
       arrow_box.y2 = arrow_box.y1 + arrow_height;
@@ -538,8 +539,9 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
   ClutterActor *stage;
   ClutterActor *widget = CLUTTER_ACTOR (tooltip->priv->widget);
   ClutterActor *self = CLUTTER_ACTOR (tooltip);
-  gint x, y;
-  guint w, h;
+  gint widget_x, widget_y, self_x, self_y;
+  guint widget_w, widget_h;
+  ClutterUnit self_w, parent_w;
   ClutterAnimation *animation;
 
   if (!widget)
@@ -570,6 +572,7 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
           g_warning ("NbtkTooltip must be parented directly on the stage");
         }
       clutter_actor_reparent (self, stage);
+      parent = stage;
     }
 
   /* raise the tooltip to the top */
@@ -578,25 +581,42 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
                                  NULL);
 
   /* place the tooltip under the associated actor */
-  clutter_actor_get_transformed_position (widget, &x, &y);
-  clutter_actor_get_transformed_size (widget, &w, &h);
+  clutter_actor_get_transformed_position (widget, &widget_x, &widget_y);
+  clutter_actor_get_transformed_size (widget, &widget_w, &widget_h);
 
+  /* find out the tooltip's width */
+  clutter_actor_get_preferred_width (self, -1, NULL, &self_w);
 
-  clutter_actor_move_anchor_point_from_gravity (self, CLUTTER_GRAVITY_NORTH);
+  /* attempt to place the tooltip */
+  self_x = widget_x + (widget_w / 2) - CLUTTER_UNITS_TO_INT (self_w / 2);
+  self_y = widget_y + widget_h;
+
+  /* make sure the tooltip is not off screen at all */
+  if (self_x < 0)
+    {
+      self_x = 0;
+    }
+  clutter_actor_get_preferred_width (parent, -1, NULL, &parent_w);
+  if (self_x + self_w > CLUTTER_UNITS_TO_INT (parent_w))
+    {
+      self_x = CLUTTER_UNITS_TO_INT (parent_w) - self_w;
+    }
+
+  /* calculate the arrow offset */
+  priv->arrow_offset = widget_x + widget_w / 2 - self_x;
 
   clutter_actor_set_position (self,
-                              (x + w / 2),
-                              y + h);
+                              self_x,
+                              self_y);
 
-  clutter_actor_move_anchor_point_from_gravity (self,
-                                                CLUTTER_GRAVITY_NONE);
+
 
   /* finally show the tooltip... */
   CLUTTER_ACTOR_CLASS (nbtk_tooltip_parent_class)->show (self);
 
   /* and give it some bounce! */
   g_object_set (G_OBJECT (self),
-                "scale-gravity", CLUTTER_GRAVITY_CENTER,
+                "scale-center-x", tooltip->priv->arrow_offset,
                 NULL);
   clutter_actor_set_scale (self, 0.0, 0.0);
   clutter_actor_animate (self, CLUTTER_EASE_OUT_ELASTIC,
@@ -635,7 +655,7 @@ nbtk_tooltip_hide (NbtkTooltip *tooltip)
     clutter_animation_completed (animation);
 
   g_object_set (G_OBJECT (tooltip),
-                "scale-gravity", CLUTTER_GRAVITY_CENTER,
+                "scale-center-x", tooltip->priv->arrow_offset,
                 NULL);
   animation =
     clutter_actor_animate (CLUTTER_ACTOR (tooltip), CLUTTER_EASE_IN_SINE,
