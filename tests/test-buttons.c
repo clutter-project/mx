@@ -35,7 +35,7 @@ main (int argc, char *argv[])
   clutter_actor_set_position (CLUTTER_ACTOR (button), 100, 100);
 
   button = nbtk_button_new ();
-  clutter_actor_set_name (CLUTTER_ACTOR (button), "style-button");
+  clutter_actor_set_name (CLUTTER_ACTOR (button), "icon-button");
   g_signal_connect (button, "clicked",
                     G_CALLBACK (button_clicked_cb),
                     "icon");
