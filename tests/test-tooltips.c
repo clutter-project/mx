@@ -33,13 +33,13 @@ main (int argc, char *argv[])
   nbtk_button_set_tooltip (NBTK_BUTTON (button), "Disappear");
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
-  clutter_actor_set_position (CLUTTER_ACTOR (button), 100, 100);
+  clutter_actor_set_position (CLUTTER_ACTOR (button), 50, 100);
 
   button = nbtk_button_new_with_label ("Testing 123");
   nbtk_button_set_tooltip (NBTK_BUTTON (button), "Testing the Tooltips...");
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
-  clutter_actor_set_position (CLUTTER_ACTOR (button), 200, 100);
+  clutter_actor_set_position (CLUTTER_ACTOR (button), 50, 200);
 
 
   button = nbtk_button_new_with_label ("Testing Long Text");
@@ -48,7 +48,15 @@ main (int argc, char *argv[])
                            " long text to test the handling in NbtkTooltip");
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
-  clutter_actor_set_position (CLUTTER_ACTOR (button), 200, 100);
+  clutter_actor_set_position (CLUTTER_ACTOR (button), 50, 300);
+
+  button = nbtk_button_new_with_label ("Testing Long Text");
+  nbtk_button_set_tooltip (NBTK_BUTTON (button),
+                           "Here is some really"
+                           " long text to test the handling in NbtkTooltip");
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage),
+                               CLUTTER_ACTOR (button));
+  clutter_actor_set_position (CLUTTER_ACTOR (button), 500, 300);
 
   clutter_actor_show (stage);
 
