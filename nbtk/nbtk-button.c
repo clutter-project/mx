@@ -49,7 +49,6 @@
 #include "nbtk-texture-frame.h"
 #include "nbtk-texture-cache.h"
 #include "nbtk-tooltip.h"
-#include "nbtk-table.h"
 
 enum
 {
@@ -77,7 +76,6 @@ struct _NbtkButtonPrivate
 
   ClutterActor *label;
   ClutterActor *icon;
-  NbtkWidget   *table;
   NbtkWidget   *tooltip;
 
   guint8 old_opacity;
@@ -416,14 +414,178 @@ nbtk_button_dispose (GObject *gobject)
 }
 
 static void
+nbtk_button_get_preferred_width (ClutterActor *self,
+                                 ClutterUnit   for_height,
+                                 ClutterUnit  *min_width_p,
+                                 ClutterUnit  *natural_width_p)
+{
+  NbtkButtonPrivate *priv = NBTK_BUTTON (self)->priv;
+  NbtkPadding padding;
+  ClutterUnit icon_w, min_child_w, natural_child_w;
+  ClutterActor *child;
+
+  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
+
+  if (priv->icon)
+    {
+      clutter_actor_get_preferred_width (priv->icon, -1, NULL, &icon_w);
+    }
+  else
+    {
+      icon_w = 0;
+    }
+
+  child = nbtk_bin_get_child (NBTK_BIN (self));
+
+  if (child)
+    {
+      clutter_actor_get_preferred_width (child,
+                                         for_height - padding.top - padding.bottom,
+                                         &min_child_w,
+                                         &natural_child_w);
+
+    }
+  else
+    {
+      min_child_w = 0;
+      natural_child_w = 0;
+    }
+
+  if (min_width_p)
+    *min_width_p = padding.left + icon_w + min_child_w + padding.right;
+
+  if (natural_width_p)
+    *natural_width_p = padding.left + icon_w + natural_child_w + padding.right;
+}
+
+static void
+nbtk_button_get_preferred_height (ClutterActor *self,
+                                  ClutterUnit   for_width,
+                                  ClutterUnit  *min_height_p,
+                                  ClutterUnit  *natural_height_p)
+{
+  NbtkButtonPrivate *priv = NBTK_BUTTON (self)->priv;
+  NbtkPadding padding;
+  ClutterUnit icon_h, min_child_h, natural_child_h;
+  ClutterActor *child;
+
+  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
+
+  if (priv->icon)
+    {
+      clutter_actor_get_preferred_height (priv->icon, -1, NULL, &icon_h);
+    }
+  else
+    {
+      icon_h = 0;
+    }
+
+  child = nbtk_bin_get_child (NBTK_BIN (self));
+
+  if (child)
+    {
+      clutter_actor_get_preferred_height (child,
+                                          for_width - padding.left - padding.right,
+                                          &min_child_h,
+                                          &natural_child_h);
+    }
+  else
+    {
+      min_child_h = 0;
+      natural_child_h = 0;
+    }
+
+  /* check the icon is not bigger than the min or natural height of the child
+   * if so, increase the min or natural height required
+   */
+
+  if (icon_h > min_child_h)
+    min_child_h = icon_h;
+
+  if (icon_h > natural_child_h)
+    natural_child_h = icon_h;
+
+  if (min_height_p)
+    {
+      *min_height_p = padding.top + min_child_h + padding.bottom;
+    }
+
+  if (natural_height_p)
+    {
+      *natural_height_p = padding.top + natural_child_h + padding.bottom;
+    }
+}
+
+static void
+nbtk_bin_get_align_factors (NbtkBin *bin,
+                            gdouble *x_align,
+                            gdouble *y_align)
+{
+  gdouble factor;
+  NbtkAlignment x_align_n, y_align_n;
+
+  g_object_get (bin, "x-align", &x_align_n, "y-align", &y_align_n, NULL);
+
+  switch (x_align_n)
+    {
+    case NBTK_ALIGN_LEFT:
+      factor = 0.0;
+      break;
+
+    case NBTK_ALIGN_CENTER:
+      factor = 0.5;
+      break;
+
+    case NBTK_ALIGN_RIGHT:
+      factor = 1.0;
+      break;
+
+    default:
+      factor = 0.0;
+      break;
+    }
+
+  if (x_align)
+    *x_align = factor;
+
+  switch (y_align_n)
+    {
+    case NBTK_ALIGN_TOP:
+      factor = 0.0;
+      break;
+
+    case NBTK_ALIGN_CENTER:
+      factor = 0.5;
+      break;
+
+    case NBTK_ALIGN_BOTTOM:
+      factor = 1.0;
+      break;
+
+    default:
+      factor = 0.0;
+      break;
+    }
+
+  if (y_align)
+    *y_align = factor;
+}
+
+static void
 nbtk_button_allocate (ClutterActor          *self,
                       const ClutterActorBox *box,
                       gboolean               absolute_origin_changed)
 {
   NbtkButton *button = NBTK_BUTTON (self);
   NbtkButtonPrivate *priv = button->priv;
+  ClutterActor *child;
+  ClutterUnit icon_w, icon_h;
+  NbtkPadding padding;
 
   CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->allocate (self, box, absolute_origin_changed);
+
+
+  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
   if (priv->old_bg)
     {
@@ -435,6 +597,108 @@ nbtk_button_allocate (ClutterActor          *self,
                               &frame_box,
                               absolute_origin_changed);
     }
+
+  /* we re-allocate the contents if an icon is set */
+  if (priv->icon)
+    {
+      ClutterActorBox icon_box;
+
+      clutter_actor_get_preferred_width (priv->icon, -1, NULL, &icon_w);
+      clutter_actor_get_preferred_height (priv->icon, -1, NULL, &icon_h);
+
+      icon_box.x1 = padding.left;
+      icon_box.x2 = icon_box.x1 + icon_w;
+
+      icon_box.y1 = (int) (box->y2 - box->y1) / 2 - (int) icon_h / 2;
+      icon_box.y2 = icon_box.y1 + icon_h;
+
+      clutter_actor_allocate (priv->icon, &icon_box, absolute_origin_changed);
+    }
+  else
+    {
+      icon_w = 0;
+      icon_h = 0;
+    }
+
+  child = nbtk_bin_get_child (NBTK_BIN (self));
+  if (child)
+    {
+      ClutterUnit natural_width, natural_height;
+      ClutterUnit min_width, min_height;
+      ClutterUnit child_width, child_height;
+      ClutterUnit available_width, available_height;
+      ClutterRequestMode request;
+      ClutterActorBox allocation = { 0, };
+      gdouble x_align, y_align;
+
+      nbtk_bin_get_align_factors (NBTK_BIN (self), &x_align, &y_align);
+
+      available_width  = box->x2 - box->x1
+                       - padding.left - padding.right
+                       - icon_w;
+      available_height = box->y2 - box->y1
+                       - padding.top - padding.bottom;
+
+      if (available_width < 0)
+        available_width = 0;
+
+      if (available_height < 0)
+        available_height = 0;
+
+      request = CLUTTER_REQUEST_HEIGHT_FOR_WIDTH;
+      g_object_get (G_OBJECT (child), "request-mode", &request, NULL);
+
+      if (request == CLUTTER_REQUEST_HEIGHT_FOR_WIDTH)
+        {
+          clutter_actor_get_preferred_width (child, available_height,
+                                             &min_width,
+                                             &natural_width);
+
+          child_width = CLAMP (natural_width, min_width, available_width);
+
+          clutter_actor_get_preferred_height (child, child_width,
+                                              &min_height,
+                                              &natural_height);
+
+          child_height = CLAMP (natural_height, min_height, available_height);
+        }
+      else if (request == CLUTTER_REQUEST_WIDTH_FOR_HEIGHT)
+        {
+          clutter_actor_get_preferred_height (child, available_width,
+                                              &min_height,
+                                              &natural_height);
+
+          child_height = CLAMP (natural_height, min_height, available_height);
+
+          clutter_actor_get_preferred_width (child, child_height,
+                                             &min_width,
+                                             &natural_width);
+
+          child_width = CLAMP (natural_width, min_width, available_width);
+        }
+
+      allocation.x1 = (int) ((available_width - child_width) * x_align
+                    + padding.left + icon_w);
+      allocation.y1 = (int) ((available_height - child_height) * y_align
+                    + padding.top);
+      allocation.x2 = allocation.x1 + child_width;
+      allocation.y2 = allocation.y1 + child_height;
+
+      clutter_actor_allocate (child, &allocation, absolute_origin_changed);
+    }
+}
+
+static void
+nbtk_button_paint (ClutterActor *self)
+{
+  NbtkButtonPrivate *priv = NBTK_BUTTON (self)->priv;
+
+  /* chain up - this should paint the child and background */
+  CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->paint (self);
+
+  /* now paint the button icon */
+  if (priv->icon)
+    clutter_actor_paint (priv->icon);
 }
 
 static void
@@ -487,7 +751,11 @@ nbtk_button_class_init (NbtkButtonClass *klass)
   actor_class->enter_event = nbtk_button_enter;
   actor_class->leave_event = nbtk_button_leave;
   actor_class->allocate = nbtk_button_allocate;
+  actor_class->get_preferred_height = nbtk_button_get_preferred_height;
+  actor_class->get_preferred_width = nbtk_button_get_preferred_width;
+
   actor_class->hide = nbtk_button_hide;
+  actor_class->paint = nbtk_button_paint;
 
   nbtk_widget_class->style_changed = nbtk_button_style_changed;
   nbtk_widget_class->draw_background = nbtk_button_draw_background;
@@ -542,12 +810,6 @@ nbtk_button_init (NbtkButton *button)
   button->priv = NBTK_BUTTON_GET_PRIVATE (button);
   button->priv->transition_duration = 250;
 
-  button->priv->table = g_object_new (NBTK_TYPE_TABLE,
-                                      "stylable", FALSE,
-                                      "reactive", FALSE,
-                                      NULL);
-  clutter_container_add_actor (CLUTTER_CONTAINER (button),
-                               CLUTTER_ACTOR (button->priv->table));
 }
 
 /**
@@ -629,12 +891,7 @@ nbtk_button_set_label (NbtkButton  *button,
                                   "ellipsize", PANGO_ELLIPSIZE_MIDDLE,
                                   "use-markup", TRUE,
                                   NULL);
-      nbtk_table_add_actor (NBTK_TABLE (priv->table), priv->label, 0, 1);
-      clutter_container_child_set (CLUTTER_CONTAINER (priv->table),
-                                   priv->label,
-                                   "y-align", 0.5,
-                                   "y-fill", FALSE,
-                                   NULL);
+      clutter_container_add (CLUTTER_CONTAINER (button), priv->label, NULL);
     }
 
 
@@ -746,15 +1003,15 @@ nbtk_button_set_icon_from_file (NbtkButton *button,
   if (filename == NULL)
     {
       if (priv->icon)
-        clutter_container_remove_actor (CLUTTER_CONTAINER (priv->table),
-                                        priv->icon);
+        clutter_actor_unparent (priv->icon);
+      priv->icon = NULL;
       priv->is_icon_set = FALSE;
     }
 
   if (!priv->icon)
     {
       priv->icon = clutter_texture_new_from_file (filename, &err);
-      nbtk_table_add_actor (NBTK_TABLE (priv->table), priv->icon, 0, 0);
+      clutter_actor_set_parent (priv->icon, CLUTTER_ACTOR (button));
     }
   else
     {
@@ -793,8 +1050,7 @@ nbtk_button_set_icon (NbtkButton    *button,
 
   if (priv->icon)
     {
-      clutter_container_remove_actor (CLUTTER_CONTAINER (priv->table),
-                                      priv->icon);
+      clutter_actor_unparent (priv->icon);
       priv->icon = NULL;
       priv->is_icon_set = FALSE;
     }
@@ -802,7 +1058,7 @@ nbtk_button_set_icon (NbtkButton    *button,
   priv->icon = icon;
   if (priv->icon)
     {
-      nbtk_table_add_actor (NBTK_TABLE (priv->table), priv->icon, 0, 0);
+      clutter_actor_set_parent (priv->icon, CLUTTER_ACTOR (button));
       priv->is_icon_set = TRUE;
     }
 }
