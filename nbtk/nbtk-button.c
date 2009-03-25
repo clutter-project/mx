@@ -91,13 +91,37 @@ struct _NbtkButtonPrivate
 
   ClutterActor     *old_bg;
   ClutterAnimation *animation;
+
+  gint spacing;
 };
 
 static guint button_signals[LAST_SIGNAL] = { 0, };
 
-G_DEFINE_TYPE (NbtkButton, nbtk_button, NBTK_TYPE_BIN)
+static void nbtk_stylable_iface_init (NbtkStylableIface *iface);
 
-static void destroy_old_bg (NbtkButton *button);
+G_DEFINE_TYPE_WITH_CODE (NbtkButton, nbtk_button, NBTK_TYPE_BIN,
+                         G_IMPLEMENT_INTERFACE (NBTK_TYPE_STYLABLE,
+                                                nbtk_stylable_iface_init));
+
+static void
+nbtk_stylable_iface_init (NbtkStylableIface *iface)
+{
+  static gboolean is_initialized = FALSE;
+
+  if (G_UNLIKELY (!is_initialized))
+    {
+      GParamSpec *pspec;
+
+      is_initialized = TRUE;
+
+      pspec = g_param_spec_int ("border-spacing",
+                                "Border Spacing",
+                                "Spacing between internal elements",
+                                0, G_MAXINT, 6,
+                                G_PARAM_READWRITE);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_BUTTON, pspec);
+    }
+}
 
 static void
 destroy_old_bg (NbtkButton *button)
@@ -171,6 +195,11 @@ nbtk_button_style_changed (NbtkWidget *widget)
   NbtkButton *button = NBTK_BUTTON (widget);
   NbtkButtonPrivate *priv = button->priv;
   ClutterActor *bg_image;
+
+  /* get the spacing value */
+  nbtk_stylable_get (NBTK_STYLABLE (widget),
+                     "border-spacing", &priv->spacing,
+                     NULL);
 
   /* update the label styling */
   if (priv->label)
@@ -430,6 +459,9 @@ nbtk_button_get_preferred_width (ClutterActor *self,
   if (priv->icon)
     {
       clutter_actor_get_preferred_width (priv->icon, -1, NULL, &icon_w);
+
+      /* increase icon_w to account for border-spacing */
+      icon_w += priv->spacing;
     }
   else
     {
@@ -559,6 +591,9 @@ nbtk_button_allocate (ClutterActor          *self,
       icon_box.y2 = icon_box.y1 + icon_h;
 
       clutter_actor_allocate (priv->icon, &icon_box, absolute_origin_changed);
+
+      /* increase icon_w to account for border-spacing */
+      icon_w += priv->spacing;
     }
   else
     {
@@ -755,6 +790,7 @@ nbtk_button_init (NbtkButton *button)
 {
   button->priv = NBTK_BUTTON_GET_PRIVATE (button);
   button->priv->transition_duration = 250;
+  button->priv->spacing = 6;
 
 }
 
