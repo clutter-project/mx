@@ -68,10 +68,10 @@ G_DEFINE_TYPE_WITH_CODE (NbtkBin, nbtk_bin, NBTK_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
                                                 clutter_container_iface_init));
 
-static void
-nbtk_bin_get_align_factors (NbtkBin *bin,
-                            gdouble *x_align,
-                            gdouble *y_align)
+void
+_nbtk_bin_get_align_factors (NbtkBin *bin,
+                             gdouble *x_align,
+                             gdouble *y_align)
 {
   NbtkBinPrivate *priv = bin->priv;
   gdouble factor;
@@ -210,7 +210,7 @@ nbtk_bin_allocate (ClutterActor          *self,
 
       // XXX  nbtk_widget_get_border (NBTK_WIDGET (self), &border);
 
-      nbtk_bin_get_align_factors (NBTK_BIN (self), &x_align, &y_align);
+      _nbtk_bin_get_align_factors (NBTK_BIN (self), &x_align, &y_align);
 
       nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
