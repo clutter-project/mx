@@ -533,10 +533,6 @@ nbtk_widget_style_changed (NbtkWidget *self)
   NbtkTextureCache *texture_cache;
   ClutterActor *texture;
   gchar *bg_file;
-  gint border_left;
-  gint border_right;
-  gint border_top;
-  gint border_bottom;
   NbtkPadding *padding = NULL;
 
   /* application has request this widget is not stylable */
@@ -553,18 +549,9 @@ nbtk_widget_style_changed (NbtkWidget *self)
   nbtk_stylable_get (NBTK_STYLABLE (self),
                     "background-color", &priv->bg_color,
                     "background-image", &bg_file,
-                    "border-top-width", &border_top,
-                    "border-right-width", &border_right,
-                    "border-bottom-width", &border_bottom,
-                    "border-left-width", &border_left,
                     "border-image", &border_image,
                     "padding", &padding,
                     NULL);
-
-  priv->border.top    = border_top;
-  priv->border.right  = border_right;
-  priv->border.bottom = border_bottom;
-  priv->border.left   = border_left;
 
   if (padding)
     {
@@ -588,6 +575,8 @@ nbtk_widget_style_changed (NbtkWidget *self)
   /* Check if the URL is actually present, not garbage in the property */
   if (border_image && border_image->image.uri)
     {
+      gint border_left, border_right, border_top, border_bottom;
+
       /* `border-image' takes precedence over `background-image'.
        * Firefox lets the background-image shine thru when border-image has
        * alpha an channel, maybe that would be an option for the future. */
@@ -605,10 +594,10 @@ nbtk_widget_style_changed (NbtkWidget *self)
                                               border_image->image.height);
 
       priv->border_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
-                                               border_top,
-                                               border_right,
-                                               border_bottom,
-                                               border_left);
+                                                   border_top,
+                                                   border_right,
+                                                   border_bottom,
+                                                   border_left);
       clutter_actor_set_parent (CLUTTER_ACTOR (priv->border_image),
                                                CLUTTER_ACTOR (self));
       g_boxed_free (NBTK_TYPE_BORDER_IMAGE, border_image);
@@ -1144,34 +1133,6 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
                                 G_PARAM_READWRITE);
       nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
-      pspec = g_param_spec_int ("border-left-width",
-                                "Border Left Width",
-                                "Left border of the image",
-                                0, G_MAXINT, 0,
-                                G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
-
-      pspec = g_param_spec_int ("border-right-width",
-                                "Border Right Width",
-                                "Right border of the image",
-                                0, G_MAXINT, 0,
-                                G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
-
-      pspec = g_param_spec_int ("border-top-width",
-                                "Border Top Width",
-                                "Top border of the image",
-                                0, G_MAXINT, 0,
-                                G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
-
-      pspec = g_param_spec_int ("border-bottom-width",
-                                "Border Bottom Width",
-                                "Bottom border of the image",
-                                0, G_MAXINT, 0,
-                                G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
-
       pspec = g_param_spec_boxed ("border-image",
                                   "Border image",
                                   "9-slice image to use for drawing borders and background",
@@ -1700,24 +1661,8 @@ void
 nbtk_widget_get_border (NbtkWidget *actor,
                         NbtkPadding *border)
 {
-  gint border_top, border_bottom;
-  gint border_left, border_right;
-
-  g_return_if_fail (NBTK_IS_WIDGET (actor));
-  g_return_if_fail (border != NULL);
-
-  border_top = border_bottom = border_left = border_right = 0;
-  nbtk_stylable_get (NBTK_STYLABLE (actor),
-                    "border-top-width", &border_top,
-                    "border-bottom-width", &border_bottom,
-                    "border-right-width", &border_right,
-                    "border-left-width", &border_left,
-                    NULL);
-
-  border->top    = CLUTTER_UNITS_FROM_DEVICE (border_top);
-  border->right  = CLUTTER_UNITS_FROM_DEVICE (border_right);
-  border->bottom = CLUTTER_UNITS_FROM_DEVICE (border_bottom);
-  border->left   = CLUTTER_UNITS_FROM_DEVICE (border_left);
+  g_warning ("%s is deprecated and may be removed in the future.",
+             __FUNCTION__);
 }
 
 ClutterActor *
