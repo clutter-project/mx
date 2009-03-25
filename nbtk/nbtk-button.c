@@ -49,6 +49,7 @@
 #include "nbtk-texture-frame.h"
 #include "nbtk-texture-cache.h"
 #include "nbtk-tooltip.h"
+#include "nbtk-private.h"
 
 enum
 {
@@ -517,61 +518,6 @@ nbtk_button_get_preferred_height (ClutterActor *self,
 }
 
 static void
-nbtk_bin_get_align_factors (NbtkBin *bin,
-                            gdouble *x_align,
-                            gdouble *y_align)
-{
-  gdouble factor;
-  NbtkAlignment x_align_n, y_align_n;
-
-  g_object_get (bin, "x-align", &x_align_n, "y-align", &y_align_n, NULL);
-
-  switch (x_align_n)
-    {
-    case NBTK_ALIGN_LEFT:
-      factor = 0.0;
-      break;
-
-    case NBTK_ALIGN_CENTER:
-      factor = 0.5;
-      break;
-
-    case NBTK_ALIGN_RIGHT:
-      factor = 1.0;
-      break;
-
-    default:
-      factor = 0.0;
-      break;
-    }
-
-  if (x_align)
-    *x_align = factor;
-
-  switch (y_align_n)
-    {
-    case NBTK_ALIGN_TOP:
-      factor = 0.0;
-      break;
-
-    case NBTK_ALIGN_CENTER:
-      factor = 0.5;
-      break;
-
-    case NBTK_ALIGN_BOTTOM:
-      factor = 1.0;
-      break;
-
-    default:
-      factor = 0.0;
-      break;
-    }
-
-  if (y_align)
-    *y_align = factor;
-}
-
-static void
 nbtk_button_allocate (ClutterActor          *self,
                       const ClutterActorBox *box,
                       gboolean               absolute_origin_changed)
@@ -631,7 +577,7 @@ nbtk_button_allocate (ClutterActor          *self,
       ClutterActorBox allocation = { 0, };
       gdouble x_align, y_align;
 
-      nbtk_bin_get_align_factors (NBTK_BIN (self), &x_align, &y_align);
+      _nbtk_bin_get_align_factors (NBTK_BIN (self), &x_align, &y_align);
 
       available_width  = box->x2 - box->x1
                        - padding.left - padding.right
