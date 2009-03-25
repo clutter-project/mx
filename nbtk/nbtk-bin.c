@@ -204,22 +204,17 @@ nbtk_bin_allocate (ClutterActor          *self,
       ClutterUnit available_width, available_height;
       ClutterRequestMode request;
       ClutterActorBox allocation = { 0, };
-      NbtkPadding border = { 0, };
       NbtkPadding padding = { 0, };
       gdouble x_align, y_align;
-
-      // XXX  nbtk_widget_get_border (NBTK_WIDGET (self), &border);
 
       _nbtk_bin_get_align_factors (NBTK_BIN (self), &x_align, &y_align);
 
       nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
       available_width  = box->x2 - box->x1
-                       - padding.left - padding.right
-                       - border.left - border.right;
+                       - padding.left - padding.right;
       available_height = box->y2 - box->y1
-                       - padding.top - padding.bottom
-                       - border.top - border.bottom;
+                       - padding.top - padding.bottom;
 
       if (available_width < 0)
         available_width = 0;
@@ -260,11 +255,9 @@ nbtk_bin_allocate (ClutterActor          *self,
         }
 
       allocation.x1 = (int) ((available_width - child_width) * x_align
-                    + padding.left
-                    + border.left);
+                    + padding.left);
       allocation.y1 = (int) ((available_height - child_height) * y_align
-                    + padding.top
-                    + border.top);
+                    + padding.top);
       allocation.x2 = allocation.x1 + child_width;
       allocation.y2 = allocation.y1 + child_height;
 
@@ -280,17 +273,12 @@ nbtk_bin_get_preferred_width (ClutterActor *self,
 {
   NbtkBinPrivate *priv = NBTK_BIN (self)->priv;
   ClutterUnit min_width, natural_width;
-  NbtkPadding border = { 0, };
   NbtkPadding padding = { 0, };
-
-  // XXX nbtk_widget_get_border (NBTK_WIDGET (self), &border);
 
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
   min_width     = 0;
-  natural_width = padding.left + padding.right
-                + border.top
-                + border.bottom;
+  natural_width = padding.left + padding.right;
 
   if (priv->child == NULL)
     {
@@ -322,16 +310,12 @@ nbtk_bin_get_preferred_height (ClutterActor *self,
 {
   NbtkBinPrivate *priv = NBTK_BIN (self)->priv;
   ClutterUnit min_height, natural_height;
-  NbtkPadding border = { 0, };
   NbtkPadding padding = { 0, };
 
-  // XXX nbtk_widget_get_border (NBTK_WIDGET (self), &border);
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
   min_height     = 0;
-  natural_height = padding.top + padding.bottom
-                 + border.left
-                 + border.right;
+  natural_height = padding.top + padding.bottom;
 
   if (priv->child == NULL)
     {
