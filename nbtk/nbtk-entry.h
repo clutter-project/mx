@@ -65,6 +65,10 @@ void                  nbtk_entry_set_text         (NbtkEntry   *entry,
                                                    const gchar *text);
 ClutterActor*         nbtk_entry_get_clutter_text (NbtkEntry   *entry);
 
+void                  nbtk_entry_set_hint_text (NbtkEntry *entry,
+                                                const gchar *text);
+G_CONST_RETURN gchar *nbtk_entry_get_hint_text (NbtkEntry *entry);
+
 G_END_DECLS
 
 #endif /* __NBTK_ENTRY_H__ */

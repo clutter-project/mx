@@ -94,6 +94,8 @@ nbtk_entry_new
 nbtk_entry_get_text
 nbtk_entry_set_text
 nbtk_entry_get_clutter_text
+nbtk_entry_get_hint_text
+nbtk_entry_set_hint_text
 <SUBSECTION Standard>
 NBTK_ENTRY
 NBTK_IS_ENTRY

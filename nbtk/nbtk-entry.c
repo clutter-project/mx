@@ -48,11 +48,15 @@
 #include "nbtk-widget.h"
 #include "nbtk-stylable.h"
 
+#define HAS_FOCUS(actor) (clutter_actor_get_stage (actor) && clutter_stage_get_key_focus ((ClutterStage *) clutter_actor_get_stage (actor)) == actor)
+
+
 enum
 {
   PROP_0,
 
-  PROP_ENTRY
+  PROP_ENTRY,
+  PROP_HINT
 };
 
 #define NBTK_ENTRY_GET_PRIVATE(obj)     (G_TYPE_INSTANCE_GET_PRIVATE ((obj), NBTK_TYPE_ENTRY, NbtkEntryPrivate))
@@ -60,6 +64,7 @@ enum
 struct _NbtkEntryPrivate
 {
   ClutterActor *entry;
+  gchar        *hint;
 };
 
 G_DEFINE_TYPE (NbtkEntry, nbtk_entry, NBTK_TYPE_WIDGET);
@@ -76,6 +81,10 @@ nbtk_entry_set_property (GObject      *gobject,
     {
     case PROP_ENTRY:
       nbtk_entry_set_text (entry, g_value_get_string (value));
+      break;
+
+    case PROP_HINT:
+      nbtk_entry_set_hint_text (entry, g_value_get_string (value));
       break;
 
     default:
@@ -98,10 +107,22 @@ nbtk_entry_get_property (GObject    *gobject,
       g_value_set_string (value, clutter_text_get_text (CLUTTER_TEXT (priv->entry)));
       break;
 
+    case PROP_HINT:
+      g_value_set_string (value, priv->hint);
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
     }
+}
+
+static void
+nbtk_entry_finalize (GObject *object)
+{
+  NbtkEntryPrivate *priv = NBTK_ENTRY (object)->priv;
+
+  g_free (priv->hint);
+  priv->hint = NULL;
 }
 
 static void
@@ -224,6 +245,41 @@ nbtk_entry_focus_in (ClutterActor *actor)
 }
 
 static void
+clutter_text_focus_out_cb (ClutterActor *actor,
+                           NbtkEntry    *entry)
+{
+  NbtkEntryPrivate *priv = NBTK_ENTRY (entry)->priv;
+
+  /* add a hint if the entry is empty */
+  if (priv->hint && !strcmp (clutter_text_get_text (CLUTTER_TEXT (priv->entry)),
+                             ""))
+    {
+      clutter_text_set_text (CLUTTER_TEXT (priv->entry), priv->hint);
+      nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (entry), "indeterminate");
+    }
+  else
+    {
+      nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (entry), NULL);
+    }
+}
+
+static void
+clutter_text_focus_in_cb (ClutterActor *actor,
+                          NbtkEntry    *entry)
+{
+  NbtkEntryPrivate *priv = NBTK_ENTRY (entry)->priv;
+
+  /* remove the hint if visible */
+  if (priv->hint
+      && !strcmp (clutter_text_get_text (CLUTTER_TEXT (priv->entry)),
+                  priv->hint))
+    {
+      clutter_text_set_text (CLUTTER_TEXT (priv->entry), "");
+    }
+  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (entry), "focus");
+}
+
+static void
 nbtk_entry_paint (ClutterActor *actor)
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
@@ -258,6 +314,8 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
   gobject_class->set_property = nbtk_entry_set_property;
   gobject_class->get_property = nbtk_entry_get_property;
 
+  gobject_class->finalize = nbtk_entry_finalize;
+
   actor_class->get_preferred_width = nbtk_entry_get_preferred_width;
   actor_class->get_preferred_height = nbtk_entry_get_preferred_height;
   actor_class->allocate = nbtk_entry_allocate;
@@ -270,6 +328,13 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
   pspec = g_param_spec_string ("text",
                                "Text",
                                "Text of the entry",
+                               NULL, G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_ENTRY, pspec);
+
+  pspec = g_param_spec_string ("hint-text",
+                               "Hint Text",
+                               "Text to display when the entry is not focused "
+                               "and the text property is empty",
                                NULL, G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_ENTRY, pspec);
 
@@ -290,6 +355,11 @@ nbtk_entry_init (NbtkEntry *entry)
                               "reactive", TRUE,
                               "cursor-color", &cursor,
                               NULL);
+
+  g_signal_connect (priv->entry, "focus-out",
+                    G_CALLBACK (clutter_text_focus_out_cb), entry);
+  g_signal_connect (priv->entry, "focus-in",
+                    G_CALLBACK (clutter_text_focus_in_cb), entry);
 
   clutter_actor_set_parent (priv->entry, CLUTTER_ACTOR (entry));
 }
@@ -348,6 +418,22 @@ nbtk_entry_set_text (NbtkEntry *entry,
 
   priv = entry->priv;
 
+  /* set a hint if we are blanking the entry */
+  if (priv->hint
+      && text && !strcmp ("", text)
+      && !HAS_FOCUS (priv->entry))
+    {
+      text = priv->hint;
+      nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (entry), "indeterminate");
+    }
+  else
+    {
+      if (HAS_FOCUS (priv->entry))
+        nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (entry), "focus");
+      else
+        nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (entry), NULL);
+    }
+
   clutter_text_set_text (CLUTTER_TEXT (priv->entry), text);
 
   g_object_notify (G_OBJECT (entry), "text");
@@ -368,4 +454,52 @@ nbtk_entry_get_clutter_text (NbtkEntry *entry)
   g_return_val_if_fail (NBTK_ENTRY (entry), NULL);
 
   return entry->priv->entry;
+}
+
+/**
+ * nbtk_entry_set_hint_text:
+ * @entry: a #NbtkEntry
+ * @text: text to set as the entry hint
+ *
+ * Sets the text to display when the entry is empty and unfocused. When the
+ * entry is displaying the hint, it has a pseudo class of "indeterminate".
+ * A value of NULL unsets the hint.
+ */
+void
+nbtk_entry_set_hint_text (NbtkEntry *entry,
+                          const gchar *text)
+{
+  NbtkEntryPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_ENTRY (entry));
+
+  priv = entry->priv;
+
+  g_free (priv->hint);
+
+  priv->hint = g_strdup (text);
+
+  if (!strcmp (clutter_text_get_text (CLUTTER_TEXT (priv->entry)), ""))
+    {
+      clutter_text_set_text (CLUTTER_TEXT (priv->entry), priv->hint);
+      nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (entry), "indeterminate");
+    }
+}
+
+/**
+ * nbtk_entry_get_hint_text:
+ * @entry: a #NbtkEntry
+ *
+ * Gets the text that is displayed when the entry is empty and unfocused
+ *
+ * Returns: the current value of the hint property. This string is owned by the
+ * #NbtkEntry and should not be freed or modified.
+ */
+G_CONST_RETURN
+gchar *
+nbtk_entry_get_hint_text (NbtkEntry *entry)
+{
+  g_return_val_if_fail (NBTK_IS_ENTRY (entry), NULL);
+
+  return entry->priv->hint;
 }
