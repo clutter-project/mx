@@ -19,6 +19,14 @@ NbtkEntry {
   padding-left: 10;
 }
 
+NbtkEntry:indeterminate {
+  color: gray;
+}
+
+NbtkEntry:focus {
+  background-color: lime;
+}
+
 NbtkButton, NbtkFadeButton {
   color: blue;
   padding: 12;

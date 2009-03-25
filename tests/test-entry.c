@@ -4,11 +4,32 @@
 #include <clutter/clutter.h>
 #include <nbtk/nbtk.h>
 
+gboolean
+set_focus (ClutterActor *actor, ClutterEvent *event, gpointer data)
+{
+  clutter_actor_grab_key_focus (actor);
+
+  return FALSE;
+}
+
+void
+btn_clicked_cb (ClutterActor *button, NbtkEntry *entry)
+{
+  nbtk_entry_set_text (entry, "Here is some text");
+}
+
+void
+clear_btn_clicked_cb (ClutterActor *button, NbtkEntry *entry)
+{
+  nbtk_entry_set_text (entry, "");
+}
+
 int
 main (int argc, char *argv[])
 {
   NbtkWidget *entry;
   ClutterActor *stage;
+  NbtkWidget *button, *clear_button;
 
   clutter_init (&argc, &argv);
 
@@ -21,10 +42,36 @@ main (int argc, char *argv[])
   entry = nbtk_entry_new ("Hello World!");
   clutter_actor_set_position (CLUTTER_ACTOR (entry), 50, 50);
 
-  clutter_container_add (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (entry), NULL);
+  clutter_container_add (CLUTTER_CONTAINER (stage),
+                         CLUTTER_ACTOR (entry), NULL);
+  g_signal_connect (entry, "button-press-event",
+                    G_CALLBACK (set_focus), NULL);
 
   clutter_stage_set_key_focus (CLUTTER_STAGE (stage),
                                CLUTTER_ACTOR (nbtk_entry_get_clutter_text (NBTK_ENTRY (entry))));
+
+  entry = nbtk_entry_new ("");
+  clutter_actor_set_position (CLUTTER_ACTOR (entry), 50, 100);
+
+  clutter_container_add (CLUTTER_CONTAINER (stage),
+                         CLUTTER_ACTOR (entry), NULL);
+  nbtk_entry_set_hint_text (NBTK_ENTRY (entry), "hint hint...");
+  g_signal_connect (entry, "button-press-event",
+                    G_CALLBACK (set_focus), NULL);
+
+  button = nbtk_button_new_with_label ("Set");
+  clutter_actor_set_position (CLUTTER_ACTOR (button), 6, 100);
+  g_signal_connect (button, "clicked", G_CALLBACK (btn_clicked_cb), entry);
+
+  clear_button = nbtk_button_new_with_label ("clear");
+  clutter_actor_set_position (CLUTTER_ACTOR (clear_button), 6, 140);
+  g_signal_connect (clear_button, "clicked",
+                    G_CALLBACK (clear_btn_clicked_cb), entry);
+
+  clutter_container_add (CLUTTER_CONTAINER (stage),
+                         CLUTTER_ACTOR (button),
+                         CLUTTER_ACTOR (clear_button),
+                         NULL);
 
   clutter_actor_show (stage);
 
