@@ -117,6 +117,18 @@ nbtk_entry_get_property (GObject    *gobject,
 }
 
 static void
+nbtk_entry_dispose (GObject *object)
+{
+  NbtkEntryPrivate *priv = NBTK_ENTRY (object)->priv;
+
+  if (priv->entry)
+    {
+      clutter_actor_unparent (priv->entry);
+      priv->entry = NULL;
+    }
+}
+
+static void
 nbtk_entry_finalize (GObject *object)
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY (object)->priv;
@@ -315,6 +327,7 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
   gobject_class->get_property = nbtk_entry_get_property;
 
   gobject_class->finalize = nbtk_entry_finalize;
+  gobject_class->dispose = nbtk_entry_dispose;
 
   actor_class->get_preferred_width = nbtk_entry_get_preferred_width;
   actor_class->get_preferred_height = nbtk_entry_get_preferred_height;
