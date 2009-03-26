@@ -271,18 +271,19 @@ clutter_text_focus_out_cb (ClutterActor *actor,
                            NbtkEntry    *entry)
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY (entry)->priv;
+  ClutterText *text = CLUTTER_TEXT (priv->entry);
 
   /* add a hint if the entry is empty */
-  if (priv->hint && !strcmp (clutter_text_get_text (CLUTTER_TEXT (priv->entry)),
-                             ""))
+  if (priv->hint && !strcmp (clutter_text_get_text (text), ""))
     {
-      clutter_text_set_text (CLUTTER_TEXT (priv->entry), priv->hint);
+      clutter_text_set_text (text, priv->hint);
       nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (entry), "indeterminate");
     }
   else
     {
       nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (entry), NULL);
     }
+  clutter_text_set_cursor_visible (text, FALSE);
 }
 
 static void
@@ -290,15 +291,16 @@ clutter_text_focus_in_cb (ClutterActor *actor,
                           NbtkEntry    *entry)
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY (entry)->priv;
+  ClutterText *text = CLUTTER_TEXT (priv->entry);
 
   /* remove the hint if visible */
   if (priv->hint
-      && !strcmp (clutter_text_get_text (CLUTTER_TEXT (priv->entry)),
-                  priv->hint))
+      && !strcmp (clutter_text_get_text (text), priv->hint))
     {
-      clutter_text_set_text (CLUTTER_TEXT (priv->entry), "");
+      clutter_text_set_text (text, "");
     }
   nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (entry), "focus");
+  clutter_text_set_cursor_visible (text, TRUE);
 }
 
 static void
