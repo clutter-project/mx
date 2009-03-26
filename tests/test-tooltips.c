@@ -58,6 +58,16 @@ main (int argc, char *argv[])
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 500, 300);
 
+  button = nbtk_button_new_with_label ("Crazy");
+  nbtk_button_set_tooltip (NBTK_BUTTON (button),
+                           "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                           " aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                           " aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                           " aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage),
+                               CLUTTER_ACTOR (button));
+  clutter_actor_set_position (CLUTTER_ACTOR (button), 250, 5);
+
   clutter_actor_show (stage);
 
   clutter_main ();
