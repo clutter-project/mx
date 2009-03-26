@@ -593,7 +593,12 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
 
   /* make sure the tooltip is not off screen at all */
   clutter_actor_get_preferred_width (parent, -1, NULL, &parent_w);
-  if (self_x < 0)
+  if (self_w > CLUTTER_UNITS_TO_INT (parent_w))
+    {
+      self_x = 0;
+      clutter_actor_set_widthu (CLUTTER_ACTOR (self), parent_w);
+    }
+  else if (self_x < 0)
     {
       self_x = 0;
     }
