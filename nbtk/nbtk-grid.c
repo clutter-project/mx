@@ -852,6 +852,7 @@ nbtk_grid_do_allocate (ClutterActor          *self,
 {
   NbtkGrid *layout = (NbtkGrid *) self;
   NbtkGridPrivate *priv = layout->priv;
+  NbtkPadding padding;
 
   ClutterUnit current_a;
   ClutterUnit current_b;
@@ -863,6 +864,8 @@ nbtk_grid_do_allocate (ClutterActor          *self,
   gboolean homogenous_b;
   gdouble  aalign;
   gdouble  balign;
+
+  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
   if (actual_width)
     *actual_width = 0;
@@ -885,8 +888,8 @@ nbtk_grid_do_allocate (ClutterActor          *self,
       clutter_actor_get_preferred_size (self, NULL, NULL, NULL, NULL);
     }
 
-  priv->alloc_width = box->x2 - box->x1;
-  priv->alloc_height = box->y2 - box->y1;
+  priv->alloc_width = box->x2 - box->x1 - padding.left - padding.right;
+  priv->alloc_height = box->y2 - box->y1 - padding.top - padding.bottom;
   priv->absolute_origin_changed = absolute_origin_changed;
 
   if (priv->column_major)
@@ -1027,6 +1030,12 @@ nbtk_grid_do_allocate (ClutterActor          *self,
               child_box.y2 = temp;
             }
 
+          /* account for padding and pixel-align */
+          child_box.x1 = (int) (child_box.x1 + padding.left);
+          child_box.y1 = (int) (child_box.y1 + padding.top);
+          child_box.x2 = (int) (child_box.x2 + padding.left);
+          child_box.y2 = (int) (child_box.y2 + padding.top);
+
           /* update the allocation */
           if (!calculate_extents_only)
             clutter_actor_allocate (CLUTTER_ACTOR (child),
@@ -1034,11 +1043,11 @@ nbtk_grid_do_allocate (ClutterActor          *self,
                                     absolute_origin_changed);
 
           /* update extents */
-          if (actual_width && child_box.x2 > *actual_width)
-            *actual_width = child_box.x2;
+          if (actual_width && (child_box.x2 + padding.right) > *actual_width)
+            *actual_width = child_box.x2 + padding.right;
 
-          if (actual_height && child_box.y2 > *actual_height)
-            *actual_height = child_box.y2;
+          if (actual_height && (child_box.y2 + padding.bottom) > *actual_height)
+            *actual_height = child_box.y2 + padding.bottom;
 
           if (homogenous_a)
             {
