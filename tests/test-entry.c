@@ -84,6 +84,10 @@ main (int argc, char *argv[])
                                          "edit-find.png");
   nbtk_entry_set_secondary_icon_from_file (NBTK_ENTRY (entry),
                                            "edit-clear.png");
+  g_signal_connect_swapped (entry, "primary-icon-clicked",
+                            G_CALLBACK (g_print), "primary icon clicked\n");
+  g_signal_connect_swapped (entry, "secondary-icon-clicked",
+                            G_CALLBACK (g_print), "secondary icon clicked\n");
   g_signal_connect (entry, "button-press-event",
                     G_CALLBACK (set_focus), NULL);
 
