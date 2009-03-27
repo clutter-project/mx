@@ -55,6 +55,10 @@ struct _NbtkEntry
 struct _NbtkEntryClass
 {
   NbtkWidgetClass parent_class;
+
+  /* signals */
+  void (*primary_icon_clicked) (NbtkEntry *entry);
+  void (*secondary_icon_clicked) (NbtkEntry *entry);
 };
 
 GType nbtk_entry_get_type (void) G_GNUC_CONST;

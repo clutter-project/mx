@@ -58,16 +58,27 @@
 #include "nbtk-widget.h"
 #include "nbtk-stylable.h"
 #include "nbtk-texture-cache.h"
+#include "nbtk-marshal.h"
 
 #define HAS_FOCUS(actor) (clutter_actor_get_stage (actor) && clutter_stage_get_key_focus ((ClutterStage *) clutter_actor_get_stage (actor)) == actor)
 
 
+/* properties */
 enum
 {
   PROP_0,
 
   PROP_ENTRY,
   PROP_HINT
+};
+
+/* signals */
+enum
+{
+  PRIMARY_ICON_CLICKED,
+  SECONDARY_ICON_CLICKED,
+
+  LAST_SIGNAL
 };
 
 #define NBTK_ENTRY_GET_PRIVATE(obj)     (G_TYPE_INSTANCE_GET_PRIVATE ((obj), NBTK_TYPE_ENTRY, NbtkEntryPrivate))
@@ -82,6 +93,8 @@ struct _NbtkEntryPrivate
 
   ClutterUnit   spacing;
 };
+
+static guint entry_signals[LAST_SIGNAL] = { 0, };
 
 G_DEFINE_TYPE (NbtkEntry, nbtk_entry, NBTK_TYPE_WIDGET);
 
@@ -434,6 +447,12 @@ nbtk_entry_pick (ClutterActor *actor,
   CLUTTER_ACTOR_CLASS (nbtk_entry_parent_class)->pick (actor, c);
 
   clutter_actor_paint (priv->entry);
+
+  if (priv->primary_icon)
+    clutter_actor_paint (priv->primary_icon);
+
+  if (priv->secondary_icon)
+    clutter_actor_paint (priv->secondary_icon);
 }
 
 static void
@@ -474,6 +493,24 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
                                NULL, G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_ENTRY, pspec);
 
+  /* signals */
+  entry_signals[PRIMARY_ICON_CLICKED] =
+    g_signal_new ("primary-icon-clicked",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (NbtkEntryClass, primary_icon_clicked),
+                  NULL, NULL,
+                  _nbtk_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
+
+  entry_signals[SECONDARY_ICON_CLICKED] =
+    g_signal_new ("secondary-icon-clicked",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (NbtkEntryClass, secondary_icon_clicked),
+                  NULL, NULL,
+                  _nbtk_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
 }
 
 static void
@@ -642,26 +679,49 @@ nbtk_entry_get_hint_text (NbtkEntry *entry)
   return entry->priv->hint;
 }
 
+static gboolean
+_nbtk_entry_icon_press_cb (ClutterActor       *actor,
+                           ClutterButtonEvent *event,
+                           NbtkEntry          *entry)
+{
+  NbtkEntryPrivate *priv = entry->priv;
+
+  if (actor == priv->primary_icon)
+    g_signal_emit (entry, entry_signals[PRIMARY_ICON_CLICKED], 0);
+  else
+    g_signal_emit (entry, entry_signals[SECONDARY_ICON_CLICKED], 0);
+
+  return FALSE;
+}
+
 static void
 _nbtk_entry_set_icon_from_file (NbtkEntry     *entry,
                                 ClutterActor **icon,
                                 const gchar   *filename)
 {
+  if (*icon)
+    {
+      g_signal_handlers_disconnect_by_func (*icon,
+                                            _nbtk_entry_icon_press_cb,
+                                            entry);
+      clutter_actor_unparent (*icon);
+      *icon = NULL;
+    }
+
   if (filename)
     {
       NbtkTextureCache *cache;
 
       cache = nbtk_texture_cache_get_default ();
 
-      if (*icon)
-        clutter_actor_unparent (*icon);
+
 
       *icon = nbtk_texture_cache_get_texture (cache, filename, FALSE);
-    }
-  else
-    {
-      clutter_actor_unparent (*icon);
-      *icon = NULL;
+
+      clutter_actor_set_reactive (*icon, TRUE);
+      clutter_actor_set_parent (*icon, CLUTTER_ACTOR (entry));
+      g_signal_connect (*icon, "button-release-event",
+                        G_CALLBACK (_nbtk_entry_icon_press_cb), entry);
     }
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (entry));
