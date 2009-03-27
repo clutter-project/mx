@@ -69,6 +69,11 @@ void                  nbtk_entry_set_hint_text (NbtkEntry *entry,
                                                 const gchar *text);
 G_CONST_RETURN gchar *nbtk_entry_get_hint_text (NbtkEntry *entry);
 
+void nbtk_entry_set_primary_icon_from_file (NbtkEntry   *entry,
+                                            const gchar *filename);
+void nbtk_entry_set_secondary_icon_from_file (NbtkEntry   *entry,
+                                              const gchar *filename);
+
 G_END_DECLS
 
 #endif /* __NBTK_ENTRY_H__ */

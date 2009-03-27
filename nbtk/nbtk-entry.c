@@ -57,6 +57,7 @@
 
 #include "nbtk-widget.h"
 #include "nbtk-stylable.h"
+#include "nbtk-texture-cache.h"
 
 #define HAS_FOCUS(actor) (clutter_actor_get_stage (actor) && clutter_stage_get_key_focus ((ClutterStage *) clutter_actor_get_stage (actor)) == actor)
 
@@ -75,15 +76,20 @@ struct _NbtkEntryPrivate
 {
   ClutterActor *entry;
   gchar        *hint;
+
+  ClutterActor *primary_icon;
+  ClutterActor *secondary_icon;
+
+  ClutterUnit   spacing;
 };
 
 G_DEFINE_TYPE (NbtkEntry, nbtk_entry, NBTK_TYPE_WIDGET);
 
 static void
 nbtk_entry_set_property (GObject      *gobject,
-                           guint         prop_id,
-                           const GValue *value,
-                           GParamSpec   *pspec)
+                         guint         prop_id,
+                         const GValue *value,
+                         GParamSpec   *pspec)
 {
   NbtkEntry *entry = NBTK_ENTRY (gobject);
 
@@ -105,9 +111,9 @@ nbtk_entry_set_property (GObject      *gobject,
 
 static void
 nbtk_entry_get_property (GObject    *gobject,
-                           guint       prop_id,
-                           GValue     *value,
-                           GParamSpec *pspec)
+                         guint       prop_id,
+                         GValue     *value,
+                         GParamSpec *pspec)
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY (gobject)->priv;
 
@@ -199,12 +205,38 @@ nbtk_entry_get_preferred_width (ClutterActor *actor,
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
   NbtkPadding padding;
+  ClutterUnit icon_w;
 
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
+
+  for_height -= padding.top + padding.bottom;
 
   clutter_actor_get_preferred_width (priv->entry, for_height,
                                      min_width_p,
                                      natural_width_p);
+
+  if (priv->primary_icon)
+    {
+      clutter_actor_get_preferred_width (priv->primary_icon, -1, NULL, &icon_w);
+
+      if (min_width_p)
+        *min_width_p += icon_w + priv->spacing;
+
+      if (natural_width_p)
+        *natural_width_p += icon_w + priv->spacing;
+    }
+
+  if (priv->secondary_icon)
+    {
+      clutter_actor_get_preferred_width (priv->secondary_icon,
+                                         -1, NULL, &icon_w);
+
+      if (min_width_p)
+        *min_width_p += icon_w + priv->spacing;
+
+      if (natural_width_p)
+        *natural_width_p += icon_w + priv->spacing;
+    }
 
   if (min_width_p)
     *min_width_p += padding.left + padding.right;
@@ -221,12 +253,39 @@ nbtk_entry_get_preferred_height (ClutterActor *actor,
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
   NbtkPadding padding;
+  ClutterUnit icon_h;
 
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
+
+  for_width -= padding.left + padding.right;
 
   clutter_actor_get_preferred_height (priv->entry, for_width,
                                       min_height_p,
                                       natural_height_p);
+
+  if (priv->primary_icon)
+    {
+      clutter_actor_get_preferred_height (priv->primary_icon,
+                                          -1, NULL, &icon_h);
+
+      if (min_height_p && icon_h > *min_height_p)
+        *min_height_p = icon_h;
+
+      if (natural_height_p && icon_h > *natural_height_p)
+        *natural_height_p = icon_h;
+    }
+
+  if (priv->secondary_icon)
+    {
+      clutter_actor_get_preferred_height (priv->secondary_icon,
+                                          -1, NULL, &icon_h);
+
+      if (min_height_p && icon_h > *min_height_p)
+        *min_height_p = icon_h;
+
+      if (natural_height_p && icon_h > *natural_height_p)
+        *natural_height_p = icon_h;
+    }
 
   if (min_height_p)
     *min_height_p += padding.top + padding.bottom;
@@ -242,8 +301,9 @@ nbtk_entry_allocate (ClutterActor          *actor,
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
   ClutterActorClass *parent_class;
-  ClutterActorBox child_box;
+  ClutterActorBox child_box, icon_box;
   NbtkPadding padding;
+  ClutterUnit icon_w, icon_h;
 
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 
@@ -254,6 +314,50 @@ nbtk_entry_allocate (ClutterActor          *actor,
   child_box.y1 = padding.top;
   child_box.x2 = box->x2 - box->x1 - padding.right;
   child_box.y2 = box->y2 - box->y1 - padding.bottom;
+
+  if (priv->primary_icon)
+    {
+      clutter_actor_get_preferred_width (priv->primary_icon,
+                                         -1, NULL, &icon_w);
+      clutter_actor_get_preferred_height (priv->primary_icon,
+                                          -1, NULL, &icon_h);
+
+      icon_box.x1 = padding.left;
+      icon_box.x2 = icon_box.x1 + icon_w;
+
+      icon_box.y1 = (int) (box->y2 - box->y1) / 2 - (int) (icon_h / 2);
+      icon_box.y2 = icon_box.y1 + icon_h;
+
+      clutter_actor_allocate (priv->primary_icon,
+                              &icon_box,
+                              absolute_origin_changed);
+
+      /* reduce the size for the entry */
+      child_box.x1 += icon_w + priv->spacing;
+      child_box.x2 -= icon_w * 2;
+    }
+
+  if (priv->secondary_icon)
+    {
+      clutter_actor_get_preferred_width (priv->secondary_icon,
+                                         -1, NULL, &icon_w);
+      clutter_actor_get_preferred_height (priv->secondary_icon,
+                                          -1, NULL, &icon_h);
+
+      icon_box.x2 = (box->x2 - box->x1) - padding.right;
+      icon_box.x1 = icon_box.x2 - icon_w;
+
+      icon_box.y1 = (int) (box->y2 - box->y1) / 2 - (int) (icon_h / 2);
+      icon_box.y2 = icon_box.y1 + icon_h;
+
+      clutter_actor_allocate (priv->secondary_icon,
+                              &icon_box,
+                              absolute_origin_changed);
+
+      /* reduce the size for the entry */
+      child_box.x2 -= icon_w - priv->spacing;
+    }
+
 
   clutter_actor_allocate (priv->entry, &child_box, absolute_origin_changed);
 }
@@ -313,10 +417,17 @@ nbtk_entry_paint (ClutterActor *actor)
   parent_class->paint (actor);
 
   clutter_actor_paint (priv->entry);
+
+  if (priv->primary_icon)
+    clutter_actor_paint (priv->primary_icon);
+
+  if (priv->secondary_icon)
+    clutter_actor_paint (priv->secondary_icon);
 }
 
 static void
-nbtk_entry_pick (ClutterActor *actor, const ClutterColor *c)
+nbtk_entry_pick (ClutterActor *actor,
+                 const ClutterColor *c)
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
 
@@ -385,6 +496,8 @@ nbtk_entry_init (NbtkEntry *entry)
                     G_CALLBACK (clutter_text_focus_out_cb), entry);
   g_signal_connect (priv->entry, "focus-in",
                     G_CALLBACK (clutter_text_focus_in_cb), entry);
+
+  priv->spacing = CLUTTER_UNITS_FROM_INT (6);
 
   clutter_actor_set_parent (priv->entry, CLUTTER_ACTOR (entry));
 }
@@ -528,3 +641,71 @@ nbtk_entry_get_hint_text (NbtkEntry *entry)
 
   return entry->priv->hint;
 }
+
+static void
+_nbtk_entry_set_icon_from_file (NbtkEntry     *entry,
+                                ClutterActor **icon,
+                                const gchar   *filename)
+{
+  if (filename)
+    {
+      NbtkTextureCache *cache;
+
+      cache = nbtk_texture_cache_get_default ();
+
+      if (*icon)
+        clutter_actor_unparent (*icon);
+
+      *icon = nbtk_texture_cache_get_texture (cache, filename, FALSE);
+    }
+  else
+    {
+      clutter_actor_unparent (*icon);
+      *icon = NULL;
+    }
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (entry));
+}
+
+/**
+ * nbtk_entry_set_primary_icon_from_file:
+ * @entry: a #NbtkEntry
+ * @filename: filename of an icon
+ *
+ * Set the primary icon of the entry to the given filename
+ */
+void
+nbtk_entry_set_primary_icon_from_file (NbtkEntry   *entry,
+                                       const gchar *filename)
+{
+  NbtkEntryPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_ENTRY (entry));
+
+  priv = entry->priv;
+
+  _nbtk_entry_set_icon_from_file (entry, &priv->primary_icon, filename);
+
+}
+
+/**
+ * nbtk_entry_set_secondary_icon_from_file:
+ * @entry: a #NbtkEntry
+ * @filename: filename of an icon
+ *
+ * Set the primary icon of the entry to the given filename
+ */
+void
+nbtk_entry_set_secondary_icon_from_file (NbtkEntry   *entry,
+                                         const gchar *filename)
+{
+  NbtkEntryPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_ENTRY (entry));
+
+  priv = entry->priv;
+
+  _nbtk_entry_set_icon_from_file (entry, &priv->secondary_icon, filename);
+
+}
+
