@@ -37,10 +37,10 @@ main (int argc, char *argv[])
                              "style/default.css", NULL);
 
   stage = clutter_stage_get_default ();
-  clutter_actor_set_size (stage, 400, 200);
+  clutter_actor_set_size (stage, 400, 300);
 
   entry = nbtk_entry_new ("Hello World!");
-  clutter_actor_set_position (CLUTTER_ACTOR (entry), 50, 50);
+  clutter_actor_set_position (CLUTTER_ACTOR (entry), 20, 20);
 
   clutter_container_add (CLUTTER_CONTAINER (stage),
                          CLUTTER_ACTOR (entry), NULL);
@@ -51,7 +51,7 @@ main (int argc, char *argv[])
                                CLUTTER_ACTOR (nbtk_entry_get_clutter_text (NBTK_ENTRY (entry))));
 
   entry = nbtk_entry_new ("");
-  clutter_actor_set_position (CLUTTER_ACTOR (entry), 50, 100);
+  clutter_actor_set_position (CLUTTER_ACTOR (entry), 20, 70);
 
   clutter_container_add (CLUTTER_CONTAINER (stage),
                          CLUTTER_ACTOR (entry), NULL);
@@ -60,11 +60,11 @@ main (int argc, char *argv[])
                     G_CALLBACK (set_focus), NULL);
 
   button = nbtk_button_new_with_label ("Set");
-  clutter_actor_set_position (CLUTTER_ACTOR (button), 6, 100);
+  clutter_actor_set_position (CLUTTER_ACTOR (button), 20, 120);
   g_signal_connect (button, "clicked", G_CALLBACK (btn_clicked_cb), entry);
 
   clear_button = nbtk_button_new_with_label ("clear");
-  clutter_actor_set_position (CLUTTER_ACTOR (clear_button), 6, 140);
+  clutter_actor_set_position (CLUTTER_ACTOR (clear_button), 70, 120);
   g_signal_connect (clear_button, "clicked",
                     G_CALLBACK (clear_btn_clicked_cb), entry);
 
@@ -72,6 +72,21 @@ main (int argc, char *argv[])
                          CLUTTER_ACTOR (button),
                          CLUTTER_ACTOR (clear_button),
                          NULL);
+
+
+  entry = nbtk_entry_new ("");
+  clutter_actor_set_position (CLUTTER_ACTOR (entry), 20, 170);
+
+  clutter_container_add (CLUTTER_CONTAINER (stage),
+                         CLUTTER_ACTOR (entry), NULL);
+  nbtk_entry_set_hint_text (NBTK_ENTRY (entry), "Search...");
+  nbtk_entry_set_primary_icon_from_file (NBTK_ENTRY (entry),
+                                         "edit-find.png");
+  nbtk_entry_set_secondary_icon_from_file (NBTK_ENTRY (entry),
+                                           "edit-clear.png");
+  g_signal_connect (entry, "button-press-event",
+                    G_CALLBACK (set_focus), NULL);
+
 
   clutter_actor_show (stage);
 

@@ -16,7 +16,7 @@ NbtkEntry {
   background-color: yellow;
   font-size: 30;
   font-family: "Times";
-  padding-left: 10;
+  padding: 3;
 }
 
 NbtkEntry:indeterminate {
