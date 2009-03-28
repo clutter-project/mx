@@ -534,6 +534,7 @@ nbtk_widget_style_changed (NbtkWidget *self)
   ClutterActor *texture;
   gchar *bg_file;
   NbtkPadding *padding = NULL;
+  gboolean relayout_needed = FALSE;
 
   /* application has request this widget is not stylable */
   if (!priv->is_stylable)
@@ -555,6 +556,15 @@ nbtk_widget_style_changed (NbtkWidget *self)
 
   if (padding)
     {
+      if (priv->padding.top != padding->top ||
+          priv->padding.left != padding->left ||
+          priv->padding.right != padding->right ||
+          priv->padding.bottom != padding->bottom)
+      {
+        /* Padding changed. Need to relayout. */
+        relayout_needed = TRUE;
+      }
+
       priv->padding = *padding;
       g_boxed_free (NBTK_TYPE_PADDING, padding);
     }
@@ -621,7 +631,12 @@ nbtk_widget_style_changed (NbtkWidget *self)
       g_free (bg_file);
     }
 
-  clutter_actor_queue_relayout ((ClutterActor *)self);
+  /*
+   * If there are any properties above that need to cause a relayout thay
+   * should set this flag.
+   */
+  if (relayout_needed)
+    clutter_actor_queue_relayout ((ClutterActor *)self);
 }
 
 static void
