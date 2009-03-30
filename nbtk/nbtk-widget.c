@@ -466,7 +466,7 @@ nbtk_widget_real_draw_background (NbtkWidget         *self,
   /* Default implementation just draws the background
    * colour and the image on top
    */
-  if (color)
+  if (color && color->alpha != 0)
     {
       ClutterActor *actor = CLUTTER_ACTOR (self);
       ClutterActorBox allocation = { 0, };
