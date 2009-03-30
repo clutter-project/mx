@@ -466,6 +466,8 @@ nbtk_scroll_view_init (NbtkScrollView *self)
   clutter_actor_show (priv->hscroll);
   clutter_actor_show (priv->vscroll);
   clutter_actor_set_rotation (priv->vscroll, CLUTTER_Z_AXIS, 90.0, 0, 0, 0);
+
+  g_object_set (G_OBJECT (self), "reactive", FALSE, NULL);
 }
 
 static void
