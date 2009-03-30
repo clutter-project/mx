@@ -174,16 +174,13 @@ static void
 nbtk_bin_pick (ClutterActor       *self,
                const ClutterColor *pick_color)
 {
-  if (clutter_actor_should_pick_paint (self))
-    {
-      NbtkBinPrivate *priv = NBTK_BIN (self)->priv;
+  NbtkBinPrivate *priv = NBTK_BIN (self)->priv;
 
-      /* get the default pick implementation */
-      CLUTTER_ACTOR_CLASS (nbtk_bin_parent_class)->pick (self, pick_color);
+  /* get the default pick implementation */
+  CLUTTER_ACTOR_CLASS (nbtk_bin_parent_class)->pick (self, pick_color);
 
-      if (priv->child && CLUTTER_ACTOR_IS_VISIBLE (priv->child))
-        clutter_actor_paint (priv->child);
-    }
+  if (priv->child && CLUTTER_ACTOR_IS_VISIBLE (priv->child))
+    clutter_actor_paint (priv->child);
 }
 
 static void
