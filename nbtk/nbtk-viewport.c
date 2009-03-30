@@ -578,6 +578,9 @@ nbtk_viewport_init (NbtkViewport *self)
 
   g_signal_connect (self, "notify::clip",
                     G_CALLBACK (clip_notify_cb), self);
+
+
+  g_object_set (G_OBJECT (self), "reactive", FALSE, NULL);
 }
 
 NbtkWidget *
