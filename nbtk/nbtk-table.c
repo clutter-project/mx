@@ -640,7 +640,7 @@ nbtk_table_homogeneous_allocate (ClutterActor          *self,
     {
       gint row, col, row_span, col_span;
       gboolean keep_ratio;
-      ClutterChildMeta *meta;
+      NbtkTableChild *meta;
       ClutterActor *child;
       ClutterActorBox childbox;
       gdouble x_align, y_align;
@@ -648,12 +648,18 @@ nbtk_table_homogeneous_allocate (ClutterActor          *self,
 
       child = CLUTTER_ACTOR (list->data);
 
-      meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
-      g_object_get (meta, "column", &col, "row", &row,
-                    "row-span", &row_span, "col-span", &col_span,
-                    "keep-aspect-ratio", &keep_ratio,
-                    "x-align", &x_align, "y-align", &y_align,
-                    "x-fill", &x_fill, "y-fill", &y_fill, NULL);
+      meta = (NbtkTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
+
+      /* get child properties */
+      col = meta->col;
+      row = meta->row;
+      row_span = meta->row_span;
+      col_span = meta->col_span;
+      keep_ratio = meta->keep_ratio;
+      x_align = meta->x_align;
+      y_align = meta->y_align;
+      x_fill = meta->x_fill;
+      y_fill = meta->y_fill;
 
       childbox.x1 = padding.left + (col_width + col_spacing) * col;
       childbox.x2 = childbox.x1 + (col_width * col_span) + (col_spacing * (col_span - 1));
@@ -728,17 +734,20 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
       gint row, col;
       ClutterUnit w_min, w_pref;
       gboolean x_expand;
-      ClutterChildMeta *meta;
+      NbtkTableChild *meta;
       ClutterActor *child;
       gint col_span, row_span;
 
       child = CLUTTER_ACTOR (list->data);
 
-      meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (table), child);
+      meta = (NbtkTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (table), child);
 
-      g_object_get (meta, "column", &col, "row", &row,
-                    "x-expand", &x_expand,
-                    "col-span", &col_span, "row-span", &row_span, NULL);
+      /* get child properties */
+      col = meta->col;
+      row = meta->row;
+      x_expand = meta->x_expand;
+      col_span = meta->col_span;
+      row_span = meta->row_span;
 
       if (x_expand)
         has_expand_cols[col] = TRUE;
@@ -824,19 +833,21 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
       gint row, col, cell_width;
       ClutterUnit h_min, h_pref;
       gboolean x_expand, y_expand;
-      ClutterChildMeta *meta;
+      NbtkTableChild *meta;
       ClutterActor *child;
       gint col_span, row_span;
 
       child = CLUTTER_ACTOR (list->data);
 
-      meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
+      meta = (NbtkTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
 
-      g_object_get (meta,
-                    "column", &col, "row", &row,
-                    "x-expand", &x_expand, "y-expand", &y_expand,
-                    "col-span", &col_span, "row-span", &row_span,
-                    NULL);
+      /* get child properties */
+      col = meta->col;
+      row = meta->row;
+      x_expand = meta->x_expand;
+      y_expand = meta->y_expand;
+      col_span = meta->col_span;
+      row_span = meta->row_span;
 
       if (y_expand)
         has_expand_rows[row] = TRUE;
@@ -890,7 +901,7 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
       gint row, col, row_span, col_span;
       gint col_width, row_height;
       gboolean keep_ratio;
-      ClutterChildMeta *meta;
+      NbtkTableChild *meta;
       ClutterActor *child;
       ClutterActorBox childbox;
       gint child_x, child_y;
@@ -899,14 +910,19 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
 
       child = CLUTTER_ACTOR (list->data);
 
-      meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
-      g_object_get (meta,
-                    "column", &col, "row", &row,
-                    "row-span", &row_span, "col-span", &col_span,
-                    "keep-aspect-ratio", &keep_ratio,
-                    "x-align", &x_align, "y-align", &y_align,
-                    "x-fill", &x_fill, "y-fill", &y_fill,
-                    NULL);
+      meta = (NbtkTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
+
+      /* get child properties */
+      col = meta->col;
+      row = meta->row;
+      row_span = meta->row_span;
+      col_span = meta->col_span;
+      keep_ratio = meta->keep_ratio;
+      x_align = meta->x_align;
+      y_align = meta->y_align;
+      x_fill = meta->x_fill;
+      y_fill = meta->y_fill;
+
 
       /* initialise the width and height */
       col_width = min_widths[col];
@@ -1052,14 +1068,15 @@ nbtk_table_get_preferred_width (ClutterActor *self,
     {
       gint col;
       ClutterUnit w_min, w_pref;
-      ClutterChildMeta *meta;
+      NbtkTableChild *meta;
       ClutterActor *child;
 
       child = CLUTTER_ACTOR (list->data);
 
-      meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
+      meta = (NbtkTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
 
-      g_object_get (meta, "column", &col, NULL);
+      /* get child properties */
+      col = meta->col;
 
       clutter_actor_get_preferred_width (child, -1, &w_min, &w_pref);
 
@@ -1127,17 +1144,17 @@ nbtk_table_get_preferred_height (ClutterActor *self,
     {
       gint row, col, col_span, cell_width;
       ClutterUnit min, pref;
-      ClutterChildMeta *meta;
+      NbtkTableChild *meta;
       ClutterActor *child;
 
       child = CLUTTER_ACTOR (list->data);
 
-      meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
+      meta = (NbtkTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
 
-      g_object_get (meta,
-                    "row", &row,
-                    "column", &col, "col-span", &col_span,
-                    NULL);
+      /* get child properties */
+      row = meta->row;
+      col = meta->col;
+      col_span = meta->col_span;
 
       cell_width = 0;
       for (i = 0; i < col_span; i++)
