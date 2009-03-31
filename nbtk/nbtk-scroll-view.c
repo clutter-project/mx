@@ -562,3 +562,68 @@ nbtk_scroll_view_get_vscroll_bar (NbtkScrollView *scroll)
 
   return scroll->priv->vscroll;
 }
+
+ClutterUnit
+nbtk_scroll_view_get_column_size (NbtkScrollView *scroll)
+{
+  NbtkAdjustment  *adjustment;
+  gdouble          column_size;
+
+  g_return_val_if_fail (scroll, 0);
+  
+  adjustment = nbtk_scroll_bar_get_adjustment (
+                NBTK_SCROLL_BAR (scroll->priv->hscroll));
+  g_object_get (adjustment,
+                "step-increment", &column_size,
+                NULL);
+
+  return column_size;
+}
+
+void
+nbtk_scroll_view_set_column_size (NbtkScrollView *scroll,
+                                  ClutterUnit     column_size)
+{
+  NbtkAdjustment  *adjustment;
+
+  g_return_if_fail (scroll);
+  
+  adjustment = nbtk_scroll_bar_get_adjustment (
+                NBTK_SCROLL_BAR (scroll->priv->hscroll));
+  g_object_set (adjustment,
+                "step-increment", (gdouble) column_size,
+                NULL);
+}
+
+ClutterUnit
+nbtk_scroll_view_get_row_size (NbtkScrollView *scroll)
+{
+  NbtkAdjustment  *adjustment;
+  gdouble row_size;
+
+  g_return_val_if_fail (scroll, 0);
+  
+  adjustment = nbtk_scroll_bar_get_adjustment (
+                NBTK_SCROLL_BAR (scroll->priv->vscroll));
+  g_object_get (adjustment,
+                "step-increment", &row_size,
+                NULL);
+
+  return row_size;
+}
+
+void
+nbtk_scroll_view_set_row_size (NbtkScrollView *scroll,
+                               ClutterUnit     row_size)
+{
+  NbtkAdjustment  *adjustment;
+
+  g_return_if_fail (scroll);
+  
+  adjustment = nbtk_scroll_bar_get_adjustment (
+                NBTK_SCROLL_BAR (scroll->priv->vscroll));
+  g_object_set (adjustment,
+                "step-increment", (gdouble) row_size,
+                NULL);
+}
+

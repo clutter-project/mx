@@ -9,6 +9,7 @@ main (int argc, char *argv[])
 {
   NbtkWidget *scroll, *view, *label, *grid;
   ClutterActor *stage;
+  gdouble column_size;
   int i;
 
   clutter_init (&argc, &argv);
@@ -29,6 +30,7 @@ main (int argc, char *argv[])
   grid = nbtk_grid_new ();
   clutter_container_add (CLUTTER_CONTAINER (view), CLUTTER_ACTOR (grid), NULL);
 
+  column_size = 0;
   for (i = 0; i < 15; i++)
     {
       char *text = g_strdup_printf ("label %d", i);
@@ -36,7 +38,13 @@ main (int argc, char *argv[])
       clutter_container_add (CLUTTER_CONTAINER (grid),
                               CLUTTER_ACTOR (label), NULL);
       g_free (text);
+
+      if (column_size < clutter_actor_get_width (CLUTTER_ACTOR (label)))
+        column_size = clutter_actor_get_width (CLUTTER_ACTOR (label));
     }
+
+  nbtk_scroll_view_set_column_size (NBTK_SCROLL_VIEW (scroll), column_size);
+  printf ("Column size: %.2f\n", nbtk_scroll_view_get_column_size (NBTK_SCROLL_VIEW (scroll)));
 
   clutter_actor_show (stage);
   clutter_main ();

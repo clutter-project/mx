@@ -56,9 +56,17 @@ GType nbtk_scroll_view_get_type (void) G_GNUC_CONST;
 
 NbtkWidget *  nbtk_scroll_view_new             (void);
 
-ClutterActor *nbtk_scroll_view_get_hscroll_bar (NbtkScrollView *scroll);
-ClutterActor *nbtk_scroll_view_get_vscroll_bar (NbtkScrollView *scroll);
-ClutterActor *nbtk_scroll_view_get_child       (NbtkScrollView *scroll);
+ClutterActor *  nbtk_scroll_view_get_hscroll_bar (NbtkScrollView *scroll);
+ClutterActor *  nbtk_scroll_view_get_vscroll_bar (NbtkScrollView *scroll);
+ClutterActor *  nbtk_scroll_view_get_child       (NbtkScrollView *scroll);
+
+ClutterUnit     nbtk_scroll_view_get_column_size (NbtkScrollView *scroll);
+void            nbtk_scroll_view_set_column_size (NbtkScrollView *scroll,
+                                                  ClutterUnit     column_size);
+
+ClutterUnit     nbtk_scroll_view_get_row_size    (NbtkScrollView *scroll);
+void            nbtk_scroll_view_set_row_size    (NbtkScrollView *scroll,
+                                                  ClutterUnit     row_size);
 
 G_END_DECLS
 
