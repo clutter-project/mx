@@ -27,17 +27,17 @@ NbtkEntry:focus {
   background-color: lime;
 }
 
-NbtkButton, NbtkFadeButton {
+NbtkButton, NbtkFadeButton, NbtkScrollButton {
   color: blue;
   padding: 12;
   border-image: url('file://border-image.png') 12 stretch stretch;
 }
 
-NbtkButton:hover, NbtkFadeButton:hover {
+NbtkButton:hover, NbtkFadeButton:hover, NbtkScrollButton:hover {
   border-image: url('file://border-image-light.png') 12 stretch stretch;
 }
 
-NbtkButton:active, NbtkFadeButton:active {
+NbtkButton:active, NbtkFadeButton:active, NbtkScrollButton:active {
   border-image: url('file://border-image-dark.png') 12 stretch stretch;
 }
 
