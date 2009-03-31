@@ -45,17 +45,22 @@ G_DEFINE_TYPE_WITH_CODE (NbtkScrollBar, nbtk_scroll_bar, NBTK_TYPE_BIN,
 
 struct _NbtkScrollBarPrivate
 {
-  NbtkAdjustment  *adjustment;
-  guint            refresh_source;
+  NbtkScrollBarMode  mode;
+  NbtkAdjustment    *adjustment;
+  guint              refresh_source;
 
-  gulong           motion_handler;
-  gulong           release_handler;
-  ClutterUnit      x_origin;
+  gulong             motion_handler;
+  gulong             release_handler;
+  ClutterUnit        x_origin;
 
-  ClutterActor    *bw_stepper;
-  ClutterActor    *fw_stepper;
-  ClutterActor    *trough;
-  ClutterActor    *handle;
+  ClutterActor      *bw_stepper;
+  ClutterActor      *fw_stepper;
+  ClutterActor      *trough;
+  ClutterActor      *handle;
+
+  guint              idle_move_id;
+  gint               move_x;
+  gint               move_y;
 };
 
 enum
@@ -398,7 +403,7 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
 }
 
 static void
-move_slider (NbtkScrollBar *bar, gint x, gint y, gboolean interpolate)
+move_slider (NbtkScrollBar *bar, gint x, gint y)
 {
   NbtkScrollBarPrivate *priv = bar->priv;
   gdouble position, lower, upper, page_size;
@@ -434,7 +439,7 @@ move_slider (NbtkScrollBar *bar, gint x, gint y, gboolean interpolate)
            * (upper - lower - page_size))
            + lower;
 
-  if (interpolate)
+  if (priv->mode == NBTK_SCROLL_BAR_MODE_INTERPOLATE)
     {
       guint mfreq = clutter_get_motion_events_frequency ();
       guint fps = clutter_get_default_frame_rate ();
@@ -451,11 +456,33 @@ move_slider (NbtkScrollBar *bar, gint x, gint y, gboolean interpolate)
 }
 
 static gboolean
+move_slider_cb (NbtkScrollBar *bar)
+{
+  move_slider (bar, bar->priv->move_x, bar->priv->move_y);
+  return FALSE;
+}
+
+static gboolean
 motion_event_cb (ClutterActor *trough,
                  ClutterMotionEvent *event,
                  NbtkScrollBar *bar)
 {
-  move_slider (bar, event->x, event->y, FALSE);
+  if (bar->priv->mode == NBTK_SCROLL_BAR_MODE_IDLE)
+    {
+      if (bar->priv->idle_move_id)
+        {
+          g_source_remove (bar->priv->idle_move_id);
+        }    
+      bar->priv->move_x = event->x;
+      bar->priv->move_y = event->y;
+      bar->priv->idle_move_id = g_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
+                                                 (GSourceFunc) move_slider_cb,
+                                                 bar, NULL);
+    }
+  else
+    {
+      move_slider (bar, event->x, event->y);    
+    }
 
   return TRUE;
 }
@@ -479,8 +506,6 @@ button_release_event_cb (ClutterActor *trough,
       g_signal_handler_disconnect (bar->priv->trough, bar->priv->release_handler);
       bar->priv->release_handler = 0;
     }
-
-  move_slider (bar, event->x, event->y, FALSE);
 
   clutter_ungrab_pointer ();
 
@@ -703,3 +728,21 @@ nbtk_scroll_bar_get_adjustment (NbtkScrollBar *bar)
 
   return bar->priv->adjustment;
 }
+
+NbtkScrollBarMode
+nbtk_scroll_bar_get_mode (NbtkScrollBar *bar)
+{
+  g_return_val_if_fail (NBTK_IS_SCROLL_BAR (bar), NBTK_SCROLL_BAR_MODE_DEFAULT);
+  
+  return bar->priv->mode;
+}
+
+void
+nbtk_scroll_bar_set_mode (NbtkScrollBar     *bar,
+                          NbtkScrollBarMode  mode)
+{
+  g_return_if_fail (NBTK_IS_SCROLL_BAR (bar));
+
+  bar->priv->mode = mode;
+}
+
