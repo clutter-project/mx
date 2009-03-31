@@ -54,8 +54,11 @@ struct _NbtkScrollViewPrivate
   ClutterActor   *hscroll;
   ClutterActor   *vscroll;
 
-  NbtkAdjustment *hadjustment;
-  NbtkAdjustment *vadjustment;
+  ClutterUnit     row_size;
+  ClutterUnit     column_size;
+
+  gboolean        row_size_set : 1;
+  gboolean        column_size_set : 1;
 };
 
 enum {
@@ -419,6 +422,14 @@ child_hadjustment_notify_cb (GObject *gobject,
   nbtk_scrollable_get_adjustments (NBTK_SCROLLABLE (actor), &hadjust, NULL);
   if (hadjust)
     {
+      /* Force scroll step if neede. */
+      if (priv->column_size_set)
+        {
+          g_object_set (hadjust,
+                        "step-increment", priv->column_size,
+                        NULL);
+        }
+
       nbtk_scroll_bar_set_adjustment (NBTK_SCROLL_BAR(priv->hscroll), hadjust);
       g_signal_connect (hadjust, "changed", G_CALLBACK (
                         child_adjustment_changed_cb), priv->hscroll);
@@ -445,6 +456,14 @@ child_vadjustment_notify_cb (GObject *gobject,
   nbtk_scrollable_get_adjustments (NBTK_SCROLLABLE(actor), NULL, &vadjust);
   if (vadjust)
     {
+      /* Force scroll step if neede. */
+      if (priv->row_size_set)
+        {
+          g_object_set (vadjust,
+                        "step-increment", priv->row_size,
+                        NULL);
+        }
+
       nbtk_scroll_bar_set_adjustment (NBTK_SCROLL_BAR(priv->vscroll), vadjust);
       g_signal_connect (vadjust, "changed", G_CALLBACK (
                         child_adjustment_changed_cb), priv->vscroll);
@@ -587,12 +606,25 @@ nbtk_scroll_view_set_column_size (NbtkScrollView *scroll,
   NbtkAdjustment  *adjustment;
 
   g_return_if_fail (scroll);
-  
-  adjustment = nbtk_scroll_bar_get_adjustment (
-                NBTK_SCROLL_BAR (scroll->priv->hscroll));
-  g_object_set (adjustment,
-                "step-increment", (gdouble) column_size,
-                NULL);
+
+  if (column_size < 0)
+    {
+      scroll->priv->column_size_set = FALSE;
+      scroll->priv->column_size = -1;
+    }
+  else
+    {
+      scroll->priv->column_size_set = TRUE;
+      scroll->priv->column_size = column_size;
+
+      adjustment = nbtk_scroll_bar_get_adjustment (
+                    NBTK_SCROLL_BAR (scroll->priv->hscroll));
+
+      if (adjustment)
+        g_object_set (adjustment,
+                      "step-increment", (gdouble) scroll->priv->column_size,
+                      NULL);
+     }
 }
 
 ClutterUnit
@@ -620,10 +652,23 @@ nbtk_scroll_view_set_row_size (NbtkScrollView *scroll,
 
   g_return_if_fail (scroll);
   
-  adjustment = nbtk_scroll_bar_get_adjustment (
-                NBTK_SCROLL_BAR (scroll->priv->vscroll));
-  g_object_set (adjustment,
-                "step-increment", (gdouble) row_size,
-                NULL);
+  if (row_size < 0)
+    {
+      scroll->priv->row_size_set = FALSE;
+      scroll->priv->row_size = -1;
+    }
+  else
+    {
+      scroll->priv->row_size_set = TRUE;
+      scroll->priv->row_size = row_size;
+
+      adjustment = nbtk_scroll_bar_get_adjustment (
+                    NBTK_SCROLL_BAR (scroll->priv->vscroll));
+
+      if (adjustment)
+        g_object_set (adjustment,
+                      "step-increment", (gdouble) scroll->priv->row_size,
+                      NULL);
+    }
 }
 
