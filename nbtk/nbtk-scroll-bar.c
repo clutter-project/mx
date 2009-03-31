@@ -202,24 +202,24 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
   inner_height = clutter_actor_get_heightu (actor) - padding.top - padding.bottom;
 
   /* Backward stepper */
-  bw_box.x1 = padding.left;
-  bw_box.y1 = padding.top;
-  bw_box.x2 = bw_box.x1 + inner_height;
-  bw_box.y2 = bw_box.y1 + inner_height;
+  bw_box.x1 = (int) (padding.left);
+  bw_box.y1 = (int) (padding.top);
+  bw_box.x2 = (int) (bw_box.x1 + inner_height);
+  bw_box.y2 = (int) (bw_box.y1 + inner_height);
   clutter_actor_allocate (priv->bw_stepper, &bw_box, absolute_origin_changed);
 
   /* Forward stepper */
-  fw_box.x1 = clutter_actor_get_widthu (actor) - padding.right - inner_height;
-  fw_box.y1 = padding.top;
-  fw_box.x2 = fw_box.x1 + inner_height;
-  fw_box.y2 = fw_box.y1 + inner_height;
+  fw_box.x1 = (int) (clutter_actor_get_widthu (actor) - padding.right - inner_height);
+  fw_box.y1 = (int) (padding.top);
+  fw_box.x2 = (int) (fw_box.x1 + inner_height);
+  fw_box.y2 = (int) (fw_box.y1 + inner_height);
   clutter_actor_allocate (priv->fw_stepper, &fw_box, absolute_origin_changed);
 
   /* Trough. */
-  trough_box.x1 = bw_box.x2;
-  trough_box.y1 = padding.top;
-  trough_box.x2 = fw_box.x1;
-  trough_box.y2 = trough_box.y1 + inner_height;
+  trough_box.x1 = (int) (bw_box.x2);
+  trough_box.y1 = (int) (padding.top);
+  trough_box.x2 = (int) (fw_box.x1);
+  trough_box.y2 = (int) (trough_box.y1 + inner_height);
   clutter_actor_allocate (priv->trough, &trough_box, absolute_origin_changed);
 
   if (priv->adjustment)
@@ -272,6 +272,11 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
                            MAX (min_sizeu,
                                 CLUTTER_UNITS_FROM_FLOAT (size)));
       handle_box.y2 = handle_box.y1 + real_height;
+
+      handle_box.x1 = (int) handle_box.x1;
+      handle_box.y1 = (int) handle_box.y1;
+      handle_box.x2 = (int) handle_box.x2;
+      handle_box.y2 = (int) handle_box.y2;
 
       clutter_actor_allocate (priv->handle,
                               &handle_box,
