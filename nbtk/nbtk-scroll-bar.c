@@ -29,7 +29,7 @@
 
 #include "nbtk-scroll-bar.h"
 #include "nbtk-bin.h"
-#include "nbtk-button.h"
+#include "nbtk-scroll-button.h"
 #include "nbtk-marshal.h"
 #include "nbtk-stylable.h"
 #include "nbtk-enum-types.h"
@@ -558,14 +558,14 @@ nbtk_scroll_bar_init (NbtkScrollBar *self)
 {
   self->priv = NBTK_SCROLL_BAR_GET_PRIVATE (self);
 
-  self->priv->bw_stepper = (ClutterActor *) nbtk_button_new ();
+  self->priv->bw_stepper = (ClutterActor *) nbtk_scroll_button_new ();
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->bw_stepper), "backward-stepper");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->bw_stepper),
                             CLUTTER_ACTOR (self));
   g_signal_connect (self->priv->bw_stepper, "clicked",
                     G_CALLBACK (backward_stepper_clicked), self);
 
-  self->priv->fw_stepper = (ClutterActor *) nbtk_button_new ();
+  self->priv->fw_stepper = (ClutterActor *) nbtk_scroll_button_new ();
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->fw_stepper), "forward-stepper");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->fw_stepper),
                             CLUTTER_ACTOR (self));

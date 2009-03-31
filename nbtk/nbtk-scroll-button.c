@@ -107,6 +107,8 @@ nbtk_scroll_button_button_press_event (ClutterActor       *actor,
                                        actor);
     }
 
+  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (actor), "active");
+
   return TRUE;
 }
 
@@ -121,6 +123,8 @@ nbtk_scroll_button_button_release_event (ClutterActor       *actor,
       g_source_remove (priv->source_id);
       priv->source_id = 0;
     }
+
+  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (actor), NULL);
 
   return TRUE;
 }
@@ -139,6 +143,8 @@ nbtk_scroll_button_leave_event (ClutterActor         *actor,
 
   CLUTTER_ACTOR_CLASS (nbtk_scroll_button_parent_class)
     ->leave_event (actor, event);
+
+  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (actor), NULL);
 
   return TRUE;
 }
