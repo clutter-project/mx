@@ -19,6 +19,7 @@
  *
  * Written by: Øyvind Kolås <pippin@linux.intel.com>
  * Ported to nbtk by: Robert Staudinger <robsta@openedhand.com>
+ * Scrollable support added by: Thomas Wood <thomas.wood@intel.com>
  */
 
 /* TODO:
@@ -31,6 +32,7 @@
 
 #include <string.h>
 
+#include "nbtk-scrollable.h"
 #include "nbtk-grid.h"
 
 typedef struct _NbtkGridActorData NbtkGridActorData;
@@ -97,10 +99,14 @@ nbtk_grid_do_allocate (ClutterActor *self,
                        ClutterUnit *actual_width,
                        ClutterUnit *actual_height);
 
+static void scrollable_interface_init (NbtkScrollableInterface *iface);
+
 G_DEFINE_TYPE_WITH_CODE (NbtkGrid, nbtk_grid,
                          NBTK_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
-                                                clutter_container_iface_init));
+                                                clutter_container_iface_init)
+                         G_IMPLEMENT_INTERFACE (NBTK_TYPE_SCROLLABLE,
+                                                scrollable_interface_init));
 
 #define NBTK_GRID_GET_PRIVATE(obj) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((obj), NBTK_TYPE_GRID, \
@@ -128,6 +134,9 @@ struct _NbtkGridPrivate
   ClutterUnit a_current_sum, a_wrap;
   ClutterUnit max_extent_a;
   ClutterUnit max_extent_b;
+
+  NbtkAdjustment *hadjustment;
+  NbtkAdjustment *vadjustment;
 };
 
 enum
@@ -141,6 +150,8 @@ enum
   PROP_HALIGN,
   PROP_END_ALIGN,
   PROP_COLUMN_MAJOR,
+  PROP_HADJUST,
+  PROP_VADJUST
 };
 
 struct _NbtkGridActorData
@@ -149,6 +160,147 @@ struct _NbtkGridActorData
   ClutterUnit xpos,       ypos;
   ClutterUnit pref_width, pref_height;
 };
+
+/* scrollable interface */
+
+static void
+adjustment_value_notify_cb (NbtkAdjustment *adjustment,
+                            GParamSpec     *pspec,
+                            NbtkGrid       *grid)
+{
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (grid));
+}
+
+static void
+scrollable_set_adjustments (NbtkScrollable *scrollable,
+                            NbtkAdjustment *hadjustment,
+                            NbtkAdjustment *vadjustment)
+{
+  NbtkGridPrivate *priv = NBTK_GRID (scrollable)->priv;
+
+  if (hadjustment != priv->hadjustment)
+    {
+      if (priv->hadjustment)
+        {
+          g_signal_handlers_disconnect_by_func (priv->hadjustment,
+                                                adjustment_value_notify_cb,
+                                                scrollable);
+          g_object_unref (priv->hadjustment);
+        }
+
+      if (hadjustment)
+        {
+          g_object_ref (hadjustment);
+          g_signal_connect (hadjustment, "notify::value",
+                            G_CALLBACK (adjustment_value_notify_cb),
+                            scrollable);
+        }
+
+      priv->hadjustment = hadjustment;
+    }
+
+  if (vadjustment != priv->vadjustment)
+    {
+      if (priv->vadjustment)
+        {
+          g_signal_handlers_disconnect_by_func (priv->vadjustment,
+                                                adjustment_value_notify_cb,
+                                                scrollable);
+          g_object_unref (priv->vadjustment);
+        }
+
+      if (vadjustment)
+        {
+          g_object_ref (vadjustment);
+          g_signal_connect (vadjustment, "notify::value",
+                            G_CALLBACK (adjustment_value_notify_cb),
+                            scrollable);
+        }
+
+      priv->vadjustment = vadjustment;
+    }
+}
+
+static void
+scrollable_get_adjustments (NbtkScrollable *scrollable,
+                            NbtkAdjustment **hadjustment,
+                            NbtkAdjustment **vadjustment)
+{
+  NbtkGridPrivate *priv;
+  ClutterActor *actor, *stage;
+
+  g_return_if_fail (NBTK_IS_GRID (scrollable));
+
+  priv = ((NbtkGrid *) scrollable)->priv;
+
+  actor = CLUTTER_ACTOR (scrollable);
+  stage = clutter_actor_get_stage (actor);
+  if (G_UNLIKELY (stage == NULL))
+    stage = clutter_stage_get_default ();
+
+  if (hadjustment)
+    {
+      if (priv->hadjustment)
+        *hadjustment = priv->hadjustment;
+      else
+        {
+          NbtkAdjustment *adjustment;
+          gdouble width, stage_width, increment;
+
+          width = CLUTTER_UNITS_TO_FLOAT (clutter_actor_get_widthu (actor));
+          stage_width = CLUTTER_UNITS_TO_FLOAT (clutter_actor_get_widthu (stage));
+          increment = MAX (1.0, MIN (stage_width, width));
+
+          adjustment = nbtk_adjustment_new (0,
+                                            0,
+                                            width,
+                                            1.0,
+                                            increment,
+                                            increment);
+
+          scrollable_set_adjustments (scrollable,
+                                      adjustment,
+                                      priv->vadjustment);
+
+          *hadjustment = adjustment;
+        }
+    }
+
+  if (vadjustment)
+    {
+      if (priv->vadjustment)
+        *vadjustment = priv->vadjustment;
+      else
+        {
+          NbtkAdjustment *adjustment;
+          gdouble height, stage_height, increment;
+
+          height = CLUTTER_UNITS_TO_FLOAT (clutter_actor_get_heightu (actor));
+          stage_height = CLUTTER_UNITS_TO_FLOAT (clutter_actor_get_heightu (stage));
+          increment = MAX (1.0, MIN (stage_height, height));
+
+          adjustment = nbtk_adjustment_new (0,
+                                            0,
+                                            height,
+                                            1.0,
+                                            increment,
+                                            increment);
+
+          scrollable_set_adjustments (scrollable,
+                                      priv->hadjustment,
+                                      adjustment);
+
+          *vadjustment = adjustment;
+        }
+    }
+}
+
+static void
+scrollable_interface_init (NbtkScrollableInterface *iface)
+{
+  iface->set_adjustments = scrollable_set_adjustments;
+  iface->get_adjustments = scrollable_get_adjustments;
+}
 
 static void
 nbtk_grid_class_init (NbtkGridClass *klass)
@@ -246,6 +398,13 @@ nbtk_grid_class_init (NbtkGridClass *klass)
                                           0.0, 1.0, 0.0,
                                           G_PARAM_READWRITE|G_PARAM_CONSTRUCT));
 
+  g_object_class_override_property (gobject_class,
+                                    PROP_HADJUST,
+                                    "hadjustment");
+
+  g_object_class_override_property (gobject_class,
+                                    PROP_VADJUST,
+                                    "vadjustment");
 }
 
 static void
@@ -481,6 +640,16 @@ nbtk_grid_set_property (GObject      *object,
     case PROP_HALIGN:
       nbtk_grid_set_halign (grid, g_value_get_double (value));
       break;
+    case PROP_HADJUST :
+      scrollable_set_adjustments (NBTK_SCROLLABLE (object),
+                                  g_value_get_object (value),
+                                  priv->vadjustment);
+      break;
+    case PROP_VADJUST :
+      scrollable_set_adjustments (NBTK_SCROLLABLE (object),
+                                  priv->hadjustment,
+                                  g_value_get_object (value));
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -493,6 +662,7 @@ nbtk_grid_get_property (GObject    *object,
                         GValue     *value,
                         GParamSpec *pspec)
 {
+  NbtkAdjustment *adjustment;
   NbtkGrid *grid = NBTK_GRID (object);
 
   NbtkGridPrivate *priv;
@@ -524,6 +694,14 @@ nbtk_grid_get_property (GObject    *object,
       break;
     case PROP_HALIGN:
       g_value_set_double (value, nbtk_grid_get_halign (grid));
+      break;
+    case PROP_HADJUST :
+      scrollable_get_adjustments (NBTK_SCROLLABLE (grid), &adjustment, NULL);
+      g_value_set_object (value, adjustment);
+      break;
+    case PROP_VADJUST :
+      scrollable_get_adjustments (NBTK_SCROLLABLE (grid), NULL, &adjustment);
+      g_value_set_object (value, adjustment);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -637,19 +815,49 @@ nbtk_grid_paint (ClutterActor *actor)
   NbtkGrid *layout = (NbtkGrid *) actor;
   NbtkGridPrivate *priv = layout->priv;
   GList *child_item;
+  gfloat x, y;
+  ClutterActorBox grid_b;
+
+  if (priv->hadjustment)
+    x = nbtk_adjustment_get_value (priv->hadjustment);
+  else
+    x = 0;
+
+  if (priv->vadjustment)
+    y = nbtk_adjustment_get_value (priv->vadjustment);
+  else
+    y = 0;
+
+  cogl_translate ((int) x * -1, (int) y * -1, 0);
 
   CLUTTER_ACTOR_CLASS (nbtk_grid_parent_class)->paint (actor);
+
+  clutter_actor_get_allocation_box (actor, &grid_b);
+  grid_b.x2 = (grid_b.x2 - grid_b.x1) + x;
+  grid_b.x1 = 0;
+  grid_b.y2 = (grid_b.y2 - grid_b.y1) + y;
+  grid_b.y1 = 0;
 
   for (child_item = priv->list;
        child_item != NULL;
        child_item = child_item->next)
     {
       ClutterActor *child = child_item->data;
+      ClutterActorBox child_b;
 
       g_assert (child != NULL);
 
-      if (CLUTTER_ACTOR_IS_VISIBLE (child))
-        clutter_actor_paint (child);
+      /* ensure the child is "on screen" */
+      clutter_actor_get_allocation_box (CLUTTER_ACTOR (child), &child_b);
+
+      if ((child_b.x1 < grid_b.x2)
+          && (child_b.x2 > grid_b.x1)
+          && (child_b.y1 < grid_b.y2)
+          && (child_b.y2 > grid_b.y1)
+          && CLUTTER_ACTOR_IS_VISIBLE (child))
+        {
+          clutter_actor_paint (child);
+        }
     }
 
 }
@@ -880,8 +1088,10 @@ nbtk_grid_do_allocate (ClutterActor          *self,
   /* chain up to set actor->allocation */
   if (!calculate_extents_only)
     {
+      /*
       CLUTTER_ACTOR_CLASS (nbtk_grid_parent_class)
         ->allocate (self, box, absolute_origin_changed);
+        */
 
       /* Make sure we have calculated the preferred size */
       /* what does this do? */
@@ -1066,6 +1276,44 @@ nbtk_grid_allocate (ClutterActor          *self,
                     const ClutterActorBox *box,
                     gboolean               absolute_origin_changed)
 {
-  nbtk_grid_do_allocate (self, box, absolute_origin_changed, FALSE, NULL, NULL);
+  NbtkGridPrivate *priv = NBTK_GRID (self)->priv;
+  ClutterActorBox alloc_box = *box;
+  ClutterUnit height;
+
+      CLUTTER_ACTOR_CLASS (nbtk_grid_parent_class)
+        ->allocate (self, box, absolute_origin_changed);
+
+      /* get sizes */
+  nbtk_grid_do_allocate (self,
+                         &alloc_box,
+                         absolute_origin_changed,
+                         TRUE,
+                         NULL,
+                         &height);
+
+  /* do vadjustment first to give it priority - we don't really want
+   * horizontal scrolling */
+  if (priv->vadjustment)
+    {
+      gdouble prev_value;
+
+      alloc_box.y2 = alloc_box.y1 + height;
+
+          g_object_set (G_OBJECT (priv->vadjustment),
+                       "lower", 0.0,
+                       "upper", height,
+                       "page-size", (double) box->y2 - box->y1,
+                       NULL);
+          prev_value = nbtk_adjustment_get_value (priv->vadjustment);
+          nbtk_adjustment_set_value (priv->vadjustment, prev_value);
+    }
+
+
+  nbtk_grid_do_allocate (self,
+                         &alloc_box,
+                         absolute_origin_changed,
+                         FALSE,
+                         NULL,
+                         NULL);
 }
 

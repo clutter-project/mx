@@ -23,6 +23,7 @@ noinst_PROGRAMS = 		\
 	test-padding 		\
 	test-border-image	\
 	test-scroll-bar		\
+	test-scroll-grid	\
 	test-scroll-view-2	\
 	test-scroll-view-3	\
 	test-viewport
@@ -43,6 +44,7 @@ test_border_image_SOURCES = test-border-image.c
 test_container_matching_SOURCES = test-container-matching.c
 
 test_scroll_bar_SOURCES = test-scroll-bar.c
+test_scroll_grid_SOURCES = test-scroll-grid.c
 test_scroll_view_2_SOURCES = test-scroll-view-2.c
 test_scroll_view_3_SOURCES = test-scroll-view-3.c
 test_viewport_SOURCES = test-viewport.c

@@ -133,8 +133,8 @@ nbtk_scroll_view_paint (ClutterActor *actor)
 
   CLUTTER_ACTOR_CLASS (nbtk_scroll_view_parent_class)->paint (actor);
 
-  if (priv->child && CLUTTER_ACTOR_IS_VISIBLE (priv->child))
-    clutter_actor_paint (priv->child);
+//  if (priv->child && CLUTTER_ACTOR_IS_VISIBLE (priv->child))
+//    clutter_actor_paint (priv->child);
   if (CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
     clutter_actor_paint (priv->hscroll);
   if (CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll))
@@ -145,7 +145,7 @@ static void
 nbtk_scroll_view_pick (ClutterActor *actor, const ClutterColor *color)
 {
   /* Chain up so we get a bounding box pained (if we are reactive) */
-  CLUTTER_ACTOR_CLASS (nbtk_scroll_view_parent_class)->pick (actor, color);
+  // CLUTTER_ACTOR_CLASS (nbtk_scroll_view_parent_class)->pick (actor, color);
 
   /* Trigger pick on children */
   nbtk_scroll_view_paint (actor);
@@ -254,8 +254,8 @@ nbtk_scroll_view_allocate (ClutterActor          *actor,
   NbtkScrollViewPrivate *priv = NBTK_SCROLL_VIEW (actor)->priv;
 
   /* Chain up */
-  CLUTTER_ACTOR_CLASS (nbtk_scroll_view_parent_class)->
-    allocate (actor, box, absolute_origin_changed);
+  //CLUTTER_ACTOR_CLASS (nbtk_scroll_view_parent_class)->
+  //  allocate (actor, box, absolute_origin_changed);
 
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 
