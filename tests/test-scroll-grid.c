@@ -40,7 +40,7 @@ main (int argc, char *argv[])
   clutter_container_add_actor (CLUTTER_CONTAINER (scroll),
                                CLUTTER_ACTOR (grid));
 
-  for (i = 1; i <= 100; i++)
+  for (i = 1; i <= 200; i++)
     {
       NbtkWidget *button;
       gchar *label;
