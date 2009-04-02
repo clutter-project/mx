@@ -1085,19 +1085,6 @@ nbtk_grid_do_allocate (ClutterActor          *self,
 
   GList *iter;
 
-  /* chain up to set actor->allocation */
-  if (!calculate_extents_only)
-    {
-      /*
-      CLUTTER_ACTOR_CLASS (nbtk_grid_parent_class)
-        ->allocate (self, box, absolute_origin_changed);
-        */
-
-      /* Make sure we have calculated the preferred size */
-      /* what does this do? */
-      clutter_actor_get_preferred_size (self, NULL, NULL, NULL, NULL);
-    }
-
   priv->alloc_width = box->x2 - box->x1 - padding.left - padding.right;
   priv->alloc_height = box->y2 - box->y1 - padding.top - padding.bottom;
   priv->absolute_origin_changed = absolute_origin_changed;
@@ -1280,32 +1267,36 @@ nbtk_grid_allocate (ClutterActor          *self,
   ClutterActorBox alloc_box = *box;
   ClutterUnit height;
 
-      CLUTTER_ACTOR_CLASS (nbtk_grid_parent_class)
-        ->allocate (self, box, absolute_origin_changed);
+  /* chain up here to preserve the allocated size
+   *
+   * (we ignore the height of the allocation if we have a vadjustment set)
+   */
+  CLUTTER_ACTOR_CLASS (nbtk_grid_parent_class)
+    ->allocate (self, box, absolute_origin_changed);
 
-      /* get sizes */
-  nbtk_grid_do_allocate (self,
-                         &alloc_box,
-                         absolute_origin_changed,
-                         TRUE,
-                         NULL,
-                         &height);
 
-  /* do vadjustment first to give it priority - we don't really want
-   * horizontal scrolling */
+  /* only update vadjustment - we don't really want horizontal scrolling */
   if (priv->vadjustment)
     {
       gdouble prev_value;
 
+      /* get preferred height for this width */
+      nbtk_grid_do_allocate (self,
+                             &box,
+                             absolute_origin_changed,
+                             TRUE,
+                             NULL,
+                             &height);
       alloc_box.y2 = alloc_box.y1 + height;
 
-          g_object_set (G_OBJECT (priv->vadjustment),
-                       "lower", 0.0,
-                       "upper", height,
-                       "page-size", (double) box->y2 - box->y1,
-                       NULL);
-          prev_value = nbtk_adjustment_get_value (priv->vadjustment);
-          nbtk_adjustment_set_value (priv->vadjustment, prev_value);
+      g_object_set (G_OBJECT (priv->vadjustment),
+                   "lower", 0.0,
+                   "upper", height,
+                   "page-size", (double) box->y2 - box->y1,
+                   NULL);
+
+      prev_value = nbtk_adjustment_get_value (priv->vadjustment);
+      nbtk_adjustment_set_value (priv->vadjustment, prev_value);
     }
 
 
