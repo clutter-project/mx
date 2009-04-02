@@ -131,10 +131,10 @@ nbtk_scroll_view_paint (ClutterActor *actor)
 {
   NbtkScrollViewPrivate *priv = NBTK_SCROLL_VIEW (actor)->priv;
 
+  /* NbtkBin will paint the child */
   CLUTTER_ACTOR_CLASS (nbtk_scroll_view_parent_class)->paint (actor);
 
-//  if (priv->child && CLUTTER_ACTOR_IS_VISIBLE (priv->child))
-//    clutter_actor_paint (priv->child);
+  /* paint our custom children */
   if (CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
     clutter_actor_paint (priv->hscroll);
   if (CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll))
@@ -144,11 +144,16 @@ nbtk_scroll_view_paint (ClutterActor *actor)
 static void
 nbtk_scroll_view_pick (ClutterActor *actor, const ClutterColor *color)
 {
-  /* Chain up so we get a bounding box pained (if we are reactive) */
-  // CLUTTER_ACTOR_CLASS (nbtk_scroll_view_parent_class)->pick (actor, color);
+  NbtkScrollViewPrivate *priv = NBTK_SCROLL_VIEW (actor)->priv;
 
-  /* Trigger pick on children */
-  nbtk_scroll_view_paint (actor);
+  /* Chain up so we get a bounding box pained (if we are reactive) */
+  CLUTTER_ACTOR_CLASS (nbtk_scroll_view_parent_class)->pick (actor, color);
+
+  /* paint our custom children */
+  if (CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
+    clutter_actor_paint (priv->hscroll);
+  if (CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll))
+    clutter_actor_paint (priv->vscroll);
 }
 
 static void
@@ -250,12 +255,22 @@ nbtk_scroll_view_allocate (ClutterActor          *actor,
   ClutterActorBox child_box;
   guint xthickness, ythickness;
   ClutterUnit xthicknessu, ythicknessu;
+  ClutterActorClass *parent_parent_class;
 
   NbtkScrollViewPrivate *priv = NBTK_SCROLL_VIEW (actor)->priv;
 
-  /* Chain up */
-  //CLUTTER_ACTOR_CLASS (nbtk_scroll_view_parent_class)->
-  //  allocate (actor, box, absolute_origin_changed);
+  /* Chain up to the parent's parent class
+   *
+   * We do this because we do not want NbtkBin to allocate the child, as we
+   * give it a different allocation later, depending on whether the scrollbars
+   * are visible
+   */
+  parent_parent_class
+    = g_type_class_peek_parent (nbtk_scroll_view_parent_class);
+
+  CLUTTER_ACTOR_CLASS (parent_parent_class)->
+    allocate (actor, box, absolute_origin_changed);
+
 
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 
