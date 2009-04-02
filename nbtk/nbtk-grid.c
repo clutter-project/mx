@@ -1267,11 +1267,14 @@ nbtk_grid_allocate (ClutterActor          *self,
 
       /* get preferred height for this width */
       nbtk_grid_do_allocate (self,
-                             &box,
+                             box,
                              absolute_origin_changed,
                              TRUE,
                              NULL,
                              &height);
+      /* set our allocated height to be the preferred height, since we will be
+       * scrolling
+       */
       alloc_box.y2 = alloc_box.y1 + height;
 
       g_object_set (G_OBJECT (priv->vadjustment),
