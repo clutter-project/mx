@@ -114,11 +114,6 @@ G_DEFINE_TYPE_WITH_CODE (NbtkGrid, nbtk_grid,
 
 struct _NbtkGridPrivate
 {
-  ClutterUnit for_height,  for_width;
-  ClutterUnit pref_width,  pref_height;
-  ClutterUnit alloc_width, alloc_height;
-
-  gboolean    absolute_origin_changed;
   GHashTable *hash_table;
   GList      *list;
 
@@ -899,9 +894,6 @@ nbtk_grid_get_preferred_width (ClutterActor *self,
     *min_width_p = actual_width;
   if (natural_width_p)
     *natural_width_p = actual_width;
-
-  priv->for_height = for_height;
-  priv->pref_width = actual_width;
 }
 
 static void
@@ -927,9 +919,6 @@ nbtk_grid_get_preferred_height (ClutterActor *self,
     *min_height_p = actual_height;
   if (natural_height_p)
     *natural_height_p = actual_height;
-
-  priv->for_width = for_width;
-  priv->pref_height = actual_height;
 }
 
 static ClutterUnit
@@ -1085,13 +1074,9 @@ nbtk_grid_do_allocate (ClutterActor          *self,
 
   GList *iter;
 
-  priv->alloc_width = box->x2 - box->x1 - padding.left - padding.right;
-  priv->alloc_height = box->y2 - box->y1 - padding.top - padding.bottom;
-  priv->absolute_origin_changed = absolute_origin_changed;
-
   if (priv->column_major)
     {
-      priv->a_wrap = priv->alloc_height;
+      priv->a_wrap = box->y2 - box->y1 - padding.top - padding.bottom;
       homogenous_b = priv->homogenous_columns;
       homogenous_a = priv->homogenous_rows;
       aalign = priv->valign;
@@ -1101,7 +1086,7 @@ nbtk_grid_do_allocate (ClutterActor          *self,
     }
   else
     {
-      priv->a_wrap = priv->alloc_width;
+      priv->a_wrap = box->x2 - box->x1 - padding.left - padding.right;
       homogenous_a = priv->homogenous_columns;
       homogenous_b = priv->homogenous_rows;
       aalign = priv->halign;
