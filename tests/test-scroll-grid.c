@@ -23,6 +23,15 @@ swap_orientation (ClutterActor *button,
                               !nbtk_grid_get_column_major (grid));
 }
 
+static void
+set_max_stride (ClutterActor    *actor,
+                ClutterKeyEvent *event,
+                NbtkGrid        *grid)
+{
+  nbtk_grid_set_max_stride (grid, event->keyval - 48);
+  g_printf ("Max Stride: %d\n", event->keyval - 48);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -71,6 +80,8 @@ main (int argc, char *argv[])
                     G_CALLBACK (stage_size_notify_cb), scroll);
   g_signal_connect (stage, "notify::height",
                     G_CALLBACK (stage_size_notify_cb), scroll);
+  g_signal_connect (stage, "key-release-event",
+                    G_CALLBACK (set_max_stride), grid);
   clutter_actor_show (stage);
   clutter_main ();
 
