@@ -98,7 +98,11 @@ struct _NbtkEntryPrivate
 
 static guint entry_signals[LAST_SIGNAL] = { 0, };
 
-G_DEFINE_TYPE (NbtkEntry, nbtk_entry, NBTK_TYPE_WIDGET);
+static void nbtk_stylable_iface_init (NbtkStylableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE (NbtkEntry, nbtk_entry, NBTK_TYPE_WIDGET,
+                         G_IMPLEMENT_INTERFACE (NBTK_TYPE_STYLABLE,
+                                                nbtk_stylable_iface_init));
 
 static void
 nbtk_entry_set_property (GObject      *gobject,
@@ -169,10 +173,41 @@ nbtk_entry_finalize (GObject *object)
 }
 
 static void
+nbtk_stylable_iface_init (NbtkStylableIface *iface)
+{
+  static gboolean is_initialized = FALSE;
+
+  if (!is_initialized)
+    {
+      GParamSpec *pspec;
+      static const ClutterColor default_color
+        = { 0x0, 0x9c, 0xcf, 0xff };
+
+      is_initialized = TRUE;
+
+      pspec = clutter_param_spec_color ("caret-color",
+                                        "Caret Color",
+                                        "Color of the entry's caret",
+                                        &default_color,
+                                        G_PARAM_READWRITE);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_ENTRY, pspec);
+
+      pspec = clutter_param_spec_color ("selection-background-color",
+                                        "Selection Background Color",
+                                        "Color of the entry's selection",
+                                        &default_color,
+                                        G_PARAM_READWRITE);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_ENTRY, pspec);
+    }
+}
+
+static void
 nbtk_entry_style_changed (NbtkWidget *self)
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (self);
   ClutterColor *color = NULL;
+  ClutterColor *caret_color = NULL;
+  ClutterColor *selection_background_color = NULL;
   gchar *font_name;
   gchar *font_string;
   gint font_size;
@@ -182,6 +217,8 @@ nbtk_entry_style_changed (NbtkWidget *self)
 
   nbtk_stylable_get (NBTK_STYLABLE (self),
                      "color", &color,
+                     "caret-color", &caret_color,
+                     "selection-background-color", &selection_background_color,
                      "font-family", &font_name,
                      "font-size", &font_size,
                      NULL);
@@ -190,6 +227,19 @@ nbtk_entry_style_changed (NbtkWidget *self)
     {
       clutter_text_set_color (CLUTTER_TEXT (priv->entry), color);
       clutter_color_free (color);
+    }
+
+  if (caret_color)
+    {
+      clutter_text_set_cursor_color (CLUTTER_TEXT (priv->entry), caret_color);
+      clutter_color_free (caret_color);
+    }
+
+  if (selection_background_color)
+    {
+      clutter_text_set_selection_color (CLUTTER_TEXT (priv->entry),
+                                        selection_background_color);
+      clutter_color_free (selection_background_color);
     }
 
   if (font_name || font_size)
@@ -527,7 +577,6 @@ static void
 nbtk_entry_init (NbtkEntry *entry)
 {
   NbtkEntryPrivate *priv;
-  ClutterColor cursor = { 0x0, 0x9c, 0xcf, 0xff };
 
   priv = entry->priv = NBTK_ENTRY_GET_PRIVATE (entry);
 
@@ -536,7 +585,6 @@ nbtk_entry_init (NbtkEntry *entry)
                               "activatable", TRUE,
                               "editable", TRUE,
                               "reactive", TRUE,
-                              "cursor-color", &cursor,
                               "single-line-mode", TRUE,
                               NULL);
 
