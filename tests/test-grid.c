@@ -265,7 +265,7 @@ main (int argc, char **argv)
     ClutterActor *layout = g_object_new (NBTK_TYPE_GRID,
                                          "x", 5,
                                          "y", 5,
-                                         "width", 0,
+                                         "max-stride", 1,
                                          NULL);
     clutter_container_add (CLUTTER_CONTAINER (data.stage), layout, NULL);
     fill_container (layout);
@@ -276,7 +276,7 @@ main (int argc, char **argv)
     ClutterActor *layout = g_object_new (NBTK_TYPE_GRID,
                                          "x", 500,
                                          "y", 5,
-                                         "width", 0,
+                                         "max-stride", 1,
                                          "halign", 0.5,
                                          "homogenous-columns", TRUE,
                                          NULL);
@@ -290,7 +290,7 @@ main (int argc, char **argv)
     ClutterActor *layout = g_object_new (NBTK_TYPE_GRID,
                                          "x",      60,
                                          "y",      5,
-                                         "height", 0,
+                                         "max-stride", 1,
                                          "column-major", TRUE,
                                          NULL);
     clutter_container_add (CLUTTER_CONTAINER (data.stage), layout, NULL);
@@ -302,7 +302,7 @@ main (int argc, char **argv)
                                          "x",       60,
                                          "y",       420,
                                          "valign",  1.0,
-                                         "width",   6550,
+                                         "max-stride", 1,
                                          "column-gap", CLUTTER_UNITS_FROM_INT(4),
                                          NULL);
     clutter_container_add (CLUTTER_CONTAINER (data.stage), layout, NULL);
