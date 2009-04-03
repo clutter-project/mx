@@ -73,23 +73,23 @@ nbtk_grid_free_actor_data (gpointer data);
 static void nbtk_grid_paint (ClutterActor *actor);
 
 static void nbtk_grid_pick (ClutterActor *actor,
-                                       const ClutterColor *color);
+                            const ClutterColor *color);
 
 static void
 nbtk_grid_get_preferred_width (ClutterActor *self,
-                                         ClutterUnit for_height,
-                                         ClutterUnit *min_width_p,
-                                         ClutterUnit *natural_width_p);
+                               ClutterUnit for_height,
+                               ClutterUnit *min_width_p,
+                               ClutterUnit *natural_width_p);
 
 static void
 nbtk_grid_get_preferred_height (ClutterActor *self,
-                                           ClutterUnit for_width,
-                                           ClutterUnit *min_height_p,
-                                           ClutterUnit *natural_height_p);
+                                ClutterUnit for_width,
+                                ClutterUnit *min_height_p,
+                                ClutterUnit *natural_height_p);
 
 static void nbtk_grid_allocate (ClutterActor *self,
-                                           const ClutterActorBox *box,
-                                           gboolean absolute_origin_changed);
+                                const ClutterActorBox *box,
+                                gboolean absolute_origin_changed);
 
 static void
 nbtk_grid_do_allocate (ClutterActor *self,
@@ -773,8 +773,8 @@ nbtk_grid_real_remove (ClutterContainer *container,
 
 static void
 nbtk_grid_real_foreach (ClutterContainer *container,
-                                   ClutterCallback callback,
-                                   gpointer user_data)
+                        ClutterCallback callback,
+                        gpointer user_data)
 {
   NbtkGrid *layout = NBTK_GRID (container);
   NbtkGridPrivate *priv = layout->priv;
@@ -784,16 +784,16 @@ nbtk_grid_real_foreach (ClutterContainer *container,
 
 static void
 nbtk_grid_real_raise (ClutterContainer *container,
-                                 ClutterActor *actor,
-                                 ClutterActor *sibling)
+                      ClutterActor *actor,
+                      ClutterActor *sibling)
 {
   /* STUB */
 }
 
 static void
 nbtk_grid_real_lower (ClutterContainer *container,
-                                 ClutterActor *actor,
-                                 ClutterActor *sibling)
+                      ClutterActor *actor,
+                      ClutterActor *sibling)
 {
   /* STUB */
 }
@@ -859,7 +859,7 @@ nbtk_grid_paint (ClutterActor *actor)
 
 static void
 nbtk_grid_pick (ClutterActor *actor,
-                           const ClutterColor *color)
+                const ClutterColor *color)
 {
   /* Chain up so we get a bounding box pained (if we are reactive) */
   CLUTTER_ACTOR_CLASS (nbtk_grid_parent_class)->pick (actor, color);
@@ -873,20 +873,20 @@ nbtk_grid_pick (ClutterActor *actor,
 
 static void
 nbtk_grid_get_preferred_width (ClutterActor *self,
-                                          ClutterUnit for_height,
-                                          ClutterUnit *min_width_p,
-                                          ClutterUnit *natural_width_p)
+                               ClutterUnit for_height,
+                               ClutterUnit *min_width_p,
+                               ClutterUnit *natural_width_p)
 {
   NbtkGrid *layout = (NbtkGrid *) self;
   NbtkGridPrivate *priv = layout->priv;
   ClutterUnit actual_width, actual_height;
   ClutterActorBox box;
-  
+
   box.x1 = 0;
   box.y1 = 0;
   box.x2 = CLUTTER_MAXUNIT;
   box.y2 = for_height;
-  
+
   nbtk_grid_do_allocate (self, &box, FALSE,
                          TRUE, &actual_width, &actual_height);
 
@@ -898,20 +898,20 @@ nbtk_grid_get_preferred_width (ClutterActor *self,
 
 static void
 nbtk_grid_get_preferred_height (ClutterActor *self,
-                                ClutterUnit for_width,
-                                ClutterUnit *min_height_p,
-                                ClutterUnit *natural_height_p)
+                                ClutterUnit   for_width,
+                                ClutterUnit  *min_height_p,
+                                ClutterUnit  *natural_height_p)
 {
   NbtkGrid *layout = (NbtkGrid *) self;
   NbtkGridPrivate *priv = layout->priv;
   ClutterUnit actual_width, actual_height;
   ClutterActorBox box;
-  
+
   box.x1 = 0;
   box.y1 = 0;
   box.x2 = for_width;
   box.y2 = CLUTTER_MAXUNIT;
-  
+
   nbtk_grid_do_allocate (self, &box, FALSE,
                          TRUE, &actual_width, &actual_height);
 
@@ -922,9 +922,9 @@ nbtk_grid_get_preferred_height (ClutterActor *self,
 }
 
 static ClutterUnit
-compute_row_height (GList                    *siblings,
-                    ClutterUnit               best_yet,
-                    ClutterUnit               current_a,
+compute_row_height (GList           *siblings,
+                    ClutterUnit      best_yet,
+                    ClutterUnit      current_a,
                     NbtkGridPrivate *priv)
 {
   GList *l;
