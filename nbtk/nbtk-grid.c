@@ -1250,20 +1250,22 @@ nbtk_grid_allocate (ClutterActor          *self,
 {
   NbtkGridPrivate *priv = NBTK_GRID (self)->priv;
   ClutterActorBox alloc_box = *box;
-  ClutterUnit height;
 
   /* chain up here to preserve the allocated size
    *
-   * (we ignore the height of the allocation if we have a vadjustment set)
+   * (we ignore the height of the allocation if we have a vadjustment set,
+   *  or the width of the allocation if an column_major is set and an
+   *  hadjustment is set)
    */
   CLUTTER_ACTOR_CLASS (nbtk_grid_parent_class)
     ->allocate (self, box, absolute_origin_changed);
 
 
   /* only update vadjustment - we don't really want horizontal scrolling */
-  if (priv->vadjustment)
+  if (priv->vadjustment && !priv->column_major)
     {
       gdouble prev_value;
+      ClutterUnit height;
 
       /* get preferred height for this width */
       nbtk_grid_do_allocate (self,
@@ -1280,11 +1282,55 @@ nbtk_grid_allocate (ClutterActor          *self,
       g_object_set (G_OBJECT (priv->vadjustment),
                    "lower", 0.0,
                    "upper", height,
-                   "page-size", (double) box->y2 - box->y1,
+                   "page-size", box->y2 - box->y1,
+                   "step-increment", (box->y2 - box->y1) / 6,
                    NULL);
+
+      if (priv->hadjustment)
+        {
+          g_object_set (G_OBJECT (priv->hadjustment),
+                        "lower", 0.0,
+                        "upper", 0,
+                        NULL);;
+        }
 
       prev_value = nbtk_adjustment_get_value (priv->vadjustment);
       nbtk_adjustment_set_value (priv->vadjustment, prev_value);
+    }
+  if (priv->hadjustment && priv->column_major)
+    {
+      gdouble prev_value;
+      ClutterUnit width;
+
+      /* get preferred width for this height */
+      nbtk_grid_do_allocate (self,
+                             box,
+                             absolute_origin_changed,
+                             TRUE,
+                             &width,
+                             NULL);
+      /* set our allocated height to be the preferred height, since we will be
+       * scrolling
+       */
+      alloc_box.x2 = alloc_box.x1 + width;
+
+      g_object_set (G_OBJECT (priv->hadjustment),
+                   "lower", 0.0,
+                   "upper", width,
+                   "page-size", box->x2 - box->x1,
+                   "step-increment", (box->x2 - box->x1) / 6,
+                   NULL);
+
+      if (priv->vadjustment)
+        {
+          g_object_set (G_OBJECT (priv->vadjustment),
+                        "lower", 0.0,
+                        "upper", 0,
+                        NULL);;
+        }
+
+      prev_value = nbtk_adjustment_get_value (priv->hadjustment);
+      nbtk_adjustment_set_value (priv->hadjustment, prev_value);
     }
 
 
