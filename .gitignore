@@ -89,6 +89,7 @@ tests/test-label
 tests/test-padding
 tests/test-script
 tests/test-scroll-bar
+tests/test-scroll-grid
 tests/test-scroll-view
 tests/test-scroll-view-2
 tests/test-scroll-view-3
