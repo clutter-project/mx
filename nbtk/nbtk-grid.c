@@ -302,6 +302,7 @@ nbtk_grid_class_init (NbtkGridClass *klass)
 {
   GObjectClass *gobject_class = (GObjectClass *) klass;
   ClutterActorClass *actor_class = (ClutterActorClass *) klass;
+  GParamSpec *pspec;
 
   gobject_class->dispose = nbtk_grid_dispose;
   gobject_class->finalize = nbtk_grid_finalize;
@@ -318,80 +319,68 @@ nbtk_grid_class_init (NbtkGridClass *klass)
   g_type_class_add_private (klass, sizeof (NbtkGridPrivate));
 
 
-  g_object_class_install_property
-                   (gobject_class,
-                    PROP_ROW_GAP,
-                    clutter_param_spec_unit ("row-gap",
-                                             "Row gap",
-                                             "gap between rows in the layout",
-                                             0, CLUTTER_MAXUNIT,
-                                             0,
-                                             G_PARAM_READWRITE|G_PARAM_CONSTRUCT));
+  pspec = clutter_param_spec_unit ("row-gap",
+                                   "Row gap",
+                                   "gap between rows in the layout",
+                                   0, CLUTTER_MAXUNIT,
+                                   0,
+                                   G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
+  g_object_class_install_property (gobject_class, PROP_ROW_GAP, pspec);
 
-  g_object_class_install_property
-                   (gobject_class,
-                    PROP_COLUMN_GAP,
-                    clutter_param_spec_unit ("column-gap",
-                                             "Column gap",
-                                             "gap between columns in the layout",
-                                             0, CLUTTER_MAXUNIT,
-                                             0,
-                                             G_PARAM_READWRITE|G_PARAM_CONSTRUCT));
+  pspec = clutter_param_spec_unit ("column-gap",
+                                   "Column gap",
+                                   "gap between columns in the layout",
+                                   0, CLUTTER_MAXUNIT,
+                                   0,
+                                   G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
+  g_object_class_install_property (gobject_class, PROP_COLUMN_GAP, pspec);
 
 
-  g_object_class_install_property
-                   (gobject_class,
-                    PROP_HOMOGENOUS_ROWS,
-                    g_param_spec_boolean ("homogenous-rows",
-                                          "homogenous rows",
-                                          "Should all rows have the same height?",
-                                          FALSE,
-                                          G_PARAM_READWRITE|G_PARAM_CONSTRUCT));
+  pspec = g_param_spec_boolean ("homogenous-rows",
+                                "homogenous rows",
+                                "Should all rows have the same height?",
+                                FALSE,
+                                G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
+  g_object_class_install_property (gobject_class, PROP_HOMOGENOUS_ROWS, pspec);
 
-  g_object_class_install_property
-                   (gobject_class,
-                    PROP_HOMOGENOUS_COLUMNS,
-                    g_param_spec_boolean ("homogenous-columns",
-                                          "homogenous columns",
-                                          "Should all columns have the same height?",
-                                          FALSE,
-                                          G_PARAM_READWRITE|G_PARAM_CONSTRUCT));
+  pspec = g_param_spec_boolean ("homogenous-columns",
+                                "homogenous columns",
+                                "Should all columns have the same height?",
+                                FALSE,
+                                G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
+  g_object_class_install_property (gobject_class,
+                                   PROP_HOMOGENOUS_COLUMNS,
+                                   pspec);
 
-  g_object_class_install_property
-                   (gobject_class,
-                    PROP_COLUMN_MAJOR,
-                    g_param_spec_boolean ("column-major",
-                                          "column-major",
-                                          "Do a column filling first instead of row filling first",
-                                          FALSE,
-                                          G_PARAM_READWRITE|G_PARAM_CONSTRUCT));
+  pspec = g_param_spec_boolean ("column-major",
+                                "column-major",
+                                "Do a column filling first instead of row"
+                                " filling first",
+                                FALSE,
+                                G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
+  g_object_class_install_property (gobject_class, PROP_COLUMN_MAJOR, pspec);
 
-  g_object_class_install_property
-                   (gobject_class,
-                    PROP_END_ALIGN,
-                    g_param_spec_boolean ("end-align",
-                                          "end-align",
-                                          "Right/bottom aligned rows/columns",
-                                          FALSE,
-                                          G_PARAM_READWRITE|G_PARAM_CONSTRUCT));
+  pspec = g_param_spec_boolean ("end-align",
+                                "end-align",
+                                "Right/bottom aligned rows/columns",
+                                FALSE,
+                                G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
+  g_object_class_install_property (gobject_class, PROP_END_ALIGN, pspec);
 
-  g_object_class_install_property
-                   (gobject_class,
-                    PROP_VALIGN,
-                    g_param_spec_double ("valign",
-                                         "Vertical align",
-                                         "Vertical alignment of items within cells",
-                                          0.0, 1.0, 0.0,
-                                          G_PARAM_READWRITE|G_PARAM_CONSTRUCT));
 
-  g_object_class_install_property
-                   (gobject_class,
-                    PROP_HALIGN,
-                    g_param_spec_double ("halign",
-                                         "Horizontal align",
-                                         "Horizontal alignment of items within cells",
-                                          0.0, 1.0, 0.0,
-                                          G_PARAM_READWRITE|G_PARAM_CONSTRUCT));
+  pspec = g_param_spec_double ("valign",
+                               "Vertical align",
+                               "Vertical alignment of items within cells",
+                                0.0, 1.0, 0.0,
+                                G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
+  g_object_class_install_property (gobject_class,PROP_VALIGN, pspec);
+
+  pspec = g_param_spec_double ("halign",
+                               "Horizontal align",
+                               "Horizontal alignment of items within cells",
+                                0.0, 1.0, 0.0,
+                                G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
+  g_object_class_install_property (gobject_class, PROP_HALIGN, pspec);
 
   g_object_class_override_property (gobject_class,
                                     PROP_HADJUST,
