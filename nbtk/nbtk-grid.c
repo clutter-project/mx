@@ -130,6 +130,8 @@ struct _NbtkGridPrivate
   ClutterUnit max_extent_a;
   ClutterUnit max_extent_b;
 
+  gint        max_stride;
+
   NbtkAdjustment *hadjustment;
   NbtkAdjustment *vadjustment;
 };
@@ -146,7 +148,8 @@ enum
   PROP_END_ALIGN,
   PROP_COLUMN_MAJOR,
   PROP_HADJUST,
-  PROP_VADJUST
+  PROP_VADJUST,
+  PROP_MAX_STRIDE
 };
 
 struct _NbtkGridActorData
@@ -382,6 +385,14 @@ nbtk_grid_class_init (NbtkGridClass *klass)
                                 G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
   g_object_class_install_property (gobject_class, PROP_HALIGN, pspec);
 
+  pspec = g_param_spec_int ("max-stride",
+                            "Maximum stride",
+                            "Maximum number of rows or columns, depending"
+                            " on orientation",
+                             0, G_MAXINT, 0,
+                             G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
+  g_object_class_install_property (gobject_class, PROP_MAX_STRIDE, pspec);
+
   g_object_class_override_property (gobject_class,
                                     PROP_HADJUST,
                                     "hadjustment");
@@ -585,6 +596,23 @@ nbtk_grid_get_halign (NbtkGrid *self)
   return priv->halign;
 }
 
+void
+nbtk_grid_set_max_stride (NbtkGrid *self,
+                          gint      value)
+{
+  g_return_if_fail (NBTK_IS_GRID (self));
+
+  self->priv->max_stride = value;
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+}
+
+gint
+nbtk_grid_get_max_stride (NbtkGrid *self)
+{
+  g_return_if_fail (NBTK_IS_GRID (self));
+
+  return self->priv->max_stride;
+}
 
 static void
 nbtk_grid_set_property (GObject      *object,
@@ -633,6 +661,9 @@ nbtk_grid_set_property (GObject      *object,
       scrollable_set_adjustments (NBTK_SCROLLABLE (object),
                                   priv->hadjustment,
                                   g_value_get_object (value));
+      break;
+    case PROP_MAX_STRIDE:
+      nbtk_grid_set_max_stride (grid, g_value_get_int (value));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -687,6 +718,8 @@ nbtk_grid_get_property (GObject    *object,
       scrollable_get_adjustments (NBTK_SCROLLABLE (grid), NULL, &adjustment);
       g_value_set_object (value, adjustment);
       break;
+    case PROP_MAX_STRIDE:
+      g_value_set_int (value, nbtk_grid_get_max_stride (grid));
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -1050,6 +1083,7 @@ nbtk_grid_do_allocate (ClutterActor          *self,
   gboolean homogenous_b;
   gdouble  aalign;
   gdouble  balign;
+  int      current_stride;
 
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
@@ -1119,6 +1153,7 @@ nbtk_grid_do_allocate (ClutterActor          *self,
       priv->max_extent_b = temp;
     }
 
+  current_stride = 0;
   for (iter = priv->list; iter; iter=iter->next)
     {
       ClutterActor *child = iter->data;
@@ -1140,14 +1175,18 @@ nbtk_grid_do_allocate (ClutterActor          *self,
           natural_b = temp;
         }
 
-      /* if the child is overflowing, we wrap to next line */
-      if (current_a + natural_a > priv->a_wrap ||
-          (homogenous_a && current_a + priv->max_extent_a > priv->a_wrap))
+      /* if the child is overflowing, or the max-stride has been reached,
+       * we wrap to next line */
+      current_stride++;
+      if ((priv->max_stride > 0 && current_stride > priv->max_stride)
+          || (current_a + natural_a > priv->a_wrap
+              || (homogenous_a && current_a + priv->max_extent_a > priv->a_wrap)))
         {
           current_b = next_b + bgap;
           current_a = 0;
           next_b = current_b + bgap;
           priv->first_of_batch = TRUE;
+          current_stride = 1;
         }
 
       if (priv->end_align &&
