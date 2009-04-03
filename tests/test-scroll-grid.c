@@ -15,6 +15,14 @@ stage_size_notify_cb (ClutterActor *stage,
   clutter_actor_set_size (table, width, height);
 }
 
+static void
+swap_orientation (ClutterActor *button,
+                  NbtkGrid     *grid)
+{
+  nbtk_grid_set_column_major (grid,
+                              !nbtk_grid_get_column_major (grid));
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -50,6 +58,11 @@ main (int argc, char *argv[])
       button = nbtk_button_new_with_label (label);
       clutter_container_add_actor (CLUTTER_CONTAINER (grid),
                                    CLUTTER_ACTOR (button));
+      if (i == 1)
+        g_signal_connect (button,
+                          "clicked",
+                          G_CALLBACK (swap_orientation),
+                          grid);
 
       g_free (label);
     }
