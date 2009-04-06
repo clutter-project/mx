@@ -12,6 +12,7 @@ noinst_PROGRAMS = 		\
 	test-container-matching	\
 	test-label 		\
 	test-entry 		\
+	test-expander 		\
 	test-grid \
 	test-script  		\
 	test-styles  		\
@@ -38,6 +39,7 @@ test_tooltips_SOURCES = test-tooltips.c
 test_texture_frame_SOURCES = test-texture-frame.c
 test_label_SOURCES = test-label.c
 test_entry_SOURCES = test-entry.c
+test_expander_SOURCES = test-expander.c
 test_grid_SOURCES = test-grid.c
 test_padding_SOURCES = test-padding.c
 test_border_image_SOURCES = test-border-image.c

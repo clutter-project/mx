@@ -87,6 +87,13 @@ NbtkTable {
   padding: 10;
 }
 
+NbtkExpander {
+  color: #aee;
+  background-color: #ddd;
+  border-image: url('file://border-image.png') 12;
+  padding: 10;
+}
+
 NbtkTooltip {
   color: white;
   padding: 4 10 12 10;
