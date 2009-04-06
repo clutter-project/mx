@@ -82,9 +82,10 @@ nbtk_expander_button_release (ClutterActor       *actor,
 {
   NbtkExpanderPrivate *priv = NBTK_EXPANDER (actor)->priv;
   ClutterActor *child;
-  ClutterUnit label_h, child_h;
+  ClutterUnit label_h, child_h, available_w;
   ClutterAnimation *animation;
   NbtkPadding padding;
+  ClutterActorBox box;
 
   child = nbtk_bin_get_child (NBTK_BIN (actor));
 
@@ -92,9 +93,11 @@ nbtk_expander_button_release (ClutterActor       *actor,
     return;
 
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
+  clutter_actor_get_allocation_box (actor, &box);
+  available_w = box.x2 - box.x1 - padding.left - padding.right;
 
-  clutter_actor_get_preferred_height (priv->label, -1, NULL, &label_h);
-  clutter_actor_get_preferred_height (child, -1, NULL, &child_h);
+  clutter_actor_get_preferred_height (priv->label, available_w, NULL, &label_h);
+  clutter_actor_get_preferred_height (child, available_w, NULL, &child_h);
 
   /* stop any previous animation */
   if ((animation = clutter_actor_get_animation (actor)))
@@ -183,14 +186,17 @@ nbtk_expander_get_preferred_height (ClutterActor *actor,
   ClutterActor *child;
   NbtkPadding padding;
   ClutterUnit min_child_h, pref_child_h, min_label_h, pref_label_h;
+  ClutterUnit available_w;
 
   child = nbtk_bin_get_child (NBTK_BIN (actor));
+
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
+  available_w = for_width - padding.left - padding.right;
 
   if (child && CLUTTER_ACTOR_IS_VISIBLE (child))
     {
       clutter_actor_get_preferred_height (child,
-                                          -1,
+                                          available_w,
                                           &min_child_h,
                                           &pref_child_h);
       min_child_h += priv->spacing;
@@ -203,7 +209,7 @@ nbtk_expander_get_preferred_height (ClutterActor *actor,
     }
 
   clutter_actor_get_preferred_height (priv->label,
-                                      -1,
+                                      available_w,
                                       &min_label_h,
                                       &pref_label_h);
 
@@ -231,6 +237,8 @@ nbtk_expander_allocate (ClutterActor          *actor,
   ClutterUnit label_w, label_h;
   ClutterUnit child_h, child_w;
   ClutterActorClass *parent_parent;
+  ClutterUnit available_w, available_h, min_w, min_h;
+  ClutterRequestMode request;
 
   /* skip NbtkBin allocate */
   parent_parent = g_type_class_peek_parent (nbtk_expander_parent_class);
@@ -238,21 +246,55 @@ nbtk_expander_allocate (ClutterActor          *actor,
 
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 
+  available_w = (box->x2 - box->x1) - padding.left - padding.right;
+  available_h = (box->y2 - box->y1) - padding.top - padding.bottom;
+
   /* label */
-  clutter_actor_get_preferred_width (priv->label, -1, NULL, &label_w);
-  clutter_actor_get_preferred_height (priv->label, -1, NULL, &label_h);
+  min_h = 0;
+  min_w = 0;
+
+  clutter_actor_get_preferred_width (priv->label, available_h, &min_w, &label_w);
+  label_w = CLAMP (label_w, min_w, available_w);
+
+  clutter_actor_get_preferred_height (priv->label, label_w, &min_h, &label_h);
+  label_h = CLAMP (label_h, min_h, available_h);
+
   child_box.x1 = padding.left;
   child_box.x2 = child_box.x1 + label_w;
   child_box.y1 = padding.top;
   child_box.y2 = child_box.y2 + label_h;
   clutter_actor_allocate (priv->label, &child_box, origin_changed);
 
+  /* remove label height and spacing for child calculations */
+  available_h -= label_h - priv->spacing;
+
   /* child */
   child = nbtk_bin_get_child (NBTK_BIN (actor));
   if (child && CLUTTER_ACTOR_IS_VISIBLE (child))
     {
-      clutter_actor_get_preferred_width (child, -1, NULL, &child_w);
-      clutter_actor_get_preferred_height (child, -1, NULL, &child_h);
+      request = CLUTTER_REQUEST_HEIGHT_FOR_WIDTH;
+      g_object_get (G_OBJECT (child), "request-mode", &request, NULL);
+
+      min_h = 0;
+      min_w = 0;
+
+      if (request == CLUTTER_REQUEST_HEIGHT_FOR_WIDTH)
+        {
+          clutter_actor_get_preferred_width (child, available_h, &min_w, &child_w);
+          child_w = CLAMP (child_w, min_w, available_w);
+
+          clutter_actor_get_preferred_height (child, child_w, &min_h, &child_h);
+          child_h = CLAMP (child_h, min_h, available_h);
+        }
+      else if (request == CLUTTER_REQUEST_WIDTH_FOR_HEIGHT)
+        {
+          clutter_actor_get_preferred_height (child, available_w, &min_h, &child_h);
+          child_h = CLAMP (child_h, min_h, available_h);
+
+          clutter_actor_get_preferred_width (child, child_h, &min_w, &child_w);
+          child_w = CLAMP (child_w, min_w, available_w);
+        }
+
       child_box.x1 = padding.left;
       child_box.x2 = child_box.x1 + child_w;
       child_box.y1 = padding.top + priv->spacing + label_h;
