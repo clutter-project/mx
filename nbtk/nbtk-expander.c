@@ -237,8 +237,9 @@ nbtk_expander_allocate (ClutterActor          *actor,
   ClutterUnit label_w, label_h;
   ClutterUnit child_h, child_w;
   ClutterActorClass *parent_parent;
-  ClutterUnit available_w, available_h, min_w, min_h;
+  ClutterUnit available_w, available_h, min_w, min_h, full_h;
   ClutterRequestMode request;
+  ClutterActor *background;
 
   /* skip NbtkBin allocate */
   parent_parent = g_type_class_peek_parent (nbtk_expander_parent_class);
@@ -248,6 +249,9 @@ nbtk_expander_allocate (ClutterActor          *actor,
 
   available_w = (box->x2 - box->x1) - padding.left - padding.right;
   available_h = (box->y2 - box->y1) - padding.top - padding.bottom;
+
+  /* visual height of the expander - used for allocating the background */
+  full_h = padding.top + padding.bottom;
 
   /* label */
   min_h = 0;
@@ -264,6 +268,8 @@ nbtk_expander_allocate (ClutterActor          *actor,
   child_box.y1 = padding.top;
   child_box.y2 = child_box.y2 + label_h;
   clutter_actor_allocate (priv->label, &child_box, origin_changed);
+
+  full_h += label_h;
 
   /* remove label height and spacing for child calculations */
   available_h -= label_h - priv->spacing;
@@ -300,6 +306,20 @@ nbtk_expander_allocate (ClutterActor          *actor,
       child_box.y1 = padding.top + priv->spacing + label_h;
       child_box.y2 = child_box.y2 + child_h;
       clutter_actor_allocate (child, &child_box, origin_changed);
+
+      full_h += priv->spacing + child_h;
+    }
+
+  /* background */
+  background = nbtk_widget_get_border_image (NBTK_WIDGET (actor));
+  if (background)
+    {
+      child_box.x1 = 0;
+      child_box.x2 = (box->x2 - box->x1);
+      child_box.y1 = 0;
+      child_box.y2 = full_h;
+
+      clutter_actor_allocate (background, &child_box, origin_changed);
     }
 }
 
