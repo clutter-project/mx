@@ -80,6 +80,12 @@ void          nbtk_bin_set_alignment (NbtkBin           *bin,
 void          nbtk_bin_get_alignment (NbtkBin           *bin,
                                       NbtkAlignment     *x_align,
                                       NbtkAlignment     *y_align);
+void          nbtk_bin_set_fill      (NbtkBin           *bin,
+                                      gboolean           x_fill,
+                                      gboolean           y_fill);
+void          nbtk_bin_get_fill      (NbtkBin           *bin,
+                                      gboolean          *x_fill,
+                                      gboolean          *y_fill);
 
 G_END_DECLS
 

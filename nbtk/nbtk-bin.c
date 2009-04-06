@@ -49,6 +49,9 @@ struct _NbtkBinPrivate
 
   NbtkAlignment x_align;
   NbtkAlignment y_align;
+
+  guint x_fill : 1;
+  guint y_fill : 1;
 };
 
 enum
@@ -59,7 +62,9 @@ enum
   PROP_PADDING,
   PROP_PADDING_SET,
   PROP_X_ALIGN,
-  PROP_Y_ALIGN
+  PROP_Y_ALIGN,
+  PROP_X_FILL,
+  PROP_Y_FILL
 };
 
 static void clutter_container_iface_init (ClutterContainerIface *iface);
@@ -219,6 +224,25 @@ nbtk_bin_allocate (ClutterActor          *self,
       if (available_height < 0)
         available_height = 0;
 
+      if (priv->x_fill)
+        {
+          allocation.x1 = (int) padding.top;
+          allocation.x2 = (int) (allocation.x1 + available_width);
+        }
+
+      if (priv->y_fill)
+        {
+          allocation.y1 = (int) padding.right;
+          allocation.y2 = (int) (allocation.y1 + available_height);
+        }
+
+      /* if we are filling horizontally and vertically then we're done */
+      if (priv->x_fill && priv->y_fill)
+        {
+          clutter_actor_allocate (priv->child, &allocation, origin_changed);
+          return;
+        }
+
       request = CLUTTER_REQUEST_HEIGHT_FOR_WIDTH;
       g_object_get (G_OBJECT (priv->child), "request-mode", &request, NULL);
 
@@ -251,12 +275,19 @@ nbtk_bin_allocate (ClutterActor          *self,
           child_width = CLAMP (natural_width, min_width, available_width);
         }
 
-      allocation.x1 = (int) ((available_width - child_width) * x_align
-                    + padding.left);
-      allocation.y1 = (int) ((available_height - child_height) * y_align
-                    + padding.top);
-      allocation.x2 = allocation.x1 + child_width;
-      allocation.y2 = allocation.y1 + child_height;
+      if (!priv->x_fill)
+        {
+          allocation.x1 = (int) ((available_width - child_width) * x_align
+                        + padding.left);
+          allocation.x2 = allocation.x1 + child_width;
+        }
+
+      if (!priv->y_fill)
+        {
+          allocation.y1 = (int) ((available_height - child_height) * y_align
+                        + padding.top);
+          allocation.y2 = allocation.y1 + child_height;
+        }
 
       clutter_actor_allocate (priv->child, &allocation, origin_changed);
     }
@@ -380,6 +411,18 @@ nbtk_bin_set_property (GObject      *gobject,
                               g_value_get_enum (value));
       break;
 
+    case PROP_X_FILL:
+      nbtk_bin_set_fill (bin,
+                         g_value_get_boolean (value),
+                         bin->priv->y_fill);
+      break;
+
+    case PROP_Y_FILL:
+      nbtk_bin_set_fill (bin,
+                         bin->priv->y_fill,
+                         g_value_get_boolean (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
     }
@@ -417,6 +460,14 @@ nbtk_bin_get_property (GObject    *gobject,
 
     case PROP_Y_ALIGN:
       g_value_set_enum (value, priv->y_align);
+      break;
+
+    case PROP_X_FILL:
+      g_value_set_boolean (value, priv->x_fill);
+      break;
+
+    case PROP_Y_FILL:
+      g_value_set_boolean (value, priv->y_fill);
       break;
 
     default:
@@ -520,6 +571,32 @@ nbtk_bin_class_init (NbtkBinClass *klass)
                              NBTK_ALIGN_CENTER,
                              NBTK_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_Y_ALIGN, pspec);
+
+  /**
+   * NbtkBin:x-fill:
+   *
+   * Whether the child should fill the horizontal allocation
+   */
+  pspec = g_param_spec_boolean ("x-fill",
+                                "X Fill",
+                                "Whether the child should fill the "
+                                "horizontal allocation",
+                                FALSE,
+                                NBTK_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_X_FILL, pspec);
+
+  /**
+   * NbtkBin:y-fill:
+   *
+   * Whether the child should fill the vertical allocation
+   */
+  pspec = g_param_spec_boolean ("y-fill",
+                                "Y Fill",
+                                "Whether the child should fill the "
+                                "vertical allocation",
+                                FALSE,
+                                NBTK_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_Y_FILL, pspec);
 }
 
 static void
@@ -721,6 +798,73 @@ nbtk_bin_get_alignment (NbtkBin       *bin,
 
   if (y_align)
     *y_align = priv->y_align;
+}
+
+/**
+ * nbtk_bin_set_fill:
+ * @bin: a #NbtkBin
+ * @x_fill: %TRUE if the child should fill horizontally the @bin
+ * @y_fill: %TRUE if the child should fill vertically the @bin
+ *
+ * Sets whether the child of @bin should fill out the horizontal
+ * and/or vertical allocation of the parent
+ */
+void
+nbtk_bin_set_fill (NbtkBin  *bin,
+                   gboolean  x_fill,
+                   gboolean  y_fill)
+{
+  NbtkBinPrivate *priv;
+  gboolean changed = FALSE;
+
+  g_return_if_fail (NBTK_IS_BIN (bin));
+
+  priv = bin->priv;
+
+  g_object_freeze_notify (G_OBJECT (bin));
+
+  if (priv->x_fill != x_fill)
+    {
+      priv->x_fill = x_fill;
+      changed = TRUE;
+
+      g_object_notify (G_OBJECT (bin), "x-fill");
+    }
+
+  if (priv->y_fill != y_fill)
+    {
+      priv->y_fill = y_fill;
+      changed = TRUE;
+
+      g_object_notify (G_OBJECT (bin), "y-fill");
+    }
+
+  if (changed)
+    clutter_actor_queue_relayout (CLUTTER_ACTOR (bin));
+
+  g_object_thaw_notify (G_OBJECT (bin));
+}
+
+/**
+ * nbtk_bin_get_fill:
+ * @bin: a #NbtkBin
+ * @x_fill: (out): return location for the horizontal fill, or %NULL
+ * @y_fill: (out): return location for the vertical fill, or %NULL
+ *
+ * Retrieves the horizontal and vertical fill settings
+ */
+void
+nbtk_bin_get_fill (NbtkBin  *bin,
+                   gboolean *x_fill,
+                   gboolean *y_fill)
+{
+  g_return_if_fail (NBTK_IS_BIN (bin));
+
+  if (x_fill)
+    *x_fill = bin->priv->x_fill;
+
+  if (y_fill)
+    *y_fill = bin->priv->y_fill;
 }
 
 static gpointer
