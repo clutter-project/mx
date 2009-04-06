@@ -10,6 +10,10 @@ G_DEFINE_TYPE (NbtkExpander, nbtk_expander, NBTK_TYPE_BIN)
 struct _NbtkExpanderPrivate {
   ClutterActor *label;
   ClutterUnit   spacing;
+
+  ClutterTimeline *timeline;
+  ClutterAlpha    *alpha;
+  gdouble progress;
 };
 
 static void
@@ -41,7 +45,23 @@ nbtk_expander_dispose (GObject *object)
 {
   NbtkExpanderPrivate *priv = NBTK_EXPANDER (object)->priv;
 
-  clutter_actor_unparent (priv->label);
+  if (priv->label)
+    {
+      clutter_actor_unparent (priv->label);
+      priv->label = NULL;
+    }
+
+  if (priv->timeline)
+    {
+      g_object_unref (priv->timeline);
+      priv->timeline = NULL;
+    }
+
+  if (priv->alpha)
+    {
+      g_object_unref (priv->alpha);
+      priv->alpha = NULL;
+    }
 
   G_OBJECT_CLASS (nbtk_expander_parent_class)->dispose (object);
 }
@@ -53,19 +73,32 @@ nbtk_expander_finalize (GObject *object)
 }
 
 static void
-child_show_complete (ClutterAnimation *animation,
-                     ClutterActor     *child)
+timeline_complete (ClutterTimeline *timeline,
+                   ClutterActor    *expander)
 {
   guchar opacity;
+  ClutterActor *child;
+  NbtkExpanderPrivate *priv = NBTK_EXPANDER (expander)->priv;
+
+  child = nbtk_bin_get_child (NBTK_BIN (expander));
+
+  if (!child)
+    return;
+
+  /* if we are "opening" */
+  if (clutter_timeline_get_direction (priv->timeline)
+      != CLUTTER_TIMELINE_FORWARD)
+    return;
 
   /* we can't do an animation if there is already one in progress,
    * because we cannot reliably get the actors true opacity
    */
-  if ((animation = clutter_actor_get_animation (child)))
+  if (clutter_actor_get_animation (child))
     {
       clutter_actor_show (child);
       return;
     }
+
 
   opacity = clutter_actor_get_opacity (child);
   clutter_actor_set_opacity (child, 0);
@@ -74,6 +107,18 @@ child_show_complete (ClutterAnimation *animation,
   clutter_actor_animate (child, CLUTTER_EASE_IN_SINE, 100,
                          "opacity", opacity,
                          NULL);
+}
+
+static void
+new_frame (ClutterTimeline *timeline,
+           gint             frame_num,
+           ClutterActor    *expander)
+{
+  NbtkExpanderPrivate *priv = NBTK_EXPANDER (expander)->priv;
+
+  priv->progress = clutter_alpha_get_alpha (priv->alpha);
+
+  clutter_actor_queue_relayout (expander);
 }
 
 static gboolean
@@ -86,53 +131,31 @@ nbtk_expander_button_release (ClutterActor       *actor,
   ClutterAnimation *animation;
   NbtkPadding padding;
   ClutterActorBox box;
+  ClutterTimeline *timeline;
 
   child = nbtk_bin_get_child (NBTK_BIN (actor));
 
   if (!child)
     return;
 
-  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
-  clutter_actor_get_allocation_box (actor, &box);
-  available_w = box.x2 - box.x1 - padding.left - padding.right;
-
-  clutter_actor_get_preferred_height (priv->label, available_w, NULL, &label_h);
-  clutter_actor_get_preferred_height (child, available_w, NULL, &child_h);
-
-  /* stop any previous animation */
-  if ((animation = clutter_actor_get_animation (actor)))
-    {
-      clutter_animation_completed (animation);
-    }
 
   if (CLUTTER_ACTOR_IS_VISIBLE (child))
     {
-      clutter_actor_set_height (actor, padding.top
-                                       + label_h
-                                       + priv->spacing
-                                       + child_h
-                                       + padding.bottom);
       clutter_actor_hide (child);
-      clutter_actor_animate (actor, CLUTTER_EASE_OUT_SINE, 250,
-                             "height", CLUTTER_UNITS_TO_INT (padding.top
-                                                             + label_h
-                                                             + padding.bottom),
-                             NULL);
+      clutter_timeline_set_direction (priv->timeline,
+                                      CLUTTER_TIMELINE_BACKWARD);
     }
   else
     {
-      clutter_actor_set_height (actor, padding.top + label_h + padding.bottom);
-      animation =
-        clutter_actor_animate (actor, CLUTTER_EASE_OUT_SINE, 250,
-                               "height", CLUTTER_UNITS_TO_INT (padding.top
-                                                         + label_h + child_h
-                                                         + padding.bottom),
-                               NULL);
-      g_signal_connect (animation, "completed", G_CALLBACK (child_show_complete),
-                        child);
+      clutter_timeline_set_direction (priv->timeline,
+                                      CLUTTER_TIMELINE_FORWARD);
     }
 
-  clutter_actor_queue_relayout (actor);
+
+  if (!clutter_timeline_is_playing (priv->timeline))
+    clutter_timeline_rewind (priv->timeline);
+
+  clutter_timeline_start (priv->timeline);
 }
 
 static void
@@ -193,7 +216,7 @@ nbtk_expander_get_preferred_height (ClutterActor *actor,
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
   available_w = for_width - padding.left - padding.right;
 
-  if (child && CLUTTER_ACTOR_IS_VISIBLE (child))
+  if (child)
     {
       clutter_actor_get_preferred_height (child,
                                           available_w,
@@ -201,6 +224,9 @@ nbtk_expander_get_preferred_height (ClutterActor *actor,
                                           &pref_child_h);
       min_child_h += priv->spacing;
       pref_child_h += priv->spacing;
+
+      min_child_h *= priv->progress;
+      pref_child_h *= priv->progress;
     }
   else
     {
@@ -310,17 +336,6 @@ nbtk_expander_allocate (ClutterActor          *actor,
       full_h += priv->spacing + child_h;
     }
 
-  /* background */
-  background = nbtk_widget_get_border_image (NBTK_WIDGET (actor));
-  if (background)
-    {
-      child_box.x1 = 0;
-      child_box.x2 = (box->x2 - box->x1);
-      child_box.y1 = 0;
-      child_box.y2 = full_h;
-
-      clutter_actor_allocate (background, &child_box, origin_changed);
-    }
 }
 
 static void
@@ -361,6 +376,15 @@ nbtk_expander_init (NbtkExpander *self)
 
   /* TODO: make this a style property */
   priv->spacing = CLUTTER_UNITS_FROM_INT (6);
+
+  priv->progress = 1.0;
+
+  priv->timeline = clutter_timeline_new_for_duration (250);
+  clutter_timeline_set_direction (priv->timeline, CLUTTER_TIMELINE_BACKWARD);
+  g_signal_connect (priv->timeline, "new-frame", G_CALLBACK (new_frame), self);
+  g_signal_connect (priv->timeline, "completed", G_CALLBACK (timeline_complete), self);
+
+  priv->alpha = clutter_alpha_new_full (priv->timeline, CLUTTER_EASE_IN_SINE);
 }
 
 NbtkWidget*
