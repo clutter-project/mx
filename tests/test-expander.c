@@ -4,6 +4,21 @@
 #include <clutter/clutter.h>
 #include <nbtk/nbtk.h>
 
+static void
+set_expanded (ClutterActor    *actor,
+              ClutterKeyEvent *event,
+              NbtkExpander    *expander)
+{
+  gboolean expand;
+
+  if (event->keyval != 32)
+    return;
+
+  expand = nbtk_expander_get_expanded (expander);
+
+  nbtk_expander_set_expanded (expander, !expand);
+}
+
 void
 stage_size_notify_cb (ClutterActor *stage,
                       GParamSpec *pspec,
@@ -63,6 +78,8 @@ main (int argc, char *argv[])
                     G_CALLBACK (stage_size_notify_cb), expander);
   g_signal_connect (stage, "notify::height",
                     G_CALLBACK (stage_size_notify_cb), expander);
+  g_signal_connect (stage, "key-release-event",
+                    G_CALLBACK (set_expanded), expander);
   clutter_actor_show (stage);
   clutter_main ();
 
