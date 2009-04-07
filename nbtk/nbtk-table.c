@@ -101,6 +101,7 @@ enum {
   CHILD_PROP_0,
 
   CHILD_PROP_COL,
+  CHILD_PROP_COL_OLD,
   CHILD_PROP_ROW,
   CHILD_PROP_COL_SPAN,
   CHILD_PROP_ROW_SPAN,
@@ -126,6 +127,9 @@ table_child_set_property (GObject      *gobject,
 
   switch (prop_id)
     {
+    case CHILD_PROP_COL_OLD:
+      g_warning ("The \"column\" property of NbtkTableChild is deprecated."
+                 " Please use \"col\" instead.");
     case CHILD_PROP_COL:
       child->col = g_value_get_int (value);
       table->priv->n_cols = MAX (table->priv->n_cols, child->col + 1);
@@ -192,6 +196,9 @@ table_child_get_property (GObject    *gobject,
 
   switch (prop_id)
     {
+    case CHILD_PROP_COL_OLD:
+      g_warning ("The \"column\" property of NbtkTableChild is deprecated."
+                 " Please use \"col\" instead.");
     case CHILD_PROP_COL:
       g_value_set_int (value, child->col);
       break;
@@ -242,6 +249,15 @@ nbtk_table_child_class_init (NbtkTableChildClass *klass)
   gobject_class->get_property = table_child_get_property;
 
   pspec = g_param_spec_int ("column",
+                            "Column Number",
+                            "The column the widget resides in",
+                            0, G_MAXINT,
+                            0,
+                            NBTK_PARAM_READWRITE);
+
+  g_object_class_install_property (gobject_class, CHILD_PROP_COL_OLD, pspec);
+
+  pspec = g_param_spec_int ("col",
                             "Column Number",
                             "The column the widget resides in",
                             0, G_MAXINT,
@@ -1561,7 +1577,7 @@ nbtk_table_add_actor (NbtkTable   *table,
   clutter_container_add_actor (CLUTTER_CONTAINER (table), actor);
   clutter_container_child_set (CLUTTER_CONTAINER (table), actor,
                                "row", row,
-                               "column", column,
+                               "col", column,
                                NULL);
 
 }
