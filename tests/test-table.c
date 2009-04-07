@@ -63,9 +63,9 @@ stage_size_notify_cb (ClutterActor *stage,
 int
 main (int argc, char *argv[])
 {
-  ClutterActor *stage;
+  ClutterActor *stage, *button2;
   NbtkWidget *table;
-  NbtkWidget *button1, *button2, *button3, *button4, *button5,
+  NbtkWidget *button1, *button3, *button4, *button5,
              *button6, *button7, *button8, *button9;
 
   clutter_init (&argc, &argv);
@@ -88,7 +88,7 @@ main (int argc, char *argv[])
                     G_CALLBACK (stage_size_notify_cb), table);
 
   button1 = nbtk_button_new_with_label ("button1");
-  button2 = nbtk_button_new_with_label ("button2");
+  button2 = clutter_texture_new_from_file ("redhand.png", NULL);
   button3 = nbtk_button_new_with_label ("button3");
   button4 = nbtk_button_new_with_label ("Expand = 1");
   button5 = nbtk_button_new_with_label ("button5");
@@ -98,7 +98,7 @@ main (int argc, char *argv[])
   button9 = nbtk_button_new_with_label ("button9");
 
   nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button1), 0, 0);
-  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button2), 0, 1);
+  nbtk_table_add_actor (NBTK_TABLE (table), button2, 0, 1);
   nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button3), 1, 1);
   nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button4), 2, 0);
   nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button5), 3, 0);
@@ -135,9 +135,11 @@ main (int argc, char *argv[])
                                "x-expand", FALSE, "y-expand", FALSE,
                                NULL);
 
-  clutter_actor_set_size (CLUTTER_ACTOR (button2), 20, 20);
-  clutter_container_child_set (CLUTTER_CONTAINER (table), CLUTTER_ACTOR (button2),
-                               "keep-aspect-ratio", TRUE, NULL);
+  g_object_set (G_OBJECT (button2), "keep-aspect-ratio", TRUE, NULL);
+  clutter_container_child_set (CLUTTER_CONTAINER (table),
+                               CLUTTER_ACTOR (button2),
+                               "y-fill", FALSE,
+                               NULL);
 
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (table));
 
