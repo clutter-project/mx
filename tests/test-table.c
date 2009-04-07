@@ -111,6 +111,7 @@ main (int argc, char *argv[])
   nbtk_table_set_widget_colspan (NBTK_TABLE (table), NBTK_WIDGET (button4), 2);
 
 
+  clutter_actor_set_size (CLUTTER_ACTOR (button1), 100, 100);
 
   clutter_container_child_set (CLUTTER_CONTAINER (table),
                                CLUTTER_ACTOR (button1),
