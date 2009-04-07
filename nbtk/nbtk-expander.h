@@ -41,6 +41,10 @@ GType nbtk_expander_get_type (void);
 NbtkWidget* nbtk_expander_new (void);
 void nbtk_expander_set_label (NbtkExpander *expander,
                               const gchar *label);
+
+gboolean nbtk_expander_get_expanded (NbtkExpander *expander);
+void nbtk_expander_set_expanded (NbtkExpander *expander,
+                                 gboolean      expanded);
 G_END_DECLS
 
 #endif /* _NBTK_EXPANDER */

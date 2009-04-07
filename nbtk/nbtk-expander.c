@@ -1,11 +1,18 @@
 /* nbtk-expander.c */
 
 #include "nbtk-expander.h"
+#include "nbtk-private.h"
 
 G_DEFINE_TYPE (NbtkExpander, nbtk_expander, NBTK_TYPE_BIN)
 
 #define GET_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), NBTK_TYPE_EXPANDER, NbtkExpanderPrivate))
+
+enum {
+  PROP_0,
+
+  PROP_EXPANDED
+};
 
 struct _NbtkExpanderPrivate {
   ClutterActor *label;
@@ -14,6 +21,8 @@ struct _NbtkExpanderPrivate {
   ClutterTimeline *timeline;
   ClutterAlpha    *alpha;
   gdouble progress;
+
+  gboolean expanded : 1;
 };
 
 static void
@@ -22,7 +31,12 @@ nbtk_expander_get_property (GObject *object,
                             GValue *value,
                             GParamSpec *pspec)
 {
+  NbtkExpanderPrivate *priv = NBTK_EXPANDER (object)->priv;
+
   switch (property_id) {
+    case PROP_EXPANDED:
+      g_value_set_boolean (value, priv->expanded);
+      break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
   }
@@ -35,6 +49,10 @@ nbtk_expander_set_property (GObject *object,
                             GParamSpec *pspec)
 {
   switch (property_id) {
+    case PROP_EXPANDED:
+      nbtk_expander_set_expanded ((NbtkExpander *) object,
+                                  g_value_get_boolean (value));
+      break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
   }
@@ -121,20 +139,21 @@ new_frame (ClutterTimeline *timeline,
   clutter_actor_queue_relayout (expander);
 }
 
-static gboolean
-nbtk_expander_button_release (ClutterActor       *actor,
-                              ClutterButtonEvent *event)
+static void
+nbtk_expander_toggle_expanded (NbtkExpander *expander)
 {
-  NbtkExpanderPrivate *priv = NBTK_EXPANDER (actor)->priv;
+  NbtkExpanderPrivate *priv = expander->priv;
   ClutterActor *child;
 
-  child = nbtk_bin_get_child (NBTK_BIN (actor));
+  priv->expanded = !priv->expanded;
+
+  child = nbtk_bin_get_child (NBTK_BIN (expander));
 
   if (!child)
-    return FALSE;
+    return;
 
 
-  if (CLUTTER_ACTOR_IS_VISIBLE (child))
+  if (!priv->expanded)
     {
       clutter_actor_hide (child);
       clutter_timeline_set_direction (priv->timeline,
@@ -151,6 +170,15 @@ nbtk_expander_button_release (ClutterActor       *actor,
     clutter_timeline_rewind (priv->timeline);
 
   clutter_timeline_start (priv->timeline);
+}
+
+static gboolean
+nbtk_expander_button_release (ClutterActor       *actor,
+                              ClutterButtonEvent *event)
+{
+  NbtkExpanderPrivate *priv = NBTK_EXPANDER (actor)->priv;
+
+  nbtk_expander_toggle_expanded (NBTK_EXPANDER (actor));
 
   return FALSE;
 }
@@ -347,6 +375,7 @@ nbtk_expander_class_init (NbtkExpanderClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
+  GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (NbtkExpanderPrivate));
 
@@ -360,6 +389,15 @@ nbtk_expander_class_init (NbtkExpanderClass *klass)
   actor_class->get_preferred_width = nbtk_expander_get_preferred_width;
   actor_class->get_preferred_height = nbtk_expander_get_preferred_height;
   actor_class->paint = nbtk_expander_paint;
+
+  pspec = g_param_spec_boolean ("expanded",
+                                "Expanded",
+                                "Indicates that the expander is open or closed",
+                                TRUE,
+                                NBTK_PARAM_READWRITE);
+  g_object_class_install_property (object_class,
+                                   PROP_EXPANDED,
+                                   pspec);
 }
 
 static void
@@ -374,6 +412,7 @@ nbtk_expander_init (NbtkExpander *self)
   priv->spacing = CLUTTER_UNITS_FROM_INT (6);
 
   priv->progress = 1.0;
+  priv->expanded = 1;
 
   priv->timeline = clutter_timeline_new_for_duration (250);
   clutter_timeline_set_direction (priv->timeline, CLUTTER_TIMELINE_BACKWARD);
@@ -397,4 +436,26 @@ nbtk_expander_set_label (NbtkExpander *expander,
   g_return_if_fail (label != NULL);
 
   clutter_text_set_text (CLUTTER_TEXT (expander->priv->label), label);
+}
+
+void
+nbtk_expander_set_expanded (NbtkExpander *expander,
+                            gboolean      expanded)
+{
+  g_return_if_fail (NBTK_IS_EXPANDER (expander));
+
+  if (expander->priv->expanded != expanded)
+    {
+      nbtk_expander_toggle_expanded (expander);
+
+      g_object_notify ((GObject *) expander, "expanded");
+    }
+}
+
+gboolean
+nbtk_expander_get_expanded (NbtkExpander *expander)
+{
+  g_return_if_fail (NBTK_IS_EXPANDER (expander));
+
+  return expander->priv->expanded;
 }
