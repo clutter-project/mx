@@ -127,16 +127,11 @@ nbtk_expander_button_release (ClutterActor       *actor,
 {
   NbtkExpanderPrivate *priv = NBTK_EXPANDER (actor)->priv;
   ClutterActor *child;
-  ClutterUnit label_h, child_h, available_w;
-  ClutterAnimation *animation;
-  NbtkPadding padding;
-  ClutterActorBox box;
-  ClutterTimeline *timeline;
 
   child = nbtk_bin_get_child (NBTK_BIN (actor));
 
   if (!child)
-    return;
+    return FALSE;
 
 
   if (CLUTTER_ACTOR_IS_VISIBLE (child))
@@ -156,6 +151,8 @@ nbtk_expander_button_release (ClutterActor       *actor,
     clutter_timeline_rewind (priv->timeline);
 
   clutter_timeline_start (priv->timeline);
+
+  return FALSE;
 }
 
 static void
@@ -265,7 +262,6 @@ nbtk_expander_allocate (ClutterActor          *actor,
   ClutterActorClass *parent_parent;
   ClutterUnit available_w, available_h, min_w, min_h, full_h;
   ClutterRequestMode request;
-  ClutterActor *background;
 
   /* skip NbtkBin allocate */
   parent_parent = g_type_class_peek_parent (nbtk_expander_parent_class);
