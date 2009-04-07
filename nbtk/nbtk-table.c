@@ -606,9 +606,11 @@ nbtk_table_allocate_fill (ClutterActor *child,
                           gboolean x_fill,
                           gboolean y_fill)
 {
+  ClutterUnit width;
+
   if (!x_fill)
     {
-      ClutterUnit width, max_width;
+      ClutterUnit max_width;
       max_width = childbox->x2 - childbox->x1;
       clutter_actor_get_preferred_width (child, -1, NULL, &width);
       if (width < max_width)
@@ -617,12 +619,16 @@ nbtk_table_allocate_fill (ClutterActor *child,
           childbox->x2 = childbox->x1 + width;
         }
     }
+  else
+    {
+      width = (childbox->x2 - childbox->x1);
+    }
 
   if (!y_fill)
     {
       ClutterUnit height, max_height;
       max_height = childbox->y2 - childbox->y1;
-      clutter_actor_get_preferred_height (child, -1, NULL, &height);
+      clutter_actor_get_preferred_height (child, width, NULL, &height);
       if (height < max_height)
         {
           childbox->y1 += CLAMP_TO_PIXEL ((max_height - height) * y_align);
