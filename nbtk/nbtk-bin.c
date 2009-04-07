@@ -524,7 +524,7 @@ nbtk_bin_init (NbtkBin *bin)
  *
  * Return value: the newly created #NbtkBin actor
  */
-ClutterActor *
+NbtkWidget *
 nbtk_bin_new (void)
 {
   return g_object_new (NBTK_TYPE_BIN, NULL);

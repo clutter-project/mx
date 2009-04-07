@@ -66,7 +66,7 @@ struct _NbtkBinClass
 
 GType nbtk_bin_get_type (void) G_GNUC_CONST;
 
-ClutterActor *nbtk_bin_new           (void);
+NbtkWidget   *nbtk_bin_new           (void);
 void          nbtk_bin_set_child     (NbtkBin           *bin,
                                       ClutterActor      *child);
 ClutterActor *nbtk_bin_get_child     (NbtkBin           *bin);
