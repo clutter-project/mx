@@ -1656,8 +1656,6 @@ nbtk_table_add_actor_full (NbtkTable            *table,
                                actor,
                                "row-span", rowspan,
                                "col-span", colspan,
-                               "keep-aspect-ratio",
-                               options & NBTK_KEEP_ASPECT_RATIO,
                                "x-expand", (options & NBTK_X_EXPAND) ?
                                  TRUE : FALSE,
                                "y-expand", (options & NBTK_Y_EXPAND) ?
@@ -1669,6 +1667,14 @@ nbtk_table_add_actor_full (NbtkTable            *table,
                                "y-fill", (options & NBTK_Y_FILL) ?
                                  TRUE : FALSE,
                                NULL);
+  /* deprecated options */
+  if (options & NBTK_KEEP_ASPECT_RATIO)
+    {
+      clutter_container_child_set (CLUTTER_CONTAINER (table),
+                                   actor,
+                                   "keep-aspect-ratio", TRUE,
+                                   NULL);
+    }
 }
 
 /**
