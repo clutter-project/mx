@@ -73,16 +73,15 @@ struct _NbtkTablePrivate
   gint active_row;
   gint active_col;
 
-  GArray *min_widths_u;
-  GArray *pref_widths_u;
-  GArray *min_heights_u;
-  GArray *pref_heights_u;
+  GArray *min_widths;
+  GArray *pref_widths;
+  GArray *min_heights;
+  GArray *pref_heights;
 
   GArray *has_expand_cols;
   GArray *has_expand_rows;
 
   GArray *col_widths;
-  GArray *min_heights;
 
   guint homogeneous : 1;
 };
@@ -541,11 +540,11 @@ nbtk_table_finalize (GObject *gobject)
 {
   NbtkTablePrivate *priv = NBTK_TABLE (gobject)->priv;
 
-  g_array_free (priv->min_widths_u, TRUE);
-  g_array_free (priv->pref_widths_u, TRUE);
+  g_array_free (priv->min_widths, TRUE);
+  g_array_free (priv->pref_widths, TRUE);
 
-  g_array_free (priv->min_heights_u, TRUE);
-  g_array_free (priv->pref_heights_u, TRUE);
+  g_array_free (priv->min_heights, TRUE);
+  g_array_free (priv->pref_heights, TRUE);
 
   g_array_free (priv->has_expand_cols, TRUE);
   g_array_free (priv->has_expand_rows, TRUE);
@@ -713,7 +712,7 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
   NbtkTablePrivate *priv = table->priv;
   gboolean *has_expand_cols;
   gint extra_col_width, n_expanded_cols = 0, expanded_cols = 0;
-  gint *col_widths;
+  gint *pref_widths, *min_widths;
   GSList *list;
   NbtkPadding padding;
 
@@ -721,9 +720,14 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
   g_array_set_size (priv->has_expand_cols, priv->n_cols);
   has_expand_cols = (gboolean *)priv->has_expand_cols->data;
 
-  g_array_set_size (priv->col_widths, 0);
-  g_array_set_size (priv->col_widths, priv->n_cols);
-  col_widths = (gint *)priv->col_widths->data;
+  g_array_set_size (priv->pref_widths, 0);
+  g_array_set_size (priv->pref_widths, priv->n_cols);
+  pref_widths = (gint *)priv->pref_widths->data;
+
+  g_array_set_size (priv->min_widths, 0);
+  g_array_set_size (priv->min_widths, priv->n_cols);
+  min_widths = (gint *)priv->min_widths->data;
+
 
   /* take off the padding values to calculate the allocatable width */
   nbtk_widget_get_padding (NBTK_WIDGET (table), &padding);
@@ -754,21 +758,27 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
         has_expand_cols[col] = TRUE;
 
       clutter_actor_get_preferred_width (child, -1, &w_min, &w_pref);
-      if (col_span == 1 && w_pref > col_widths[col])
-        col_widths[col] = CLUTTER_UNITS_TO_INT (w_pref);
+      if (col_span == 1 && w_pref > pref_widths[col])
+        {
+          pref_widths[col] = w_pref;
+        }
+      if (col_span == 1 && w_min > min_widths[col])
+        {
+          min_widths[col] = w_min;
+        }
 
     }
 
   total_min_width = priv->col_spacing * (priv->n_cols - 1);
   for (i = 0; i < priv->n_cols; i++)
-    total_min_width += col_widths[i];
+    total_min_width += pref_widths[i];
 
   /* calculate the remaining space and distribute it evenly onto all rows/cols
    * with the x/y expand property set. */
   for (i = 0; i < priv->n_cols; i++)
     if (has_expand_cols[i])
       {
-        expanded_cols += col_widths[i];
+        expanded_cols += pref_widths[i];
         n_expanded_cols++;
       }
 
@@ -779,15 +789,27 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
       if (has_expand_cols[i])
        {
           if (extra_col_width < 0)
-            col_widths[i] =
-              MAX (0,
-                   col_widths[i]
-                  + (extra_col_width * (col_widths[i] / (float) expanded_cols)));
+            {
+              pref_widths[i] =
+                MAX (min_widths[i],
+                     pref_widths[i]
+                    + (extra_col_width * (pref_widths[i] / (float) expanded_cols)));
+
+              /* if we reached the minimum width for this column, we need to
+               * stop counting it as expanded */
+              if (pref_widths[i] == min_widths[i])
+                {
+                  /* restart calculations :-( */
+                  expanded_cols -= pref_widths[i];
+                  has_expand_cols[i] = 0;
+                  i = 0;
+                }
+            }
           else
-            col_widths[i] += extra_col_width / n_expanded_cols;
+            pref_widths[i] += extra_col_width / n_expanded_cols;
         }
 
-  return col_widths;
+  return pref_widths;
 }
 
 static void
@@ -1037,7 +1059,7 @@ nbtk_table_get_preferred_width (ClutterActor *self,
                                 ClutterUnit  *min_width_p,
                                 ClutterUnit  *natural_width_p)
 {
-  ClutterUnit *min_widths, *pref_widths;
+  gint *min_widths, *pref_widths;
   ClutterUnit total_min_width, total_pref_width;
   NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
   GSList *list;
@@ -1056,13 +1078,13 @@ nbtk_table_get_preferred_width (ClutterActor *self,
   /* Setting size to zero and then what we want it to be causes a clear if
    * clear flag is set (which it should be.)
    */
-  g_array_set_size (priv->min_widths_u, 0);
-  g_array_set_size (priv->pref_widths_u, 0);
-  g_array_set_size (priv->min_widths_u, priv->n_cols);
-  g_array_set_size (priv->pref_widths_u, priv->n_cols);
+  g_array_set_size (priv->min_widths, 0);
+  g_array_set_size (priv->pref_widths, 0);
+  g_array_set_size (priv->min_widths, priv->n_cols);
+  g_array_set_size (priv->pref_widths, priv->n_cols);
 
-  min_widths = (ClutterUnit *)priv->min_widths_u->data;
-  pref_widths = (ClutterUnit *)priv->pref_widths_u->data;
+  min_widths = (gint *)priv->min_widths->data;
+  pref_widths = (gint *)priv->pref_widths->data;
 
   /* calculate minimum row widths */
   for (list = priv->children; list; list = g_slist_next (list))
@@ -1111,7 +1133,7 @@ nbtk_table_get_preferred_height (ClutterActor *self,
                                  ClutterUnit  *min_height_p,
                                  ClutterUnit  *natural_height_p)
 {
-  ClutterUnit *min_heights, *pref_heights;
+  gint *min_heights, *pref_heights;
   ClutterUnit total_min_height, total_pref_height;
   NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
   GSList *list;
@@ -1129,16 +1151,16 @@ nbtk_table_get_preferred_height (ClutterActor *self,
   /* Setting size to zero and then what we want it to be causes a clear if
    * clear flag is set (which it should be.)
    */
-  g_array_set_size (priv->min_heights_u, 0);
-  g_array_set_size (priv->pref_heights_u, 0);
-  g_array_set_size (priv->min_heights_u, priv->n_rows);
-  g_array_set_size (priv->pref_heights_u, priv->n_rows);
+  g_array_set_size (priv->min_heights, 0);
+  g_array_set_size (priv->pref_heights, 0);
+  g_array_set_size (priv->min_heights, priv->n_rows);
+  g_array_set_size (priv->pref_heights, priv->n_rows);
 
   /* use min_widths to help allocation of height-for-width widgets */
   min_widths = nbtk_table_calculate_col_widths (NBTK_TABLE (self), for_width);
 
-  min_heights = (ClutterUnit *)priv->min_heights_u->data;
-  pref_heights = (ClutterUnit *)priv->pref_heights_u->data;
+  min_heights = (gint *)priv->min_heights->data;
+  pref_heights = (gint *)priv->pref_heights->data;
 
   /* calculate minimum row heights */
   for (list = priv->children; list; list = g_slist_next (list))
@@ -1366,18 +1388,18 @@ nbtk_table_init (NbtkTable *table)
   table->priv->n_cols = 0;
   table->priv->n_rows = 0;
 
-  table->priv->min_widths_u = g_array_new (FALSE,
+  table->priv->min_widths = g_array_new (FALSE,
+                                         TRUE,
+                                         sizeof (gint));
+  table->priv->pref_widths = g_array_new (FALSE,
+                                          TRUE,
+                                          sizeof (gint));
+  table->priv->min_heights = g_array_new (FALSE,
+                                          TRUE,
+                                          sizeof (gint));
+  table->priv->pref_heights = g_array_new (FALSE,
                                            TRUE,
-                                           sizeof (ClutterUnit));
-  table->priv->pref_widths_u = g_array_new (FALSE,
-                                            TRUE,
-                                            sizeof (ClutterUnit));
-  table->priv->min_heights_u = g_array_new (FALSE,
-                                            TRUE,
-                                            sizeof (ClutterUnit));
-  table->priv->pref_heights_u = g_array_new (FALSE,
-                                             TRUE,
-                                             sizeof (ClutterUnit));
+                                           sizeof (gint));
 
   table->priv->has_expand_cols = g_array_new (FALSE,
                                               TRUE,
