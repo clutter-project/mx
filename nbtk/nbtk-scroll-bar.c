@@ -291,21 +291,20 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
 }
 
 static void
-on_style_change (NbtkStyle     *style,
-                 NbtkScrollBar *bar)
+nbtk_scroll_bar_style_changed (NbtkWidget *widget)
 {
-  NbtkScrollBarPrivate *priv = bar->priv;
-  ClutterColor *color = NULL;
+  NbtkScrollBarPrivate *priv = NBTK_SCROLL_BAR (widget)->priv;
 
-  if (CLUTTER_IS_RECTANGLE (priv->handle))
-    {
-      nbtk_stylable_get (NBTK_STYLABLE (bar), "color", &color, NULL);
-      if (color)
-        {
-          clutter_rectangle_set_color (CLUTTER_RECTANGLE (priv->handle), color);
-          clutter_color_free (color);
-        }
-    }
+  NBTK_WIDGET_CLASS (nbtk_scroll_bar_parent_class)->style_changed (widget);
+
+  NBTK_WIDGET_GET_CLASS (NBTK_WIDGET (priv->bw_stepper))
+    ->style_changed (NBTK_WIDGET (priv->bw_stepper));
+  NBTK_WIDGET_GET_CLASS (NBTK_WIDGET (priv->fw_stepper))
+    ->style_changed (NBTK_WIDGET (priv->fw_stepper));
+  NBTK_WIDGET_GET_CLASS (NBTK_WIDGET (priv->trough))
+    ->style_changed (NBTK_WIDGET (priv->trough));
+  NBTK_WIDGET_GET_CLASS (NBTK_WIDGET (priv->handle))
+    ->style_changed (NBTK_WIDGET (priv->handle));
 }
 
 static void
@@ -337,12 +336,6 @@ nbtk_scroll_bar_constructor (GType                  type,
 
   g_signal_connect (bar, "notify::reactive",
                     G_CALLBACK (bar_reactive_notify_cb), NULL);
-  g_signal_connect (nbtk_stylable_get_style (NBTK_STYLABLE (bar)),
-                    "changed", G_CALLBACK (on_style_change),
-                    bar);
-
-  /* Manually call on_style_change */
-  on_style_change (NULL, bar);
 
   return obj;
 }
@@ -352,6 +345,7 @@ nbtk_scroll_bar_class_init (NbtkScrollBarClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
+  NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
 
   g_type_class_add_private (klass, sizeof (NbtkScrollBarPrivate));
 
@@ -363,6 +357,8 @@ nbtk_scroll_bar_class_init (NbtkScrollBarClass *klass)
   actor_class->allocate       = nbtk_scroll_bar_allocate;
   actor_class->paint          = nbtk_scroll_bar_paint;
   actor_class->pick           = nbtk_scroll_bar_pick;
+
+  widget_class->style_changed = nbtk_scroll_bar_style_changed;
 
   g_object_class_install_property
            (object_class,
