@@ -82,6 +82,7 @@ struct _NbtkTablePrivate
   GArray *is_expand_row;
 
   GArray *col_widths;
+  GArray *row_heights;
 
   guint homogeneous : 1;
 };
@@ -569,7 +570,7 @@ nbtk_table_finalize (GObject *gobject)
   g_array_free (priv->is_expand_row, TRUE);
 
   g_array_free (priv->col_widths, TRUE);
-  g_array_free (priv->min_heights, TRUE);
+  g_array_free (priv->row_heights, TRUE);
 
   G_OBJECT_CLASS (nbtk_table_parent_class)->finalize (gobject);
 }
@@ -821,7 +822,8 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
                   /* restart calculations :-( */
                   expanded_cols -= pref_widths[i];
                   is_expand_col[i] = 0;
-                  i = 0;
+                  n_expanded_cols--;
+                  i = -1;
                 }
             }
           else
@@ -838,7 +840,7 @@ nbtk_table_calculate_row_heights (NbtkTable *table,
 {
   NbtkTablePrivate *priv = NBTK_TABLE (table)->priv;
   GSList *list;
-  gint *is_expand_row, *min_heights, extra_row_height;
+  gint *is_expand_row, *min_heights, *pref_heights, *row_heights, extra_row_height;
   gint i, total_min_height;
   gint row_spacing;
   gint expanded_rows = 0;
@@ -852,6 +854,10 @@ nbtk_table_calculate_row_heights (NbtkTable *table,
 
   row_spacing = (priv->row_spacing);
 
+  g_array_set_size (priv->row_heights, 0);
+  g_array_set_size (priv->row_heights, priv->n_rows);
+  row_heights = (gboolean *)priv->row_heights->data;
+
   g_array_set_size (priv->is_expand_row, 0);
   g_array_set_size (priv->is_expand_row, priv->n_rows);
   is_expand_row = (gboolean *)priv->is_expand_row->data;
@@ -859,6 +865,10 @@ nbtk_table_calculate_row_heights (NbtkTable *table,
   g_array_set_size (priv->min_heights, 0);
   g_array_set_size (priv->min_heights, priv->n_rows);
   min_heights = (gboolean *)priv->min_heights->data;
+
+  g_array_set_size (priv->pref_heights, 0);
+  g_array_set_size (priv->pref_heights, priv->n_rows);
+  pref_heights = (gboolean *)priv->pref_heights->data;
 
   /* calculate minimum row widths and column heights */
   for (list = priv->children; list; list = g_slist_next (list))
@@ -888,48 +898,81 @@ nbtk_table_calculate_row_heights (NbtkTable *table,
       /* calculate the cell width by including any spanned columns */
       cell_width = 0;
       for (i = 0; i < col_span; i++)
-        cell_width += col_widths[col + i];
+        cell_width += CLUTTER_UNITS_FROM_INT (col_widths[col + i]);
+
+      if (!meta->x_fill)
+        {
+          ClutterUnit width;
+          clutter_actor_get_preferred_width (child, -1, NULL, &width);
+          cell_width = MIN (cell_width, width);
+        }
 
       clutter_actor_get_preferred_height (child, cell_width, &h_min, &h_pref);
 
-      if (row_span == 1 && h_pref > min_heights[row])
-        min_heights[row] = CLUTTER_UNITS_TO_INT (h_pref);
+      if (row_span == 1 && h_pref > pref_heights[row])
+        {
+          pref_heights[row] = CLUTTER_UNITS_TO_INT (h_pref);
+        }
+      if (row_span == 1 && h_min > min_heights[row])
+        {
+          min_heights[row] = CLUTTER_UNITS_TO_INT (h_min);
+        }
     }
 
   total_min_height = row_spacing * (priv->n_rows - 1);
   for (i = 0; i < priv->n_rows; i++)
-    total_min_height += min_heights[i];
+    total_min_height += pref_heights[i];
 
   /* calculate the remaining space and distribute it evenly onto all rows/cols
    * with the x/y expand property set. */
   for (i = 0; i < priv->n_rows; i++)
     if (is_expand_row[i])
       {
-        expanded_rows += min_heights[i];
+        expanded_rows += pref_heights[i];
         n_expanded_rows++;
       }
 
   extra_row_height = for_height - total_min_height;
 
-  /* distribute the extra space amongst columns/rows with expand set to TRUE
-   *
-   * extra space is allocated evenly when extra space is > 0 and
-   * proportionally when extra space < 0.
-   */
+  /* start with all rows at their preferred height */
+  for (i = 0; i < priv->n_rows; i++)
+    {
+      row_heights[i] = pref_heights[i];
+    }
+
+  /* distribute the extra space amongst rows with expand set to TRUE */
   if (extra_row_height)
     for (i = 0; i < priv->n_rows; i++)
       if (is_expand_row[i])
         {
-          if (expanded_rows < 0)
-            min_heights[i] =
-              MAX (0,
-                   min_heights[i]
-                   + (extra_row_height * (min_heights[i] / (float) expanded_rows)));
+          /* extra space is allocated evenly when extra space is > 0 and
+           * proportionally when extra space < 0.
+           */
+          if (extra_row_height < 0)
+            {
+              row_heights[i] =
+                     pref_heights[i]
+                     + (extra_row_height
+                        * (pref_heights[i] / (float) expanded_rows));
+
+              /* we reached the minimum height, so stop counting this row as
+               * expand and re-calculate the other row heights */
+              if (row_heights[i] < min_heights[i])
+                {
+                  row_heights[i] = min_heights[i];
+
+                  expanded_rows -= pref_heights[i];
+                  is_expand_row[i] = FALSE;
+                  i = -1;
+                }
+            }
           else
-            min_heights[i] += extra_row_height / n_expanded_rows;
+            row_heights[i] = pref_heights[i]
+                             + (extra_row_height / n_expanded_rows);
         }
 
-  return min_heights;
+
+  return row_heights;
 }
 
 static void
@@ -1463,7 +1506,7 @@ nbtk_table_init (NbtkTable *table)
   table->priv->col_widths = g_array_new (FALSE,
                                          TRUE,
                                          sizeof (gint));
-  table->priv->min_heights = g_array_new (FALSE,
+  table->priv->row_heights = g_array_new (FALSE,
                                           TRUE,
                                           sizeof (gint));
 }
