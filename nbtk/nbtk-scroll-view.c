@@ -342,7 +342,7 @@ nbtk_scroll_view_style_changed (NbtkWidget *widget)
   if (priv->child)
     {
       NBTK_WIDGET_GET_CLASS (NBTK_WIDGET (priv->child))
-        ->style_changed (NBTK_WIDGET (priv->child));    
+        ->style_changed (NBTK_WIDGET (priv->child));
     }
   NBTK_WIDGET_GET_CLASS (NBTK_WIDGET (priv->hscroll))
     ->style_changed (NBTK_WIDGET (priv->hscroll));
@@ -626,7 +626,7 @@ nbtk_scroll_view_get_column_size (NbtkScrollView *scroll)
   gdouble          column_size;
 
   g_return_val_if_fail (scroll, 0);
-  
+
   adjustment = nbtk_scroll_bar_get_adjustment (
                 NBTK_SCROLL_BAR (scroll->priv->hscroll));
   g_object_get (adjustment,
@@ -671,7 +671,7 @@ nbtk_scroll_view_get_row_size (NbtkScrollView *scroll)
   gdouble row_size;
 
   g_return_val_if_fail (scroll, 0);
-  
+
   adjustment = nbtk_scroll_bar_get_adjustment (
                 NBTK_SCROLL_BAR (scroll->priv->vscroll));
   g_object_get (adjustment,
@@ -688,7 +688,7 @@ nbtk_scroll_view_set_row_size (NbtkScrollView *scroll,
   NbtkAdjustment  *adjustment;
 
   g_return_if_fail (scroll);
-  
+
   if (row_size < 0)
     {
       scroll->priv->row_size_set = FALSE;

@@ -469,7 +469,7 @@ motion_event_cb (ClutterActor *trough,
       if (bar->priv->idle_move_id)
         {
           g_source_remove (bar->priv->idle_move_id);
-        }    
+        }
       bar->priv->move_x = event->x;
       bar->priv->move_y = event->y;
       bar->priv->idle_move_id = g_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
@@ -478,7 +478,7 @@ motion_event_cb (ClutterActor *trough,
     }
   else
     {
-      move_slider (bar, event->x, event->y);    
+      move_slider (bar, event->x, event->y);
     }
 
   return TRUE;
@@ -730,7 +730,7 @@ NbtkScrollBarMode
 nbtk_scroll_bar_get_mode (NbtkScrollBar *bar)
 {
   g_return_val_if_fail (NBTK_IS_SCROLL_BAR (bar), NBTK_SCROLL_BAR_MODE_DEFAULT);
-  
+
   return bar->priv->mode;
 }
 
