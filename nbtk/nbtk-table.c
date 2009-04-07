@@ -145,6 +145,9 @@ table_child_set_property (GObject      *gobject,
       clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
     case CHILD_PROP_KEEP_RATIO:
+      g_warning ("The \"keep-aspect-ratio\" property of NbtkTableChild is"
+                 " deprecated. Please implement this feature using the child's"
+                 " preferred width and height mechanism");
       child->keep_ratio = g_value_get_boolean (value);
       clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
