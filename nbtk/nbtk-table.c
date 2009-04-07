@@ -78,8 +78,8 @@ struct _NbtkTablePrivate
   GArray *min_heights;
   GArray *pref_heights;
 
-  GArray *has_expand_cols;
-  GArray *has_expand_rows;
+  GArray *is_expand_col;
+  GArray *is_expand_row;
 
   GArray *col_widths;
 
@@ -546,8 +546,8 @@ nbtk_table_finalize (GObject *gobject)
   g_array_free (priv->min_heights, TRUE);
   g_array_free (priv->pref_heights, TRUE);
 
-  g_array_free (priv->has_expand_cols, TRUE);
-  g_array_free (priv->has_expand_rows, TRUE);
+  g_array_free (priv->is_expand_col, TRUE);
+  g_array_free (priv->is_expand_row, TRUE);
 
   g_array_free (priv->col_widths, TRUE);
   g_array_free (priv->min_heights, TRUE);
@@ -710,15 +710,15 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
 {
   gint total_min_width, i;
   NbtkTablePrivate *priv = table->priv;
-  gboolean *has_expand_cols;
+  gboolean *is_expand_col;
   gint extra_col_width, n_expanded_cols = 0, expanded_cols = 0;
   gint *pref_widths, *min_widths;
   GSList *list;
   NbtkPadding padding;
 
-  g_array_set_size (priv->has_expand_cols, 0);
-  g_array_set_size (priv->has_expand_cols, priv->n_cols);
-  has_expand_cols = (gboolean *)priv->has_expand_cols->data;
+  g_array_set_size (priv->is_expand_col, 0);
+  g_array_set_size (priv->is_expand_col, priv->n_cols);
+  is_expand_col = (gboolean *)priv->is_expand_col->data;
 
   g_array_set_size (priv->pref_widths, 0);
   g_array_set_size (priv->pref_widths, priv->n_cols);
@@ -755,7 +755,7 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
       row_span = meta->row_span;
 
       if (x_expand)
-        has_expand_cols[col] = TRUE;
+        is_expand_col[col] = TRUE;
 
       clutter_actor_get_preferred_width (child, -1, &w_min, &w_pref);
       if (col_span == 1 && w_pref > pref_widths[col])
@@ -776,7 +776,7 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
   /* calculate the remaining space and distribute it evenly onto all rows/cols
    * with the x/y expand property set. */
   for (i = 0; i < priv->n_cols; i++)
-    if (has_expand_cols[i])
+    if (is_expand_col[i])
       {
         expanded_cols += pref_widths[i];
         n_expanded_cols++;
@@ -786,7 +786,7 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
   extra_col_width = for_width - total_min_width;
   if (extra_col_width)
     for (i = 0; i < priv->n_cols; i++)
-      if (has_expand_cols[i])
+      if (is_expand_col[i])
        {
           if (extra_col_width < 0)
             {
@@ -801,7 +801,7 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
                 {
                   /* restart calculations :-( */
                   expanded_cols -= pref_widths[i];
-                  has_expand_cols[i] = 0;
+                  is_expand_col[i] = 0;
                   i = 0;
                 }
             }
@@ -823,7 +823,7 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
   gint *min_widths, *min_heights;
   gint n_expanded_rows = 0;
   NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
-  gboolean *has_expand_rows;
+  gboolean *is_expand_row;
   gint expanded_rows = 0;
   NbtkPadding padding;
 
@@ -832,9 +832,9 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
   col_spacing = (priv->col_spacing);
   row_spacing = (priv->row_spacing);
 
-  g_array_set_size (priv->has_expand_rows, 0);
-  g_array_set_size (priv->has_expand_rows, priv->n_rows);
-  has_expand_rows = (gboolean *)priv->has_expand_rows->data;
+  g_array_set_size (priv->is_expand_row, 0);
+  g_array_set_size (priv->is_expand_row, priv->n_rows);
+  is_expand_row = (gboolean *)priv->is_expand_row->data;
 
   g_array_set_size (priv->min_heights, 0);
   g_array_set_size (priv->min_heights, priv->n_rows);
@@ -873,7 +873,7 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
       row_span = meta->row_span;
 
       if (y_expand)
-        has_expand_rows[row] = TRUE;
+        is_expand_row[row] = TRUE;
 
       /* calculate the cell width by including any spanned columns */
       cell_width = 0;
@@ -893,7 +893,7 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
   /* calculate the remaining space and distribute it evenly onto all rows/cols
    * with the x/y expand property set. */
   for (i = 0; i < priv->n_rows; i++)
-    if (has_expand_rows[i])
+    if (is_expand_row[i])
       {
         expanded_rows += min_heights[i];
         n_expanded_rows++;
@@ -908,7 +908,7 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
    */
   if (extra_row_height)
     for (i = 0; i < priv->n_rows; i++)
-      if (has_expand_rows[i])
+      if (is_expand_row[i])
         {
           if (expanded_rows < 0)
             min_heights[i] =
@@ -1401,12 +1401,12 @@ nbtk_table_init (NbtkTable *table)
                                            TRUE,
                                            sizeof (gint));
 
-  table->priv->has_expand_cols = g_array_new (FALSE,
-                                              TRUE,
-                                              sizeof (gboolean));
-  table->priv->has_expand_rows = g_array_new (FALSE,
-                                              TRUE,
-                                              sizeof (gboolean));
+  table->priv->is_expand_col = g_array_new (FALSE,
+                                            TRUE,
+                                            sizeof (gboolean));
+  table->priv->is_expand_row = g_array_new (FALSE,
+                                            TRUE,
+                                            sizeof (gboolean));
 
   table->priv->col_widths = g_array_new (FALSE,
                                          TRUE,
