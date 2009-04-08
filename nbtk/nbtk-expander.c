@@ -22,6 +22,7 @@
 
 #include "nbtk-expander.h"
 #include "nbtk-private.h"
+#include "nbtk-stylable.h"
 
 G_DEFINE_TYPE (NbtkExpander, nbtk_expander, NBTK_TYPE_BIN)
 
@@ -434,7 +435,12 @@ static void
 nbtk_expander_style_changed (NbtkWidget *widget)
 {
   NbtkExpander *expander = NBTK_EXPANDER (widget);
+  NbtkExpanderPrivate *priv = expander->priv;
   const gchar *pseudo_class;
+  ClutterColor *color = NULL;
+  gchar *font_name;
+  gchar *font_string;
+  gint font_size;
 
   NBTK_WIDGET_CLASS (nbtk_expander_parent_class)->style_changed (widget);
 
@@ -442,6 +448,39 @@ nbtk_expander_style_changed (NbtkWidget *widget)
 
   nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (expander->priv->arrow),
                                       pseudo_class);
+
+
+  nbtk_stylable_get (NBTK_STYLABLE (widget),
+                     "color", &color,
+                     "font-family", &font_name,
+                     "font-size", &font_size,
+                     NULL);
+
+  if (color)
+    {
+      clutter_text_set_color (CLUTTER_TEXT (priv->label), color);
+      clutter_color_free (color);
+    }
+
+  if (font_name || font_size)
+    {
+      if (font_name && font_size)
+        {
+          font_string = g_strdup_printf ("%s %dpx", font_name, font_size);
+          g_free (font_name);
+        }
+      else
+        {
+          if (font_size)
+            font_string = g_strdup_printf ("%dpx", font_size);
+          else
+            font_string = font_name;
+        }
+
+      clutter_text_set_font_name (CLUTTER_TEXT (priv->label), font_string);
+      g_free (font_string);
+    }
+
 }
 
 static gboolean
