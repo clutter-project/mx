@@ -41,8 +41,9 @@
 
 struct _NbtkScrollButtonPrivate
 {
-  guint source_id;
-  gboolean is_initial;
+  guint     signal_id;
+  guint     source_id;
+  gboolean  is_initial;
 };
 
 G_DEFINE_TYPE (NbtkScrollButton, nbtk_scroll_button, NBTK_TYPE_BUTTON);
@@ -67,7 +68,7 @@ nbtk_scroll_button_emit_clicked (NbtkScrollButton *self)
 {
   NbtkScrollButtonPrivate *priv = NBTK_SCROLL_BUTTON_GET_PRIVATE (self);
 
-  g_signal_emit_by_name (self, "clicked");
+  g_signal_emit (self, priv->signal_id, 0);
 
   if (priv->is_initial)
     {
@@ -165,7 +166,9 @@ static void
 nbtk_scroll_button_init (NbtkScrollButton *self)
 {
   self->priv = NBTK_SCROLL_BUTTON_GET_PRIVATE (self);
-  
+
+  self->priv->signal_id = g_signal_lookup ("clicked", NBTK_TYPE_BUTTON);
+
   g_signal_connect (self, "notify::reactive", 
                     G_CALLBACK (nbtk_scroll_button_notify_reactive), NULL);
 }
