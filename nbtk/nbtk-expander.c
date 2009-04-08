@@ -36,6 +36,7 @@ enum {
 
 struct _NbtkExpanderPrivate {
   ClutterActor *label;
+  ClutterActor *arrow;
   ClutterUnit   spacing;
 
   ClutterTimeline *timeline;
@@ -167,6 +168,17 @@ nbtk_expander_toggle_expanded (NbtkExpander *expander)
 
   priv->expanded = !priv->expanded;
 
+  if (priv->expanded)
+    {
+      clutter_actor_set_name (priv->arrow, "nbtk-expander-arrow-open");
+      nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (expander), "active");
+    }
+  else
+    {
+      clutter_actor_set_name (priv->arrow, "nbtk-expander-arrow-closed");
+      nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (expander), NULL);
+    }
+
   child = nbtk_bin_get_child (NBTK_BIN (expander));
 
   if (!child)
@@ -212,7 +224,7 @@ nbtk_expander_get_preferred_width (ClutterActor *actor,
   NbtkExpanderPrivate *priv = NBTK_EXPANDER (actor)->priv;
   ClutterActor *child;
   NbtkPadding padding;
-  ClutterUnit min_child_w, pref_child_w, min_label_w, pref_label_w;
+  ClutterUnit min_child_w, pref_child_w, min_label_w, pref_label_w, arrow_w;
 
   child = nbtk_bin_get_child (NBTK_BIN (actor));
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
@@ -232,15 +244,21 @@ nbtk_expander_get_preferred_width (ClutterActor *actor,
 
   clutter_actor_get_preferred_width (priv->label,
                                      -1, &min_label_w, &pref_label_w);
+  clutter_actor_get_preferred_width (priv->arrow,
+                                     -1, NULL, &arrow_w);
+
+  /* TODO: create a style property for this padding between arrow and label */
+  if (arrow_w)
+    arrow_w += CLUTTER_UNITS_FROM_INT (6);
 
   if (min_width)
     *min_width = padding.left
-                 + MAX (min_child_w, min_label_w)
+                 + MAX (min_child_w, min_label_w + arrow_w)
                  + padding.right;
 
   if (pref_width)
     *pref_width = padding.left
-                  + MAX (pref_child_w, pref_label_w)
+                  + MAX (pref_child_w, pref_label_w + arrow_w)
                   + padding.right;
 }
 
@@ -253,7 +271,7 @@ nbtk_expander_get_preferred_height (ClutterActor *actor,
   NbtkExpanderPrivate *priv = NBTK_EXPANDER (actor)->priv;
   ClutterActor *child;
   NbtkPadding padding;
-  ClutterUnit min_child_h, pref_child_h, min_label_h, pref_label_h;
+  ClutterUnit min_child_h, pref_child_h, min_label_h, pref_label_h, arrow_h;
   ClutterUnit available_w;
 
   child = nbtk_bin_get_child (NBTK_BIN (actor));
@@ -284,6 +302,11 @@ nbtk_expander_get_preferred_height (ClutterActor *actor,
                                       &min_label_h,
                                       &pref_label_h);
 
+  clutter_actor_get_preferred_height (priv->arrow, -1, NULL, &arrow_h);
+
+  min_label_h = MAX (min_label_h, arrow_h);
+  pref_label_h = MAX (pref_label_h, arrow_h);
+
   if (min_height)
     *min_height = padding.top
                   + min_child_h + min_label_h
@@ -308,7 +331,7 @@ nbtk_expander_allocate (ClutterActor          *actor,
   ClutterUnit label_w, label_h;
   ClutterUnit child_h, child_w;
   ClutterActorClass *parent_parent;
-  ClutterUnit available_w, available_h, min_w, min_h, full_h;
+  ClutterUnit available_w, available_h, min_w, min_h, full_h, arrow_h, arrow_w;
   ClutterRequestMode request;
 
   /* skip NbtkBin allocate */
@@ -323,26 +346,42 @@ nbtk_expander_allocate (ClutterActor          *actor,
   /* visual height of the expander - used for allocating the background */
   full_h = padding.top + padding.bottom;
 
+  /* arrow */
+  clutter_actor_get_preferred_width (priv->arrow, -1, NULL, &arrow_w);
+  arrow_w = MIN (arrow_w, available_w);
+
+  clutter_actor_get_preferred_height (priv->arrow, -1, NULL, &arrow_h);
+  arrow_h = MIN (arrow_h, available_h);
+
+  child_box.x1 = padding.left;
+  child_box.x2 = child_box.x1 + arrow_w;
+  child_box.y1 = padding.top;
+  child_box.y2 = child_box.y1 + arrow_h;
+  clutter_actor_allocate (priv->arrow, &child_box, origin_changed);
+
   /* label */
   min_h = 0;
   min_w = 0;
 
-  clutter_actor_get_preferred_width (priv->label, available_h, &min_w, &label_w);
+  clutter_actor_get_preferred_width (priv->label,
+                                     available_h, &min_w, &label_w);
   label_w = CLAMP (label_w, min_w, available_w);
 
-  clutter_actor_get_preferred_height (priv->label, label_w, &min_h, &label_h);
+  clutter_actor_get_preferred_height (priv->label,
+                                      label_w, &min_h, &label_h);
   label_h = CLAMP (label_h, min_h, available_h);
 
-  child_box.x1 = padding.left;
+  /* TODO: make a style property for padding between arrow and label */
+  child_box.x1 = padding.left + arrow_w + CLUTTER_UNITS_FROM_INT (6);
   child_box.x2 = child_box.x1 + label_w;
   child_box.y1 = padding.top;
-  child_box.y2 = child_box.y2 + label_h;
+  child_box.y2 = child_box.y1 + label_h;
   clutter_actor_allocate (priv->label, &child_box, origin_changed);
 
-  full_h += label_h;
+  full_h += MAX (label_h, arrow_h);
 
   /* remove label height and spacing for child calculations */
-  available_h -= label_h - priv->spacing;
+  available_h -= MAX (label_h, arrow_h) - priv->spacing;
 
   /* child */
   child = nbtk_bin_get_child (NBTK_BIN (actor));
@@ -373,7 +412,7 @@ nbtk_expander_allocate (ClutterActor          *actor,
 
       child_box.x1 = padding.left;
       child_box.x2 = child_box.x1 + child_w;
-      child_box.y1 = padding.top + priv->spacing + label_h;
+      child_box.y1 = padding.top + priv->spacing + MAX (label_h, arrow_h);
       child_box.y2 = child_box.y2 + child_h;
       clutter_actor_allocate (child, &child_box, origin_changed);
 
@@ -387,14 +426,48 @@ nbtk_expander_paint (ClutterActor *actor)
 {
   CLUTTER_ACTOR_CLASS (nbtk_expander_parent_class)->paint (actor);
 
-  clutter_actor_paint (NBTK_EXPANDER (actor)->priv->label);
+  clutter_actor_paint (((NbtkExpander* ) actor)->priv->label);
+  clutter_actor_paint (((NbtkExpander* ) actor)->priv->arrow);
 }
+
+static void
+nbtk_expander_style_changed (NbtkWidget *widget)
+{
+  NbtkExpander *expander = NBTK_EXPANDER (widget);
+  const gchar *pseudo_class;
+
+  NBTK_WIDGET_CLASS (nbtk_expander_parent_class)->style_changed (widget);
+
+  pseudo_class = nbtk_widget_get_style_pseudo_class (widget);
+
+  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (expander->priv->arrow),
+                                      pseudo_class);
+}
+
+static gboolean
+nbtk_expander_enter (ClutterActor         *actor,
+                     ClutterCrossingEvent *event)
+{
+  if (!NBTK_EXPANDER (actor)->priv->expanded)
+    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (actor), "hover");
+}
+
+static gboolean
+nbtk_expander_leave (ClutterActor         *actor,
+                     ClutterCrossingEvent *event)
+{
+  if (!NBTK_EXPANDER (actor)->priv->expanded)
+    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (actor), NULL);
+}
+
+
 
 static void
 nbtk_expander_class_init (NbtkExpanderClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
+  NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (NbtkExpanderPrivate));
@@ -409,6 +482,10 @@ nbtk_expander_class_init (NbtkExpanderClass *klass)
   actor_class->get_preferred_width = nbtk_expander_get_preferred_width;
   actor_class->get_preferred_height = nbtk_expander_get_preferred_height;
   actor_class->paint = nbtk_expander_paint;
+  actor_class->enter_event = nbtk_expander_enter;
+  actor_class->leave_event = nbtk_expander_leave;
+
+  widget_class->style_changed = nbtk_expander_style_changed;
 
   pspec = g_param_spec_boolean ("expanded",
                                 "Expanded",
@@ -427,6 +504,11 @@ nbtk_expander_init (NbtkExpander *self)
 
   priv->label = clutter_text_new ();
   clutter_actor_set_parent (priv->label, (ClutterActor *) self);
+
+  priv->arrow = (ClutterActor *) nbtk_icon_new ();
+  clutter_actor_set_parent (priv->arrow, (ClutterActor *) self);
+  clutter_actor_set_name (priv->arrow, "nbtk-expander-arrow-open");
+  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (self), "active");
 
   /* TODO: make this a style property */
   priv->spacing = CLUTTER_UNITS_FROM_INT (6);
