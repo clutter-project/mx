@@ -584,25 +584,25 @@ nbtk_widget_style_changed (NbtkWidget *self)
   texture_cache = nbtk_texture_cache_get_default ();
 
   /* Check if the URL is actually present, not garbage in the property */
-  if (border_image && border_image->image.uri)
+  if (border_image && border_image->uri)
     {
       gint border_left, border_right, border_top, border_bottom;
+      gint width, height;
 
       /* `border-image' takes precedence over `background-image'.
        * Firefox lets the background-image shine thru when border-image has
        * alpha an channel, maybe that would be an option for the future. */
       texture = nbtk_texture_cache_get_texture (texture_cache,
-                                                border_image->image.uri,
+                                                border_image->uri,
                                                 FALSE);
 
-      border_left = ccss_position_get_size (&border_image->left,
-                                            border_image->image.width);
-      border_top = ccss_position_get_size (&border_image->top,
-                                           border_image->image.height);
-      border_right = ccss_position_get_size (&border_image->right,
-                                             border_image->image.width);
-      border_bottom = ccss_position_get_size (&border_image->bottom,
-                                              border_image->image.height);
+      clutter_texture_get_base_size (CLUTTER_TEXTURE (texture),
+                                     &width, &height);
+
+      border_left = ccss_position_get_size (&border_image->left, width);
+      border_top = ccss_position_get_size (&border_image->top, height);
+      border_right = ccss_position_get_size (&border_image->right, width);
+      border_bottom = ccss_position_get_size (&border_image->bottom, height);
 
       priv->border_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
                                                    border_top,

@@ -78,6 +78,8 @@ typedef struct {
   NbtkStylableIface *iface;
 } nbtk_style_node_t;
 
+static ccss_function_t const * peek_css_functions (void);
+
 static ccss_node_class_t * peek_node_class (void);
 
 static guint style_signals[LAST_SIGNAL] = { 0, };
@@ -129,6 +131,7 @@ nbtk_style_load_from_file (NbtkStyle    *style,
                            GError      **error)
 {
   NbtkStylePrivate *priv;
+  ccss_grammar_t *grammar;
   GError *internal_error;
   gchar *path;
   GList *l;
@@ -172,7 +175,12 @@ nbtk_style_load_from_file (NbtkStyle    *style,
     priv->image_paths = g_list_append (priv->image_paths, path);
 
   /* now load the stylesheet */
-  priv->stylesheet = ccss_stylesheet_new_from_file (filename);
+  grammar = ccss_grammar_create_css ();
+  ccss_grammar_add_functions (grammar, peek_css_functions ());
+  priv->stylesheet = ccss_grammar_create_stylesheet_from_file (grammar,
+                                                               filename,
+                                                               NULL);
+  ccss_grammar_destroy (grammar);
   g_signal_emit (style, style_signals[CHANGED], 0, NULL);
 
   /* add a monitor, if we don't already have this file */
@@ -287,10 +295,8 @@ nbtk_style_class_init (NbtkStyleClass *klass)
 
 /* url loader for libccss */
 static char *
-ccss_url (ccss_block_t  *block,
-          char const    *property_name,
-          char const    *function_name,
-          GSList const  *args)
+ccss_url (GSList const  *args,
+          void          *user_data)
 {
   const gchar *given_path, *filename;
   gchar *test_path;
@@ -334,26 +340,25 @@ ccss_url (ccss_block_t  *block,
   return strdup (given_path);
 }
 
-static ccss_function_t const ccss_functions[] =
+static ccss_function_t const *
+peek_css_functions (void)
 {
-  { "url", ccss_url },
-  { NULL }
-};
+  static ccss_function_t const ccss_functions[] =
+  {
+    { "url", ccss_url },
+    { NULL }
+  };
+
+  return ccss_functions;
+}
 
 
 static void
 nbtk_style_init (NbtkStyle *style)
 {
   NbtkStylePrivate *priv;
-  static gboolean inited = FALSE;
 
   style->priv = priv = NBTK_STYLE_GET_PRIVATE (style);
-
-  if (!inited)
-  {
-    inited = TRUE;
-    ccss_init (NULL, ccss_functions);
-  }
 
   nbtk_style_load (style);
 }
@@ -514,9 +519,9 @@ nbtk_style_get_property (NbtkStyle    *style,
       ccss_node->iface = iface;
       ccss_node->stylable = stylable;
 
-      ccss_style = ccss_style_new ();
-
-      if (ccss_stylesheet_query (priv->stylesheet, (ccss_node_t*) ccss_node, ccss_style))
+      ccss_style = ccss_stylesheet_query (priv->stylesheet,
+                                          (ccss_node_t *) ccss_node);
+      if (ccss_style)
         {
           if (G_PARAM_SPEC_VALUE_TYPE (pspec))
             {
@@ -541,16 +546,14 @@ nbtk_style_get_property (NbtkStyle    *style,
               else if (NBTK_TYPE_BORDER_IMAGE == G_PARAM_SPEC_VALUE_TYPE (pspec) &&
                        0 == g_strcmp0 ("border-image", pspec->name))
                 {
-                  gpointer css_value;
+                      ccss_border_image_t const *border_image;
 
                   if (ccss_style_get_property (ccss_style,
                                                "border-image",
-                                               &css_value))
+                                               (ccss_property_base_t const **) &border_image))
                     {
-                      ccss_property_t *border_image = css_value;
                       if (border_image &&
-                          border_image->type != CCSS_PROPERTY_STATE_UNSET &&
-                          border_image->type != CCSS_PROPERTY_STATE_NONE)
+                          border_image->base.state == CCSS_PROPERTY_STATE_SET)
                         {
                           g_value_set_boxed (&real_value, border_image);
                           value_set = TRUE;
@@ -621,7 +624,7 @@ nbtk_style_get_property (NbtkStyle    *style,
                 }
             }
         }
-      ccss_style_free (ccss_style);
+      ccss_style_destroy (ccss_style);
       g_free (ccss_node);
     }
 
