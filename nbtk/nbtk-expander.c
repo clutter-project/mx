@@ -550,7 +550,7 @@ nbtk_expander_init (NbtkExpander *self)
   nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (self), "active");
 
   /* TODO: make this a style property */
-  priv->spacing = CLUTTER_UNITS_FROM_INT (6);
+  priv->spacing = CLUTTER_UNITS_FROM_INT (10);
 
   priv->progress = 1.0;
   priv->expanded = 1;
