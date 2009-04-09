@@ -31,6 +31,7 @@
 #include <nbtk/nbtk-expander.h>
 #include <nbtk/nbtk-fade-button.h>
 #include <nbtk/nbtk-grid.h>
+#include <nbtk/nbtk-icon.h>
 #include <nbtk/nbtk-label.h>
 #include <nbtk/nbtk-scroll-bar.h>
 #include <nbtk/nbtk-scroll-view.h>
