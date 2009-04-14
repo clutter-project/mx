@@ -1267,7 +1267,7 @@ nbtk_table_get_preferred_height (ClutterActor *self,
   /* calculate minimum row heights */
   for (list = priv->children; list; list = g_slist_next (list))
     {
-      gint row, col, col_span, cell_width;
+      gint row, col, col_span, cell_width, row_span;
       ClutterUnit min, pref;
       NbtkTableChild *meta;
       ClutterActor *child;
@@ -1280,6 +1280,7 @@ nbtk_table_get_preferred_height (ClutterActor *self,
       row = meta->row;
       col = meta->col;
       col_span = meta->col_span;
+      row_span = meta->row_span;
 
       cell_width = 0;
       for (i = 0; i < col_span; i++)
@@ -1289,9 +1290,9 @@ nbtk_table_get_preferred_height (ClutterActor *self,
       clutter_actor_get_preferred_height (child,
               CLUTTER_UNITS_FROM_INT (cell_width), &min, &pref);
 
-      if (min > min_heights[row])
+      if (row_span == 1 && min > min_heights[row])
         min_heights[row] = min;
-      if (pref > pref_heights[row])
+      if (row_span == 1 && pref > pref_heights[row])
         pref_heights[row] = pref;
     }
 
