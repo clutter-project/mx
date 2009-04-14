@@ -1190,7 +1190,7 @@ nbtk_table_get_preferred_width (ClutterActor *self,
   /* calculate minimum row widths */
   for (list = priv->children; list; list = g_slist_next (list))
     {
-      gint col;
+      gint col, col_span;
       ClutterUnit w_min, w_pref;
       NbtkTableChild *meta;
       ClutterActor *child;
@@ -1201,12 +1201,13 @@ nbtk_table_get_preferred_width (ClutterActor *self,
 
       /* get child properties */
       col = meta->col;
+      col_span = meta->col_span;
 
       clutter_actor_get_preferred_width (child, -1, &w_min, &w_pref);
 
-      if (w_min > min_widths[col])
+      if (col_span == 1 && w_min > min_widths[col])
         min_widths[col] = w_min;
-      if (w_pref > pref_widths[col])
+      if (col_span == 1 && w_pref > pref_widths[col])
         pref_widths[col] = w_pref;
     }
 
