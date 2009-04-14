@@ -606,12 +606,11 @@ nbtk_table_allocate_fill (ClutterActor *child,
                           gboolean x_fill,
                           gboolean y_fill)
 {
-  ClutterUnit width;
+  ClutterUnit width, max_width;
+  max_width = childbox->x2 - childbox->x1;
 
   if (!x_fill)
     {
-      ClutterUnit max_width;
-      max_width = childbox->x2 - childbox->x1;
       clutter_actor_get_preferred_width (child, -1, NULL, &width);
       if (width < max_width)
         {
@@ -633,6 +632,24 @@ nbtk_table_allocate_fill (ClutterActor *child,
         {
           childbox->y1 += CLAMP_TO_PIXEL ((max_height - height) * y_align);
           childbox->y2 = childbox->y1 + height;
+        }
+      else
+        {
+          /* we couldn't fit the actor's height into our cell
+           * however, if x-fill is on, we are free to adjust the width, so we can
+           * get the preferred width for this height instead
+           */
+          if (x_fill)
+            {
+              ClutterUnit min_w, pref_w;
+
+              clutter_actor_get_preferred_width (child, max_height,
+                                                 &min_w, &pref_w);
+              width = CLAMP (pref_w, min_w, max_width);
+
+              childbox->x1 += CLAMP_TO_PIXEL((max_width - width) * x_align);
+              childbox->x2 = childbox->x1 + width;
+            }
         }
     }
 }
