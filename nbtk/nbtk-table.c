@@ -1432,6 +1432,10 @@ nbtk_table_add_actor_full (NbtkTable            *table,
   g_return_if_fail ((xalign >= 0) && (xalign <= 1.0));
   g_return_if_fail ((yalign >= 0) && (yalign <= 1.0));
 
+  g_warning ("%s is deprecated. Please use nbtk_table_add_actor_with_properties"
+             " instead.",
+             __FUNCTION__);
+
   nbtk_table_add_actor (table, actor, row, column);
   clutter_container_child_set (CLUTTER_CONTAINER (table),
                                actor,
@@ -1469,6 +1473,8 @@ nbtk_table_add_actor_full (NbtkTable            *table,
  *
  * Note: row and column numberings start from 0 in the top left corner.
  * Therefore, the top left most cell is at column 0, row 0.
+ *
+ * Deprecated: Please use nbtk_table_add_actor() instead.
  */
 void
 nbtk_table_add_widget (NbtkTable  *table,
@@ -1476,10 +1482,9 @@ nbtk_table_add_widget (NbtkTable  *table,
                        gint        row,
                        gint        column)
 {
-  g_return_if_fail (NBTK_IS_TABLE (table));
-  g_return_if_fail (NBTK_IS_WIDGET (widget));
-  g_return_if_fail (row >= 0);
-  g_return_if_fail (column >= 0);
+
+  g_warning ("%s is deprecated. Please use nbtk_table_add_actor instead.",
+             __FUNCTION__);
 
   nbtk_table_add_actor (table, CLUTTER_ACTOR (widget), row, column);
 }
@@ -1500,6 +1505,8 @@ nbtk_table_add_widget (NbtkTable  *table,
  * child properties simultaneously.
  *
  * See nbtk_table_add_widget().
+ *
+ * Deprecated: Please use nbtk_table_add_actor_with_properties() instead.
  */
 void
 nbtk_table_add_widget_full (NbtkTable            *table,
@@ -1512,7 +1519,10 @@ nbtk_table_add_widget_full (NbtkTable            *table,
                             gdouble               xalign,
                             gdouble               yalign)
 {
-  g_return_if_fail (NBTK_IS_WIDGET (widget));
+
+  g_warning ("%s is deprecated. Please use nbtk_table_add_actor_with_properties"
+             " instead.",
+             __FUNCTION__);
 
   nbtk_table_add_actor_full (table,
                              CLUTTER_ACTOR (widget),
@@ -1534,6 +1544,8 @@ nbtk_table_add_widget_full (NbtkTable            *table,
  * Set the number of columns a widget should span, starting with the current
  * column and moving right. For example, a widget placed in column 1 with
  * colspan set to 3 will occupy columns 1, 2 and 3.
+ *
+ * Deprecated: please use nbtk_table_child_set_col_span() instead
  */
 void
 nbtk_table_set_widget_colspan (NbtkTable *table,
@@ -1545,6 +1557,9 @@ nbtk_table_set_widget_colspan (NbtkTable *table,
   g_return_if_fail (NBTK_TABLE (table));
   g_return_if_fail (NBTK_WIDGET (widget));
   g_return_if_fail (colspan >= 1);
+
+  g_warning ("%s is deprecated. Please use nbtk_table_child_set_col_span()"
+             " instead", __FUNCTION__);
 
   meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (table),
                                            CLUTTER_ACTOR (widget));
@@ -1561,6 +1576,8 @@ nbtk_table_set_widget_colspan (NbtkTable *table,
  * Set the number of rows a widget should span, starting with the current
  * row and moving down. For example, a widget placed in row 1 with rowspan
  * set to 3 will occupy rows 1, 2 and 3.
+ *
+ * Deprecated: Please use nbtk_table_child_set_row_span() instead.
  */
 void
 nbtk_table_set_widget_rowspan (NbtkTable *table,
@@ -1572,6 +1589,9 @@ nbtk_table_set_widget_rowspan (NbtkTable *table,
   g_return_if_fail (NBTK_TABLE (table));
   g_return_if_fail (NBTK_WIDGET (widget));
   g_return_if_fail (rowspan >= 1);
+
+  g_warning ("%s is deprecated. Please use nbtk_table_child_set_row_span()"
+             " instead", __FUNCTION__);
 
   meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (table),
                                            CLUTTER_ACTOR (widget));
@@ -1585,9 +1605,8 @@ nbtk_table_set_widget_rowspan (NbtkTable *table,
  * @x: screen coordinate of the insertion
  * @y: screen coordiante of the insertion
  *
- * Set the number of rows a widget should span, starting with the current
- * row and moving down. For example, a widget placed in row 1 with rowspan
- * set to 3 will occupy rows 1, 2 and 3.
+ *
+ * Deprecated: This function has never been implemented.
  */
 void
 nbtk_table_insert_actor_at_position (NbtkTable *table,
@@ -1599,6 +1618,8 @@ nbtk_table_insert_actor_at_position (NbtkTable *table,
   g_return_if_fail (CLUTTER_IS_ACTOR (actor));
 
   priv = NBTK_TABLE (table)->priv;
+
+  g_warning ("%s is deprecated and has never been implemented", __FUNCTION__);
 
   /*
    * FIXME -- this is just a stub; do something sensible with the coords
