@@ -1651,6 +1651,38 @@ nbtk_table_add_actor (NbtkTable   *table,
 }
 
 void
+nbtk_table_add_actor_with_attributes (NbtkTable    *table,
+                                      ClutterActor *actor,
+                                      gint          row,
+                                      gint          column,
+                                      const gchar  *first_property_name,
+                                      ...)
+{
+  va_list args;
+  NbtkTableChild *meta;
+  ClutterContainer *container;
+
+  g_return_if_fail (NBTK_IS_TABLE (table));
+  g_return_if_fail (CLUTTER_IS_ACTOR (actor));
+  g_return_if_fail (row >= 0);
+  g_return_if_fail (column >= 0);
+  g_return_if_fail (first_property_name != NULL);
+
+  container = (ClutterContainer *)table;
+  clutter_container_add_actor (container, actor);
+  clutter_container_child_set (CLUTTER_CONTAINER (table), actor,
+                               "row", row,
+                               "col", column,
+                               NULL);
+  meta = (NbtkTableChild*) clutter_container_get_child_meta (container,
+                                                             actor);
+
+  va_start (args, first_property_name);
+  g_object_set_valist ((GObject*) meta, first_property_name, args);
+  va_end (args);
+}
+
+void
 nbtk_table_add_actor_full (NbtkTable            *table,
                            ClutterActor         *actor,
                            gint                  row,
