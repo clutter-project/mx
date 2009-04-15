@@ -70,6 +70,12 @@ typedef enum {
   NBTK_ALIGN_CENTER
 } NbtkAlignment;
 
+typedef enum {
+  NBTK_ALIGN_START,
+  NBTK_ALIGN_MIDDLE,
+  NBTK_ALIGN_END
+} NbtkAlign;
+
 G_END_DECLS
 
 #endif /* __NBTK_TYPES_H__ */

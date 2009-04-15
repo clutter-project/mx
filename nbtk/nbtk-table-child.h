@@ -27,6 +27,8 @@
 
 #include <nbtk/nbtk-types.h>
 #include <nbtk/nbtk-widget.h>
+#include <nbtk/nbtk-table.h>
+#include <clutter/clutter.h>
 
 G_BEGIN_DECLS
 
@@ -57,24 +59,6 @@ struct _NbtkTableChild
   gdouble y_align;
 };
 
-/**
- * NbtkTableChildOptions:
- * @NBTK_KEEP_ASPECT_RATIO: whether to respect the widget's aspect ratio
- * @NBTK_X_EXPAND: whether to allocate extra space on the widget's x-axis
- * @NBTK_Y_EXPAND: whether to allocate extra space on the widget's y-axis
- * @NBTK_X_FILL: whether to stretch the child to fill the cell horizontally
- * @NBTK_Y_FILL: whether to stretch the child to fill the cell vertically
- *
- * Denotes the child properties an NbtkTable child will have.
- */
-typedef enum
-{
-  NBTK_KEEP_ASPECT_RATIO = 1 << 0,
-  NBTK_X_EXPAND          = 1 << 1,
-  NBTK_Y_EXPAND          = 1 << 2,
-  NBTK_X_FILL            = 1 << 3,
-  NBTK_Y_FILL            = 1 << 4
-} NbtkTableChildOptions;
 
 struct _NbtkTableChildClass
 {
@@ -82,6 +66,30 @@ struct _NbtkTableChildClass
 };
 
 GType nbtk_table_child_get_type (void) G_GNUC_CONST;
+
+gint nbtk_table_child_get_col_span (NbtkTable *table, ClutterActor *child);
+void nbtk_table_child_set_col_span (NbtkTable *table, ClutterActor *child, gint span);
+
+gint nbtk_table_child_get_row_span (NbtkTable *table, ClutterActor *child);
+void nbtk_table_child_set_row_span (NbtkTable *table, ClutterActor *child, gint span);
+
+gboolean nbtk_table_child_get_x_fill (NbtkTable *table, ClutterActor *child);
+void nbtk_table_child_set_x_fill (NbtkTable *table, ClutterActor *child, gboolean fill);
+
+gboolean nbtk_table_child_get_y_fill (NbtkTable *table, ClutterActor *child);
+void nbtk_table_child_set_y_fill (NbtkTable *table, ClutterActor *child, gboolean fill);
+
+gboolean nbtk_table_child_get_col_expand (NbtkTable *table, ClutterActor *child);
+void nbtk_table_child_set_col_expand (NbtkTable *table, ClutterActor *child, gboolean expand);
+
+gboolean nbtk_table_child_get_row_expand (NbtkTable *table, ClutterActor *child);
+void nbtk_table_child_set_row_expand (NbtkTable *table, ClutterActor *child, gboolean expand);
+
+NbtkAlign nbtk_table_child_get_x_align (NbtkTable *table, ClutterActor *child);
+void nbtk_table_child_set_x_align (NbtkTable *table, ClutterActor *child, NbtkAlign align);
+
+NbtkAlign nbtk_table_child_get_y_align (NbtkTable *table, ClutterActor *child);
+void nbtk_table_child_set_y_align (NbtkTable *table, ClutterActor *child, NbtkAlign align);
 
 G_END_DECLS
 
