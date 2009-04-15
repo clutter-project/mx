@@ -26,6 +26,7 @@
 #include <glib.h>
 #include "nbtk-widget.h"
 #include "nbtk-bin.h"
+#include "nbtk-table.h"
 
 G_BEGIN_DECLS
 
@@ -44,5 +45,7 @@ G_END_DECLS
 ClutterActor *_nbtk_widget_get_dnd_clone (NbtkWidget *widget);
 void _nbtk_bin_get_align_factors (NbtkBin *bin, gdouble *x_align, gdouble *y_align);
 
+/* used by NbtkTableChild to update row/column count */
+void _nbtk_table_update_row_col (NbtkTable *table, gint row, gint col);
 
 #endif /* __NBTK_PRIVATE_H__ */

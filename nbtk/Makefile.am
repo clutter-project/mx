@@ -138,6 +138,7 @@ libnbtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	nbtk-stylable.c 		\
 	nbtk-style.c 			\
 	nbtk-table.c 			\
+	nbtk-table-child.c 		\
 	nbtk-texture-cache.c 		\
 	nbtk-texture-frame.c 		\
 	nbtk-tooltip.c 			\
