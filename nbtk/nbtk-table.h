@@ -91,7 +91,7 @@ void        nbtk_table_add_widget         (NbtkTable *table, NbtkWidget *widget,
 void        nbtk_table_add_widget_full    (NbtkTable *table, NbtkWidget *widget, gint row, gint column, gint rowspan, gint colspan, NbtkTableChildOptions options, gdouble xalign, gdouble yalign);
 void        nbtk_table_add_actor          (NbtkTable *table, ClutterActor *actor, gint row, gint column);
 void        nbtk_table_add_actor_full     (NbtkTable *table, ClutterActor *actor, gint row, gint column, gint rowspan, gint colspan, NbtkTableChildOptions options, gdouble xalign, gdouble yalign);
-void        nbtk_table_add_actor_with_attributes (NbtkTable    *table,
+void        nbtk_table_add_actor_with_properties (NbtkTable    *table,
                                                   ClutterActor *actor,
                                                   gint          row,
                                                   gint          column,

@@ -1381,7 +1381,7 @@ nbtk_table_add_actor (NbtkTable   *table,
 }
 
 void
-nbtk_table_add_actor_with_attributes (NbtkTable    *table,
+nbtk_table_add_actor_with_properties (NbtkTable    *table,
                                       ClutterActor *actor,
                                       gint          row,
                                       gint          column,
