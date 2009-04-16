@@ -1361,11 +1361,22 @@ nbtk_table_get_col_spacing (NbtkTable *table)
   return priv->col_spacing;
 }
 
+/**
+ * nbtk_table_add_actor:
+ * @table: a #NbtkTable
+ * @actor: the child to insert
+ * @row: the row to place the child into
+ * @column: the column to place the child into
+ *
+ * Add an actor at the specified row and column
+ *
+ * Note, column and rows numbers start from zero
+ */
 void
-nbtk_table_add_actor (NbtkTable   *table,
-                     ClutterActor *actor,
-                     gint          row,
-                     gint          column)
+nbtk_table_add_actor (NbtkTable    *table,
+                      ClutterActor *actor,
+                      gint          row,
+                      gint          column)
 {
   g_return_if_fail (NBTK_IS_TABLE (table));
   g_return_if_fail (CLUTTER_IS_ACTOR (actor));
@@ -1380,6 +1391,18 @@ nbtk_table_add_actor (NbtkTable   *table,
 
 }
 
+/**
+ * nbtk_table_add_actor_with_properties
+ * @table: a #NbtkTable
+ * @actor: the child #ClutterActor
+ * @row: the row to place the child into
+ * @column: the column to place the child into
+ * @first_property_name: name of the first property to set
+ * @...: value for the first property, followed optionally by more name/value pairs terminated with NULL.
+ *
+ * Add an actor into at the specified row and column, with additional child
+ * properties to set.
+ */
 void
 nbtk_table_add_actor_with_properties (NbtkTable    *table,
                                       ClutterActor *actor,
@@ -1412,6 +1435,20 @@ nbtk_table_add_actor_with_properties (NbtkTable    *table,
   va_end (args);
 }
 
+/**
+ * nbtk_table_add_actor_full:
+ * @table:
+ * @widget:
+ * @row:
+ * @column:
+ * @rowspan:
+ * @colspan:
+ * @options:
+ * @xalign:
+ * @yalign:
+ *
+ * Deprecated: Please use nbtk_table_add_actor_with_properties() instead.
+ */
 void
 nbtk_table_add_actor_full (NbtkTable            *table,
                            ClutterActor         *actor,
