@@ -418,7 +418,19 @@ nbtk_button_finalize (GObject *gobject)
 static void
 nbtk_button_dispose (GObject *gobject)
 {
-  NbtkButton *button = NBTK_BUTTON (gobject);
+  NbtkButtonPrivate *priv = NBTK_BUTTON (gobject)->priv;
+
+  if (priv->icon)
+    {
+      clutter_actor_unparent (priv->icon);
+      priv->icon = NULL;
+    }
+
+  if (priv->label)
+    {
+      clutter_actor_unparent (priv->label);
+      priv->label = NULL;
+    }
 
   G_OBJECT_CLASS (nbtk_button_parent_class)->dispose (gobject);
 }
