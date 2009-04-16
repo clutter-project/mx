@@ -527,6 +527,7 @@ nbtk_entry_init (NbtkEntry *entry)
                               "editable", TRUE,
                               "reactive", TRUE,
                               "cursor-color", &cursor,
+                              "single-line-mode", TRUE,
                               NULL);
 
   g_signal_connect (priv->entry, "focus-out",
