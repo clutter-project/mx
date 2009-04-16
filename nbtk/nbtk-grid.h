@@ -94,6 +94,10 @@ void          nbtk_grid_set_halign             (NbtkGrid    *self,
                                                 gdouble      value);
 gdouble       nbtk_grid_get_halign             (NbtkGrid    *self);
 
+void nbtk_grid_set_max_stride (NbtkGrid *self,
+                               gint      value);
+gint nbtk_grid_get_max_stride (NbtkGrid *self);
+
 G_END_DECLS
 
 #endif /* __NBTK_GRID_H__ */

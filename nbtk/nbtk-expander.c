@@ -23,6 +23,7 @@
 #include "nbtk-expander.h"
 #include "nbtk-private.h"
 #include "nbtk-stylable.h"
+#include "nbtk-icon.h"
 
 G_DEFINE_TYPE (NbtkExpander, nbtk_expander, NBTK_TYPE_BIN)
 
@@ -209,8 +210,6 @@ static gboolean
 nbtk_expander_button_release (ClutterActor       *actor,
                               ClutterButtonEvent *event)
 {
-  NbtkExpanderPrivate *priv = NBTK_EXPANDER (actor)->priv;
-
   nbtk_expander_toggle_expanded (NBTK_EXPANDER (actor));
 
   return FALSE;
@@ -489,6 +488,8 @@ nbtk_expander_enter (ClutterActor         *actor,
 {
   if (!NBTK_EXPANDER (actor)->priv->expanded)
     nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (actor), "hover");
+
+  return FALSE;
 }
 
 static gboolean
@@ -497,6 +498,8 @@ nbtk_expander_leave (ClutterActor         *actor,
 {
   if (!NBTK_EXPANDER (actor)->priv->expanded)
     nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (actor), NULL);
+
+  return FALSE;
 }
 
 
@@ -596,7 +599,7 @@ nbtk_expander_set_expanded (NbtkExpander *expander,
 gboolean
 nbtk_expander_get_expanded (NbtkExpander *expander)
 {
-  g_return_if_fail (NBTK_IS_EXPANDER (expander));
+  g_return_val_if_fail (NBTK_IS_EXPANDER (expander), FALSE);
 
   return expander->priv->expanded;
 }

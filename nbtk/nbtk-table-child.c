@@ -305,8 +305,8 @@ nbtk_table_child_get_col_span (NbtkTable    *table,
 {
   NbtkTableChild *meta;
 
-  g_return_if_fail (NBTK_IS_TABLE (table));
-  g_return_if_fail (CLUTTER_IS_ACTOR (child));
+  g_return_val_if_fail (NBTK_IS_TABLE (table), 0);
+  g_return_val_if_fail (CLUTTER_IS_ACTOR (child), 0);
 
   meta = get_child_meta (table, child);
 
@@ -337,8 +337,8 @@ nbtk_table_child_get_row_span (NbtkTable    *table,
 {
   NbtkTableChild *meta;
 
-  g_return_if_fail (NBTK_IS_TABLE (table));
-  g_return_if_fail (CLUTTER_IS_ACTOR (child));
+  g_return_val_if_fail (NBTK_IS_TABLE (table), 0);
+  g_return_val_if_fail (CLUTTER_IS_ACTOR (child), 0);
 
   meta = get_child_meta (table, child);
 
@@ -368,8 +368,8 @@ nbtk_table_child_get_x_fill (NbtkTable    *table,
 {
   NbtkTableChild *meta;
 
-  g_return_if_fail (NBTK_IS_TABLE (table));
-  g_return_if_fail (CLUTTER_IS_ACTOR (child));
+  g_return_val_if_fail (NBTK_IS_TABLE (table), 0);
+  g_return_val_if_fail (CLUTTER_IS_ACTOR (child), 0);
 
   meta = get_child_meta (table, child);
 
@@ -400,8 +400,8 @@ nbtk_table_child_get_y_fill (NbtkTable    *table,
 {
   NbtkTableChild *meta;
 
-  g_return_if_fail (NBTK_IS_TABLE (table));
-  g_return_if_fail (CLUTTER_IS_ACTOR (child));
+  g_return_val_if_fail (NBTK_IS_TABLE (table), 0);
+  g_return_val_if_fail (CLUTTER_IS_ACTOR (child), 0);
 
   meta = get_child_meta (table, child);
 
@@ -431,8 +431,8 @@ nbtk_table_child_get_col_expand (NbtkTable    *table,
 {
   NbtkTableChild *meta;
 
-  g_return_if_fail (NBTK_IS_TABLE (table));
-  g_return_if_fail (CLUTTER_IS_ACTOR (child));
+  g_return_val_if_fail (NBTK_IS_TABLE (table), 0);
+  g_return_val_if_fail (CLUTTER_IS_ACTOR (child), 0);
 
   meta = get_child_meta (table, child);
 
@@ -462,39 +462,8 @@ nbtk_table_child_get_row_expand (NbtkTable    *table,
 {
   NbtkTableChild *meta;
 
-  g_return_if_fail (NBTK_IS_TABLE (table));
-  g_return_if_fail (CLUTTER_IS_ACTOR (child));
-
-  meta = get_child_meta (table, child);
-
-  return meta->y_expand;
-}
-
-void
-nbtk_table_child_set_row_expand (NbtkTable    *table,
-                                 ClutterActor *child,
-                                 gboolean      expand)
-{
-  NbtkTableChild *meta;
-
-  g_return_if_fail (NBTK_IS_TABLE (table));
-  g_return_if_fail (CLUTTER_IS_ACTOR (child));
-
-  meta = get_child_meta (table, child);
-
-  meta->y_expand = expand;
-
-  clutter_actor_queue_relayout (child);
-}
-
-NbtkAlign
-nbtk_table_child_get_x_align (NbtkTable    *table,
-                              ClutterActor *child)
-{
-  NbtkTableChild *meta;
-
-  g_return_if_fail (NBTK_IS_TABLE (table));
-  g_return_if_fail (CLUTTER_IS_ACTOR (child));
+  g_return_val_if_fail (NBTK_IS_TABLE (table), 0);
+  g_return_val_if_fail (CLUTTER_IS_ACTOR (child), 0);
 
   meta = get_child_meta (table, child);
 
@@ -540,8 +509,8 @@ nbtk_table_child_get_y_align (NbtkTable *table,
 {
   NbtkTableChild *meta;
 
-  g_return_if_fail (NBTK_IS_TABLE (table));
-  g_return_if_fail (CLUTTER_IS_ACTOR (child));
+  g_return_val_if_fail (NBTK_IS_TABLE (table), 0);
+  g_return_val_if_fail (CLUTTER_IS_ACTOR (child), 0);
 
   meta = get_child_meta (table, child);
 

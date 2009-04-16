@@ -609,7 +609,7 @@ nbtk_grid_set_max_stride (NbtkGrid *self,
 gint
 nbtk_grid_get_max_stride (NbtkGrid *self)
 {
-  g_return_if_fail (NBTK_IS_GRID (self));
+  g_return_val_if_fail (NBTK_IS_GRID (self), 0);
 
   return self->priv->max_stride;
 }
@@ -899,8 +899,6 @@ nbtk_grid_get_preferred_width (ClutterActor *self,
                                ClutterUnit *min_width_p,
                                ClutterUnit *natural_width_p)
 {
-  NbtkGrid *layout = (NbtkGrid *) self;
-  NbtkGridPrivate *priv = layout->priv;
   ClutterUnit actual_width, actual_height;
   ClutterActorBox box;
 
@@ -924,8 +922,6 @@ nbtk_grid_get_preferred_height (ClutterActor *self,
                                 ClutterUnit  *min_height_p,
                                 ClutterUnit  *natural_height_p)
 {
-  NbtkGrid *layout = (NbtkGrid *) self;
-  NbtkGridPrivate *priv = layout->priv;
   ClutterUnit actual_width, actual_height;
   ClutterActorBox box;
 

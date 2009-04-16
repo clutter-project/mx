@@ -1561,15 +1561,30 @@ nbtk_table_add_widget_full (NbtkTable            *table,
              " instead.",
              __FUNCTION__);
 
-  nbtk_table_add_actor_full (table,
-                             CLUTTER_ACTOR (widget),
-                             row,
-                             column,
-                             rowspan,
-                             colspan,
-                             options,
-                             xalign,
-                             yalign);
+  nbtk_table_add_actor (table, CLUTTER_ACTOR (widget), row, column);
+  clutter_container_child_set (CLUTTER_CONTAINER (table),
+                               CLUTTER_ACTOR (widget),
+                               "row-span", rowspan,
+                               "col-span", colspan,
+                               "x-expand", (options & NBTK_X_EXPAND) ?
+                                 TRUE : FALSE,
+                               "y-expand", (options & NBTK_Y_EXPAND) ?
+                                 TRUE : FALSE,
+                               "x-align", xalign,
+                               "y-align", yalign,
+                               "x-fill", (options & NBTK_X_FILL) ?
+                                 TRUE : FALSE,
+                               "y-fill", (options & NBTK_Y_FILL) ?
+                                 TRUE : FALSE,
+                               NULL);
+  /* deprecated options */
+  if (options & NBTK_KEEP_ASPECT_RATIO)
+    {
+      clutter_container_child_set (CLUTTER_CONTAINER (table),
+                                   CLUTTER_ACTOR (widget),
+                                   "keep-aspect-ratio", TRUE,
+                                   NULL);
+    }
 }
 
 /**
