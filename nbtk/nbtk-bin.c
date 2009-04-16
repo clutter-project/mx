@@ -607,8 +607,10 @@ nbtk_bin_get_child (NbtkBin *bin)
  *
  * If @padding is %NULL the default padding provided by the
  * CSS theme will be used instead.
+ *
+ * Deprecated: please set padding using a stylesheet
  */
-void
+G_GNUC_DEPRECATED void
 nbtk_bin_set_padding (NbtkBin           *bin,
                       const NbtkPadding *padding)
 {
@@ -622,8 +624,10 @@ nbtk_bin_set_padding (NbtkBin           *bin,
  * @padding: return location for a #NbtkPadding
  *
  * Retrieves the padding set using nbtk_bin_set_padding().
+ *
+ * Deprecated: Please use nbtk_widget_get_padding instead
  */
-void
+G_GNUC_DEPRECATED void
 nbtk_bin_get_padding (NbtkBin     *bin,
                       NbtkPadding *padding)
 {

@@ -446,7 +446,7 @@ nbtk_stylable_get_property (NbtkStylable *stylable,
  *
  * @Deprecated: this function is deprecated and should not be used
  */
-void
+G_GNUC_DEPRECATED void
 nbtk_stylable_set_property (NbtkStylable *stylable,
                             const gchar  *property_name,
                             const GValue *value)
@@ -567,7 +567,7 @@ nbtk_stylable_get (NbtkStylable *stylable,
  *
  * Sets the style properties of @stylable.
  */
-void
+G_GNUC_DEPRECATED void
 nbtk_stylable_set (NbtkStylable *stylable,
                    const gchar  *first_property_name,
                    ...)

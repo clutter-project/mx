@@ -1449,7 +1449,7 @@ nbtk_table_add_actor_with_properties (NbtkTable    *table,
  *
  * Deprecated: Please use nbtk_table_add_actor_with_properties() instead.
  */
-void
+G_GNUC_DEPRECATED void
 nbtk_table_add_actor_full (NbtkTable            *table,
                            ClutterActor         *actor,
                            gint                  row,
@@ -1513,7 +1513,7 @@ nbtk_table_add_actor_full (NbtkTable            *table,
  *
  * Deprecated: Please use nbtk_table_add_actor() instead.
  */
-void
+G_GNUC_DEPRECATED void
 nbtk_table_add_widget (NbtkTable  *table,
                        NbtkWidget *widget,
                        gint        row,
@@ -1545,7 +1545,7 @@ nbtk_table_add_widget (NbtkTable  *table,
  *
  * Deprecated: Please use nbtk_table_add_actor_with_properties() instead.
  */
-void
+G_GNUC_DEPRECATED void
 nbtk_table_add_widget_full (NbtkTable            *table,
                             NbtkWidget           *widget,
                             gint                  row,
@@ -1584,7 +1584,7 @@ nbtk_table_add_widget_full (NbtkTable            *table,
  *
  * Deprecated: please use nbtk_table_child_set_col_span() instead
  */
-void
+G_GNUC_DEPRECATED void
 nbtk_table_set_widget_colspan (NbtkTable *table,
                                NbtkWidget *widget,
                                gint colspan)
@@ -1616,7 +1616,7 @@ nbtk_table_set_widget_colspan (NbtkTable *table,
  *
  * Deprecated: Please use nbtk_table_child_set_row_span() instead.
  */
-void
+G_GNUC_DEPRECATED void
 nbtk_table_set_widget_rowspan (NbtkTable *table,
                                NbtkWidget *widget,
                                gint rowspan)
@@ -1645,7 +1645,7 @@ nbtk_table_set_widget_rowspan (NbtkTable *table,
  *
  * Deprecated: This function has never been implemented.
  */
-void
+G_GNUC_DEPRECATED void
 nbtk_table_insert_actor_at_position (NbtkTable *table,
 				     ClutterActor *actor, gint x, gint y)
 {
@@ -1664,7 +1664,7 @@ nbtk_table_insert_actor_at_position (NbtkTable *table,
   nbtk_table_add_actor (NBTK_TABLE (table), actor, priv->n_rows, 0);
 }
 
-void
+G_GNUC_DEPRECATED void
 nbtk_table_set_padding (NbtkTable         *table,
                         const NbtkPadding *padding)
 {
@@ -1673,7 +1673,7 @@ nbtk_table_set_padding (NbtkTable         *table,
   g_warning ("%s is deprecated. Please set padding using a stylesheet.", __FUNCTION__);
 }
 
-void
+G_GNUC_DEPRECATED void
 nbtk_table_get_padding (NbtkTable   *table,
                         NbtkPadding *padding)
 {

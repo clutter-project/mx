@@ -1673,7 +1673,7 @@ nbtk_border_image_get_type (void)
   return our_type;
 }
 
-void
+G_GNUC_DEPRECATED void
 nbtk_widget_get_border (NbtkWidget *actor,
                         NbtkPadding *border)
 {
