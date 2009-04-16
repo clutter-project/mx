@@ -89,7 +89,6 @@ struct _NbtkButtonPrivate
 
   gint transition_duration;
 
-  ClutterActor     *old_bg;
   ClutterAnimation *animation;
 
   gint spacing;
@@ -123,17 +122,7 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
     }
 }
 
-static void
-destroy_old_bg (NbtkButton *button)
-{
-  NbtkButtonPrivate *priv = button->priv;
 
-  if (priv->old_bg)
-    {
-      clutter_actor_unparent (priv->old_bg);
-      priv->old_bg = NULL;
-    }
-}
 
 static void
 nbtk_button_set_style_pseudo_class (NbtkButton  *button,
@@ -194,7 +183,8 @@ nbtk_button_style_changed (NbtkWidget *widget)
 {
   NbtkButton *button = NBTK_BUTTON (widget);
   NbtkButtonPrivate *priv = button->priv;
-  ClutterActor *bg_image;
+  ClutterActor *bg_image = NULL;
+  NbtkButtonClass *button_class = NBTK_BUTTON_GET_CLASS (button);
 
   /* get the spacing value */
   nbtk_stylable_get (NBTK_STYLABLE (widget),
@@ -205,35 +195,27 @@ nbtk_button_style_changed (NbtkWidget *widget)
   if (priv->label)
     nbtk_button_update_label_style (button);
 
-  /* Remove the old background if it's around */
-  destroy_old_bg (button);
-
   /* Store background, NbtkWidget will unparent it */
-  bg_image = nbtk_widget_get_border_image (widget);
-  if (bg_image)
-    priv->old_bg = g_object_ref (bg_image);
+  if (button_class->transition)
+    {
+      bg_image = nbtk_widget_get_border_image (widget);
+
+      /* ref because widget->style_changed will unparent it */
+      if (bg_image)
+        g_object_ref (bg_image);
+    }
 
   /* Chain up to update style bits */
   NBTK_WIDGET_CLASS (nbtk_button_parent_class)->style_changed (widget);
 
-  /* Parent old background */
-  if (priv->old_bg)
+  /* run a transition if applicable */
+  if (button_class->transition)
     {
-      clutter_actor_set_parent (priv->old_bg, CLUTTER_ACTOR (button));
-      g_object_unref (priv->old_bg);
-    }
+      button_class->transition (button, bg_image);
 
-  /* Do animation */
-  /* run a transition effect if applicable */
-  if (NBTK_BUTTON_GET_CLASS (button)->transition)
-    {
-      if (NBTK_BUTTON_GET_CLASS (button)->transition (button, priv->old_bg))
-        destroy_old_bg (button);
-    }
-  else
-    {
-      /* no transition, so just remove the old background */
-      destroy_old_bg (button);
+      /* unref our earlier ref */
+      if (bg_image)
+        g_object_unref (bg_image);
     }
 }
 
@@ -438,8 +420,6 @@ nbtk_button_dispose (GObject *gobject)
 {
   NbtkButton *button = NBTK_BUTTON (gobject);
 
-  destroy_old_bg (button);
-
   G_OBJECT_CLASS (nbtk_button_parent_class)->dispose (gobject);
 }
 
@@ -565,16 +545,6 @@ nbtk_button_allocate (ClutterActor          *self,
 
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
-  if (priv->old_bg)
-    {
-      ClutterActorBox frame_box = {
-          0, 0, box->x2 - box->x1, box->y2 - box->y1
-      };
-
-      clutter_actor_allocate (priv->old_bg,
-                              &frame_box,
-                              absolute_origin_changed);
-    }
 
   /* we re-allocate the contents if an icon is set */
   if (priv->icon)
@@ -683,21 +653,6 @@ nbtk_button_paint (ClutterActor *self)
 }
 
 static void
-nbtk_button_draw_background (NbtkWidget         *self,
-                             ClutterActor       *background,
-                             const ClutterColor *color)
-{
-  NbtkButtonPrivate *priv = NBTK_BUTTON (self)->priv;
-  NbtkWidgetClass *parent_class;
-
-  parent_class = NBTK_WIDGET_CLASS (nbtk_button_parent_class);
-  parent_class->draw_background (self, background, color);
-
-  if (priv->old_bg)
-    clutter_actor_paint (priv->old_bg);
-}
-
-static void
 nbtk_button_hide (ClutterActor *actor)
 {
   NbtkButton *button = (NbtkButton *) actor;
@@ -739,7 +694,6 @@ nbtk_button_class_init (NbtkButtonClass *klass)
   actor_class->paint = nbtk_button_paint;
 
   nbtk_widget_class->style_changed = nbtk_button_style_changed;
-  nbtk_widget_class->draw_background = nbtk_button_draw_background;
 
   pspec = g_param_spec_string ("label",
                                "Label",

@@ -43,6 +43,8 @@ G_BEGIN_DECLS
 #define NBTK_FADE_BUTTON_GET_CLASS(obj) \
   (G_TYPE_INSTANCE_GET_CLASS ((obj), NBTK_TYPE_FADE_BUTTON, NbtkFadeButtonClass))
 
+typedef struct _NbtkFadeButtonPrivate NbtkFadeButtonPrivate;
+
 /**
  * NbtkFadeButton:
  *
@@ -52,6 +54,7 @@ G_BEGIN_DECLS
 typedef struct {
   /*< private >*/
   NbtkButton parent;
+  NbtkFadeButtonPrivate *priv;
 } NbtkFadeButton;
 
 typedef struct {
