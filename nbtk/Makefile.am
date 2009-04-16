@@ -23,6 +23,7 @@ source_h = \
 	$(top_srcdir)/nbtk/nbtk-stylable.h 		\
 	$(top_srcdir)/nbtk/nbtk-style.h 		\
 	$(top_srcdir)/nbtk/nbtk-table.h 		\
+	$(top_srcdir)/nbtk/nbtk-table-child.h 		\
 	$(top_srcdir)/nbtk/nbtk-texture-cache.h 	\
 	$(top_srcdir)/nbtk/nbtk-texture-frame.h 	\
 	$(top_srcdir)/nbtk/nbtk-tooltip.h		\
