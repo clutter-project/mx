@@ -1318,7 +1318,7 @@ nbtk_grid_allocate (ClutterActor          *self,
         {
           g_object_set (G_OBJECT (priv->hadjustment),
                         "lower", 0.0,
-                        "upper", 0,
+                        "upper", 0.0,
                         NULL);;
         }
 
@@ -1353,7 +1353,7 @@ nbtk_grid_allocate (ClutterActor          *self,
         {
           g_object_set (G_OBJECT (priv->vadjustment),
                         "lower", 0.0,
-                        "upper", 0,
+                        "upper", 0.0,
                         NULL);;
         }
 
