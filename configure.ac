@@ -1,6 +1,6 @@
 m4_define([nbtk_major], [0])
-m4_define([nbtk_minor], [2])
-m4_define([nbtk_micro], [3])
+m4_define([nbtk_minor], [3])
+m4_define([nbtk_micro], [0])
 
 m4_define([nbtk_version], [nbtk_major.nbtk_minor.nbtk_micro])
 m4_define([nbtk_api_version], [1.0])
@@ -90,7 +90,7 @@ flags_default@:>@]),,
 
 
 if test "x$enable_maintainer_flags" = "xyes"; then
-  NBTK_MAINTAINER_CFLAGS="-Werror -Wall -Wshadow -Wcast-align -Wno-uninitialized -Wempty-body -Wformat-security -Winit-self -Wmissing-declarations -Wredundant-decls -Wunreachable-code "
+  NBTK_MAINTAINER_CFLAGS="-Werror -Wall -Wshadow -Wcast-align -Wno-uninitialized -Wempty-body -Wformat-security -Winit-self -Wmissing-declarations -Wredundant-decls"
 fi
 AC_SUBST(NBTK_MAINTAINER_CFLAGS)
 
