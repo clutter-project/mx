@@ -922,11 +922,16 @@ nbtk_widget_get_style (NbtkStylable *stylable)
 {
   NbtkWidgetPrivate *priv = NBTK_WIDGET (stylable)->priv;
 
-  if (!priv->style)
-    priv->style = g_object_ref (nbtk_style_get_default ());
-
   return priv->style;
 }
+
+static void
+nbtk_style_changed_cb (NbtkStyle    *style,
+                       NbtkStylable *stylable)
+{
+  g_signal_emit (stylable, actor_signals[STYLE_CHANGED], 0, NULL);
+}
+
 
 static void
 nbtk_widget_set_style (NbtkStylable *stylable,
@@ -938,6 +943,11 @@ nbtk_widget_set_style (NbtkStylable *stylable,
     g_object_unref (priv->style);
 
   priv->style = g_object_ref_sink (style);
+
+  g_signal_connect (priv->style,
+                    "changed",
+                    G_CALLBACK (nbtk_style_changed_cb),
+                    stylable);
 }
 
 static NbtkStylable*
@@ -1198,6 +1208,9 @@ nbtk_widget_init (NbtkWidget *actor)
 
   /* connect style changed */
   g_signal_connect (actor, "notify::name", G_CALLBACK (nbtk_widget_name_notify), NULL);
+
+  /* set the default style */
+  nbtk_widget_set_style (NBTK_STYLABLE (actor), nbtk_style_get_default ());
 
 }
 

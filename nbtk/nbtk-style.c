@@ -35,6 +35,7 @@
 
 #include <glib-object.h>
 #include <gobject/gvaluecollector.h>
+#include <gio/gio.h>
 
 #include <clutter/clutter.h>
 
@@ -68,6 +69,7 @@ struct _NbtkStylePrivate
 {
   ccss_stylesheet_t *stylesheet;
   GList *image_paths;
+  GSList *monitors;
 };
 
 typedef struct {
@@ -90,6 +92,25 @@ g_style_error_quark (void)
   return g_quark_from_static_string ("nbtk-style-error-quark");
 }
 
+static void
+stylesheet_monitor_changed_cb (GFileMonitor      *monitor,
+                               GFile             *file,
+                               GFile             *other_file,
+                               GFileMonitorEvent  event_type,
+                               NbtkStyle         *style)
+{
+
+  if (event_type == G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT)
+    {
+      gchar *path;
+
+      path = g_file_get_path (file);
+      if (path)
+        nbtk_style_load_from_file (style, path, NULL);
+    }
+}
+
+
 /**
  * nbtk_style_load_from_file:
  * @style: a #NbtkStyle
@@ -111,6 +132,8 @@ nbtk_style_load_from_file (NbtkStyle    *style,
   GError *internal_error;
   gchar *path;
   GList *l;
+  GFileMonitor *monitor;
+  GFile *file;
 
   g_return_val_if_fail (NBTK_IS_STYLE (style), FALSE);
   g_return_val_if_fail (filename != NULL, FALSE);
@@ -140,16 +163,37 @@ nbtk_style_load_from_file (NbtkStyle    *style,
         {
           /* we have this path already */
           g_free (path);
-          return TRUE;
+          path = NULL;
         }
     }
 
   /* Add the new path */
-  priv->image_paths = g_list_append (priv->image_paths, path);
+  if (path)
+    priv->image_paths = g_list_append (priv->image_paths, path);
 
   /* now load the stylesheet */
   priv->stylesheet = ccss_stylesheet_new_from_file (filename);
+  g_signal_emit (style, style_signals[CHANGED], 0, NULL);
 
+  /* add a monitor, if we don't already have this file */
+  if (path) /* TODO: check filename, not just path */
+    {
+      file = g_file_new_for_path (filename);
+      if (file)
+        {
+          monitor = g_file_monitor_file (file, 0, NULL, NULL);
+          if (monitor)
+            {
+              g_signal_connect (monitor,
+                                "changed",
+                                G_CALLBACK (stylesheet_monitor_changed_cb),
+                                style);
+              priv->monitors = g_slist_append (priv->monitors, monitor);
+            }
+
+          g_object_unref (file);
+        }
+    }
   return TRUE;
 }
 
@@ -187,6 +231,20 @@ nbtk_style_load (NbtkStyle *style)
 }
 
 static void
+nbtk_style_dispose (GObject *gobject)
+{
+  NbtkStylePrivate *priv = ((NbtkStyle *)gobject)->priv;
+  GSList *l;
+
+  for (l = priv->monitors; l; l = g_slist_delete_link (l, l))
+  {
+    g_object_unref (G_OBJECT (l->data));
+  }
+
+  G_OBJECT_CLASS (nbtk_style_parent_class)->dispose (gobject);
+}
+
+static void
 nbtk_style_finalize (GObject *gobject)
 {
   NbtkStylePrivate *priv = ((NbtkStyle *)gobject)->priv;
@@ -208,6 +266,7 @@ nbtk_style_class_init (NbtkStyleClass *klass)
   g_type_class_add_private (klass, sizeof (NbtkStylePrivate));
 
   gobject_class->finalize = nbtk_style_finalize;
+  gobject_class->dispose = nbtk_style_dispose;
 
   /**
    * NbtkStyle::changed:
