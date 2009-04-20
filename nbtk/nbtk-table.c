@@ -583,7 +583,7 @@ nbtk_table_style_changed (NbtkWidget *self)
 
   for (c = priv->children; c; c = c->next)
     if (NBTK_IS_WIDGET (c->data))
-      g_signal_emit_by_name (c->data, "style-changed", 0);
+      g_signal_emit_by_name (c->data, "style-changed");
 }
 
 static gint *
