@@ -99,6 +99,8 @@ nbtk_grid_do_allocate (ClutterActor *self,
                        ClutterUnit *actual_width,
                        ClutterUnit *actual_height);
 
+static void nbtk_grid_style_changed (NbtkWidget *self);
+
 static void scrollable_interface_init (NbtkScrollableInterface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (NbtkGrid, nbtk_grid,
@@ -305,6 +307,8 @@ nbtk_grid_class_init (NbtkGridClass *klass)
 {
   GObjectClass *gobject_class = (GObjectClass *) klass;
   ClutterActorClass *actor_class = (ClutterActorClass *) klass;
+  NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
+
   GParamSpec *pspec;
 
   gobject_class->dispose = nbtk_grid_dispose;
@@ -318,6 +322,8 @@ nbtk_grid_class_init (NbtkGridClass *klass)
   actor_class->get_preferred_width  = nbtk_grid_get_preferred_width;
   actor_class->get_preferred_height = nbtk_grid_get_preferred_height;
   actor_class->allocate             = nbtk_grid_allocate;
+
+  widget_class->style_changed = nbtk_grid_style_changed;
 
   g_type_class_add_private (klass, sizeof (NbtkGridPrivate));
 
@@ -824,6 +830,19 @@ static void
 nbtk_grid_real_sort_depth_order (ClutterContainer *container)
 {
   /* STUB */
+}
+
+static void
+nbtk_grid_style_changed (NbtkWidget *self)
+{
+  NbtkGridPrivate *priv = ((NbtkGrid *)self)->priv;
+  GList *c;
+
+  NBTK_WIDGET_CLASS (nbtk_grid_parent_class)->style_changed (self);
+
+  for (c = priv->list; c; c = c->next)
+    if (NBTK_IS_WIDGET (c->data))
+      g_signal_emit_by_name (c->data, "style-changed", 0);
 }
 
 static void

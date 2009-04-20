@@ -573,6 +573,19 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
   return pref_widths;
 }
 
+static void
+nbtk_table_style_changed (NbtkWidget *self)
+{
+  NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
+  GSList *c;
+
+  NBTK_WIDGET_CLASS (nbtk_table_parent_class)->style_changed (self);
+
+  for (c = priv->children; c; c = c->next)
+    if (NBTK_IS_WIDGET (c->data))
+      g_signal_emit_by_name (c->data, "style-changed", 0);
+}
+
 static gint *
 nbtk_table_calculate_row_heights (NbtkTable *table,
                                   gint       for_height,
@@ -1179,6 +1192,7 @@ nbtk_table_class_init (NbtkTableClass *klass)
   actor_class->hide_all = nbtk_table_hide_all;
 
   widget_class->dnd_dropped = nbtk_table_dnd_dropped;
+  widget_class->style_changed = nbtk_table_style_changed;
 
   pspec = g_param_spec_boolean ("homogeneous",
                                 "Homogeneous",
