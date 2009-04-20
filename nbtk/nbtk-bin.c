@@ -482,8 +482,8 @@ nbtk_bin_style_changed (NbtkWidget *self)
 
   NBTK_WIDGET_CLASS (nbtk_bin_parent_class)->style_changed (self);
 
-  if (priv->child)
-    g_signal_emit_by_name (priv->child, "style-changed", 0);
+  if (priv->child && NBTK_IS_WIDGET (priv->child))
+    g_signal_emit_by_name (priv->child, "style-changed");
 }
 
 static void
