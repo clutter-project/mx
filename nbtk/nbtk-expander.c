@@ -169,6 +169,7 @@ nbtk_expander_toggle_expanded (NbtkExpander *expander)
   ClutterActor *child;
 
   priv->expanded = !priv->expanded;
+  g_object_notify ((GObject *) expander, "expanded");
 
   if (priv->expanded)
     {
@@ -591,8 +592,6 @@ nbtk_expander_set_expanded (NbtkExpander *expander,
   if (expander->priv->expanded != expanded)
     {
       nbtk_expander_toggle_expanded (expander);
-
-      g_object_notify ((GObject *) expander, "expanded");
     }
 }
 
