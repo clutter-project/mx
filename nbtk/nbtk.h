@@ -26,12 +26,14 @@
 
 #include <nbtk/nbtk-bin.h>
 #include <nbtk/nbtk-button.h>
+#include <nbtk/nbtk-cell-renderer.h>
 #include <nbtk/nbtk-entry.h>
 #include <nbtk/nbtk-enum-types.h>
 #include <nbtk/nbtk-expander.h>
 #include <nbtk/nbtk-fade-button.h>
 #include <nbtk/nbtk-grid.h>
 #include <nbtk/nbtk-icon.h>
+#include <nbtk/nbtk-icon-view.h>
 #include <nbtk/nbtk-label.h>
 #include <nbtk/nbtk-scroll-bar.h>
 #include <nbtk/nbtk-scroll-view.h>
