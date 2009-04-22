@@ -111,7 +111,6 @@ model_changed_cb (ClutterModel *model,
 
   child_n = g_list_length (list);
   model_n = clutter_model_get_n_rows (model);
-  g_debug ("model length = %d", model_n);
 
   while (child_n < model_n)
     {
@@ -126,9 +125,6 @@ model_changed_cb (ClutterModel *model,
 
       clutter_container_add_actor (CLUTTER_CONTAINER (self),
                                    new_child);
-      g_debug ("adding child (%s)",
-               G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (new_child)));
-
 
       list = clutter_container_get_children (CLUTTER_CONTAINER (self));
       child_n = g_list_length (list);
@@ -139,7 +135,6 @@ model_changed_cb (ClutterModel *model,
       /* remove some children */
       clutter_container_remove_actor (CLUTTER_CONTAINER (self),
                                       CLUTTER_ACTOR (list->data));
-      g_debug ("removing child");
 
       list = clutter_container_get_children (CLUTTER_CONTAINER (self));
       child_n = g_list_length (list);
@@ -161,9 +156,6 @@ model_changed_cb (ClutterModel *model,
           PropData *prop = p->data;
 
           clutter_model_iter_get_value (iter, prop->col, &value);
-          g_debug ("setting property '%s' to '%s'",
-                   prop->name,
-                   g_strdup_value_contents (&value));
 
           g_object_set_property (G_OBJECT (l->data), prop->name, &value);
         }
