@@ -426,12 +426,6 @@ nbtk_button_dispose (GObject *gobject)
       priv->icon = NULL;
     }
 
-  if (priv->label)
-    {
-      clutter_actor_unparent (priv->label);
-      priv->label = NULL;
-    }
-
   G_OBJECT_CLASS (nbtk_button_parent_class)->dispose (gobject);
 }
 
