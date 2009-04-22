@@ -140,12 +140,15 @@ model_changed_cb (ClutterModel *model,
       child_n = g_list_length (list);
     }
 
-  iter = clutter_model_get_first_iter (priv->model);
-
-  if (!iter)
+  if (model_n == 0)
     {
-      g_debug ("Model has no items?");
+      /* no rows so we don't need to set properties */
+      return;
     }
+
+  /* set the properties on the objects */
+
+  iter = clutter_model_get_first_iter (priv->model);
 
   for (l = list; l && iter; l = l->next)
     {
