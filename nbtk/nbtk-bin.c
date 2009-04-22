@@ -663,7 +663,7 @@ nbtk_bin_set_child (NbtkBin *bin,
       priv->child = child;
       clutter_actor_set_parent (child, CLUTTER_ACTOR (bin));
 
-      g_signal_emit_by_name (bin, "actor-removed", priv->child);
+      g_signal_emit_by_name (bin, "actor-added", priv->child);
     }
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (bin));
