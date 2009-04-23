@@ -2,7 +2,7 @@
 
 #include "nbtk-icon-view.h"
 #include "nbtk-cell-renderer.h"
-#include <clutter/clutter.h>
+#include "nbtk-private.h"
 
 G_DEFINE_TYPE (NbtkIconView, nbtk_icon_view, NBTK_TYPE_GRID)
 
@@ -14,6 +14,13 @@ typedef struct
   gchar *name;
   gint   col;
 } PropData;
+
+enum
+{
+  PROP_0,
+
+  PROP_MODEL
+};
 
 struct _NbtkIconViewPrivate
 {
@@ -34,8 +41,12 @@ static void
 nbtk_icon_view_get_property (GObject *object, guint property_id,
                               GValue *value, GParamSpec *pspec)
 {
+  NbtkIconViewPrivate *priv = NBTK_ICON_VIEW (object)->priv;
   switch (property_id)
     {
+    case PROP_MODEL:
+      g_value_set_object (value, priv->model);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -47,6 +58,10 @@ nbtk_icon_view_set_property (GObject *object, guint property_id,
 {
   switch (property_id)
     {
+    case PROP_MODEL:
+      nbtk_icon_view_set_model ((NbtkIconView*) object,
+                                (ClutterModel*) g_value_get_object (value));
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -76,6 +91,7 @@ static void
 nbtk_icon_view_class_init (NbtkIconViewClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (NbtkIconViewPrivate));
 
@@ -83,6 +99,13 @@ nbtk_icon_view_class_init (NbtkIconViewClass *klass)
   object_class->set_property = nbtk_icon_view_set_property;
   object_class->dispose = nbtk_icon_view_dispose;
   object_class->finalize = nbtk_icon_view_finalize;
+
+  pspec = g_param_spec_object ("model",
+                               "model",
+                               "The model for the icon view",
+                               CLUTTER_TYPE_MODEL,
+                               NBTK_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_MODEL, pspec);
 }
 
 static void
@@ -208,6 +231,14 @@ nbtk_icon_view_set_cell_renderer (NbtkIconView     *self,
   priv->renderer = renderer;
 
   model_changed_cb (priv->model, self);
+}
+
+ClutterModel*
+nbtk_icon_view_get_model (NbtkIconView *self)
+{
+  g_return_val_if_fail (NBTK_IS_ICON_VIEW (self), NULL);
+
+  return self->priv->model;
 }
 
 void
