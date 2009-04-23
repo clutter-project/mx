@@ -13,7 +13,7 @@ typedef struct
 {
   gchar *name;
   gint   col;
-} PropData;
+} AttributeData;
 
 enum
 {
@@ -27,7 +27,7 @@ struct _NbtkIconViewPrivate
 {
   ClutterModel      *model;
   NbtkCellRenderer  *renderer;
-  GList             *props;
+  GSList            *attributes;
 
   gulong filter_changed;
   gulong row_added;
@@ -99,6 +99,14 @@ static void
 nbtk_icon_view_finalize (GObject *object)
 {
   G_OBJECT_CLASS (nbtk_icon_view_parent_class)->finalize (object);
+
+
+  if (priv->attributes)
+    {
+      g_slist_foreach (priv->attributes, (GFunc) g_free, NULL);
+      g_slist_free (priv->attributes);
+      priv->attributes = NULL;
+    }
 }
 
 static void
@@ -141,7 +149,8 @@ static void
 model_changed_cb (ClutterModel *model,
                   NbtkIconView *self)
 {
-  GList *l, *list, *p;
+  GSList *p;
+  GList *l, *children;
   NbtkIconViewPrivate *priv = self->priv;
   ClutterModelIter *iter;
   gint model_n, child_n;
@@ -151,9 +160,9 @@ model_changed_cb (ClutterModel *model,
   if (!priv->renderer)
     return;
 
-  list = clutter_container_get_children (CLUTTER_CONTAINER (self));
+  children = clutter_container_get_children (CLUTTER_CONTAINER (self));
 
-  child_n = g_list_length (list);
+  child_n = g_list_length (children);
   model_n = clutter_model_get_n_rows (model);
 
   while (child_n < model_n)
@@ -170,18 +179,18 @@ model_changed_cb (ClutterModel *model,
       clutter_container_add_actor (CLUTTER_CONTAINER (self),
                                    new_child);
 
-      list = clutter_container_get_children (CLUTTER_CONTAINER (self));
-      child_n = g_list_length (list);
+      children = clutter_container_get_children (CLUTTER_CONTAINER (self));
+      child_n = g_list_length (children);
     }
 
   while (child_n > model_n)
     {
       /* remove some children */
       clutter_container_remove_actor (CLUTTER_CONTAINER (self),
-                                      CLUTTER_ACTOR (list->data));
+                                      CLUTTER_ACTOR (children->data));
 
-      list = clutter_container_get_children (CLUTTER_CONTAINER (self));
-      child_n = g_list_length (list);
+      children = clutter_container_get_children (CLUTTER_CONTAINER (self));
+      child_n = g_list_length (children);
     }
 
   if (model_n == 0)
@@ -194,18 +203,21 @@ model_changed_cb (ClutterModel *model,
 
   iter = clutter_model_get_first_iter (priv->model);
 
-  for (l = list; l && iter; l = l->next)
+  for (l = children; l && iter; l = l->next)
     {
-      /* TODO optimise this? */
-      for (p = priv->props; p; p = p->next)
+      GObject *child = G_OBJECT (l->data);
+
+      g_object_freeze_notify (child);
+      for (p = priv->attributes; p; p = p->next)
         {
           GValue value = { 0, };
-          PropData *prop = p->data;
+          AttributeData *attr = p->data;
 
-          clutter_model_iter_get_value (iter, prop->col, &value);
+          clutter_model_iter_get_value (iter, attr->col, &value);
 
-          g_object_set_property (G_OBJECT (l->data), prop->name, &value);
+          g_object_set_property (child, attr->name, &value);
         }
+      g_object_thaw_notify (child);
 
       if (clutter_model_iter_is_last (iter))
         break;
@@ -324,7 +336,7 @@ nbtk_icon_view_add_attribute (NbtkIconView *self,
                               gint column)
 {
   NbtkIconViewPrivate *priv;
-  PropData *prop;
+  AttributeData *prop;
 
   g_return_if_fail (NBTK_IS_ICON_VIEW (self));
   g_return_if_fail (attr != NULL);
@@ -332,10 +344,10 @@ nbtk_icon_view_add_attribute (NbtkIconView *self,
 
   priv = self->priv;
 
-  prop = g_new (PropData, 1);
+  prop = g_new (AttributeData, 1);
   prop->name = g_strdup (attr);
   prop->col = column;
 
-  priv->props = g_list_prepend (priv->props, prop);
+  priv->attributes = g_slist_prepend (priv->attributes, prop);
   model_changed_cb (priv->model, self);
 }
