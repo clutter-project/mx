@@ -39,8 +39,10 @@ struct _NbtkIconViewPrivate
 /* gobject implementations */
 
 static void
-nbtk_icon_view_get_property (GObject *object, guint property_id,
-                              GValue *value, GParamSpec *pspec)
+nbtk_icon_view_get_property (GObject    *object,
+                             guint       property_id,
+                             GValue     *value,
+                             GParamSpec *pspec)
 {
   NbtkIconViewPrivate *priv = NBTK_ICON_VIEW (object)->priv;
   switch (property_id)
@@ -57,8 +59,10 @@ nbtk_icon_view_get_property (GObject *object, guint property_id,
 }
 
 static void
-nbtk_icon_view_set_property (GObject *object, guint property_id,
-                              const GValue *value, GParamSpec *pspec)
+nbtk_icon_view_set_property (GObject      *object,
+                             guint         property_id,
+                             const GValue *value,
+                             GParamSpec   *pspec)
 {
   switch (property_id)
     {
@@ -332,8 +336,8 @@ nbtk_icon_view_set_model (NbtkIconView *self,
 
 void
 nbtk_icon_view_add_attribute (NbtkIconView *self,
-                              const gchar *attr,
-                              gint column)
+                              const gchar  *attr,
+                              gint          column)
 {
   NbtkIconViewPrivate *priv;
   AttributeData *prop;
