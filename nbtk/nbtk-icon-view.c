@@ -19,7 +19,8 @@ enum
 {
   PROP_0,
 
-  PROP_MODEL
+  PROP_MODEL,
+  PROP_RENDERER
 };
 
 struct _NbtkIconViewPrivate
@@ -47,6 +48,9 @@ nbtk_icon_view_get_property (GObject *object, guint property_id,
     case PROP_MODEL:
       g_value_set_object (value, priv->model);
       break;
+    case PROP_RENDERER:
+      g_value_set_object (value, priv->renderer);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -61,6 +65,10 @@ nbtk_icon_view_set_property (GObject *object, guint property_id,
     case PROP_MODEL:
       nbtk_icon_view_set_model ((NbtkIconView*) object,
                                 (ClutterModel*) g_value_get_object (value));
+    case PROP_RENDERER:
+      nbtk_icon_view_set_cell_renderer ((NbtkIconView*) object,
+                                        (NbtkCellRenderer*)
+                                          g_value_get_object (value));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -78,6 +86,12 @@ nbtk_icon_view_dispose (GObject *object)
     {
       g_object_unref (priv->model);
       priv->model = NULL;
+    }
+
+  if (priv->renderer)
+    {
+      g_object_unref (priv->renderer);
+      priv->renderer = NULL;
     }
 }
 
@@ -106,6 +120,13 @@ nbtk_icon_view_class_init (NbtkIconViewClass *klass)
                                CLUTTER_TYPE_MODEL,
                                NBTK_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_MODEL, pspec);
+
+  pspec = g_param_spec_object ("cell-renderer",
+                               "cell-renderer",
+                               "The renderer to use for the icon view",
+                               NBTK_TYPE_CELL_RENDERER,
+                               NBTK_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_RENDERER, pspec);
 }
 
 static void
@@ -211,6 +232,15 @@ nbtk_icon_view_new (void)
 {
   return g_object_new (NBTK_TYPE_ICON_VIEW, NULL);
 }
+
+NbtkCellRenderer*
+nbtk_icon_view_get_cell_renderer (NbtkIconView *self)
+{
+  g_return_val_if_fail (NBTK_IS_ICON_VIEW (self), NULL);
+
+  return self->priv->renderer;
+}
+
 
 void
 nbtk_icon_view_set_cell_renderer (NbtkIconView     *self,

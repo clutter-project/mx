@@ -51,9 +51,10 @@ void         nbtk_icon_view_set_model (NbtkIconView *icon_view,
                                        ClutterModel *model);
 ClutterModel* nbtk_icon_view_get_model (NbtkIconView *icon_view);
 
-void         nbtk_icon_view_set_cell_renderer (NbtkIconView     *icon_view,
-                                               NbtkCellRenderer *renderer);
-ClutterActor nbtk_icon_view_get_cell_renderer (NbtkIconView *icon_view);
+void              nbtk_icon_view_set_cell_renderer (NbtkIconView     *icon_view,
+                                                    NbtkCellRenderer *renderer);
+NbtkCellRenderer* nbtk_icon_view_get_cell_renderer (NbtkIconView *icon_view);
+
 void
 nbtk_icon_view_add_attribute (NbtkIconView *self,
                               const gchar *attribute,
