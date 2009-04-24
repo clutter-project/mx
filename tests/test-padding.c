@@ -4,7 +4,7 @@
 #include <clutter/clutter.h>
 #include <nbtk/nbtk.h>
 
-gboolean
+static gboolean
 set_cb (ClutterActor  *actor,
         ClutterEvent  *event,
         NbtkWidget    *label)
@@ -28,7 +28,7 @@ set_cb (ClutterActor  *actor,
   return TRUE;
 }
 
-gboolean
+static gboolean
 reset_cb (ClutterActor  *actor,
           ClutterEvent  *event,
           NbtkWidget    *label)

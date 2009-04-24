@@ -4,7 +4,7 @@
 #include <clutter/clutter.h>
 #include <nbtk/nbtk.h>
 
-void
+static void
 button_clicked_cb (NbtkButton *button, gchar *name)
 {
   printf ("%s button clicked!\n", name);

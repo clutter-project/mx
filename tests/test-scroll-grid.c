@@ -4,7 +4,7 @@
 #include <clutter/clutter.h>
 #include <nbtk/nbtk.h>
 
-void
+static void
 stage_size_notify_cb (ClutterActor *stage,
                       GParamSpec *pspec,
                       ClutterActor *table)
@@ -29,7 +29,7 @@ set_max_stride (ClutterActor    *actor,
                 NbtkGrid        *grid)
 {
   nbtk_grid_set_max_stride (grid, event->keyval - 48);
-  g_printf ("Max Stride: %d\n", event->keyval - 48);
+  printf ("Max Stride: %d\n", event->keyval - 48);
 }
 
 int

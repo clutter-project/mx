@@ -1,6 +1,6 @@
 NULL =
 
-AM_CFLAGS = $(NBTK_CFLAGS)
+AM_CFLAGS = $(NBTK_CFLAGS) $(NBTK_MAINTAINER_CFLAGS)
 LDADD = $(top_builddir)/nbtk/libnbtk-$(NBTK_API_VERSION).la
 
 INCLUDES = \

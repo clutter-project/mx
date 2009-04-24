@@ -49,7 +49,7 @@ randomise_align (NbtkButton *button, ClutterContainer *table)
   g_free (label);
 }
 
-void
+static void
 stage_size_notify_cb (ClutterActor *stage,
                       GParamSpec *pspec,
                       ClutterActor *table)

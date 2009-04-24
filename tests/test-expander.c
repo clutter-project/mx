@@ -30,7 +30,7 @@ set_expanded (ClutterActor    *actor,
   nbtk_expander_set_expanded (expander, !expand);
 }
 
-void
+static void
 stage_size_notify_cb (ClutterActor *stage,
                       GParamSpec *pspec,
                       ClutterActor *table)

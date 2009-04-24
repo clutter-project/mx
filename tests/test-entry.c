@@ -4,7 +4,7 @@
 #include <clutter/clutter.h>
 #include <nbtk/nbtk.h>
 
-gboolean
+static gboolean
 set_focus (ClutterActor *actor, ClutterEvent *event, gpointer data)
 {
   clutter_actor_grab_key_focus (actor);
@@ -12,13 +12,13 @@ set_focus (ClutterActor *actor, ClutterEvent *event, gpointer data)
   return FALSE;
 }
 
-void
+static void
 btn_clicked_cb (ClutterActor *button, NbtkEntry *entry)
 {
   nbtk_entry_set_text (entry, "Here is some text");
 }
 
-void
+static void
 clear_btn_clicked_cb (ClutterActor *button, NbtkEntry *entry)
 {
   nbtk_entry_set_text (entry, "");
