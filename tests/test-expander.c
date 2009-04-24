@@ -5,6 +5,20 @@
 #include <nbtk/nbtk.h>
 
 static void
+expand_complete_cb (NbtkExpander  *expander,
+                    gpointer       user_data)
+{
+  printf ("expand complete\n");
+}
+
+static void
+contract_complete_cb (NbtkExpander  *expander,
+                      gpointer       user_data)
+{
+  printf ("contract complete\n");
+}
+
+static void
 set_expanded (ClutterActor    *actor,
               ClutterKeyEvent *event,
               NbtkExpander    *expander)
@@ -50,6 +64,11 @@ main (int argc, char *argv[])
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (expander));
   clutter_actor_set_position (CLUTTER_ACTOR (expander), 10, 10);
+
+  g_signal_connect (expander, "expand-complete",
+                    G_CALLBACK (expand_complete_cb), NULL);
+  g_signal_connect (expander, "contract-complete",
+                    G_CALLBACK (contract_complete_cb), NULL);
 
   scroll = (NbtkWidget *) nbtk_scroll_view_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (expander),

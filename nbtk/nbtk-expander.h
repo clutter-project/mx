@@ -56,6 +56,11 @@ typedef struct {
 
 typedef struct {
   NbtkBinClass parent_class;
+
+  /* signals */
+  void (* expand_complete) (NbtkExpander *expander);
+  void (* contract_complete) (NbtkExpander *expander);
+
 } NbtkExpanderClass;
 
 GType nbtk_expander_get_type (void);

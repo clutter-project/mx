@@ -20,6 +20,7 @@
  *
  */
 
+#include "nbtk-marshal.h"
 #include "nbtk-expander.h"
 #include "nbtk-private.h"
 #include "nbtk-stylable.h"
@@ -36,6 +37,14 @@ enum {
   PROP_EXPANDED
 };
 
+enum
+{
+  EXPAND_COMPLETE,
+  CONTRACT_COMPLETE,
+
+  LAST_SIGNAL
+};
+
 struct _NbtkExpanderPrivate {
   ClutterActor *label;
   ClutterActor *arrow;
@@ -47,6 +56,8 @@ struct _NbtkExpanderPrivate {
 
   gboolean expanded : 1;
 };
+
+static guint expander_signals[LAST_SIGNAL] = { 0, };
 
 static void
 nbtk_expander_get_property (GObject *object,
@@ -120,6 +131,11 @@ timeline_complete (ClutterTimeline *timeline,
   guchar opacity;
   ClutterActor *child;
   NbtkExpanderPrivate *priv = NBTK_EXPANDER (expander)->priv;
+
+  if (priv->expanded)
+    g_signal_emit (expander, expander_signals[EXPAND_COMPLETE], 0);
+  else
+    g_signal_emit (expander, expander_signals[CONTRACT_COMPLETE], 0);
 
   child = nbtk_bin_get_child (NBTK_BIN (expander));
 
@@ -538,6 +554,38 @@ nbtk_expander_class_init (NbtkExpanderClass *klass)
   g_object_class_install_property (object_class,
                                    PROP_EXPANDED,
                                    pspec);
+
+  /**
+   * NbtkExpander::expand-complete:
+   * @expander: the object that received the signal
+   *
+   * Emitted after the expand animation finishes.
+   */
+
+  expander_signals[EXPAND_COMPLETE] =
+    g_signal_new ("expand-complete",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (NbtkExpanderClass, expand_complete),
+                  NULL, NULL,
+                  _nbtk_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
+
+  /**
+   * NbtkExpander::contract-complete:
+   * @expander: the object that received the signal
+   *
+   * Emitted after the contract animation finishes.
+   */
+
+  expander_signals[CONTRACT_COMPLETE] =
+    g_signal_new ("contract-complete",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (NbtkExpanderClass, contract_complete),
+                  NULL, NULL,
+                  _nbtk_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
 }
 
 static void
