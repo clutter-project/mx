@@ -40,7 +40,6 @@ enum {
 enum
 {
   EXPAND_COMPLETE,
-  CONTRACT_COMPLETE,
 
   LAST_SIGNAL
 };
@@ -132,10 +131,7 @@ timeline_complete (ClutterTimeline *timeline,
   ClutterActor *child;
   NbtkExpanderPrivate *priv = NBTK_EXPANDER (expander)->priv;
 
-  if (priv->expanded)
-    g_signal_emit (expander, expander_signals[EXPAND_COMPLETE], 0);
-  else
-    g_signal_emit (expander, expander_signals[CONTRACT_COMPLETE], 0);
+  g_signal_emit (expander, expander_signals[EXPAND_COMPLETE], 0);
 
   child = nbtk_bin_get_child (NBTK_BIN (expander));
 
@@ -559,7 +555,8 @@ nbtk_expander_class_init (NbtkExpanderClass *klass)
    * NbtkExpander::expand-complete:
    * @expander: the object that received the signal
    *
-   * Emitted after the expand animation finishes.
+   * Emitted after the expand animation finishes. Check the "expanded" property
+   * of the #NbtkExpander to determine if the expander is expanded or not.
    */
 
   expander_signals[EXPAND_COMPLETE] =
@@ -567,22 +564,6 @@ nbtk_expander_class_init (NbtkExpanderClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (NbtkExpanderClass, expand_complete),
-                  NULL, NULL,
-                  _nbtk_marshal_VOID__VOID,
-                  G_TYPE_NONE, 0);
-
-  /**
-   * NbtkExpander::contract-complete:
-   * @expander: the object that received the signal
-   *
-   * Emitted after the contract animation finishes.
-   */
-
-  expander_signals[CONTRACT_COMPLETE] =
-    g_signal_new ("contract-complete",
-                  G_TYPE_FROM_CLASS (klass),
-                  G_SIGNAL_RUN_LAST,
-                  G_STRUCT_OFFSET (NbtkExpanderClass, contract_complete),
                   NULL, NULL,
                   _nbtk_marshal_VOID__VOID,
                   G_TYPE_NONE, 0);
