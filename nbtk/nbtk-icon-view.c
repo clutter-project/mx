@@ -102,6 +102,8 @@ nbtk_icon_view_dispose (GObject *object)
 static void
 nbtk_icon_view_finalize (GObject *object)
 {
+  NbtkIconViewPrivate *priv = NBTK_ICON_VIEW (object)->priv;
+
   G_OBJECT_CLASS (nbtk_icon_view_parent_class)->finalize (object);
 
 
