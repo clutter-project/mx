@@ -596,12 +596,27 @@ nbtk_expander_init (NbtkExpander *self)
   priv->alpha = clutter_alpha_new_full (priv->timeline, CLUTTER_EASE_IN_SINE);
 }
 
+/**
+ * nbtk_expander_new:
+ *
+ * Creates a new #NbtkExpander
+ *
+ * Returns: the newly allocated #NbtkExpander
+ */
 NbtkWidget*
 nbtk_expander_new (void)
 {
   return g_object_new (NBTK_TYPE_EXPANDER, NULL);
 }
 
+/**
+ * nbtk_expander_set_label:
+ *
+ * @expander: A #NbtkExpander
+ * @label: string to set as the expander label
+ *
+ * Sets the text displayed as the title of the expander
+ */
 void
 nbtk_expander_set_label (NbtkExpander *expander,
                          const gchar *label)
@@ -612,6 +627,15 @@ nbtk_expander_set_label (NbtkExpander *expander,
   clutter_text_set_text (CLUTTER_TEXT (expander->priv->label), label);
 }
 
+/**
+ * nbtk_expander_set_expanded:
+ *
+ * @expander: A #NbtkExpander
+ * @expanded: the state of the expander to set
+ *
+ * Set the state of the expander. This will cause the expander to open and
+ * close if the state is changed.
+ */
 void
 nbtk_expander_set_expanded (NbtkExpander *expander,
                             gboolean      expanded)
@@ -624,6 +648,15 @@ nbtk_expander_set_expanded (NbtkExpander *expander,
     }
 }
 
+/**
+ * nbtk_expander_get_expanded:
+ *
+ * @expander: a #NbtkExpander
+ *
+ * Get the current state of the expander
+ *
+ * Returns: #TRUE if the expander is open, #FALSE if it is closed
+ */
 gboolean
 nbtk_expander_get_expanded (NbtkExpander *expander)
 {
