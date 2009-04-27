@@ -243,12 +243,28 @@ row_changed_cb (ClutterModel     *model,
 
 /* public api */
 
+/**
+ * nbtk_icon_view_new:
+ *
+ * Create a new #NbtkIconView
+ *
+ * Returns: a newly allocated #NbtkIconView
+ */
 NbtkWidget*
 nbtk_icon_view_new (void)
 {
   return g_object_new (NBTK_TYPE_ICON_VIEW, NULL);
 }
 
+/**
+ * nbtk_icon_view_get_cell_renderer:
+ *
+ * @self: An #NbtkIconView
+ *
+ * Get the cell renderer currently being used to create items
+ *
+ * Returns: the current #NbtkCellRenderer
+ */
 NbtkCellRenderer*
 nbtk_icon_view_get_cell_renderer (NbtkIconView *self)
 {
@@ -258,6 +274,15 @@ nbtk_icon_view_get_cell_renderer (NbtkIconView *self)
 }
 
 
+/**
+ * nbtk_icon_view_set_cell_renderer:
+ *
+ * @self: An #NbtkIconView
+ * @renderer: An #NbtkCellRenderer
+ *
+ * Set the cell renderer used to create items representing each row in the
+ * model
+ */
 void
 nbtk_icon_view_set_cell_renderer (NbtkIconView     *self,
                                   NbtkCellRenderer *renderer)
@@ -279,6 +304,15 @@ nbtk_icon_view_set_cell_renderer (NbtkIconView     *self,
   model_changed_cb (priv->model, self);
 }
 
+/**
+ * nbtk_icon_view_get_model:
+ *
+ * @self: An #NbtkIconView
+ *
+ * Get the model currently used by the #NbtkIconView
+ *
+ * Returns: the current #ClutterModel
+ */
 ClutterModel*
 nbtk_icon_view_get_model (NbtkIconView *self)
 {
@@ -287,6 +321,14 @@ nbtk_icon_view_get_model (NbtkIconView *self)
   return self->priv->model;
 }
 
+/**
+ * nbtk_icon_view_set_model:
+ *
+ * @self: An #NbtkIconView
+ * @model: A #ClutterModel
+ *
+ * Set the model used by the #NbtkIconView
+ */
 void
 nbtk_icon_view_set_model (NbtkIconView *self,
                           ClutterModel *model)
@@ -334,6 +376,17 @@ nbtk_icon_view_set_model (NbtkIconView *self,
   model_changed_cb (priv->model, self);
 }
 
+/**
+ * nbtk_icon_view_add_attribute:
+ *
+ * @self: An #NbtkIconView
+ * @attr: Name of the attribute
+ * @column: Column number
+ *
+ * Adds an attribute mapping between the current model and the objects from the
+ * cell renderer.
+ *
+ */
 void
 nbtk_icon_view_add_attribute (NbtkIconView *self,
                               const gchar  *attr,
