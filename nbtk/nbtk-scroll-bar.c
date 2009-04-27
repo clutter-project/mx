@@ -44,6 +44,9 @@ G_DEFINE_TYPE_WITH_CODE (NbtkScrollBar, nbtk_scroll_bar, NBTK_TYPE_BIN,
 
 #define NBTK_SCROLL_BAR_GET_PRIVATE(o)  (G_TYPE_INSTANCE_GET_PRIVATE ((o), NBTK_TYPE_SCROLL_BAR, NbtkScrollBarPrivate))
 
+#define PAGING_INITIAL_REPEAT_TIMEOUT 500
+#define PAGING_SUBSEQUENT_REPEAT_TIMEOUT 200
+
 struct _NbtkScrollBarPrivate
 {
   NbtkScrollBarMode  mode;
@@ -62,6 +65,11 @@ struct _NbtkScrollBarPrivate
   guint              idle_move_id;
   gint               move_x;
   gint               move_y;
+
+  /* Trough-click handling. */
+  enum { NONE, UP, DOWN }  paging_direction;
+  guint              paging_source_id;
+  guint              paging_event_no;
 };
 
 enum
@@ -72,9 +80,9 @@ enum
 };
 
 static gboolean
-button_press_event_cb (ClutterActor       *actor,
-                       ClutterButtonEvent *event,
-                       NbtkScrollBar      *bar);
+handle_button_press_event_cb (ClutterActor       *actor,
+                              ClutterButtonEvent *event,
+                              NbtkScrollBar      *bar);
 
 static void
 nbtk_scroll_bar_get_property (GObject    *gobject,
@@ -134,7 +142,7 @@ nbtk_scroll_bar_dispose (GObject *gobject)
   if (priv->handle)
     {
       g_signal_handlers_disconnect_by_func (priv->handle,
-                                            G_CALLBACK (button_press_event_cb),
+                                            G_CALLBACK (handle_button_press_event_cb),
                                             bar);
       clutter_actor_unparent (priv->handle);
       priv->handle = NULL;
@@ -460,9 +468,9 @@ move_slider_cb (NbtkScrollBar *bar)
 }
 
 static gboolean
-motion_event_cb (ClutterActor *trough,
-                 ClutterMotionEvent *event,
-                 NbtkScrollBar *bar)
+handle_motion_event_cb (ClutterActor       *trough,
+                        ClutterMotionEvent *event,
+                        NbtkScrollBar      *bar)
 {
   if (bar->priv->mode == NBTK_SCROLL_BAR_MODE_IDLE)
     {
@@ -485,9 +493,9 @@ motion_event_cb (ClutterActor *trough,
 }
 
 static gboolean
-button_release_event_cb (ClutterActor *trough,
-                         ClutterButtonEvent *event,
-                         NbtkScrollBar *bar)
+handle_button_release_event_cb (ClutterActor *trough,
+                                ClutterButtonEvent *event,
+                                NbtkScrollBar *bar)
 {
   if (event->button != 1)
     return FALSE;
@@ -510,9 +518,9 @@ button_release_event_cb (ClutterActor *trough,
 }
 
 static gboolean
-button_press_event_cb (ClutterActor       *actor,
-                       ClutterButtonEvent *event,
-                       NbtkScrollBar      *bar)
+handle_button_press_event_cb (ClutterActor       *actor,
+                              ClutterButtonEvent *event,
+                              NbtkScrollBar      *bar)
 {
   NbtkScrollBarPrivate *priv = bar->priv;
 
@@ -530,16 +538,146 @@ button_press_event_cb (ClutterActor       *actor,
 
   priv->motion_handler = g_signal_connect_after (priv->trough,
                                                  "motion-event",
-                                                 G_CALLBACK (motion_event_cb),
+                                                 G_CALLBACK (handle_motion_event_cb),
                                                  bar);
   priv->release_handler = g_signal_connect_after (priv->trough,
                                                   "button-release-event",
-                                                  G_CALLBACK (button_release_event_cb),
+                                                  G_CALLBACK (handle_button_release_event_cb),
                                                   bar);
 
   clutter_grab_pointer (priv->trough);
 
   return TRUE;
+}
+
+static gboolean
+trough_paging_cb (NbtkScrollBar *self)
+{
+  ClutterUnit handle_pos, event_pos;
+  gdouble value;
+  gdouble page_increment;
+  gboolean ret;
+
+  if (self->priv->paging_event_no == 0)
+    {
+      /* Scroll on after initial timeout. */
+      ret = FALSE;
+      self->priv->paging_event_no = 1;
+      self->priv->paging_source_id = g_timeout_add (
+                                      PAGING_INITIAL_REPEAT_TIMEOUT,
+                                      (GSourceFunc) trough_paging_cb,
+                                      self);
+    }
+  else if (self->priv->paging_event_no == 1)
+    {
+      /* Scroll on after subsequent timeout. */
+      ret = FALSE;
+      self->priv->paging_event_no = 2;
+      self->priv->paging_source_id = g_timeout_add (
+                                      PAGING_SUBSEQUENT_REPEAT_TIMEOUT,
+                                      (GSourceFunc) trough_paging_cb,
+                                      self);
+    }
+  else
+    {
+      /* Keep scrolling. */
+      ret = TRUE;
+      self->priv->paging_event_no++;
+    }
+
+  /* Do the scrolling */
+  nbtk_adjustment_get_values (self->priv->adjustment,
+                              &value, NULL, NULL,
+                              NULL, &page_increment, NULL);
+
+  handle_pos = clutter_actor_get_xu (self->priv->handle);
+
+  clutter_actor_transform_stage_point (CLUTTER_ACTOR (self->priv->trough),
+                                        CLUTTER_UNITS_FROM_DEVICE (self->priv->move_x),
+                                        CLUTTER_UNITS_FROM_DEVICE (self->priv->move_y),
+                                        &event_pos, NULL);
+
+  if (event_pos > handle_pos)
+    {
+      if (self->priv->paging_direction == NONE)
+        {
+          /* Remember direction. */
+          self->priv->paging_direction = DOWN;
+        }
+      if (self->priv->paging_direction == UP)
+        {
+          /* Scrolled far enough. */
+          return FALSE;
+        }
+      value += page_increment;
+    }
+  else
+    {
+      if (self->priv->paging_direction == NONE)
+        {
+          /* Remember direction. */
+          self->priv->paging_direction = UP;
+        }
+      if (self->priv->paging_direction == DOWN)
+        {
+          /* Scrolled far enough. */
+          return FALSE;
+        }
+      value -= page_increment;
+    }
+
+  nbtk_adjustment_set_value (self->priv->adjustment, value);
+
+  return ret;
+}
+
+static gboolean
+trough_button_press_event_cb (ClutterActor       *actor,
+                              ClutterButtonEvent *event,
+                              NbtkScrollBar      *self)
+{
+  g_return_val_if_fail (self, FALSE);
+
+  if (NULL == self->priv->adjustment)
+    return FALSE;
+
+  self->priv->move_x = event->x;
+  self->priv->move_y = event->y;
+  self->priv->paging_direction = NONE;
+  self->priv->paging_event_no = 0;
+  trough_paging_cb (self);
+
+  return TRUE;
+}
+
+static gboolean
+trough_button_release_event_cb (ClutterActor       *actor,
+                                ClutterButtonEvent *event,
+                                NbtkScrollBar      *self)
+{
+  if (self->priv->paging_source_id)
+    {
+      g_source_remove (self->priv->paging_source_id);
+      self->priv->paging_source_id = 0;
+      return TRUE;
+    }
+
+  return FALSE;
+}
+
+static gboolean
+trough_leave_event_cb (ClutterActor   *actor,
+                       ClutterEvent   *event,
+                       NbtkScrollBar  *self)
+{
+  if (self->priv->paging_source_id)
+    {
+      g_source_remove (self->priv->paging_source_id);
+      self->priv->paging_source_id = 0;
+      return TRUE;
+    }
+
+  return FALSE;
 }
 
 static void
@@ -603,13 +741,19 @@ nbtk_scroll_bar_init (NbtkScrollBar *self)
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->trough), "trough");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->trough),
                             CLUTTER_ACTOR (self));
+  g_signal_connect (self->priv->trough, "button-press-event",
+                    G_CALLBACK (trough_button_press_event_cb), self);
+  g_signal_connect (self->priv->trough, "button-release-event",
+                    G_CALLBACK (trough_button_release_event_cb), self);
+  g_signal_connect (self->priv->trough, "leave-event",
+                    G_CALLBACK (trough_leave_event_cb), self);
 
   self->priv->handle = (ClutterActor *) nbtk_button_new ();
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->handle), "handle");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->handle),
                             self->priv->trough);
   g_signal_connect (self->priv->handle, "button-press-event",
-                    G_CALLBACK (button_press_event_cb), self);
+                    G_CALLBACK (handle_button_press_event_cb), self);
 }
 
 NbtkWidget *

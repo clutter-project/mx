@@ -1327,6 +1327,7 @@ nbtk_grid_allocate (ClutterActor          *self,
                    "upper", height,
                    "page-size", box->y2 - box->y1,
                    "step-increment", (box->y2 - box->y1) / 6,
+                   "page-increment", box->y2 - box->y1,
                    NULL);
 
       if (priv->hadjustment)
@@ -1362,6 +1363,7 @@ nbtk_grid_allocate (ClutterActor          *self,
                    "upper", width,
                    "page-size", box->x2 - box->x1,
                    "step-increment", (box->x2 - box->x1) / 6,
+                   "page-increment", box->x2 - box->x1,
                    NULL);
 
       if (priv->vadjustment)
