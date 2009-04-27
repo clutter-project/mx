@@ -22,6 +22,10 @@
  *
  */
 
+#if !defined(NBTK_H_INSIDE) && !defined(NBTK_COMPILATION)
+#error "Only <nbtk/nbtk.h> can be included directly.h"
+#endif
+
 #ifndef __NBTK_TABLE_CHILD_H__
 #define __NBTK_TABLE_CHILD_H__
 
