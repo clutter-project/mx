@@ -42,8 +42,9 @@
 #include <glib.h>
 #include <clutter/clutter.h>
 
+#include "nbtk-enum-types.h"
+#include "nbtk-marshal.h"
 #include "nbtk-private.h"
-#include "nbtk.h"
 #include "nbtk-table-child.h"
 
 enum

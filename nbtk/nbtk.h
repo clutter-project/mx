@@ -23,7 +23,9 @@
 #ifndef __NBTK_H__
 #define __NBTK_H__
 
+#define NBTK_H_INSIDE
 
+#include <nbtk/nbtk-adjustment.h>
 #include <nbtk/nbtk-bin.h>
 #include <nbtk/nbtk-button.h>
 #include <nbtk/nbtk-entry.h>
@@ -45,5 +47,6 @@
 #include <nbtk/nbtk-viewport.h>
 #include <nbtk/nbtk-widget.h>
 
+#undef NBTK_H_INSIDE
 
 #endif /* __NBTK_H__ */

@@ -1,6 +1,5 @@
 
 #include <nbtk/nbtk.h>
-#include <nbtk/nbtk-scroll-button.h>
 
 static void
 clicked_cb (NbtkButton *button,
