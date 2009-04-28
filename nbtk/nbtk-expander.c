@@ -611,7 +611,6 @@ nbtk_expander_new (void)
 
 /**
  * nbtk_expander_set_label:
- *
  * @expander: A #NbtkExpander
  * @label: string to set as the expander label
  *
@@ -629,7 +628,6 @@ nbtk_expander_set_label (NbtkExpander *expander,
 
 /**
  * nbtk_expander_set_expanded:
- *
  * @expander: A #NbtkExpander
  * @expanded: the state of the expander to set
  *
@@ -650,7 +648,6 @@ nbtk_expander_set_expanded (NbtkExpander *expander,
 
 /**
  * nbtk_expander_get_expanded:
- *
  * @expander: a #NbtkExpander
  *
  * Get the current state of the expander
