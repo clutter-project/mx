@@ -99,12 +99,12 @@ void        nbtk_table_add_actor_with_properties (NbtkTable    *table,
                                                   const gchar  *first_property_name,
                                                   ...);
 #ifndef NBTK_DISABLE_DEPRECATED
-void        nbtk_table_add_widget         (NbtkTable *table, NbtkWidget *widget, gint row, gint column);
-void        nbtk_table_add_widget_full    (NbtkTable *table, NbtkWidget *widget, gint row, gint column, gint rowspan, gint colspan, NbtkTableChildOptions options, gdouble xalign, gdouble yalign);
-void        nbtk_table_add_actor_full     (NbtkTable *table, ClutterActor *actor, gint row, gint column, gint rowspan, gint colspan, NbtkTableChildOptions options, gdouble xalign, gdouble yalign);
-void        nbtk_table_set_widget_colspan (NbtkTable *table, NbtkWidget *widget, gint colspan);
-void        nbtk_table_set_widget_rowspan (NbtkTable *table, NbtkWidget *widget, gint rowspan);
-void        nbtk_table_insert_actor_at_position (NbtkTable *table, ClutterActor *actor, gint x, gint y);
+G_GNUC_DEPRECATED void        nbtk_table_add_widget         (NbtkTable *table, NbtkWidget *widget, gint row, gint column);
+G_GNUC_DEPRECATED void        nbtk_table_add_widget_full    (NbtkTable *table, NbtkWidget *widget, gint row, gint column, gint rowspan, gint colspan, NbtkTableChildOptions options, gdouble xalign, gdouble yalign);
+G_GNUC_DEPRECATED void        nbtk_table_add_actor_full     (NbtkTable *table, ClutterActor *actor, gint row, gint column, gint rowspan, gint colspan, NbtkTableChildOptions options, gdouble xalign, gdouble yalign);
+G_GNUC_DEPRECATED void        nbtk_table_set_widget_colspan (NbtkTable *table, NbtkWidget *widget, gint colspan);
+G_GNUC_DEPRECATED void        nbtk_table_set_widget_rowspan (NbtkTable *table, NbtkWidget *widget, gint rowspan);
+G_GNUC_DEPRECATED void        nbtk_table_insert_actor_at_position (NbtkTable *table, ClutterActor *actor, gint x, gint y);
 
 #endif
 G_END_DECLS
