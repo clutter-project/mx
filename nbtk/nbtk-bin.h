@@ -74,10 +74,12 @@ NbtkWidget   *nbtk_bin_new           (void);
 void          nbtk_bin_set_child     (NbtkBin           *bin,
                                       ClutterActor      *child);
 ClutterActor *nbtk_bin_get_child     (NbtkBin           *bin);
+#ifndef NBTK_DISABLE_DEPRECATED
 void          nbtk_bin_set_padding   (NbtkBin           *bin,
                                       const NbtkPadding *padding);
 void          nbtk_bin_get_padding   (NbtkBin           *bin,
                                       NbtkPadding       *padding);
+#endif
 void          nbtk_bin_set_alignment (NbtkBin           *bin,
                                       NbtkAlignment      x_align,
                                       NbtkAlignment      y_align);

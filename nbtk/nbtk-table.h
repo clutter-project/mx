@@ -91,20 +91,22 @@ gint        nbtk_table_get_col_spacing    (NbtkTable *table);
 gint        nbtk_table_get_row_spacing    (NbtkTable *table);
 void        nbtk_table_set_padding        (NbtkTable *table, const NbtkPadding *padding);
 void        nbtk_table_get_padding        (NbtkTable *table, NbtkPadding *padding);
-void        nbtk_table_add_widget         (NbtkTable *table, NbtkWidget *widget, gint row, gint column);
-void        nbtk_table_add_widget_full    (NbtkTable *table, NbtkWidget *widget, gint row, gint column, gint rowspan, gint colspan, NbtkTableChildOptions options, gdouble xalign, gdouble yalign);
 void        nbtk_table_add_actor          (NbtkTable *table, ClutterActor *actor, gint row, gint column);
-void        nbtk_table_add_actor_full     (NbtkTable *table, ClutterActor *actor, gint row, gint column, gint rowspan, gint colspan, NbtkTableChildOptions options, gdouble xalign, gdouble yalign);
 void        nbtk_table_add_actor_with_properties (NbtkTable    *table,
                                                   ClutterActor *actor,
                                                   gint          row,
                                                   gint          column,
                                                   const gchar  *first_property_name,
                                                   ...);
+#ifndef NBTK_DISABLE_DEPRECATED
+void        nbtk_table_add_widget         (NbtkTable *table, NbtkWidget *widget, gint row, gint column);
+void        nbtk_table_add_widget_full    (NbtkTable *table, NbtkWidget *widget, gint row, gint column, gint rowspan, gint colspan, NbtkTableChildOptions options, gdouble xalign, gdouble yalign);
+void        nbtk_table_add_actor_full     (NbtkTable *table, ClutterActor *actor, gint row, gint column, gint rowspan, gint colspan, NbtkTableChildOptions options, gdouble xalign, gdouble yalign);
 void        nbtk_table_set_widget_colspan (NbtkTable *table, NbtkWidget *widget, gint colspan);
 void        nbtk_table_set_widget_rowspan (NbtkTable *table, NbtkWidget *widget, gint rowspan);
 void        nbtk_table_insert_actor_at_position (NbtkTable *table, ClutterActor *actor, gint x, gint y);
 
+#endif
 G_END_DECLS
 
 #endif /* __NBTK_TABLE_H__ */
