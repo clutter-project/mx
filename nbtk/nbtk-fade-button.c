@@ -114,12 +114,27 @@ nbtk_fade_button_init (NbtkFadeButton *self)
   self->priv = NBTK_FADE_BUTTON_GET_PRIVATE (self);
 }
 
+/**
+ * nbtk_fade_button_new:
+ *
+ * Create a new button that fades between states.
+ *
+ * Returns: A newly allocated #NbtkFadeButton
+ */
 NbtkWidget*
 nbtk_fade_button_new (void)
 {
   return g_object_new (NBTK_TYPE_FADE_BUTTON, NULL);
 }
 
+/**
+ * nbtk_fade_button_new_with_label:
+ * @text: text to set as the label of the button
+ *
+ * Create a new fade button and set the label to the text specified.
+ *
+ * Returns: a newly allocated #NbtkFadeButton
+ */
 NbtkWidget*
 nbtk_fade_button_new_with_label (const gchar *text)
 {
