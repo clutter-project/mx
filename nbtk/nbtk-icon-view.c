@@ -144,20 +144,20 @@ nbtk_icon_view_class_init (NbtkIconViewClass *klass)
 }
 
 static void
-nbtk_icon_view_init (NbtkIconView *self)
+nbtk_icon_view_init (NbtkIconView *icon_view)
 {
-  self->priv = ICON_VIEW_PRIVATE (self);
+  icon_view->priv = ICON_VIEW_PRIVATE (icon_view);
 }
 
 
 /* model monitors */
 static void
 model_changed_cb (ClutterModel *model,
-                  NbtkIconView *self)
+                  NbtkIconView *icon_view)
 {
   GSList *p;
   GList *l, *children;
-  NbtkIconViewPrivate *priv = self->priv;
+  NbtkIconViewPrivate *priv = icon_view->priv;
   ClutterModelIter *iter;
   gint model_n, child_n;
 
@@ -166,7 +166,7 @@ model_changed_cb (ClutterModel *model,
   if (!priv->renderer)
     return;
 
-  children = clutter_container_get_children (CLUTTER_CONTAINER (self));
+  children = clutter_container_get_children (CLUTTER_CONTAINER (icon_view));
 
   child_n = g_list_length (children);
   model_n = clutter_model_get_n_rows (model);
@@ -182,20 +182,20 @@ model_changed_cb (ClutterModel *model,
           break;
         }
 
-      clutter_container_add_actor (CLUTTER_CONTAINER (self),
+      clutter_container_add_actor (CLUTTER_CONTAINER (icon_view),
                                    new_child);
 
-      children = clutter_container_get_children (CLUTTER_CONTAINER (self));
+      children = clutter_container_get_children (CLUTTER_CONTAINER (icon_view));
       child_n = g_list_length (children);
     }
 
   while (child_n > model_n)
     {
       /* remove some children */
-      clutter_container_remove_actor (CLUTTER_CONTAINER (self),
+      clutter_container_remove_actor (CLUTTER_CONTAINER (icon_view),
                                       CLUTTER_ACTOR (children->data));
 
-      children = clutter_container_get_children (CLUTTER_CONTAINER (self));
+      children = clutter_container_get_children (CLUTTER_CONTAINER (icon_view));
       child_n = g_list_length (children);
     }
 
@@ -236,9 +236,9 @@ model_changed_cb (ClutterModel *model,
 static void
 row_changed_cb (ClutterModel     *model,
                 ClutterModelIter *iter,
-                NbtkIconView     *self)
+                NbtkIconView     *icon_view)
 {
-  model_changed_cb (model, self);
+  model_changed_cb (model, icon_view);
 }
 
 
@@ -260,41 +260,39 @@ nbtk_icon_view_new (void)
 
 /**
  * nbtk_icon_view_get_cell_renderer:
- *
- * @self: An #NbtkIconView
+ * @icon_view: An #NbtkIconView
  *
  * Get the cell renderer currently being used to create items
  *
  * Returns: the current #NbtkCellRenderer
  */
 NbtkCellRenderer*
-nbtk_icon_view_get_cell_renderer (NbtkIconView *self)
+nbtk_icon_view_get_cell_renderer (NbtkIconView *icon_view)
 {
-  g_return_val_if_fail (NBTK_IS_ICON_VIEW (self), NULL);
+  g_return_val_if_fail (NBTK_IS_ICON_VIEW (icon_view), NULL);
 
-  return self->priv->renderer;
+  return icon_view->priv->renderer;
 }
 
 
 /**
  * nbtk_icon_view_set_cell_renderer:
- *
- * @self: An #NbtkIconView
+ * @icon_view: An #NbtkIconView
  * @renderer: An #NbtkCellRenderer
  *
  * Set the cell renderer used to create items representing each row in the
  * model
  */
 void
-nbtk_icon_view_set_cell_renderer (NbtkIconView     *self,
+nbtk_icon_view_set_cell_renderer (NbtkIconView     *icon_view,
                                   NbtkCellRenderer *renderer)
 {
   NbtkIconViewPrivate *priv;
 
-  g_return_if_fail (NBTK_IS_ICON_VIEW (self));
+  g_return_if_fail (NBTK_IS_ICON_VIEW (icon_view));
   g_return_if_fail (NBTK_IS_CELL_RENDERER (renderer));
 
-  priv = self->priv;
+  priv = icon_view->priv;
 
   if (priv->renderer)
     {
@@ -303,44 +301,42 @@ nbtk_icon_view_set_cell_renderer (NbtkIconView     *self,
 
   priv->renderer = renderer;
 
-  model_changed_cb (priv->model, self);
+  model_changed_cb (priv->model, icon_view);
 }
 
 /**
  * nbtk_icon_view_get_model:
- *
- * @self: An #NbtkIconView
+ * @icon_view: An #NbtkIconView
  *
  * Get the model currently used by the #NbtkIconView
  *
  * Returns: the current #ClutterModel
  */
 ClutterModel*
-nbtk_icon_view_get_model (NbtkIconView *self)
+nbtk_icon_view_get_model (NbtkIconView *icon_view)
 {
-  g_return_val_if_fail (NBTK_IS_ICON_VIEW (self), NULL);
+  g_return_val_if_fail (NBTK_IS_ICON_VIEW (icon_view), NULL);
 
-  return self->priv->model;
+  return icon_view->priv->model;
 }
 
 /**
  * nbtk_icon_view_set_model:
- *
- * @self: An #NbtkIconView
+ * @icon_view: An #NbtkIconView
  * @model: A #ClutterModel
  *
  * Set the model used by the #NbtkIconView
  */
 void
-nbtk_icon_view_set_model (NbtkIconView *self,
+nbtk_icon_view_set_model (NbtkIconView *icon_view,
                           ClutterModel *model)
 {
   NbtkIconViewPrivate *priv;
 
-  g_return_if_fail (NBTK_IS_ICON_VIEW (self));
+  g_return_if_fail (NBTK_IS_ICON_VIEW (icon_view));
   g_return_if_fail (CLUTTER_IS_MODEL (model));
 
-  priv = self->priv;
+  priv = icon_view->priv;
 
   if (priv->model)
     {
@@ -353,36 +349,35 @@ nbtk_icon_view_set_model (NbtkIconView *self,
   priv->filter_changed = g_signal_connect (priv->model,
                                            "filter-changed",
                                            G_CALLBACK (model_changed_cb),
-                                           self);
+                                           icon_view);
 
   priv->row_added = g_signal_connect (priv->model,
                                       "row-added",
                                       G_CALLBACK (row_changed_cb),
-                                      self);
+                                      icon_view);
 
   priv->row_changed = g_signal_connect (priv->model,
                                         "row-changed",
                                         G_CALLBACK (row_changed_cb),
-                                        self);
+                                        icon_view);
 
   priv->row_removed = g_signal_connect (priv->model,
                                         "row-removed",
                                         G_CALLBACK (row_changed_cb),
-                                        self);
+                                        icon_view);
 
   priv->sort_changed = g_signal_connect (priv->model,
                                          "sort-changed",
                                          G_CALLBACK (model_changed_cb),
-                                         self);
+                                         icon_view);
 
-  model_changed_cb (priv->model, self);
+  model_changed_cb (priv->model, icon_view);
 }
 
 /**
  * nbtk_icon_view_add_attribute:
- *
- * @self: An #NbtkIconView
- * @attr: Name of the attribute
+ * @icon_view: An #NbtkIconView
+ * @attribute: Name of the attribute
  * @column: Column number
  *
  * Adds an attribute mapping between the current model and the objects from the
@@ -390,23 +385,23 @@ nbtk_icon_view_set_model (NbtkIconView *self,
  *
  */
 void
-nbtk_icon_view_add_attribute (NbtkIconView *self,
-                              const gchar  *attr,
+nbtk_icon_view_add_attribute (NbtkIconView *icon_view,
+                              const gchar  *attribute,
                               gint          column)
 {
   NbtkIconViewPrivate *priv;
   AttributeData *prop;
 
-  g_return_if_fail (NBTK_IS_ICON_VIEW (self));
-  g_return_if_fail (attr != NULL);
+  g_return_if_fail (NBTK_IS_ICON_VIEW (icon_view));
+  g_return_if_fail (attribute != NULL);
   g_return_if_fail (column >= 0);
 
-  priv = self->priv;
+  priv = icon_view->priv;
 
   prop = g_new (AttributeData, 1);
-  prop->name = g_strdup (attr);
+  prop->name = g_strdup (attribute);
   prop->col = column;
 
   priv->attributes = g_slist_prepend (priv->attributes, prop);
-  model_changed_cb (priv->model, self);
+  model_changed_cb (priv->model, icon_view);
 }

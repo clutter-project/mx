@@ -56,7 +56,7 @@ void              nbtk_icon_view_set_cell_renderer (NbtkIconView     *icon_view,
 NbtkCellRenderer* nbtk_icon_view_get_cell_renderer (NbtkIconView *icon_view);
 
 void
-nbtk_icon_view_add_attribute (NbtkIconView *self,
+nbtk_icon_view_add_attribute (NbtkIconView *icon_view,
                               const gchar *attribute,
                               gint column);
 
