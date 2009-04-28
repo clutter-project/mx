@@ -7,6 +7,14 @@
  * ClutterChildMeta Implementation
  */
 
+/**
+ * SECTION:nbtk-table-child
+ * @short_description: The child property store for #NbtkTable
+ *
+ * The #ClutterChildMeta implementation for the #NbtkTable container widget.
+ *
+ */
+
 enum {
   CHILD_PROP_0,
 
@@ -299,6 +307,15 @@ get_child_meta (NbtkTable    *table,
   return meta;
 }
 
+/**
+ * nbtk_table_child_get_col_span:
+ * @table: an #NbtkTable
+ * @child: a #ClutterActor
+ *
+ * Get the column span of the child. Defaults to 1.
+ *
+ * Returns: the column span of the child
+ */
 gint
 nbtk_table_child_get_col_span (NbtkTable    *table,
                                ClutterActor *child)
@@ -313,6 +330,15 @@ nbtk_table_child_get_col_span (NbtkTable    *table,
   return meta->col_span;
 }
 
+/**
+ * nbtk_table_child_set_col_span:
+ * @table: An #NbtkTable
+ * @child: An #ClutterActor
+ * @span: The number of columns to span
+ *
+ * Set the column span of the child.
+ *
+ */
 void
 nbtk_table_child_set_col_span (NbtkTable    *table,
                                ClutterActor *child,
@@ -331,6 +357,15 @@ nbtk_table_child_set_col_span (NbtkTable    *table,
   clutter_actor_queue_relayout (child);
 }
 
+/**
+ * nbtk_table_child_get_row_span:
+ * @table: A #NbtkTable
+ * @child: A #ClutterActor
+ *
+ * Get the row span of the child. Defaults to 1.
+ *
+ * Returns: the row span of the child
+ */
 gint
 nbtk_table_child_get_row_span (NbtkTable    *table,
                                ClutterActor *child)
@@ -344,6 +379,16 @@ nbtk_table_child_get_row_span (NbtkTable    *table,
 
   return meta->row_span;
 }
+
+/**
+ * nbtk_table_child_set_row_span:
+ * @table: A #NbtkTable
+ * @child: A #ClutterActor
+ * @span: the number of rows to span
+ *
+ * Set the row span of the child.
+ *
+ */
 void
 nbtk_table_child_set_row_span (NbtkTable    *table,
                                ClutterActor *child,
@@ -362,6 +407,15 @@ nbtk_table_child_set_row_span (NbtkTable    *table,
   clutter_actor_queue_relayout (child);
 }
 
+/**
+ * nbtk_table_child_get_x_fill:
+ * @table: A #NbtkTable
+ * @child: A #ClutterActor
+ *
+ * Get the x-fill state of the child
+ *
+ * Returns: #TRUE if the child is set to x-fill
+ */
 gboolean
 nbtk_table_child_get_x_fill (NbtkTable    *table,
                              ClutterActor *child)
@@ -376,6 +430,16 @@ nbtk_table_child_get_x_fill (NbtkTable    *table,
   return meta->x_fill;
 }
 
+/**
+ * nbtk_table_child_set_x_fill:
+ * @table: A #NbtkTable
+ * @child: A #ClutterActor
+ * @fill: the fill state
+ *
+ * Set the fill state of the child on the x-axis. This will cause the child to
+ * be allocated the maximum available space.
+ *
+ */
 void
 nbtk_table_child_set_x_fill (NbtkTable    *table,
                              ClutterActor *child,
@@ -394,6 +458,15 @@ nbtk_table_child_set_x_fill (NbtkTable    *table,
 }
 
 
+/**
+ * nbtk_table_child_get_y_fill:
+ * @table: A #NbtkTable
+ * @child: A #ClutterActor
+ *
+ * Get the y-fill state of the child
+ *
+ * Returns: #TRUE if the child is set to y-fill
+ */
 gboolean
 nbtk_table_child_get_y_fill (NbtkTable    *table,
                              ClutterActor *child)
@@ -408,6 +481,16 @@ nbtk_table_child_get_y_fill (NbtkTable    *table,
   return meta->y_fill;
 }
 
+/**
+ * nbtk_table_child_set_y_fill:
+ * @table: A #NbtkTable
+ * @child: A #ClutterActor
+ * @fill: the fill state
+ *
+ * Set the fill state of the child on the y-axis. This will cause the child to
+ * be allocated the maximum available space.
+ *
+ */
 void
 nbtk_table_child_set_y_fill (NbtkTable    *table,
                              ClutterActor *child,
@@ -425,6 +508,15 @@ nbtk_table_child_set_y_fill (NbtkTable    *table,
   clutter_actor_queue_relayout (child);
 }
 
+/**
+ * nbtk_table_child_get_col_expand:
+ * @table: A #NbtkTable
+ * @child: A #ClutterActor
+ *
+ * Get the column expand property of the child
+ *
+ * Returns: #TRUE if the child is set to column expand
+ */
 gboolean
 nbtk_table_child_get_col_expand (NbtkTable    *table,
                                  ClutterActor *child)
@@ -439,6 +531,45 @@ nbtk_table_child_get_col_expand (NbtkTable    *table,
   return meta->x_expand;
 }
 
+/**
+ * nbtk_table_child_set_row_expand:
+ * @table: A #NbtkTable
+ * @child: A #ClutterActor
+ * @expand: the new value of the row expand child property
+ *
+ * Set row expand on the child. This causes the row which the child
+ * resides in to be allocated any extra space if the allocation of the table is
+ * larger than the preferred size.
+ *
+ */
+void
+nbtk_table_child_set_row_expand (NbtkTable    *table,
+                                 ClutterActor *child,
+                                 gboolean      expand)
+{
+  NbtkTableChild *meta;
+
+  g_return_if_fail (NBTK_IS_TABLE (table));
+  g_return_if_fail (CLUTTER_IS_ACTOR (child));
+
+  meta = get_child_meta (table, child);
+
+  meta->y_expand = expand;
+
+  clutter_actor_queue_relayout (child);
+}
+
+/**
+ * nbtk_table_child_set_col_expand:
+ * @table: A #NbtkTable
+ * @child: A #ClutterActor
+ * @expand: the new value of the column expand child property
+ *
+ * Set column expand on the child. This causes the column which the child
+ * resides in to be allocated any extra space if the allocation of the table is
+ * larger than the preferred size.
+ *
+ */
 void
 nbtk_table_child_set_col_expand (NbtkTable    *table,
                                  ClutterActor *child,
@@ -456,6 +587,15 @@ nbtk_table_child_set_col_expand (NbtkTable    *table,
   clutter_actor_queue_relayout (child);
 }
 
+/**
+ * nbtk_table_child_get_row_expand:
+ * @table: A #NbtkTable
+ * @child: A #ClutterActor
+ *
+ * Get the row expand property of the child.
+ *
+ * Returns: #TRUE if the child is set to row expand
+ */
 gboolean
 nbtk_table_child_get_row_expand (NbtkTable    *table,
                                  ClutterActor *child)
@@ -475,10 +615,49 @@ nbtk_table_child_get_row_expand (NbtkTable    *table,
       return NBTK_ALIGN_MIDDLE;
 }
 
+/**
+ * nbtk_table_child_get_x_align:
+ * @table: A #NbtkTable
+ * @child: A #ClutterActor
+ *
+ * Get the x-align value of the child
+ *
+ * Returns: An #NbtkAlign value
+ */
+NbtkAlign
+nbtk_table_child_get_x_align (NbtkTable    *table,
+                              ClutterActor *child)
+{
+  NbtkTableChild *meta;
+
+  g_return_val_if_fail (NBTK_IS_TABLE (table), 0);
+  g_return_val_if_fail (CLUTTER_IS_ACTOR (child), 0);
+
+  meta = get_child_meta (table, child);
+
+  if (meta->x_align == 0.0)
+    return NBTK_ALIGN_START;
+  else if (meta->x_align == 1.0)
+    return NBTK_ALIGN_END;
+  else
+    return NBTK_ALIGN_MIDDLE;
+
+}
+
+/**
+ * nbtk_table_child_set_x_align:
+ * @table: A #NbtkTable
+ * @child: A #ClutterActor
+ * @align: A #NbtkAlign value
+ *
+ * Set the alignment of the child within its cell. This will only have an effect
+ * if the the x-fill property is FALSE.
+ *
+ */
 void
-nbtk_table_child_set_x_align (NbtkTable *table,
+nbtk_table_child_set_x_align (NbtkTable    *table,
                               ClutterActor *child,
-                              NbtkAlign align)
+                              NbtkAlign     align)
 {
   NbtkTableChild *meta;
 
@@ -503,8 +682,17 @@ nbtk_table_child_set_x_align (NbtkTable *table,
   clutter_actor_queue_relayout (child);
 }
 
+/**
+ * nbtk_table_child_get_y_align:
+ * @table: A #NbtkTable
+ * @child: A #ClutterActor
+ *
+ * Get the y-align value of the child
+ *
+ * Returns: An #NbtkAlign value
+ */
 NbtkAlign
-nbtk_table_child_get_y_align (NbtkTable *table,
+nbtk_table_child_get_y_align (NbtkTable    *table,
                               ClutterActor *child)
 {
   NbtkTableChild *meta;
@@ -523,10 +711,20 @@ nbtk_table_child_get_y_align (NbtkTable *table,
 
 }
 
+/**
+ * nbtk_table_child_set_y_align:
+ * @table: A #NbtkTable
+ * @child: A #ClutterActor
+ * @align: A #NbtkAlign value
+ *
+ * Set the value of the y-align property. This will only have an effect if
+ * y-fill value is set to FALSE.
+ *
+ */
 void
-nbtk_table_child_set_y_align (NbtkTable *table,
+nbtk_table_child_set_y_align (NbtkTable    *table,
                               ClutterActor *child,
-                              NbtkAlign align)
+                              NbtkAlign     align)
 {
   NbtkTableChild *meta;
 
