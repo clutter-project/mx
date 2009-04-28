@@ -1,5 +1,13 @@
 /* nbtk-cell-renderer.c */
 
+/**
+ * SECTION:nbtk-cell-renderer
+ * @short_description: generates actors to represent rows from a model in a view
+ *
+ * An #NbtkCellRenderer provides actors to a view that will represent rows in a
+ * model.
+ */
+
 #include "nbtk-cell-renderer.h"
 
 G_DEFINE_TYPE (NbtkCellRenderer,
@@ -28,6 +36,14 @@ nbtk_cell_renderer_init (NbtkCellRenderer *self)
 {
 }
 
+/**
+ * nbtk_cell_renderer_get_actor:
+ * @renderer: A #NbtkCellRenderer
+ *
+ * The actor to be used as the represenetation of a row in the model.
+ *
+ * Returns: a #ClutterActor
+ */
 ClutterActor *
 nbtk_cell_renderer_get_actor (NbtkCellRenderer *renderer)
 {
