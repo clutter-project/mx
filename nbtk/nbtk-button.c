@@ -619,7 +619,7 @@ nbtk_button_allocate (ClutterActor          *self,
 
           child_height = CLAMP (natural_height, min_height, available_height);
         }
-      else if (request == CLUTTER_REQUEST_WIDTH_FOR_HEIGHT)
+      else
         {
           clutter_actor_get_preferred_height (child, available_width,
                                               &min_height,

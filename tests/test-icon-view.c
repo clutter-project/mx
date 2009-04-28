@@ -106,9 +106,8 @@ key_release_cb (ClutterActor *actor,
 int
 main (int argc, char *argv[])
 {
-  NbtkWidget *scroll, *view;
+  NbtkWidget *view;
   ClutterActor *stage;
-  int i;
   ClutterModel *model;
   ClutterColor red = { 0xff, 0x00, 0x00, 0xff};
   ClutterColor green = { 0x00, 0xff, 0x00, 0xff};
