@@ -31,7 +31,7 @@ main (int argc, char *argv[])
     {
       char *text = g_strdup_printf ("label %d", i);
       label = nbtk_label_new (text);
-      nbtk_table_add_widget (NBTK_TABLE (table), label, i, 0);
+      nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (label), i, 0);
       g_free (text);
     }
 

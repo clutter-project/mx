@@ -97,18 +97,18 @@ main (int argc, char *argv[])
   button8 = nbtk_button_new_with_label ("button8");
   button9 = nbtk_button_new_with_label ("button9");
 
-  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button1), 0, 0);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button1), 0, 0);
   nbtk_table_add_actor (NBTK_TABLE (table), button2, 0, 1);
-  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button3), 1, 1);
-  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button4), 2, 0);
-  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button5), 3, 0);
-  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button6), 3, 1);
-  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button7), 4, 1);
-  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button8), 4, 0);
-  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button9), 5, 0);
-  nbtk_table_set_widget_rowspan (NBTK_TABLE (table), NBTK_WIDGET (button1), 2);
-  nbtk_table_set_widget_rowspan (NBTK_TABLE (table), NBTK_WIDGET (button7), 2);
-  nbtk_table_set_widget_colspan (NBTK_TABLE (table), NBTK_WIDGET (button4), 2);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button3), 1, 1);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button4), 2, 0);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button5), 3, 0);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button6), 3, 1);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button7), 4, 1);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button8), 4, 0);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button9), 5, 0);
+  nbtk_table_child_set_row_span (NBTK_TABLE (table), CLUTTER_ACTOR (button1), 2);
+  nbtk_table_child_set_row_span (NBTK_TABLE (table), CLUTTER_ACTOR (button7), 2);
+  nbtk_table_child_set_col_span (NBTK_TABLE (table), CLUTTER_ACTOR (button4), 2);
 
 
   clutter_actor_set_size (CLUTTER_ACTOR (button1), 100, 100);

@@ -348,7 +348,7 @@ nbtk_table_child_set_col_span (NbtkTable    *table,
 
   g_return_if_fail (NBTK_IS_TABLE (table));
   g_return_if_fail (CLUTTER_IS_ACTOR (child));
-  g_return_if_fail (span < 1);
+  g_return_if_fail (span > 1);
 
   meta = get_child_meta (table, child);
 
@@ -398,7 +398,7 @@ nbtk_table_child_set_row_span (NbtkTable    *table,
 
   g_return_if_fail (NBTK_IS_TABLE (table));
   g_return_if_fail (CLUTTER_IS_ACTOR (child));
-  g_return_if_fail (span < 1);
+  g_return_if_fail (span > 1);
 
   meta = get_child_meta (table, child);
 

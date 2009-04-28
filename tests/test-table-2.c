@@ -27,7 +27,7 @@ main (int     argc,
 			 CLUTTER_ACTOR (table), NULL);
 
   label = nbtk_label_new ("Short top text");
-  nbtk_table_add_widget (NBTK_TABLE (table), label, 0, 0);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (label), 0, 0);
 
   label2 = nbtk_label_new ("");
   
@@ -36,7 +36,7 @@ main (int     argc,
   clutter_text_set_line_alignment (CLUTTER_TEXT (txt), PANGO_ALIGN_LEFT);
   clutter_text_set_line_wrap (CLUTTER_TEXT (txt), TRUE);
 
-  nbtk_table_add_widget (NBTK_TABLE (table), label2, 1, 0);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (label2), 1, 0);
 
   clutter_container_child_set (CLUTTER_CONTAINER (table),
                                CLUTTER_ACTOR (label2),
@@ -45,7 +45,7 @@ main (int     argc,
                                NULL);
 
   label = nbtk_label_new ("Short Bottom text");
-  nbtk_table_add_widget (NBTK_TABLE (table), label, 2, 0);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (label), 2, 0);
 
   nbtk_label_set_text (NBTK_LABEL (label2), "Really really long long long long long long long long long long long long long long long long long long (ooooh this is verrrrrrry long!) long longlong long long longlong long long long \nlong longlong long long long longlonglonglonglonglonglonglonglonglonglonglonglong long long long long long long long long long Loooooooooooooooong text");
 

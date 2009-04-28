@@ -43,6 +43,7 @@
 #include <nbtk/nbtk-stylable.h>
 #include <nbtk/nbtk-style.h>
 #include <nbtk/nbtk-table.h>
+#include <nbtk/nbtk-table-child.h>
 #include <nbtk/nbtk-texture-cache.h>
 #include <nbtk/nbtk-texture-frame.h>
 #include <nbtk/nbtk-tooltip.h>
