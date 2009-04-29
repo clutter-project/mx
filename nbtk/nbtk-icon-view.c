@@ -159,7 +159,7 @@ model_changed_cb (ClutterModel *model,
   GList *l, *children;
   NbtkIconViewPrivate *priv = icon_view->priv;
   ClutterModelIter *iter;
-  gint model_n, child_n;
+  gint model_n = 0, child_n = 0;
 
 
   /* bail out if we don't yet have a renderer */
@@ -172,8 +172,6 @@ model_changed_cb (ClutterModel *model,
   /* set the properties on the objects */
 
   iter = clutter_model_get_first_iter (priv->model);
-  if (!iter)
-    return;
 
   model_n = 0;
 
@@ -181,7 +179,7 @@ model_changed_cb (ClutterModel *model,
    * clutter_list_model_get_n_rows() does not currently take into account the
    * filtered model. See Clutter bug 1562.
    */
-  while (!clutter_model_iter_is_last (iter))
+  while (iter && !clutter_model_iter_is_last (iter))
     {
       GObject *child;
 
@@ -254,7 +252,8 @@ model_changed_cb (ClutterModel *model,
       child_n = g_list_length (children);
     }
 
-  g_object_unref (iter);
+  if (iter)
+    g_object_unref (iter);
 }
 
 static void
