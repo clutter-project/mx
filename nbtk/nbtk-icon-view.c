@@ -172,6 +172,9 @@ model_changed_cb (ClutterModel *model,
   /* set the properties on the objects */
 
   iter = clutter_model_get_first_iter (priv->model);
+  if (!iter)
+    return;
+
   model_n = 0;
 
   /* We count the number of rows in the model ourselves, as
