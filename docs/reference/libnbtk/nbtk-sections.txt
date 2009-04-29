@@ -17,15 +17,8 @@ NBTK_CELL_RENDERER_GET_CLASS
 <FILE>nbtk-widget</FILE>
 <TITLE>NbtkWidgetChild</TITLE>
 NbtkWidgetChild
-NBTK_TYPE_WIDGET
-NBTK_WIDGET
-NBTK_IS_WIDGET
-NBTK_WIDGET_CLASS
-NBTK_IS_WIDGET_CLASS
-NBTK_WIDGET_GET_CLASS
 <TITLE>NbtkWidget</TITLE>
 NbtkWidget
-nbtk_widget_get_type
 nbtk_widget_set_style_pseudo_class
 nbtk_widget_get_style_pseudo_class
 nbtk_widget_set_style_class_name
@@ -39,6 +32,13 @@ nbtk_widget_get_border_image
 nbtk_widget_get_padding
 nbtk_widget_get_border
 <SUBSECTION Standard>
+nbtk_widget_get_type
+NBTK_TYPE_WIDGET
+NBTK_WIDGET
+NBTK_IS_WIDGET
+NBTK_WIDGET_CLASS
+NBTK_IS_WIDGET_CLASS
+NBTK_WIDGET_GET_CLASS
 NBTK_WIDGET_CHILD
 NBTK_IS_WIDGET_CHILD
 NBTK_TYPE_WIDGET_CHILD

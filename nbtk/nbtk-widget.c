@@ -1022,7 +1022,7 @@ nbtk_widget_get_viewport (NbtkStylable *stylable,
 /**
  * nbtk_widget_set_style_class_name:
  * @actor: a #NbtkWidget
- * @pseudo_class: a new pseudo class string
+ * @style_class: a new style class string
  *
  * Set the style class name
  */
@@ -1218,8 +1218,9 @@ nbtk_widget_init (NbtkWidget *actor)
  * nbtk_widget_get_dnd_threshold:
  * @actor: a #NbtkWidget
  *
- * Returns: the current threshold.
  * Retrieves the drag and drop threshold.
+ *
+ * Returns: the current threshold.
  */
 guint
 nbtk_widget_get_dnd_threshold (NbtkWidget *actor)
@@ -1694,6 +1695,16 @@ nbtk_widget_get_border (NbtkWidget *actor,
              __FUNCTION__);
 }
 
+/**
+ * nbtk_widget_get_border_image:
+ * @actor: A #NbtkWidget
+ *
+ * Get the texture used as the border image. This is set using the
+ * "border-image" CSS property. This function should normally only be used
+ * by subclasses.
+ *
+ * Returns: #ClutterActor
+ */
 ClutterActor *
 nbtk_widget_get_border_image (NbtkWidget *actor)
 {
@@ -1701,6 +1712,16 @@ nbtk_widget_get_border_image (NbtkWidget *actor)
   return priv->border_image;
 }
 
+/**
+ * nbtk_widget_get_background_image:
+ * @actor: A #NbtkWidget
+ *
+ * Get the texture used as the background image. This is set using the
+ * "background-image" CSS property. This function should normally only be used
+ * by subclasses.
+ *
+ * Returns: a #ClutterActor
+ */
 ClutterActor *
 nbtk_widget_get_background_image (NbtkWidget *actor)
 {
@@ -1708,6 +1729,15 @@ nbtk_widget_get_background_image (NbtkWidget *actor)
   return priv->background_image;
 }
 
+/**
+ * nbtk_widget_get_padding:
+ * @widget: A #NbtkWidget
+ * @padding: A pointer to an #NbtkPadding to fill
+ *
+ * Gets the padding of the widget, set using the "padding" CSS property. This
+ * function should normally only be used by subclasses.
+ *
+ */
 void
 nbtk_widget_get_padding (NbtkWidget *widget,
                          NbtkPadding *padding)
