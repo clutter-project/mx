@@ -348,6 +348,48 @@ nbtk_scroll_bar_constructor (GType                  type,
   return obj;
 }
 
+static gboolean
+nbtk_scroll_bar_scroll_event (ClutterActor         *actor,
+                              ClutterScrollEvent   *event)
+{
+  NbtkScrollBarPrivate *priv = NBTK_SCROLL_BAR (actor)->priv;
+  gdouble lower, step, upper, value;
+
+  if (priv->adjustment)
+    {
+      g_object_get (priv->adjustment,
+                    "lower", &lower,
+                    "step-increment", &step,
+                    "upper", &upper,
+                    "value", &value,
+                    NULL);
+    }
+  else
+    {
+      return FALSE;
+    }
+
+  switch (event->direction)
+    {
+      case CLUTTER_SCROLL_UP:
+      case CLUTTER_SCROLL_LEFT:
+        if (value == lower)
+          return FALSE;
+        else
+          nbtk_adjustment_set_value (priv->adjustment, value - step);
+        break;
+      case CLUTTER_SCROLL_DOWN:
+      case CLUTTER_SCROLL_RIGHT:
+        if (value == upper)
+          return FALSE;
+        else
+          nbtk_adjustment_set_value (priv->adjustment, value + step);
+        break;
+    }
+
+  return TRUE;
+}
+
 static void
 nbtk_scroll_bar_class_init (NbtkScrollBarClass *klass)
 {
@@ -365,6 +407,7 @@ nbtk_scroll_bar_class_init (NbtkScrollBarClass *klass)
   actor_class->allocate       = nbtk_scroll_bar_allocate;
   actor_class->paint          = nbtk_scroll_bar_paint;
   actor_class->pick           = nbtk_scroll_bar_pick;
+  actor_class->scroll_event   = nbtk_scroll_bar_scroll_event;
 
   widget_class->style_changed = nbtk_scroll_bar_style_changed;
 
