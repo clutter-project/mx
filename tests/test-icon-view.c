@@ -90,14 +90,26 @@ key_release_cb (ClutterActor *actor,
 
   if (event->keyval == 's')
     {
-      clutter_model_set_sort (model, 0, sort_func,
-                              NULL, NULL);
+      static gboolean sort_set = 0;
+
+      if (!sort_set)
+        clutter_model_set_sort (model, 0, sort_func, NULL, NULL);
+      else
+        clutter_model_set_sort (model, -1, NULL, NULL, NULL);
+
+      sort_set = !sort_set;
     }
 
   if (event->keyval == 'f')
     {
-      clutter_model_set_filter (model, filter_func,
-                                NULL, NULL);
+      static gboolean filter_set = 0;
+
+      if (!filter_set)
+        clutter_model_set_filter (model, filter_func, NULL, NULL);
+      else
+        clutter_model_set_filter (model, NULL, NULL, NULL);
+
+      filter_set = !filter_set;
     }
 
   return FALSE;
