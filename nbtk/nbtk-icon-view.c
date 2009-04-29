@@ -322,7 +322,14 @@ nbtk_icon_view_set_cell_renderer (NbtkIconView     *icon_view,
       g_object_unref (priv->renderer);
     }
 
-  priv->renderer = renderer;
+  if (renderer)
+    {
+      priv->renderer = g_object_ref_sink (renderer);
+    }
+  else
+    {
+      priv->renderer = NULL;
+    }
 
   model_changed_cb (priv->model, icon_view);
 }
