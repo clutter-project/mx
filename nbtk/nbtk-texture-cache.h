@@ -82,10 +82,6 @@ nbtk_texture_cache_get_texture (NbtkTextureCache *self,
 				const gchar      *path, 
 				gboolean          want_clone);
 
-void
-nbtk_texture_cache_get_texture_async (NbtkTextureCache *self,
-                                      const gchar      *path);
-
 gint
 nbtk_texture_cache_get_size (NbtkTextureCache *self);
 
