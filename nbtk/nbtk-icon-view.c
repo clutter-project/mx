@@ -391,10 +391,14 @@ nbtk_icon_view_set_model (NbtkIconView *icon_view,
                                         G_CALLBACK (row_changed_cb),
                                         icon_view);
 
-  priv->row_removed = g_signal_connect (priv->model,
-                                        "row-removed",
-                                        G_CALLBACK (row_changed_cb),
-                                        icon_view);
+  /*
+   * model_changed_cb (called from row_changed_cb) expect the row to already
+   * have been removed, thus we need to use _after
+   */
+  priv->row_removed = g_signal_connect_after (priv->model,
+                                              "row-removed",
+                                              G_CALLBACK (row_changed_cb),
+                                              icon_view);
 
   priv->sort_changed = g_signal_connect (priv->model,
                                          "sort-changed",
