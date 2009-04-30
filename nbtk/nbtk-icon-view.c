@@ -158,7 +158,7 @@ model_changed_cb (ClutterModel *model,
   GSList *p;
   GList *l, *children;
   NbtkIconViewPrivate *priv = icon_view->priv;
-  ClutterModelIter *iter;
+  ClutterModelIter *iter = NULL;
   gint model_n = 0, child_n = 0;
 
 
@@ -170,8 +170,8 @@ model_changed_cb (ClutterModel *model,
   child_n = g_list_length (children);
 
   /* set the properties on the objects */
-
-  iter = clutter_model_get_first_iter (priv->model);
+  if (priv->model)
+    iter = clutter_model_get_first_iter (priv->model);
 
   model_n = 0;
 
