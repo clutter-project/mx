@@ -379,6 +379,12 @@ nbtk_stylable_get_property_internal (NbtkStylable *stylable,
 
   style = nbtk_stylable_get_style (stylable);
 
+  if (!style)
+    {
+      g_value_reset (value);
+      return;
+    }
+
   nbtk_style_get_property (style, stylable, pspec, &real_value);
 
   g_value_copy (&real_value, value);
