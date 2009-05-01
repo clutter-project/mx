@@ -717,7 +717,7 @@ _nbtk_entry_set_icon_from_file (NbtkEntry     *entry,
 
 
 
-      *icon = nbtk_texture_cache_get_texture (cache, filename, FALSE);
+      *icon = (ClutterActor*) nbtk_texture_cache_get_texture (cache, filename, FALSE);
 
       clutter_actor_set_reactive (*icon, TRUE);
       clutter_actor_set_parent (*icon, CLUTTER_ACTOR (entry));

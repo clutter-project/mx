@@ -532,7 +532,7 @@ nbtk_widget_style_changed (NbtkWidget *self)
   NbtkWidgetPrivate *priv = self->priv;
   NbtkBorderImage *border_image = NULL;
   NbtkTextureCache *texture_cache;
-  ClutterActor *texture;
+  ClutterTexture *texture;
   gchar *bg_file;
   NbtkPadding *padding = NULL;
   gboolean relayout_needed = FALSE;
@@ -604,7 +604,7 @@ nbtk_widget_style_changed (NbtkWidget *self)
       border_bottom = ccss_position_get_size (&border_image->bottom,
                                               border_image->image.height);
 
-      priv->border_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
+      priv->border_image = nbtk_texture_frame_new (texture,
                                                    border_top,
                                                    border_right,
                                                    border_bottom,
@@ -617,8 +617,8 @@ nbtk_widget_style_changed (NbtkWidget *self)
     {
       texture = nbtk_texture_cache_get_texture (texture_cache,
                                                 bg_file,
-                                                TRUE);
-      priv->background_image = texture;
+                                                FALSE);
+      priv->background_image = (ClutterActor*) texture;
 
       if (!texture)
         {
