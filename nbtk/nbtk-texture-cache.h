@@ -72,18 +72,13 @@ typedef struct {
 
 GType nbtk_texture_cache_get_type (void);
 
-NbtkTextureCache* nbtk_texture_cache_new (void);
+NbtkTextureCache* nbtk_texture_cache_new         (void);
+NbtkTextureCache* nbtk_texture_cache_get_default (void);
+ClutterTexture*   nbtk_texture_cache_get_texture (NbtkTextureCache *self,
+                                                  const gchar *path,
+                                                  gboolean want_clone);
 
-NbtkTextureCache*
-nbtk_texture_cache_get_default (void);
-
-ClutterActor*
-nbtk_texture_cache_get_texture (NbtkTextureCache *self,
-				const gchar      *path, 
-				gboolean          want_clone);
-
-gint
-nbtk_texture_cache_get_size (NbtkTextureCache *self);
+gint              nbtk_texture_cache_get_size    (NbtkTextureCache *self);
 
 G_END_DECLS
 

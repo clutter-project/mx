@@ -139,6 +139,7 @@ nbtk_texture_cache_get_default (void)
   return  __cache_singleton;
 }
 
+#if 0
 static void
 on_texure_finalized (gpointer data,
 		     GObject *where_the_object_was)
@@ -151,6 +152,7 @@ on_texure_finalized (gpointer data,
   g_free(closure->path);
   g_free(closure);
 }
+#endif
 
 gint
 nbtk_texture_cache_get_size (NbtkTextureCache *self)
@@ -163,77 +165,71 @@ nbtk_texture_cache_get_size (NbtkTextureCache *self)
 static void
 add_texture_to_cache (NbtkTextureCache *self,
                       const gchar      *path,
-                      ClutterActor     *res)
+                      CoglHandle       *res)
 {
-  FinalizedClosure        *closure;
+  /*  FinalizedClosure        *closure; */
   NbtkTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE(self);
 
   g_hash_table_insert (priv->cache, g_strdup (path), res);
 
+#if 0
   /* Make sure we can remove from hash */
   closure = g_new0 (FinalizedClosure, 1);
   closure->path = g_strdup (path);
   closure->cache = self;
 
   g_object_weak_ref (G_OBJECT (res), on_texure_finalized, closure);
-}
-
-static ClutterActor *
-nbtk_texture_cache_get_texture_if_exists (NbtkTextureCache *self,
-				          const gchar      *path, 
-				          gboolean          want_clone)
-{
-  NbtkTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE(self);
-  ClutterActor *res = NULL;
-
-  if (!path)
-    return res;
-
-  res = g_hash_table_lookup (priv->cache, path);
-
-  if (res)
-    {
-      if (want_clone)
-        res = clutter_clone_new (res);
-      else
-        g_object_ref (res);
-    }
-  
-  return res;
+#endif
 }
 
 /* NOTE: you should unref the returned texture when not needed */
-ClutterActor*
+ClutterTexture*
 nbtk_texture_cache_get_texture (NbtkTextureCache *self,
-				const gchar      *path, 
-				gboolean          want_clone)
+                                const gchar      *path,
+                                gboolean          want_clone)
 {
-  ClutterActor *res;
+  CoglHandle *res;
+  ClutterActor *texture;
+  NbtkTextureCachePrivate *priv;
 
+  g_return_val_if_fail (NBTK_IS_TEXTURE_CACHE (self), NULL);
   g_return_val_if_fail (path != NULL, NULL);
 
-  res = nbtk_texture_cache_get_texture_if_exists (self, path, want_clone);
+  priv = TEXTURE_CACHE_PRIVATE (self);
+
+
+  if (want_clone)
+    g_warning ("The want_clone parameter of %s is now ignored. This function "
+               "always returns a new ClutterTexture", __FUNCTION__);
+
+  res = g_hash_table_lookup (priv->cache, path);
 
   if (!res)
     {
-      res = clutter_texture_new_from_file (path, NULL);
+      GError *err = NULL;
+      res = cogl_texture_new_from_file (path, -1, COGL_TEXTURE_NONE, COGL_PIXEL_FORMAT_ANY,
+                                        &err);
+
+      /* XXX: pass up GError */
       if (!res)
-	return NULL;
+        {
+          if (err)
+            {
+              g_warning ("Error loading image: %s", err->message);
+              g_error_free (err);
+            }
+
+          return NULL;
+        }
 
       add_texture_to_cache (self, path, res);
-      
-      if (want_clone)
-        {
-          ClutterActor *clone;
-
-          clone = clutter_clone_new (res);
-          g_object_unref (res);
-
-          res = clone;
-        }
     }
 
-  return res;
+  texture = clutter_texture_new ();
+  clutter_texture_set_cogl_texture ((ClutterTexture*) texture, res);
+
+
+  return (ClutterTexture*) texture;
 }
 
 
