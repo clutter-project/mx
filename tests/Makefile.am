@@ -19,7 +19,6 @@ noinst_PROGRAMS = 		\
 	test-table-2            \
 	test-texture-frame 	\
 	test-tooltips 		\
-	test-padding 		\
 	test-icon-view 		\
 	test-border-image	\
 	test-scroll-bar		\
@@ -40,7 +39,6 @@ test_entry_SOURCES = test-entry.c
 test_expander_SOURCES = test-expander.c
 test_grid_SOURCES = test-grid.c
 test_icon_view_SOURCES = test-icon-view.c
-test_padding_SOURCES = test-padding.c
 test_border_image_SOURCES = test-border-image.c
 
 test_scroll_bar_SOURCES = test-scroll-bar.c
