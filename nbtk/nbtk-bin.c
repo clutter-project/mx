@@ -396,7 +396,8 @@ nbtk_bin_set_property (GObject      *gobject,
       break;
 
     case PROP_PADDING:
-      nbtk_bin_set_padding (bin, g_value_get_boxed (value));
+      g_warning ("The padding property is deprecated, please set padding using"
+                 " a stylesheet");
       break;
 
     case PROP_X_ALIGN:
@@ -701,7 +702,7 @@ nbtk_bin_get_child (NbtkBin *bin)
  *
  * Deprecated: please set padding using a stylesheet
  */
-G_GNUC_DEPRECATED void
+void
 nbtk_bin_set_padding (NbtkBin           *bin,
                       const NbtkPadding *padding)
 {
