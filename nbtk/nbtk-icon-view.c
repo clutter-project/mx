@@ -264,7 +264,21 @@ row_changed_cb (ClutterModel     *model,
   model_changed_cb (model, icon_view);
 }
 
+static void
+row_removed_cb (ClutterModel     *model,
+                ClutterModelIter *iter,
+                NbtkIconView     *icon_view)
+{
+  GList *children;
+  GList *l;
+  ClutterActor *child;
 
+  children = clutter_container_get_children (CLUTTER_CONTAINER (icon_view));
+  l = g_list_nth (children, clutter_model_iter_get_row (iter));
+  child = (ClutterActor *)l->data;
+  clutter_container_remove_actor (CLUTTER_CONTAINER (icon_view), child);
+  g_list_free (children);
+}
 
 /* public api */
 
@@ -397,7 +411,7 @@ nbtk_icon_view_set_model (NbtkIconView *icon_view,
    */
   priv->row_removed = g_signal_connect_after (priv->model,
                                               "row-removed",
-                                              G_CALLBACK (row_changed_cb),
+                                              G_CALLBACK (row_removed_cb),
                                               icon_view);
 
   priv->sort_changed = g_signal_connect (priv->model,
