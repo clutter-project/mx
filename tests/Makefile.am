@@ -20,7 +20,6 @@ noinst_PROGRAMS = 		\
 	test-texture-frame 	\
 	test-tooltips 		\
 	test-icon-view 		\
-	test-border-image	\
 	test-scroll-bar		\
 	test-scroll-grid	\
 	test-scroll-view-2	\
@@ -39,7 +38,6 @@ test_entry_SOURCES = test-entry.c
 test_expander_SOURCES = test-expander.c
 test_grid_SOURCES = test-grid.c
 test_icon_view_SOURCES = test-icon-view.c
-test_border_image_SOURCES = test-border-image.c
 
 test_scroll_bar_SOURCES = test-scroll-bar.c
 test_scroll_grid_SOURCES = test-scroll-grid.c
