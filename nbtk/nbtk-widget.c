@@ -39,6 +39,7 @@
 #include "nbtk-stylable.h"
 #include "nbtk-texture-cache.h"
 #include "nbtk-texture-frame.h"
+#include "nbtk-tooltip.h"
 
 /*
  * Forward declaration for sake of NbtkWidgetChild
@@ -71,6 +72,9 @@ struct _NbtkWidgetPrivate
   gboolean dnd_motion : 1;
   gboolean dnd_grab   : 1;
   gboolean is_stylable : 1;
+  gboolean has_tooltip : 1;
+
+  NbtkTooltip *tooltip;
 };
 
 /*
@@ -191,6 +195,9 @@ enum
   PROP_DND_ICON,
 
   PROP_STYLABLE,
+
+  PROP_HAS_TOOLTIP,
+  PROP_TOOLTIP_TEXT
 };
 
 enum
@@ -257,6 +264,10 @@ nbtk_widget_set_property (GObject      *gobject,
         }
       break;
 
+    case PROP_HAS_TOOLTIP:
+      nbtk_widget_set_has_tooltip (actor, g_value_get_boolean (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -296,6 +307,14 @@ nbtk_widget_get_property (GObject    *gobject,
 
     case PROP_STYLABLE:
       g_value_set_boolean (value, priv->is_stylable);
+      break;
+
+    case PROP_HAS_TOOLTIP:
+      g_value_set_boolean (value, priv->has_tooltip);
+      break;
+
+    case PROP_TOOLTIP_TEXT:
+      g_value_set_string (value, nbtk_tooltip_get_label (priv->tooltip));
       break;
 
     default:
@@ -362,6 +381,12 @@ nbtk_widget_dispose (GObject *gobject)
       ClutterActor *dragged = priv->dnd_dragged;
       priv->dnd_dragged = NULL;
       g_object_unref (dragged);
+    }
+
+  if (priv->tooltip)
+    {
+      clutter_actor_unparent (CLUTTER_ACTOR (priv->tooltip));
+      priv->tooltip = NULL;
     }
 
   G_OBJECT_CLASS (nbtk_widget_parent_class)->dispose (gobject);
@@ -669,6 +694,51 @@ nbtk_widget_dnd_dropped (NbtkWidget   *actor,
     }
 }
 
+static gboolean
+nbtk_widget_enter (ClutterActor         *actor,
+                   ClutterCrossingEvent *event)
+{
+  NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
+
+
+  if (priv->has_tooltip)
+      nbtk_tooltip_show (priv->tooltip);
+
+  if (CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->enter_event)
+    return CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->enter_event (actor, event);
+  else
+    return FALSE;
+}
+
+static gboolean
+nbtk_widget_leave (ClutterActor         *actor,
+                   ClutterCrossingEvent *event)
+{
+  NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
+
+  if (priv->has_tooltip)
+      nbtk_tooltip_hide (priv->tooltip);
+
+  if (CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->leave_event)
+    return CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->leave_event (actor, event);
+  else
+    return FALSE;
+}
+
+static void
+nbtk_widget_hide (ClutterActor *actor)
+{
+  NbtkWidget *widget = (NbtkWidget *) actor;
+
+  /* hide the tooltip, if there is one */
+  if (widget->priv->tooltip)
+    nbtk_tooltip_hide (NBTK_TOOLTIP (widget->priv->tooltip));
+
+  CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->hide (actor);
+}
+
+
+
 static void
 nbtk_widget_class_init (NbtkWidgetClass *klass)
 {
@@ -686,6 +756,10 @@ nbtk_widget_class_init (NbtkWidgetClass *klass)
   actor_class->allocate = nbtk_widget_allocate;
   actor_class->paint = nbtk_widget_paint;
   actor_class->parent_set = nbtk_widget_parent_set;
+
+  actor_class->enter_event = nbtk_widget_enter;
+  actor_class->leave_event = nbtk_widget_leave;
+  actor_class->hide = nbtk_widget_hide;
 
   klass->draw_background = nbtk_widget_real_draw_background;
 
@@ -764,6 +838,35 @@ nbtk_widget_class_init (NbtkWidgetClass *klass)
   g_object_class_install_property (gobject_class,
                                    PROP_STYLABLE,
                                    pspec);
+
+  /**
+   * NbtkWidget:has-tooltip:
+   *
+   * Determines whether the widget has a tooltip. If set to TRUE, causes the
+   * widget to monitor enter and leave events (i.e. sets the widget reactive).
+   */
+  pspec = g_param_spec_boolean ("has-tooltip",
+                                "Has Tooltip",
+                                "Determines whether the widget has a tooltip",
+                                FALSE,
+                                NBTK_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class,
+                                   PROP_HAS_TOOLTIP,
+                                   pspec);
+
+
+  /**
+   * NbtkWidget:tooltip-text:
+   *
+   * text displayed on the tooltip
+   */
+  pspec = g_param_spec_string ("tooltip-text",
+                               "Tooltip Text",
+                               "Text displayed on the tooltip",
+                               "",
+                               NBTK_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_TOOLTIP_TEXT, pspec);
+
 
   /**
    * NbtkWidget::style-changed:
@@ -1746,4 +1849,107 @@ nbtk_widget_get_padding (NbtkWidget *widget,
   g_return_if_fail (padding != NULL);
 
   *padding = widget->priv->padding;
+}
+
+/**
+ * nbtk_widget_set_has_tooltip:
+ * @widget: A #NbtkWidget
+ * @has_tooltip: #TRUE if the widget should display a tooltip
+ *
+ * Enables tooltip support on the #NbtkWidget.
+ *
+ * Note that setting has-tooltip to #TRUE will cause the widget to be set
+ * reactive. If you no longer need tooltip support and do not need the widget
+ * to be reactive, you need to set ClutterActor::reactive to FALSE.
+ *
+ */
+void
+nbtk_widget_set_has_tooltip (NbtkWidget *widget,
+                             gboolean    has_tooltip)
+{
+  NbtkWidgetPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_WIDGET (widget));
+
+  priv = widget->priv;
+
+  priv->has_tooltip = has_tooltip;
+
+  if (has_tooltip)
+    {
+      clutter_actor_set_reactive ((ClutterActor*) widget, TRUE);
+
+      if (!priv->tooltip)
+        priv->tooltip = g_object_new (NBTK_TYPE_TOOLTIP,
+                                      "widget", widget,
+                                      NULL);
+    }
+  else
+    {
+      if (priv->tooltip)
+        {
+          clutter_actor_unparent (CLUTTER_ACTOR (priv->tooltip));
+          priv->tooltip = NULL;
+        }
+    }
+}
+
+/**
+ * nbtk_widget_get_has_tooltip:
+ * @widget: A #NbtkWidget
+ *
+ * Returns the current value of the has-tooltip property. See
+ * nbtk_tooltip_set_has_tooltip() for more information.
+ *
+ * Returns: current value of has-tooltip on @widget
+ */
+gboolean
+nbtk_widget_get_has_tooltip (NbtkWidget *widget)
+{
+  g_return_val_if_fail (NBTK_IS_WIDGET (widget), FALSE);
+
+  return widget->priv->has_tooltip;
+}
+
+/**
+ * nbtk_widget_set_tooltip_text:
+ * @widget: A #NbtkWidget
+ * @text: text to set as the tooltip
+ *
+ * Set the tooltip text of the widget. This will set NbtkWidget::has-tooltip to
+ * #TRUE. A value of #NULL will unset the tooltip and set has-tooltip to #FALSE.
+ *
+ */
+void
+nbtk_widget_set_tooltip_text (NbtkWidget  *widget,
+                              const gchar *text)
+{
+  NbtkWidgetPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_WIDGET (widget));
+
+  priv = widget->priv;
+
+  if (text == NULL)
+    nbtk_widget_set_has_tooltip (widget, FALSE);
+  else
+    nbtk_widget_set_has_tooltip (widget, TRUE);
+
+  nbtk_tooltip_set_label (priv->tooltip, text);
+}
+
+/**
+ * nbtk_widget_get_tooltip_text:
+ * @widget: A #NbtkWidget
+ *
+ * Get the current tooltip string
+ *
+ * Returns: The current tooltip string, owned by the #NbtkWidget
+ */
+const gchar*
+nbtk_widget_get_tooltip_text (NbtkWidget *widget)
+{
+  g_return_val_if_fail (NBTK_IS_WIDGET (widget), NULL);
+
+  return nbtk_tooltip_get_label (widget->priv->tooltip);
 }

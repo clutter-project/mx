@@ -148,6 +148,14 @@ void                  nbtk_widget_setup_child_dnd        (NbtkWidget   *actor,
 void                  nbtk_widget_undo_child_dnd         (NbtkWidget   *actor,
                                                           ClutterActor *child);
 
+
+void     nbtk_widget_set_has_tooltip (NbtkWidget *widget, gboolean has_tooltip);
+gboolean nbtk_widget_get_has_tooltip (NbtkWidget *widget);
+void     nbtk_widget_set_tooltip_text (NbtkWidget *widget, const gchar *text);
+const gchar* nbtk_widget_get_tooltip_text (NbtkWidget *widget);
+
+
+
 /* Only to be used by sub-classes of NbtkWidget */
 ClutterActor *nbtk_widget_get_background_image (NbtkWidget *actor);
 ClutterActor *nbtk_widget_get_border_image     (NbtkWidget *actor);
