@@ -48,7 +48,6 @@
 #include "nbtk-style.h"
 #include "nbtk-texture-frame.h"
 #include "nbtk-texture-cache.h"
-#include "nbtk-tooltip.h"
 #include "nbtk-private.h"
 
 enum
@@ -77,7 +76,6 @@ struct _NbtkButtonPrivate
 
   ClutterActor *label;
   ClutterActor *icon;
-  NbtkWidget   *tooltip;
 
   guint8 old_opacity;
 
@@ -243,6 +241,7 @@ static gboolean
 nbtk_button_button_press (ClutterActor       *actor,
                           ClutterButtonEvent *event)
 {
+  nbtk_widget_hide_tooltip (NBTK_WIDGET (actor));
 
   if (event->button == 1)
     {
@@ -279,8 +278,6 @@ nbtk_button_button_release (ClutterActor       *actor,
       if (button->priv->is_toggle)
         {
           nbtk_button_set_checked (button, !button->priv->is_checked);
-          if (button->priv->tooltip)
-            nbtk_tooltip_hide (NBTK_TOOLTIP (button->priv->tooltip));
         }
 
       button->priv->is_pressed = FALSE;
@@ -307,10 +304,7 @@ nbtk_button_enter (ClutterActor         *actor,
 
   button->priv->is_hover = 1;
 
-  if (button->priv->tooltip)
-    nbtk_tooltip_show (NBTK_TOOLTIP (button->priv->tooltip));
-
-  return FALSE;
+  return CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->enter_event (actor, event);
 }
 
 static gboolean
@@ -338,10 +332,7 @@ nbtk_button_leave (ClutterActor         *actor,
   else
     nbtk_button_set_style_pseudo_class (button, NULL);
 
-  if (button->priv->tooltip)
-    nbtk_tooltip_hide (NBTK_TOOLTIP (button->priv->tooltip));
-
-  return FALSE;
+  return CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->leave_event (actor, event);
 }
 
 static void
@@ -659,18 +650,6 @@ nbtk_button_paint (ClutterActor *self)
 }
 
 static void
-nbtk_button_hide (ClutterActor *actor)
-{
-  NbtkButton *button = (NbtkButton *) actor;
-
-  /* hide the tooltip, if there is one */
-  if (button->priv->tooltip)
-    nbtk_tooltip_hide (NBTK_TOOLTIP (button->priv->tooltip));
-
-  CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->hide (actor);
-}
-
-static void
 nbtk_button_class_init (NbtkButtonClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -696,7 +675,6 @@ nbtk_button_class_init (NbtkButtonClass *klass)
   actor_class->get_preferred_height = nbtk_button_get_preferred_height;
   actor_class->get_preferred_width = nbtk_button_get_preferred_width;
 
-  actor_class->hide = nbtk_button_hide;
   actor_class->paint = nbtk_button_paint;
 
   nbtk_widget_class->style_changed = nbtk_button_style_changed;
@@ -1011,24 +989,12 @@ nbtk_button_set_icon (NbtkButton    *button,
  * @label: text to display in the tooltip, or NULL to unset the tooltip
  *
  * Set or remove a tooltip from the button.
+ *
+ * Deprecated: use nbtk_widget_set_tooltip_text() instead
  */
 void
 nbtk_button_set_tooltip (NbtkButton  *button,
                          const gchar *label)
 {
-  NbtkButtonPrivate *priv;
-
-  g_return_if_fail (NBTK_IS_BUTTON (button));
-
-  priv = button->priv;
-
-  if (label)
-    {
-      priv->tooltip = g_object_new (NBTK_TYPE_TOOLTIP,
-                                    "widget", button,
-                                    "label", label,
-                                    NULL);
-    }
-  else
-    g_object_unref (priv->tooltip);
+  nbtk_widget_set_tooltip_text (NBTK_WIDGET (button), label);
 }
