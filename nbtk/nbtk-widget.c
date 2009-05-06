@@ -1953,3 +1953,21 @@ nbtk_widget_get_tooltip_text (NbtkWidget *widget)
 
   return nbtk_tooltip_get_label (widget->priv->tooltip);
 }
+
+void
+nbtk_widget_show_tooltip (NbtkWidget *widget)
+{
+  g_return_if_fail (NBTK_IS_WIDGET (widget));
+
+  if (widget->priv->tooltip)
+    nbtk_tooltip_show (widget->priv->tooltip);
+}
+
+void
+nbtk_widget_hide_tooltip (NbtkWidget *widget)
+{
+  g_return_if_fail (NBTK_IS_WIDGET (widget));
+
+  if (widget->priv->tooltip)
+    nbtk_tooltip_hide (widget->priv->tooltip);
+}

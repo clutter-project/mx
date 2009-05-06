@@ -154,6 +154,9 @@ gboolean nbtk_widget_get_has_tooltip (NbtkWidget *widget);
 void     nbtk_widget_set_tooltip_text (NbtkWidget *widget, const gchar *text);
 const gchar* nbtk_widget_get_tooltip_text (NbtkWidget *widget);
 
+void nbtk_widget_show_tooltip (NbtkWidget *widget);
+void nbtk_widget_hide_tooltip (NbtkWidget *widget);
+
 
 
 /* Only to be used by sub-classes of NbtkWidget */
