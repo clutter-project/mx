@@ -1,0 +1,46 @@
+Coding Style
+============
+
+The coding style of Nbtk mostly follows the GNU coding standards. See
+http://www.gnu.org/prep/standards/ for more information.
+
+One important exception is that formal parameters to functions are always
+separated by new lines and the type and name columns are aligned.
+
+ For example:
+
+void
+foo_bar_set_int (FooBar *type,
+                 gint    int)
+{
+  ...
+}
+
+
+Committing
+==========
+
+Nbtk is currently managed in a git repository. Git has a special format for
+commit messages; the first line of the message is a brief (less than 72
+characters) explanation of the commit. Where appropriate, the short commit
+message should be preceded by a "tag" enclosed in square brackets. This should
+either be the class name affected by the commit, or the application binary
+name. If your patch affects multiple classes or applications, consider whether
+the patch can be broken into smaller commits.
+
+The short log message is followed by a blank line and then a paragraph that
+details the reasons for the commit and explains the changes. Sometimes it is
+not necessary to include the long description, but this should be the exception
+rather than the rule.
+
+For example:
+
+-------------------------------------------------------------------------------
+[tag] a brief short description
+
+A longer description outlining the changes and why they where introduced.
+This should be concise, but not too brief.
+-------------------------------------------------------------------------------
+
+
+
