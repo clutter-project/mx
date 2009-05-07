@@ -30,20 +30,20 @@ main (int argc, char *argv[])
   g_signal_connect (button, "clicked",
                     G_CALLBACK (button_hide),
                     "hello");
-  nbtk_widget_set_tooltip_text (NBTK_BUTTON (button), "Disappear");
+  nbtk_widget_set_tooltip_text (button, "Disappear");
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 50, 100);
 
   button = nbtk_button_new_with_label ("Testing 123");
-  nbtk_widget_set_tooltip_text (NBTK_BUTTON (button), "Testing the Tooltips...");
+  nbtk_widget_set_tooltip_text (button, "Testing the Tooltips...");
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 50, 200);
 
 
   button = nbtk_button_new_with_label ("Testing Long Text");
-  nbtk_widget_set_tooltip_text (NBTK_BUTTON (button),
+  nbtk_widget_set_tooltip_text (button,
                            "Here is some really"
                            " long text to test the handling in NbtkTooltip");
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
@@ -51,7 +51,7 @@ main (int argc, char *argv[])
   clutter_actor_set_position (CLUTTER_ACTOR (button), 50, 300);
 
   button = nbtk_button_new_with_label ("Testing Long Text");
-  nbtk_widget_set_tooltip_text (NBTK_BUTTON (button),
+  nbtk_widget_set_tooltip_text (button,
                            "Here is some really"
                            " long text to test the handling in NbtkTooltip");
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
@@ -59,7 +59,7 @@ main (int argc, char *argv[])
   clutter_actor_set_position (CLUTTER_ACTOR (button), 500, 300);
 
   button = nbtk_button_new_with_label ("Crazy");
-  nbtk_widget_set_tooltip_text (NBTK_BUTTON (button),
+  nbtk_widget_set_tooltip_text (button,
                            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                            " aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                            " aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
