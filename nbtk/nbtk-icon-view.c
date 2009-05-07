@@ -384,42 +384,59 @@ nbtk_icon_view_set_model (NbtkIconView *icon_view,
 
   if (priv->model)
     {
+      g_signal_handlers_disconnect_by_func (priv->model,
+                                            (GCallback)model_changed_cb,
+                                            icon_view);
+      g_signal_handlers_disconnect_by_func (priv->model,
+                                            (GCallback)row_changed_cb,
+                                            icon_view);
+      g_signal_handlers_disconnect_by_func (priv->model,
+                                            (GCallback)row_removed_cb,
+                                            icon_view);
       g_object_unref (priv->model);
-      /* remove all items */
     }
 
-  priv->model = g_object_ref (model);
+  if (model)
+    {
+      g_return_if_fail (CLUTTER_IS_MODEL (model));
 
-  priv->filter_changed = g_signal_connect (priv->model,
-                                           "filter-changed",
-                                           G_CALLBACK (model_changed_cb),
-                                           icon_view);
+      priv->model = g_object_ref (model);
 
-  priv->row_added = g_signal_connect (priv->model,
-                                      "row-added",
-                                      G_CALLBACK (row_changed_cb),
-                                      icon_view);
+      priv->filter_changed = g_signal_connect (priv->model,
+                                               "filter-changed",
+                                               G_CALLBACK (model_changed_cb),
+                                               icon_view);
 
-  priv->row_changed = g_signal_connect (priv->model,
-                                        "row-changed",
-                                        G_CALLBACK (row_changed_cb),
-                                        icon_view);
+      priv->row_added = g_signal_connect (priv->model,
+                                          "row-added",
+                                          G_CALLBACK (row_changed_cb),
+                                          icon_view);
 
-  /*
-   * model_changed_cb (called from row_changed_cb) expect the row to already
-   * have been removed, thus we need to use _after
-   */
-  priv->row_removed = g_signal_connect_after (priv->model,
-                                              "row-removed",
-                                              G_CALLBACK (row_removed_cb),
-                                              icon_view);
+      priv->row_changed = g_signal_connect (priv->model,
+                                            "row-changed",
+                                            G_CALLBACK (row_changed_cb),
+                                            icon_view);
 
-  priv->sort_changed = g_signal_connect (priv->model,
-                                         "sort-changed",
-                                         G_CALLBACK (model_changed_cb),
-                                         icon_view);
+      /*
+       * model_changed_cb (called from row_changed_cb) expect the row to already
+       * have been removed, thus we need to use _after
+       */
+      priv->row_removed = g_signal_connect_after (priv->model,
+                                                  "row-removed",
+                                                  G_CALLBACK (row_removed_cb),
+                                                  icon_view);
 
-  model_changed_cb (priv->model, icon_view);
+      priv->sort_changed = g_signal_connect (priv->model,
+                                             "sort-changed",
+                                             G_CALLBACK (model_changed_cb),
+                                             icon_view);
+
+      /*
+       * Only do this inside this block, setting the model to NULL should have
+       * the effect of preserving the view; just disconnect the handlers
+       */
+      model_changed_cb (priv->model, icon_view);
+  }
 }
 
 /**
