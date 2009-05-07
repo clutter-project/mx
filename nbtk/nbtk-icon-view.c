@@ -86,11 +86,8 @@ nbtk_icon_view_dispose (GObject *object)
 
   G_OBJECT_CLASS (nbtk_icon_view_parent_class)->dispose (object);
 
-  if (priv->model)
-    {
-      g_object_unref (priv->model);
-      priv->model = NULL;
-    }
+  /* This will cause the unref of the model and also disconnect the signals */
+  nbtk_icon_view_set_model (NBTK_ICON_VIEW (object), NULL);
 
   if (priv->renderer)
     {
