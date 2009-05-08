@@ -596,7 +596,6 @@ nbtk_table_calculate_row_heights (NbtkTable *table,
   GSList *list;
   gint *is_expand_row, *min_heights, *pref_heights, *row_heights, extra_row_height;
   gint i, total_min_height;
-  gint row_spacing;
   gint expanded_rows = 0;
   gint n_expanded_rows = 0;
   NbtkPadding padding;
@@ -605,8 +604,6 @@ nbtk_table_calculate_row_heights (NbtkTable *table,
 
   /* take padding off available height */
   for_height -= CLUTTER_UNITS_TO_INT (padding.top + padding.bottom);
-
-  row_spacing = (priv->row_spacing);
 
   g_array_set_size (priv->row_heights, 0);
   g_array_set_size (priv->row_heights, priv->n_rows);
@@ -673,7 +670,7 @@ nbtk_table_calculate_row_heights (NbtkTable *table,
         }
     }
 
-  total_min_height = row_spacing * (priv->n_rows - 1);
+  total_min_height = 0;// priv->row_spacing * (priv->n_rows - 1);
   for (i = 0; i < priv->n_rows; i++)
     total_min_height += pref_heights[i];
 
@@ -686,44 +683,82 @@ nbtk_table_calculate_row_heights (NbtkTable *table,
         n_expanded_rows++;
       }
 
+  /* extra row height = for height - row spacings - total_min_height */
+  for_height -= (priv->row_spacing * (priv->n_rows - 1));
   extra_row_height = for_height - total_min_height;
 
-  /* start with all rows at their preferred height */
-  for (i = 0; i < priv->n_rows; i++)
+
+  if (extra_row_height < 0)
     {
-      row_heights[i] = pref_heights[i];
-    }
+      gint *skip = g_slice_alloc0 (sizeof (gint) * priv->n_rows);
+      gint total_shrink_height;
 
-  /* distribute the extra space amongst rows with expand set to TRUE */
-  if (extra_row_height)
-    for (i = 0; i < priv->n_rows; i++)
-      if (is_expand_row[i])
+      /* If we need to shrink rows, we need to do multiple passes.
+       *
+       * We start by assuming all rows can shrink. All rows are sized
+       * proportional to their height in the total table size. If a row would be
+       * sized smaller than its minimum size, we mark it as non-shrinkable, and
+       * reduce extra_row_height by the amount it has been shrunk. The amount
+       * it has been shrunk by is the difference between the preferred and
+       * minimum height, since all rows start at their preferred height. We
+       * also then reduce the total table size (stored in total_shrink_height) by the height
+       * of the row we are going to be skipping.
+       *
+       */
+
+      /* We start by assuming all rows can shrink */
+      total_shrink_height = total_min_height;
+      for (i = 0; i < priv->n_rows; i++)
         {
-          /* extra space is allocated evenly when extra space is > 0 and
-           * proportionally when extra space < 0.
-           */
-          if (extra_row_height < 0)
+          if (!skip[i])
             {
-              row_heights[i] =
-                     pref_heights[i]
-                     + (extra_row_height
-                        * (pref_heights[i] / (float) expanded_rows));
+              gint tmp;
 
-              /* we reached the minimum height, so stop counting this row as
-               * expand and re-calculate the other row heights */
-              if (row_heights[i] < min_heights[i])
+              /* Calculate the height of the row by starting with the preferred
+               * height and taking away the extra row height proportional to
+               * the preferred row height over the rows that are being shrunk
+               */
+              tmp = pref_heights[i]
+                + (extra_row_height * (pref_heights[i] / (float) total_shrink_height));
+
+              if (tmp < min_heights[i])
                 {
+                  /* This was a row we *were* set to shrink, but we now find it would have
+                   * been shrunk too much. We remove it from the list of rows to shrink and
+                   * adjust extra_row_height and total_shrink_height appropriately */
+                  skip[i] = TRUE;
                   row_heights[i] = min_heights[i];
 
-                  expanded_rows -= pref_heights[i];
-                  is_expand_row[i] = FALSE;
+                  /* Reduce extra_row_height by the amount we have reduced this
+                   * actor by */
+                  extra_row_height += (pref_heights[i] - min_heights[i]);
+                  /* now take off the row from the total shrink height */
+                  total_shrink_height -= pref_heights[i];
+
+                  /* restart the loop */
                   i = -1;
                 }
+              else
+                {
+                  skip[i] = FALSE;
+                  row_heights[i] = tmp;
+                }
             }
-          else
-            row_heights[i] = pref_heights[i]
-                             + (extra_row_height / n_expanded_rows);
+
         }
+
+      g_slice_free1 (sizeof (gint) * priv->n_rows, skip);
+    }
+  else
+    {
+      for (i = 0; i < priv->n_rows; i++)
+        {
+          if (is_expand_row[i])
+            row_heights[i] = pref_heights[i] + (extra_row_height / n_expanded_rows);
+          else
+            row_heights[i] = pref_heights[i];
+        }
+    }
 
 
   return row_heights;
