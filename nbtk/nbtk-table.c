@@ -324,52 +324,87 @@ nbtk_table_allocate_fill (ClutterActor *child,
                           gboolean x_fill,
                           gboolean y_fill)
 {
-  ClutterUnit width, max_width;
-  max_width = childbox->x2 - childbox->x1;
+  ClutterUnit natural_width, natural_height;
+  ClutterUnit min_width, min_height;
+  ClutterUnit child_width, child_height;
+  ClutterUnit available_width, available_height;
+  ClutterRequestMode request;
+  ClutterActorBox allocation = { 0, };
 
-  if (!x_fill)
+  available_width  = childbox->x2 - childbox->x1;
+  available_height = childbox->y2 - childbox->y1;
+
+  if (available_width < 0)
+    available_width = 0;
+
+  if (available_height < 0)
+    available_height = 0;
+
+  if (x_fill)
     {
-      clutter_actor_get_preferred_width (child, -1, NULL, &width);
-      if (width < max_width)
-        {
-          childbox->x1 += CLAMP_TO_PIXEL((max_width - width) * x_align);
-          childbox->x2 = childbox->x1 + width;
-        }
+      allocation.x1 = childbox->x1;
+      allocation.x2 = (int) (allocation.x1 + available_width);
+    }
+
+  if (y_fill)
+    {
+      allocation.y1 = childbox->y1;
+      allocation.y2 = (int) (allocation.y1 + available_height);
+    }
+
+  /* if we are filling horizontally and vertically then we're done */
+  if (x_fill && y_fill)
+    {
+      *childbox = allocation;
+      return;
+    }
+
+  request = CLUTTER_REQUEST_HEIGHT_FOR_WIDTH;
+  g_object_get (G_OBJECT (child), "request-mode", &request, NULL);
+
+  if (request == CLUTTER_REQUEST_HEIGHT_FOR_WIDTH)
+    {
+      clutter_actor_get_preferred_width (child, available_height,
+                                         &min_width,
+                                         &natural_width);
+
+      child_width = CLAMP (natural_width, min_width, available_width);
+
+      clutter_actor_get_preferred_height (child, child_width,
+                                          &min_height,
+                                          &natural_height);
+
+      child_height = CLAMP (natural_height, min_height, available_height);
     }
   else
     {
-      width = (childbox->x2 - childbox->x1);
+      clutter_actor_get_preferred_height (child, available_width,
+                                          &min_height,
+                                          &natural_height);
+
+      child_height = CLAMP (natural_height, min_height, available_height);
+
+      clutter_actor_get_preferred_width (child, child_height,
+                                         &min_width,
+                                         &natural_width);
+
+      child_width = CLAMP (natural_width, min_width, available_width);
+    }
+
+  if (!x_fill)
+    {
+      allocation.x1 = childbox->x1 + (int) ((available_width - child_width) * x_align);
+      allocation.x2 = allocation.x1 + (int) child_width;
     }
 
   if (!y_fill)
     {
-      ClutterUnit height, max_height;
-      max_height = childbox->y2 - childbox->y1;
-      clutter_actor_get_preferred_height (child, width, NULL, &height);
-      if (height < max_height)
-        {
-          childbox->y1 += CLAMP_TO_PIXEL ((max_height - height) * y_align);
-          childbox->y2 = childbox->y1 + height;
-        }
-      else
-        {
-          /* we couldn't fit the actor's height into our cell
-           * however, if x-fill is on, we are free to adjust the width, so we can
-           * get the preferred width for this height instead
-           */
-          if (x_fill)
-            {
-              ClutterUnit min_w, pref_w;
-
-              clutter_actor_get_preferred_width (child, max_height,
-                                                 &min_w, &pref_w);
-              width = CLAMP (pref_w, min_w, max_width);
-
-              childbox->x1 += CLAMP_TO_PIXEL((max_width - width) * x_align);
-              childbox->x2 = childbox->x1 + width;
-            }
-        }
+      allocation.y1 = childbox->y1 + (int) ((available_height - child_height) * y_align);
+      allocation.y2 = allocation.y1 + (int) child_height;
     }
+
+  *childbox = allocation;
+
 }
 
 static void
