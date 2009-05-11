@@ -271,7 +271,8 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
       min_sizeu = CLUTTER_UNITS_FROM_INT (min_size);
       max_sizeu = CLUTTER_UNITS_FROM_INT (max_size);
 
-      clutter_actor_get_positionu (priv->handle, &handle_box.x1, &handle_box.y1);
+      clutter_actor_get_positionu (priv->handle, 
+				   &handle_box.x1, &handle_box.y1);
 
       /* Get initial position right.
        * Need to account for the fact that the handle is only a "clutter"-child
@@ -545,17 +546,19 @@ handle_button_release_event_cb (ClutterActor *trough,
 
   if (bar->priv->motion_handler)
     {
-      g_signal_handler_disconnect (bar->priv->trough, bar->priv->motion_handler);
+      g_signal_handler_disconnect (clutter_actor_get_stage(bar->priv->trough), 
+				   bar->priv->motion_handler);
       bar->priv->motion_handler = 0;
     }
 
   if (bar->priv->release_handler)
     {
-      g_signal_handler_disconnect (bar->priv->trough, bar->priv->release_handler);
+      g_signal_handler_disconnect (clutter_actor_get_stage(bar->priv->trough), 
+				   bar->priv->release_handler);
       bar->priv->release_handler = 0;
     }
 
-  clutter_ungrab_pointer ();
+  clutter_set_motion_events_enabled (TRUE); 
 
   return TRUE;
 }
@@ -579,16 +582,20 @@ handle_button_press_event_cb (ClutterActor       *actor,
   /* Account for the scrollbar-trough-handle nesting. */
   priv->x_origin += clutter_actor_get_xu (priv->trough);
 
-  priv->motion_handler = g_signal_connect_after (priv->trough,
-                                                 "motion-event",
-                                                 G_CALLBACK (handle_motion_event_cb),
-                                                 bar);
-  priv->release_handler = g_signal_connect_after (priv->trough,
-                                                  "button-release-event",
-                                                  G_CALLBACK (handle_button_release_event_cb),
-                                                  bar);
+  /* Turn off picking for motion events */
+  clutter_set_motion_events_enabled (FALSE); 
 
-  clutter_grab_pointer (priv->trough);
+  priv->motion_handler = g_signal_connect_after (
+				  clutter_actor_get_stage (priv->trough),
+				  "motion-event",
+				  G_CALLBACK (handle_motion_event_cb),
+				  bar);
+
+  priv->release_handler = g_signal_connect_after (
+				  clutter_actor_get_stage (priv->trough),
+				  "button-release-event",
+				  G_CALLBACK (handle_button_release_event_cb),
+				  bar);
 
   return TRUE;
 }
