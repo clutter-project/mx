@@ -347,7 +347,6 @@ nbtk_entry_allocate (ClutterActor          *actor,
 
       /* reduce the size for the entry */
       child_box.x1 += icon_w + priv->spacing;
-      child_box.x2 -= icon_w * 2;
     }
 
   if (priv->secondary_icon)
