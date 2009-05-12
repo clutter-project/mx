@@ -107,6 +107,7 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
 
   if (G_UNLIKELY (!is_initialized))
     {
+      ClutterColor bg_color = { 0xcc, 0xcc, 0xcc, 0xff };
       GParamSpec *pspec;
 
       is_initialized = TRUE;
@@ -116,6 +117,16 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
                                 "Spacing between internal elements",
                                 0, G_MAXINT, 6,
                                 G_PARAM_READWRITE);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_BUTTON, pspec);
+
+
+      is_initialized = TRUE;
+
+      pspec = clutter_param_spec_color ("background-color",
+                                        "Background Color",
+                                        "The background color of an actor",
+                                        &bg_color,
+                                        G_PARAM_READWRITE);
       nbtk_stylable_iface_install_property (iface, NBTK_TYPE_BUTTON, pspec);
     }
 }
