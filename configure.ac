@@ -134,6 +134,7 @@ nbtk-gtk.pc
 docs/Makefile
 docs/reference/Makefile
 docs/reference/libnbtk/Makefile
+examples/Makefile
 nbtk/Makefile
 nbtk/nbtk-version.h
 tests/Makefile
