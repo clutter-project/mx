@@ -145,7 +145,7 @@ draw (GtkWidget *lightswitch,
   gdk_draw_layout (lightswitch->window,
                    style->fg_gc[GTK_STATE_SELECTED],
                    on_label_x,
-                   (lightswitch->allocation.height
+                   (priv->switch_height
                     - (label_height / PANGO_SCALE)) / 2,
                    layout);
   /* Draw the second label; "Off" */
@@ -156,7 +156,7 @@ draw (GtkWidget *lightswitch,
   gdk_draw_layout (lightswitch->window,
                    style->fg_gc[GTK_STATE_NORMAL],
                    off_label_x,
-                   (lightswitch->allocation.height
+                   (priv->switch_height
                     - (label_height / PANGO_SCALE)) / 2,
                    layout);
 
