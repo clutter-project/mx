@@ -3,15 +3,18 @@ SUBDIRS = nbtk tests docs build
 ACLOCAL_AMFLAGS = -I build/autotools
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
 
-pcfiles = nbtk-$(NBTK_API_VERSION).pc
+pcfiles = nbtk-$(NBTK_API_VERSION).pc nbtk-gtk-$(NBTK_API_VERSION).pc
 
 nbtk-$(NBTK_API_VERSION).pc: nbtk.pc
+	@cp -f $< $@
+
+nbtk-gtk-$(NBTK_API_VERSION).pc: nbtk-gtk.pc
 	@cp -f $< $@
 
 pkgconfig_DATA = $(pcfiles)
 pkgconfigdir = $(libdir)/pkgconfig
 
-EXTRA_DIST = $(nbtkdoc_DATA) nbtk.pc.in
+EXTRA_DIST = $(nbtkdoc_DATA) nbtk.pc.in nbtk-gtk.pc.in
 
 CLEANFILES = $(pcfiles)
 

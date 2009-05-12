@@ -115,7 +115,8 @@ dnl ***************************************************************************
 
 AM_PROG_LIBTOOL
 
-PKG_CHECK_MODULES(NBTK, [clutter-0.9 libccss-1 gio-2.0 gtk+-2.0])
+PKG_CHECK_MODULES(NBTK, [clutter-0.9 libccss-1 gio-2.0])
+PKG_CHECK_MODULES(GTK, [gtk+-2.0])
 
 # check for gtk-doc
 GTK_DOC_CHECK(1.9)
@@ -129,6 +130,7 @@ build/autotools/Makefile
 build/autotools/shave
 build/autotools/shave-libtool
 nbtk.pc
+nbtk-gtk.pc
 docs/Makefile
 docs/reference/Makefile
 docs/reference/libnbtk/Makefile

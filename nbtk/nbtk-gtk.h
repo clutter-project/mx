@@ -1,6 +1,8 @@
+
 /*
  * nbtk.h: Collection of high-level actors for Clutter
  *
+ * Copyright 2007 OpenedHand
  * Copyright 2009 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -19,37 +21,14 @@
  *
  */
 
-#ifndef __NBTK_H__
-#define __NBTK_H__
+#ifndef __NBTK_GTK_H__
+#define __NBTK_GTK_H__
 
 #define NBTK_H_INSIDE
 
-#include <nbtk/nbtk-adjustment.h>
-#include <nbtk/nbtk-bin.h>
-#include <nbtk/nbtk-button.h>
-#include <nbtk/nbtk-cell-renderer.h>
-#include <nbtk/nbtk-entry.h>
-#include <nbtk/nbtk-enum-types.h>
-#include <nbtk/nbtk-expander.h>
-#include <nbtk/nbtk-fade-button.h>
-#include <nbtk/nbtk-grid.h>
-#include <nbtk/nbtk-icon.h>
-#include <nbtk/nbtk-icon-view.h>
-#include <nbtk/nbtk-label.h>
-#include <nbtk/nbtk-scroll-bar.h>
-#include <nbtk/nbtk-scroll-view.h>
-#include <nbtk/nbtk-scrollable.h>
-#include <nbtk/nbtk-stylable.h>
-#include <nbtk/nbtk-style.h>
-#include <nbtk/nbtk-table.h>
-#include <nbtk/nbtk-table-child.h>
-#include <nbtk/nbtk-texture-cache.h>
-#include <nbtk/nbtk-texture-frame.h>
-#include <nbtk/nbtk-tooltip.h>
-#include <nbtk/nbtk-types.h>
-#include <nbtk/nbtk-viewport.h>
-#include <nbtk/nbtk-widget.h>
+#include <nbtk/nbtk-gtk-light-switch.h>
+#include <nbtk/nbtk-gtk-frame.h>
 
 #undef NBTK_H_INSIDE
 
-#endif /* __NBTK_H__ */
+#endif /* __NBTK_GTK_H__ */

@@ -1,5 +1,5 @@
 #include <gtk/gtk.h>
-#include <nbtk/nbtk.h>
+#include <nbtk/nbtk-gtk.h>
 
 
 int
