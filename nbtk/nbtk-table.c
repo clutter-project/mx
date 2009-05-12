@@ -1198,7 +1198,7 @@ nbtk_table_dnd_dropped (NbtkWidget   *actor,
     }
 
   clutter_container_remove_actor (CLUTTER_CONTAINER (parent), dragged);
-  nbtk_table_insert_actor_at_position (NBTK_TABLE (actor), dragged, x, y);
+  nbtk_table_add_actor (NBTK_TABLE (actor), dragged, NBTK_TABLE (actor)->priv->n_rows, 0);
 
   clutter_container_child_set (CLUTTER_CONTAINER (actor), dragged,
 			       "keep-aspect-ratio", keep_ratio,
