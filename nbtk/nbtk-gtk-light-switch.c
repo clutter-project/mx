@@ -10,8 +10,6 @@ G_DEFINE_TYPE (NbtkGtkLightSwitch, nbtk_gtk_light_switch, GTK_TYPE_DRAWING_AREA)
 
 static gboolean nbtk_gtk_light_switch_expose (GtkWidget      *lightswitch,
                                               GdkEventExpose *event);
-static gboolean nbtk_gtk_light_switch_button_press (GtkWidget      *lightswitch,
-                                                    GdkEventButton *event);
 static gboolean nbtk_gtk_light_switch_button_release (GtkWidget      *lightswitch,
                                                       GdkEventButton *event);
 static gboolean nbtk_gtk_light_switch_motion_notify (GtkWidget      *lightswitch,
@@ -34,7 +32,6 @@ typedef struct _NbtkGtkLightSwitchPrivate NbtkGtkLightSwitchPrivate;
 struct _NbtkGtkLightSwitchPrivate {
   gboolean active; /* boolean state of switch */
   gboolean dragging; /* true if dragging switch */
-  gboolean single; /* Single click detection */
   gint x;     /* the x position of the switch */
   gint switch_width;
   gint switch_height;
@@ -51,7 +48,6 @@ nbtk_gtk_light_switch_class_init (NbtkGtkLightSwitchClass *klass)
   widget_class = GTK_WIDGET_CLASS (klass);
 
   widget_class->expose_event = nbtk_gtk_light_switch_expose;
-  widget_class->button_press_event = nbtk_gtk_light_switch_button_press;
   widget_class->button_release_event = nbtk_gtk_light_switch_button_release;
   widget_class->motion_notify_event = nbtk_gtk_light_switch_motion_notify;
   widget_class->size_request = nbtk_gtk_light_switch_size_request;
@@ -235,82 +231,24 @@ nbtk_gtk_light_switch_expose (GtkWidget      *lightswitch,
 }
 
 static gboolean
-nbtk_gtk_light_switch_button_press (GtkWidget      *lightswitch,
-                                    GdkEventButton *event)
-{
-  NbtkGtkLightSwitchPrivate *priv;
-
-  priv = NBTK_GTK_LIGHT_SWITCH_GET_PRIVATE (lightswitch);
-
-  if (event->x > priv->x && event->x < (priv->x + priv->switch_width))
-    {
-      /* we are in the lightswitch */
-      priv->dragging = TRUE;
-    }
-  else
-    {
-      priv->single = TRUE;
-    }
-
-  return FALSE;
-}
-
-static void
-emit_state_changed_signal (NbtkGtkLightSwitch *lightswitch,
-                           int x)
-{
-  NbtkGtkLightSwitchPrivate *priv;
-
-  priv = NBTK_GTK_LIGHT_SWITCH_GET_PRIVATE (lightswitch);
-
-  if (priv->dragging == FALSE)
-    {
-      if (x > priv->trough_width / 2)
-        {
-          priv->x = priv->trough_width - priv->switch_width;
-          priv->active = TRUE;
-          g_signal_emit (lightswitch,
-                         nbtk_gtk_light_switch_signals[SWITCH_FLIPPED],
-                         0,
-                         priv->active);
-        }
-      else
-        {
-          priv->x = 0;
-          priv->active = FALSE;
-          g_signal_emit (lightswitch,
-                         nbtk_gtk_light_switch_signals[SWITCH_FLIPPED],
-                         0,
-                         priv->active);
-        }
-    }
-  else
-    {
-      priv->x = x;
-    }
-
-  gtk_widget_queue_draw (GTK_WIDGET (lightswitch));
-}
-
-static gboolean
 nbtk_gtk_light_switch_motion_notify (GtkWidget      *lightswitch,
                                      GdkEventMotion *event)
 {
   NbtkGtkLightSwitchPrivate *priv;
-  gint new_x;
 
   priv = NBTK_GTK_LIGHT_SWITCH_GET_PRIVATE (lightswitch);
 
-  if (priv->dragging)
+  if (event->state & GDK_BUTTON1_MASK)
     {
       if (event->x > (priv->trough_width - priv->switch_width))
-        new_x = (priv->trough_width - priv->switch_width);
+        priv->x = (priv->trough_width - priv->switch_width);
       else if (event->x < 0)
-        new_x = 0;
+        priv->x = 0;
       else
-        new_x = event->x;
-      emit_state_changed_signal (NBTK_GTK_LIGHT_SWITCH (lightswitch),
-                                 new_x);
+        priv->x = event->x;
+
+      priv->dragging = TRUE;
+      gtk_widget_queue_draw ((GtkWidget *) lightswitch);
     }
 
   return TRUE;
@@ -345,6 +283,13 @@ nbtk_gtk_light_switch_set_active (NbtkGtkLightSwitch *lightswitch,
         {
           priv->x = 0;
         }
+
+      gtk_widget_queue_draw ((GtkWidget *) lightswitch);
+
+      g_signal_emit (lightswitch,
+                     nbtk_gtk_light_switch_signals[SWITCH_FLIPPED],
+                     0,
+                     priv->active);
     }
 }
 
@@ -359,19 +304,25 @@ nbtk_gtk_light_switch_button_release (GtkWidget *lightswitch,
   /* detect whereabouts we are and "drop" into a state */
   if (priv->dragging)
     {
-      priv = NBTK_GTK_LIGHT_SWITCH_GET_PRIVATE (lightswitch);
       priv->dragging = FALSE;
-      emit_state_changed_signal (NBTK_GTK_LIGHT_SWITCH (lightswitch),
-                                 event->x);
+      if (priv->x + (priv->switch_width / 2) > priv->trough_width / 2)
+        {
+          nbtk_gtk_light_switch_set_active ((NbtkGtkLightSwitch *) lightswitch, TRUE);
+          priv->x = priv->trough_width - priv->switch_width;
+        }
+      else
+        {
+          nbtk_gtk_light_switch_set_active ((NbtkGtkLightSwitch *) lightswitch, FALSE);
+          priv->x = 0;
+        }
+      /* we always need to queue a redraw after dragging to put the slider back
+       * in the correct place */
+      gtk_widget_queue_draw ((GtkWidget *) lightswitch);
     }
-  else if (priv->single)
+  else
     {
-      priv->single = FALSE;
-      emit_state_changed_signal (NBTK_GTK_LIGHT_SWITCH (lightswitch),
-                                 event->x);
+      nbtk_gtk_light_switch_set_active ((NbtkGtkLightSwitch *) lightswitch, !priv->active);
     }
-
-  /* If we aren't dragging we might want to just toggle */
 
   return FALSE;
 }
