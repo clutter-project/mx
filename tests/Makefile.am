@@ -2,7 +2,7 @@ NULL =
 
 AM_CFLAGS = $(NBTK_CFLAGS) $(GTK_CFLAGS)  $(NBTK_MAINTAINER_CFLAGS)
 LDADD = $(top_builddir)/nbtk/libnbtk-$(NBTK_API_VERSION).la \
-        $(top_builddir)/nbtk-gtk/libnbtk-gtk-$(NBTK_API_VERSION).la
+        $(top_builddir)/nbtk/libnbtk-gtk-$(NBTK_API_VERSION).la
 
 
 INCLUDES = \
