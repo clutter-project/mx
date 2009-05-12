@@ -17,6 +17,12 @@ AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 
 AC_CONFIG_HEADERS([config.h])
 
+GETTEXT_PACKAGE=nbtk
+AC_SUBST(GETTEXT_PACKAGE)
+AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Gettext domain name])
+AM_GLIB_GNU_GETTEXT
+
+
 AM_MAINTAINER_MODE
 
 AC_ISC_POSIX
@@ -109,7 +115,7 @@ dnl ***************************************************************************
 
 AM_PROG_LIBTOOL
 
-PKG_CHECK_MODULES(NBTK, [clutter-0.9 libccss-1 gio-2.0])
+PKG_CHECK_MODULES(NBTK, [clutter-0.9 libccss-1 gio-2.0 gtk+-2.0])
 
 # check for gtk-doc
 GTK_DOC_CHECK(1.9)

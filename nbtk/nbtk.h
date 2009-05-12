@@ -34,6 +34,8 @@
 #include <nbtk/nbtk-expander.h>
 #include <nbtk/nbtk-fade-button.h>
 #include <nbtk/nbtk-grid.h>
+#include <nbtk/nbtk-gtk-light-switch.h>
+#include <nbtk/nbtk-gtk-frame.h>
 #include <nbtk/nbtk-icon.h>
 #include <nbtk/nbtk-icon-view.h>
 #include <nbtk/nbtk-label.h>
