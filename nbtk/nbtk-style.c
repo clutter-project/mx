@@ -179,7 +179,7 @@ nbtk_style_load_from_file (NbtkStyle    *style,
   ccss_grammar_add_functions (grammar, peek_css_functions ());
   priv->stylesheet = ccss_grammar_create_stylesheet_from_file (grammar,
                                                                filename,
-                                                               NULL);
+                                                               path);
   ccss_grammar_destroy (grammar);
   g_signal_emit (style, style_signals[CHANGED], 0, NULL);
 
@@ -320,21 +320,21 @@ ccss_url (GSList const  *args,
     return test_path;
   g_free (test_path);
 
-  /* we can only check the default style right now due no user-data in this
-   * callback
-   */
-  if (default_style)
-  {
-    for (l = default_style->priv->image_paths; l; l = l->next)
-      {
-        test_path = g_build_filename ((gchar *)l->data, filename, NULL);
+  if (user_data)
+    {
+        {
+          test_path = g_build_filename ((gchar *) user_data, filename, NULL);
 
-        if (g_file_test (test_path, G_FILE_TEST_IS_REGULAR))
-          return test_path;
+          if (g_file_test (test_path, G_FILE_TEST_IS_REGULAR))
+            return test_path;
 
-        g_free (test_path);
-      }
-  }
+          g_free (test_path);
+        }
+    }
+  else
+    {
+      g_warning ("No path available css url resolver!");
+    }
 
   /* couldn't find the image anywhere, so just return the filename */
   return strdup (given_path);
