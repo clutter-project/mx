@@ -230,7 +230,7 @@ nbtk_table_set_property (GObject       *gobject,
       break;
 
     case PROP_PADDING:
-      nbtk_table_set_padding (table, g_value_get_boxed (value));
+      g_warning ("The 'padding' property of NbtkTable is deprecated. Please set padding using a stylesheet.");
       break;
 
     default:
@@ -263,7 +263,7 @@ nbtk_table_get_property (GObject    *gobject,
       break;
 
     case PROP_PADDING:
-      nbtk_table_get_padding (NBTK_TABLE (gobject), &padding);
+      nbtk_widget_get_padding (NBTK_WIDGET (gobject), &padding);
       g_value_set_boxed (value, &padding);
       break;
 
@@ -1764,7 +1764,15 @@ nbtk_table_insert_actor_at_position (NbtkTable *table,
   nbtk_table_add_actor (NBTK_TABLE (table), actor, priv->n_rows, 0);
 }
 
-G_GNUC_DEPRECATED void
+/**
+ * nbtk_table_set_padding:
+ * @table: A #NbtkTable
+ * @padding: A #NbtkPadding
+ *
+ * Deprecated: Please set padding using a stylesheet.
+ *
+ */
+void
 nbtk_table_set_padding (NbtkTable         *table,
                         const NbtkPadding *padding)
 {
@@ -1773,7 +1781,15 @@ nbtk_table_set_padding (NbtkTable         *table,
   g_warning ("%s is deprecated. Please set padding using a stylesheet.", __FUNCTION__);
 }
 
-G_GNUC_DEPRECATED void
+/**
+ * nbtk_table_get_padding:
+ * @table: A #NbtkTable
+ * @padding: A #NbtkPadding
+ *
+ * Deprecated: Please use nbtk_widget_get_padding()
+ *
+ */
+void
 nbtk_table_get_padding (NbtkTable   *table,
                         NbtkPadding *padding)
 {

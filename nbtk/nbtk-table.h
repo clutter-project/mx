@@ -89,8 +89,6 @@ void        nbtk_table_set_col_spacing    (NbtkTable *table, gint spacing);
 void        nbtk_table_set_row_spacing    (NbtkTable *table, gint spacing);
 gint        nbtk_table_get_col_spacing    (NbtkTable *table);
 gint        nbtk_table_get_row_spacing    (NbtkTable *table);
-void        nbtk_table_set_padding        (NbtkTable *table, const NbtkPadding *padding);
-void        nbtk_table_get_padding        (NbtkTable *table, NbtkPadding *padding);
 void        nbtk_table_add_actor          (NbtkTable *table, ClutterActor *actor, gint row, gint column);
 void        nbtk_table_add_actor_with_properties (NbtkTable    *table,
                                                   ClutterActor *actor,
@@ -105,6 +103,8 @@ G_GNUC_DEPRECATED void        nbtk_table_add_actor_full     (NbtkTable *table, C
 G_GNUC_DEPRECATED void        nbtk_table_set_widget_colspan (NbtkTable *table, NbtkWidget *widget, gint colspan);
 G_GNUC_DEPRECATED void        nbtk_table_set_widget_rowspan (NbtkTable *table, NbtkWidget *widget, gint rowspan);
 G_GNUC_DEPRECATED void        nbtk_table_insert_actor_at_position (NbtkTable *table, ClutterActor *actor, gint x, gint y);
+G_GNUC_DEPRECATED void        nbtk_table_set_padding        (NbtkTable *table, const NbtkPadding *padding);
+G_GNUC_DEPRECATED void        nbtk_table_get_padding        (NbtkTable *table, NbtkPadding *padding);
 
 #endif
 G_END_DECLS
