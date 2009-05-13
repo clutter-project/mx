@@ -4,7 +4,7 @@ int
 main (int argc, char** argv)
 {
   ClutterActor *stage, *text;
-  NbtkWidget *w, *table, *button, *checkbox, *expander, *scrollview, *entry;
+  NbtkWidget *w, *table, *button, *scrollview, *entry;
 
   clutter_init (&argc, &argv);
 
@@ -36,7 +36,7 @@ main (int argc, char** argv)
                                         "x-expand", FALSE,  "y-expand", FALSE, NULL);
 
   button = nbtk_button_new_with_label ("Close");
-  clutter_actor_set_name (button, "close-button");
+  clutter_actor_set_name (CLUTTER_ACTOR (button), "close-button");
   nbtk_table_add_actor_with_properties (NBTK_TABLE (table), (ClutterActor*) button, 0, 4,
                                         "x-expand", FALSE,  "y-expand", FALSE, NULL);
 
@@ -45,9 +45,9 @@ main (int argc, char** argv)
                                         "col-span", 5, "x-expand", FALSE, NULL);
 
   text = clutter_text_new ();
-  clutter_text_set_line_wrap (text, TRUE);
+  clutter_text_set_line_wrap (CLUTTER_TEXT (text), TRUE);
   clutter_actor_set_width (text, 640);
-  clutter_text_set_text (text, "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
+  clutter_text_set_text (CLUTTER_TEXT (text), "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
 
   w = nbtk_viewport_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (w),text);
