@@ -107,7 +107,7 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
 
   if (G_UNLIKELY (!is_initialized))
     {
-      ClutterColor bg_color = { 0xcc, 0xcc, 0xcc, 0xff };
+      ClutterColor bg_color = { 0xcc, 0xcc, 0xcc, 0x00 };
       GParamSpec *pspec;
 
       is_initialized = TRUE;
