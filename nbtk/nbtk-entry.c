@@ -493,6 +493,11 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
   g_object_class_install_property (gobject_class, PROP_ENTRY, pspec);
 
   /* signals */
+  /**
+   * NbtkEntry::primary-icon-clicked:
+   *
+   * Emitted when the primary icon is clicked
+   */
   entry_signals[PRIMARY_ICON_CLICKED] =
     g_signal_new ("primary-icon-clicked",
                   G_TYPE_FROM_CLASS (klass),
@@ -501,7 +506,11 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
                   NULL, NULL,
                   _nbtk_marshal_VOID__VOID,
                   G_TYPE_NONE, 0);
-
+  /**
+   * NbtkEntry::secondary-icon-clicked:
+   *
+   * Emitted when the secondary icon is clicked
+   */
   entry_signals[SECONDARY_ICON_CLICKED] =
     g_signal_new ("secondary-icon-clicked",
                   G_TYPE_FROM_CLASS (klass),
