@@ -8,6 +8,8 @@ main (int argc, char** argv)
 
   clutter_init (&argc, &argv);
 
+  nbtk_style_load_from_file (nbtk_style_get_default (), "custom.css", NULL);
+
   stage = clutter_stage_get_default ();
   clutter_actor_set_size (stage, 320, 240);
 
@@ -34,6 +36,7 @@ main (int argc, char** argv)
                                         "x-expand", FALSE,  "y-expand", FALSE, NULL);
 
   button = nbtk_button_new_with_label ("Close");
+  clutter_actor_set_name (button, "close-button");
   nbtk_table_add_actor_with_properties (NBTK_TABLE (table), (ClutterActor*) button, 0, 4,
                                         "x-expand", FALSE,  "y-expand", FALSE, NULL);
 
