@@ -530,6 +530,14 @@ nbtk_texture_frame_new (ClutterTexture *texture,
 		       NULL);
 }
 
+/**
+ * nbtk_texture_frame_get_parent_texture:
+ * @frame: A #NbtkTextureFrame
+ *
+ * Return the texture used by the #NbtkTextureFrame
+ *
+ * Returns: a #ClutterTexture owned by the #NbtkTextureFrame
+ */
 ClutterTexture *
 nbtk_texture_frame_get_parent_texture (NbtkTextureFrame *frame)
 {
@@ -538,6 +546,14 @@ nbtk_texture_frame_get_parent_texture (NbtkTextureFrame *frame)
   return frame->priv->parent_texture;
 }
 
+/**
+ * nbtk_texture_frame_set_parent_texture:
+ * @frame: A #NbtkTextureFrame
+ * @texture: A #ClutterTexture
+ *
+ * Set the #ClutterTexture used by this #NbtkTextureFrame
+ *
+ */
 void
 nbtk_texture_frame_set_parent_texture (NbtkTextureFrame *frame,
                                        ClutterTexture   *texture)
@@ -577,6 +593,18 @@ nbtk_texture_frame_set_parent_texture (NbtkTextureFrame *frame,
   g_object_notify (G_OBJECT (frame), "parent-texture");
 }
 
+/**
+ * nbtk_texture_frame_set_frame:
+ * @frame: A #NbtkTextureFrame
+ * @top: width of the top slice
+ * @right: width of the right slice
+ * @bottom: width of the bottom slice
+ * @left: width of the left slice
+ *
+ * Set the slice lines of the specified frame. The slices are calculated as
+ * widths from the edge of the frame.
+ *
+ */
 void
 nbtk_texture_frame_set_frame (NbtkTextureFrame *frame,
                               gfloat            top,
@@ -589,6 +617,17 @@ nbtk_texture_frame_set_frame (NbtkTextureFrame *frame,
   nbtk_texture_frame_set_frame_internal (frame, top, right, bottom, left);
 }
 
+/**
+ * nbtk_texture_frame_get_frame:
+ * @frame: A #NbtkTextureFrame
+ * @top: width of the top slice
+ * @right: width of the right slice
+ * @bottom: width of the bottom slice
+ * @left: width of the left slice
+ *
+ * Retrieve the current slice lines from the specified frame.
+ *
+ */
 void
 nbtk_texture_frame_get_frame (NbtkTextureFrame *frame,
                               gfloat           *top,
