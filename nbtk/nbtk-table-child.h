@@ -46,8 +46,15 @@ G_BEGIN_DECLS
 typedef struct _NbtkTableChild         NbtkTableChild;
 typedef struct _NbtkTableChildClass    NbtkTableChildClass;
 
+/**
+ * NbtkTableChild:
+ *
+ * The contents of the this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _NbtkTableChild
 {
+  /*< private >*/
   NbtkWidgetChild parent_instance;
 
   gint col;

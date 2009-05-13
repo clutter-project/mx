@@ -33,7 +33,14 @@ G_BEGIN_DECLS
 
 typedef struct _NbtkIconViewPrivate NbtkIconViewPrivate;
 
+/**
+ * NbtkIconView:
+ *
+ * The contents of the this structure are private and should only be accessed
+ * through the public API.
+ */
 typedef struct {
+  /*< private >*/
   NbtkGrid parent;
 
   NbtkIconViewPrivate *priv;

@@ -63,8 +63,15 @@ struct _NbtkGridClass
   NbtkWidgetClass parent_class;
 };
 
+/**
+ * NbtkGrid:
+ *
+ * The contents of the this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _NbtkGrid
 {
+  /*< private >*/
   NbtkWidget parent;
 
   NbtkGridPrivate *priv;
