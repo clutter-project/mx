@@ -175,12 +175,20 @@ nbtk_style_load_from_file (NbtkStyle    *style,
     priv->image_paths = g_list_append (priv->image_paths, path);
 
   /* now load the stylesheet */
-  grammar = ccss_grammar_create_css ();
-  ccss_grammar_add_functions (grammar, peek_css_functions ());
-  priv->stylesheet = ccss_grammar_create_stylesheet_from_file (grammar,
-                                                               filename,
-                                                               path);
-  ccss_grammar_destroy (grammar);
+  if (!priv->stylesheet)
+    {
+      grammar = ccss_grammar_create_css ();
+      ccss_grammar_add_functions (grammar, peek_css_functions ());
+      priv->stylesheet = ccss_grammar_create_stylesheet_from_file (grammar,
+                                                                   filename,
+                                                                   path);
+      ccss_grammar_destroy (grammar);
+    }
+  else
+    {
+      ccss_stylesheet_add_from_file (priv->stylesheet, filename, CCSS_STYLESHEET_AUTHOR, path);
+    }
+
   g_signal_emit (style, style_signals[CHANGED], 0, NULL);
 
   /* add a monitor, if we don't already have this file */
