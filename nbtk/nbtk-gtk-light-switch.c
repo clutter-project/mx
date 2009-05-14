@@ -8,6 +8,8 @@ G_DEFINE_TYPE (NbtkGtkLightSwitch, nbtk_gtk_light_switch, GTK_TYPE_DRAWING_AREA)
 #define NBTK_GTK_LIGHT_SWITCH_GET_PRIVATE(o)                                 \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), NBTK_GTK_TYPE_LIGHT_SWITCH, NbtkGtkLightSwitchPrivate))
 
+static gboolean nbtk_gtk_light_switch_configure (GtkWidget         *lightswitch,
+                                                 GdkEventConfigure *event);
 static gboolean nbtk_gtk_light_switch_expose (GtkWidget      *lightswitch,
                                               GdkEventExpose *event);
 static gboolean nbtk_gtk_light_switch_button_release (GtkWidget      *lightswitch,
@@ -50,6 +52,7 @@ nbtk_gtk_light_switch_class_init (NbtkGtkLightSwitchClass *klass)
   object_class = G_OBJECT_CLASS (klass);
   widget_class = GTK_WIDGET_CLASS (klass);
 
+  widget_class->configure_event = nbtk_gtk_light_switch_configure;
   widget_class->expose_event = nbtk_gtk_light_switch_expose;
   widget_class->button_release_event = nbtk_gtk_light_switch_button_release;
   widget_class->button_press_event = nbtk_gtk_light_switch_button_press;
@@ -212,11 +215,24 @@ nbtk_gtk_light_switch_style_set (GtkWidget *lightswitch,
 }
 
 static gboolean
+nbtk_gtk_light_switch_configure (GtkWidget         *lightswitch,
+                                 GdkEventConfigure *event)
+{
+  NbtkGtkLightSwitchPrivate *priv = NBTK_GTK_LIGHT_SWITCH_GET_PRIVATE (lightswitch);
+
+  if (priv->active)
+    priv->x = priv->trough_width - priv->switch_width;
+  else
+    priv->x = 0;
+
+  return FALSE;
+}
+
+static gboolean
 nbtk_gtk_light_switch_expose (GtkWidget      *lightswitch,
                               GdkEventExpose *event)
 {
   cairo_t *cr;
-
   cr = gdk_cairo_create (lightswitch->window);
 
   cairo_rectangle (cr,
