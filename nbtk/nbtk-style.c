@@ -308,7 +308,6 @@ ccss_url (GSList const  *args,
 {
   const gchar *given_path, *filename;
   gchar *test_path;
-  GList *l;
 
   g_return_val_if_fail (args, NULL);
 
@@ -330,14 +329,12 @@ ccss_url (GSList const  *args,
 
   if (user_data)
     {
-        {
-          test_path = g_build_filename ((gchar *) user_data, filename, NULL);
+      test_path = g_build_filename ((gchar *) user_data, filename, NULL);
 
-          if (g_file_test (test_path, G_FILE_TEST_IS_REGULAR))
-            return test_path;
+      if (g_file_test (test_path, G_FILE_TEST_IS_REGULAR))
+        return test_path;
 
-          g_free (test_path);
-        }
+      g_free (test_path);
     }
   else
     {

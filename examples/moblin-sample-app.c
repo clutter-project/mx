@@ -22,7 +22,7 @@ main (int argc, char** argv)
   nbtk_style_load_from_file (nbtk_style_get_default (), "custom.css", NULL);
 
   stage = clutter_stage_get_default ();
-  clutter_stage_set_user_resizable (stage, TRUE);
+  clutter_stage_set_user_resizable (CLUTTER_STAGE (stage), TRUE);
 
   table = nbtk_table_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (table));
