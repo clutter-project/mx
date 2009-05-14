@@ -467,3 +467,65 @@ nbtk_icon_view_add_attribute (NbtkIconView *icon_view,
   priv->attributes = g_slist_prepend (priv->attributes, prop);
   model_changed_cb (priv->model, icon_view);
 }
+
+/**
+ * nbtk_icon_view_freeze
+ * @icon_view: An #NbtkIconView
+ *
+ * Freeze the view. This means that the view will not act on changes to the
+ * model until it is thawed. Call nbtk_icon_view_thaw() to thaw the view
+ */
+void
+nbtk_icon_view_freeze (NbtkIconView *icon_view)
+{
+  NbtkIconViewPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_ICON_VIEW (icon_view));
+
+  priv = icon_view->priv;
+
+  g_signal_handlers_block_by_func (priv->model,
+                                   model_changed_cb,
+                                   icon_view);
+
+  g_signal_handlers_block_by_func (priv->model,
+                                   row_removed_cb,
+                                   icon_view);
+
+  g_signal_handlers_block_by_func (priv->model,
+                                   row_changed_cb,
+                                   icon_view);
+}
+
+/**
+ * nbtk_icon_view_thaw
+ * @icon_view: An #NbtkIconView
+ *
+ * Thaw the view. This means that the view will now act on changes to the
+ * model.
+ */
+void
+nbtk_icon_view_thaw (NbtkIconView *icon_view)
+{
+  NbtkIconViewPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_ICON_VIEW (icon_view));
+
+  priv = icon_view->priv;
+
+  g_signal_handlers_unblock_by_func (priv->model,
+                                     model_changed_cb,
+                                     icon_view);
+
+  g_signal_handlers_unblock_by_func (priv->model,
+                                     row_removed_cb,
+                                     icon_view);
+
+  g_signal_handlers_unblock_by_func (priv->model,
+                                     row_changed_cb,
+                                     icon_view);
+
+  /* Repopulate */
+  model_changed_cb (priv->model, icon_view);
+}
+

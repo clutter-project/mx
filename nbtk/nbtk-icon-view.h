@@ -67,6 +67,8 @@ nbtk_icon_view_add_attribute (NbtkIconView *icon_view,
                               const gchar *attribute,
                               gint column);
 
+void nbtk_icon_view_freeze (NbtkIconView *icon_view);
+void nbtk_icon_view_thaw (NbtkIconView *icon_view);
 
 
 G_END_DECLS
