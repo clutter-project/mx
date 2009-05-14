@@ -41,7 +41,7 @@ main (int argc, char *argv[])
 
   entry = nbtk_entry_new ("Hello World!");
   clutter_actor_set_position (CLUTTER_ACTOR (entry), 20, 20);
-  clutter_actor_set_size (CLUTTER_ACTOR (entry), 150, 20);
+  clutter_actor_set_width (CLUTTER_ACTOR (entry), 150);
 
   clutter_container_add (CLUTTER_CONTAINER (stage),
                          CLUTTER_ACTOR (entry), NULL);
