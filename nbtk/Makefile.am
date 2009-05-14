@@ -76,7 +76,7 @@ stamp-nbtk-enum-types.h: $(source_h) nbtk-enum-types.h.in
 	  $(GLIB_MKENUMS) \
 	    --template nbtk-enum-types.h.in \
 	  $(source_h) ) >> xgen-teth && \
-	(cmp xgen-teth nbtk-enum-types.h || cp xgen-teth nbtk-enum-types.h) && \
+	(cmp -s xgen-teth nbtk-enum-types.h || cp xgen-teth nbtk-enum-types.h) && \
 	rm -f xgen-teth && \
 	echo timestamp > $(@F)
 
