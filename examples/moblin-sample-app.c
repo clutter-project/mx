@@ -1,5 +1,16 @@
 #include <nbtk/nbtk.h>
 
+static void
+stage_size_notify_cb (ClutterActor *stage,
+                      GParamSpec *pspec,
+                      ClutterActor *table)
+{
+  guint width, height;
+
+  clutter_actor_get_size (stage, &width, &height);
+  clutter_actor_set_size (table, width, height);
+}
+
 int
 main (int argc, char** argv)
 {
@@ -11,12 +22,11 @@ main (int argc, char** argv)
   nbtk_style_load_from_file (nbtk_style_get_default (), "custom.css", NULL);
 
   stage = clutter_stage_get_default ();
-  clutter_actor_set_size (stage, 320, 240);
+  clutter_stage_set_user_resizable (stage, TRUE);
 
   table = nbtk_table_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (table));
   clutter_actor_set_position (CLUTTER_ACTOR (table), 0, 0);
-  clutter_actor_set_size (CLUTTER_ACTOR (table), 320, 240);
 
   button = nbtk_button_new_with_label ("Back");
   nbtk_table_add_actor_with_properties (NBTK_TABLE (table), (ClutterActor*) button, 0, 0,
@@ -53,6 +63,10 @@ main (int argc, char** argv)
   clutter_container_add_actor (CLUTTER_CONTAINER (w),text);
   clutter_container_add_actor (CLUTTER_CONTAINER (scrollview), CLUTTER_ACTOR (w));
 
+  g_signal_connect (stage, "notify::width",
+                    G_CALLBACK (stage_size_notify_cb), table);
+  g_signal_connect (stage, "notify::height",
+                    G_CALLBACK (stage_size_notify_cb), table);
   clutter_actor_show (stage);
 
   clutter_main ();
