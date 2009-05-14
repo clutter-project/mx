@@ -45,6 +45,12 @@ typedef struct _NbtkScrollView          NbtkScrollView;
 typedef struct _NbtkScrollViewPrivate   NbtkScrollViewPrivate;
 typedef struct _NbtkScrollViewClass     NbtkScrollViewClass;
 
+/**
+ * NbtkScrollView:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _NbtkScrollView
 {
   /*< private >*/
