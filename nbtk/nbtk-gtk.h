@@ -28,6 +28,7 @@
 
 #include <nbtk/nbtk-gtk-light-switch.h>
 #include <nbtk/nbtk-gtk-frame.h>
+#include <nbtk/nbtk-gtk-expander.h>
 
 #undef NBTK_H_INSIDE
 

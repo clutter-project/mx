@@ -17,6 +17,7 @@ source_h = \
 	$(top_srcdir)/nbtk/nbtk-fade-button.h 		\
 	$(top_srcdir)/nbtk/nbtk-grid.h \
 	$(top_srcdir)/nbtk/nbtk-gtk-frame.h 	\
+	$(top_srcdir)/nbtk/nbtk-gtk-expander.h 	\
 	$(top_srcdir)/nbtk/nbtk-gtk-light-switch.h 	\
 	$(top_srcdir)/nbtk/nbtk-icon-view.h \
 	$(top_srcdir)/nbtk/nbtk-icon.h \
@@ -191,6 +192,7 @@ libnbtk_gtk_@NBTK_API_VERSION@_la_LDFLAGS = \
 libnbtk_gtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	$(source_h)			\
 	nbtk-gtk-frame.c 		\
+	nbtk-gtk-expander.c 		\
 	nbtk-gtk-light-switch.c 	\
 	nbtk-gtk.h 			\
 	$(NULL)

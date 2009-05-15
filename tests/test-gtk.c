@@ -32,7 +32,7 @@ _toggle_cb (GtkToggleButton *toggle,
 int
 main (int argc, char **argv)
 {
-  GtkWidget *window, *vbox, *frame, *swtch, *toggle;
+  GtkWidget *window, *vbox, *frame, *swtch, *toggle, *expander;
   gboolean is_active = FALSE;
 
   gtk_init (&argc, &argv);
@@ -46,21 +46,29 @@ main (int argc, char **argv)
   gtk_window_set_default_size (GTK_WINDOW (window), 320, 240);
 
   vbox = gtk_vbox_new (FALSE, 12);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox), 10);
   gtk_container_add (GTK_CONTAINER (window), vbox);
 
   frame = nbtk_gtk_frame_new ();
-  gtk_box_pack_start (GTK_BOX (vbox), frame, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox), frame, TRUE, TRUE, 10);
   gtk_frame_set_label (GTK_FRAME (frame), "Frame Title");
 
   swtch = nbtk_gtk_light_switch_new ();
   nbtk_gtk_light_switch_set_active (NBTK_GTK_LIGHT_SWITCH (swtch), is_active);
   gtk_container_add (GTK_CONTAINER (frame), swtch);
 
+  expander = nbtk_gtk_expander_new ();
+  gtk_box_pack_start (GTK_BOX (vbox), expander, FALSE, FALSE, 10);
+  gtk_expander_set_label (GTK_EXPANDER (expander), "Simple Expander");
+
+  frame = gtk_alignment_new (0, 0, 0, 0);
+  gtk_alignment_set_padding (GTK_ALIGNMENT (frame), 10, 10, 10, 10);
+  gtk_container_add (GTK_CONTAINER (expander), frame);
+
   toggle = gtk_toggle_button_new_with_label ("Toggle");
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (toggle), is_active);
-  gtk_box_pack_start (GTK_BOX (vbox), toggle, FALSE, FALSE, 0);
+  gtk_container_add (GTK_CONTAINER (frame), toggle);
   g_signal_connect (toggle, "toggled", G_CALLBACK (_toggle_cb), swtch);
-
 
   gtk_widget_show_all (window);
   g_signal_connect (window, "delete-event", gtk_main_quit, NULL);
