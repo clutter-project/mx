@@ -43,10 +43,6 @@ G_BEGIN_DECLS
 
 typedef struct {
   GtkFrame parent;
-
-  GtkAllocation bullet_allocation;
-
-  GdkColor bullet_color;
   GdkColor border_color;
 } NbtkGtkFrame;
 

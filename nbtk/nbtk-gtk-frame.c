@@ -20,9 +20,6 @@
 #include <math.h>
 
 static GdkColor nbtk_gtk_frame_default_border_color = { 0, 0xdddd, 0xe2e2, 0xe5e5 };
-static GdkColor nbtk_gtk_frame_default_bullet_color = { 0, 0xaaaa, 0xaaaa, 0xaaaa };
-static gfloat nbtk_gtk_frame_bullet_size_factor = 1.3;
-#define NBTK_GTK_FRAME_BULLET_PADDING 10
 
 static void nbtk_gtk_frame_buildable_init (GtkBuildableIface *iface);
 static void nbtk_gtk_frame_buildable_add_child (GtkBuildable *buildable,
@@ -48,12 +45,11 @@ nbtk_gtk_frame_finalize (GObject *object)
 static void
 nbtk_gtk_frame_update_style (NbtkGtkFrame *frame)
 {
-  GdkColor *border_color, *bullet_color;
+  GdkColor *border_color;
   char *font = NULL;
 
   gtk_widget_style_get (GTK_WIDGET (frame),
                         "border-color", &border_color,
-                        "bullet-color", &bullet_color,
                         "title-font", &font,
                         NULL);
 
@@ -65,15 +61,6 @@ nbtk_gtk_frame_update_style (NbtkGtkFrame *frame)
   else
     {
       frame->border_color = nbtk_gtk_frame_default_border_color;
-    }
-  if (bullet_color)
-    {
-      frame->bullet_color = *bullet_color;
-      gdk_color_free (bullet_color);
-    }
-  else
-    {
-      frame->bullet_color = nbtk_gtk_frame_default_bullet_color;
     }
 
   if (font)
@@ -180,24 +167,6 @@ nbtk_gtk_frame_paint (GtkWidget *widget, GdkRectangle *area)
 
   cairo_paint (cairo);
 
-  /* draw bullet before title */
-  if (GTK_FRAME (frame)->label_widget)
-    {
-      gdk_cairo_set_source_color (cairo, &frame->bullet_color);
-
-      rounded_rectangle (cairo,
-                         frame->bullet_allocation.x,
-                         frame->bullet_allocation.y,
-                         frame->bullet_allocation.height,
-                         frame->bullet_allocation.height,
-                         4);
-      cairo_clip (cairo);
-
-      gdk_cairo_rectangle (cairo, area);
-      cairo_clip (cairo);
-
-      cairo_paint (cairo);
-    }
   cairo_destroy (cairo);
 }
 
@@ -234,11 +203,6 @@ nbtk_gtk_frame_size_request (GtkWidget *widget,
   if (frame->label_widget)
     {
       gtk_widget_size_request (frame->label_widget, &title_req);
-      /* add room for bullet */
-      title_req.height = title_req.height * nbtk_gtk_frame_bullet_size_factor +
-                         2 * NBTK_GTK_FRAME_BULLET_PADDING;
-      title_req.width += title_req.height * nbtk_gtk_frame_bullet_size_factor +
-                         2 * NBTK_GTK_FRAME_BULLET_PADDING;
     }
 
   requisition->width = MAX (child_req.width, title_req.width) +
@@ -258,8 +222,8 @@ nbtk_gtk_frame_size_allocate (GtkWidget *widget,
   GtkBin *bin = GTK_BIN (widget);
   NbtkGtkFrame *nbtk_gtk_frame = NBTK_GTK_FRAME (widget);
   GtkFrame *frame = GTK_FRAME (widget);
-  GtkAllocation child_allocation;
-  int xmargin, ymargin, title_height;
+  GtkAllocation child_allocation, title_allocation;
+  int xmargin, ymargin;
 
   widget->allocation = *allocation;
   xmargin = GTK_CONTAINER (widget)->border_width +
@@ -267,35 +231,26 @@ nbtk_gtk_frame_size_allocate (GtkWidget *widget,
   ymargin = GTK_CONTAINER (widget)->border_width +
             widget->style->ythickness;
 
-  title_height = 0;
+  title_allocation.height = title_allocation.width = 0;
   if (frame->label_widget)
     {
-      GtkAllocation title_allocation;
       GtkRequisition title_req;
       gtk_widget_get_child_requisition (frame->label_widget, &title_req);
 
-      /* the bullet is bigger than the text */
-      title_height = title_req.height * nbtk_gtk_frame_bullet_size_factor +
-                     2 * NBTK_GTK_FRAME_BULLET_PADDING;
 
-      /* x allocation starts after bullet */
-      title_allocation.x = allocation->x + xmargin + title_height;
-      title_allocation.y = allocation->y + ymargin + NBTK_GTK_FRAME_BULLET_PADDING;
+      title_allocation.x = allocation->x + xmargin;
+      title_allocation.y = allocation->y + ymargin;
       title_allocation.width = MIN (title_req.width,
-                                    allocation->width - 2 * xmargin - title_height);
-      title_allocation.height = title_height - 2 * NBTK_GTK_FRAME_BULLET_PADDING;
+                                    allocation->width - 2 * xmargin);
+      title_allocation.height = title_req.height;
       gtk_widget_size_allocate (frame->label_widget, &title_allocation);
 
-      nbtk_gtk_frame->bullet_allocation.x = allocation->x + xmargin + NBTK_GTK_FRAME_BULLET_PADDING;
-      nbtk_gtk_frame->bullet_allocation.y = allocation->y + ymargin + NBTK_GTK_FRAME_BULLET_PADDING;
-      nbtk_gtk_frame->bullet_allocation.width = title_allocation.height;
-      nbtk_gtk_frame->bullet_allocation.height = title_allocation.height;
     }
 
   child_allocation.x = allocation->x + xmargin;
-  child_allocation.y = allocation->y + ymargin + title_height;
+  child_allocation.y = allocation->y + ymargin + title_allocation.height;
   child_allocation.width = allocation->width - 2 * xmargin;
-  child_allocation.height = allocation->height - 2 * ymargin - title_height;
+  child_allocation.height = allocation->height - 2 * ymargin - title_allocation.height;
 
   if (GTK_WIDGET_MAPPED (widget) &&
       (child_allocation.x != frame->child_allocation.x ||
@@ -342,12 +297,6 @@ nbtk_gtk_frame_class_init (NbtkGtkFrameClass *klass)
   pspec = g_param_spec_boxed ("border-color",
                               "Border color",
                               "Color of the outside border",
-                              GDK_TYPE_COLOR,
-                              G_PARAM_READABLE);
-  gtk_widget_class_install_style_property (widget_class, pspec);
-  pspec = g_param_spec_boxed ("bullet-color",
-                              "Bullet color",
-                              "Color of the rounded rectangle before a title",
                               GDK_TYPE_COLOR,
                               G_PARAM_READABLE);
   gtk_widget_class_install_style_property (widget_class, pspec);
