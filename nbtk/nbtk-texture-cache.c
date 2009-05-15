@@ -245,9 +245,11 @@ nbtk_texture_cache_get_texture (NbtkTextureCache *self,
     {
       GError *err = NULL;
       res = cogl_texture_new_from_file (path, -1,
-                                        COGL_TEXTURE_AUTO_MIPMAP,
+                                        COGL_TEXTURE_NONE,
                                         COGL_PIXEL_FORMAT_ANY,
                                         &err);
+      cogl_texture_set_filters (res, COGL_TEXTURE_FILTER_LINEAR,
+                                COGL_TEXTURE_FILTER_LINEAR);
 
       /* XXX: pass up GError */
       if (!res)
@@ -266,9 +268,6 @@ nbtk_texture_cache_get_texture (NbtkTextureCache *self,
 
   texture = clutter_texture_new ();
   clutter_texture_set_cogl_texture ((ClutterTexture*) texture, res);
-  clutter_texture_set_filter_quality ((ClutterTexture*) texture,
-                                      CLUTTER_TEXTURE_QUALITY_HIGH);
-
 
   return (ClutterTexture*) texture;
 }
