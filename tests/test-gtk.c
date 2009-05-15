@@ -50,6 +50,7 @@ main (int argc, char **argv)
 
   frame = nbtk_gtk_frame_new ();
   gtk_box_pack_start (GTK_BOX (vbox), frame, TRUE, TRUE, 0);
+  gtk_frame_set_label (GTK_FRAME (frame), "Frame Title");
 
   swtch = nbtk_gtk_light_switch_new ();
   nbtk_gtk_light_switch_set_active (NBTK_GTK_LIGHT_SWITCH (swtch), is_active);
