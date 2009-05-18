@@ -132,7 +132,7 @@ main (int argc, char *argv[])
   nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button7), 4, 1);
   nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button8), 4, 0);
   nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button9), 5, 0);
-  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button10), 6, 0);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button10), -1, 0);
   nbtk_table_child_set_row_span (NBTK_TABLE (table), CLUTTER_ACTOR (button1), 2);
   nbtk_table_child_set_row_span (NBTK_TABLE (table), CLUTTER_ACTOR (button7), 2);
   nbtk_table_child_set_col_span (NBTK_TABLE (table), CLUTTER_ACTOR (button4), 2);

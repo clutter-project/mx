@@ -1483,8 +1483,14 @@ nbtk_table_add_actor (NbtkTable    *table,
 {
   g_return_if_fail (NBTK_IS_TABLE (table));
   g_return_if_fail (CLUTTER_IS_ACTOR (actor));
-  g_return_if_fail (row >= 0);
-  g_return_if_fail (column >= 0);
+  g_return_if_fail (row >= -1);
+  g_return_if_fail (column >= -1);
+
+  if (row < 0)
+    row = table->priv->n_rows + 1;
+
+  if (column < 0)
+    column = table->priv->n_cols + 1;
 
   clutter_container_add_actor (CLUTTER_CONTAINER (table), actor);
   clutter_container_child_set (CLUTTER_CONTAINER (table), actor,
