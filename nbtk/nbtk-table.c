@@ -446,6 +446,9 @@ nbtk_table_homogeneous_allocate (ClutterActor          *self,
 
       meta = (NbtkTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
 
+      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
+
       /* get child properties */
       col = meta->col;
       row = meta->row;
@@ -542,6 +545,9 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
       child = CLUTTER_ACTOR (list->data);
 
       meta = (NbtkTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (table), child);
+
+      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
 
       /* get child properties */
       col = meta->col;
@@ -669,6 +675,9 @@ nbtk_table_calculate_row_heights (NbtkTable *table,
       child = CLUTTER_ACTOR (list->data);
 
       meta = (NbtkTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (table), child);
+
+      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
 
       /* get child properties */
       col = meta->col;
@@ -854,6 +863,9 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
 
       meta = (NbtkTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
 
+      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
+
       /* get child properties */
       col = meta->col;
       row = meta->row;
@@ -1017,6 +1029,9 @@ nbtk_table_get_preferred_width (ClutterActor *self,
 
       meta = (NbtkTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
 
+      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
+
       /* get child properties */
       col = meta->col;
       col_span = meta->col_span;
@@ -1093,6 +1108,9 @@ nbtk_table_get_preferred_height (ClutterActor *self,
       child = CLUTTER_ACTOR (list->data);
 
       meta = (NbtkTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
+
+      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
 
       /* get child properties */
       row = meta->row;

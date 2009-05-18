@@ -30,6 +30,7 @@ enum {
   CHILD_PROP_Y_ALIGN,
   CHILD_PROP_X_FILL,
   CHILD_PROP_Y_FILL,
+  CHILD_PROP_ALLOCATE_HIDDEN,
 };
 
 G_DEFINE_TYPE (NbtkTableChild, nbtk_table_child, NBTK_TYPE_WIDGET_CHILD);
@@ -97,6 +98,10 @@ table_child_set_property (GObject      *gobject,
       child->y_fill = g_value_get_boolean (value);
       clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
+    case CHILD_PROP_ALLOCATE_HIDDEN:
+      child->allocate_hidden = g_value_get_boolean (value);
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
+      break;
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -149,6 +154,9 @@ table_child_get_property (GObject    *gobject,
       break;
     case CHILD_PROP_Y_FILL:
       g_value_set_boolean (value, child->y_fill);
+      break;
+    case CHILD_PROP_ALLOCATE_HIDDEN:
+      g_value_set_boolean (value, child->allocate_hidden);
       break;
 
     default:
@@ -278,6 +286,15 @@ nbtk_table_child_class_init (NbtkTableChildClass *klass)
                                 NBTK_PARAM_READWRITE);
 
   g_object_class_install_property (gobject_class, CHILD_PROP_Y_FILL, pspec);
+
+  pspec = g_param_spec_boolean ("allocate-hidden",
+                                "Allocate Hidden",
+                                "Whether the child should be allocate even "
+                                "if it is hidden",
+                                TRUE,
+                                NBTK_PARAM_READWRITE);
+
+  g_object_class_install_property (gobject_class, CHILD_PROP_ALLOCATE_HIDDEN, pspec);
 }
 
 static void
@@ -294,6 +311,8 @@ nbtk_table_child_init (NbtkTableChild *self)
 
   self->x_fill = TRUE;
   self->y_fill = TRUE;
+
+  self->allocate_hidden = TRUE;
 }
 
 static NbtkTableChild*
@@ -747,4 +766,40 @@ nbtk_table_child_set_y_align (NbtkTable    *table,
     }
 
   clutter_actor_queue_relayout (child);
+}
+
+void
+nbtk_table_child_set_allocate_hidden (NbtkTable    *table,
+                                      ClutterActor *child,
+                                      gboolean      value)
+{
+  NbtkTableChild *meta;
+
+  g_return_if_fail (NBTK_IS_TABLE (table));
+  g_return_if_fail (CLUTTER_IS_ACTOR (child));
+
+  meta = get_child_meta (table, child);
+
+  if (meta->allocate_hidden != value)
+    {
+      meta->allocate_hidden = value;
+
+      clutter_actor_queue_relayout (child);
+
+      g_object_notify (G_OBJECT (meta), "allocate-hidden");
+    }
+}
+
+gboolean
+nbtk_table_child_get_allocate_hidden (NbtkTable    *table,
+                                      ClutterActor *child)
+{
+  NbtkTableChild *meta;
+
+  g_return_val_if_fail (NBTK_IS_TABLE (table), TRUE);
+  g_return_val_if_fail (CLUTTER_IS_ACTOR (child), TRUE);
+
+  meta = get_child_meta (table, child);
+
+  return meta->allocate_hidden;
 }

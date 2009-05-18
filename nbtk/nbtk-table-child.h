@@ -61,13 +61,14 @@ struct _NbtkTableChild
   gint row;
   gint col_span;
   gint row_span;
-  gboolean keep_ratio : 1;
-  gboolean x_expand : 1;
-  gboolean y_expand : 1;
-  gboolean x_fill : 1;
-  gboolean y_fill : 1;
   gdouble x_align;
   gdouble y_align;
+  guint allocate_hidden : 1;
+  guint keep_ratio : 1;
+  guint x_expand : 1;
+  guint y_expand : 1;
+  guint x_fill : 1;
+  guint y_fill : 1;
 };
 
 
@@ -101,6 +102,8 @@ void nbtk_table_child_set_x_align (NbtkTable *table, ClutterActor *child, NbtkAl
 
 NbtkAlign nbtk_table_child_get_y_align (NbtkTable *table, ClutterActor *child);
 void nbtk_table_child_set_y_align (NbtkTable *table, ClutterActor *child, NbtkAlign align);
+void nbtk_table_child_set_allocate_hidden (NbtkTable *table, ClutterActor *child, gboolean allocate);
+gboolean nbtk_table_child_get_allocate_hidden (NbtkTable *table, ClutterActor *child);
 
 G_END_DECLS
 

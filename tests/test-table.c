@@ -78,13 +78,20 @@ stage_size_notify_cb (ClutterActor *stage,
   clutter_actor_set_size (table, width-10, height-10);
 }
 
+static void
+toggle_visible (NbtkButton *button)
+{
+  clutter_actor_hide (CLUTTER_ACTOR (button));
+}
+
 int
 main (int argc, char *argv[])
 {
   ClutterActor *stage, *button2;
   NbtkWidget *table;
   NbtkWidget *button1, *button3, *button4, *button5,
-             *button6, *button7, *button8, *button9;
+             *button6, *button7, *button8, *button9,
+             *button10;
 
   clutter_init (&argc, &argv);
 
@@ -114,6 +121,7 @@ main (int argc, char *argv[])
   button7 = nbtk_button_new_with_label ("Align (0.50, 0.50)");
   button8 = nbtk_button_new_with_label ("button8");
   button9 = nbtk_button_new_with_label ("button9");
+  button10 = nbtk_button_new_with_label ("button10");
 
   nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button1), 0, 0);
   nbtk_table_add_actor (NBTK_TABLE (table), button2, 0, 1);
@@ -124,6 +132,7 @@ main (int argc, char *argv[])
   nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button7), 4, 1);
   nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button8), 4, 0);
   nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button9), 5, 0);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button10), 6, 0);
   nbtk_table_child_set_row_span (NBTK_TABLE (table), CLUTTER_ACTOR (button1), 2);
   nbtk_table_child_set_row_span (NBTK_TABLE (table), CLUTTER_ACTOR (button7), 2);
   nbtk_table_child_set_col_span (NBTK_TABLE (table), CLUTTER_ACTOR (button4), 2);
@@ -159,12 +168,18 @@ main (int argc, char *argv[])
                                "y-fill", FALSE,
                                NULL);
 
+  clutter_container_child_set (CLUTTER_CONTAINER (table),
+                               CLUTTER_ACTOR (button10),
+                               "allocate-hidden", FALSE,
+                               NULL);
+
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (table));
 
   clutter_actor_set_position (CLUTTER_ACTOR (table), 5, 5);
 
   g_signal_connect (button4, "clicked", G_CALLBACK (toggle_expand), table);
   g_signal_connect (button7, "clicked", G_CALLBACK (randomise_align), table);
+  g_signal_connect (button10, "clicked", G_CALLBACK (toggle_visible), NULL);
 
   clutter_actor_show (stage);
 
