@@ -80,6 +80,14 @@ void             nbtk_style_get_property   (NbtkStyle     *style,
                                             NbtkStylable  *stylable,
                                             GParamSpec    *pspec,
                                             GValue        *value);
+void             nbtk_style_get            (NbtkStyle     *style,
+                                            NbtkStylable  *stylable,
+                                            const gchar   *first_property_name,
+                                            ...) G_GNUC_NULL_TERMINATED;
+void             nbtk_style_get_valist     (NbtkStyle     *style,
+                                            NbtkStylable  *stylable,
+                                            const gchar   *first_property_name,
+                                            va_list        va_args);
 
 G_END_DECLS
 

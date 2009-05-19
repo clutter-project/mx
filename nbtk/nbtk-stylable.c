@@ -461,61 +461,6 @@ nbtk_stylable_set_property (NbtkStylable *stylable,
              __FUNCTION__);
 }
 
-static void
-nbtk_stylable_get_valist (NbtkStylable *stylable,
-                          const gchar  *first_property_name,
-                          va_list       varargs)
-{
-  const gchar *name;
-
-  g_object_ref (stylable);
-
-  name = first_property_name;
-
-  while (name)
-    {
-      GParamSpec *pspec;
-      GValue value = { 0, };
-      gchar *error;
-
-      pspec = nbtk_stylable_find_property (stylable, name);
-      if (!pspec)
-        {
-          g_warning ("%s: no style property named `%s' found for class `%s'",
-                     G_STRLOC,
-                     name,
-                     g_type_name (G_OBJECT_TYPE (stylable)));
-          break;
-        }
-
-      if (!(pspec->flags & G_PARAM_READABLE))
-        {
-          g_warning ("Style property `%s' of class `%s' is not readable",
-                     pspec->name,
-                     g_type_name (G_OBJECT_TYPE (stylable)));
-          break;
-        }
-
-      g_value_init (&value, G_PARAM_SPEC_VALUE_TYPE (pspec));
-      nbtk_stylable_get_property_internal (stylable, pspec, &value);
-
-      G_VALUE_LCOPY (&value, varargs, 0, &error);
-      if (error)
-        {
-          g_warning ("%s: %s", G_STRLOC, error);
-          g_free (error);
-          g_value_unset (&value);
-          break;
-        }
-
-      g_value_unset (&value);
-
-      name = va_arg (varargs, gchar*);
-    }
-
-  g_object_unref (stylable);
-}
-
 /**
  * nbtk_stylable_get:
  * @stylable: a #NbtkStylable
@@ -554,13 +499,16 @@ nbtk_stylable_get (NbtkStylable *stylable,
                    const gchar  *first_property_name,
                                  ...)
 {
+  NbtkStyle *style;
   va_list args;
 
   g_return_if_fail (NBTK_IS_STYLABLE (stylable));
   g_return_if_fail (first_property_name != NULL);
 
+  style = nbtk_stylable_get_style (stylable);
+
   va_start (args, first_property_name);
-  nbtk_stylable_get_valist (stylable, first_property_name, args);
+  nbtk_style_get_valist (style, stylable, first_property_name, args);
   va_end (args);
 }
 
