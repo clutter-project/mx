@@ -530,19 +530,31 @@ nbtk_stylable_set (NbtkStylable *stylable,
              __FUNCTION__);
 }
 
+/**
+ * nbtk_stylable_get_default_value:
+ * @stylable: a #NbtkStylable
+ * @property_name: name of the property to query
+ * @value_out: return location for the default value
+ *
+ * Query @stylable for the default value of property @property_name and
+ * fill @value_out with the result.
+ *
+ * Returns: %TRUE if property @property_name exists and the default value has
+ * been returned.
+ */
 gboolean
 nbtk_stylable_get_default_value (NbtkStylable  *stylable,
-                                 const gchar   *name,
+                                 const gchar   *property_name,
                                  GValue        *value_out)
 {
   GParamSpec *pspec;
 
-  pspec = nbtk_stylable_find_property (stylable, name);
+  pspec = nbtk_stylable_find_property (stylable, property_name);
   if (!pspec)
     {
       g_warning ("%s: no style property named `%s' found for class `%s'",
                   G_STRLOC,
-                  name,
+                  property_name,
                   g_type_name (G_OBJECT_TYPE (stylable)));
       return FALSE;
     }

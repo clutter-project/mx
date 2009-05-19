@@ -106,7 +106,7 @@ void         nbtk_stylable_get_property           (NbtkStylable      *stylable,
                                                    const gchar       *property_name,
                                                    GValue            *value);
 gboolean     nbtk_stylable_get_default_value      (NbtkStylable      *stylable,
-                                                   const gchar       *name,
+                                                   const gchar       *property_name,
                                                    GValue            *value_out);
 
 NbtkStylable* nbtk_stylable_get_container     (NbtkStylable *stylable);
