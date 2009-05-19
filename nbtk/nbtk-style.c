@@ -683,6 +683,18 @@ stylable_get_default_value (NbtkStylable  *stylable,
   return TRUE;
 }
 
+/**
+ * nbtk_style_get_valist:
+ * @style: a #NbtkStyle
+ * @stylable: a #NbtkStylable
+ * @first_property_name: name of the first property to get
+ * @va_args: return location for the first property, followed optionally
+ *   by more name/return location pairs, followed by %NULL
+ *
+ * Gets the style properties for @stylable from @style.
+ *
+ * Please refer to nbtk_style_get() for further information.
+ */
 void
 nbtk_style_get_valist (NbtkStyle     *style,
                        NbtkStylable  *stylable,
@@ -760,6 +772,20 @@ nbtk_style_get_valist (NbtkStyle     *style,
     }
 }
 
+/**
+ * nbtk_style_get:
+ * @style: a #NbtkStyle
+ * @stylable: a #NbtkStylable
+ * @first_property_name: name of the first property to get
+ * @Varargs: return location for the first property, followed optionally
+ *   by more name/return location pairs, followed by %NULL
+ *
+ * Gets the style properties for @stylable from @style.
+ *
+ * In general, a copy is made of the property contents and the caller
+ * is responsible for freeing the memory in the appropriate manner for
+ * the property type.
+ */
 void
 nbtk_style_get (NbtkStyle     *style,
                 NbtkStylable  *stylable,
