@@ -105,6 +105,10 @@ G_GNUC_DEPRECATED void nbtk_stylable_set_property (NbtkStylable      *stylable,
 void         nbtk_stylable_get_property           (NbtkStylable      *stylable,
                                                    const gchar       *property_name,
                                                    GValue            *value);
+gboolean     nbtk_stylable_get_default_value      (NbtkStylable      *stylable,
+                                                   const gchar       *name,
+                                                   GValue            *value_out);
+
 NbtkStylable* nbtk_stylable_get_container     (NbtkStylable *stylable);
 NbtkStylable* nbtk_stylable_get_base_style    (NbtkStylable *stylable);
 const gchar*  nbtk_stylable_get_style_id      (NbtkStylable *stylable);

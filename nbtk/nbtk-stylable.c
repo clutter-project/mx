@@ -530,6 +530,36 @@ nbtk_stylable_set (NbtkStylable *stylable,
              __FUNCTION__);
 }
 
+gboolean
+nbtk_stylable_get_default_value (NbtkStylable  *stylable,
+                                 const gchar   *name,
+                                 GValue        *value_out)
+{
+  GParamSpec *pspec;
+
+  pspec = nbtk_stylable_find_property (stylable, name);
+  if (!pspec)
+    {
+      g_warning ("%s: no style property named `%s' found for class `%s'",
+                  G_STRLOC,
+                  name,
+                  g_type_name (G_OBJECT_TYPE (stylable)));
+      return FALSE;
+    }
+
+  if (!(pspec->flags & G_PARAM_READABLE))
+    {
+      g_warning ("Style property `%s' of class `%s' is not readable",
+                  pspec->name,
+                  g_type_name (G_OBJECT_TYPE (stylable)));
+      return FALSE;
+    }
+
+  g_value_init (value_out, G_PARAM_SPEC_VALUE_TYPE (pspec));
+  g_param_value_set_default (pspec, value_out);
+  return TRUE;
+}
+
 /**
  * nbtk_stylable_get_style:
  * @stylable: a #NbtkStylable

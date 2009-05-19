@@ -651,36 +651,10 @@ nbtk_style_get_property (NbtkStyle    *style,
 
   /* no value was found in css, so copy in the default value */
   if (!value_set)
-    g_param_value_set_default (pspec, value);
-}
-
-static gboolean
-stylable_get_default_value (NbtkStylable  *stylable,
-                            const gchar   *name,
-                            GValue        *value_out)
-{
-  GParamSpec *pspec;
-
-  pspec = nbtk_stylable_find_property (stylable, name);
-  if (!pspec)
     {
-      g_warning ("%s: no style property named `%s' found for class `%s'",
-                  G_STRLOC,
-                  name,
-                  g_type_name (G_OBJECT_TYPE (stylable)));
-      return FALSE;
+      g_value_init (value, G_PARAM_SPEC_VALUE_TYPE (pspec));
+      g_param_value_set_default (pspec, value);
     }
-
-  if (!(pspec->flags & G_PARAM_READABLE))
-    {
-      g_warning ("Style property `%s' of class `%s' is not readable",
-                  pspec->name,
-                  g_type_name (G_OBJECT_TYPE (stylable)));
-      return FALSE;
-    }
-
-  g_param_value_set_default (pspec, value_out);
-  return TRUE;
 }
 
 /**
@@ -757,7 +731,7 @@ nbtk_style_get_valist (NbtkStyle     *style,
         {
           GValue value = { 0, };
           gchar *error = NULL;
-          stylable_get_default_value (stylable, name, &value);
+          nbtk_stylable_get_default_value (stylable, name, &value);
           G_VALUE_LCOPY (&value, va_args, 0, &error);
           if (error)
             {
