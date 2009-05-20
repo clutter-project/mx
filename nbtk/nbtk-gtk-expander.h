@@ -30,17 +30,28 @@ G_BEGIN_DECLS
   (G_TYPE_INSTANCE_GET_CLASS ((obj), \
   NBTK_TYPE_GTK_EXPANDER, NbtkGtkExpanderClass))
 
-typedef struct {
-  GtkExpander parent;
-} NbtkGtkExpander;
 
-typedef struct {
+typedef struct _NbtkGtkExpander NbtkGtkExpander;
+typedef struct _NbtkGtkExpanderClass NbtkGtkExpanderClass;
+typedef struct _NbtkGtkExpanderPrivate NbtkGtkExpanderPrivate;
+
+struct _NbtkGtkExpander
+{
+  GtkExpander parent;
+
+  NbtkGtkExpanderPrivate *priv;
+};
+
+struct _NbtkGtkExpanderClass
+{
   GtkExpanderClass parent_class;
-} NbtkGtkExpanderClass;
+};
 
 GType nbtk_gtk_expander_get_type (void);
 
 GtkWidget* nbtk_gtk_expander_new (void);
+void nbtk_gtk_expander_set_label_widget (NbtkGtkExpander *expander, GtkWidget *label);
+GtkWidget* nbtk_gtk_expander_get_label_widget (NbtkGtkExpander *expander);
 
 G_END_DECLS
 

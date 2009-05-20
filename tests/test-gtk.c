@@ -59,7 +59,8 @@ main (int argc, char **argv)
 
   expander = nbtk_gtk_expander_new ();
   gtk_box_pack_start (GTK_BOX (vbox), expander, FALSE, FALSE, 10);
-  gtk_expander_set_label (GTK_EXPANDER (expander), "Simple Expander");
+  nbtk_gtk_expander_set_label_widget (NBTK_GTK_EXPANDER (expander),
+                                      gtk_label_new ("Simple Expander"));
 
   frame = gtk_alignment_new (0, 0, 0, 0);
   gtk_alignment_set_padding (GTK_ALIGNMENT (frame), 10, 10, 10, 10);

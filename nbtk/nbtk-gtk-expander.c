@@ -2,74 +2,20 @@
 
 #include "nbtk-gtk-expander.h"
 
-G_DEFINE_TYPE (NbtkGtkExpander, nbtk_gtk_expander, GTK_TYPE_EXPANDER)
-
-/* taken from gtkexpander.c */
-static void
-get_expander_bounds (GtkExpander  *expander,
-		     GdkRectangle *rect)
+struct _NbtkGtkExpanderPrivate
 {
-  GtkWidget *widget;
-  gint border_width;
-  gint expander_size;
-  gint expander_spacing;
-  gboolean interior_focus;
-  gint focus_width;
-  gint focus_pad;
-  gboolean ltr;
-  GtkWidget *label_widget = gtk_expander_get_label_widget (expander);
+  gboolean is_open : 1;
+  gboolean has_indicator : 1;
 
-  widget = GTK_WIDGET (expander);
+  gint indicator_size;
 
-  border_width = GTK_CONTAINER (expander)->border_width;
+  GtkWidget *label;
+  GdkWindow *event_window;
+};
 
-  gtk_widget_style_get (widget,
-			"interior-focus", &interior_focus,
-			"focus-line-width", &focus_width,
-			"focus-padding", &focus_pad,
-			"expander-size", &expander_size,
-			"expander-spacing", &expander_spacing,
-			NULL);
+G_DEFINE_TYPE (NbtkGtkExpander, nbtk_gtk_expander, GTK_TYPE_BIN)
 
-  ltr = gtk_widget_get_direction (widget) != GTK_TEXT_DIR_RTL;
-
-  rect->x = widget->allocation.x + border_width + widget->style->xthickness;
-  rect->y = widget->allocation.y + border_width + widget->style->ythickness;
-
-  if (ltr)
-    rect->x += expander_spacing;
-  else
-    rect->x += widget->allocation.width - 2 * border_width -
-               expander_spacing - expander_size;
-
-  if (label_widget && GTK_WIDGET_VISIBLE (label_widget))
-    {
-      GtkAllocation label_allocation;
-
-      label_allocation = label_widget->allocation;
-
-      if (expander_size < label_allocation.height)
-	rect->y += focus_width + focus_pad + (label_allocation.height - expander_size) / 2;
-      else
-	rect->y += expander_spacing;
-    }
-  else
-    {
-      rect->y += expander_spacing;
-    }
-
-  if (!interior_focus)
-    {
-      if (ltr)
-	rect->x += focus_width + focus_pad;
-      else
-	rect->x -= focus_width + focus_pad;
-      rect->y += focus_width + focus_pad;
-    }
-
-  rect->width = rect->height = expander_size;
-}
-
+#define DEFAULT_INDICATOR_SIZE 12
 
 gboolean
 nbtk_gtk_expander_expose_event (GtkWidget      *widget,
@@ -77,14 +23,13 @@ nbtk_gtk_expander_expose_event (GtkWidget      *widget,
 {
   if (GTK_WIDGET_DRAWABLE (widget))
     {
-      GtkExpander *expander = GTK_EXPANDER (widget);
+      NbtkGtkExpanderPrivate *priv = NBTK_GTK_EXPANDER (widget)->priv;
       GtkContainer *container = GTK_CONTAINER (widget);
       GtkShadowType shadow;
-      GdkRectangle rect, bounds;
+      GdkRectangle rect;
       GtkExpanderStyle style;
-      gint expander_size = 12;
 
-      if (gtk_expander_get_expanded (expander))
+      if (priv->is_open)
         {
           shadow = GTK_SHADOW_IN;
           style = GTK_EXPANDER_EXPANDED;
@@ -112,30 +57,36 @@ nbtk_gtk_expander_expose_event (GtkWidget      *widget,
                      rect.width,
                      rect.height);
 
-      get_expander_bounds (expander, &bounds);
 
-     gtk_widget_style_get (widget,
-                           "expander-size", &expander_size,
-                           NULL);
+      if (priv->has_indicator)
+        {
+          gint indicator_size, indicator_x, indicator_y;
 
-      gtk_paint_expander (widget->style,
-                          widget->window,
-                          widget->state,
-                          &bounds,
-                          widget,
-                          NULL,
-                          bounds.x + bounds.width / 2,
-                          bounds.y + bounds.height / 2,
-                          style);
+          gtk_widget_style_get (widget, "expander-size", &indicator_size, NULL);
+          indicator_x = rect.x + widget->style->xthickness + indicator_size / 2;
+
+          if (priv->label)
+            indicator_y = priv->label->allocation.y
+              + priv->label->allocation.height / 2;
+          else
+            indicator_y = rect.y + widget->style->ythickness;
 
 
 
-      gtk_container_propagate_expose (container,
-                                      gtk_bin_get_child (GTK_BIN (widget)),
-                                      event);
-      gtk_container_propagate_expose (container,
-                                      gtk_expander_get_label_widget (expander),
-                                      event);
+
+          gtk_paint_expander (widget->style,
+                              widget->window,
+                              widget->state,
+                              NULL,
+                              widget,
+                              NULL,
+                              indicator_x,
+                              indicator_y,
+                              style);
+        }
+
+      if (priv->label)
+        gtk_container_propagate_expose (container, priv->label, event);
 
       /*
       if (GTK_WIDGET_HAS_FOCUS (expander))
@@ -144,24 +95,282 @@ nbtk_gtk_expander_expose_event (GtkWidget      *widget,
 
     }
 
+  /* chain up to get child painted */
+  GTK_WIDGET_CLASS (nbtk_gtk_expander_parent_class)->expose_event (widget,
+                                                                   event);
+
   return FALSE;
+}
+
+void
+nbtk_gtk_expander_size_allocate (GtkWidget     *widget,
+                                 GtkAllocation *allocation)
+{
+  NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
+  GtkWidget *child, *label;
+  GtkAllocation label_alloc, child_alloc;
+  GtkRequisition label_req = { 0, }, child_req;
+
+  GTK_WIDGET_CLASS (nbtk_gtk_expander_parent_class)->size_allocate (widget,
+                                                                    allocation);
+
+  child = gtk_bin_get_child ((GtkBin*) widget);
+  label = ((NbtkGtkExpander *) widget)->priv->label;
+
+  if (label && GTK_WIDGET_VISIBLE (label))
+    {
+      gtk_widget_size_request (label, &label_req);
+
+      label_alloc.x = allocation->x + widget->style->xthickness;
+      label_alloc.y = allocation->y + widget->style->ythickness;
+      label_alloc.width = label_req.width;
+      label_alloc.height = label_req.height;
+
+      if (priv->has_indicator)
+        label_alloc.x += priv->indicator_size;
+
+
+      gtk_widget_size_allocate (label, &label_alloc);
+    }
+
+  if (priv->is_open && child && GTK_WIDGET_VISIBLE (child))
+    {
+      gtk_widget_size_request (child, &child_req);
+
+      child_alloc.x = allocation->x + widget->style->xthickness;
+      child_alloc.y = allocation->y + widget->style->ythickness * 2 + label_req.height;
+      child_alloc.width = child_req.width;
+      child_alloc.height = child_req.height;
+
+      gtk_widget_size_allocate (child, &child_alloc);
+    }
+
+
+  if (priv->event_window)
+    {
+      gdk_window_move_resize (priv->event_window, allocation->x, allocation->y,
+                              allocation->width, allocation->height);
+    }
+
+}
+
+void
+nbtk_gtk_expander_size_request (GtkWidget      *widget,
+                                GtkRequisition *requisition)
+{
+  NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
+  GtkWidget *child, *label;
+  GtkRequisition req;
+
+
+  child = gtk_bin_get_child ((GtkBin*) widget);
+  label = ((NbtkGtkExpander *) widget)->priv->label;
+
+  requisition->width = widget->style->xthickness * 2;
+  requisition->height = widget->style->ythickness * 3;
+
+  if (label && GTK_WIDGET_VISIBLE (label))
+    {
+      gtk_widget_size_request (label, &req);
+
+      requisition->width += req.width;
+      requisition->height += req.height;
+    }
+
+  if (priv->is_open && child && GTK_WIDGET_VISIBLE (child))
+    {
+      gtk_widget_size_request (child, &req);
+
+      requisition->width = MAX (requisition->width,
+                                req.width + widget->style->xthickness * 2);
+      requisition->height += req.height;
+    }
+}
+
+static void
+nbtk_gtk_expander_map (GtkWidget *widget)
+{
+  NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
+
+  if (priv->label)
+    {
+      gtk_widget_show (priv->label);
+      gtk_widget_map (priv->label);
+    }
+
+  if (priv->event_window)
+    gdk_window_show (priv->event_window);
+
+  GTK_WIDGET_CLASS (nbtk_gtk_expander_parent_class)->map (widget);
+}
+
+static void
+nbtk_gtk_expander_unmap (GtkWidget *widget)
+{
+  NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
+
+  if (priv->label)
+    gtk_widget_unmap (priv->label);
+
+  if (priv->event_window)
+    gdk_window_hide (priv->event_window);
+
+  GTK_WIDGET_CLASS (nbtk_gtk_expander_parent_class)->unmap (widget);
+}
+
+static void
+nbtk_gtk_expander_show (GtkWidget *widget)
+{
+  NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
+
+  if (priv->label)
+    gtk_widget_show (priv->label);
+
+  GTK_WIDGET_CLASS (nbtk_gtk_expander_parent_class)->show (widget);
+}
+
+static void
+nbtk_gtk_expander_hide (GtkWidget *widget)
+{
+  NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
+
+  if (priv->label)
+    gtk_widget_hide (priv->label);
+
+  GTK_WIDGET_CLASS (nbtk_gtk_expander_parent_class)->hide (widget);
+}
+
+static gboolean
+nbtk_gtk_expander_button_release (GtkWidget      *widget,
+                                  GdkEventButton *event)
+{
+  NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
+
+  priv->is_open = !priv->is_open;
+
+  if (priv->is_open)
+    gtk_widget_show (gtk_bin_get_child (GTK_BIN (widget)));
+  else
+    gtk_widget_hide (gtk_bin_get_child (GTK_BIN (widget)));
+
+  gtk_widget_queue_resize (widget);
+
+  return FALSE;
+}
+
+static void
+nbtk_gtk_expander_realize (GtkWidget *widget)
+{
+  NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
+  GdkWindowAttr attributes;
+
+  GTK_WIDGET_CLASS (nbtk_gtk_expander_parent_class)->realize (widget);
+
+  attributes.window_type = GDK_WINDOW_CHILD;
+  attributes.wclass = GDK_INPUT_ONLY;
+  attributes.event_mask = gtk_widget_get_events (widget) |
+                            GDK_BUTTON_PRESS_MASK        |
+                            GDK_BUTTON_RELEASE_MASK      |
+                            GDK_ENTER_NOTIFY_MASK        |
+                            GDK_LEAVE_NOTIFY_MASK;
+
+  priv->event_window = gdk_window_new (gtk_widget_get_parent_window (widget),
+                                       &attributes, GDK_WA_X | GDK_WA_Y);
+  gdk_window_set_user_data (priv->event_window, widget);
+
+  gdk_window_move_resize (priv->event_window,
+                          widget->allocation.x,
+                          widget->allocation.y,
+                          widget->allocation.width,
+                          widget->allocation.height);
+
+}
+
+static void
+nbtk_gtk_expander_unrealize (GtkWidget *widget)
+{
+  NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
+
+  if (priv->event_window)
+    {
+      gdk_window_destroy (priv->event_window);
+      priv->event_window = NULL;
+    }
+
+  GTK_WIDGET_CLASS (nbtk_gtk_expander_parent_class)->unrealize (widget);
 }
 
 static void
 nbtk_gtk_expander_class_init (NbtkGtkExpanderClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+  GParamSpec *pspec;
+
+  g_type_class_add_private (klass, sizeof (NbtkGtkExpanderPrivate));
 
   widget_class->expose_event = nbtk_gtk_expander_expose_event;
+
+  widget_class->size_request = nbtk_gtk_expander_size_request;
+  widget_class->size_allocate = nbtk_gtk_expander_size_allocate;
+
+  widget_class->realize = nbtk_gtk_expander_realize;
+  widget_class->unrealize = nbtk_gtk_expander_unrealize;
+  widget_class->map = nbtk_gtk_expander_map;
+  widget_class->unmap = nbtk_gtk_expander_unmap;
+  widget_class->show = nbtk_gtk_expander_show;
+  widget_class->hide = nbtk_gtk_expander_hide;
+
+  widget_class->button_release_event = nbtk_gtk_expander_button_release;
+
+  pspec = g_param_spec_int ("expander-size",
+                            "Expander Size",
+                            "Size of the expander indicator",
+                            0, G_MAXINT, DEFAULT_INDICATOR_SIZE,
+                            G_PARAM_READABLE);
+
+  gtk_widget_class_install_style_property (widget_class, pspec);
+
+
 }
 
 static void
 nbtk_gtk_expander_init (NbtkGtkExpander *self)
 {
+  self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
+                                            NBTK_TYPE_GTK_EXPANDER,
+                                            NbtkGtkExpanderPrivate);
+
+  GTK_WIDGET_SET_FLAGS (self, GTK_CAN_FOCUS);
+
+  self->priv->indicator_size = DEFAULT_INDICATOR_SIZE;
+  self->priv->has_indicator = TRUE;
 }
 
 GtkWidget*
 nbtk_gtk_expander_new (void)
 {
   return g_object_new (NBTK_TYPE_GTK_EXPANDER, NULL);
+}
+
+
+void
+nbtk_gtk_expander_set_label_widget (NbtkGtkExpander *expander,
+                                    GtkWidget       *label)
+{
+  g_return_if_fail (NBTK_IS_GTK_EXPANDER (expander));
+  g_return_if_fail (GTK_IS_WIDGET (label));
+
+  if (expander->priv->label)
+    gtk_widget_unparent (expander->priv->label);
+
+  expander->priv->label = label;
+  gtk_widget_set_parent (label, (GtkWidget*) expander);
+}
+
+GtkWidget*
+nbtk_gtk_expander_get_label_widget (NbtkGtkExpander *expander)
+{
+  g_return_val_if_fail (NBTK_IS_GTK_EXPANDER (expander), NULL);
+
+  return expander->priv->label;
 }
