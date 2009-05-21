@@ -15,6 +15,14 @@ struct _NbtkGtkExpanderPrivate
   GdkWindow *event_window;
 };
 
+enum
+{
+  PROP_0,
+
+  PROP_LABEL_WIDGET,
+  PROP_HAS_INDICATOR
+};
+
 G_DEFINE_TYPE (NbtkGtkExpander, nbtk_gtk_expander, GTK_TYPE_BIN)
 
 #define DEFAULT_INDICATOR_SIZE 12
@@ -321,12 +329,61 @@ nbtk_gtk_expander_style_set (GtkWidget *widget,
 }
 
 static void
+nbtk_gtk_expander_set_property (GObject      *object,
+                                guint         property_id,
+                                const GValue *value,
+                                GParamSpec   *pspec)
+{
+  NbtkGtkExpander *expander = (NbtkGtkExpander *) object;
+
+  switch (property_id)
+    {
+    case PROP_LABEL_WIDGET:
+      nbtk_gtk_expander_set_label_widget (expander, g_value_get_object (value));
+      break;
+    case PROP_HAS_INDICATOR:
+      nbtk_gtk_expander_set_has_indicator (expander,
+                                           g_value_get_boolean (value));
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+    }
+}
+
+static void
+nbtk_gtk_expander_get_property (GObject    *object,
+                                guint       property_id,
+                                GValue     *value,
+                                GParamSpec *pspec)
+{
+  NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) object)->priv;
+
+  switch (property_id)
+    {
+    case PROP_LABEL_WIDGET:
+      g_value_set_object (value, priv->label);
+      break;
+
+    case PROP_HAS_INDICATOR:
+      g_value_set_boolean (value, priv->has_indicator);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+    }
+}
+
+static void
 nbtk_gtk_expander_class_init (NbtkGtkExpanderClass *klass)
 {
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (NbtkGtkExpanderPrivate));
+
+  object_class->set_property = nbtk_gtk_expander_set_property;
+  object_class->get_property = nbtk_gtk_expander_get_property;
 
   widget_class->expose_event = nbtk_gtk_expander_expose_event;
   widget_class->style_set = nbtk_gtk_expander_style_set;
@@ -342,6 +399,20 @@ nbtk_gtk_expander_class_init (NbtkGtkExpanderClass *klass)
   widget_class->hide = nbtk_gtk_expander_hide;
 
   widget_class->button_release_event = nbtk_gtk_expander_button_release;
+
+  pspec = g_param_spec_object ("label-widget",
+                               "Label Widget",
+                               "Widget to use as the title of the expander",
+                               GTK_TYPE_WIDGET,
+                               G_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_LABEL_WIDGET, pspec);
+
+  pspec = g_param_spec_boolean ("has-indicator",
+                                "Has Indicator",
+                                "Determines whether to show an indicator",
+                                TRUE,
+                                G_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_HAS_INDICATOR, pspec);
 
   pspec = g_param_spec_int ("expander-size",
                             "Expander Size",
@@ -383,13 +454,18 @@ nbtk_gtk_expander_set_label_widget (NbtkGtkExpander *expander,
                                     GtkWidget       *label)
 {
   g_return_if_fail (NBTK_IS_GTK_EXPANDER (expander));
-  g_return_if_fail (GTK_IS_WIDGET (label));
+  g_return_if_fail (label == NULL || GTK_IS_WIDGET (label));
 
   if (expander->priv->label)
     gtk_widget_unparent (expander->priv->label);
 
-  expander->priv->label = label;
-  gtk_widget_set_parent (label, (GtkWidget*) expander);
+  if (label)
+    {
+      expander->priv->label = label;
+      gtk_widget_set_parent (label, (GtkWidget*) expander);
+    }
+  else
+    expander->priv->label = NULL;
 }
 
 GtkWidget*
