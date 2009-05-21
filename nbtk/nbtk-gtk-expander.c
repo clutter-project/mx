@@ -35,18 +35,21 @@ nbtk_gtk_expander_expose_event (GtkWidget      *widget,
     {
       NbtkGtkExpanderPrivate *priv = NBTK_GTK_EXPANDER (widget)->priv;
       GtkContainer *container = GTK_CONTAINER (widget);
-      GtkShadowType shadow;
       GdkRectangle rect;
       GtkExpanderStyle style;
+      gint label_h;
+
+      if (priv->label)
+        label_h = priv->label->allocation.height;
+      else
+        label_h = 0;
 
       if (priv->is_open)
         {
-          shadow = GTK_SHADOW_IN;
           style = GTK_EXPANDER_EXPANDED;
         }
       else
         {
-          shadow = GTK_SHADOW_OUT;
           style = GTK_EXPANDER_COLLAPSED;
         }
 
@@ -58,7 +61,7 @@ nbtk_gtk_expander_expose_event (GtkWidget      *widget,
       gtk_paint_box (widget->style,
                      widget->window,
                      widget->state,
-                     shadow,
+                     GTK_SHADOW_OUT,
                      &rect,
                      widget,
                      NULL,
@@ -67,18 +70,36 @@ nbtk_gtk_expander_expose_event (GtkWidget      *widget,
                      rect.width,
                      rect.height);
 
+      if (priv->is_open)
+        {
+          gint shadow_x, shadow_y;
+
+          shadow_x = rect.x + widget->style->xthickness;
+          shadow_y = rect.y + widget->style->ythickness
+                         + priv->child_padding
+                         + MAX (label_h, priv->indicator_size);
+
+          gtk_paint_box (widget->style,
+                         widget->window,
+                         widget->state,
+                         GTK_SHADOW_IN,
+                         &rect,
+                         widget,
+                         NULL,
+                         shadow_x,
+                         shadow_y,
+                         rect.width - (shadow_x - rect.x) - widget->style->xthickness,
+                         rect.height - (shadow_y - rect.y) - widget->style->ythickness);
+        }
+
 
       if (priv->has_indicator)
         {
-          gint indicator_size, label_h, indicator_x, indicator_y;
+          gint indicator_size, indicator_x, indicator_y;
 
           gtk_widget_style_get (widget, "expander-size", &indicator_size, NULL);
           indicator_x = rect.x + widget->style->xthickness + indicator_size / 2;
 
-          if (priv->label)
-            label_h = priv->label->allocation.height;
-          else
-            label_h = 0;
 
 
           indicator_y = rect.y + (widget->style->ythickness * 2 +
