@@ -8,6 +8,8 @@ struct _NbtkGtkExpanderPrivate
   gboolean has_indicator : 1;
 
   gint indicator_size;
+  gint indicator_padding; /* padding between indicator and label */
+  gint child_padding; /* padding between label and child */
 
   GtkWidget *label;
   GdkWindow *event_window;
@@ -60,19 +62,19 @@ nbtk_gtk_expander_expose_event (GtkWidget      *widget,
 
       if (priv->has_indicator)
         {
-          gint indicator_size, indicator_x, indicator_y;
+          gint indicator_size, label_h, indicator_x, indicator_y;
 
           gtk_widget_style_get (widget, "expander-size", &indicator_size, NULL);
           indicator_x = rect.x + widget->style->xthickness + indicator_size / 2;
 
           if (priv->label)
-            indicator_y = priv->label->allocation.y
-              + priv->label->allocation.height / 2;
+            label_h = priv->label->allocation.height;
           else
-            indicator_y = rect.y + widget->style->ythickness;
+            label_h = 0;
 
 
-
+          indicator_y = rect.y + (widget->style->ythickness * 2 +
+                                  MAX (label_h, indicator_size)) / 2;
 
           gtk_paint_expander (widget->style,
                               widget->window,
@@ -110,6 +112,7 @@ nbtk_gtk_expander_size_allocate (GtkWidget     *widget,
   GtkWidget *child, *label;
   GtkAllocation label_alloc, child_alloc;
   GtkRequisition label_req = { 0, }, child_req;
+  gint label_h;
 
   GTK_WIDGET_CLASS (nbtk_gtk_expander_parent_class)->size_allocate (widget,
                                                                     allocation);
@@ -127,18 +130,23 @@ nbtk_gtk_expander_size_allocate (GtkWidget     *widget,
       label_alloc.height = label_req.height;
 
       if (priv->has_indicator)
-        label_alloc.x += priv->indicator_size;
+        label_alloc.x += priv->indicator_size + priv->indicator_padding;
 
 
       gtk_widget_size_allocate (label, &label_alloc);
+
+      label_h = MAX (priv->indicator_size, label_alloc.height);
     }
+  else
+    label_h = priv->indicator_size;
 
   if (priv->is_open && child && GTK_WIDGET_VISIBLE (child))
     {
       gtk_widget_size_request (child, &child_req);
 
       child_alloc.x = allocation->x + widget->style->xthickness;
-      child_alloc.y = allocation->y + widget->style->ythickness * 2 + label_req.height;
+      child_alloc.y = allocation->y + widget->style->ythickness + label_h
+        + priv->child_padding;
       child_alloc.width = child_req.width;
       child_alloc.height = child_req.height;
 
@@ -167,7 +175,7 @@ nbtk_gtk_expander_size_request (GtkWidget      *widget,
   label = ((NbtkGtkExpander *) widget)->priv->label;
 
   requisition->width = widget->style->xthickness * 2;
-  requisition->height = widget->style->ythickness * 3;
+  requisition->height = widget->style->ythickness * 2;
 
   if (label && GTK_WIDGET_VISIBLE (label))
     {
@@ -183,7 +191,7 @@ nbtk_gtk_expander_size_request (GtkWidget      *widget,
 
       requisition->width = MAX (requisition->width,
                                 req.width + widget->style->xthickness * 2);
-      requisition->height += req.height;
+      requisition->height += req.height + widget->style->ythickness;
     }
 }
 
@@ -336,14 +344,21 @@ nbtk_gtk_expander_class_init (NbtkGtkExpanderClass *klass)
 static void
 nbtk_gtk_expander_init (NbtkGtkExpander *self)
 {
+  NbtkGtkExpanderPrivate *priv;
+
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
                                             NBTK_TYPE_GTK_EXPANDER,
                                             NbtkGtkExpanderPrivate);
 
   GTK_WIDGET_SET_FLAGS (self, GTK_CAN_FOCUS);
 
-  self->priv->indicator_size = DEFAULT_INDICATOR_SIZE;
-  self->priv->has_indicator = TRUE;
+  priv = self->priv;
+
+  priv->indicator_size = DEFAULT_INDICATOR_SIZE;
+  priv->has_indicator = TRUE;
+
+  priv->child_padding = ((GtkWidget*) self)->style->ythickness;
+  priv->indicator_padding = ((GtkWidget*) self)->style->xthickness;
 }
 
 GtkWidget*
