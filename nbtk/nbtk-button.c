@@ -741,6 +741,7 @@ nbtk_button_init (NbtkButton *button)
   button->priv->transition_duration = 250;
   button->priv->spacing = 6;
 
+  clutter_actor_set_reactive ((ClutterActor *) button, TRUE);
 }
 
 /**

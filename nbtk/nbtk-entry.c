@@ -546,6 +546,7 @@ nbtk_entry_init (NbtkEntry *entry)
   priv->spacing = CLUTTER_UNITS_FROM_INT (6);
 
   clutter_actor_set_parent (priv->entry, CLUTTER_ACTOR (entry));
+  clutter_actor_set_reactive ((ClutterActor *) entry, TRUE);
 }
 
 /**

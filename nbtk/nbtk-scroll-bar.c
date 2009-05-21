@@ -774,6 +774,7 @@ nbtk_scroll_bar_init (NbtkScrollBar *self)
                     G_CALLBACK (forward_stepper_clicked), self);
 
   self->priv->trough = (ClutterActor *) nbtk_bin_new ();
+  clutter_actor_set_reactive ((ClutterActor *) self->priv->trough, TRUE);
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->trough), "trough");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->trough),
                             CLUTTER_ACTOR (self));
@@ -790,6 +791,7 @@ nbtk_scroll_bar_init (NbtkScrollBar *self)
                             self->priv->trough);
   g_signal_connect (self->priv->handle, "button-press-event",
                     G_CALLBACK (handle_button_press_event_cb), self);
+
 }
 
 NbtkWidget *

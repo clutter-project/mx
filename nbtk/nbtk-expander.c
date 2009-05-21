@@ -594,6 +594,8 @@ nbtk_expander_init (NbtkExpander *self)
   g_signal_connect (priv->timeline, "completed", G_CALLBACK (timeline_complete), self);
 
   priv->alpha = clutter_alpha_new_full (priv->timeline, CLUTTER_EASE_IN_SINE);
+
+  clutter_actor_set_reactive ((ClutterActor *) self, TRUE);
 }
 
 /**

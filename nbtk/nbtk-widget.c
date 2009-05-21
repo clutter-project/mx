@@ -1339,8 +1339,6 @@ nbtk_widget_init (NbtkWidget *actor)
   actor->priv = priv = NBTK_WIDGET_GET_PRIVATE (actor);
   priv->is_stylable = TRUE;
 
-  clutter_actor_set_reactive (CLUTTER_ACTOR (actor), TRUE);
-
   /* connect style changed */
   g_signal_connect (actor, "notify::name", G_CALLBACK (nbtk_widget_name_notify), NULL);
 
