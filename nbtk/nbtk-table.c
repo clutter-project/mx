@@ -1526,9 +1526,15 @@ nbtk_table_add_actor_with_properties (NbtkTable    *table,
 
   g_return_if_fail (NBTK_IS_TABLE (table));
   g_return_if_fail (CLUTTER_IS_ACTOR (actor));
-  g_return_if_fail (row >= 0);
-  g_return_if_fail (column >= 0);
+  g_return_if_fail (row >= -1);
+  g_return_if_fail (column >= -1);
   g_return_if_fail (first_property_name != NULL);
+
+  if (row < 0)
+    row = table->priv->n_rows + 1;
+
+  if (column < 0)
+    column = table->priv->n_cols + 1;
 
   container = (ClutterContainer *)table;
   clutter_container_add_actor (container, actor);
@@ -1571,8 +1577,8 @@ nbtk_table_add_actor_full (NbtkTable            *table,
 {
   g_return_if_fail (NBTK_IS_TABLE (table));
   g_return_if_fail (CLUTTER_IS_ACTOR (actor));
-  g_return_if_fail (row >= 0);
-  g_return_if_fail (column >= 0);
+  g_return_if_fail (row >= -1);
+  g_return_if_fail (column >= -1);
   g_return_if_fail (rowspan >= 1);
   g_return_if_fail (colspan >= 1);
   g_return_if_fail ((xalign >= 0) && (xalign <= 1.0));
