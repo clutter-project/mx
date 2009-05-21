@@ -53,6 +53,8 @@ GtkWidget* nbtk_gtk_expander_new (void);
 void nbtk_gtk_expander_set_label_widget (NbtkGtkExpander *expander, GtkWidget *label);
 GtkWidget* nbtk_gtk_expander_get_label_widget (NbtkGtkExpander *expander);
 
+void nbtk_gtk_expander_set_has_indicator (NbtkGtkExpander *expander, gboolean has_indicator);
+gboolean nbtk_gtk_expander_get_has_indicator (NbtkGtkExpander *expander);
 G_END_DECLS
 
 #endif /* _NBTK_GTK_EXPANDER_H */

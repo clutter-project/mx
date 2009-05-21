@@ -399,3 +399,22 @@ nbtk_gtk_expander_get_label_widget (NbtkGtkExpander *expander)
 
   return expander->priv->label;
 }
+
+void
+nbtk_gtk_expander_set_has_indicator (NbtkGtkExpander *expander,
+                                     gboolean         has_indicator)
+{
+  g_return_if_fail (NBTK_IS_GTK_EXPANDER (expander));
+
+  expander->priv->has_indicator = has_indicator;
+
+  gtk_widget_queue_resize ((GtkWidget*) expander);
+}
+
+gboolean
+nbtk_gtk_expander_get_has_indicator (NbtkGtkExpander *expander)
+{
+  g_return_val_if_fail (NBTK_IS_GTK_EXPANDER (expander), 0);
+
+  return expander->priv->has_indicator;
+}
