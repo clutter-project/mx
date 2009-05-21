@@ -309,6 +309,18 @@ nbtk_gtk_expander_unrealize (GtkWidget *widget)
 }
 
 static void
+nbtk_gtk_expander_style_set (GtkWidget *widget,
+                             GtkStyle  *previous)
+{
+  NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
+
+  priv->child_padding = widget->style->ythickness;
+  priv->indicator_padding = widget->style->xthickness;
+
+  gtk_widget_style_get (widget, "expander-size", &priv->indicator_size, NULL);
+}
+
+static void
 nbtk_gtk_expander_class_init (NbtkGtkExpanderClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
@@ -317,6 +329,7 @@ nbtk_gtk_expander_class_init (NbtkGtkExpanderClass *klass)
   g_type_class_add_private (klass, sizeof (NbtkGtkExpanderPrivate));
 
   widget_class->expose_event = nbtk_gtk_expander_expose_event;
+  widget_class->style_set = nbtk_gtk_expander_style_set;
 
   widget_class->size_request = nbtk_gtk_expander_size_request;
   widget_class->size_allocate = nbtk_gtk_expander_size_allocate;
@@ -356,9 +369,6 @@ nbtk_gtk_expander_init (NbtkGtkExpander *self)
 
   priv->indicator_size = DEFAULT_INDICATOR_SIZE;
   priv->has_indicator = TRUE;
-
-  priv->child_padding = ((GtkWidget*) self)->style->ythickness;
-  priv->indicator_padding = ((GtkWidget*) self)->style->xthickness;
 }
 
 GtkWidget*
