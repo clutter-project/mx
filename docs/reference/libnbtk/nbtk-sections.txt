@@ -397,6 +397,8 @@ nbtk_style_get_default
 nbtk_style_new
 nbtk_style_load_from_file
 nbtk_style_get_property
+nbtk_style_get
+nbtk_style_get_valist
 <SUBSECTION Standard>
 NBTK_STYLE
 NBTK_IS_STYLE
@@ -478,6 +480,7 @@ nbtk_stylable_set
 nbtk_stylable_get
 nbtk_stylable_set_property
 nbtk_stylable_get_property
+nbtk_stylable_get_default_value
 nbtk_stylable_get_container
 nbtk_stylable_get_base_style
 nbtk_stylable_get_style_id
