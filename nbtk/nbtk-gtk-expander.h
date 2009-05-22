@@ -50,6 +50,10 @@ struct _NbtkGtkExpanderClass
 GType nbtk_gtk_expander_get_type (void);
 
 GtkWidget* nbtk_gtk_expander_new (void);
+
+void nbtk_gtk_expander_set_expanded (NbtkGtkExpander *expander, gboolean expanded);
+gboolean nbtk_gtk_expander_get_expanded (NbtkGtkExpander *expander);
+
 void nbtk_gtk_expander_set_label_widget (NbtkGtkExpander *expander, GtkWidget *label);
 GtkWidget* nbtk_gtk_expander_get_label_widget (NbtkGtkExpander *expander);
 

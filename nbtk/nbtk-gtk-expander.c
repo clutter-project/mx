@@ -19,6 +19,7 @@ enum
 {
   PROP_0,
 
+  PROP_EXPANDED,
   PROP_LABEL_WIDGET,
   PROP_HAS_INDICATOR
 };
@@ -283,14 +284,7 @@ nbtk_gtk_expander_button_release (GtkWidget      *widget,
 {
   NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
 
-  priv->is_open = !priv->is_open;
-
-  if (priv->is_open)
-    gtk_widget_show (gtk_bin_get_child (GTK_BIN (widget)));
-  else
-    gtk_widget_hide (gtk_bin_get_child (GTK_BIN (widget)));
-
-  gtk_widget_queue_resize (widget);
+  nbtk_gtk_expander_set_expanded ((NbtkGtkExpander *) widget, !priv->is_open);
 
   return FALSE;
 }
@@ -359,9 +353,14 @@ nbtk_gtk_expander_set_property (GObject      *object,
 
   switch (property_id)
     {
+    case PROP_EXPANDED:
+      nbtk_gtk_expander_set_expanded (expander, g_value_get_boolean (value));
+      break;
+
     case PROP_LABEL_WIDGET:
       nbtk_gtk_expander_set_label_widget (expander, g_value_get_object (value));
       break;
+
     case PROP_HAS_INDICATOR:
       nbtk_gtk_expander_set_has_indicator (expander,
                                            g_value_get_boolean (value));
@@ -381,6 +380,9 @@ nbtk_gtk_expander_get_property (GObject    *object,
 
   switch (property_id)
     {
+    case PROP_EXPANDED:
+      g_value_set_boolean (value, priv->is_open);
+
     case PROP_LABEL_WIDGET:
       g_value_set_object (value, priv->label);
       break;
@@ -420,6 +422,13 @@ nbtk_gtk_expander_class_init (NbtkGtkExpanderClass *klass)
   widget_class->hide = nbtk_gtk_expander_hide;
 
   widget_class->button_release_event = nbtk_gtk_expander_button_release;
+
+  pspec = g_param_spec_boolean ("expanded",
+                                "Expanded",
+                                "Whether the expander is open or closed",
+                                FALSE,
+                                G_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_EXPANDED, pspec);
 
   pspec = g_param_spec_object ("label-widget",
                                "Label Widget",
@@ -469,6 +478,34 @@ nbtk_gtk_expander_new (void)
   return g_object_new (NBTK_TYPE_GTK_EXPANDER, NULL);
 }
 
+void
+nbtk_gtk_expander_set_expanded (NbtkGtkExpander *expander,
+                                gboolean         expanded)
+{
+  NbtkGtkExpanderPrivate *priv;
+  g_return_if_fail (NBTK_IS_GTK_EXPANDER (expander));
+
+  priv = ((NbtkGtkExpander*) expander)->priv;
+
+  priv->is_open = !priv->is_open;
+
+  if (priv->is_open)
+    gtk_widget_show (gtk_bin_get_child (GTK_BIN (expander)));
+  else
+    gtk_widget_hide (gtk_bin_get_child (GTK_BIN (expander)));
+
+  gtk_widget_queue_resize ((GtkWidget*) expander);
+
+  g_object_notify ((GObject*) expander, "expanded");
+}
+
+gboolean
+nbtk_gtk_expander_get_expanded (NbtkGtkExpander *expander)
+{
+  g_return_val_if_fail (NBTK_IS_GTK_EXPANDER (expander), FALSE);
+
+  return expander->priv->is_open;
+}
 
 void
 nbtk_gtk_expander_set_label_widget (NbtkGtkExpander *expander,
