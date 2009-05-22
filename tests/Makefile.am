@@ -16,7 +16,6 @@ noinst_PROGRAMS = 		\
 	test-expander 		\
 	test-grid \
 	test-gtk		\
-	test-performance \
 	test-script  		\
 	test-styles  		\
 	test-table   		\
@@ -48,9 +47,6 @@ test_scroll_bar_SOURCES = test-scroll-bar.c
 test_scroll_grid_SOURCES = test-scroll-grid.c
 test_scroll_view_2_SOURCES = test-scroll-view-2.c
 test_scroll_view_3_SOURCES = test-scroll-view-3.c
-
-test_performance_LDFLAGS = -export-dynamic
-test_performance_SOURCES = test-performance.c
 
 EXTRA_DIST = \
         redhand.png rounded-corner.png \
