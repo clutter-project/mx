@@ -220,7 +220,6 @@ nbtk_gtk_frame_size_allocate (GtkWidget *widget,
                               GtkAllocation *allocation)
 {
   GtkBin *bin = GTK_BIN (widget);
-  NbtkGtkFrame *nbtk_gtk_frame = NBTK_GTK_FRAME (widget);
   GtkFrame *frame = GTK_FRAME (widget);
   GtkAllocation child_allocation, title_allocation;
   int xmargin, ymargin;
