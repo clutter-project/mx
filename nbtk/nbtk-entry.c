@@ -547,6 +547,9 @@ nbtk_entry_init (NbtkEntry *entry)
 
   clutter_actor_set_parent (priv->entry, CLUTTER_ACTOR (entry));
   clutter_actor_set_reactive ((ClutterActor *) entry, TRUE);
+
+  /* set cursor hidden until we receive focus */
+  clutter_text_set_cursor_visible ((ClutterText *) priv->entry, FALSE);
 }
 
 /**
