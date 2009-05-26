@@ -621,6 +621,10 @@ nbtk_table_style_changed (NbtkWidget *self)
   NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
   GSList *c;
 
+  /* Skip retrieving style information until we are parented */
+  if (!clutter_actor_get_parent ((ClutterActor*) self))
+    return;
+
   NBTK_WIDGET_CLASS (nbtk_table_parent_class)->style_changed (self);
 
   for (c = priv->children; c; c = c->next)

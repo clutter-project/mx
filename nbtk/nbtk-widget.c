@@ -568,6 +568,11 @@ nbtk_widget_style_changed (NbtkWidget *self)
   if (!priv->is_stylable)
     return;
 
+
+  /* Skip retrieving style information until we are parented */
+  if (!clutter_actor_get_parent ((ClutterActor *) self))
+    return;
+
   /* cache these values for use in the paint function */
   nbtk_stylable_get (NBTK_STYLABLE (self),
                     "background-color", &color,
