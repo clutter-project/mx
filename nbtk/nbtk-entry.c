@@ -380,35 +380,6 @@ static void
 nbtk_entry_focus_in (ClutterActor *actor)
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
-
-  clutter_actor_grab_key_focus (priv->entry);
-}
-
-static void
-clutter_text_focus_out_cb (ClutterActor *actor,
-                           NbtkEntry    *entry)
-{
-  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (entry);
-  ClutterText *text = CLUTTER_TEXT (priv->entry);
-
-  /* add a hint if the entry is empty */
-  if (priv->hint && !strcmp (clutter_text_get_text (text), ""))
-    {
-      clutter_text_set_text (text, priv->hint);
-      nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (entry), "indeterminate");
-    }
-  else
-    {
-      nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (entry), NULL);
-    }
-  clutter_text_set_cursor_visible (text, FALSE);
-}
-
-static void
-clutter_text_focus_in_cb (ClutterActor *actor,
-                          NbtkEntry    *entry)
-{
-  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (entry);
   ClutterText *text = CLUTTER_TEXT (priv->entry);
 
   /* remove the hint if visible */
@@ -417,8 +388,35 @@ clutter_text_focus_in_cb (ClutterActor *actor,
     {
       clutter_text_set_text (text, "");
     }
-  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (entry), "focus");
+  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (actor), "focus");
   clutter_text_set_cursor_visible (text, TRUE);
+}
+
+static void
+nbtk_entry_focus_out (ClutterActor *actor)
+{
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
+  ClutterText *text = CLUTTER_TEXT (priv->entry);
+
+  /* add a hint if the entry is empty */
+  if (priv->hint && !strcmp (clutter_text_get_text (text), ""))
+    {
+      clutter_text_set_text (text, priv->hint);
+      nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (actor), "indeterminate");
+    }
+  else
+    {
+      nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (actor), NULL);
+    }
+  clutter_text_set_cursor_visible (text, FALSE);
+}
+
+static void
+clutter_text_focus_in_cb (ClutterActor *actor,
+                          ClutterActor *entry)
+{
+  /* override the clutter text focus handling */
+  clutter_actor_grab_key_focus (entry);
 }
 
 static void
@@ -456,6 +454,63 @@ nbtk_entry_pick (ClutterActor *actor,
     clutter_actor_paint (priv->secondary_icon);
 }
 
+static gboolean
+nbtk_entry_key_press_event (ClutterActor    *actor,
+                            ClutterKeyEvent *event)
+{
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
+
+  clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
+
+  return TRUE;
+}
+
+static gboolean
+nbtk_entry_key_release_event (ClutterActor    *actor,
+                              ClutterKeyEvent *event)
+{
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
+
+  clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
+
+  return TRUE;
+}
+
+static gboolean
+nbtk_entry_button_press_event (ClutterActor       *actor,
+                               ClutterButtonEvent *event)
+{
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
+
+  clutter_actor_grab_key_focus (actor);
+
+  clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
+
+  return TRUE;
+}
+
+static gboolean
+nbtk_entry_button_release_event (ClutterActor       *actor,
+                                 ClutterButtonEvent *event)
+{
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
+
+  clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
+
+  return TRUE;
+}
+
+static gboolean
+nbtk_entry_motion_event (ClutterActor       *actor,
+                         ClutterMotionEvent *event)
+{
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
+
+  clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
+
+  return TRUE;
+}
+
 static void
 nbtk_entry_class_init (NbtkEntryClass *klass)
 {
@@ -476,8 +531,16 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
   actor_class->get_preferred_height = nbtk_entry_get_preferred_height;
   actor_class->allocate = nbtk_entry_allocate;
   actor_class->focus_in = nbtk_entry_focus_in;
+  actor_class->focus_out = nbtk_entry_focus_out;
   actor_class->paint = nbtk_entry_paint;
   actor_class->pick = nbtk_entry_pick;
+
+  actor_class->key_press_event = nbtk_entry_key_press_event;
+  actor_class->key_release_event = nbtk_entry_key_release_event;
+
+  actor_class->button_press_event = nbtk_entry_button_press_event;
+  actor_class->button_release_event = nbtk_entry_button_release_event;
+  actor_class->motion_event = nbtk_entry_motion_event;
 
   widget_class->style_changed = nbtk_entry_style_changed;
 
@@ -533,15 +596,10 @@ nbtk_entry_init (NbtkEntry *entry)
 
   priv->entry = g_object_new (CLUTTER_TYPE_TEXT,
                               "line-alignment", PANGO_ALIGN_LEFT,
-                              "activatable", TRUE,
                               "editable", TRUE,
-                              "reactive", TRUE,
                               "cursor-color", &cursor,
                               "single-line-mode", TRUE,
                               NULL);
-
-  g_signal_connect (priv->entry, "focus-out",
-                    G_CALLBACK (clutter_text_focus_out_cb), entry);
   g_signal_connect (priv->entry, "focus-in",
                     G_CALLBACK (clutter_text_focus_in_cb), entry);
 
