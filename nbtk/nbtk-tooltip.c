@@ -360,7 +360,44 @@ nbtk_tooltip_paint (ClutterActor *self)
     clutter_actor_paint (arrow_image);
 
   clutter_actor_paint (priv->label);
+}
 
+static void
+nbtk_tooltip_map (ClutterActor *self)
+{
+  NbtkTooltipPrivate *priv = NBTK_TOOLTIP (self)->priv;
+  ClutterActor *border_image, *arrow_image;
+
+  CLUTTER_ACTOR_CLASS (nbtk_tooltip_parent_class)->map (self);
+
+  border_image = nbtk_widget_get_border_image (NBTK_WIDGET (self));
+  if (border_image)
+    clutter_actor_map (border_image);
+
+  arrow_image = nbtk_widget_get_background_image (NBTK_WIDGET (self));
+  if (arrow_image)
+    clutter_actor_map (arrow_image);
+
+  clutter_actor_map (priv->label);
+}
+
+static void
+nbtk_tooltip_unmap (ClutterActor *self)
+{
+  NbtkTooltipPrivate *priv = NBTK_TOOLTIP (self)->priv;
+  ClutterActor *border_image, *arrow_image;
+
+  CLUTTER_ACTOR_CLASS (nbtk_tooltip_parent_class)->unmap (self);
+
+  border_image = nbtk_widget_get_border_image (NBTK_WIDGET (self));
+  if (border_image)
+    clutter_actor_unmap (border_image);
+
+  arrow_image = nbtk_widget_get_background_image (NBTK_WIDGET (self));
+  if (arrow_image)
+    clutter_actor_unmap (arrow_image);
+
+  clutter_actor_unmap (priv->label);
 }
 
 static void
@@ -380,6 +417,8 @@ nbtk_tooltip_class_init (NbtkTooltipClass *klass)
   actor_class->get_preferred_height = nbtk_tooltip_get_preferred_height;
   actor_class->allocate = nbtk_tooltip_allocate;
   actor_class->paint = nbtk_tooltip_paint;
+  actor_class->map = nbtk_tooltip_map;
+  actor_class->unmap = nbtk_tooltip_unmap;
 
   widget_class->style_changed = nbtk_tooltip_style_changed;
 
@@ -540,8 +579,8 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
   ClutterActor *stage;
   ClutterActor *widget = CLUTTER_ACTOR (tooltip->priv->widget);
   ClutterActor *self = CLUTTER_ACTOR (tooltip);
-  gint widget_x, widget_y, self_x, self_y;
-  guint widget_w, widget_h;
+  gfloat widget_x, widget_y, self_x, self_y;
+  gfloat widget_w, widget_h;
   ClutterUnit self_w, parent_w;
   ClutterAnimation *animation;
 
@@ -569,9 +608,8 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
   if (G_UNLIKELY (parent != stage))
     {
       if (parent)
-        {
-          g_warning ("NbtkTooltip must be parented directly on the stage");
-        }
+        g_warning ("NbtkTooltip must be parented directly on the stage");
+
       clutter_actor_reparent (self, stage);
       parent = stage;
     }
@@ -589,21 +627,21 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
   clutter_actor_get_preferred_width (self, -1, NULL, &self_w);
 
   /* attempt to place the tooltip */
-  self_x = widget_x + (widget_w / 2) - CLUTTER_UNITS_TO_INT (self_w / 2);
-  self_y = widget_y + widget_h;
+  self_x = (int) (widget_x + (widget_w / 2) - (self_w / 2));
+  self_y = (int) (widget_y + widget_h);
 
   /* make sure the tooltip is not off screen at all */
   clutter_actor_get_preferred_width (parent, -1, NULL, &parent_w);
-  if (self_w > CLUTTER_UNITS_TO_INT (parent_w))
+  if (self_w > parent_w)
     {
       self_x = 0;
-      clutter_actor_set_widthu (CLUTTER_ACTOR (self), parent_w);
+      clutter_actor_set_width (CLUTTER_ACTOR (self), parent_w);
     }
   else if (self_x < 0)
     {
       self_x = 0;
     }
-  else if (self_x + self_w > CLUTTER_UNITS_TO_INT (parent_w))
+  else if (self_x + self_w > parent_w)
     {
       self_x = CLUTTER_UNITS_TO_INT (parent_w) - self_w;
     }
@@ -611,11 +649,7 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
   /* calculate the arrow offset */
   priv->arrow_offset = widget_x + widget_w / 2 - self_x;
 
-  clutter_actor_set_position (self,
-                              self_x,
-                              self_y);
-
-
+  clutter_actor_set_position (self, self_x, self_y);
 
   /* finally show the tooltip... */
   CLUTTER_ACTOR_CLASS (nbtk_tooltip_parent_class)->show (self);

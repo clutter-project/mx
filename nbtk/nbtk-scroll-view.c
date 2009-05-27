@@ -323,11 +323,11 @@ nbtk_scroll_view_allocate (ClutterActor          *actor,
   if (priv->child)
     {
       clutter_actor_allocate (priv->child, &child_box, absolute_origin_changed);
-      clutter_actor_set_clipu (priv->child,
-                               child_box.x1,
-                               child_box.y1,
-                               child_box.x2 - child_box.x1,
-                               child_box.y2 - child_box.y1);
+      clutter_actor_set_clip (priv->child,
+                              child_box.x1,
+                              child_box.y1,
+                              child_box.x2 - child_box.x1,
+                              child_box.y2 - child_box.y1);
     }
 
 }
@@ -585,6 +585,23 @@ nbtk_scroll_view_remove (ClutterContainer *container,
 }
 
 static void
+nbtk_scroll_view_foreach_with_internals (ClutterContainer *container,
+                                         ClutterCallback   callback,
+                                         gpointer          user_data)
+{
+  NbtkScrollViewPrivate *priv = NBTK_SCROLL_VIEW (container)->priv;
+
+  if (priv->child != NULL)
+    callback (priv->child, user_data);
+
+  if (priv->hscroll != NULL)
+    callback (priv->hscroll, user_data);
+
+  if (priv->vscroll != NULL)
+    callback (priv->vscroll, user_data);
+}
+
+static void
 clutter_container_iface_init (ClutterContainerIface *iface)
 {
   /* store a pointer to the NbtkBin implementation of
@@ -595,6 +612,7 @@ clutter_container_iface_init (ClutterContainerIface *iface)
 
   iface->add = nbtk_scroll_view_add;
   iface->remove = nbtk_scroll_view_remove;
+  iface->foreach_with_internals = nbtk_scroll_view_foreach_with_internals;
 }
 
 NbtkWidget *

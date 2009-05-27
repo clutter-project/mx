@@ -487,11 +487,11 @@ scrollable_get_adjustments (NbtkScrollable *scrollable,
           NbtkAdjustment *adjustment;
           gdouble width, stage_width, increment;
 
-          width = CLUTTER_UNITS_TO_FLOAT (clutter_actor_get_widthu (actor));
-          stage_width = CLUTTER_UNITS_TO_FLOAT (clutter_actor_get_widthu (stage));
+          width = clutter_actor_get_width (actor);
+          stage_width = clutter_actor_get_width (stage);
           increment = MAX (1.0, MIN (stage_width, width));
 
-          adjustment = nbtk_adjustment_new (CLUTTER_UNITS_TO_FLOAT (priv->x),
+          adjustment = nbtk_adjustment_new (priv->x,
                                             0,
                                             width,
                                             1.0,
@@ -515,11 +515,11 @@ scrollable_get_adjustments (NbtkScrollable *scrollable,
           NbtkAdjustment *adjustment;
           gdouble height, stage_height, increment;
 
-          height = CLUTTER_UNITS_TO_FLOAT (clutter_actor_get_heightu (actor));
-          stage_height = CLUTTER_UNITS_TO_FLOAT (clutter_actor_get_heightu (stage));
+          height = clutter_actor_get_height (actor);
+          stage_height = clutter_actor_get_height (stage);
           increment = MAX (1.0, MIN (stage_height, height));
 
-          adjustment = nbtk_adjustment_new (CLUTTER_UNITS_TO_FLOAT (priv->y),
+          adjustment = nbtk_adjustment_new (priv->y,
                                             0,
                                             height,
                                             1.0,
@@ -547,8 +547,8 @@ clip_notify_cb (ClutterActor *actor,
                 GParamSpec   *pspec,
                 NbtkViewport *self)
 {
-  gint width, height;
   NbtkViewportPrivate *priv = self->priv;
+  gfloat width, height;
 
   if (!priv->sync_adjustments)
     return;
@@ -556,19 +556,19 @@ clip_notify_cb (ClutterActor *actor,
   if (!clutter_actor_has_clip (actor))
     {
       if (priv->hadjustment)
-        g_object_set (priv->hadjustment, "page-size", (gdouble)1.0, NULL);
+        g_object_set (priv->hadjustment, "page-size", 1.0f, NULL);
       if (priv->vadjustment)
-        g_object_set (priv->vadjustment, "page-size", (gdouble)1.0, NULL);
+        g_object_set (priv->vadjustment, "page-size", 1.0f, NULL);
       return;
     }
 
   clutter_actor_get_clip (actor, NULL, NULL, &width, &height);
 
   if (priv->hadjustment)
-    g_object_set (priv->hadjustment, "page-size", (gdouble)width, NULL);
+    g_object_set (priv->hadjustment, "page-size", width, NULL);
 
   if (priv->vadjustment)
-    g_object_set (priv->vadjustment, "page-size", (gdouble)height, NULL);
+    g_object_set (priv->vadjustment, "page-size", height, NULL);
 }
 
 static void

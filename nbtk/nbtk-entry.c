@@ -456,6 +456,38 @@ nbtk_entry_pick (ClutterActor *actor,
 }
 
 static void
+nbtk_entry_map (ClutterActor *actor)
+{
+  NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
+
+  CLUTTER_ACTOR_CLASS (nbtk_entry_parent_class)->map (actor);
+
+  clutter_actor_map (priv->entry);
+
+  if (priv->primary_icon)
+    clutter_actor_map (priv->primary_icon);
+
+  if (priv->secondary_icon)
+    clutter_actor_map (priv->secondary_icon);
+}
+
+static void
+nbtk_entry_unmap (ClutterActor *actor)
+{
+  NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
+
+  CLUTTER_ACTOR_CLASS (nbtk_entry_parent_class)->unmap (actor);
+
+  clutter_actor_unmap (priv->entry);
+
+  if (priv->primary_icon)
+    clutter_actor_unmap (priv->primary_icon);
+
+  if (priv->secondary_icon)
+    clutter_actor_unmap (priv->secondary_icon);
+}
+
+static void
 nbtk_entry_class_init (NbtkEntryClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -467,7 +499,6 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
 
   gobject_class->set_property = nbtk_entry_set_property;
   gobject_class->get_property = nbtk_entry_get_property;
-
   gobject_class->finalize = nbtk_entry_finalize;
   gobject_class->dispose = nbtk_entry_dispose;
 
@@ -477,6 +508,8 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
   actor_class->focus_in = nbtk_entry_focus_in;
   actor_class->paint = nbtk_entry_paint;
   actor_class->pick = nbtk_entry_pick;
+  actor_class->map = nbtk_entry_map;
+  actor_class->unmap = nbtk_entry_unmap;
 
   widget_class->style_changed = nbtk_entry_style_changed;
 

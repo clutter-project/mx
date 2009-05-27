@@ -94,6 +94,28 @@ nbtk_fade_button_allocate (ClutterActor          *self,
 }
 
 static void
+nbtk_fade_button_map (ClutterActor *actor)
+{
+  NbtkFadeButtonPrivate *priv = NBTK_FADE_BUTTON (actor)->priv;
+
+  CLUTTER_ACTOR_CLASS (nbtk_fade_button_parent_class)->map (actor);
+
+  if (priv->old_bg)
+    clutter_actor_map (priv->old_bg);
+}
+
+static void
+nbtk_fade_button_unmap (ClutterActor *actor)
+{
+  NbtkFadeButtonPrivate *priv = NBTK_FADE_BUTTON (actor)->priv;
+
+  CLUTTER_ACTOR_CLASS (nbtk_fade_button_parent_class)->unmap (actor);
+
+  if (priv->old_bg)
+    clutter_actor_unmap (priv->old_bg);
+}
+
+static void
 nbtk_fade_button_class_init (NbtkFadeButtonClass *klass)
 {
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
@@ -103,6 +125,8 @@ nbtk_fade_button_class_init (NbtkFadeButtonClass *klass)
   g_type_class_add_private (klass, sizeof (NbtkFadeButtonPrivate));
 
   actor_class->allocate = nbtk_fade_button_allocate;
+  actor_class->map = nbtk_fade_button_map;
+  actor_class->unmap = nbtk_fade_button_unmap;
 
   widget_class->draw_background = nbtk_fade_button_draw_background;
   button_class->transition = nbtk_button_fade_transition;

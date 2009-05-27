@@ -31,7 +31,7 @@ main (int argc, char *argv[])
   stage = clutter_stage_get_default ();
   clutter_actor_set_size (stage, 400, 200);
 
-  button = nbtk_scroll_button_new ();
+  button = NBTK_WIDGET (nbtk_scroll_button_new ());
   clutter_actor_set_position (CLUTTER_ACTOR (button), 50, 50);
   clutter_actor_set_size (CLUTTER_ACTOR (button), 24, 24);
   g_signal_connect (button, "clicked", 

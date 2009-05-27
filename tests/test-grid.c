@@ -98,6 +98,7 @@ on_button_press (ClutterActor *stage, ClutterButtonEvent *event,
     {
       ClutterActor *actor
 	= clutter_stage_get_actor_at_pos (CLUTTER_STAGE (stage),
+                                          CLUTTER_PICK_ALL,
 					  event->x, event->y);
 
       for (corner = 0; corner < 4; corner++)
@@ -238,12 +239,12 @@ main (int argc, char **argv)
 
   clutter_actor_get_preferred_size (data.layout, NULL, NULL,
 				    &layout_width, &layout_height);
-  clutter_actor_set_positionu (data.rect,
-			       clutter_actor_get_widthu (data.stage) / 2
-			       - layout_width / 2,
-			       clutter_actor_get_heightu (data.stage) / 2
-			       - layout_height / 2);
-  clutter_actor_set_sizeu (data.rect, layout_width, layout_height);
+  clutter_actor_set_position (data.rect,
+			      clutter_actor_get_width (data.stage) / 2
+			      - layout_width / 2,
+			      clutter_actor_get_height (data.stage) / 2
+			      - layout_height / 2);
+  clutter_actor_set_size (data.rect, layout_width, layout_height);
 
 
   g_timeout_add (150, adder_timeout, data.layout);

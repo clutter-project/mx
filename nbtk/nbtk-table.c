@@ -437,7 +437,7 @@ nbtk_table_homogeneous_allocate (ClutterActor          *self,
           gint new_height;
           gint center_offset;
 
-          clutter_actor_get_sizeu (child, &w, &h);
+          clutter_actor_get_size (child, &w, &h);
 
           new_height = ((gdouble) h / w)  * ((gdouble) childbox.x2 - childbox.x1);
           new_width = ((gdouble) w / h)  * ((gdouble) childbox.y2 - childbox.y1);
@@ -851,15 +851,15 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
 
       if (keep_ratio)
         {
-          guint w, h;
-          guint new_width;
-          guint new_height;
+          gfloat w, h;
+          gfloat new_width;
+          gfloat new_height;
           gint center_offset;
 
           clutter_actor_get_size (child, &w, &h);
 
-          new_height = (h / (gdouble) w)  * (gdouble) col_width;
-          new_width = (w / (gdouble) h)  * (gdouble) row_height;
+          new_height = (h / w)  * (gfloat) col_width;
+          new_width = (w / h)  * (gfloat) row_height;
 
 
           if (new_height > row_height)

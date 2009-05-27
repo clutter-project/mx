@@ -650,6 +650,28 @@ nbtk_button_paint (ClutterActor *self)
 }
 
 static void
+nbtk_button_map (ClutterActor *self)
+{
+  NbtkButtonPrivate *priv = NBTK_BUTTON (self)->priv;
+
+  CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->map (self);
+
+  if (priv->icon)
+    clutter_actor_map (priv->icon);
+}
+
+static void
+nbtk_button_unmap (ClutterActor *self)
+{
+  NbtkButtonPrivate *priv = NBTK_BUTTON (self)->priv;
+
+  CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->unmap (self);
+
+  if (priv->icon)
+    clutter_actor_unmap (priv->icon);
+}
+
+static void
 nbtk_button_class_init (NbtkButtonClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -676,6 +698,8 @@ nbtk_button_class_init (NbtkButtonClass *klass)
   actor_class->get_preferred_width = nbtk_button_get_preferred_width;
 
   actor_class->paint = nbtk_button_paint;
+  actor_class->map = nbtk_button_map;
+  actor_class->unmap = nbtk_button_unmap;
 
   nbtk_widget_class->style_changed = nbtk_button_style_changed;
 

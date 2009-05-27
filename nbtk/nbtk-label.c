@@ -226,6 +226,26 @@ nbtk_label_paint (ClutterActor *actor)
 }
 
 static void
+nbtk_label_map (ClutterActor *actor)
+{
+  NbtkLabelPrivate *priv = NBTK_LABEL (actor)->priv;
+
+  CLUTTER_ACTOR_CLASS (nbtk_label_parent_class)->map (actor);
+
+  clutter_actor_map (priv->label);
+}
+
+static void
+nbtk_label_unmap (ClutterActor *actor)
+{
+  NbtkLabelPrivate *priv = NBTK_LABEL (actor)->priv;
+
+  CLUTTER_ACTOR_CLASS (nbtk_label_parent_class)->unmap (actor);
+
+  clutter_actor_unmap (priv->label);
+}
+
+static void
 nbtk_label_class_init (NbtkLabelClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -242,6 +262,8 @@ nbtk_label_class_init (NbtkLabelClass *klass)
   actor_class->allocate = nbtk_label_allocate;
   actor_class->get_preferred_width = nbtk_label_get_preferred_width;
   actor_class->get_preferred_height = nbtk_label_get_preferred_height;
+  actor_class->map = nbtk_label_map;
+  actor_class->unmap = nbtk_label_unmap;
 
   widget_class->style_changed = nbtk_label_style_changed;
 

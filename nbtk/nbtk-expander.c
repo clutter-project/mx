@@ -444,6 +444,28 @@ nbtk_expander_paint (ClutterActor *actor)
 }
 
 static void
+nbtk_expander_map (ClutterActor *actor)
+{
+  NbtkExpanderPrivate *priv = NBTK_EXPANDER (actor)->priv;
+
+  CLUTTER_ACTOR_CLASS (nbtk_expander_parent_class)->map (actor);
+
+  clutter_actor_map (priv->label);
+  clutter_actor_map (priv->arrow);
+}
+
+static void
+nbtk_expander_unmap (ClutterActor *actor)
+{
+  NbtkExpanderPrivate *priv = NBTK_EXPANDER (actor)->priv;
+
+  CLUTTER_ACTOR_CLASS (nbtk_expander_parent_class)->unmap (actor);
+
+  clutter_actor_unmap (priv->label);
+  clutter_actor_unmap (priv->arrow);
+}
+
+static void
 nbtk_expander_style_changed (NbtkWidget *widget)
 {
   NbtkExpander *expander = NBTK_EXPANDER (widget);
@@ -515,8 +537,6 @@ nbtk_expander_leave (ClutterActor         *actor,
   return FALSE;
 }
 
-
-
 static void
 nbtk_expander_class_init (NbtkExpanderClass *klass)
 {
@@ -539,6 +559,8 @@ nbtk_expander_class_init (NbtkExpanderClass *klass)
   actor_class->paint = nbtk_expander_paint;
   actor_class->enter_event = nbtk_expander_enter;
   actor_class->leave_event = nbtk_expander_leave;
+  actor_class->map = nbtk_expander_map;
+  actor_class->unmap = nbtk_expander_unmap;
 
   widget_class->style_changed = nbtk_expander_style_changed;
 
