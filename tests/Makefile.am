@@ -1,7 +1,9 @@
 NULL =
 
-AM_CFLAGS = $(NBTK_CFLAGS) $(NBTK_MAINTAINER_CFLAGS)
-LDADD = $(top_builddir)/nbtk/libnbtk-$(NBTK_API_VERSION).la
+AM_CFLAGS = $(NBTK_CFLAGS) $(GTK_CFLAGS)  $(NBTK_MAINTAINER_CFLAGS)
+LDADD = $(top_builddir)/nbtk/libnbtk-$(NBTK_API_VERSION).la \
+        $(top_builddir)/nbtk/libnbtk-gtk-$(NBTK_API_VERSION).la
+
 
 INCLUDES = \
 	-I$(top_srcdir) \
@@ -13,6 +15,7 @@ noinst_PROGRAMS = 		\
 	test-entry 		\
 	test-expander 		\
 	test-grid \
+	test-gtk		\
 	test-script  		\
 	test-styles  		\
 	test-table   		\
@@ -37,6 +40,7 @@ test_label_SOURCES = test-label.c
 test_entry_SOURCES = test-entry.c
 test_expander_SOURCES = test-expander.c
 test_grid_SOURCES = test-grid.c
+test_gtk_SOURCES = test-gtk.c
 test_icon_view_SOURCES = test-icon-view.c
 
 test_scroll_bar_SOURCES = test-scroll-bar.c

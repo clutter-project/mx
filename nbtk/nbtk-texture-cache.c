@@ -20,6 +20,14 @@
  *
  */
 
+/**
+ * SECTION:nbtk-texture-cache
+ * @short_description: A per-process store to cache textures
+ *
+ * #NbtkTextureCache allows an application to re-use an previously loaded
+ * textures.
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -130,6 +138,14 @@ nbtk_texture_cache_init (NbtkTextureCache *self)
 
 }
 
+/**
+ * nbtk_texture_cache_get_default:
+ *
+ * Returns the default texture cache. This is owned by Nbtk and should not be
+ * unreferenced or freed.
+ *
+ * Returns: a NbtkTextureCache
+ */
 NbtkTextureCache*
 nbtk_texture_cache_get_default (void)
 {
@@ -154,6 +170,14 @@ on_texure_finalized (gpointer data,
 }
 #endif
 
+/**
+ * nbtk_texture_cache_get_size:
+ * @self: A #NbtkTextureCache
+ *
+ * Returns the number of items in the texture cache
+ *
+ * Returns: the current size of the cache
+ */
 gint
 nbtk_texture_cache_get_size (NbtkTextureCache *self)
 {
@@ -183,6 +207,19 @@ add_texture_to_cache (NbtkTextureCache *self,
 }
 
 /* NOTE: you should unref the returned texture when not needed */
+/**
+ * nbtk_texture_cache_get_texture:
+ * @self: A #NbtkTextureCache
+ * @path: A path to a image file
+ * @want_clone: ignored
+ *
+ * Create a new ClutterTexture with the specified image. Adds the image to the
+ * cache if the image had not been previously loaded. Subsequent calls with
+ * the same image path will return a new ClutterTexture with the previously
+ * loaded image.
+ *
+ * Returns: a newly created ClutterTexture
+ */
 ClutterTexture*
 nbtk_texture_cache_get_texture (NbtkTextureCache *self,
                                 const gchar      *path,
@@ -208,9 +245,11 @@ nbtk_texture_cache_get_texture (NbtkTextureCache *self,
     {
       GError *err = NULL;
       res = cogl_texture_new_from_file (path, -1,
-                                        COGL_TEXTURE_AUTO_MIPMAP,
+                                        COGL_TEXTURE_NONE,
                                         COGL_PIXEL_FORMAT_ANY,
                                         &err);
+      cogl_texture_set_filters (res, COGL_TEXTURE_FILTER_LINEAR,
+                                COGL_TEXTURE_FILTER_LINEAR);
 
       /* XXX: pass up GError */
       if (!res)
@@ -229,9 +268,6 @@ nbtk_texture_cache_get_texture (NbtkTextureCache *self,
 
   texture = clutter_texture_new ();
   clutter_texture_set_cogl_texture ((ClutterTexture*) texture, res);
-  clutter_texture_set_filter_quality ((ClutterTexture*) texture,
-                                      CLUTTER_TEXTURE_QUALITY_HIGH);
-
 
   return (ClutterTexture*) texture;
 }

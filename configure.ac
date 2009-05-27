@@ -1,5 +1,5 @@
 m4_define([nbtk_major], [0])
-m4_define([nbtk_minor], [7])
+m4_define([nbtk_minor], [9])
 m4_define([nbtk_micro], [0])
 
 m4_define([nbtk_version], [nbtk_major.nbtk_minor.nbtk_micro])
@@ -16,6 +16,12 @@ AC_CONFIG_MACRO_DIR([build/autotools])
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 
 AC_CONFIG_HEADERS([config.h])
+
+GETTEXT_PACKAGE=nbtk
+AC_SUBST(GETTEXT_PACKAGE)
+AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Gettext domain name])
+AM_GLIB_GNU_GETTEXT
+
 
 AM_MAINTAINER_MODE
 
@@ -110,6 +116,7 @@ dnl ***************************************************************************
 AM_PROG_LIBTOOL
 
 PKG_CHECK_MODULES(NBTK, [clutter-0.9 libccss-1 gio-2.0])
+PKG_CHECK_MODULES(GTK, [gtk+-2.0])
 
 # check for gtk-doc
 GTK_DOC_CHECK(1.9)
@@ -123,9 +130,12 @@ build/autotools/Makefile
 build/autotools/shave
 build/autotools/shave-libtool
 nbtk.pc
+nbtk-gtk.pc
 docs/Makefile
 docs/reference/Makefile
 docs/reference/libnbtk/Makefile
+docs/reference/libnbtk/version.xml
+examples/Makefile
 nbtk/Makefile
 nbtk/nbtk-version.h
 tests/Makefile

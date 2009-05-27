@@ -42,6 +42,12 @@ typedef struct _NbtkTextureFrame                NbtkTextureFrame;
 typedef struct _NbtkTextureFramePrivate         NbtkTextureFramePrivate;
 typedef struct _NbtkTextureFrameClass           NbtkTextureFrameClass;
 
+/**
+ * NbtkTextureFrame:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _NbtkTextureFrame
 {
   /*< private >*/

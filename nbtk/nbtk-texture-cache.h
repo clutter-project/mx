@@ -54,6 +54,12 @@ G_BEGIN_DECLS
   (G_TYPE_INSTANCE_GET_CLASS ((obj), \
   NBTK_TYPE_TEXTURE_CACHE, NbtkTextureCacheClass))
 
+/**
+ * NbtkTextureCache:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 typedef struct {
     /*< private >*/
     GObject parent;
@@ -72,7 +78,6 @@ typedef struct {
 
 GType nbtk_texture_cache_get_type (void);
 
-NbtkTextureCache* nbtk_texture_cache_new         (void);
 NbtkTextureCache* nbtk_texture_cache_get_default (void);
 ClutterTexture*   nbtk_texture_cache_get_texture (NbtkTextureCache *self,
                                                   const gchar *path,

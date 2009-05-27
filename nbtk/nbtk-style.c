@@ -175,12 +175,20 @@ nbtk_style_load_from_file (NbtkStyle    *style,
     priv->image_paths = g_list_append (priv->image_paths, path);
 
   /* now load the stylesheet */
-  grammar = ccss_grammar_create_css ();
-  ccss_grammar_add_functions (grammar, peek_css_functions ());
-  priv->stylesheet = ccss_grammar_create_stylesheet_from_file (grammar,
-                                                               filename,
-                                                               NULL);
-  ccss_grammar_destroy (grammar);
+  if (!priv->stylesheet)
+    {
+      grammar = ccss_grammar_create_css ();
+      ccss_grammar_add_functions (grammar, peek_css_functions ());
+      priv->stylesheet = ccss_grammar_create_stylesheet_from_file (grammar,
+                                                                   filename,
+                                                                   path);
+      ccss_grammar_destroy (grammar);
+    }
+  else
+    {
+      ccss_stylesheet_add_from_file (priv->stylesheet, filename, CCSS_STYLESHEET_AUTHOR, path);
+    }
+
   g_signal_emit (style, style_signals[CHANGED], 0, NULL);
 
   /* add a monitor, if we don't already have this file */
@@ -300,7 +308,6 @@ ccss_url (GSList const  *args,
 {
   const gchar *given_path, *filename;
   gchar *test_path;
-  GList *l;
 
   g_return_val_if_fail (args, NULL);
 
@@ -320,21 +327,19 @@ ccss_url (GSList const  *args,
     return test_path;
   g_free (test_path);
 
-  /* we can only check the default style right now due no user-data in this
-   * callback
-   */
-  if (default_style)
-  {
-    for (l = default_style->priv->image_paths; l; l = l->next)
-      {
-        test_path = g_build_filename ((gchar *)l->data, filename, NULL);
+  if (user_data)
+    {
+      test_path = g_build_filename ((gchar *) user_data, filename, NULL);
 
-        if (g_file_test (test_path, G_FILE_TEST_IS_REGULAR))
-          return test_path;
+      if (g_file_test (test_path, G_FILE_TEST_IS_REGULAR))
+        return test_path;
 
-        g_free (test_path);
-      }
-  }
+      g_free (test_path);
+    }
+  else
+    {
+      g_warning ("No path available css url resolver!");
+    }
 
   /* couldn't find the image anywhere, so just return the filename */
   return strdup (given_path);
@@ -480,6 +485,121 @@ peek_node_class (void)
   return &_node_class;
 }
 
+static void
+nbtk_style_fetch_ccss_property (ccss_style_t  *ccss_style,
+                                GParamSpec    *pspec,
+                                GValue        *value)
+{
+  gboolean value_set = FALSE;
+
+  g_value_init (value, G_PARAM_SPEC_VALUE_TYPE (pspec));
+
+  if (G_PARAM_SPEC_VALUE_TYPE (pspec))
+    {
+      double number;
+
+      if (G_IS_PARAM_SPEC_INT (pspec))
+        {
+          if (ccss_style_get_double (ccss_style, pspec->name, &number))
+            {
+              g_value_set_int (value, (gint) number);
+              value_set = TRUE;
+            }
+        }
+      else if (G_IS_PARAM_SPEC_UINT (pspec))
+        {
+          if (ccss_style_get_double (ccss_style, pspec->name, &number))
+            {
+              g_value_set_uint (value, (guint) number);
+              value_set = TRUE;
+            }
+        }
+      else if (G_PARAM_SPEC_VALUE_TYPE (pspec) == NBTK_TYPE_BORDER_IMAGE &&
+               !g_strcmp0 ("border-image", pspec->name))
+        {
+              ccss_border_image_t const *border_image;
+
+          if (ccss_style_get_property (ccss_style,
+                                        "border-image",
+                                        (ccss_property_base_t const **) &border_image))
+            {
+              if (border_image &&
+                  border_image->base.state == CCSS_PROPERTY_STATE_SET)
+                {
+                  g_value_set_boxed (value, border_image);
+                  value_set = TRUE;
+                }
+            }
+        }
+      else if (NBTK_TYPE_PADDING == G_PARAM_SPEC_VALUE_TYPE (pspec) &&
+                0 == g_strcmp0 ("padding", pspec->name))
+        {
+          NbtkPadding padding = { 0, };
+          gboolean padding_set = 0;
+
+          if (ccss_style_get_double (ccss_style, "padding-top", &number))
+            {
+              padding.top = CLUTTER_UNITS_FROM_INT ((int) number);
+              padding_set = TRUE;
+            }
+
+          if (ccss_style_get_double (ccss_style, "padding-right", &number))
+            {
+              padding.right = CLUTTER_UNITS_FROM_INT ((int) number);
+              padding_set = TRUE;
+            }
+
+          if (ccss_style_get_double (ccss_style, "padding-bottom", &number))
+            {
+              padding.bottom = CLUTTER_UNITS_FROM_INT ((int) number);
+              padding_set = TRUE;
+            }
+
+          if (ccss_style_get_double (ccss_style, "padding-left", &number))
+            {
+              padding.left = CLUTTER_UNITS_FROM_INT ((int) number);
+              padding_set = TRUE;
+            }
+
+          if (padding_set)
+            {
+              g_value_set_boxed (value, &padding);
+              value_set = TRUE;
+            }
+        }
+      else
+        {
+          gchar *string = NULL;
+
+          ccss_style_get_string (ccss_style, pspec->name, &string);
+
+          if (string)
+            {
+              if (CLUTTER_IS_PARAM_SPEC_COLOR (pspec))
+                {
+                  ClutterColor color = { 0, };
+
+                  clutter_color_from_string (&color, string);
+                  clutter_value_set_color (value, &color);
+
+                  value_set = TRUE;
+                }
+              else
+                if (G_IS_PARAM_SPEC_STRING (pspec))
+                  {
+                    g_value_set_string (value, string);
+                    value_set = TRUE;
+                  }
+              g_free (string);
+            }
+        }
+    }
+
+  /* no value was found in css, so copy in the default value */
+  if (!value_set)
+    g_param_value_set_default (pspec, value);
+}
+
 /**
  * nbtk_style_get_property:
  * @style: the style data store object
@@ -496,8 +616,7 @@ nbtk_style_get_property (NbtkStyle    *style,
                          GParamSpec   *pspec,
                          GValue       *value)
 {
-  NbtkStylePrivate *priv = style->priv;
-  GValue real_value = { 0, };
+  NbtkStylePrivate *priv;
   gboolean value_set = FALSE;
 
   g_return_if_fail (NBTK_IS_STYLE (style));
@@ -505,7 +624,7 @@ nbtk_style_get_property (NbtkStyle    *style,
   g_return_if_fail (pspec != NULL);
   g_return_if_fail (value != NULL);
 
-  g_value_init (&real_value, G_PARAM_SPEC_VALUE_TYPE (pspec));
+  priv = style->priv;
 
   /* look up the property in the css */
   if (priv->stylesheet)
@@ -523,106 +642,8 @@ nbtk_style_get_property (NbtkStyle    *style,
                                           (ccss_node_t *) ccss_node);
       if (ccss_style)
         {
-          if (G_PARAM_SPEC_VALUE_TYPE (pspec))
-            {
-              double number;
-
-              if (G_IS_PARAM_SPEC_INT (pspec))
-                {
-                  if (ccss_style_get_double (ccss_style, pspec->name, &number))
-                    {
-                      g_value_set_int (&real_value, (gint) number);
-                      value_set = TRUE;
-                    }
-                }
-              else if (G_IS_PARAM_SPEC_UINT (pspec))
-                {
-                  if (ccss_style_get_double (ccss_style, pspec->name, &number))
-                    {
-                      g_value_set_uint (&real_value, (guint) number);
-                      value_set = TRUE;
-                    }
-                }
-              else if (NBTK_TYPE_BORDER_IMAGE == G_PARAM_SPEC_VALUE_TYPE (pspec) &&
-                       0 == g_strcmp0 ("border-image", pspec->name))
-                {
-                      ccss_border_image_t const *border_image;
-
-                  if (ccss_style_get_property (ccss_style,
-                                               "border-image",
-                                               (ccss_property_base_t const **) &border_image))
-                    {
-                      if (border_image &&
-                          border_image->base.state == CCSS_PROPERTY_STATE_SET)
-                        {
-                          g_value_set_boxed (&real_value, border_image);
-                          value_set = TRUE;
-                        }
-                    }
-                }
-              else if (NBTK_TYPE_PADDING == G_PARAM_SPEC_VALUE_TYPE (pspec) &&
-                       0 == g_strcmp0 ("padding", pspec->name))
-                {
-                  NbtkPadding padding = { 0, 0, 0, 0 };
-                  gboolean padding_set = 0;
-
-                  if (ccss_style_get_double (ccss_style, "padding-top", &number))
-                    {
-                      padding.top = CLUTTER_UNITS_FROM_INT ((int) number);
-                      padding_set = TRUE;
-                    }
-
-                  if (ccss_style_get_double (ccss_style, "padding-right", &number))
-                    {
-                      padding.right = CLUTTER_UNITS_FROM_INT ((int) number);
-                      padding_set = TRUE;
-                    }
-
-                  if (ccss_style_get_double (ccss_style, "padding-bottom", &number))
-                    {
-                      padding.bottom = CLUTTER_UNITS_FROM_INT ((int) number);
-                      padding_set = TRUE;
-                    }
-
-                  if (ccss_style_get_double (ccss_style, "padding-left", &number))
-                    {
-                      padding.left = CLUTTER_UNITS_FROM_INT ((int) number);
-                      padding_set = TRUE;
-                    }
-
-                  if (padding_set)
-                    {
-                      g_value_set_boxed (&real_value, &padding);
-                      value_set = TRUE;
-                    }
-                }
-              else
-                {
-                  gchar *string = NULL;
-
-                  ccss_style_get_string (ccss_style, pspec->name, &string);
-
-                  if (string)
-                    {
-                      if (CLUTTER_IS_PARAM_SPEC_COLOR (pspec))
-                        {
-                          ClutterColor color = { 0, };
-
-                          clutter_color_from_string (&color, string);
-                          clutter_value_set_color (&real_value, &color);
-
-                          value_set = TRUE;
-                        }
-                      else
-                        if (G_IS_PARAM_SPEC_STRING (pspec))
-                          {
-                            g_value_set_string (&real_value, string);
-                            value_set = TRUE;
-                          }
-                      g_free (string);
-                    }
-                }
-            }
+          nbtk_style_fetch_ccss_property (ccss_style, pspec, value);
+          value_set = TRUE;
         }
       ccss_style_destroy (ccss_style);
       g_free (ccss_node);
@@ -630,11 +651,128 @@ nbtk_style_get_property (NbtkStyle    *style,
 
   /* no value was found in css, so copy in the default value */
   if (!value_set)
-    g_param_value_set_default (pspec, &real_value);
+    {
+      g_value_init (value, G_PARAM_SPEC_VALUE_TYPE (pspec));
+      g_param_value_set_default (pspec, value);
+    }
+}
 
-  g_value_init (value, G_VALUE_TYPE (&real_value));
-  g_value_copy (&real_value, value);
+/**
+ * nbtk_style_get_valist:
+ * @style: a #NbtkStyle
+ * @stylable: a #NbtkStylable
+ * @first_property_name: name of the first property to get
+ * @va_args: return location for the first property, followed optionally
+ *   by more name/return location pairs, followed by %NULL
+ *
+ * Gets the style properties for @stylable from @style.
+ *
+ * Please refer to nbtk_style_get() for further information.
+ */
+void
+nbtk_style_get_valist (NbtkStyle     *style,
+                       NbtkStylable  *stylable,
+                       const gchar   *first_property_name,
+                       va_list        va_args)
+{
+  NbtkStylePrivate *priv;
+  const gchar *name = first_property_name;
+  gboolean values_set = FALSE;
 
-  g_value_unset (&real_value);
+  g_return_if_fail (NBTK_IS_STYLE (style));
+  g_return_if_fail (NBTK_IS_STYLABLE (stylable));
+  g_return_if_fail (style->priv != NULL);
+
+  priv = style->priv;
+
+  /* look up the property in the css */
+  if (priv->stylesheet)
+    {
+      NbtkStylableIface *iface = NBTK_STYLABLE_GET_IFACE (stylable);
+      ccss_style_t *ccss_style;
+      nbtk_style_node_t *ccss_node;
+
+      ccss_node = g_new0 (nbtk_style_node_t, 1);
+      ccss_node_init ((ccss_node_t*) ccss_node, peek_node_class ());
+      ccss_node->iface = iface;
+      ccss_node->stylable = stylable;
+      ccss_style = ccss_stylesheet_query (priv->stylesheet,
+                                          (ccss_node_t *) ccss_node);
+      if (ccss_style)
+        {
+          while (name)
+            {
+              GValue value = { 0, };
+              gchar *error = NULL;
+              GParamSpec *pspec = nbtk_stylable_find_property (stylable, name);
+              nbtk_style_fetch_ccss_property (ccss_style, pspec, &value);
+              G_VALUE_LCOPY (&value, va_args, 0, &error);
+              if (error)
+                {
+                  g_warning ("%s: %s", G_STRLOC, error);
+                  g_free (error);
+                  g_value_unset (&value);
+                  break;
+                }
+              g_value_unset (&value);
+              name = va_arg (va_args, gchar*);
+            }
+          ccss_style_destroy (ccss_style);
+          values_set = TRUE;
+        }
+      g_free (ccss_node);
+    }
+
+  if (!values_set)
+    {
+      /* Set the remaining properties to their default values
+       * even if broken out of the above loop. */
+      while (name)
+        {
+          GValue value = { 0, };
+          gchar *error = NULL;
+          nbtk_stylable_get_default_value (stylable, name, &value);
+          G_VALUE_LCOPY (&value, va_args, 0, &error);
+          if (error)
+            {
+              g_warning ("%s: %s", G_STRLOC, error);
+              g_free (error);
+              g_value_unset (&value);
+              break;
+            }
+          g_value_unset (&value);
+          name = va_arg (va_args, gchar*);
+        }
+    }
+}
+
+/**
+ * nbtk_style_get:
+ * @style: a #NbtkStyle
+ * @stylable: a #NbtkStylable
+ * @first_property_name: name of the first property to get
+ * @Varargs: return location for the first property, followed optionally
+ *   by more name/return location pairs, followed by %NULL
+ *
+ * Gets the style properties for @stylable from @style.
+ *
+ * In general, a copy is made of the property contents and the caller
+ * is responsible for freeing the memory in the appropriate manner for
+ * the property type.
+ */
+void
+nbtk_style_get (NbtkStyle     *style,
+                NbtkStylable  *stylable,
+                const gchar   *first_property_name,
+                ...)
+{
+  va_list va_args;
+
+  g_return_if_fail (NBTK_IS_STYLE (style));
+  g_return_if_fail (first_property_name != NULL);
+
+  va_start (va_args, first_property_name);
+  nbtk_style_get_valist (style, stylable, first_property_name, va_args);
+  va_end (va_args);
 }
 

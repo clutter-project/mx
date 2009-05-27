@@ -230,7 +230,7 @@ nbtk_table_set_property (GObject       *gobject,
       break;
 
     case PROP_PADDING:
-      nbtk_table_set_padding (table, g_value_get_boxed (value));
+      g_warning ("The 'padding' property of NbtkTable is deprecated. Please set padding using a stylesheet.");
       break;
 
     default:
@@ -263,7 +263,7 @@ nbtk_table_get_property (GObject    *gobject,
       break;
 
     case PROP_PADDING:
-      nbtk_table_get_padding (NBTK_TABLE (gobject), &padding);
+      nbtk_widget_get_padding (NBTK_WIDGET (gobject), &padding);
       g_value_set_boxed (value, &padding);
       break;
 
@@ -324,52 +324,87 @@ nbtk_table_allocate_fill (ClutterActor *child,
                           gboolean x_fill,
                           gboolean y_fill)
 {
-  ClutterUnit width, max_width;
-  max_width = childbox->x2 - childbox->x1;
+  ClutterUnit natural_width, natural_height;
+  ClutterUnit min_width, min_height;
+  ClutterUnit child_width, child_height;
+  ClutterUnit available_width, available_height;
+  ClutterRequestMode request;
+  ClutterActorBox allocation = { 0, };
 
-  if (!x_fill)
+  available_width  = childbox->x2 - childbox->x1;
+  available_height = childbox->y2 - childbox->y1;
+
+  if (available_width < 0)
+    available_width = 0;
+
+  if (available_height < 0)
+    available_height = 0;
+
+  if (x_fill)
     {
-      clutter_actor_get_preferred_width (child, -1, NULL, &width);
-      if (width < max_width)
-        {
-          childbox->x1 += CLAMP_TO_PIXEL((max_width - width) * x_align);
-          childbox->x2 = childbox->x1 + width;
-        }
+      allocation.x1 = childbox->x1;
+      allocation.x2 = (int) (allocation.x1 + available_width);
+    }
+
+  if (y_fill)
+    {
+      allocation.y1 = childbox->y1;
+      allocation.y2 = (int) (allocation.y1 + available_height);
+    }
+
+  /* if we are filling horizontally and vertically then we're done */
+  if (x_fill && y_fill)
+    {
+      *childbox = allocation;
+      return;
+    }
+
+  request = CLUTTER_REQUEST_HEIGHT_FOR_WIDTH;
+  g_object_get (G_OBJECT (child), "request-mode", &request, NULL);
+
+  if (request == CLUTTER_REQUEST_HEIGHT_FOR_WIDTH)
+    {
+      clutter_actor_get_preferred_width (child, available_height,
+                                         &min_width,
+                                         &natural_width);
+
+      child_width = CLAMP (natural_width, min_width, available_width);
+
+      clutter_actor_get_preferred_height (child, child_width,
+                                          &min_height,
+                                          &natural_height);
+
+      child_height = CLAMP (natural_height, min_height, available_height);
     }
   else
     {
-      width = (childbox->x2 - childbox->x1);
+      clutter_actor_get_preferred_height (child, available_width,
+                                          &min_height,
+                                          &natural_height);
+
+      child_height = CLAMP (natural_height, min_height, available_height);
+
+      clutter_actor_get_preferred_width (child, child_height,
+                                         &min_width,
+                                         &natural_width);
+
+      child_width = CLAMP (natural_width, min_width, available_width);
+    }
+
+  if (!x_fill)
+    {
+      allocation.x1 = childbox->x1 + (int) ((available_width - child_width) * x_align);
+      allocation.x2 = allocation.x1 + (int) child_width;
     }
 
   if (!y_fill)
     {
-      ClutterUnit height, max_height;
-      max_height = childbox->y2 - childbox->y1;
-      clutter_actor_get_preferred_height (child, width, NULL, &height);
-      if (height < max_height)
-        {
-          childbox->y1 += CLAMP_TO_PIXEL ((max_height - height) * y_align);
-          childbox->y2 = childbox->y1 + height;
-        }
-      else
-        {
-          /* we couldn't fit the actor's height into our cell
-           * however, if x-fill is on, we are free to adjust the width, so we can
-           * get the preferred width for this height instead
-           */
-          if (x_fill)
-            {
-              ClutterUnit min_w, pref_w;
-
-              clutter_actor_get_preferred_width (child, max_height,
-                                                 &min_w, &pref_w);
-              width = CLAMP (pref_w, min_w, max_width);
-
-              childbox->x1 += CLAMP_TO_PIXEL((max_width - width) * x_align);
-              childbox->x2 = childbox->x1 + width;
-            }
-        }
+      allocation.y1 = childbox->y1 + (int) ((available_height - child_height) * y_align);
+      allocation.y2 = allocation.y1 + (int) child_height;
     }
+
+  *childbox = allocation;
+
 }
 
 static void
@@ -410,6 +445,9 @@ nbtk_table_homogeneous_allocate (ClutterActor          *self,
       child = CLUTTER_ACTOR (list->data);
 
       meta = (NbtkTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
+
+      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
 
       /* get child properties */
       col = meta->col;
@@ -508,6 +546,9 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
 
       meta = (NbtkTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (table), child);
 
+      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
+
       /* get child properties */
       col = meta->col;
       row = meta->row;
@@ -580,6 +621,10 @@ nbtk_table_style_changed (NbtkWidget *self)
   NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
   GSList *c;
 
+  /* Skip retrieving style information until we are parented */
+  if (!clutter_actor_get_parent ((ClutterActor*) self))
+    return;
+
   NBTK_WIDGET_CLASS (nbtk_table_parent_class)->style_changed (self);
 
   for (c = priv->children; c; c = c->next)
@@ -596,7 +641,6 @@ nbtk_table_calculate_row_heights (NbtkTable *table,
   GSList *list;
   gint *is_expand_row, *min_heights, *pref_heights, *row_heights, extra_row_height;
   gint i, total_min_height;
-  gint row_spacing;
   gint expanded_rows = 0;
   gint n_expanded_rows = 0;
   NbtkPadding padding;
@@ -605,8 +649,6 @@ nbtk_table_calculate_row_heights (NbtkTable *table,
 
   /* take padding off available height */
   for_height -= CLUTTER_UNITS_TO_INT (padding.top + padding.bottom);
-
-  row_spacing = (priv->row_spacing);
 
   g_array_set_size (priv->row_heights, 0);
   g_array_set_size (priv->row_heights, priv->n_rows);
@@ -637,6 +679,9 @@ nbtk_table_calculate_row_heights (NbtkTable *table,
       child = CLUTTER_ACTOR (list->data);
 
       meta = (NbtkTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (table), child);
+
+      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
 
       /* get child properties */
       col = meta->col;
@@ -673,7 +718,7 @@ nbtk_table_calculate_row_heights (NbtkTable *table,
         }
     }
 
-  total_min_height = row_spacing * (priv->n_rows - 1);
+  total_min_height = 0;// priv->row_spacing * (priv->n_rows - 1);
   for (i = 0; i < priv->n_rows; i++)
     total_min_height += pref_heights[i];
 
@@ -686,44 +731,82 @@ nbtk_table_calculate_row_heights (NbtkTable *table,
         n_expanded_rows++;
       }
 
+  /* extra row height = for height - row spacings - total_min_height */
+  for_height -= (priv->row_spacing * (priv->n_rows - 1));
   extra_row_height = for_height - total_min_height;
 
-  /* start with all rows at their preferred height */
-  for (i = 0; i < priv->n_rows; i++)
+
+  if (extra_row_height < 0)
     {
-      row_heights[i] = pref_heights[i];
-    }
+      gint *skip = g_slice_alloc0 (sizeof (gint) * priv->n_rows);
+      gint total_shrink_height;
 
-  /* distribute the extra space amongst rows with expand set to TRUE */
-  if (extra_row_height)
-    for (i = 0; i < priv->n_rows; i++)
-      if (is_expand_row[i])
+      /* If we need to shrink rows, we need to do multiple passes.
+       *
+       * We start by assuming all rows can shrink. All rows are sized
+       * proportional to their height in the total table size. If a row would be
+       * sized smaller than its minimum size, we mark it as non-shrinkable, and
+       * reduce extra_row_height by the amount it has been shrunk. The amount
+       * it has been shrunk by is the difference between the preferred and
+       * minimum height, since all rows start at their preferred height. We
+       * also then reduce the total table size (stored in total_shrink_height) by the height
+       * of the row we are going to be skipping.
+       *
+       */
+
+      /* We start by assuming all rows can shrink */
+      total_shrink_height = total_min_height;
+      for (i = 0; i < priv->n_rows; i++)
         {
-          /* extra space is allocated evenly when extra space is > 0 and
-           * proportionally when extra space < 0.
-           */
-          if (extra_row_height < 0)
+          if (!skip[i])
             {
-              row_heights[i] =
-                     pref_heights[i]
-                     + (extra_row_height
-                        * (pref_heights[i] / (float) expanded_rows));
+              gint tmp;
 
-              /* we reached the minimum height, so stop counting this row as
-               * expand and re-calculate the other row heights */
-              if (row_heights[i] < min_heights[i])
+              /* Calculate the height of the row by starting with the preferred
+               * height and taking away the extra row height proportional to
+               * the preferred row height over the rows that are being shrunk
+               */
+              tmp = pref_heights[i]
+                + (extra_row_height * (pref_heights[i] / (float) total_shrink_height));
+
+              if (tmp < min_heights[i])
                 {
+                  /* This was a row we *were* set to shrink, but we now find it would have
+                   * been shrunk too much. We remove it from the list of rows to shrink and
+                   * adjust extra_row_height and total_shrink_height appropriately */
+                  skip[i] = TRUE;
                   row_heights[i] = min_heights[i];
 
-                  expanded_rows -= pref_heights[i];
-                  is_expand_row[i] = FALSE;
+                  /* Reduce extra_row_height by the amount we have reduced this
+                   * actor by */
+                  extra_row_height += (pref_heights[i] - min_heights[i]);
+                  /* now take off the row from the total shrink height */
+                  total_shrink_height -= pref_heights[i];
+
+                  /* restart the loop */
                   i = -1;
                 }
+              else
+                {
+                  skip[i] = FALSE;
+                  row_heights[i] = tmp;
+                }
             }
-          else
-            row_heights[i] = pref_heights[i]
-                             + (extra_row_height / n_expanded_rows);
+
         }
+
+      g_slice_free1 (sizeof (gint) * priv->n_rows, skip);
+    }
+  else
+    {
+      for (i = 0; i < priv->n_rows; i++)
+        {
+          if (is_expand_row[i])
+            row_heights[i] = pref_heights[i] + (extra_row_height / n_expanded_rows);
+          else
+            row_heights[i] = pref_heights[i];
+        }
+    }
 
 
   return row_heights;
@@ -783,6 +866,9 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
       child = CLUTTER_ACTOR (list->data);
 
       meta = (NbtkTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
+
+      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
 
       /* get child properties */
       col = meta->col;
@@ -947,6 +1033,9 @@ nbtk_table_get_preferred_width (ClutterActor *self,
 
       meta = (NbtkTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
 
+      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
+
       /* get child properties */
       col = meta->col;
       col_span = meta->col_span;
@@ -1023,6 +1112,9 @@ nbtk_table_get_preferred_height (ClutterActor *self,
       child = CLUTTER_ACTOR (list->data);
 
       meta = (NbtkTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
+
+      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
 
       /* get child properties */
       row = meta->row;
@@ -1128,7 +1220,7 @@ nbtk_table_dnd_dropped (NbtkWidget   *actor,
     }
 
   clutter_container_remove_actor (CLUTTER_CONTAINER (parent), dragged);
-  nbtk_table_insert_actor_at_position (NBTK_TABLE (actor), dragged, x, y);
+  nbtk_table_add_actor (NBTK_TABLE (actor), dragged, NBTK_TABLE (actor)->priv->n_rows, 0);
 
   clutter_container_child_set (CLUTTER_CONTAINER (actor), dragged,
 			       "keep-aspect-ratio", keep_ratio,
@@ -1395,8 +1487,14 @@ nbtk_table_add_actor (NbtkTable    *table,
 {
   g_return_if_fail (NBTK_IS_TABLE (table));
   g_return_if_fail (CLUTTER_IS_ACTOR (actor));
-  g_return_if_fail (row >= 0);
-  g_return_if_fail (column >= 0);
+  g_return_if_fail (row >= -1);
+  g_return_if_fail (column >= -1);
+
+  if (row < 0)
+    row = table->priv->n_rows + 1;
+
+  if (column < 0)
+    column = table->priv->n_cols + 1;
 
   clutter_container_add_actor (CLUTTER_CONTAINER (table), actor);
   clutter_container_child_set (CLUTTER_CONTAINER (table), actor,
@@ -1432,9 +1530,15 @@ nbtk_table_add_actor_with_properties (NbtkTable    *table,
 
   g_return_if_fail (NBTK_IS_TABLE (table));
   g_return_if_fail (CLUTTER_IS_ACTOR (actor));
-  g_return_if_fail (row >= 0);
-  g_return_if_fail (column >= 0);
+  g_return_if_fail (row >= -1);
+  g_return_if_fail (column >= -1);
   g_return_if_fail (first_property_name != NULL);
+
+  if (row < 0)
+    row = table->priv->n_rows + 1;
+
+  if (column < 0)
+    column = table->priv->n_cols + 1;
 
   container = (ClutterContainer *)table;
   clutter_container_add_actor (container, actor);
@@ -1477,8 +1581,8 @@ nbtk_table_add_actor_full (NbtkTable            *table,
 {
   g_return_if_fail (NBTK_IS_TABLE (table));
   g_return_if_fail (CLUTTER_IS_ACTOR (actor));
-  g_return_if_fail (row >= 0);
-  g_return_if_fail (column >= 0);
+  g_return_if_fail (row >= -1);
+  g_return_if_fail (column >= -1);
   g_return_if_fail (rowspan >= 1);
   g_return_if_fail (colspan >= 1);
   g_return_if_fail ((xalign >= 0) && (xalign <= 1.0));
@@ -1694,7 +1798,15 @@ nbtk_table_insert_actor_at_position (NbtkTable *table,
   nbtk_table_add_actor (NBTK_TABLE (table), actor, priv->n_rows, 0);
 }
 
-G_GNUC_DEPRECATED void
+/**
+ * nbtk_table_set_padding:
+ * @table: A #NbtkTable
+ * @padding: A #NbtkPadding
+ *
+ * Deprecated: Please set padding using a stylesheet.
+ *
+ */
+void
 nbtk_table_set_padding (NbtkTable         *table,
                         const NbtkPadding *padding)
 {
@@ -1703,7 +1815,15 @@ nbtk_table_set_padding (NbtkTable         *table,
   g_warning ("%s is deprecated. Please set padding using a stylesheet.", __FUNCTION__);
 }
 
-G_GNUC_DEPRECATED void
+/**
+ * nbtk_table_get_padding:
+ * @table: A #NbtkTable
+ * @padding: A #NbtkPadding
+ *
+ * Deprecated: Please use nbtk_widget_get_padding()
+ *
+ */
+void
 nbtk_table_get_padding (NbtkTable   *table,
                         NbtkPadding *padding)
 {

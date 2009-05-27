@@ -1,12 +1,23 @@
+/*
+ * Copyright 2009 Intel Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+ * Boston, MA 02111-1307, USA.
+ *
+ */
 
 #include <nbtk/nbtk.h>
-
-static void
-clicked_cb (NbtkButton *button,
-            gpointer    data)
-{
-  printf ("%s()\n", __FUNCTION__);
-}
 
 static void
 changed_cb (NbtkAdjustment *adjustment,
@@ -20,7 +31,7 @@ int
 main (int argc, char *argv[])
 {
   ClutterActor    *stage;
-  NbtkWidget      *button, *scroll;
+  NbtkWidget      *scroll;
   NbtkAdjustment  *adjustment;
 
   clutter_init (&argc, &argv);
@@ -30,13 +41,6 @@ main (int argc, char *argv[])
 
   stage = clutter_stage_get_default ();
   clutter_actor_set_size (stage, 400, 200);
-
-  button = NBTK_WIDGET (nbtk_scroll_button_new ());
-  clutter_actor_set_position (CLUTTER_ACTOR (button), 50, 50);
-  clutter_actor_set_size (CLUTTER_ACTOR (button), 24, 24);
-  g_signal_connect (button, "clicked", 
-                    G_CALLBACK (clicked_cb), NULL);
-  clutter_container_add (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (button), NULL);
 
   adjustment = nbtk_adjustment_new (0., 0., 100., 1., 10., 10.);
   g_signal_connect (adjustment, "notify::value", 

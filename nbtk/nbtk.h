@@ -1,7 +1,6 @@
 /*
  * nbtk.h: Collection of high-level actors for Clutter
  *
- * Copyright 2007 OpenedHand
  * Copyright 2009 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it

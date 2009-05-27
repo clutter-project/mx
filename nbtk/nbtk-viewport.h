@@ -46,8 +46,15 @@ typedef struct _NbtkViewport          NbtkViewport;
 typedef struct _NbtkViewportPrivate   NbtkViewportPrivate;
 typedef struct _NbtkViewportClass     NbtkViewportClass;
 
+/**
+ * NbtkViewport:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _NbtkViewport
 {
+  /*< private >*/
   NbtkBin parent;
 
   NbtkViewportPrivate *priv;

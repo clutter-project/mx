@@ -82,6 +82,8 @@ enum
 };
 
 #define NBTK_ENTRY_GET_PRIVATE(obj)     (G_TYPE_INSTANCE_GET_PRIVATE ((obj), NBTK_TYPE_ENTRY, NbtkEntryPrivate))
+#define NBTK_ENTRY_PRIV(x) ((NbtkEntry *) x)->priv
+
 
 struct _NbtkEntryPrivate
 {
@@ -128,7 +130,7 @@ nbtk_entry_get_property (GObject    *gobject,
                          GValue     *value,
                          GParamSpec *pspec)
 {
-  NbtkEntryPrivate *priv = NBTK_ENTRY (gobject)->priv;
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (gobject);
 
   switch (prop_id)
     {
@@ -148,7 +150,7 @@ nbtk_entry_get_property (GObject    *gobject,
 static void
 nbtk_entry_dispose (GObject *object)
 {
-  NbtkEntryPrivate *priv = NBTK_ENTRY (object)->priv;
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (object);
 
   if (priv->entry)
     {
@@ -160,7 +162,7 @@ nbtk_entry_dispose (GObject *object)
 static void
 nbtk_entry_finalize (GObject *object)
 {
-  NbtkEntryPrivate *priv = NBTK_ENTRY (object)->priv;
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (object);
 
   g_free (priv->hint);
   priv->hint = NULL;
@@ -169,7 +171,7 @@ nbtk_entry_finalize (GObject *object)
 static void
 nbtk_entry_style_changed (NbtkWidget *self)
 {
-  NbtkEntryPrivate *priv = NBTK_ENTRY (self)->priv;
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (self);
   ClutterColor *color = NULL;
   gchar *font_name;
   gchar *font_string;
@@ -216,7 +218,7 @@ nbtk_entry_get_preferred_width (ClutterActor *actor,
                                 ClutterUnit  *min_width_p,
                                 ClutterUnit  *natural_width_p)
 {
-  NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
   NbtkPadding padding;
   ClutterUnit icon_w;
 
@@ -264,7 +266,7 @@ nbtk_entry_get_preferred_height (ClutterActor *actor,
                                  ClutterUnit  *min_height_p,
                                  ClutterUnit  *natural_height_p)
 {
-  NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
   NbtkPadding padding;
   ClutterUnit icon_h;
 
@@ -312,7 +314,7 @@ nbtk_entry_allocate (ClutterActor          *actor,
                      const ClutterActorBox *box,
                      gboolean               absolute_origin_changed)
 {
-  NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
   ClutterActorClass *parent_class;
   ClutterActorBox child_box, icon_box;
   NbtkPadding padding;
@@ -347,7 +349,6 @@ nbtk_entry_allocate (ClutterActor          *actor,
 
       /* reduce the size for the entry */
       child_box.x1 += icon_w + priv->spacing;
-      child_box.x2 -= icon_w * 2;
     }
 
   if (priv->secondary_icon)
@@ -378,7 +379,7 @@ nbtk_entry_allocate (ClutterActor          *actor,
 static void
 nbtk_entry_focus_in (ClutterActor *actor)
 {
-  NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
 
   clutter_actor_grab_key_focus (priv->entry);
 }
@@ -387,7 +388,7 @@ static void
 clutter_text_focus_out_cb (ClutterActor *actor,
                            NbtkEntry    *entry)
 {
-  NbtkEntryPrivate *priv = NBTK_ENTRY (entry)->priv;
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (entry);
   ClutterText *text = CLUTTER_TEXT (priv->entry);
 
   /* add a hint if the entry is empty */
@@ -407,7 +408,7 @@ static void
 clutter_text_focus_in_cb (ClutterActor *actor,
                           NbtkEntry    *entry)
 {
-  NbtkEntryPrivate *priv = NBTK_ENTRY (entry)->priv;
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (entry);
   ClutterText *text = CLUTTER_TEXT (priv->entry);
 
   /* remove the hint if visible */
@@ -423,7 +424,7 @@ clutter_text_focus_in_cb (ClutterActor *actor,
 static void
 nbtk_entry_paint (ClutterActor *actor)
 {
-  NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
   ClutterActorClass *parent_class;
 
   parent_class = CLUTTER_ACTOR_CLASS (nbtk_entry_parent_class);
@@ -442,7 +443,7 @@ static void
 nbtk_entry_pick (ClutterActor *actor,
                  const ClutterColor *c)
 {
-  NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
 
   CLUTTER_ACTOR_CLASS (nbtk_entry_parent_class)->pick (actor, c);
 
@@ -527,6 +528,11 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
   g_object_class_install_property (gobject_class, PROP_ENTRY, pspec);
 
   /* signals */
+  /**
+   * NbtkEntry::primary-icon-clicked:
+   *
+   * Emitted when the primary icon is clicked
+   */
   entry_signals[PRIMARY_ICON_CLICKED] =
     g_signal_new ("primary-icon-clicked",
                   G_TYPE_FROM_CLASS (klass),
@@ -535,7 +541,11 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
                   NULL, NULL,
                   _nbtk_marshal_VOID__VOID,
                   G_TYPE_NONE, 0);
-
+  /**
+   * NbtkEntry::secondary-icon-clicked:
+   *
+   * Emitted when the secondary icon is clicked
+   */
   entry_signals[SECONDARY_ICON_CLICKED] =
     g_signal_new ("secondary-icon-clicked",
                   G_TYPE_FROM_CLASS (klass),
@@ -571,6 +581,10 @@ nbtk_entry_init (NbtkEntry *entry)
   priv->spacing = CLUTTER_UNITS_FROM_INT (6);
 
   clutter_actor_set_parent (priv->entry, CLUTTER_ACTOR (entry));
+  clutter_actor_set_reactive ((ClutterActor *) entry, TRUE);
+
+  /* set cursor hidden until we receive focus */
+  clutter_text_set_cursor_visible ((ClutterText *) priv->entry, FALSE);
 }
 
 /**
@@ -584,14 +598,14 @@ nbtk_entry_init (NbtkEntry *entry)
 NbtkWidget *
 nbtk_entry_new (const gchar *text)
 {
-  NbtkEntry  *entry;
+  NbtkWidget *entry;
 
   /* add the entry to the stage, but don't allow it to be visible */
   entry = g_object_new (NBTK_TYPE_ENTRY,
-                          "text", text,
-                          NULL);
+                        "text", text,
+                        NULL);
 
-  return NBTK_WIDGET (entry);
+  return entry;
 }
 
 /**

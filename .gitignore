@@ -52,8 +52,10 @@ docs/reference/libnbtk/nbtk.interfaces
 docs/reference/libnbtk/nbtk.prerequisites
 docs/reference/libnbtk/nbtk.signals
 docs/reference/libnbtk/tmpl/*
+docs/reference/libnbtk/version.xml
 docs/reference/libnbtk/xml/*
 dump
+examples/moblin-sample-app
 gtk-doc.make
 install-sh
 intltool-extract*
@@ -64,8 +66,9 @@ libtool
 ltmain.sh
 missing
 mkinstalldirs
-nbtk-0.1.4.tar.gz
 nbtk-1.0.pc
+nbtk-gtk-1.0.pc
+nbtk-gtk.pc
 nbtk.pc
 nbtk/nbtk-enum-types.c
 nbtk/nbtk-enum-types.h
@@ -85,6 +88,8 @@ tests/test-container-matching
 tests/test-entry
 tests/test-expander
 tests/test-grid
+tests/test-gtk
+tests/test-icon-view
 tests/test-label
 tests/test-padding
 tests/test-script

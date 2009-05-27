@@ -597,24 +597,50 @@ nbtk_widget_style_changed (NbtkWidget *self)
   gchar *bg_file;
   NbtkPadding *padding = NULL;
   gboolean relayout_needed = FALSE;
+  gboolean has_changed = FALSE;
+  ClutterColor *color;
 
   /* application has request this widget is not stylable */
   if (!priv->is_stylable)
     return;
 
-  if (priv->bg_color)
-    {
-      clutter_color_free (priv->bg_color);
-      priv->bg_color = NULL;
-    }
+
+  /* Skip retrieving style information until we are parented */
+  if (!clutter_actor_get_parent ((ClutterActor *) self))
+    return;
 
   /* cache these values for use in the paint function */
   nbtk_stylable_get (NBTK_STYLABLE (self),
-                    "background-color", &priv->bg_color,
+                    "background-color", &color,
                     "background-image", &bg_file,
                     "border-image", &border_image,
                     "padding", &padding,
                     NULL);
+
+
+  if (color)
+    {
+      if (priv->bg_color && clutter_color_equal (color, priv->bg_color))
+        {
+          /* color is the same ... */
+          clutter_color_free (color);
+        }
+      else
+        {
+          clutter_color_free (priv->bg_color);
+          priv->bg_color = color;
+          has_changed = TRUE;
+        }
+    }
+  else
+    if (priv->bg_color)
+      {
+        clutter_color_free (priv->bg_color);
+        priv->bg_color = NULL;
+        has_changed = TRUE;
+      }
+
+
 
   if (padding)
     {
@@ -624,6 +650,7 @@ nbtk_widget_style_changed (NbtkWidget *self)
           priv->padding.bottom != padding->bottom)
       {
         /* Padding changed. Need to relayout. */
+        has_changed = TRUE;
         relayout_needed = TRUE;
       }
 
@@ -673,6 +700,9 @@ nbtk_widget_style_changed (NbtkWidget *self)
                                                    border_left);
       clutter_actor_set_parent (priv->border_image, CLUTTER_ACTOR (self));
       g_boxed_free (NBTK_TYPE_BORDER_IMAGE, border_image);
+
+      has_changed = TRUE;
+      relayout_needed = TRUE;
     }
 
   if (bg_file != NULL)
@@ -691,13 +721,20 @@ nbtk_widget_style_changed (NbtkWidget *self)
         g_warning ("Could not load %s", bg_file);
 
       g_free (bg_file);
+      has_changed = TRUE;
+      relayout_needed = TRUE;
     }
 
   /* If there are any properties above that need to cause a relayout thay
    * should set this flag.
    */
-  if (relayout_needed)
-    clutter_actor_queue_relayout ((ClutterActor *)self);
+  if (has_changed)
+    {
+      if (relayout_needed)
+        clutter_actor_queue_relayout ((ClutterActor *) self);
+      else
+        clutter_actor_queue_redraw ((ClutterActor *) self);
+    }
 }
 
 static void
@@ -1343,8 +1380,6 @@ nbtk_widget_init (NbtkWidget *actor)
 
   actor->priv = priv = NBTK_WIDGET_GET_PRIVATE (actor);
   priv->is_stylable = TRUE;
-
-  clutter_actor_set_reactive (CLUTTER_ACTOR (actor), TRUE);
 
   /* connect style changed */
   g_signal_connect (actor, "notify::name", G_CALLBACK (nbtk_widget_name_notify), NULL);

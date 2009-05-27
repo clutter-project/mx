@@ -53,6 +53,12 @@ typedef struct _NbtkScrollBar          NbtkScrollBar;
 typedef struct _NbtkScrollBarPrivate   NbtkScrollBarPrivate;
 typedef struct _NbtkScrollBarClass     NbtkScrollBarClass;
 
+/**
+ * NbtkScrollBar:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _NbtkScrollBar
 {
   /*< private >*/
