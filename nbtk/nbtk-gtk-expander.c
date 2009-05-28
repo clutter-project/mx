@@ -226,15 +226,29 @@ nbtk_gtk_expander_size_request (GtkWidget      *widget,
 }
 
 static void
+nbtk_gtk_expander_forall (GtkContainer *container,
+                          gboolean      include_internals,
+                          GtkCallback   callback,
+                          gpointer      callback_data)
+{
+  NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) container)->priv;
+
+  GTK_CONTAINER_CLASS (nbtk_gtk_expander_parent_class)->forall (container,
+                                                                include_internals,
+                                                                callback,
+                                                                callback_data);
+
+  if (priv->label && include_internals)
+    (* callback) (priv->label, callback_data);
+}
+
+static void
 nbtk_gtk_expander_map (GtkWidget *widget)
 {
   NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
 
   if (priv->label)
-    {
-      gtk_widget_show (priv->label);
       gtk_widget_map (priv->label);
-    }
 
   if (priv->event_window)
     gdk_window_show (priv->event_window);
@@ -401,6 +415,7 @@ nbtk_gtk_expander_class_init (NbtkGtkExpanderClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+  GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (NbtkGtkExpanderPrivate));
@@ -420,6 +435,8 @@ nbtk_gtk_expander_class_init (NbtkGtkExpanderClass *klass)
   widget_class->unmap = nbtk_gtk_expander_unmap;
   widget_class->show = nbtk_gtk_expander_show;
   widget_class->hide = nbtk_gtk_expander_hide;
+
+  container_class->forall = nbtk_gtk_expander_forall;
 
   widget_class->button_release_event = nbtk_gtk_expander_button_release;
 
