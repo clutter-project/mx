@@ -511,10 +511,8 @@ nbtk_gtk_expander_set_expanded (NbtkGtkExpander *expander,
 
   priv->is_open = !priv->is_open;
 
-  if (priv->is_open)
-    gtk_widget_show (gtk_bin_get_child (GTK_BIN (expander)));
-  else
-    gtk_widget_hide (gtk_bin_get_child (GTK_BIN (expander)));
+  gtk_widget_set_child_visible (gtk_bin_get_child (GTK_BIN (expander)),
+                                priv->is_open);
 
   gtk_widget_queue_resize ((GtkWidget*) expander);
 
