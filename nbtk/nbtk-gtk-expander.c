@@ -215,6 +215,10 @@ nbtk_gtk_expander_size_request (GtkWidget      *widget,
       requisition->height += req.height;
     }
 
+  requisition->height = MAX (requisition->height,
+                             priv->indicator_size +
+                             widget->style->ythickness * 2);
+
   if (priv->is_open && child && GTK_WIDGET_VISIBLE (child))
     {
       gtk_widget_size_request (child, &req);
