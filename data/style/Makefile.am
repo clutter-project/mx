@@ -1,9 +1,9 @@
 styledir = ${datadir}/nbtk/style
-style_DATA =    button-active.png \
+dist_style_DATA = \
+		button-active.png \
 		button-hover.png \
 		button.png \
 		default.css \
-		Makefile.am \
 		scroll-button-down-hover.png \
 		scroll-button-down.png \
 		scroll-button-up-hover.png \
