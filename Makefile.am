@@ -1,4 +1,4 @@
-SUBDIRS = nbtk examples tests docs build
+SUBDIRS = nbtk data examples tests docs build
 
 ACLOCAL_AMFLAGS = -I build/autotools
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc

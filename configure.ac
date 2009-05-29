@@ -129,6 +129,8 @@ build/Makefile
 build/autotools/Makefile
 build/autotools/shave
 build/autotools/shave-libtool
+data/Makefile
+data/assets/Makefile
 nbtk.pc
 nbtk-gtk.pc
 docs/Makefile
