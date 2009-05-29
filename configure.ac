@@ -130,7 +130,7 @@ build/autotools/Makefile
 build/autotools/shave
 build/autotools/shave-libtool
 data/Makefile
-data/assets/Makefile
+data/style/Makefile
 nbtk.pc
 nbtk-gtk.pc
 docs/Makefile

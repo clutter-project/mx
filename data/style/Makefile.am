@@ -1,5 +1,5 @@
-assetsdir = ${datadir}/nbtk/assets
-assets_DATA =    button-active.png \
+styledir = ${datadir}/nbtk/style
+style_DATA =    button-active.png \
 		button-hover.png \
 		button.png \
 		default.css \

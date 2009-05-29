@@ -1,1 +1,1 @@
-SUBDIRS=assets
+SUBDIRS=style
