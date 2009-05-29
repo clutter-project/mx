@@ -242,7 +242,7 @@ nbtk_gtk_expander_forall (GtkContainer *container,
                                                                 callback,
                                                                 callback_data);
 
-  if (priv->label && include_internals)
+  if (priv->label)
     (* callback) (priv->label, callback_data);
 }
 
@@ -275,25 +275,26 @@ nbtk_gtk_expander_unmap (GtkWidget *widget)
 }
 
 static void
-nbtk_gtk_expander_show (GtkWidget *widget)
+nbtk_gtk_expander_add (GtkContainer *container,
+                       GtkWidget    *widget)
 {
-  NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
+  GTK_CONTAINER_CLASS (nbtk_gtk_expander_parent_class)->add (container, widget);
 
-  if (priv->label)
-    gtk_widget_show (priv->label);
-
-  GTK_WIDGET_CLASS (nbtk_gtk_expander_parent_class)->show (widget);
+  gtk_widget_set_child_visible (widget, NBTK_GTK_EXPANDER (container)->priv->is_open);
+  gtk_widget_queue_resize (GTK_WIDGET (container));
 }
 
 static void
-nbtk_gtk_expander_hide (GtkWidget *widget)
+nbtk_gtk_expander_remove (GtkContainer *container,
+                          GtkWidget    *widget)
 {
-  NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
+  NbtkGtkExpander *expander = NBTK_GTK_EXPANDER (container);
 
-  if (priv->label)
-    gtk_widget_hide (priv->label);
-
-  GTK_WIDGET_CLASS (nbtk_gtk_expander_parent_class)->hide (widget);
+  if (expander->priv->label == widget)
+    nbtk_gtk_expander_set_label_widget (expander, NULL);
+  else
+    GTK_CONTAINER_CLASS (nbtk_gtk_expander_parent_class)->remove (container,
+                                                                  widget);
 }
 
 static gboolean
@@ -437,9 +438,9 @@ nbtk_gtk_expander_class_init (NbtkGtkExpanderClass *klass)
   widget_class->unrealize = nbtk_gtk_expander_unrealize;
   widget_class->map = nbtk_gtk_expander_map;
   widget_class->unmap = nbtk_gtk_expander_unmap;
-  widget_class->show = nbtk_gtk_expander_show;
-  widget_class->hide = nbtk_gtk_expander_hide;
 
+  container_class->add = nbtk_gtk_expander_add;
+  container_class->remove = nbtk_gtk_expander_remove;
   container_class->forall = nbtk_gtk_expander_forall;
 
   widget_class->button_release_event = nbtk_gtk_expander_button_release;
