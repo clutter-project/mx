@@ -225,8 +225,9 @@ nbtk_style_load (NbtkStyle *style)
     rc_file = g_strdup (env_var);
 
   if (!rc_file)
-    rc_file = g_build_filename (g_get_user_config_dir (),
+    rc_file = g_build_filename (PACKAGE_DATA_DIR,
                                 "nbtk",
+                                "style",
                                 "default.css",
                                 NULL);
 
