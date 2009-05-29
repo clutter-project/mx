@@ -166,6 +166,7 @@ main (int argc, char *argv[])
   clutter_container_child_set (CLUTTER_CONTAINER (table),
                                CLUTTER_ACTOR (button2),
                                "y-fill", FALSE,
+                               "x-fill", FALSE,
                                NULL);
 
   clutter_container_child_set (CLUTTER_CONTAINER (table),
