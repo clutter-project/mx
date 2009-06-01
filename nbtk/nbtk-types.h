@@ -1,3 +1,21 @@
+/*
+ * Copyright 2009 Intel Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ */
+
 #if !defined(NBTK_H_INSIDE) && !defined(NBTK_COMPILATION)
 #error "Only <nbtk/nbtk.h> can be included directly.h"
 #endif
@@ -56,19 +74,11 @@ typedef enum {
   NBTK_ALIGN_CENTER
 } NbtkAlignment;
 
-/**
- * NbtkTransitionType:
- * @NBTK_TRANSITION_NONE: no transition
- * @NBTK_TRANSITION_FADE: fading
- * @NBTK_TRANSITION_BOUNCE: bouncing
- *
- * Types of transition
- */
-typedef enum { /*< prefix=NBTK_TRANSITION >*/
-  NBTK_TRANSITION_NONE,
-  NBTK_TRANSITION_FADE,
-  NBTK_TRANSITION_BOUNCE
-} NbtkTransitionType;
+typedef enum {
+  NBTK_ALIGN_START,
+  NBTK_ALIGN_MIDDLE,
+  NBTK_ALIGN_END
+} NbtkAlign;
 
 G_END_DECLS
 

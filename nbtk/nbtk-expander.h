@@ -1,66 +1,88 @@
 /*
- * Copyright (C) 2009 Intel Corporation
+ * nbtk-expander.h: Expander Widget
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * Copyright 2009 Intel Corporation.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
  *
- * Written by: Robert Staudinger <robsta@openedhand.com>
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Written by: Thomas Wood <thomas.wood@intel.com>
+ *
  */
 
-#ifndef __NBTK_EXPANDER_H__
-#define __NBTK_EXPANDER_H__
 
-#include <nbtk/nbtk-widget.h>
+#if !defined(NBTK_H_INSIDE) && !defined(NBTK_COMPILATION)
+#error "Only <nbtk/nbtk.h> can be included directly.h"
+#endif
+
+#ifndef _NBTK_EXPANDER
+#define _NBTK_EXPANDER
+
+#include <glib-object.h>
+#include <nbtk/nbtk-bin.h>
 
 G_BEGIN_DECLS
 
-#define NBTK_TYPE_EXPANDER                (nbtk_expander_get_type ())
-#define NBTK_EXPANDER(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_EXPANDER, NbtkExpander))
-#define NBTK_IS_EXPANDER(obj)             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NBTK_TYPE_EXPANDER))
-#define NBTK_EXPANDER_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), NBTK_TYPE_EXPANDER, NbtkExpanderClass))
-#define NBTK_IS_EXPANDER_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), NBTK_TYPE_EXPANDER))
-#define NBTK_EXPANDER_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), NBTK_TYPE_EXPANDER, NbtkExpanderClass))
+#define NBTK_TYPE_EXPANDER nbtk_expander_get_type()
 
-typedef struct _NbtkExpander              NbtkExpander;
-typedef struct _NbtkExpanderPrivate       NbtkExpanderPrivate;
-typedef struct _NbtkExpanderClass         NbtkExpanderClass;
+#define NBTK_EXPANDER(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_EXPANDER, NbtkExpander))
 
-struct _NbtkExpander
-{
+#define NBTK_EXPANDER_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST ((klass), NBTK_TYPE_EXPANDER, NbtkExpanderClass))
+
+#define NBTK_IS_EXPANDER(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NBTK_TYPE_EXPANDER))
+
+#define NBTK_IS_EXPANDER_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE ((klass), NBTK_TYPE_EXPANDER))
+
+#define NBTK_EXPANDER_GET_CLASS(obj) \
+  (G_TYPE_INSTANCE_GET_CLASS ((obj), NBTK_TYPE_EXPANDER, NbtkExpanderClass))
+
+typedef struct _NbtkExpanderPrivate NbtkExpanderPrivate;
+
+/**
+ * NbtkExpander:
+ *
+ * The contents of the this structure are private and should only be accessed
+ * through the public API.
+ */
+typedef struct {
   /*< private >*/
-  NbtkBin parent_instance;
+  NbtkBin parent;
 
   NbtkExpanderPrivate *priv;
-};
+} NbtkExpander;
 
-struct _NbtkExpanderClass
-{
+typedef struct {
   NbtkBinClass parent_class;
-};
 
-GType nbtk_expander_get_type (void) G_GNUC_CONST;
+  /* signals */
+  void (* expand_complete) (NbtkExpander *expander);
+  void (* contract_complete) (NbtkExpander *expander);
 
-NbtkWidget *    nbtk_expander_new       (const gchar *label);
+} NbtkExpanderClass;
 
-gboolean        nbtk_expander_get_expanded  (NbtkExpander *self);
-void            nbtk_expander_set_expanded  (NbtkExpander *self,
-                                             gboolean      expanded);
+GType nbtk_expander_get_type (void);
 
-ClutterActor *  nbtk_expander_get_child     (NbtkExpander *self);
-const gchar *   nbtk_expander_get_label     (NbtkExpander *self);
+NbtkWidget* nbtk_expander_new (void);
+void nbtk_expander_set_label (NbtkExpander *expander,
+                              const gchar *label);
 
+gboolean nbtk_expander_get_expanded (NbtkExpander *expander);
+void nbtk_expander_set_expanded (NbtkExpander *expander,
+                                 gboolean      expanded);
 G_END_DECLS
 
-#endif /* __NBTK_EXPANDER_H__ */
+#endif /* _NBTK_EXPANDER */

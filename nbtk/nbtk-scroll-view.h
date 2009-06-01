@@ -1,24 +1,26 @@
-/* nbtk-scroll-view.h: Container with scroll-bars
+/*
+ * nbtk-scroll-view.h: Container with scroll-bars
  *
- * Copyright (C) 2008 OpenedHand
+ * Copyright 2008 OpenedHand
+ * Copyright 2009 Intel Corporation.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  * Boston, MA 02111-1307, USA.
  *
  * Written by: Chris Lord <chris@openedhand.com>
  * Port to Nbtk by: Robert Staudinger <robsta@openedhand.com>
+ *
  */
 
 #if !defined(NBTK_H_INSIDE) && !defined(NBTK_COMPILATION)
@@ -43,6 +45,12 @@ typedef struct _NbtkScrollView          NbtkScrollView;
 typedef struct _NbtkScrollViewPrivate   NbtkScrollViewPrivate;
 typedef struct _NbtkScrollViewClass     NbtkScrollViewClass;
 
+/**
+ * NbtkScrollView:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _NbtkScrollView
 {
   /*< private >*/
@@ -60,9 +68,17 @@ GType nbtk_scroll_view_get_type (void) G_GNUC_CONST;
 
 NbtkWidget *  nbtk_scroll_view_new             (void);
 
-ClutterActor *nbtk_scroll_view_get_hscroll_bar (NbtkScrollView *scroll);
-ClutterActor *nbtk_scroll_view_get_vscroll_bar (NbtkScrollView *scroll);
-ClutterActor *nbtk_scroll_view_get_child       (NbtkScrollView *scroll);
+ClutterActor *  nbtk_scroll_view_get_hscroll_bar (NbtkScrollView *scroll);
+ClutterActor *  nbtk_scroll_view_get_vscroll_bar (NbtkScrollView *scroll);
+ClutterActor *  nbtk_scroll_view_get_child       (NbtkScrollView *scroll);
+
+ClutterUnit     nbtk_scroll_view_get_column_size (NbtkScrollView *scroll);
+void            nbtk_scroll_view_set_column_size (NbtkScrollView *scroll,
+                                                  ClutterUnit     column_size);
+
+ClutterUnit     nbtk_scroll_view_get_row_size    (NbtkScrollView *scroll);
+void            nbtk_scroll_view_set_row_size    (NbtkScrollView *scroll,
+                                                  ClutterUnit     row_size);
 
 G_END_DECLS
 

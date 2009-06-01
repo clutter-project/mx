@@ -1,192 +1,335 @@
 /*
- * Copyright (C) 2009 Intel Corporation
+ * nbtk-expander.c: Expander Widget
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * Copyright 2009 Intel Corporation.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
  *
- * Written by: Robert Staudinger <robsta@openedhand.com>
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Written by: Thomas Wood <thomas.wood@intel.com>
+ *
  */
 
-/**
- * SECTION:nbtk-expander
- * @short_description: Expander widget that shows and hides it's child widget.
- */
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include <clutter/clutter.h>
-
-#include "nbtk-bin.h"
-#include "nbtk-button.h"
+#include "nbtk-marshal.h"
 #include "nbtk-expander.h"
+#include "nbtk-private.h"
+#include "nbtk-stylable.h"
+#include "nbtk-icon.h"
 
-#define NBTK_EXPANDER_GET_PRIVATE(obj)    \
-        (G_TYPE_INSTANCE_GET_PRIVATE ((obj), NBTK_TYPE_EXPANDER, NbtkExpanderPrivate))
+G_DEFINE_TYPE (NbtkExpander, nbtk_expander, NBTK_TYPE_BIN)
 
-enum
-{
+#define GET_PRIVATE(o) \
+  (G_TYPE_INSTANCE_GET_PRIVATE ((o), NBTK_TYPE_EXPANDER, NbtkExpanderPrivate))
+
+enum {
   PROP_0,
 
-  PROP_EXPANDED,
-  PROP_LABEL
+  PROP_EXPANDED
 };
 
 enum
 {
+  EXPAND_COMPLETE,
+
   LAST_SIGNAL
 };
 
-struct _NbtkExpanderPrivate
-{
-  ClutterActor *header_button;
-  ClutterActor *payload_bin;
+struct _NbtkExpanderPrivate {
+  ClutterActor *label;
+  ClutterActor *arrow;
+  ClutterUnit   spacing;
+
+  ClutterTimeline *timeline;
+  ClutterAlpha    *alpha;
+  gdouble progress;
+
+  gboolean expanded : 1;
 };
 
-static void nbtk_container_iface_init (ClutterContainerIface *iface);
-
-G_DEFINE_TYPE_WITH_CODE (NbtkExpander, nbtk_expander, NBTK_TYPE_BIN,
-                         G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
-                                                nbtk_container_iface_init));
+static guint expander_signals[LAST_SIGNAL] = { 0, };
 
 static void
-nbtk_expander_get_property (GObject    *gobject,
-                            guint       prop_id,
-                            GValue     *value,
+nbtk_expander_get_property (GObject *object,
+                            guint property_id,
+                            GValue *value,
                             GParamSpec *pspec)
 {
-  NbtkExpanderPrivate *priv = NBTK_EXPANDER (gobject)->priv;
+  NbtkExpanderPrivate *priv = NBTK_EXPANDER (object)->priv;
 
-  switch (prop_id)
-    {
+  switch (property_id) {
     case PROP_EXPANDED:
-      g_value_set_boolean (value, 
-                           nbtk_expander_get_expanded (NBTK_EXPANDER (gobject)));
+      g_value_set_boolean (value, priv->expanded);
       break;
-    case PROP_LABEL:
-      g_value_set_string (value,
-                          nbtk_button_get_label (
-                              NBTK_BUTTON (priv->header_button)));
-      break;
-
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
-      break;
-    }
+  default:
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+  }
 }
 
 static void
-nbtk_expander_set_property (GObject      *gobject,
-                            guint         prop_id,
+nbtk_expander_set_property (GObject *object,
+                            guint property_id,
                             const GValue *value,
-                            GParamSpec   *pspec)
+                            GParamSpec *pspec)
 {
-  NbtkExpanderPrivate *priv = NBTK_EXPANDER (gobject)->priv;
-
-  switch (prop_id)
-    {
+  switch (property_id) {
     case PROP_EXPANDED:
-      nbtk_expander_set_expanded (NBTK_EXPANDER (gobject),
+      nbtk_expander_set_expanded ((NbtkExpander *) object,
                                   g_value_get_boolean (value));
       break;
-    case PROP_LABEL:
-      nbtk_button_set_label (NBTK_BUTTON (priv->header_button),
-                             g_value_get_string (value));
-      break;
-
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
-      break;
-    }
+  default:
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+  }
 }
 
 static void
-nbtk_expander_finalize (GObject *gobject)
+nbtk_expander_dispose (GObject *object)
 {
-  NbtkExpanderPrivate *priv = NBTK_EXPANDER (gobject)->priv;
+  NbtkExpanderPrivate *priv = NBTK_EXPANDER (object)->priv;
 
-  clutter_actor_unparent (priv->header_button);
+  if (priv->label)
+    {
+      clutter_actor_unparent (priv->label);
+      priv->label = NULL;
+    }
 
-  G_OBJECT_CLASS (nbtk_expander_parent_class)->finalize (gobject);
+  if (priv->timeline)
+    {
+      g_object_unref (priv->timeline);
+      priv->timeline = NULL;
+    }
+
+  if (priv->alpha)
+    {
+      g_object_unref (priv->alpha);
+      priv->alpha = NULL;
+    }
+
+  G_OBJECT_CLASS (nbtk_expander_parent_class)->dispose (object);
+}
+
+static void
+nbtk_expander_finalize (GObject *object)
+{
+  G_OBJECT_CLASS (nbtk_expander_parent_class)->finalize (object);
+}
+
+static void
+timeline_complete (ClutterTimeline *timeline,
+                   ClutterActor    *expander)
+{
+  guchar opacity;
+  ClutterActor *child;
+  NbtkExpanderPrivate *priv = NBTK_EXPANDER (expander)->priv;
+
+  g_signal_emit (expander, expander_signals[EXPAND_COMPLETE], 0);
+
+  child = nbtk_bin_get_child (NBTK_BIN (expander));
+
+  if (!child)
+    return;
+
+  /* if we are "opening" */
+  if (clutter_timeline_get_direction (priv->timeline)
+      != CLUTTER_TIMELINE_FORWARD)
+    return;
+
+  /* we can't do an animation if there is already one in progress,
+   * because we cannot reliably get the actors true opacity
+   */
+  if (clutter_actor_get_animation (child))
+    {
+      clutter_actor_show (child);
+      return;
+    }
+
+
+  opacity = clutter_actor_get_opacity (child);
+  clutter_actor_set_opacity (child, 0);
+
+  clutter_actor_show (child);
+  clutter_actor_animate (child, CLUTTER_EASE_IN_SINE, 100,
+                         "opacity", opacity,
+                         NULL);
+}
+
+static void
+new_frame (ClutterTimeline *timeline,
+           gint             frame_num,
+           ClutterActor    *expander)
+{
+  NbtkExpanderPrivate *priv = NBTK_EXPANDER (expander)->priv;
+
+  priv->progress = clutter_alpha_get_alpha (priv->alpha);
+
+  clutter_actor_queue_relayout (expander);
+}
+
+static void
+nbtk_expander_toggle_expanded (NbtkExpander *expander)
+{
+  NbtkExpanderPrivate *priv = expander->priv;
+  ClutterActor *child;
+
+  priv->expanded = !priv->expanded;
+  g_object_notify ((GObject *) expander, "expanded");
+
+  if (priv->expanded)
+    {
+      clutter_actor_set_name (priv->arrow, "nbtk-expander-arrow-open");
+      nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (expander), "active");
+    }
+  else
+    {
+      clutter_actor_set_name (priv->arrow, "nbtk-expander-arrow-closed");
+      nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (expander), NULL);
+    }
+
+  child = nbtk_bin_get_child (NBTK_BIN (expander));
+
+  if (!child)
+    return;
+
+
+  if (!priv->expanded)
+    {
+      clutter_actor_hide (child);
+      clutter_timeline_set_direction (priv->timeline,
+                                      CLUTTER_TIMELINE_BACKWARD);
+    }
+  else
+    {
+      clutter_timeline_set_direction (priv->timeline,
+                                      CLUTTER_TIMELINE_FORWARD);
+    }
+
+
+  if (!clutter_timeline_is_playing (priv->timeline))
+    clutter_timeline_rewind (priv->timeline);
+
+  clutter_timeline_start (priv->timeline);
+}
+
+static gboolean
+nbtk_expander_button_release (ClutterActor       *actor,
+                              ClutterButtonEvent *event)
+{
+  nbtk_expander_toggle_expanded (NBTK_EXPANDER (actor));
+
+  return FALSE;
 }
 
 static void
 nbtk_expander_get_preferred_width (ClutterActor *actor,
                                    ClutterUnit   for_height,
-                                   ClutterUnit  *min_width_p,
-                                   ClutterUnit  *natural_width_p)
+                                   ClutterUnit  *min_width,
+                                   ClutterUnit  *pref_width)
 {
   NbtkExpanderPrivate *priv = NBTK_EXPANDER (actor)->priv;
+  ClutterActor *child;
   NbtkPadding padding;
-  ClutterUnit header_min, header_natural;
-  ClutterUnit payload_min, payload_natural;
+  ClutterUnit min_child_w, pref_child_w, min_label_w, pref_label_w, arrow_w;
 
-  nbtk_bin_get_padding (NBTK_BIN (actor), &padding);
-  
-  clutter_actor_get_preferred_width (priv->header_button, for_height,
-                                     &header_min, &header_natural);  
+  child = nbtk_bin_get_child (NBTK_BIN (actor));
+  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 
-  payload_min = 0;
-  payload_natural = 0;
-  if (nbtk_button_get_checked (NBTK_BUTTON (priv->header_button)))
+  if (child)
     {
-      clutter_actor_get_preferred_width (priv->payload_bin, for_height,
-                                         &payload_min, &payload_natural);
+      clutter_actor_get_preferred_width (child,
+                                         -1,
+                                         &min_child_w,
+                                         &pref_child_w);
+    }
+  else
+    {
+      min_child_w = 0;
+      pref_child_w = 0;
     }
 
-  if (min_width_p)
-    *min_width_p = MAX (header_min, payload_min) 
-                    + padding.left + padding.right;
+  clutter_actor_get_preferred_width (priv->label,
+                                     -1, &min_label_w, &pref_label_w);
+  clutter_actor_get_preferred_width (priv->arrow,
+                                     -1, NULL, &arrow_w);
 
-  if (natural_width_p)
-    *natural_width_p = MAX (header_natural, payload_natural)
-                        + padding.left + padding.right;
+  /* TODO: create a style property for this padding between arrow and label */
+  if (arrow_w)
+    arrow_w += CLUTTER_UNITS_FROM_INT (6);
+
+  if (min_width)
+    *min_width = padding.left
+                 + MAX (min_child_w, min_label_w + arrow_w)
+                 + padding.right;
+
+  if (pref_width)
+    *pref_width = padding.left
+                  + MAX (pref_child_w, pref_label_w + arrow_w)
+                  + padding.right;
 }
 
 static void
 nbtk_expander_get_preferred_height (ClutterActor *actor,
                                     ClutterUnit   for_width,
-                                    ClutterUnit  *min_height_p,
-                                    ClutterUnit  *natural_height_p)
+                                    ClutterUnit  *min_height,
+                                    ClutterUnit  *pref_height)
 {
   NbtkExpanderPrivate *priv = NBTK_EXPANDER (actor)->priv;
+  ClutterActor *child;
   NbtkPadding padding;
-  ClutterUnit header_min, header_natural;
-  ClutterUnit payload_min, payload_natural;
+  ClutterUnit min_child_h, pref_child_h, min_label_h, pref_label_h, arrow_h;
+  ClutterUnit available_w;
 
-  nbtk_bin_get_padding (NBTK_BIN (actor), &padding);
+  child = nbtk_bin_get_child (NBTK_BIN (actor));
 
-  clutter_actor_get_preferred_height (priv->header_button, for_width,
-                                      &header_min, &header_natural);  
+  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
+  available_w = for_width - padding.left - padding.right;
 
-  payload_min = 0;
-  payload_natural = 0;
-  if (nbtk_button_get_checked (NBTK_BUTTON (priv->header_button)))
+  if (child)
     {
-      clutter_actor_get_preferred_height (priv->payload_bin, for_width,
-                                          &payload_min, &payload_natural);
+      clutter_actor_get_preferred_height (child,
+                                          available_w,
+                                          &min_child_h,
+                                          &pref_child_h);
+      min_child_h += priv->spacing;
+      pref_child_h += priv->spacing;
+
+      min_child_h *= priv->progress;
+      pref_child_h *= priv->progress;
+    }
+  else
+    {
+      min_child_h = 0;
+      pref_child_h = 0;
     }
 
-  if (min_height_p)
-    *min_height_p = header_min + payload_min
-                   + padding.top + padding.bottom;
+  clutter_actor_get_preferred_height (priv->label,
+                                      available_w,
+                                      &min_label_h,
+                                      &pref_label_h);
 
-  if (natural_height_p)
-    *natural_height_p = header_natural + payload_natural
-                       + padding.top + padding.bottom;
+  clutter_actor_get_preferred_height (priv->arrow, -1, NULL, &arrow_h);
+
+  min_label_h = MAX (min_label_h, arrow_h);
+  pref_label_h = MAX (pref_label_h, arrow_h);
+
+  if (min_height)
+    *min_height = padding.top
+                  + min_child_h + min_label_h
+                  + padding.bottom;
+
+  if (pref_height)
+    *pref_height = padding.top
+                   + pref_child_h + pref_label_h
+                   + padding.bottom;
+
 }
 
 static void
@@ -194,264 +337,329 @@ nbtk_expander_allocate (ClutterActor          *actor,
                         const ClutterActorBox *box,
                         gboolean               origin_changed)
 {
+  ClutterActor *child;
   NbtkExpanderPrivate *priv = NBTK_EXPANDER (actor)->priv;
-  ClutterActorBox      header_box;
-  NbtkPadding          padding;
+  ClutterActorBox child_box;
+  NbtkPadding padding;
+  ClutterUnit label_w, label_h;
+  ClutterUnit child_h, child_w;
+  ClutterActorClass *parent_parent;
+  ClutterUnit available_w, available_h, min_w, min_h, full_h, arrow_h, arrow_w;
+  ClutterRequestMode request;
 
-  CLUTTER_ACTOR_CLASS (nbtk_expander_parent_class)
-    ->allocate (actor, box, origin_changed);
+  /* skip NbtkBin allocate */
+  parent_parent = g_type_class_peek_parent (nbtk_expander_parent_class);
+  parent_parent->allocate (actor, box, origin_changed);
 
-  nbtk_bin_get_padding (NBTK_BIN (actor), &padding);
+  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 
-  /* Header button. */
-  header_box.x1 = padding.left;
-  header_box.y1 = padding.top;
-  header_box.x2 = box->x2 - box->x1 - padding.left - padding.right; /* Fill w. */
-  header_box.y2 = header_box.x1 + clutter_actor_get_heightu (priv->header_button);
+  available_w = (box->x2 - box->x1) - padding.left - padding.right;
+  available_h = (box->y2 - box->y1) - padding.top - padding.bottom;
 
-  clutter_actor_allocate (priv->header_button, &header_box, origin_changed);
+  /* visual height of the expander - used for allocating the background */
+  full_h = padding.top + padding.bottom;
 
-  /* Payload. */
-  if (nbtk_button_get_checked (NBTK_BUTTON (priv->header_button)))
+  /* arrow */
+  clutter_actor_get_preferred_width (priv->arrow, -1, NULL, &arrow_w);
+  arrow_w = MIN (arrow_w, available_w);
+
+  clutter_actor_get_preferred_height (priv->arrow, -1, NULL, &arrow_h);
+  arrow_h = MIN (arrow_h, available_h);
+
+  child_box.x1 = padding.left;
+  child_box.x2 = child_box.x1 + arrow_w;
+  child_box.y1 = padding.top;
+  child_box.y2 = child_box.y1 + arrow_h;
+  clutter_actor_allocate (priv->arrow, &child_box, origin_changed);
+
+  /* label */
+  min_h = 0;
+  min_w = 0;
+
+  clutter_actor_get_preferred_width (priv->label,
+                                     available_h, &min_w, &label_w);
+  label_w = CLAMP (label_w, min_w, available_w);
+
+  clutter_actor_get_preferred_height (priv->label,
+                                      label_w, &min_h, &label_h);
+  label_h = CLAMP (label_h, min_h, available_h);
+
+  /* TODO: make a style property for padding between arrow and label */
+  child_box.x1 = padding.left + arrow_w + CLUTTER_UNITS_FROM_INT (6);
+  child_box.x2 = child_box.x1 + label_w;
+  child_box.y1 = padding.top;
+  child_box.y2 = child_box.y1 + label_h;
+  clutter_actor_allocate (priv->label, &child_box, origin_changed);
+
+  full_h += MAX (label_h, arrow_h);
+
+  /* remove label height and spacing for child calculations */
+  available_h -= MAX (label_h, arrow_h) - priv->spacing;
+
+  /* child */
+  child = nbtk_bin_get_child (NBTK_BIN (actor));
+  if (child && CLUTTER_ACTOR_IS_VISIBLE (child))
     {
-      ClutterActorBox payload_box;
+      request = CLUTTER_REQUEST_HEIGHT_FOR_WIDTH;
+      g_object_get (G_OBJECT (child), "request-mode", &request, NULL);
 
-      payload_box.x1 = header_box.x1;
-      payload_box.y1 = header_box.y2;
-      payload_box.x2 = header_box.x2;
-      payload_box.y2 = payload_box.x1 +
-                       clutter_actor_get_height (priv->payload_bin);
+      min_h = 0;
+      min_w = 0;
 
-      /* Sanity check. */
-      payload_box.y2 = MAX (payload_box.y1, payload_box.y2);
+      if (request == CLUTTER_REQUEST_HEIGHT_FOR_WIDTH)
+        {
+          clutter_actor_get_preferred_width (child, available_h, &min_w, &child_w);
+          child_w = CLAMP (child_w, min_w, available_w);
 
-      clutter_actor_allocate (priv->payload_bin, &payload_box, origin_changed);
+          clutter_actor_get_preferred_height (child, child_w, &min_h, &child_h);
+          child_h = CLAMP (child_h, min_h, available_h);
+        }
+      else if (request == CLUTTER_REQUEST_WIDTH_FOR_HEIGHT)
+        {
+          clutter_actor_get_preferred_height (child, available_w, &min_h, &child_h);
+          child_h = CLAMP (child_h, min_h, available_h);
+
+          clutter_actor_get_preferred_width (child, child_h, &min_w, &child_w);
+          child_w = CLAMP (child_w, min_w, available_w);
+        }
+
+      child_box.x1 = padding.left;
+      child_box.x2 = child_box.x1 + child_w;
+      child_box.y1 = padding.top + priv->spacing + MAX (label_h, arrow_h);
+      child_box.y2 = child_box.y2 + child_h;
+      clutter_actor_allocate (child, &child_box, origin_changed);
+
+      full_h += priv->spacing + child_h;
     }
+
 }
 
 static void
 nbtk_expander_paint (ClutterActor *actor)
 {
-  NbtkExpanderPrivate *priv = NBTK_EXPANDER (actor)->priv;
-
   CLUTTER_ACTOR_CLASS (nbtk_expander_parent_class)->paint (actor);
 
-  clutter_actor_paint (priv->header_button);
-
-  if (nbtk_button_get_checked (NBTK_BUTTON (priv->header_button)))
-    clutter_actor_paint (priv->payload_bin);
-}
-
-
-static void
-nbtk_expander_pick (ClutterActor       *actor,
-                    const ClutterColor *pick_color)
-{
-  NbtkExpanderPrivate *priv = NBTK_EXPANDER (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (nbtk_expander_parent_class)->pick (actor, pick_color);
-
-  clutter_actor_paint (priv->header_button);
-
-  if (nbtk_button_get_checked (NBTK_BUTTON (priv->header_button)))
-    clutter_actor_paint (priv->payload_bin);
+  clutter_actor_paint (((NbtkExpander* ) actor)->priv->label);
+  clutter_actor_paint (((NbtkExpander* ) actor)->priv->arrow);
 }
 
 static void
-button_checked_cb (NbtkButton     *button,
-                   GParamSpec     *pspec,
-                   NbtkExpander   *self)
+nbtk_expander_style_changed (NbtkWidget *widget)
 {
-  g_object_notify (G_OBJECT (self), "expanded");
+  NbtkExpander *expander = NBTK_EXPANDER (widget);
+  NbtkExpanderPrivate *priv = expander->priv;
+  const gchar *pseudo_class;
+  ClutterColor *color = NULL;
+  gchar *font_name;
+  gchar *font_string;
+  gint font_size;
+
+  NBTK_WIDGET_CLASS (nbtk_expander_parent_class)->style_changed (widget);
+
+  pseudo_class = nbtk_widget_get_style_pseudo_class (widget);
+
+  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (expander->priv->arrow),
+                                      pseudo_class);
+
+
+  nbtk_stylable_get (NBTK_STYLABLE (widget),
+                     "color", &color,
+                     "font-family", &font_name,
+                     "font-size", &font_size,
+                     NULL);
+
+  if (color)
+    {
+      clutter_text_set_color (CLUTTER_TEXT (priv->label), color);
+      clutter_color_free (color);
+    }
+
+  if (font_name || font_size)
+    {
+      if (font_name && font_size)
+        {
+          font_string = g_strdup_printf ("%s %dpx", font_name, font_size);
+          g_free (font_name);
+        }
+      else
+        {
+          if (font_size)
+            font_string = g_strdup_printf ("%dpx", font_size);
+          else
+            font_string = font_name;
+        }
+
+      clutter_text_set_font_name (CLUTTER_TEXT (priv->label), font_string);
+      g_free (font_string);
+    }
+
 }
+
+static gboolean
+nbtk_expander_enter (ClutterActor         *actor,
+                     ClutterCrossingEvent *event)
+{
+  if (!NBTK_EXPANDER (actor)->priv->expanded)
+    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (actor), "hover");
+
+  return FALSE;
+}
+
+static gboolean
+nbtk_expander_leave (ClutterActor         *actor,
+                     ClutterCrossingEvent *event)
+{
+  if (!NBTK_EXPANDER (actor)->priv->expanded)
+    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (actor), NULL);
+
+  return FALSE;
+}
+
+
 
 static void
 nbtk_expander_class_init (NbtkExpanderClass *klass)
 {
-  GObjectClass      *gobject_class = G_OBJECT_CLASS (klass);
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  GParamSpec        *pspec;
+  NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
+  GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (NbtkExpanderPrivate));
 
-  gobject_class->finalize = nbtk_expander_finalize;
-  gobject_class->get_property = nbtk_expander_get_property;
-  gobject_class->set_property = nbtk_expander_set_property;
+  object_class->get_property = nbtk_expander_get_property;
+  object_class->set_property = nbtk_expander_set_property;
+  object_class->dispose = nbtk_expander_dispose;
+  object_class->finalize = nbtk_expander_finalize;
 
-  actor_class->get_preferred_height = nbtk_expander_get_preferred_height;
-  actor_class->get_preferred_width = nbtk_expander_get_preferred_width;
+  actor_class->button_release_event = nbtk_expander_button_release;
   actor_class->allocate = nbtk_expander_allocate;
+  actor_class->get_preferred_width = nbtk_expander_get_preferred_width;
+  actor_class->get_preferred_height = nbtk_expander_get_preferred_height;
   actor_class->paint = nbtk_expander_paint;
-  actor_class->pick = nbtk_expander_pick;
+  actor_class->enter_event = nbtk_expander_enter;
+  actor_class->leave_event = nbtk_expander_leave;
 
-  pspec = g_param_spec_string ("expanded",
-                               "Expanded",
-                               "Expansion state of the widget",
-                               FALSE, G_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class, PROP_EXPANDED, pspec);
+  widget_class->style_changed = nbtk_expander_style_changed;
 
-  pspec = g_param_spec_string ("label",
-                               "Label",
-                               "Label of the header",
-                               NULL, G_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class, PROP_LABEL, pspec);
+  pspec = g_param_spec_boolean ("expanded",
+                                "Expanded",
+                                "Indicates that the expander is open or closed",
+                                TRUE,
+                                NBTK_PARAM_READWRITE);
+  g_object_class_install_property (object_class,
+                                   PROP_EXPANDED,
+                                   pspec);
+
+  /**
+   * NbtkExpander::expand-complete:
+   * @expander: the object that received the signal
+   *
+   * Emitted after the expand animation finishes. Check the "expanded" property
+   * of the #NbtkExpander to determine if the expander is expanded or not.
+   */
+
+  expander_signals[EXPAND_COMPLETE] =
+    g_signal_new ("expand-complete",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (NbtkExpanderClass, expand_complete),
+                  NULL, NULL,
+                  _nbtk_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
 }
 
 static void
 nbtk_expander_init (NbtkExpander *self)
 {
-  self->priv = NBTK_EXPANDER_GET_PRIVATE (self);
+  NbtkExpanderPrivate *priv = self->priv = GET_PRIVATE (self);
 
-  self->priv->header_button = (ClutterActor *)
-                                g_object_new (NBTK_TYPE_BUTTON,
-                                              "toggle-mode", TRUE,
-                                              "x-align", 0.,
-                                              NULL);
-  clutter_actor_set_parent (self->priv->header_button, CLUTTER_ACTOR (self));
-  g_signal_connect (self->priv->header_button, "notify::checked",
-                    G_CALLBACK (button_checked_cb), self);
+  priv->label = clutter_text_new ();
+  clutter_actor_set_parent (priv->label, (ClutterActor *) self);
 
-  /* Initially invisible, for consistency with the un-toggled button. */
-  self->priv->payload_bin = (ClutterActor *) g_object_new (NBTK_TYPE_BIN,
-                                                            "x-align", 0.,
-                                                            NULL);
-  clutter_actor_set_parent (self->priv->payload_bin, CLUTTER_ACTOR (self));
-  clutter_actor_hide (self->priv->payload_bin);
-}
+  priv->arrow = (ClutterActor *) nbtk_icon_new ();
+  clutter_actor_set_parent (priv->arrow, (ClutterActor *) self);
+  clutter_actor_set_name (priv->arrow, "nbtk-expander-arrow-open");
+  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (self), "active");
 
-static void
-get_payload_child_cb (ClutterActor   *actor,
-                      ClutterActor  **actor_return_location)
-{
-  /* Iterating over a single-child container. */
-  *actor_return_location = actor;
+  /* TODO: make this a style property */
+  priv->spacing = CLUTTER_UNITS_FROM_INT (10);
+
+  priv->progress = 1.0;
+  priv->expanded = 1;
+
+  priv->timeline = clutter_timeline_new_for_duration (250);
+  clutter_timeline_set_direction (priv->timeline, CLUTTER_TIMELINE_BACKWARD);
+  g_signal_connect (priv->timeline, "new-frame", G_CALLBACK (new_frame), self);
+  g_signal_connect (priv->timeline, "completed", G_CALLBACK (timeline_complete), self);
+
+  priv->alpha = clutter_alpha_new_full (priv->timeline, CLUTTER_EASE_IN_SINE);
+
+  clutter_actor_set_reactive ((ClutterActor *) self, TRUE);
 }
 
 /**
  * nbtk_expander_new:
  *
- * Create a new expander.
+ * Creates a new #NbtkExpander
  *
- * Returns: a new #NbtkExpander
+ * Returns: the newly allocated #NbtkExpander
  */
-NbtkWidget *
-nbtk_expander_new (const gchar *label)
+NbtkWidget*
+nbtk_expander_new (void)
 {
-  return g_object_new (NBTK_TYPE_EXPANDER,
-                       "label", label,
-                       NULL);
+  return g_object_new (NBTK_TYPE_EXPANDER, NULL);
 }
 
-gboolean
-nbtk_expander_get_expanded (NbtkExpander *self)
-{
-  g_return_val_if_fail (self, FALSE);
-  
-  return nbtk_button_get_checked (NBTK_BUTTON (self->priv->header_button));
-}
-
+/**
+ * nbtk_expander_set_label:
+ * @expander: A #NbtkExpander
+ * @label: string to set as the expander label
+ *
+ * Sets the text displayed as the title of the expander
+ */
 void
-nbtk_expander_set_expanded (NbtkExpander *self,
+nbtk_expander_set_label (NbtkExpander *expander,
+                         const gchar *label)
+{
+  g_return_if_fail (NBTK_IS_EXPANDER (expander));
+  g_return_if_fail (label != NULL);
+
+  clutter_text_set_text (CLUTTER_TEXT (expander->priv->label), label);
+}
+
+/**
+ * nbtk_expander_set_expanded:
+ * @expander: A #NbtkExpander
+ * @expanded: the state of the expander to set
+ *
+ * Set the state of the expander. This will cause the expander to open and
+ * close if the state is changed.
+ */
+void
+nbtk_expander_set_expanded (NbtkExpander *expander,
                             gboolean      expanded)
 {
-  g_return_if_fail (self);
-  
-  nbtk_button_set_checked (NBTK_BUTTON (self->priv->header_button), expanded);
-}
+  g_return_if_fail (NBTK_IS_EXPANDER (expander));
 
-/* FIXME: this can go away once we have NbtkBin */
-ClutterActor *
-nbtk_expander_get_child (NbtkExpander *self)
-{
-  ClutterActor *child;
-  
-  g_return_val_if_fail (self, NULL);
-
-  child = NULL;
-  clutter_container_foreach (CLUTTER_CONTAINER (self->priv->payload_bin),
-                             (ClutterCallback) get_payload_child_cb, &child);
-                             
-  return child;
-}
-
-const gchar *
-nbtk_expander_get_label (NbtkExpander *self)
-{
-  g_return_val_if_fail (self, NULL);
-
-  return nbtk_button_get_label (NBTK_BUTTON (self->priv->header_button));
-}
-
-/*
- * ClutterContainer interface.
- */
-
-static void
-nbtk_expander_add_actor (ClutterContainer *container,
-                         ClutterActor     *actor)
-{
-  NbtkExpanderPrivate *priv = NBTK_EXPANDER (container)->priv;
-
-  clutter_container_add (CLUTTER_CONTAINER (priv->payload_bin),
-                         actor, NULL);
-
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
-
-  g_signal_emit_by_name (container, "actor-added", actor);
-}
-
-typedef struct {
-  const ClutterActor  *actor;
-  gboolean             actor_found;
-} match_data_t;
-
-static void
-match_child_cb (ClutterActor  *actor,
-                match_data_t  *match_data)
-{
-  if (match_data->actor == actor)
-    match_data->actor_found = TRUE;
-}
-
-static void
-nbtk_expander_remove_actor (ClutterContainer *container,
-                            ClutterActor     *actor)
-{
-  NbtkExpanderPrivate *priv = NBTK_EXPANDER (container)->priv;
-  match_data_t         match_data;
-
-  /* Need to determine whether child is valid in order to know
-   * if the "actor-removed" signal should be emitted. */
-  match_data.actor = actor;
-  match_data.actor_found = FALSE;
-  clutter_container_foreach (CLUTTER_CONTAINER (priv->payload_bin),
-                             (ClutterCallback) match_child_cb,
-                             &match_data);
-
-  if (match_data.actor_found)
+  if (expander->priv->expanded != expanded)
     {
-      clutter_container_remove (CLUTTER_CONTAINER (priv->payload_bin),
-                                actor, NULL);
-      g_signal_emit_by_name (container, "actor-removed", actor);
+      nbtk_expander_toggle_expanded (expander);
     }
 }
 
-static void
-nbtk_expander_foreach (ClutterContainer *container,
-                       ClutterCallback   callback,
-                       gpointer          callback_data)
+/**
+ * nbtk_expander_get_expanded:
+ * @expander: a #NbtkExpander
+ *
+ * Get the current state of the expander
+ *
+ * Returns: #TRUE if the expander is open, #FALSE if it is closed
+ */
+gboolean
+nbtk_expander_get_expanded (NbtkExpander *expander)
 {
-  NbtkExpanderPrivate *priv = NBTK_EXPANDER (container)->priv;
+  g_return_val_if_fail (NBTK_IS_EXPANDER (expander), FALSE);
 
-  clutter_container_foreach (CLUTTER_CONTAINER (priv->payload_bin),
-                             callback, callback_data);
+  return expander->priv->expanded;
 }
-
-static void
-nbtk_container_iface_init (ClutterContainerIface *iface)
-{
-  iface->add = nbtk_expander_add_actor;
-  iface->remove = nbtk_expander_remove_actor;
-  iface->foreach = nbtk_expander_foreach;
-}
-

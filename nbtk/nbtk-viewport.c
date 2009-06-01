@@ -1,24 +1,26 @@
-/* nbtk-viewport.c: Viewport actor
+/*
+ * nbtk-viewport.c: Viewport actor
  *
- * Copyright (C) 2008 OpenedHand
+ * Copyright 2008 OpenedHand
+ * Copyright 2009 Intel Corporation.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  * Boston, MA 02111-1307, USA.
  *
  * Written by: Chris Lord <chris@openedhand.com>
  * Port to Nbtk by: Robert Staudinger <robsta@openedhand.com>
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -195,21 +197,18 @@ nbtk_viewport_dispose (GObject *gobject)
 }
 
 static ClutterActor *
-get_natural_child_sizeu (NbtkViewport    *self,
-                         ClutterUnit    *natural_width,
-                         ClutterUnit    *natural_height)
+get_child_and_natural_size (NbtkViewport  *self,
+                            ClutterUnit   *natural_width,
+                            ClutterUnit   *natural_height)
 {
-  GList *children = clutter_container_get_children (CLUTTER_CONTAINER (self));
+  /* NbtkBin is a single-child container,
+    * let it grow as big as it wants. */
+  ClutterActor        *child;
+  ClutterRequestMode   mode;
 
-  if (children)
+  child = nbtk_bin_get_child (NBTK_BIN (self));
+  if (child)
     {
-      /* NbtkWidget is a single-child container,
-       * let it grow as big as it wants. */
-      ClutterActor        *child;
-      ClutterRequestMode   mode;
-
-      child = CLUTTER_ACTOR (children->data);
-      g_list_free (children), children = NULL;
 
       g_object_get (G_OBJECT (child), "request-mode", &mode, NULL);
       if (mode == CLUTTER_REQUEST_HEIGHT_FOR_WIDTH)
@@ -273,7 +272,9 @@ nbtk_viewport_allocate (ClutterActor          *self,
   natural_box.x1 = 0;
   natural_box.y1 = 0;
 
-  if (NULL != (child = get_natural_child_sizeu (NBTK_VIEWPORT (self), &natural_width, &natural_height)))
+  if (NULL != (child = get_child_and_natural_size (NBTK_VIEWPORT (self),
+                                                   &natural_width,
+                                                   &natural_height)))
     {
       natural_box.x2 = natural_width;
       natural_box.y2 = natural_height;
@@ -579,6 +580,9 @@ nbtk_viewport_init (NbtkViewport *self)
 
   g_signal_connect (self, "notify::clip",
                     G_CALLBACK (clip_notify_cb), self);
+
+
+  g_object_set (G_OBJECT (self), "reactive", FALSE, NULL);
 }
 
 NbtkWidget *

@@ -1,25 +1,25 @@
-/* nbtk-button.c: Plain button actor
+/*
+ * nbtk-button.c: Plain button actor
  *
  * Copyright 2007 OpenedHand
- * Copyright 2008 Intel Corporation
+ * Copyright 2008, 2009 Intel Corporation.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Written by: Emmanuele Bassi <ebassi@openedhand.com>
  *             Thomas Wood <thomas@linux.intel.com>
+ *
  */
 
 /**
@@ -48,8 +48,7 @@
 #include "nbtk-style.h"
 #include "nbtk-texture-frame.h"
 #include "nbtk-texture-cache.h"
-#include "nbtk-tooltip.h"
-#include "nbtk-table.h"
+#include "nbtk-private.h"
 
 enum
 {
@@ -77,8 +76,6 @@ struct _NbtkButtonPrivate
 
   ClutterActor *label;
   ClutterActor *icon;
-  NbtkWidget   *table;
-  NbtkWidget   *tooltip;
 
   guint8 old_opacity;
 
@@ -90,26 +87,62 @@ struct _NbtkButtonPrivate
 
   gint transition_duration;
 
-  ClutterActor     *old_bg;
   ClutterAnimation *animation;
+
+  gint spacing;
 };
 
 static guint button_signals[LAST_SIGNAL] = { 0, };
 
-G_DEFINE_TYPE (NbtkButton, nbtk_button, NBTK_TYPE_BIN)
+static void nbtk_stylable_iface_init (NbtkStylableIface *iface);
 
-static void destroy_old_bg (NbtkButton *button);
+G_DEFINE_TYPE_WITH_CODE (NbtkButton, nbtk_button, NBTK_TYPE_BIN,
+                         G_IMPLEMENT_INTERFACE (NBTK_TYPE_STYLABLE,
+                                                nbtk_stylable_iface_init));
 
 static void
-destroy_old_bg (NbtkButton *button)
+nbtk_stylable_iface_init (NbtkStylableIface *iface)
+{
+  static gboolean is_initialized = FALSE;
+
+  if (G_UNLIKELY (!is_initialized))
+    {
+      ClutterColor bg_color = { 0xcc, 0xcc, 0xcc, 0x00 };
+      GParamSpec *pspec;
+
+      is_initialized = TRUE;
+
+      pspec = g_param_spec_int ("border-spacing",
+                                "Border Spacing",
+                                "Spacing between internal elements",
+                                0, G_MAXINT, 6,
+                                G_PARAM_READWRITE);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_BUTTON, pspec);
+
+
+      is_initialized = TRUE;
+
+      pspec = clutter_param_spec_color ("background-color",
+                                        "Background Color",
+                                        "The background color of an actor",
+                                        &bg_color,
+                                        G_PARAM_READWRITE);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_BUTTON, pspec);
+    }
+}
+
+
+
+static void
+nbtk_button_set_style_pseudo_class (NbtkButton  *button,
+                                    const gchar *pseudo_class)
 {
   NbtkButtonPrivate *priv = button->priv;
 
-  if (priv->old_bg)
-    {
-      clutter_actor_unparent (priv->old_bg);
-      priv->old_bg = NULL;
-    }
+  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), pseudo_class);
+
+  if (NBTK_IS_WIDGET (priv->icon))
+    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (priv->icon), pseudo_class);
 }
 
 static inline void
@@ -159,48 +192,46 @@ nbtk_button_style_changed (NbtkWidget *widget)
 {
   NbtkButton *button = NBTK_BUTTON (widget);
   NbtkButtonPrivate *priv = button->priv;
-  ClutterActor *bg_image;
+  ClutterActor *bg_image = NULL;
+  NbtkButtonClass *button_class = NBTK_BUTTON_GET_CLASS (button);
+
+  /* get the spacing value */
+  nbtk_stylable_get (NBTK_STYLABLE (widget),
+                     "border-spacing", &priv->spacing,
+                     NULL);
 
   /* update the label styling */
   if (priv->label)
     nbtk_button_update_label_style (button);
 
-  /* Remove the old background if it's around */
-  destroy_old_bg (button);
-
   /* Store background, NbtkWidget will unparent it */
-  bg_image = nbtk_widget_get_border_image (widget);
-  if (bg_image)
-    priv->old_bg = g_object_ref (bg_image);
+  if (button_class->transition)
+    {
+      bg_image = nbtk_widget_get_border_image (widget);
+
+      /* ref because widget->style_changed will unparent it */
+      if (bg_image)
+        g_object_ref (bg_image);
+    }
 
   /* Chain up to update style bits */
   NBTK_WIDGET_CLASS (nbtk_button_parent_class)->style_changed (widget);
-  
-  /* Parent old background */
-  if (priv->old_bg)
-    {
-      clutter_actor_set_parent (priv->old_bg, CLUTTER_ACTOR (button));
-      g_object_unref (priv->old_bg);
-    }
 
-  /* Do animation */
-  /* run a transition effect if applicable */
-  if (NBTK_BUTTON_GET_CLASS (button)->transition)
+  /* run a transition if applicable */
+  if (button_class->transition)
     {
-      if (NBTK_BUTTON_GET_CLASS (button)->transition (button, priv->old_bg))
-        destroy_old_bg (button);
-    }
-  else
-    {
-      /* no transition, so just remove the old background */
-      destroy_old_bg (button);
+      button_class->transition (button, bg_image);
+
+      /* unref our earlier ref */
+      if (bg_image)
+        g_object_unref (bg_image);
     }
 }
 
 static void
 nbtk_button_real_pressed (NbtkButton *button)
 {
-  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "active");
+  nbtk_button_set_style_pseudo_class (button, "active");
 }
 
 static void
@@ -209,11 +240,11 @@ nbtk_button_real_released (NbtkButton *button)
   NbtkButtonPrivate *priv = button->priv;
 
   if (priv->is_checked)
-    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "checked");
+    nbtk_button_set_style_pseudo_class (button, "checked");
   else if (!priv->is_hover)
-    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), NULL);
+    nbtk_button_set_style_pseudo_class (button, NULL);
   else
-    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "hover");
+    nbtk_button_set_style_pseudo_class (button, "hover");
 
 }
 
@@ -221,6 +252,7 @@ static gboolean
 nbtk_button_button_press (ClutterActor       *actor,
                           ClutterButtonEvent *event)
 {
+  nbtk_widget_hide_tooltip (NBTK_WIDGET (actor));
 
   if (event->button == 1)
     {
@@ -257,8 +289,6 @@ nbtk_button_button_release (ClutterActor       *actor,
       if (button->priv->is_toggle)
         {
           nbtk_button_set_checked (button, !button->priv->is_checked);
-          if (button->priv->tooltip)
-            nbtk_tooltip_hide (NBTK_TOOLTIP (button->priv->tooltip));
         }
 
       button->priv->is_pressed = FALSE;
@@ -281,14 +311,11 @@ nbtk_button_enter (ClutterActor         *actor,
   NbtkButton *button = NBTK_BUTTON (actor);
 
   if (!button->priv->is_checked)
-    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "hover");
+    nbtk_button_set_style_pseudo_class (button, "hover");
 
   button->priv->is_hover = 1;
 
-  if (button->priv->tooltip)
-    nbtk_tooltip_show (NBTK_TOOLTIP (button->priv->tooltip));
-
-  return FALSE;
+  return CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->enter_event (actor, event);
 }
 
 static gboolean
@@ -298,7 +325,6 @@ nbtk_button_leave (ClutterActor         *actor,
   NbtkButton *button = NBTK_BUTTON (actor);
 
   button->priv->is_hover = 0;
-
 
   if (button->priv->is_pressed)
     {
@@ -313,14 +339,11 @@ nbtk_button_leave (ClutterActor         *actor,
     }
 
   if (button->priv->is_checked)
-    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "checked");
+    nbtk_button_set_style_pseudo_class (button, "checked");
   else
-    nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), NULL);
+    nbtk_button_set_style_pseudo_class (button, NULL);
 
-  if (button->priv->tooltip)
-    nbtk_tooltip_hide (NBTK_TOOLTIP (button->priv->tooltip));
-
-  return FALSE;
+  return CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->leave_event (actor, event);
 }
 
 static void
@@ -397,11 +420,121 @@ nbtk_button_finalize (GObject *gobject)
 static void
 nbtk_button_dispose (GObject *gobject)
 {
-  NbtkButton *button = NBTK_BUTTON (gobject);
+  NbtkButtonPrivate *priv = NBTK_BUTTON (gobject)->priv;
 
-  destroy_old_bg (button);
+  if (priv->icon)
+    {
+      clutter_actor_unparent (priv->icon);
+      priv->icon = NULL;
+    }
 
   G_OBJECT_CLASS (nbtk_button_parent_class)->dispose (gobject);
+}
+
+static void
+nbtk_button_get_preferred_width (ClutterActor *self,
+                                 ClutterUnit   for_height,
+                                 ClutterUnit  *min_width_p,
+                                 ClutterUnit  *natural_width_p)
+{
+  NbtkButtonPrivate *priv = NBTK_BUTTON (self)->priv;
+  NbtkPadding padding;
+  ClutterUnit icon_w, min_child_w, natural_child_w;
+  ClutterActor *child;
+
+  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
+
+  if (priv->icon)
+    {
+      clutter_actor_get_preferred_width (priv->icon, -1, NULL, &icon_w);
+
+      /* increase icon_w to account for border-spacing */
+      icon_w += priv->spacing;
+    }
+  else
+    {
+      icon_w = 0;
+    }
+
+  child = nbtk_bin_get_child (NBTK_BIN (self));
+
+  if (child)
+    {
+      clutter_actor_get_preferred_width (child,
+                                         for_height - padding.top - padding.bottom,
+                                         &min_child_w,
+                                         &natural_child_w);
+
+    }
+  else
+    {
+      min_child_w = 0;
+      natural_child_w = 0;
+    }
+
+  if (min_width_p)
+    *min_width_p = padding.left + icon_w + min_child_w + padding.right;
+
+  if (natural_width_p)
+    *natural_width_p = padding.left + icon_w + natural_child_w + padding.right;
+}
+
+static void
+nbtk_button_get_preferred_height (ClutterActor *self,
+                                  ClutterUnit   for_width,
+                                  ClutterUnit  *min_height_p,
+                                  ClutterUnit  *natural_height_p)
+{
+  NbtkButtonPrivate *priv = NBTK_BUTTON (self)->priv;
+  NbtkPadding padding;
+  ClutterUnit icon_h, min_child_h, natural_child_h;
+  ClutterActor *child;
+
+  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
+
+  if (priv->icon)
+    {
+      clutter_actor_get_preferred_height (priv->icon, -1, NULL, &icon_h);
+    }
+  else
+    {
+      icon_h = 0;
+    }
+
+  child = nbtk_bin_get_child (NBTK_BIN (self));
+
+  if (child)
+    {
+      clutter_actor_get_preferred_height (child,
+                                          for_width - padding.left - padding.right,
+                                          &min_child_h,
+                                          &natural_child_h);
+    }
+  else
+    {
+      min_child_h = 0;
+      natural_child_h = 0;
+    }
+
+  /* check the icon is not bigger than the min or natural height of the child
+   * if so, increase the min or natural height required
+   */
+
+  if (icon_h > min_child_h)
+    min_child_h = icon_h;
+
+  if (icon_h > natural_child_h)
+    natural_child_h = icon_h;
+
+  if (min_height_p)
+    {
+      *min_height_p = padding.top + min_child_h + padding.bottom;
+    }
+
+  if (natural_height_p)
+    {
+      *natural_height_p = padding.top + natural_child_h + padding.bottom;
+    }
 }
 
 static void
@@ -411,46 +544,120 @@ nbtk_button_allocate (ClutterActor          *self,
 {
   NbtkButton *button = NBTK_BUTTON (self);
   NbtkButtonPrivate *priv = button->priv;
+  ClutterActor *child;
+  ClutterUnit icon_w, icon_h;
+  NbtkPadding padding;
 
   CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->allocate (self, box, absolute_origin_changed);
 
-  if (priv->old_bg)
-    {
-      ClutterActorBox frame_box = {
-          0, 0, box->x2 - box->x1, box->y2 - box->y1
-      };
 
-      clutter_actor_allocate (priv->old_bg,
-                              &frame_box,
-                              absolute_origin_changed);
+  nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
+
+
+  /* we re-allocate the contents if an icon is set */
+  if (priv->icon)
+    {
+      ClutterActorBox icon_box;
+
+      clutter_actor_get_preferred_width (priv->icon, -1, NULL, &icon_w);
+      clutter_actor_get_preferred_height (priv->icon, -1, NULL, &icon_h);
+
+      icon_box.x1 = padding.left;
+      icon_box.x2 = icon_box.x1 + icon_w;
+
+      icon_box.y1 = (int) (box->y2 - box->y1) / 2 - (int) icon_h / 2;
+      icon_box.y2 = icon_box.y1 + icon_h;
+
+      clutter_actor_allocate (priv->icon, &icon_box, absolute_origin_changed);
+
+      /* increase icon_w to account for border-spacing */
+      icon_w += priv->spacing;
+    }
+  else
+    {
+      icon_w = 0;
+      icon_h = 0;
+    }
+
+  child = nbtk_bin_get_child (NBTK_BIN (self));
+  if (child)
+    {
+      ClutterUnit natural_width, natural_height;
+      ClutterUnit min_width, min_height;
+      ClutterUnit child_width, child_height;
+      ClutterUnit available_width, available_height;
+      ClutterRequestMode request;
+      ClutterActorBox allocation = { 0, };
+      gdouble x_align, y_align;
+
+      _nbtk_bin_get_align_factors (NBTK_BIN (self), &x_align, &y_align);
+
+      available_width  = box->x2 - box->x1
+                       - padding.left - padding.right
+                       - icon_w;
+      available_height = box->y2 - box->y1
+                       - padding.top - padding.bottom;
+
+      if (available_width < 0)
+        available_width = 0;
+
+      if (available_height < 0)
+        available_height = 0;
+
+      request = CLUTTER_REQUEST_HEIGHT_FOR_WIDTH;
+      g_object_get (G_OBJECT (child), "request-mode", &request, NULL);
+
+      if (request == CLUTTER_REQUEST_HEIGHT_FOR_WIDTH)
+        {
+          clutter_actor_get_preferred_width (child, available_height,
+                                             &min_width,
+                                             &natural_width);
+
+          child_width = CLAMP (natural_width, min_width, available_width);
+
+          clutter_actor_get_preferred_height (child, child_width,
+                                              &min_height,
+                                              &natural_height);
+
+          child_height = CLAMP (natural_height, min_height, available_height);
+        }
+      else
+        {
+          clutter_actor_get_preferred_height (child, available_width,
+                                              &min_height,
+                                              &natural_height);
+
+          child_height = CLAMP (natural_height, min_height, available_height);
+
+          clutter_actor_get_preferred_width (child, child_height,
+                                             &min_width,
+                                             &natural_width);
+
+          child_width = CLAMP (natural_width, min_width, available_width);
+        }
+
+      allocation.x1 = (int) ((available_width - child_width) * x_align
+                    + padding.left + icon_w);
+      allocation.y1 = (int) ((available_height - child_height) * y_align
+                    + padding.top);
+      allocation.x2 = allocation.x1 + child_width;
+      allocation.y2 = allocation.y1 + child_height;
+
+      clutter_actor_allocate (child, &allocation, absolute_origin_changed);
     }
 }
 
 static void
-nbtk_button_draw_background (NbtkWidget         *self,
-                             ClutterActor       *background,
-                             const ClutterColor *color)
+nbtk_button_paint (ClutterActor *self)
 {
   NbtkButtonPrivate *priv = NBTK_BUTTON (self)->priv;
-  NbtkWidgetClass *parent_class;
 
-  parent_class = NBTK_WIDGET_CLASS (nbtk_button_parent_class);
-  parent_class->draw_background (self, background, color);
-  
-  if (priv->old_bg)
-    clutter_actor_paint (priv->old_bg);
-}
+  /* chain up - this should paint the child and background */
+  CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->paint (self);
 
-static void
-nbtk_button_hide (ClutterActor *actor)
-{
-  NbtkButton *button = (NbtkButton *) actor;
-
-  /* hide the tooltip, if there is one */
-  if (button->priv->tooltip)
-    nbtk_tooltip_hide (NBTK_TOOLTIP (button->priv->tooltip));
-
-  CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->hide (actor);
+  /* now paint the button icon */
+  if (priv->icon)
+    clutter_actor_paint (priv->icon);
 }
 
 static void
@@ -476,10 +683,12 @@ nbtk_button_class_init (NbtkButtonClass *klass)
   actor_class->enter_event = nbtk_button_enter;
   actor_class->leave_event = nbtk_button_leave;
   actor_class->allocate = nbtk_button_allocate;
-  actor_class->hide = nbtk_button_hide;
+  actor_class->get_preferred_height = nbtk_button_get_preferred_height;
+  actor_class->get_preferred_width = nbtk_button_get_preferred_width;
+
+  actor_class->paint = nbtk_button_paint;
 
   nbtk_widget_class->style_changed = nbtk_button_style_changed;
-  nbtk_widget_class->draw_background = nbtk_button_draw_background;
 
   pspec = g_param_spec_string ("label",
                                "Label",
@@ -530,10 +739,9 @@ nbtk_button_init (NbtkButton *button)
 {
   button->priv = NBTK_BUTTON_GET_PRIVATE (button);
   button->priv->transition_duration = 250;
+  button->priv->spacing = 6;
 
-  button->priv->table = g_object_new (NBTK_TYPE_TABLE, "stylable", FALSE, NULL);
-  clutter_container_add_actor (CLUTTER_CONTAINER (button),
-                               CLUTTER_ACTOR (button->priv->table));
+  clutter_actor_set_reactive ((ClutterActor *) button, TRUE);
 }
 
 /**
@@ -615,12 +823,7 @@ nbtk_button_set_label (NbtkButton  *button,
                                   "ellipsize", PANGO_ELLIPSIZE_MIDDLE,
                                   "use-markup", TRUE,
                                   NULL);
-      nbtk_table_add_actor (NBTK_TABLE (priv->table), priv->label, 0, 1);
-      clutter_container_child_set (CLUTTER_CONTAINER (priv->table),
-                                   priv->label,
-                                   "y-align", 0.5,
-                                   "y-fill", FALSE,
-                                   NULL);
+      clutter_container_add (CLUTTER_CONTAINER (button), priv->label, NULL);
     }
 
 
@@ -699,12 +902,12 @@ nbtk_button_set_checked (NbtkButton  *button,
       button->priv->is_checked = checked;
 
       if (checked)
-        nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "checked");
+        nbtk_button_set_style_pseudo_class (button, "checked");
       else
         if (button->priv->is_hover)
-          nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), "hover");
+          nbtk_button_set_style_pseudo_class (button, "hover");
         else
-          nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (button), NULL);
+          nbtk_button_set_style_pseudo_class (button, NULL);
     }
 
   g_object_notify (G_OBJECT (button), "checked");
@@ -732,15 +935,15 @@ nbtk_button_set_icon_from_file (NbtkButton *button,
   if (filename == NULL)
     {
       if (priv->icon)
-        clutter_container_remove_actor (CLUTTER_CONTAINER (priv->table),
-                                        priv->icon);
+        clutter_actor_unparent (priv->icon);
+      priv->icon = NULL;
       priv->is_icon_set = FALSE;
     }
 
   if (!priv->icon)
     {
       priv->icon = clutter_texture_new_from_file (filename, &err);
-      nbtk_table_add_actor (NBTK_TABLE (priv->table), priv->icon, 0, 0);
+      clutter_actor_set_parent (priv->icon, CLUTTER_ACTOR (button));
     }
   else
     {
@@ -760,15 +963,16 @@ nbtk_button_set_icon_from_file (NbtkButton *button,
 }
 
 /**
- * nbtk_button_set_tooltip:
+ * nbtk_button_set_icon:
  * @button: a #NbtkButton
- * @label: text to display in the tooltip, or NULL to unset the tooltip
+ * @icon: #ClutterActor to us as icon
  *
- * Set or remove a tooltip from the button.
+ * Sets the icon of the button to the actor specified in @icon.
+ * If @icon is %NULL, the current icon is removed.
  */
 void
-nbtk_button_set_tooltip (NbtkButton  *button,
-                         const gchar *label)
+nbtk_button_set_icon (NbtkButton    *button,
+                      ClutterActor  *icon)
 {
   NbtkButtonPrivate *priv;
 
@@ -776,13 +980,33 @@ nbtk_button_set_tooltip (NbtkButton  *button,
 
   priv = button->priv;
 
-  if (label)
+  if (priv->icon)
     {
-      priv->tooltip = g_object_new (NBTK_TYPE_TOOLTIP,
-                                    "widget", button,
-                                    "label", label,
-                                    NULL);
+      clutter_actor_unparent (priv->icon);
+      priv->icon = NULL;
+      priv->is_icon_set = FALSE;
     }
-  else
-    g_object_unref (priv->tooltip);
+
+  priv->icon = icon;
+  if (priv->icon)
+    {
+      clutter_actor_set_parent (priv->icon, CLUTTER_ACTOR (button));
+      priv->is_icon_set = TRUE;
+    }
+}
+
+/**
+ * nbtk_button_set_tooltip:
+ * @button: a #NbtkButton
+ * @label: text to display in the tooltip, or NULL to unset the tooltip
+ *
+ * Set or remove a tooltip from the button.
+ *
+ * Deprecated: use nbtk_widget_set_tooltip_text() instead
+ */
+void
+nbtk_button_set_tooltip (NbtkButton  *button,
+                         const gchar *label)
+{
+  nbtk_widget_set_tooltip_text (NBTK_WIDGET (button), label);
 }

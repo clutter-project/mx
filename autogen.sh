@@ -38,5 +38,5 @@ fi
 
 cd $olddir
 
-$srcdir/configure --enable-maintainer-mode "$@" && \
+$srcdir/configure --enable-maintainer-mode --disable-static "$@" && \
   echo "Now type 'make' to compile $PROJECT."

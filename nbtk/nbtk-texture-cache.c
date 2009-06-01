@@ -1,21 +1,31 @@
-/* nbtk-widget.h: Base class for Nbtk actors
+/*
+ * nbtk-widget.h: Base class for Nbtk actors
  *
- * Copyright (C) 2007 OpenedHand
+ * Copyright 2007 OpenedHand
+ * Copyright 2009 Intel Corporation.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  * Boston, MA 02111-1307, USA.
+ *
+ */
+
+/**
+ * SECTION:nbtk-texture-cache
+ * @short_description: A per-process store to cache textures
+ *
+ * #NbtkTextureCache allows an application to re-use an previously loaded
+ * textures.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -41,8 +51,6 @@ typedef struct _NbtkTextureCachePrivate NbtkTextureCachePrivate;
 struct _NbtkTextureCachePrivate
 {
   GHashTable  *cache;
-  GList       *loading;
-  GThreadPool *thread_pool;
 };
 
 typedef struct FinalizedClosure
@@ -54,23 +62,9 @@ typedef struct FinalizedClosure
 enum
 {
   PROP_0,
-  
-  PROP_MAX_THREADS
 };
-
-enum
-{
-  LOADED,
-  ERROR_LOADING,
-
-  LAST_SIGNAL
-};
-
-static guint signals[LAST_SIGNAL] = { 0, };
 
 static NbtkTextureCache* __cache_singleton = NULL;
-
-static void texture_loading_thread_func (gpointer data, gpointer user_data);
 
 static void
 nbtk_texture_cache_set_property (GObject      *object,
@@ -78,15 +72,8 @@ nbtk_texture_cache_set_property (GObject      *object,
 				 const GValue *value,
 				 GParamSpec   *pspec)
 {
-  NbtkTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE (object);
-
   switch (prop_id)
     {
-    case PROP_MAX_THREADS:
-      g_thread_pool_set_max_threads (priv->thread_pool,
-                                     g_value_get_int (value),
-                                     NULL);
-      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -99,14 +86,8 @@ nbtk_texture_cache_get_property (GObject    *object,
 				 GValue     *value,
 				 GParamSpec *pspec)
 {
-  NbtkTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE (object);
-
   switch (prop_id)
     {
-    case PROP_MAX_THREADS:
-      g_value_set_int (value,
-                       g_thread_pool_get_max_threads (priv->thread_pool));
-      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -116,14 +97,6 @@ nbtk_texture_cache_get_property (GObject    *object,
 static void
 nbtk_texture_cache_dispose (GObject *object)
 {
-  NbtkTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE(object);
-  
-  if (priv->thread_pool)
-    {
-      g_thread_pool_free (priv->thread_pool, FALSE, TRUE);
-      priv->thread_pool = NULL;
-    }
-  
   if (G_OBJECT_CLASS (nbtk_texture_cache_parent_class)->dispose)
     G_OBJECT_CLASS (nbtk_texture_cache_parent_class)->dispose (object);
 }
@@ -154,48 +127,6 @@ nbtk_texture_cache_class_init (NbtkTextureCacheClass *klass)
   object_class->dispose = nbtk_texture_cache_dispose;
   object_class->finalize = nbtk_texture_cache_finalize;
 
-  g_object_class_install_property 
-             (object_class,
-	      PROP_MAX_THREADS,
-	      g_param_spec_int ("max-threads",
-				"Max. threads",
-				"Maximum amount of threads to use when "
-                                "asynchronously loading textures.",
-				-1, G_MAXINT, 1,
-				G_PARAM_READWRITE));
-
-  /**
-   * NbtkTextureCache::loaded:
-   * @self: the object that received the signal
-   * @path: path to the image that has been loaded
-   * @texture: the texture that has been loaded
-   *
-   * Emitted when a texture has completed loading asynchronously
-   */
-  signals[LOADED] =
-    g_signal_new ("loaded",
-                  G_TYPE_FROM_CLASS (klass),
-                  G_SIGNAL_RUN_LAST,
-                  G_STRUCT_OFFSET (NbtkTextureCacheClass, loaded),
-                  NULL, NULL,
-                  _nbtk_marshal_VOID__STRING_OBJECT,
-                  G_TYPE_NONE, 2, G_TYPE_STRING, CLUTTER_TYPE_TEXTURE);
-
-  /**
-   * NbtkTextureCache::error-loading:
-   * @self: the object that received the signal
-   * @error: a #GError describing the error encountered when loading the image
-   *
-   * Emitted when there is an error in loading any texture asynchronously
-   */
-  signals[ERROR_LOADING] =
-    g_signal_new ("error-loading",
-                  G_TYPE_FROM_CLASS (klass),
-                  G_SIGNAL_RUN_LAST,
-                  G_STRUCT_OFFSET (NbtkTextureCacheClass, error_loading),
-                  NULL, NULL,
-                  _nbtk_marshal_VOID__POINTER,
-                  G_TYPE_NONE, 1, G_TYPE_POINTER);
 }
 
 static void
@@ -205,26 +136,16 @@ nbtk_texture_cache_init (NbtkTextureCache *self)
 
   priv->cache = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
-  if (g_thread_supported())
-    {
-      GError *error = NULL;
-
-      priv->thread_pool = g_thread_pool_new (texture_loading_thread_func,
-                                             self,
-                                             1,
-                                             FALSE,
-                                             &error);
-      
-      if (!priv->thread_pool)
-        {
-          g_warning ("Error creating thread pool, asynchronous texture loading "
-                     "will actually be synchronous. Error message: %s",
-                     error->message);
-          g_error_free (error);
-        }
-    }
 }
 
+/**
+ * nbtk_texture_cache_get_default:
+ *
+ * Returns the default texture cache. This is owned by Nbtk and should not be
+ * unreferenced or freed.
+ *
+ * Returns: a NbtkTextureCache
+ */
 NbtkTextureCache*
 nbtk_texture_cache_get_default (void)
 {
@@ -234,6 +155,7 @@ nbtk_texture_cache_get_default (void)
   return  __cache_singleton;
 }
 
+#if 0
 static void
 on_texure_finalized (gpointer data,
 		     GObject *where_the_object_was)
@@ -246,7 +168,16 @@ on_texure_finalized (gpointer data,
   g_free(closure->path);
   g_free(closure);
 }
+#endif
 
+/**
+ * nbtk_texture_cache_get_size:
+ * @self: A #NbtkTextureCache
+ *
+ * Returns the number of items in the texture cache
+ *
+ * Returns: the current size of the cache
+ */
 gint
 nbtk_texture_cache_get_size (NbtkTextureCache *self)
 {
@@ -258,234 +189,87 @@ nbtk_texture_cache_get_size (NbtkTextureCache *self)
 static void
 add_texture_to_cache (NbtkTextureCache *self,
                       const gchar      *path,
-                      ClutterActor     *res)
+                      CoglHandle       *res)
 {
-  FinalizedClosure        *closure;
+  /*  FinalizedClosure        *closure; */
   NbtkTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE(self);
 
   g_hash_table_insert (priv->cache, g_strdup (path), res);
 
+#if 0
   /* Make sure we can remove from hash */
   closure = g_new0 (FinalizedClosure, 1);
   closure->path = g_strdup (path);
   closure->cache = self;
 
   g_object_weak_ref (G_OBJECT (res), on_texure_finalized, closure);
-}
-
-static ClutterActor *
-nbtk_texture_cache_get_texture_if_exists (NbtkTextureCache *self,
-				          const gchar      *path, 
-				          gboolean          want_clone)
-{
-  NbtkTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE(self);
-  ClutterActor *res = NULL;
-
-  if (!path)
-    return res;
-
-  res = g_hash_table_lookup (priv->cache, path);
-
-  if (res)
-    {
-      if (want_clone)
-        res = clutter_clone_new (res);
-      else
-        g_object_ref (res);
-    }
-  
-  return res;
+#endif
 }
 
 /* NOTE: you should unref the returned texture when not needed */
-ClutterActor*
+/**
+ * nbtk_texture_cache_get_texture:
+ * @self: A #NbtkTextureCache
+ * @path: A path to a image file
+ * @want_clone: ignored
+ *
+ * Create a new ClutterTexture with the specified image. Adds the image to the
+ * cache if the image had not been previously loaded. Subsequent calls with
+ * the same image path will return a new ClutterTexture with the previously
+ * loaded image.
+ *
+ * Returns: a newly created ClutterTexture
+ */
+ClutterTexture*
 nbtk_texture_cache_get_texture (NbtkTextureCache *self,
-				const gchar      *path, 
-				gboolean          want_clone)
+                                const gchar      *path,
+                                gboolean          want_clone)
 {
-  ClutterActor *res;
+  CoglHandle *res;
+  ClutterActor *texture;
+  NbtkTextureCachePrivate *priv;
 
+  g_return_val_if_fail (NBTK_IS_TEXTURE_CACHE (self), NULL);
   g_return_val_if_fail (path != NULL, NULL);
 
-  res = nbtk_texture_cache_get_texture_if_exists (self, path, want_clone);
+  priv = TEXTURE_CACHE_PRIVATE (self);
+
+
+  if (want_clone)
+    g_warning ("The want_clone parameter of %s is now ignored. This function "
+               "always returns a new ClutterTexture", __FUNCTION__);
+
+  res = g_hash_table_lookup (priv->cache, path);
 
   if (!res)
     {
-      res = clutter_texture_new_from_file (path, NULL);
+      GError *err = NULL;
+      res = cogl_texture_new_from_file (path, -1,
+                                        COGL_TEXTURE_NONE,
+                                        COGL_PIXEL_FORMAT_ANY,
+                                        &err);
+      cogl_texture_set_filters (res, COGL_TEXTURE_FILTER_LINEAR,
+                                COGL_TEXTURE_FILTER_LINEAR);
+
+      /* XXX: pass up GError */
       if (!res)
-	return NULL;
+        {
+          if (err)
+            {
+              g_warning ("Error loading image: %s", err->message);
+              g_error_free (err);
+            }
+
+          return NULL;
+        }
 
       add_texture_to_cache (self, path, res);
-      
-      if (want_clone)
-        {
-          ClutterActor *clone;
-
-          clone = clutter_clone_new (res);
-          g_object_unref (res);
-
-          res = clone;
-        }
     }
 
-  return res;
-}
-
-typedef struct {
-  NbtkTextureCache *cache;
-  gchar            *path;
-  GdkPixbufLoader  *pixbuf_loader;
-  GError           *error;
-} NbtkTextureCacheThreadData;
-
-static gboolean
-texture_loading_idle_cb (gpointer user_data)
-{
-  gint                        bpp;
-  gboolean                    success;
-  gboolean                    has_alpha;
-  ClutterActor               *texture;
-  GdkPixbuf                  *pixbuf;
-  NbtkTextureCacheThreadData *data   = user_data;
-  GError                     *error  = NULL;
-  NbtkTextureCachePrivate    *priv   = TEXTURE_CACHE_PRIVATE (data->cache);
-  
-  /* Check that we haven't synchronously loaded the texture in the meantime */
-  /* It would be good if we could easily guard against this, but you
-   * really oughtn't be mixing synchronous and asynchronous texture loading.
-   */
-  texture = nbtk_texture_cache_get_texture_if_exists (data->cache,
-                                                      data->path,
-                                                      FALSE);
-  if (texture)
-    {
-      g_signal_emit (data->cache, signals[LOADED], 0, data->path, texture);
-      goto free_thread_data;
-    }
-  
-  if (data->error)
-    {
-      g_signal_emit (data->cache, signals[ERROR_LOADING], 0, data->error);
-      g_error_free (data->error);
-      goto free_thread_data;
-    }
-  
-  /* Get the pixbuf from the pixbuf loader (NULL if it failed to load) */
-  pixbuf = gdk_pixbuf_loader_get_pixbuf (data->pixbuf_loader);
-  if (!pixbuf)
-    goto free_thread_data;
-  
-  /* Create a texture and set the data from the pixbuf */
   texture = clutter_texture_new ();
-  has_alpha = gdk_pixbuf_get_has_alpha (pixbuf);
-  bpp = (gdk_pixbuf_get_bits_per_sample (pixbuf) != 8) ?
-    0 : (has_alpha ? 4 : 3);
-  success =
-    clutter_texture_set_from_rgb_data (CLUTTER_TEXTURE (texture),
-                                       gdk_pixbuf_get_pixels (pixbuf),
-                                       has_alpha,
-                                       gdk_pixbuf_get_width (pixbuf),
-                                       gdk_pixbuf_get_height (pixbuf),
-                                       gdk_pixbuf_get_rowstride (pixbuf),
-                                       bpp,
-                                       0,
-                                       &error);
-  
-  if (!success)
-    {
-      g_warning ("Error setting texture data: %s", error->message);
-      g_error_free (error);
-    }
-  else
-    g_signal_emit (data->cache, signals[LOADED], 0, data->path, texture);
+  clutter_texture_set_cogl_texture ((ClutterTexture*) texture, res);
 
-free_thread_data:
-  
-  g_object_unref (texture);
-  priv->loading = g_list_remove (priv->loading, data->path);
-  g_object_unref (data->pixbuf_loader);
-  g_free (data->path);
-  g_slice_free (NbtkTextureCacheThreadData, data);
-  
-  return FALSE;
+  return (ClutterTexture*) texture;
 }
 
-static void
-texture_loading_thread_func (gpointer data, gpointer user_data)
-{
-  gsize                       length;
-  gchar                      *contents;
-  gboolean                    success;
-  NbtkTextureCacheThreadData *thread_data = data;
-  GError                     *error       = NULL;
-  
-  if (!(g_file_get_contents (thread_data->path, &contents, &length, &error)))
-    {
-      thread_data->error = error;
-    }
-  else
-    {
-      success = gdk_pixbuf_loader_write (thread_data->pixbuf_loader,
-                                         (const guchar *)contents,
-                                         length,
-                                         &error);
 
-      if (!success)
-        {
-          thread_data->error = error;
-        }
-      
-      g_free (contents);
-    }
-  
-  error = NULL;
-  if (!gdk_pixbuf_loader_close (thread_data->pixbuf_loader, &error))
-    {
-      g_warning ("Error closing pixbuf loader: %s", error->message);
-      g_error_free (error);
-    }
-
-  clutter_threads_add_idle (texture_loading_idle_cb, thread_data);
-}
-
-void
-nbtk_texture_cache_get_texture_async (NbtkTextureCache *self,
-                                      const gchar      *path)
-{
-  ClutterActor *texture;
-  NbtkTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE (self);
-
-  g_return_if_fail (path != NULL);
-
-  texture = nbtk_texture_cache_get_texture_if_exists (self, path, FALSE);
-
-  if (texture || !priv->thread_pool)
-    {
-      if (!texture)
-        texture = nbtk_texture_cache_get_texture (self, path, FALSE);
-      
-      g_signal_emit (self, signals[LOADED], 0, path, texture);
-      g_object_unref (texture);
-    }
-  else
-    {
-      NbtkTextureCacheThreadData *thread_data;
-      
-      /* Check if we're already loading the image */
-      if (g_list_find_custom (priv->loading, path, (GCompareFunc)strcmp))
-        return;
-      
-      thread_data = g_slice_new0 (NbtkTextureCacheThreadData);
-      
-      thread_data->cache = self;
-      thread_data->path = g_strdup (path);
-      thread_data->pixbuf_loader = gdk_pixbuf_loader_new ();
-      
-      g_thread_pool_push (priv->thread_pool,
-                          thread_data,
-                          NULL);
-      
-      /* Add it to the loading list */
-      priv->loading = g_list_prepend (priv->loading, thread_data->path);
-    }
-}

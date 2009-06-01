@@ -1,23 +1,23 @@
-/* nbtk-entry.c: Plain entry actor
+/*
+ * nbtk-entry.c: Plain entry actor
  *
- * Copyright 2008 Intel Corporation
+ * Copyright 2008, 2009 Intel Corporation
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Written by: Thomas Wood <thomas@linux.intel.com>
+ * Written by: Thomas Wood <thomas.wood@intel.com>
+ *
  */
 
 /**
@@ -28,6 +28,16 @@
  * #NbtkWidget to add extra style and placement functionality over
  * #ClutterText. The internal #ClutterText is publicly accessibly to allow
  * applications to set further properties.
+ *
+ * #NbtkEntry supports the following pseudo style states:
+ * <itemizedlist>
+ *  <listitem>
+ *   <para>focus: the widget has focus</para>
+ *  </listitem>
+ *  <listitem>
+ *   <para>indeterminate: the widget is showing the hint text</para>
+ *  </listitem>
+ * </itemizedlist>
  */
 
 #ifdef HAVE_CONFIG_H
@@ -47,22 +57,46 @@
 
 #include "nbtk-widget.h"
 #include "nbtk-stylable.h"
+#include "nbtk-texture-cache.h"
+#include "nbtk-marshal.h"
 
+#define HAS_FOCUS(actor) (clutter_actor_get_stage (actor) && clutter_stage_get_key_focus ((ClutterStage *) clutter_actor_get_stage (actor)) == actor)
+
+
+/* properties */
 enum
 {
   PROP_0,
 
-  PROP_ENTRY
+  PROP_ENTRY,
+  PROP_HINT
+};
+
+/* signals */
+enum
+{
+  PRIMARY_ICON_CLICKED,
+  SECONDARY_ICON_CLICKED,
+
+  LAST_SIGNAL
 };
 
 #define NBTK_ENTRY_GET_PRIVATE(obj)     (G_TYPE_INSTANCE_GET_PRIVATE ((obj), NBTK_TYPE_ENTRY, NbtkEntryPrivate))
+#define NBTK_ENTRY_PRIV(x) ((NbtkEntry *) x)->priv
+
 
 struct _NbtkEntryPrivate
 {
   ClutterActor *entry;
+  gchar        *hint;
 
-  NbtkPadding padding;
+  ClutterActor *primary_icon;
+  ClutterActor *secondary_icon;
+
+  ClutterUnit   spacing;
 };
+
+static guint entry_signals[LAST_SIGNAL] = { 0, };
 
 static void nbtk_stylable_iface_init (NbtkStylableIface *iface);
 
@@ -72,9 +106,9 @@ G_DEFINE_TYPE_WITH_CODE (NbtkEntry, nbtk_entry, NBTK_TYPE_WIDGET,
 
 static void
 nbtk_entry_set_property (GObject      *gobject,
-                           guint         prop_id,
-                           const GValue *value,
-                           GParamSpec   *pspec)
+                         guint         prop_id,
+                         const GValue *value,
+                         GParamSpec   *pspec)
 {
   NbtkEntry *entry = NBTK_ENTRY (gobject);
 
@@ -82,6 +116,10 @@ nbtk_entry_set_property (GObject      *gobject,
     {
     case PROP_ENTRY:
       nbtk_entry_set_text (entry, g_value_get_string (value));
+      break;
+
+    case PROP_HINT:
+      nbtk_entry_set_hint_text (entry, g_value_get_string (value));
       break;
 
     default:
@@ -92,17 +130,20 @@ nbtk_entry_set_property (GObject      *gobject,
 
 static void
 nbtk_entry_get_property (GObject    *gobject,
-                           guint       prop_id,
-                           GValue     *value,
-                           GParamSpec *pspec)
+                         guint       prop_id,
+                         GValue     *value,
+                         GParamSpec *pspec)
 {
-  NbtkEntryPrivate *priv = NBTK_ENTRY (gobject)->priv;
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (gobject);
 
   switch (prop_id)
     {
     case PROP_ENTRY:
       g_value_set_string (value, clutter_text_get_text (CLUTTER_TEXT (priv->entry)));
       break;
+
+    case PROP_HINT:
+      g_value_set_string (value, priv->hint);
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -111,11 +152,62 @@ nbtk_entry_get_property (GObject    *gobject,
 }
 
 static void
+nbtk_entry_dispose (GObject *object)
+{
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (object);
+
+  if (priv->entry)
+    {
+      clutter_actor_unparent (priv->entry);
+      priv->entry = NULL;
+    }
+}
+
+static void
+nbtk_entry_finalize (GObject *object)
+{
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (object);
+
+  g_free (priv->hint);
+  priv->hint = NULL;
+}
+
+static void
+nbtk_stylable_iface_init (NbtkStylableIface *iface)
+{
+  static gboolean is_initialized = FALSE;
+
+  if (!is_initialized)
+    {
+      GParamSpec *pspec;
+      static const ClutterColor default_color
+        = { 0x0, 0x9c, 0xcf, 0xff };
+
+      is_initialized = TRUE;
+
+      pspec = clutter_param_spec_color ("caret-color",
+                                        "Caret Color",
+                                        "Color of the entry's caret",
+                                        &default_color,
+                                        G_PARAM_READWRITE);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_ENTRY, pspec);
+
+      pspec = clutter_param_spec_color ("selection-background-color",
+                                        "Selection Background Color",
+                                        "Color of the entry's selection",
+                                        &default_color,
+                                        G_PARAM_READWRITE);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_ENTRY, pspec);
+    }
+}
+
+static void
 nbtk_entry_style_changed (NbtkWidget *self)
 {
-  NbtkEntryPrivate *priv = NBTK_ENTRY (self)->priv;
-  NbtkPadding *padding = NULL;
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (self);
   ClutterColor *color = NULL;
+  ClutterColor *caret_color = NULL;
+  ClutterColor *selection_background_color = NULL;
   gchar *font_name;
   gchar *font_string;
   gint font_size;
@@ -125,9 +217,10 @@ nbtk_entry_style_changed (NbtkWidget *self)
 
   nbtk_stylable_get (NBTK_STYLABLE (self),
                      "color", &color,
+                     "caret-color", &caret_color,
+                     "selection-background-color", &selection_background_color,
                      "font-family", &font_name,
                      "font-size", &font_size,
-                     "padding", &padding,
                      NULL);
 
   if (color)
@@ -136,10 +229,17 @@ nbtk_entry_style_changed (NbtkWidget *self)
       clutter_color_free (color);
     }
 
-  if (padding)
+  if (caret_color)
     {
-      priv->padding = *padding;
-      g_boxed_free (NBTK_TYPE_PADDING, padding);
+      clutter_text_set_cursor_color (CLUTTER_TEXT (priv->entry), caret_color);
+      clutter_color_free (caret_color);
+    }
+
+  if (selection_background_color)
+    {
+      clutter_text_set_selection_color (CLUTTER_TEXT (priv->entry),
+                                        selection_background_color);
+      clutter_color_free (selection_background_color);
     }
 
   if (font_name || font_size)
@@ -168,17 +268,46 @@ nbtk_entry_get_preferred_width (ClutterActor *actor,
                                 ClutterUnit  *min_width_p,
                                 ClutterUnit  *natural_width_p)
 {
-  NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
+  NbtkPadding padding;
+  ClutterUnit icon_w;
+
+  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
+
+  for_height -= padding.top + padding.bottom;
 
   clutter_actor_get_preferred_width (priv->entry, for_height,
                                      min_width_p,
                                      natural_width_p);
 
+  if (priv->primary_icon)
+    {
+      clutter_actor_get_preferred_width (priv->primary_icon, -1, NULL, &icon_w);
+
+      if (min_width_p)
+        *min_width_p += icon_w + priv->spacing;
+
+      if (natural_width_p)
+        *natural_width_p += icon_w + priv->spacing;
+    }
+
+  if (priv->secondary_icon)
+    {
+      clutter_actor_get_preferred_width (priv->secondary_icon,
+                                         -1, NULL, &icon_w);
+
+      if (min_width_p)
+        *min_width_p += icon_w + priv->spacing;
+
+      if (natural_width_p)
+        *natural_width_p += icon_w + priv->spacing;
+    }
+
   if (min_width_p)
-    *min_width_p += priv->padding.left + priv->padding.right;
+    *min_width_p += padding.left + padding.right;
 
   if (natural_width_p)
-    *natural_width_p += priv->padding.left + priv->padding.right;
+    *natural_width_p += padding.left + padding.right;
 }
 
 static void
@@ -187,17 +316,47 @@ nbtk_entry_get_preferred_height (ClutterActor *actor,
                                  ClutterUnit  *min_height_p,
                                  ClutterUnit  *natural_height_p)
 {
-  NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
+  NbtkPadding padding;
+  ClutterUnit icon_h;
+
+  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
+
+  for_width -= padding.left + padding.right;
 
   clutter_actor_get_preferred_height (priv->entry, for_width,
                                       min_height_p,
                                       natural_height_p);
 
+  if (priv->primary_icon)
+    {
+      clutter_actor_get_preferred_height (priv->primary_icon,
+                                          -1, NULL, &icon_h);
+
+      if (min_height_p && icon_h > *min_height_p)
+        *min_height_p = icon_h;
+
+      if (natural_height_p && icon_h > *natural_height_p)
+        *natural_height_p = icon_h;
+    }
+
+  if (priv->secondary_icon)
+    {
+      clutter_actor_get_preferred_height (priv->secondary_icon,
+                                          -1, NULL, &icon_h);
+
+      if (min_height_p && icon_h > *min_height_p)
+        *min_height_p = icon_h;
+
+      if (natural_height_p && icon_h > *natural_height_p)
+        *natural_height_p = icon_h;
+    }
+
   if (min_height_p)
-    *min_height_p += priv->padding.top + priv->padding.bottom;
+    *min_height_p += padding.top + padding.bottom;
 
   if (natural_height_p)
-    *natural_height_p += priv->padding.top + priv->padding.bottom;
+    *natural_height_p += padding.top + padding.bottom;
 }
 
 static void
@@ -205,58 +364,146 @@ nbtk_entry_allocate (ClutterActor          *actor,
                      const ClutterActorBox *box,
                      gboolean               absolute_origin_changed)
 {
-  NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
   ClutterActorClass *parent_class;
-  ClutterActorBox child_box;
+  ClutterActorBox child_box, icon_box;
+  NbtkPadding padding;
+  ClutterUnit icon_w, icon_h;
+
+  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 
   parent_class = CLUTTER_ACTOR_CLASS (nbtk_entry_parent_class);
   parent_class->allocate (actor, box, absolute_origin_changed);
-  
-  child_box.x1 = priv->padding.left;
-  child_box.y1 = priv->padding.top;
-  child_box.x2 = box->x2 - box->x1 - priv->padding.right;
-  child_box.y2 = box->y2 - box->y1 - priv->padding.bottom;
-  
+
+  child_box.x1 = padding.left;
+  child_box.y1 = padding.top;
+  child_box.x2 = box->x2 - box->x1 - padding.right;
+  child_box.y2 = box->y2 - box->y1 - padding.bottom;
+
+  if (priv->primary_icon)
+    {
+      clutter_actor_get_preferred_width (priv->primary_icon,
+                                         -1, NULL, &icon_w);
+      clutter_actor_get_preferred_height (priv->primary_icon,
+                                          -1, NULL, &icon_h);
+
+      icon_box.x1 = padding.left;
+      icon_box.x2 = icon_box.x1 + icon_w;
+
+      icon_box.y1 = (int) (box->y2 - box->y1) / 2 - (int) (icon_h / 2);
+      icon_box.y2 = icon_box.y1 + icon_h;
+
+      clutter_actor_allocate (priv->primary_icon,
+                              &icon_box,
+                              absolute_origin_changed);
+
+      /* reduce the size for the entry */
+      child_box.x1 += icon_w + priv->spacing;
+    }
+
+  if (priv->secondary_icon)
+    {
+      clutter_actor_get_preferred_width (priv->secondary_icon,
+                                         -1, NULL, &icon_w);
+      clutter_actor_get_preferred_height (priv->secondary_icon,
+                                          -1, NULL, &icon_h);
+
+      icon_box.x2 = (box->x2 - box->x1) - padding.right;
+      icon_box.x1 = icon_box.x2 - icon_w;
+
+      icon_box.y1 = (int) (box->y2 - box->y1) / 2 - (int) (icon_h / 2);
+      icon_box.y2 = icon_box.y1 + icon_h;
+
+      clutter_actor_allocate (priv->secondary_icon,
+                              &icon_box,
+                              absolute_origin_changed);
+
+      /* reduce the size for the entry */
+      child_box.x2 -= icon_w - priv->spacing;
+    }
+
+
   clutter_actor_allocate (priv->entry, &child_box, absolute_origin_changed);
 }
 
 static void
 nbtk_entry_focus_in (ClutterActor *actor)
 {
-  NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
 
   clutter_actor_grab_key_focus (priv->entry);
 }
 
 static void
+clutter_text_focus_out_cb (ClutterActor *actor,
+                           NbtkEntry    *entry)
+{
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (entry);
+  ClutterText *text = CLUTTER_TEXT (priv->entry);
+
+  /* add a hint if the entry is empty */
+  if (priv->hint && !strcmp (clutter_text_get_text (text), ""))
+    {
+      clutter_text_set_text (text, priv->hint);
+      nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (entry), "indeterminate");
+    }
+  else
+    {
+      nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (entry), NULL);
+    }
+  clutter_text_set_cursor_visible (text, FALSE);
+}
+
+static void
+clutter_text_focus_in_cb (ClutterActor *actor,
+                          NbtkEntry    *entry)
+{
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (entry);
+  ClutterText *text = CLUTTER_TEXT (priv->entry);
+
+  /* remove the hint if visible */
+  if (priv->hint
+      && !strcmp (clutter_text_get_text (text), priv->hint))
+    {
+      clutter_text_set_text (text, "");
+    }
+  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (entry), "focus");
+  clutter_text_set_cursor_visible (text, TRUE);
+}
+
+static void
 nbtk_entry_paint (ClutterActor *actor)
 {
-  NbtkEntryPrivate *priv = NBTK_ENTRY (actor)->priv;
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
   ClutterActorClass *parent_class;
 
   parent_class = CLUTTER_ACTOR_CLASS (nbtk_entry_parent_class);
   parent_class->paint (actor);
 
   clutter_actor_paint (priv->entry);
+
+  if (priv->primary_icon)
+    clutter_actor_paint (priv->primary_icon);
+
+  if (priv->secondary_icon)
+    clutter_actor_paint (priv->secondary_icon);
 }
 
 static void
-nbtk_stylable_iface_init (NbtkStylableIface *iface)
+nbtk_entry_pick (ClutterActor *actor,
+                 const ClutterColor *c)
 {
-  static gboolean is_initialized = FALSE;
+  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
 
-  if (G_UNLIKELY (!is_initialized))
-    {
-      GParamSpec *pspec;
+  CLUTTER_ACTOR_CLASS (nbtk_entry_parent_class)->pick (actor, c);
 
-      pspec = g_param_spec_boxed ("padding",
-                                  "Padding",
-                                  "Padding between the widgets borders "
-                                  "and its content",
-                                  NBTK_TYPE_PADDING,
-                                  G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_ENTRY, pspec);
-    }
+  clutter_actor_paint (priv->entry);
+
+  if (priv->primary_icon)
+    clutter_actor_paint (priv->primary_icon);
+
+  if (priv->secondary_icon)
+    clutter_actor_paint (priv->secondary_icon);
 }
 
 static void
@@ -272,11 +519,15 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
   gobject_class->set_property = nbtk_entry_set_property;
   gobject_class->get_property = nbtk_entry_get_property;
 
+  gobject_class->finalize = nbtk_entry_finalize;
+  gobject_class->dispose = nbtk_entry_dispose;
+
   actor_class->get_preferred_width = nbtk_entry_get_preferred_width;
   actor_class->get_preferred_height = nbtk_entry_get_preferred_height;
   actor_class->allocate = nbtk_entry_allocate;
   actor_class->focus_in = nbtk_entry_focus_in;
   actor_class->paint = nbtk_entry_paint;
+  actor_class->pick = nbtk_entry_pick;
 
   widget_class->style_changed = nbtk_entry_style_changed;
 
@@ -286,25 +537,69 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
                                NULL, G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_ENTRY, pspec);
 
+  pspec = g_param_spec_string ("hint-text",
+                               "Hint Text",
+                               "Text to display when the entry is not focused "
+                               "and the text property is empty",
+                               NULL, G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_ENTRY, pspec);
+
+  /* signals */
+  /**
+   * NbtkEntry::primary-icon-clicked:
+   *
+   * Emitted when the primary icon is clicked
+   */
+  entry_signals[PRIMARY_ICON_CLICKED] =
+    g_signal_new ("primary-icon-clicked",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (NbtkEntryClass, primary_icon_clicked),
+                  NULL, NULL,
+                  _nbtk_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
+  /**
+   * NbtkEntry::secondary-icon-clicked:
+   *
+   * Emitted when the secondary icon is clicked
+   */
+  entry_signals[SECONDARY_ICON_CLICKED] =
+    g_signal_new ("secondary-icon-clicked",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (NbtkEntryClass, secondary_icon_clicked),
+                  NULL, NULL,
+                  _nbtk_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
 }
 
 static void
 nbtk_entry_init (NbtkEntry *entry)
 {
   NbtkEntryPrivate *priv;
-  ClutterColor cursor = { 0x0, 0x9c, 0xcf, 0xff };
 
-  entry->priv = NBTK_ENTRY_GET_PRIVATE (entry);
+  priv = entry->priv = NBTK_ENTRY_GET_PRIVATE (entry);
 
-  entry->priv->entry = g_object_new (CLUTTER_TYPE_TEXT,
-                                     "line-alignment", PANGO_ALIGN_LEFT,
-                                     "activatable", TRUE,
-                                     "editable", TRUE,
-                                     "reactive", TRUE,
-                                     "cursor-color", &cursor,
-                                     NULL);
+  priv->entry = g_object_new (CLUTTER_TYPE_TEXT,
+                              "line-alignment", PANGO_ALIGN_LEFT,
+                              "activatable", TRUE,
+                              "editable", TRUE,
+                              "reactive", TRUE,
+                              "single-line-mode", TRUE,
+                              NULL);
+
+  g_signal_connect (priv->entry, "focus-out",
+                    G_CALLBACK (clutter_text_focus_out_cb), entry);
+  g_signal_connect (priv->entry, "focus-in",
+                    G_CALLBACK (clutter_text_focus_in_cb), entry);
+
+  priv->spacing = CLUTTER_UNITS_FROM_INT (6);
 
   clutter_actor_set_parent (priv->entry, CLUTTER_ACTOR (entry));
+  clutter_actor_set_reactive ((ClutterActor *) entry, TRUE);
+
+  /* set cursor hidden until we receive focus */
+  clutter_text_set_cursor_visible ((ClutterText *) priv->entry, FALSE);
 }
 
 /**
@@ -318,14 +613,14 @@ nbtk_entry_init (NbtkEntry *entry)
 NbtkWidget *
 nbtk_entry_new (const gchar *text)
 {
-  NbtkEntry  *entry;
+  NbtkWidget *entry;
 
   /* add the entry to the stage, but don't allow it to be visible */
   entry = g_object_new (NBTK_TYPE_ENTRY,
-                          "text", text,
-                          NULL);
+                        "text", text,
+                        NULL);
 
-  return NBTK_WIDGET (entry);
+  return entry;
 }
 
 /**
@@ -361,6 +656,22 @@ nbtk_entry_set_text (NbtkEntry *entry,
 
   priv = entry->priv;
 
+  /* set a hint if we are blanking the entry */
+  if (priv->hint
+      && text && !strcmp ("", text)
+      && !HAS_FOCUS (priv->entry))
+    {
+      text = priv->hint;
+      nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (entry), "indeterminate");
+    }
+  else
+    {
+      if (HAS_FOCUS (priv->entry))
+        nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (entry), "focus");
+      else
+        nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (entry), NULL);
+    }
+
   clutter_text_set_text (CLUTTER_TEXT (priv->entry), text);
 
   g_object_notify (G_OBJECT (entry), "text");
@@ -382,3 +693,142 @@ nbtk_entry_get_clutter_text (NbtkEntry *entry)
 
   return entry->priv->entry;
 }
+
+/**
+ * nbtk_entry_set_hint_text:
+ * @entry: a #NbtkEntry
+ * @text: text to set as the entry hint
+ *
+ * Sets the text to display when the entry is empty and unfocused. When the
+ * entry is displaying the hint, it has a pseudo class of "indeterminate".
+ * A value of NULL unsets the hint.
+ */
+void
+nbtk_entry_set_hint_text (NbtkEntry *entry,
+                          const gchar *text)
+{
+  NbtkEntryPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_ENTRY (entry));
+
+  priv = entry->priv;
+
+  g_free (priv->hint);
+
+  priv->hint = g_strdup (text);
+
+  if (!strcmp (clutter_text_get_text (CLUTTER_TEXT (priv->entry)), ""))
+    {
+      clutter_text_set_text (CLUTTER_TEXT (priv->entry), priv->hint);
+      nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (entry), "indeterminate");
+    }
+}
+
+/**
+ * nbtk_entry_get_hint_text:
+ * @entry: a #NbtkEntry
+ *
+ * Gets the text that is displayed when the entry is empty and unfocused
+ *
+ * Returns: the current value of the hint property. This string is owned by the
+ * #NbtkEntry and should not be freed or modified.
+ */
+G_CONST_RETURN
+gchar *
+nbtk_entry_get_hint_text (NbtkEntry *entry)
+{
+  g_return_val_if_fail (NBTK_IS_ENTRY (entry), NULL);
+
+  return entry->priv->hint;
+}
+
+static gboolean
+_nbtk_entry_icon_press_cb (ClutterActor       *actor,
+                           ClutterButtonEvent *event,
+                           NbtkEntry          *entry)
+{
+  NbtkEntryPrivate *priv = entry->priv;
+
+  if (actor == priv->primary_icon)
+    g_signal_emit (entry, entry_signals[PRIMARY_ICON_CLICKED], 0);
+  else
+    g_signal_emit (entry, entry_signals[SECONDARY_ICON_CLICKED], 0);
+
+  return FALSE;
+}
+
+static void
+_nbtk_entry_set_icon_from_file (NbtkEntry     *entry,
+                                ClutterActor **icon,
+                                const gchar   *filename)
+{
+  if (*icon)
+    {
+      g_signal_handlers_disconnect_by_func (*icon,
+                                            _nbtk_entry_icon_press_cb,
+                                            entry);
+      clutter_actor_unparent (*icon);
+      *icon = NULL;
+    }
+
+  if (filename)
+    {
+      NbtkTextureCache *cache;
+
+      cache = nbtk_texture_cache_get_default ();
+
+
+
+      *icon = (ClutterActor*) nbtk_texture_cache_get_texture (cache, filename, FALSE);
+
+      clutter_actor_set_reactive (*icon, TRUE);
+      clutter_actor_set_parent (*icon, CLUTTER_ACTOR (entry));
+      g_signal_connect (*icon, "button-release-event",
+                        G_CALLBACK (_nbtk_entry_icon_press_cb), entry);
+    }
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (entry));
+}
+
+/**
+ * nbtk_entry_set_primary_icon_from_file:
+ * @entry: a #NbtkEntry
+ * @filename: filename of an icon
+ *
+ * Set the primary icon of the entry to the given filename
+ */
+void
+nbtk_entry_set_primary_icon_from_file (NbtkEntry   *entry,
+                                       const gchar *filename)
+{
+  NbtkEntryPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_ENTRY (entry));
+
+  priv = entry->priv;
+
+  _nbtk_entry_set_icon_from_file (entry, &priv->primary_icon, filename);
+
+}
+
+/**
+ * nbtk_entry_set_secondary_icon_from_file:
+ * @entry: a #NbtkEntry
+ * @filename: filename of an icon
+ *
+ * Set the primary icon of the entry to the given filename
+ */
+void
+nbtk_entry_set_secondary_icon_from_file (NbtkEntry   *entry,
+                                         const gchar *filename)
+{
+  NbtkEntryPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_ENTRY (entry));
+
+  priv = entry->priv;
+
+  _nbtk_entry_set_icon_from_file (entry, &priv->secondary_icon, filename);
+
+}
+

@@ -1,6 +1,6 @@
 m4_define([nbtk_major], [0])
-m4_define([nbtk_minor], [1])
-m4_define([nbtk_micro], [6])
+m4_define([nbtk_minor], [10])
+m4_define([nbtk_micro], [0])
 
 m4_define([nbtk_version], [nbtk_major.nbtk_minor.nbtk_micro])
 m4_define([nbtk_api_version], [1.0])
@@ -16,6 +16,12 @@ AC_CONFIG_MACRO_DIR([build/autotools])
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 
 AC_CONFIG_HEADERS([config.h])
+
+GETTEXT_PACKAGE=nbtk
+AC_SUBST(GETTEXT_PACKAGE)
+AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Gettext domain name])
+AM_GLIB_GNU_GETTEXT
+
 
 AM_MAINTAINER_MODE
 
@@ -82,17 +88,17 @@ fi
 AC_SUBST(NBTK_DEBUG_CFLAGS)
 
 dnl = Enable strict compiler flags =========================================
-
-# use strict compiler flags only on stable releases
-m4_define([maintainer_flags_default],
-          m4_if(m4_eval(nbtk_minor % 2), [0], [yes], [no]))
 AC_ARG_ENABLE([maintainer-flags],
               AC_HELP_STRING([--enable-maintainer-flags=@<:@no/yes@:>@],
-                             [Use strict compiler flags @<:@default=maintainer_flags_default@:>@]),,
-              enable_maintainer_flags=maintainer_flags_default)
+                             [Use strict compiler flags @<:@default=maintainer_
+flags_default@:>@]),,
+              enable_maintainer_flags="no")
+
 
 if test "x$enable_maintainer_flags" = "xyes"; then
-  NBTK_MAINTAINER_CFLAGS="-Werror -Wall -Wshadow -Wcast-align -Wno-uninitialized -Wempty-body -Wformat-security -Winit-self -Wmissing-declarations -Wredundant-decls -Wunreachable-code "
+  NBTK_MAINTAINER_CFLAGS="-Werror -Wall -Wshadow -Wcast-align -Wno-uninitialized -Wempty-body -Wformat-security -Winit-self -Wmissing-declarations -Wredundant-decls"
+  else # minimum
+  NBTK_MAINTAINER_CFLAGS="-Wall"
 fi
 AC_SUBST(NBTK_MAINTAINER_CFLAGS)
 
@@ -109,7 +115,8 @@ dnl ***************************************************************************
 
 AM_PROG_LIBTOOL
 
-PKG_CHECK_MODULES(NBTK, [clutter-0.9 libccss-1])
+PKG_CHECK_MODULES(NBTK, [clutter-0.9 libccss-1 gio-2.0])
+PKG_CHECK_MODULES(GTK, [gtk+-2.0])
 
 # check for gtk-doc
 GTK_DOC_CHECK(1.9)
@@ -122,10 +129,15 @@ build/Makefile
 build/autotools/Makefile
 build/autotools/shave
 build/autotools/shave-libtool
+data/Makefile
+data/style/Makefile
 nbtk.pc
+nbtk-gtk.pc
 docs/Makefile
 docs/reference/Makefile
 docs/reference/libnbtk/Makefile
+docs/reference/libnbtk/version.xml
+examples/Makefile
 nbtk/Makefile
 nbtk/nbtk-version.h
 tests/Makefile

@@ -1,25 +1,26 @@
-/* nbtk-widget.c: Base class for Nbtk actors
+/*
+ * nbtk-widget.c: Base class for Nbtk actors
  *
- * Copyright (C) 2007 OpenedHand
- * Copyright (C) 2008 Intel Corporation
+ * Copyright 2007 OpenedHand
+ * Copyright 2008, 2009 Intel Corporation.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  * Boston, MA 02111-1307, USA.
  *
  * Written by: Emmanuele Bassi <ebassi@openedhand.com>
  *             Thomas Wood <thomas@linux.intel.com>
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -38,6 +39,7 @@
 #include "nbtk-stylable.h"
 #include "nbtk-texture-cache.h"
 #include "nbtk-texture-frame.h"
+#include "nbtk-tooltip.h"
 
 /*
  * Forward declaration for sake of NbtkWidgetChild
@@ -45,6 +47,7 @@
 struct _NbtkWidgetPrivate
 {
   NbtkPadding border;
+  NbtkPadding padding;
 
   NbtkStyle *style;
   gchar *pseudo_class;
@@ -69,6 +72,9 @@ struct _NbtkWidgetPrivate
   gboolean dnd_motion : 1;
   gboolean dnd_grab   : 1;
   gboolean is_stylable : 1;
+  gboolean has_tooltip : 1;
+
+  NbtkTooltip *tooltip;
 };
 
 /*
@@ -189,6 +195,9 @@ enum
   PROP_DND_ICON,
 
   PROP_STYLABLE,
+
+  PROP_HAS_TOOLTIP,
+  PROP_TOOLTIP_TEXT
 };
 
 enum
@@ -255,6 +264,10 @@ nbtk_widget_set_property (GObject      *gobject,
         }
       break;
 
+    case PROP_HAS_TOOLTIP:
+      nbtk_widget_set_has_tooltip (actor, g_value_get_boolean (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -294,6 +307,14 @@ nbtk_widget_get_property (GObject    *gobject,
 
     case PROP_STYLABLE:
       g_value_set_boolean (value, priv->is_stylable);
+      break;
+
+    case PROP_HAS_TOOLTIP:
+      g_value_set_boolean (value, priv->has_tooltip);
+      break;
+
+    case PROP_TOOLTIP_TEXT:
+      g_value_set_string (value, nbtk_tooltip_get_label (priv->tooltip));
       break;
 
     default:
@@ -360,6 +381,12 @@ nbtk_widget_dispose (GObject *gobject)
       ClutterActor *dragged = priv->dnd_dragged;
       priv->dnd_dragged = NULL;
       g_object_unref (dragged);
+    }
+
+  if (priv->tooltip)
+    {
+      clutter_actor_unparent (CLUTTER_ACTOR (priv->tooltip));
+      priv->tooltip = NULL;
     }
 
   G_OBJECT_CLASS (nbtk_widget_parent_class)->dispose (gobject);
@@ -465,7 +492,7 @@ nbtk_widget_real_draw_background (NbtkWidget         *self,
   /* Default implementation just draws the background
    * colour and the image on top
    */
-  if (color)
+  if (color && color->alpha != 0)
     {
       ClutterActor *actor = CLUTTER_ACTOR (self);
       ClutterActorBox allocation = { 0, };
@@ -530,38 +557,70 @@ nbtk_widget_style_changed (NbtkWidget *self)
   NbtkWidgetPrivate *priv = self->priv;
   NbtkBorderImage *border_image = NULL;
   NbtkTextureCache *texture_cache;
-  ClutterActor *texture;
+  ClutterTexture *texture;
   gchar *bg_file;
-  gint border_left;
-  gint border_right;
-  gint border_top;
-  gint border_bottom;
+  NbtkPadding *padding = NULL;
+  gboolean relayout_needed = FALSE;
+  gboolean has_changed = FALSE;
+  ClutterColor *color;
 
   /* application has request this widget is not stylable */
   if (!priv->is_stylable)
     return;
 
-  if (priv->bg_color)
-    {
-      clutter_color_free (priv->bg_color);
-      priv->bg_color = NULL;
-    }
+
+  /* Skip retrieving style information until we are parented */
+  if (!clutter_actor_get_parent ((ClutterActor *) self))
+    return;
 
   /* cache these values for use in the paint function */
   nbtk_stylable_get (NBTK_STYLABLE (self),
-                    "background-color", &priv->bg_color,
+                    "background-color", &color,
                     "background-image", &bg_file,
-                    "border-top-width", &border_top,
-                    "border-right-width", &border_right,
-                    "border-bottom-width", &border_bottom,
-                    "border-left-width", &border_left,
                     "border-image", &border_image,
+                    "padding", &padding,
                     NULL);
 
-  priv->border.top    = border_top;
-  priv->border.right  = border_right;
-  priv->border.bottom = border_bottom;
-  priv->border.left   = border_left;
+
+  if (color)
+    {
+      if (priv->bg_color && clutter_color_equal (color, priv->bg_color))
+        {
+          /* color is the same ... */
+          clutter_color_free (color);
+        }
+      else
+        {
+          clutter_color_free (priv->bg_color);
+          priv->bg_color = color;
+          has_changed = TRUE;
+        }
+    }
+  else
+    if (priv->bg_color)
+      {
+        clutter_color_free (priv->bg_color);
+        priv->bg_color = NULL;
+        has_changed = TRUE;
+      }
+
+
+
+  if (padding)
+    {
+      if (priv->padding.top != padding->top ||
+          priv->padding.left != padding->left ||
+          priv->padding.right != padding->right ||
+          priv->padding.bottom != padding->bottom)
+      {
+        /* Padding changed. Need to relayout. */
+        has_changed = TRUE;
+        relayout_needed = TRUE;
+      }
+
+      priv->padding = *padding;
+      g_boxed_free (NBTK_TYPE_PADDING, padding);
+    }
 
   if (priv->border_image)
     {
@@ -577,39 +636,44 @@ nbtk_widget_style_changed (NbtkWidget *self)
   texture_cache = nbtk_texture_cache_get_default ();
 
   /* Check if the URL is actually present, not garbage in the property */
-  if (border_image && border_image->image.uri)
+  if (border_image && border_image->uri)
     {
+      gint border_left, border_right, border_top, border_bottom;
+      gint width, height;
+
       /* `border-image' takes precedence over `background-image'.
        * Firefox lets the background-image shine thru when border-image has
        * alpha an channel, maybe that would be an option for the future. */
       texture = nbtk_texture_cache_get_texture (texture_cache,
-                                                border_image->image.uri,
+                                                border_image->uri,
                                                 FALSE);
 
-      border_left = ccss_position_get_size (&border_image->left,
-                                            border_image->image.width);
-      border_top = ccss_position_get_size (&border_image->top,
-                                           border_image->image.height);
-      border_right = ccss_position_get_size (&border_image->right,
-                                             border_image->image.width);
-      border_bottom = ccss_position_get_size (&border_image->bottom,
-                                              border_image->image.height);
+      clutter_texture_get_base_size (CLUTTER_TEXTURE (texture),
+                                     &width, &height);
 
-      priv->border_image = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture),
-                                               border_top,
-                                               border_right,
-                                               border_bottom,
-                                               border_left);
+      border_left = ccss_position_get_size (&border_image->left, width);
+      border_top = ccss_position_get_size (&border_image->top, height);
+      border_right = ccss_position_get_size (&border_image->right, width);
+      border_bottom = ccss_position_get_size (&border_image->bottom, height);
+
+      priv->border_image = nbtk_texture_frame_new (texture,
+                                                   border_top,
+                                                   border_right,
+                                                   border_bottom,
+                                                   border_left);
       clutter_actor_set_parent (CLUTTER_ACTOR (priv->border_image),
                                                CLUTTER_ACTOR (self));
       g_boxed_free (NBTK_TYPE_BORDER_IMAGE, border_image);
+
+      has_changed = TRUE;
+      relayout_needed = TRUE;
     }
   if (bg_file)
     {
       texture = nbtk_texture_cache_get_texture (texture_cache,
                                                 bg_file,
-                                                TRUE);
-      priv->background_image = texture;
+                                                FALSE);
+      priv->background_image = (ClutterActor*) texture;
 
       if (!texture)
         {
@@ -621,9 +685,21 @@ nbtk_widget_style_changed (NbtkWidget *self)
                                     CLUTTER_ACTOR (self));
         }
       g_free (bg_file);
+      has_changed = TRUE;
+      relayout_needed = TRUE;
     }
 
-  clutter_actor_queue_relayout ((ClutterActor *)self);
+  /*
+   * If there are any properties above that need to cause a relayout thay
+   * should set this flag.
+   */
+  if (has_changed)
+    {
+      if (relayout_needed)
+        clutter_actor_queue_relayout ((ClutterActor *) self);
+      else
+        clutter_actor_queue_redraw ((ClutterActor *) self);
+    }
 }
 
 static void
@@ -655,6 +731,51 @@ nbtk_widget_dnd_dropped (NbtkWidget   *actor,
     }
 }
 
+static gboolean
+nbtk_widget_enter (ClutterActor         *actor,
+                   ClutterCrossingEvent *event)
+{
+  NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
+
+
+  if (priv->has_tooltip)
+      nbtk_tooltip_show (priv->tooltip);
+
+  if (CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->enter_event)
+    return CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->enter_event (actor, event);
+  else
+    return FALSE;
+}
+
+static gboolean
+nbtk_widget_leave (ClutterActor         *actor,
+                   ClutterCrossingEvent *event)
+{
+  NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
+
+  if (priv->has_tooltip)
+      nbtk_tooltip_hide (priv->tooltip);
+
+  if (CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->leave_event)
+    return CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->leave_event (actor, event);
+  else
+    return FALSE;
+}
+
+static void
+nbtk_widget_hide (ClutterActor *actor)
+{
+  NbtkWidget *widget = (NbtkWidget *) actor;
+
+  /* hide the tooltip, if there is one */
+  if (widget->priv->tooltip)
+    nbtk_tooltip_hide (NBTK_TOOLTIP (widget->priv->tooltip));
+
+  CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->hide (actor);
+}
+
+
+
 static void
 nbtk_widget_class_init (NbtkWidgetClass *klass)
 {
@@ -672,6 +793,10 @@ nbtk_widget_class_init (NbtkWidgetClass *klass)
   actor_class->allocate = nbtk_widget_allocate;
   actor_class->paint = nbtk_widget_paint;
   actor_class->parent_set = nbtk_widget_parent_set;
+
+  actor_class->enter_event = nbtk_widget_enter;
+  actor_class->leave_event = nbtk_widget_leave;
+  actor_class->hide = nbtk_widget_hide;
 
   klass->draw_background = nbtk_widget_real_draw_background;
 
@@ -750,6 +875,35 @@ nbtk_widget_class_init (NbtkWidgetClass *klass)
   g_object_class_install_property (gobject_class,
                                    PROP_STYLABLE,
                                    pspec);
+
+  /**
+   * NbtkWidget:has-tooltip:
+   *
+   * Determines whether the widget has a tooltip. If set to TRUE, causes the
+   * widget to monitor enter and leave events (i.e. sets the widget reactive).
+   */
+  pspec = g_param_spec_boolean ("has-tooltip",
+                                "Has Tooltip",
+                                "Determines whether the widget has a tooltip",
+                                FALSE,
+                                NBTK_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class,
+                                   PROP_HAS_TOOLTIP,
+                                   pspec);
+
+
+  /**
+   * NbtkWidget:tooltip-text:
+   *
+   * text displayed on the tooltip
+   */
+  pspec = g_param_spec_string ("tooltip-text",
+                               "Tooltip Text",
+                               "Text displayed on the tooltip",
+                               "",
+                               NBTK_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_TOOLTIP_TEXT, pspec);
+
 
   /**
    * NbtkWidget::style-changed:
@@ -908,11 +1062,16 @@ nbtk_widget_get_style (NbtkStylable *stylable)
 {
   NbtkWidgetPrivate *priv = NBTK_WIDGET (stylable)->priv;
 
-  if (!priv->style)
-    priv->style = g_object_ref (nbtk_style_get_default ());
-
   return priv->style;
 }
+
+static void
+nbtk_style_changed_cb (NbtkStyle    *style,
+                       NbtkStylable *stylable)
+{
+  g_signal_emit (stylable, actor_signals[STYLE_CHANGED], 0, NULL);
+}
+
 
 static void
 nbtk_widget_set_style (NbtkStylable *stylable,
@@ -924,6 +1083,11 @@ nbtk_widget_set_style (NbtkStylable *stylable,
     g_object_unref (priv->style);
 
   priv->style = g_object_ref_sink (style);
+
+  g_signal_connect (priv->style,
+                    "changed",
+                    G_CALLBACK (nbtk_style_changed_cb),
+                    stylable);
 }
 
 static NbtkStylable*
@@ -998,7 +1162,7 @@ nbtk_widget_get_viewport (NbtkStylable *stylable,
 /**
  * nbtk_widget_set_style_class_name:
  * @actor: a #NbtkWidget
- * @pseudo_class: a new pseudo class string
+ * @style_class: a new style class string
  *
  * Set the style class name
  */
@@ -1098,6 +1262,8 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
       ClutterColor color = { 0x00, 0x00, 0x00, 0xff };
       ClutterColor bg_color = { 0xff, 0xff, 0xff, 0x00 };
 
+      is_initialized = TRUE;
+
       pspec = clutter_param_spec_color ("background-color",
                                   "Background Color",
                                   "The background color of an actor",
@@ -1133,38 +1299,18 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
                                 G_PARAM_READWRITE);
       nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
-      pspec = g_param_spec_int ("border-left-width",
-                                "Border Left Width",
-                                "Left border of the image",
-                                0, G_MAXINT, 0,
-                                G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
-
-      pspec = g_param_spec_int ("border-right-width",
-                                "Border Right Width",
-                                "Right border of the image",
-                                0, G_MAXINT, 0,
-                                G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
-
-      pspec = g_param_spec_int ("border-top-width",
-                                "Border Top Width",
-                                "Top border of the image",
-                                0, G_MAXINT, 0,
-                                G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
-
-      pspec = g_param_spec_int ("border-bottom-width",
-                                "Border Bottom Width",
-                                "Bottom border of the image",
-                                0, G_MAXINT, 0,
-                                G_PARAM_READWRITE);
-      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
-
       pspec = g_param_spec_boxed ("border-image",
                                   "Border image",
                                   "9-slice image to use for drawing borders and background",
                                   NBTK_TYPE_BORDER_IMAGE,
+                                  G_PARAM_READWRITE);
+      nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
+
+      pspec = g_param_spec_boxed ("padding",
+                                  "Padding",
+                                  "Padding between the widget's borders "
+                                  "and its content",
+                                  NBTK_TYPE_PADDING,
                                   G_PARAM_READWRITE);
       nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
@@ -1198,10 +1344,11 @@ nbtk_widget_init (NbtkWidget *actor)
   actor->priv = priv = NBTK_WIDGET_GET_PRIVATE (actor);
   priv->is_stylable = TRUE;
 
-  clutter_actor_set_reactive (CLUTTER_ACTOR (actor), TRUE);
-
   /* connect style changed */
   g_signal_connect (actor, "notify::name", G_CALLBACK (nbtk_widget_name_notify), NULL);
+
+  /* set the default style */
+  nbtk_widget_set_style (NBTK_STYLABLE (actor), nbtk_style_get_default ());
 
 }
 
@@ -1209,8 +1356,9 @@ nbtk_widget_init (NbtkWidget *actor)
  * nbtk_widget_get_dnd_threshold:
  * @actor: a #NbtkWidget
  *
- * Returns: the current threshold.
  * Retrieves the drag and drop threshold.
+ *
+ * Returns: the current threshold.
  */
 guint
 nbtk_widget_get_dnd_threshold (NbtkWidget *actor)
@@ -1677,30 +1825,24 @@ nbtk_border_image_get_type (void)
   return our_type;
 }
 
-void
+G_GNUC_DEPRECATED void
 nbtk_widget_get_border (NbtkWidget *actor,
                         NbtkPadding *border)
 {
-  gint border_top, border_bottom;
-  gint border_left, border_right;
-
-  g_return_if_fail (NBTK_IS_WIDGET (actor));
-  g_return_if_fail (border != NULL);
-
-  border_top = border_bottom = border_left = border_right = 0;
-  nbtk_stylable_get (NBTK_STYLABLE (actor),
-                    "border-top-width", &border_top,
-                    "border-bottom-width", &border_bottom,
-                    "border-right-width", &border_right,
-                    "border-left-width", &border_left,
-                    NULL);
-
-  border->top    = CLUTTER_UNITS_FROM_DEVICE (border_top);
-  border->right  = CLUTTER_UNITS_FROM_DEVICE (border_right);
-  border->bottom = CLUTTER_UNITS_FROM_DEVICE (border_bottom);
-  border->left   = CLUTTER_UNITS_FROM_DEVICE (border_left);
+  g_warning ("%s is deprecated and may be removed in the future.",
+             __FUNCTION__);
 }
 
+/**
+ * nbtk_widget_get_border_image:
+ * @actor: A #NbtkWidget
+ *
+ * Get the texture used as the border image. This is set using the
+ * "border-image" CSS property. This function should normally only be used
+ * by subclasses.
+ *
+ * Returns: #ClutterActor
+ */
 ClutterActor *
 nbtk_widget_get_border_image (NbtkWidget *actor)
 {
@@ -1708,9 +1850,159 @@ nbtk_widget_get_border_image (NbtkWidget *actor)
   return priv->border_image;
 }
 
+/**
+ * nbtk_widget_get_background_image:
+ * @actor: A #NbtkWidget
+ *
+ * Get the texture used as the background image. This is set using the
+ * "background-image" CSS property. This function should normally only be used
+ * by subclasses.
+ *
+ * Returns: a #ClutterActor
+ */
 ClutterActor *
 nbtk_widget_get_background_image (NbtkWidget *actor)
 {
   NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
   return priv->background_image;
+}
+
+/**
+ * nbtk_widget_get_padding:
+ * @widget: A #NbtkWidget
+ * @padding: A pointer to an #NbtkPadding to fill
+ *
+ * Gets the padding of the widget, set using the "padding" CSS property. This
+ * function should normally only be used by subclasses.
+ *
+ */
+void
+nbtk_widget_get_padding (NbtkWidget *widget,
+                         NbtkPadding *padding)
+{
+  g_return_if_fail (NBTK_IS_WIDGET (widget));
+  g_return_if_fail (padding != NULL);
+
+  *padding = widget->priv->padding;
+}
+
+/**
+ * nbtk_widget_set_has_tooltip:
+ * @widget: A #NbtkWidget
+ * @has_tooltip: #TRUE if the widget should display a tooltip
+ *
+ * Enables tooltip support on the #NbtkWidget.
+ *
+ * Note that setting has-tooltip to #TRUE will cause the widget to be set
+ * reactive. If you no longer need tooltip support and do not need the widget
+ * to be reactive, you need to set ClutterActor::reactive to FALSE.
+ *
+ */
+void
+nbtk_widget_set_has_tooltip (NbtkWidget *widget,
+                             gboolean    has_tooltip)
+{
+  NbtkWidgetPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_WIDGET (widget));
+
+  priv = widget->priv;
+
+  priv->has_tooltip = has_tooltip;
+
+  if (has_tooltip)
+    {
+      clutter_actor_set_reactive ((ClutterActor*) widget, TRUE);
+
+      if (!priv->tooltip)
+        priv->tooltip = g_object_new (NBTK_TYPE_TOOLTIP,
+                                      "widget", widget,
+                                      NULL);
+    }
+  else
+    {
+      if (priv->tooltip)
+        {
+          clutter_actor_unparent (CLUTTER_ACTOR (priv->tooltip));
+          priv->tooltip = NULL;
+        }
+    }
+}
+
+/**
+ * nbtk_widget_get_has_tooltip:
+ * @widget: A #NbtkWidget
+ *
+ * Returns the current value of the has-tooltip property. See
+ * nbtk_tooltip_set_has_tooltip() for more information.
+ *
+ * Returns: current value of has-tooltip on @widget
+ */
+gboolean
+nbtk_widget_get_has_tooltip (NbtkWidget *widget)
+{
+  g_return_val_if_fail (NBTK_IS_WIDGET (widget), FALSE);
+
+  return widget->priv->has_tooltip;
+}
+
+/**
+ * nbtk_widget_set_tooltip_text:
+ * @widget: A #NbtkWidget
+ * @text: text to set as the tooltip
+ *
+ * Set the tooltip text of the widget. This will set NbtkWidget::has-tooltip to
+ * #TRUE. A value of #NULL will unset the tooltip and set has-tooltip to #FALSE.
+ *
+ */
+void
+nbtk_widget_set_tooltip_text (NbtkWidget  *widget,
+                              const gchar *text)
+{
+  NbtkWidgetPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_WIDGET (widget));
+
+  priv = widget->priv;
+
+  if (text == NULL)
+    nbtk_widget_set_has_tooltip (widget, FALSE);
+  else
+    nbtk_widget_set_has_tooltip (widget, TRUE);
+
+  nbtk_tooltip_set_label (priv->tooltip, text);
+}
+
+/**
+ * nbtk_widget_get_tooltip_text:
+ * @widget: A #NbtkWidget
+ *
+ * Get the current tooltip string
+ *
+ * Returns: The current tooltip string, owned by the #NbtkWidget
+ */
+const gchar*
+nbtk_widget_get_tooltip_text (NbtkWidget *widget)
+{
+  g_return_val_if_fail (NBTK_IS_WIDGET (widget), NULL);
+
+  return nbtk_tooltip_get_label (widget->priv->tooltip);
+}
+
+void
+nbtk_widget_show_tooltip (NbtkWidget *widget)
+{
+  g_return_if_fail (NBTK_IS_WIDGET (widget));
+
+  if (widget->priv->tooltip)
+    nbtk_tooltip_show (widget->priv->tooltip);
+}
+
+void
+nbtk_widget_hide_tooltip (NbtkWidget *widget)
+{
+  g_return_if_fail (NBTK_IS_WIDGET (widget));
+
+  if (widget->priv->tooltip)
+    nbtk_tooltip_hide (widget->priv->tooltip);
 }

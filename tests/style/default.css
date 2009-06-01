@@ -1,3 +1,4 @@
+
 NbtkLabel {
   color: red;
   background-color: yellow;
@@ -15,20 +16,28 @@ NbtkEntry {
   background-color: yellow;
   font-size: 30;
   font-family: "Times";
-  padding-left: 10;
+  padding: 3;
 }
 
-NbtkButton, NbtkFadeButton {
+NbtkEntry:indeterminate {
+  color: gray;
+}
+
+NbtkEntry:focus {
+  background-color: lime;
+}
+
+NbtkButton, NbtkFadeButton, NbtkScrollButton {
   color: blue;
   padding: 12;
   border-image: url('file://border-image.png') 12 stretch stretch;
 }
 
-NbtkButton:hover, NbtkFadeButton:hover {
+NbtkButton:hover, NbtkFadeButton:hover, NbtkScrollButton:hover {
   border-image: url('file://border-image-light.png') 12 stretch stretch;
 }
 
-NbtkButton:active, NbtkFadeButton:active {
+NbtkButton:active, NbtkFadeButton:active, NbtkScrollButton:active {
   border-image: url('file://border-image-dark.png') 12 stretch stretch;
 }
 
@@ -37,12 +46,12 @@ NbtkButton#test-border-image {
   border-image: url('file://border-image.png') 12 stretch stretch;
 }
 
-NbtkExpander {
-  background-color: blue;
+NbtkButton NbtkBin#button-icon {
+  background-color: green;
 }
 
-NbtkExpander > NbtkBin {
-  background-color: red;
+NbtkButton NbtkBin#button-icon:hover {
+  background-color: yellow;
 }
 
 NbtkLabel#test-border-image {
@@ -75,10 +84,47 @@ NbtkTable {
   color: #aee;
   background-color: #ddd;
   border-image: url('file://rounded-corner.png') 30;
+  padding: 10;
+}
+
+NbtkExpander {
+  color: blank;
+  font-size: 15;
+  border-image: url('file://expander-closed.png') 6;
+  padding: 6 12;
+}
+
+NbtkExpander:hover {
+  border-image: url('file://expander-hover.png') 6;
+}
+
+NbtkExpander:active {
+  border-image: url('file://expander-open.png') 36 6 6 6;
+}
+
+*#nbtk-expander-arrow-closed {
+    padding: 0;
+    background-image: url('file://arrow-up.png');
+}
+
+*#nbtk-expander-arrow-closed:hover {
+    background-image: url('file://arrow-up-hover.png');
+}
+
+*#nbtk-expander-arrow-open {
+    background-image: url('file://arrow-down.png');
+}
+
+*#nbtk-expander-arrow-open:hover {
+    background-image: url('file://arrow-down-hover.png');
 }
 
 NbtkTooltip {
-  background-color: #ccc5;
+  color: white;
+  padding: 4 10 12 10;
+  background-image: url('file://tooltip-arrow.png');
+  border-image: url('file://tooltip-background.png') 4 11 12 11;
+  font-size: 15px;
 }
 
 NbtkTable NbtkButton {
@@ -96,6 +142,7 @@ NbtkScrollBar *#trough {
 
 NbtkScrollBar *#handle {
   background-color: black;
+  border-image: none;
 }
 
 NbtkScrollBar *#handle:hover {

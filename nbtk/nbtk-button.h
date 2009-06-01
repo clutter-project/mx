@@ -1,25 +1,26 @@
-/* nbtk-button.h: Plain button actor
+/*
+ * nbtk-button.h: Plain button actor
  *
- * Copyright (C) 2007 OpenedHand
- * Copyright (C) 2008 Intel Corporation
- * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * Copyright 2007 OpenedHand
+ * Copyright 2008, 2009 Intel Corporation.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  * Boston, MA 02111-1307, USA.
  *
  * Written by: Emmanuele Bassi <ebassi@openedhand.com>
  *             Thomas Wood <thomas@linux.intel.com>
+ *
  */
 
 #if !defined(NBTK_H_INSIDE) && !defined(NBTK_COMPILATION)
@@ -66,7 +67,7 @@ struct _NbtkButtonClass
   /* vfuncs, not signals */
   void (* pressed)  (NbtkButton *button);
   void (* released) (NbtkButton *button);
-  gboolean (* transition) (NbtkButton *button, ClutterActor *old_bg);
+  void (* transition) (NbtkButton *button, ClutterActor *old_bg);
 
   /* signals */
   void (* clicked) (NbtkButton *button);
@@ -81,11 +82,15 @@ void                  nbtk_button_set_label      (NbtkButton   *button,
                                                   const gchar  *text);
 void                  nbtk_button_set_icon_from_file (NbtkButton *button,
                                                       gchar      *filename);
+void                  nbtk_button_set_icon           (NbtkButton *button, ClutterActor *icon);
 void                  nbtk_button_set_toggle_mode    (NbtkButton *button, gboolean toggle);
 gboolean              nbtk_button_get_toggle_mode    (NbtkButton *button);
 void                  nbtk_button_set_checked        (NbtkButton *button, gboolean checked);
 gboolean              nbtk_button_get_checked        (NbtkButton *button);
-void                  nbtk_button_set_tooltip        (NbtkButton *button, const gchar *label);
+
+#ifndef NBTK_DISABLE_DEPRECATED
+G_GNUC_DEPRECATED void nbtk_button_set_tooltip (NbtkButton *button, const gchar *label);
+#endif /* NBTK_DISABLE_DEPRECATED */
 
 G_END_DECLS
 

@@ -1,24 +1,25 @@
-/* nbtk-stylable.c: Interface for stylable objects
+/*
+ * nbtk-stylable.c: Interface for stylable objects
  *
- * Copyright (C) 2008 Intel Corporation
+ * Copyright 2008 Intel Corporation
+ * Copyright 2009 Intel Corporation.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Written by: Emmanuele Bassi <ebassi@openedhand.com>
  *             Thomas Wood <thomas@linux.intel.com>
+ *
  */
 
 /**
@@ -369,52 +370,6 @@ nbtk_stylable_find_property (NbtkStylable *stylable,
 }
 
 static inline void
-nbtk_stylable_set_property_internal (NbtkStylable       *stylable,
-                                     GParamSpec         *pspec,
-                                     const GValue       *value,
-                                     GObjectNotifyQueue *nqueue)
-{
-  GValue tmp_value = { 0, };
-
-  g_value_init (&tmp_value, G_PARAM_SPEC_VALUE_TYPE (pspec));
-
-  if (!g_value_transform (value, &tmp_value))
-    g_warning ("unable to set property `%s' of type `%s' from value of type `%s'",
-               pspec->name,
-               g_type_name (G_PARAM_SPEC_VALUE_TYPE (pspec)),
-               G_VALUE_TYPE_NAME (value));
-  else if (g_param_value_validate (pspec, &tmp_value) &&
-           !(pspec->flags & G_PARAM_LAX_VALIDATION))
-    {
-      gchar *contents = g_strdup_value_contents (value);
-
-      g_warning ("value \"%s\" of type `%s' is invalid or out of range for property `%s' of type `%s'",
-                 contents,
-                 G_VALUE_TYPE_NAME (value),
-                 pspec->name,
-                 g_type_name (G_PARAM_SPEC_VALUE_TYPE (pspec)));
-      g_free (contents);
-    }
-  else
-    {
-      NbtkStyle *style = nbtk_stylable_get_style (stylable);
-      gchar *real_name;
-
-      real_name = g_strconcat (g_param_spec_get_qdata (pspec, quark_real_owner),
-                               "::",
-                               pspec->name,
-                               NULL);
-
-      // XXX nbtk_style_set_property (style, real_name, &tmp_value);
-      g_object_notify_queue_add (G_OBJECT (stylable), nqueue, pspec);
-
-      g_free (real_name);
-    }
-
-  g_value_unset (&tmp_value);
-}
-
-static inline void
 nbtk_stylable_get_property_internal (NbtkStylable *stylable,
                                      GParamSpec   *pspec,
                                      GValue       *value)
@@ -423,6 +378,12 @@ nbtk_stylable_get_property_internal (NbtkStylable *stylable,
   GValue real_value = { 0, };
 
   style = nbtk_stylable_get_style (stylable);
+
+  if (!style)
+    {
+      g_value_reset (value);
+      return;
+    }
 
   nbtk_style_get_property (style, stylable, pspec, &real_value);
 
@@ -488,166 +449,16 @@ nbtk_stylable_get_property (NbtkStylable *stylable,
  * @value: an initialized #GValue
  *
  * Sets the property @property_name with @value.
+ *
+ * @Deprecated: this function is deprecated and should not be used
  */
-void
+G_GNUC_DEPRECATED void
 nbtk_stylable_set_property (NbtkStylable *stylable,
                             const gchar  *property_name,
                             const GValue *value)
 {
-  GObjectNotifyQueue *nqueue;
-  GParamSpec *pspec;
-
-  g_return_if_fail (NBTK_IS_STYLABLE (stylable));
-  g_return_if_fail (property_name != NULL);
-  g_return_if_fail (value != NULL);
-
-  g_object_ref (stylable);
-
-  nqueue = g_object_notify_queue_freeze (G_OBJECT (stylable),
-                                         &property_notify_context);
-
-  pspec = nbtk_stylable_find_property (stylable, property_name);
-  if (!pspec)
-    {
-      g_warning ("Stylable class `%s' doesn't have a property named `%s'",
-                 g_type_name (G_OBJECT_TYPE (stylable)),
-                 property_name);
-    }
-  else if (!(pspec->flags & G_PARAM_WRITABLE))
-    {
-      g_warning ("Style property `%s' of class `%s' is not readable",
-                 pspec->name,
-                 g_type_name (G_OBJECT_TYPE (stylable)));
-    }
-  else if (G_VALUE_TYPE (value) != G_PARAM_SPEC_VALUE_TYPE (pspec))
-    {
-      g_warning ("Passed value is not of the requested type `%s' for "
-                 "the style property `%s' of class `%s'",
-                 g_type_name (G_PARAM_SPEC_VALUE_TYPE (pspec)),
-                 pspec->name,
-                 g_type_name (G_OBJECT_TYPE (stylable)));
-    }
-  else
-    nbtk_stylable_set_property_internal (stylable, pspec, value, nqueue);
-
-  g_object_notify_queue_thaw (G_OBJECT (stylable), nqueue);
-  g_object_unref (stylable);
-}
-
-static void
-nbtk_stylable_get_valist (NbtkStylable *stylable,
-                          const gchar  *first_property_name,
-                          va_list       varargs)
-{
-  const gchar *name;
-
-  g_object_ref (stylable);
-
-  name = first_property_name;
-
-  while (name)
-    {
-      GParamSpec *pspec;
-      GValue value = { 0, };
-      gchar *error;
-
-      pspec = nbtk_stylable_find_property (stylable, name);
-      if (!pspec)
-        {
-          g_warning ("%s: no style property named `%s' found for class `%s'",
-                     G_STRLOC,
-                     name,
-                     g_type_name (G_OBJECT_TYPE (stylable)));
-          break;
-        }
-
-      if (!(pspec->flags & G_PARAM_READABLE))
-        {
-          g_warning ("Style property `%s' of class `%s' is not readable",
-                     pspec->name,
-                     g_type_name (G_OBJECT_TYPE (stylable)));
-          break;
-        }
-
-      g_value_init (&value, G_PARAM_SPEC_VALUE_TYPE (pspec));
-      nbtk_stylable_get_property_internal (stylable, pspec, &value);
-
-      G_VALUE_LCOPY (&value, varargs, 0, &error);
-      if (error)
-        {
-          g_warning ("%s: %s", G_STRLOC, error);
-          g_free (error);
-          g_value_unset (&value);
-          break;
-        }
-
-      g_value_unset (&value);
-
-      name = va_arg (varargs, gchar*);
-    }
-
-  g_object_unref (stylable);
-}
-
-static void
-nbtk_stylable_set_valist (NbtkStylable *stylable,
-                          const gchar  *first_property_name,
-                          va_list       varargs)
-{
-  GObjectNotifyQueue *nqueue;
-  const gchar *name;
-
-  g_object_ref (stylable);
-
-  nqueue = g_object_notify_queue_freeze (G_OBJECT (stylable),
-                                         &property_notify_context);
-
-  name = first_property_name;
-
-  while (name)
-    {
-      GParamSpec *pspec;
-      GValue value = { 0, };
-      gchar *error;
-
-      pspec = nbtk_stylable_find_property (stylable, name);
-      if (!pspec)
-        {
-          g_warning ("%s: no style property named `%s' found for class `%s'",
-                     G_STRLOC,
-                     name,
-                     g_type_name (G_OBJECT_TYPE (stylable)));
-          break;
-        }
-
-      if (!(pspec->flags & G_PARAM_WRITABLE) ||
-          (pspec->flags & G_PARAM_CONSTRUCT_ONLY))
-        {
-          g_warning ("Style property `%s' of class `%s' is not writable",
-                     pspec->name,
-                     g_type_name (G_OBJECT_TYPE (stylable)));
-          break;
-        }
-
-      g_value_init (&value, G_PARAM_SPEC_VALUE_TYPE (pspec));
-
-      G_VALUE_COLLECT (&value, varargs, 0, &error);
-      if (error)
-        {
-          g_warning ("%s: %s", G_STRLOC, error);
-          g_free (error);
-          g_value_unset (&value);
-          break;
-        }
-
-      nbtk_stylable_set_property_internal (stylable, pspec, &value, nqueue);
-      g_value_unset (&value);
-
-      name = va_arg (varargs, gchar*);
-    }
-
-  g_object_notify_queue_thaw (G_OBJECT (stylable), nqueue);
-  g_object_unref (stylable);
+  g_warning ("%s is deprecated and will be removed in future versions",
+             __FUNCTION__);
 }
 
 /**
@@ -688,13 +499,16 @@ nbtk_stylable_get (NbtkStylable *stylable,
                    const gchar  *first_property_name,
                                  ...)
 {
+  NbtkStyle *style;
   va_list args;
 
   g_return_if_fail (NBTK_IS_STYLABLE (stylable));
   g_return_if_fail (first_property_name != NULL);
 
+  style = nbtk_stylable_get_style (stylable);
+
   va_start (args, first_property_name);
-  nbtk_stylable_get_valist (stylable, first_property_name, args);
+  nbtk_style_get_valist (style, stylable, first_property_name, args);
   va_end (args);
 }
 
@@ -707,19 +521,55 @@ nbtk_stylable_get (NbtkStylable *stylable,
  *
  * Sets the style properties of @stylable.
  */
-void
+G_GNUC_DEPRECATED void
 nbtk_stylable_set (NbtkStylable *stylable,
                    const gchar  *first_property_name,
                    ...)
 {
-  va_list args;
+  g_warning ("%s is deprecated and will be removed in future versions",
+             __FUNCTION__);
+}
 
-  g_return_if_fail (NBTK_IS_STYLABLE (stylable));
-  g_return_if_fail (first_property_name != NULL);
+/**
+ * nbtk_stylable_get_default_value:
+ * @stylable: a #NbtkStylable
+ * @property_name: name of the property to query
+ * @value_out: return location for the default value
+ *
+ * Query @stylable for the default value of property @property_name and
+ * fill @value_out with the result.
+ *
+ * Returns: %TRUE if property @property_name exists and the default value has
+ * been returned.
+ */
+gboolean
+nbtk_stylable_get_default_value (NbtkStylable  *stylable,
+                                 const gchar   *property_name,
+                                 GValue        *value_out)
+{
+  GParamSpec *pspec;
 
-  va_start (args, first_property_name);
-  nbtk_stylable_set_valist (stylable, first_property_name, args);
-  va_end (args);
+  pspec = nbtk_stylable_find_property (stylable, property_name);
+  if (!pspec)
+    {
+      g_warning ("%s: no style property named `%s' found for class `%s'",
+                  G_STRLOC,
+                  property_name,
+                  g_type_name (G_OBJECT_TYPE (stylable)));
+      return FALSE;
+    }
+
+  if (!(pspec->flags & G_PARAM_READABLE))
+    {
+      g_warning ("Style property `%s' of class `%s' is not readable",
+                  pspec->name,
+                  g_type_name (G_OBJECT_TYPE (stylable)));
+      return FALSE;
+    }
+
+  g_value_init (value_out, G_PARAM_SPEC_VALUE_TYPE (pspec));
+  g_param_value_set_default (pspec, value_out);
+  return TRUE;
 }
 
 /**

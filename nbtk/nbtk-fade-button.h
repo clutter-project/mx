@@ -1,4 +1,26 @@
-/* nbtk-fade-button.h */
+/*
+ * nbtk-fade-button.h
+ *
+ * Copyright 2009 Intel Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ */
+
+#if !defined(NBTK_H_INSIDE) && !defined(NBTK_COMPILATION)
+#error "Only <nbtk/nbtk.h> can be included directly.h"
+#endif
 
 #ifndef _NBTK_FADE_BUTTON
 #define _NBTK_FADE_BUTTON
@@ -25,6 +47,8 @@ G_BEGIN_DECLS
 #define NBTK_FADE_BUTTON_GET_CLASS(obj) \
   (G_TYPE_INSTANCE_GET_CLASS ((obj), NBTK_TYPE_FADE_BUTTON, NbtkFadeButtonClass))
 
+typedef struct _NbtkFadeButtonPrivate NbtkFadeButtonPrivate;
+
 /**
  * NbtkFadeButton:
  *
@@ -34,6 +58,7 @@ G_BEGIN_DECLS
 typedef struct {
   /*< private >*/
   NbtkButton parent;
+  NbtkFadeButtonPrivate *priv;
 } NbtkFadeButton;
 
 typedef struct {

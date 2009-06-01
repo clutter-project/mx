@@ -1,25 +1,30 @@
-/* nbtk-grid.h: Reflowing grid layout container for nbtk.
+/*
+ * nbtk-grid.h: Reflowing grid layout container for nbtk.
  *
- * Copyright (C) 2008-2009 Intel Corporation
+ * Copyright 2008, 2009 Intel Corporation.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  * Boston, MA 02111-1307, USA.
  *
  * Written by: Øyvind Kolås <pippin@linux.intel.com>
  * Ported to nbtk by: Robert Staudinger <robsta@openedhand.com>
+ *
  */
+
+#if !defined(NBTK_H_INSIDE) && !defined(NBTK_COMPILATION)
+#error "Only <nbtk/nbtk.h> can be included directly.h"
+#endif
 
 #ifndef __NBTK_GRID_H__
 #define __NBTK_GRID_H__
@@ -58,8 +63,15 @@ struct _NbtkGridClass
   NbtkWidgetClass parent_class;
 };
 
+/**
+ * NbtkGrid:
+ *
+ * The contents of the this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _NbtkGrid
 {
+  /*< private >*/
   NbtkWidget parent;
 
   NbtkGridPrivate *priv;
@@ -92,6 +104,10 @@ gdouble       nbtk_grid_get_valign             (NbtkGrid    *self);
 void          nbtk_grid_set_halign             (NbtkGrid    *self,
                                                 gdouble      value);
 gdouble       nbtk_grid_get_halign             (NbtkGrid    *self);
+
+void nbtk_grid_set_max_stride (NbtkGrid *self,
+                               gint      value);
+gint nbtk_grid_get_max_stride (NbtkGrid *self);
 
 G_END_DECLS
 

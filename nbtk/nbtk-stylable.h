@@ -1,24 +1,25 @@
-/* nbtk-stylable.h: Interface for stylable objects
+/*
+ * nbtk-stylable.h: Interface for stylable objects
  *
- * Copyright (C) 2008 Intel Corporation
+ * Copyright 2008, 2009 Intel Corporation
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  * Boston, MA 02111-1307, USA.
  *
  * Written by: Emmanuele Bassi <ebassi@openedhand.com>
  *             Thomas Wood <thomas@linux.intel.com>
+ *
  */
 
 #if !defined(NBTK_H_INSIDE) && !defined(NBTK_COMPILATION)
@@ -92,18 +93,22 @@ void         nbtk_stylable_set_style              (NbtkStylable      *stylable,
                                                    NbtkStyle         *style);
 NbtkStyle *  nbtk_stylable_get_style              (NbtkStylable      *stylable);
 
-void         nbtk_stylable_set                    (NbtkStylable      *stylable,
+G_GNUC_DEPRECATED void  nbtk_stylable_set         (NbtkStylable      *stylable,
                                                    const gchar       *first_property_name,
                                                    ...) G_GNUC_NULL_TERMINATED;
 void         nbtk_stylable_get                    (NbtkStylable      *stylable,
                                                    const gchar       *first_property_name,
                                                    ...) G_GNUC_NULL_TERMINATED;
-void         nbtk_stylable_set_property           (NbtkStylable      *stylable,
+G_GNUC_DEPRECATED void nbtk_stylable_set_property (NbtkStylable      *stylable,
                                                    const gchar       *property_name,
                                                    const GValue      *value);
 void         nbtk_stylable_get_property           (NbtkStylable      *stylable,
                                                    const gchar       *property_name,
                                                    GValue            *value);
+gboolean     nbtk_stylable_get_default_value      (NbtkStylable      *stylable,
+                                                   const gchar       *property_name,
+                                                   GValue            *value_out);
+
 NbtkStylable* nbtk_stylable_get_container     (NbtkStylable *stylable);
 NbtkStylable* nbtk_stylable_get_base_style    (NbtkStylable *stylable);
 const gchar*  nbtk_stylable_get_style_id      (NbtkStylable *stylable);

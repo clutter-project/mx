@@ -3,7 +3,6 @@
 nbtk_adjustment_get_type
 nbtk_button_get_type
 nbtk_entry_get_type
-nbtk_expander_get_type
 nbtk_grid_get_type
 nbtk_label_get_type
 nbtk_padding_get_type

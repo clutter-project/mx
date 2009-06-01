@@ -1,14 +1,20 @@
 <?xml version="1.0"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
-               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+<!ENTITY version SYSTEM "version.xml">
+]>
+
 <book id="index" xmlns:xi="http://www.w3.org/2003/XInclude">
   <bookinfo>
     <title>nbtk Reference Manual</title>
     <releaseinfo>
-      for nbtk [VERSION]
-      The latest version of this documentation can be found on-line at
-      <ulink role="online-location" url="http://[SERVER]/nbtk/index.html">http://[SERVER]/nbtk/</ulink>.
+      for nbtk &version;
     </releaseinfo>
+
+    <copyright>
+      <year>2009</year>
+      <holder>Intel Corporation</holder>
+    </copyright>
   </bookinfo>
 
   <chapter>
@@ -17,7 +23,6 @@
     <xi:include href="xml/nbtk-button.xml"/>
     <xi:include href="xml/nbtk-enum-types.xml"/>
     <xi:include href="xml/nbtk-entry.xml"/>
-    <xi:include href="xml/nbtk-expander.xml"/>
     <xi:include href="xml/nbtk-grid.xml"/>
     <xi:include href="xml/nbtk-label.xml"/>
     <xi:include href="xml/nbtk-scroll-bar.xml"/>

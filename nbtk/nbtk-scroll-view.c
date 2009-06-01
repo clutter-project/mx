@@ -1,24 +1,25 @@
-/* nbtk-scroll-view.h: Container with scroll-bars
+/*
+ * nbtk-scroll-view.h: Container with scroll-bars
  *
- * Copyright (C) 2008 OpenedHand
+ * Copyright 2008 OpenedHand
+ * Copyright 2009 Intel Corporation.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Written by: Chris Lord <chris@openedhand.com>
  * Port to Nbtk by: Robert Staudinger <robsta@openedhand.com>
+ *
  */
 
 #include "nbtk-scroll-view.h"
@@ -54,8 +55,11 @@ struct _NbtkScrollViewPrivate
   ClutterActor   *hscroll;
   ClutterActor   *vscroll;
 
-  NbtkAdjustment *hadjustment;
-  NbtkAdjustment *vadjustment;
+  ClutterUnit     row_size;
+  ClutterUnit     column_size;
+
+  gboolean        row_size_set : 1;
+  gboolean        column_size_set : 1;
 };
 
 enum {
@@ -128,10 +132,10 @@ nbtk_scroll_view_paint (ClutterActor *actor)
 {
   NbtkScrollViewPrivate *priv = NBTK_SCROLL_VIEW (actor)->priv;
 
+  /* NbtkBin will paint the child */
   CLUTTER_ACTOR_CLASS (nbtk_scroll_view_parent_class)->paint (actor);
 
-  if (priv->child && CLUTTER_ACTOR_IS_VISIBLE (priv->child))
-    clutter_actor_paint (priv->child);
+  /* paint our custom children */
   if (CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
     clutter_actor_paint (priv->hscroll);
   if (CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll))
@@ -141,11 +145,16 @@ nbtk_scroll_view_paint (ClutterActor *actor)
 static void
 nbtk_scroll_view_pick (ClutterActor *actor, const ClutterColor *color)
 {
+  NbtkScrollViewPrivate *priv = NBTK_SCROLL_VIEW (actor)->priv;
+
   /* Chain up so we get a bounding box pained (if we are reactive) */
   CLUTTER_ACTOR_CLASS (nbtk_scroll_view_parent_class)->pick (actor, color);
 
-  /* Trigger pick on children */
-  nbtk_scroll_view_paint (actor);
+  /* paint our custom children */
+  if (CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
+    clutter_actor_paint (priv->hscroll);
+  if (CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll))
+    clutter_actor_paint (priv->vscroll);
 }
 
 static void
@@ -162,7 +171,7 @@ nbtk_scroll_view_get_preferred_width (ClutterActor *actor,
   if (!priv->child)
     return;
 
-  nbtk_bin_get_padding (NBTK_BIN (actor), &padding);
+  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
   nbtk_stylable_get (NBTK_STYLABLE (actor),
                      "xthickness", &xthickness,
                      NULL);
@@ -207,7 +216,7 @@ nbtk_scroll_view_get_preferred_height (ClutterActor *actor,
   if (!priv->child)
     return;
 
-  nbtk_bin_get_padding (NBTK_BIN (actor), &padding);
+  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
   nbtk_stylable_get (NBTK_STYLABLE (actor),
                      "ythickness", &ythickness,
                      NULL);
@@ -247,14 +256,24 @@ nbtk_scroll_view_allocate (ClutterActor          *actor,
   ClutterActorBox child_box;
   guint xthickness, ythickness;
   ClutterUnit xthicknessu, ythicknessu;
+  ClutterActorClass *parent_parent_class;
 
   NbtkScrollViewPrivate *priv = NBTK_SCROLL_VIEW (actor)->priv;
 
-  /* Chain up */
-  CLUTTER_ACTOR_CLASS (nbtk_scroll_view_parent_class)->
+  /* Chain up to the parent's parent class
+   *
+   * We do this because we do not want NbtkBin to allocate the child, as we
+   * give it a different allocation later, depending on whether the scrollbars
+   * are visible
+   */
+  parent_parent_class
+    = g_type_class_peek_parent (nbtk_scroll_view_parent_class);
+
+  CLUTTER_ACTOR_CLASS (parent_parent_class)->
     allocate (actor, box, absolute_origin_changed);
 
-  nbtk_bin_get_padding (NBTK_BIN (actor), &padding);
+
+  nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 
   nbtk_stylable_get (NBTK_STYLABLE (actor),
                      "xthickness", &xthickness,
@@ -314,10 +333,29 @@ nbtk_scroll_view_allocate (ClutterActor          *actor,
 }
 
 static void
+nbtk_scroll_view_style_changed (NbtkWidget *widget)
+{
+  NbtkScrollViewPrivate *priv = NBTK_SCROLL_VIEW (widget)->priv;
+
+  NBTK_WIDGET_CLASS (nbtk_scroll_view_parent_class)->style_changed (widget);
+
+  if (priv->child)
+    {
+      NBTK_WIDGET_GET_CLASS (NBTK_WIDGET (priv->child))
+        ->style_changed (NBTK_WIDGET (priv->child));
+    }
+  NBTK_WIDGET_GET_CLASS (NBTK_WIDGET (priv->hscroll))
+    ->style_changed (NBTK_WIDGET (priv->hscroll));
+  NBTK_WIDGET_GET_CLASS (NBTK_WIDGET (priv->vscroll))
+    ->style_changed (NBTK_WIDGET (priv->vscroll));
+}
+
+static void
 nbtk_scroll_view_class_init (NbtkScrollViewClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
+  NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
 
   g_type_class_add_private (klass, sizeof (NbtkScrollViewPrivate));
 
@@ -331,6 +369,8 @@ nbtk_scroll_view_class_init (NbtkScrollViewClass *klass)
   actor_class->get_preferred_width = nbtk_scroll_view_get_preferred_width;
   actor_class->get_preferred_height = nbtk_scroll_view_get_preferred_height;
   actor_class->allocate = nbtk_scroll_view_allocate;
+
+  widget_class->style_changed = nbtk_scroll_view_style_changed;
 
   g_object_class_install_property (object_class,
                                    PROP_HSCROLL,
@@ -357,6 +397,8 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
   if (!is_initialized)
     {
       GParamSpec *pspec;
+
+      is_initialized = TRUE;
 
       pspec = g_param_spec_uint ("xthickness",
                                   "Vertical scroll-bar thickness",
@@ -417,6 +459,14 @@ child_hadjustment_notify_cb (GObject *gobject,
   nbtk_scrollable_get_adjustments (NBTK_SCROLLABLE (actor), &hadjust, NULL);
   if (hadjust)
     {
+      /* Force scroll step if neede. */
+      if (priv->column_size_set)
+        {
+          g_object_set (hadjust,
+                        "step-increment", priv->column_size,
+                        NULL);
+        }
+
       nbtk_scroll_bar_set_adjustment (NBTK_SCROLL_BAR(priv->hscroll), hadjust);
       g_signal_connect (hadjust, "changed", G_CALLBACK (
                         child_adjustment_changed_cb), priv->hscroll);
@@ -443,6 +493,14 @@ child_vadjustment_notify_cb (GObject *gobject,
   nbtk_scrollable_get_adjustments (NBTK_SCROLLABLE(actor), NULL, &vadjust);
   if (vadjust)
     {
+      /* Force scroll step if neede. */
+      if (priv->row_size_set)
+        {
+          g_object_set (vadjust,
+                        "step-increment", priv->row_size,
+                        NULL);
+        }
+
       nbtk_scroll_bar_set_adjustment (NBTK_SCROLL_BAR(priv->vscroll), vadjust);
       g_signal_connect (vadjust, "changed", G_CALLBACK (
                         child_adjustment_changed_cb), priv->vscroll);
@@ -464,6 +522,8 @@ nbtk_scroll_view_init (NbtkScrollView *self)
   clutter_actor_show (priv->hscroll);
   clutter_actor_show (priv->vscroll);
   clutter_actor_set_rotation (priv->vscroll, CLUTTER_Z_AXIS, 90.0, 0, 0, 0);
+
+  g_object_set (G_OBJECT (self), "reactive", FALSE, NULL);
 }
 
 static void
@@ -478,7 +538,7 @@ nbtk_scroll_view_add (ClutterContainer *container,
       priv->child = actor;
 
       /* chain up to NbtkBin::add() */
-      // nbtk_scroll_view_parent_iface->add (container, actor);
+      nbtk_scroll_view_parent_iface->add (container, actor);
 
       /* Get adjustments for scroll-bars */
       g_signal_connect (actor, "notify::hadjustment",
@@ -558,3 +618,94 @@ nbtk_scroll_view_get_vscroll_bar (NbtkScrollView *scroll)
 
   return scroll->priv->vscroll;
 }
+
+ClutterUnit
+nbtk_scroll_view_get_column_size (NbtkScrollView *scroll)
+{
+  NbtkAdjustment  *adjustment;
+  gdouble          column_size;
+
+  g_return_val_if_fail (scroll, 0);
+
+  adjustment = nbtk_scroll_bar_get_adjustment (
+                NBTK_SCROLL_BAR (scroll->priv->hscroll));
+  g_object_get (adjustment,
+                "step-increment", &column_size,
+                NULL);
+
+  return column_size;
+}
+
+void
+nbtk_scroll_view_set_column_size (NbtkScrollView *scroll,
+                                  ClutterUnit     column_size)
+{
+  NbtkAdjustment  *adjustment;
+
+  g_return_if_fail (scroll);
+
+  if (column_size < 0)
+    {
+      scroll->priv->column_size_set = FALSE;
+      scroll->priv->column_size = -1;
+    }
+  else
+    {
+      scroll->priv->column_size_set = TRUE;
+      scroll->priv->column_size = column_size;
+
+      adjustment = nbtk_scroll_bar_get_adjustment (
+                    NBTK_SCROLL_BAR (scroll->priv->hscroll));
+
+      if (adjustment)
+        g_object_set (adjustment,
+                      "step-increment", (gdouble) scroll->priv->column_size,
+                      NULL);
+     }
+}
+
+ClutterUnit
+nbtk_scroll_view_get_row_size (NbtkScrollView *scroll)
+{
+  NbtkAdjustment  *adjustment;
+  gdouble row_size;
+
+  g_return_val_if_fail (scroll, 0);
+
+  adjustment = nbtk_scroll_bar_get_adjustment (
+                NBTK_SCROLL_BAR (scroll->priv->vscroll));
+  g_object_get (adjustment,
+                "step-increment", &row_size,
+                NULL);
+
+  return row_size;
+}
+
+void
+nbtk_scroll_view_set_row_size (NbtkScrollView *scroll,
+                               ClutterUnit     row_size)
+{
+  NbtkAdjustment  *adjustment;
+
+  g_return_if_fail (scroll);
+
+  if (row_size < 0)
+    {
+      scroll->priv->row_size_set = FALSE;
+      scroll->priv->row_size = -1;
+    }
+  else
+    {
+      scroll->priv->row_size_set = TRUE;
+      scroll->priv->row_size = row_size;
+
+      adjustment = nbtk_scroll_bar_get_adjustment (
+                    NBTK_SCROLL_BAR (scroll->priv->vscroll));
+
+      if (adjustment)
+        g_object_set (adjustment,
+                      "step-increment", (gdouble) scroll->priv->row_size,
+                      NULL);
+    }
+}
+

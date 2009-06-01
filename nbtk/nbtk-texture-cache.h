@@ -1,21 +1,23 @@
-/* nbtk-texture-cache.h: Cached textures object
+/*
+ * nbtk-texture-cache.h: Cached textures object
  *
- * Copyright (C) 2007 OpenedHand
+ * Copyright 2007 OpenedHand
+ * Copyright 2009 Intel Corporation.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  * Boston, MA 02111-1307, USA.
+ *
  */
 
 #if !defined(NBTK_H_INSIDE) && !defined(NBTK_COMPILATION)
@@ -52,6 +54,12 @@ G_BEGIN_DECLS
   (G_TYPE_INSTANCE_GET_CLASS ((obj), \
   NBTK_TYPE_TEXTURE_CACHE, NbtkTextureCacheClass))
 
+/**
+ * NbtkTextureCache:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 typedef struct {
     /*< private >*/
     GObject parent;
@@ -70,22 +78,12 @@ typedef struct {
 
 GType nbtk_texture_cache_get_type (void);
 
-NbtkTextureCache* nbtk_texture_cache_new (void);
+NbtkTextureCache* nbtk_texture_cache_get_default (void);
+ClutterTexture*   nbtk_texture_cache_get_texture (NbtkTextureCache *self,
+                                                  const gchar *path,
+                                                  gboolean want_clone);
 
-NbtkTextureCache*
-nbtk_texture_cache_get_default (void);
-
-ClutterActor*
-nbtk_texture_cache_get_texture (NbtkTextureCache *self,
-				const gchar      *path, 
-				gboolean          want_clone);
-
-void
-nbtk_texture_cache_get_texture_async (NbtkTextureCache *self,
-                                      const gchar      *path);
-
-gint
-nbtk_texture_cache_get_size (NbtkTextureCache *self);
+gint              nbtk_texture_cache_get_size    (NbtkTextureCache *self);
 
 G_END_DECLS
 

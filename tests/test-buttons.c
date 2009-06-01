@@ -1,10 +1,28 @@
+/*
+ * Copyright 2009 Intel Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+ * Boston, MA 02111-1307, USA.
+ *
+ */
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <clutter/clutter.h>
 #include <nbtk/nbtk.h>
 
-void
+static void
 button_clicked_cb (NbtkButton *button, gchar *name)
 {
   printf ("%s button clicked!\n", name);
@@ -15,19 +33,13 @@ main (int argc, char *argv[])
 {
   NbtkWidget *button;
   ClutterColor stage_color =  { 0xff, 0xff, 0xff, 0xff };
-  NbtkPadding padding = { 0, };
-  ClutterActor *stage;
+  ClutterActor *stage, *icon;
 
   clutter_init (&argc, &argv);
 
   /* load the style sheet */
   nbtk_style_load_from_file (nbtk_style_get_default (),
                              "style/default.css", NULL);
-
-  padding.left = CLUTTER_UNITS_FROM_DEVICE (40);
-  padding.right = CLUTTER_UNITS_FROM_DEVICE (40);
-  padding.top = CLUTTER_UNITS_FROM_DEVICE (40);
-  padding.bottom = CLUTTER_UNITS_FROM_DEVICE (40);
 
   stage = clutter_stage_get_default ();
   clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
@@ -39,10 +51,9 @@ main (int argc, char *argv[])
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 100, 100);
-  nbtk_bin_set_padding (NBTK_BIN (button), &padding);
 
   button = nbtk_button_new ();
-  clutter_actor_set_name (CLUTTER_ACTOR (button), "style-button");
+  clutter_actor_set_name (CLUTTER_ACTOR (button), "icon-button");
   g_signal_connect (button, "clicked",
                     G_CALLBACK (button_clicked_cb),
                     "icon");
@@ -52,7 +63,18 @@ main (int argc, char *argv[])
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 300, 100);
-  nbtk_bin_set_padding (NBTK_BIN (button), &padding);
+
+  button = nbtk_button_new_with_label ("icon actor");
+  icon = (ClutterActor *) nbtk_bin_new ();
+  clutter_actor_set_name (icon, "button-icon");
+  clutter_actor_set_size (icon, 16, 16);
+  nbtk_button_set_icon (NBTK_BUTTON (button), icon);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage),
+                               CLUTTER_ACTOR (button));
+  clutter_actor_set_position (CLUTTER_ACTOR (button), 300, 380);
+  g_signal_connect (button, "clicked",
+                    G_CALLBACK (button_clicked_cb),
+                    "actor icon");
 
   button = nbtk_button_new_with_label ("Toggle");
   g_signal_connect (button, "clicked",
@@ -62,7 +84,6 @@ main (int argc, char *argv[])
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 100, 200);
-  nbtk_bin_set_padding (NBTK_BIN (button), &padding);
 
   button = nbtk_button_new ();
   g_signal_connect (button, "clicked",

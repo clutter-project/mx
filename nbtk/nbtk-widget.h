@@ -1,22 +1,23 @@
-/* nbtk-widget.h: Base class for Nbtk actors
+/*
+ * nbtk-widget.h: Base class for Nbtk actors
  *
- * Copyright (C) 2007 OpenedHand
- * Copyright (C) 2008 Intel Corporation
+ * Copyright 2007 OpenedHand
+ * Copyright 2008, 2009 Intel Corporation.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  * Boston, MA 02111-1307, USA.
+ *
  */
 
 #if !defined(NBTK_H_INSIDE) && !defined(NBTK_COMPILATION)
@@ -147,10 +148,25 @@ void                  nbtk_widget_setup_child_dnd        (NbtkWidget   *actor,
 void                  nbtk_widget_undo_child_dnd         (NbtkWidget   *actor,
                                                           ClutterActor *child);
 
+
+void     nbtk_widget_set_has_tooltip (NbtkWidget *widget, gboolean has_tooltip);
+gboolean nbtk_widget_get_has_tooltip (NbtkWidget *widget);
+void     nbtk_widget_set_tooltip_text (NbtkWidget *widget, const gchar *text);
+const gchar* nbtk_widget_get_tooltip_text (NbtkWidget *widget);
+
+void nbtk_widget_show_tooltip (NbtkWidget *widget);
+void nbtk_widget_hide_tooltip (NbtkWidget *widget);
+
+
+
 /* Only to be used by sub-classes of NbtkWidget */
 ClutterActor *nbtk_widget_get_background_image (NbtkWidget *actor);
-ClutterActor *nbtk_widget_get_border_image (NbtkWidget *actor);
+ClutterActor *nbtk_widget_get_border_image     (NbtkWidget *actor);
+void          nbtk_widget_get_padding          (NbtkWidget  *widget,
+                                                NbtkPadding *padding);
 
+G_GNUC_DEPRECATED void  nbtk_widget_get_border (NbtkWidget *actor,
+                                                NbtkPadding *border);
 G_END_DECLS
 
 #endif /* __NBTK_WIDGET_H__ */

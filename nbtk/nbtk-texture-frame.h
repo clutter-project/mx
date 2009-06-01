@@ -1,22 +1,23 @@
-/* nbtk-texture-frame.h: Expandible texture actor
+/*
+ * nbtk-texture-frame.h: Expandible texture actor
  *
- * Copyright (C) 2007, 2008 OpenedHand Ltd
- * Copyright (C) 2009 Intel Corp.
+ * Copyright 2007, 2008 OpenedHand Ltd
+ * Copyright 2009 Intel Corporation.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  * Boston, MA 02111-1307, USA.
+ *
  */
 
 #if !defined(NBTK_H_INSIDE) && !defined(NBTK_COMPILATION)
@@ -41,6 +42,12 @@ typedef struct _NbtkTextureFrame                NbtkTextureFrame;
 typedef struct _NbtkTextureFramePrivate         NbtkTextureFramePrivate;
 typedef struct _NbtkTextureFrameClass           NbtkTextureFrameClass;
 
+/**
+ * NbtkTextureFrame:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _NbtkTextureFrame
 {
   /*< private >*/

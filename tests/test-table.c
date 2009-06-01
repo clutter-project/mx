@@ -1,3 +1,21 @@
+/*
+ * Copyright 2009 Intel Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+ * Boston, MA 02111-1307, USA.
+ *
+ */
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -49,7 +67,7 @@ randomise_align (NbtkButton *button, ClutterContainer *table)
   g_free (label);
 }
 
-void
+static void
 stage_size_notify_cb (ClutterActor *stage,
                       GParamSpec *pspec,
                       ClutterActor *table)
@@ -60,21 +78,20 @@ stage_size_notify_cb (ClutterActor *stage,
   clutter_actor_set_size (table, width-10, height-10);
 }
 
+static void
+toggle_visible (NbtkButton *button)
+{
+  clutter_actor_hide (CLUTTER_ACTOR (button));
+}
+
 int
 main (int argc, char *argv[])
 {
-  ClutterActor *stage;
+  ClutterActor *stage, *button2;
   NbtkWidget *table;
-  NbtkWidget *button1, *button2, *button3, *button4, *button5,
-             *button6, *button7, *button8, *button9;
-  NbtkPadding padding = {CLUTTER_UNITS_FROM_INT (10),
-                         CLUTTER_UNITS_FROM_INT (30),
-                         CLUTTER_UNITS_FROM_INT (10),
-                         CLUTTER_UNITS_FROM_INT (10)};
-  NbtkPadding btn_pad = {CLUTTER_UNITS_FROM_INT (10),
-                         CLUTTER_UNITS_FROM_INT (10),
-                         CLUTTER_UNITS_FROM_INT (10),
-                         CLUTTER_UNITS_FROM_INT (10)};
+  NbtkWidget *button1, *button3, *button4, *button5,
+             *button6, *button7, *button8, *button9,
+             *button10;
 
   clutter_init (&argc, &argv);
 
@@ -86,7 +103,6 @@ main (int argc, char *argv[])
   clutter_stage_set_user_resizable (CLUTTER_STAGE (stage), TRUE);
 
   table = nbtk_table_new ();
-  nbtk_table_set_padding (NBTK_TABLE (table), &padding);
   nbtk_table_set_col_spacing (NBTK_TABLE (table), 10);
   nbtk_table_set_row_spacing (NBTK_TABLE (table), 10);
 
@@ -97,7 +113,7 @@ main (int argc, char *argv[])
                     G_CALLBACK (stage_size_notify_cb), table);
 
   button1 = nbtk_button_new_with_label ("button1");
-  button2 = nbtk_button_new_with_label ("button2");
+  button2 = clutter_texture_new_from_file ("redhand.png", NULL);
   button3 = nbtk_button_new_with_label ("button3");
   button4 = nbtk_button_new_with_label ("Expand = 1");
   button5 = nbtk_button_new_with_label ("button5");
@@ -105,29 +121,24 @@ main (int argc, char *argv[])
   button7 = nbtk_button_new_with_label ("Align (0.50, 0.50)");
   button8 = nbtk_button_new_with_label ("button8");
   button9 = nbtk_button_new_with_label ("button9");
+  button10 = nbtk_button_new_with_label ("button10");
 
-  nbtk_bin_set_padding (NBTK_BIN (button1), &btn_pad);
-  nbtk_bin_set_padding (NBTK_BIN (button2), &btn_pad);
-  nbtk_bin_set_padding (NBTK_BIN (button3), &btn_pad);
-  nbtk_bin_set_padding (NBTK_BIN (button4), &btn_pad);
-  nbtk_bin_set_padding (NBTK_BIN (button7), &btn_pad);
-  nbtk_bin_set_padding (NBTK_BIN (button8), &btn_pad);
-  nbtk_bin_set_padding (NBTK_BIN (button9), &btn_pad);
-
-  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button1), 0, 0);
-  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button2), 0, 1);
-  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button3), 1, 1);
-  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button4), 2, 0);
-  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button5), 3, 0);
-  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button6), 3, 1);
-  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button7), 4, 1);
-  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button8), 4, 0);
-  nbtk_table_add_widget (NBTK_TABLE (table), NBTK_WIDGET (button9), 5, 0);
-  nbtk_table_set_widget_rowspan (NBTK_TABLE (table), NBTK_WIDGET (button1), 2);
-  nbtk_table_set_widget_rowspan (NBTK_TABLE (table), NBTK_WIDGET (button7), 2);
-  nbtk_table_set_widget_colspan (NBTK_TABLE (table), NBTK_WIDGET (button4), 2);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button1), 0, 0);
+  nbtk_table_add_actor (NBTK_TABLE (table), button2, 0, 1);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button3), 1, 1);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button4), 2, 0);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button5), 3, 0);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button6), 3, 1);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button7), 4, 1);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button8), 4, 0);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button9), 5, 0);
+  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button10), -1, 0);
+  nbtk_table_child_set_row_span (NBTK_TABLE (table), CLUTTER_ACTOR (button1), 2);
+  nbtk_table_child_set_row_span (NBTK_TABLE (table), CLUTTER_ACTOR (button7), 2);
+  nbtk_table_child_set_col_span (NBTK_TABLE (table), CLUTTER_ACTOR (button4), 2);
 
 
+  clutter_actor_set_size (CLUTTER_ACTOR (button1), 100, 100);
 
   clutter_container_child_set (CLUTTER_CONTAINER (table),
                                CLUTTER_ACTOR (button1),
@@ -151,9 +162,17 @@ main (int argc, char *argv[])
                                "x-expand", FALSE, "y-expand", FALSE,
                                NULL);
 
-  clutter_actor_set_size (CLUTTER_ACTOR (button2), 20, 20);
-  clutter_container_child_set (CLUTTER_CONTAINER (table), CLUTTER_ACTOR (button2),
-                               "keep-aspect-ratio", TRUE, NULL);
+  g_object_set (G_OBJECT (button2), "keep-aspect-ratio", TRUE, NULL);
+  clutter_container_child_set (CLUTTER_CONTAINER (table),
+                               CLUTTER_ACTOR (button2),
+                               "y-fill", FALSE,
+                               "x-fill", FALSE,
+                               NULL);
+
+  clutter_container_child_set (CLUTTER_CONTAINER (table),
+                               CLUTTER_ACTOR (button10),
+                               "allocate-hidden", FALSE,
+                               NULL);
 
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (table));
 
@@ -161,6 +180,7 @@ main (int argc, char *argv[])
 
   g_signal_connect (button4, "clicked", G_CALLBACK (toggle_expand), table);
   g_signal_connect (button7, "clicked", G_CALLBACK (randomise_align), table);
+  g_signal_connect (button10, "clicked", G_CALLBACK (toggle_visible), NULL);
 
   clutter_actor_show (stage);
 
