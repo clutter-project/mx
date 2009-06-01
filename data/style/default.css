@@ -1,6 +1,5 @@
 NbtkButton
 {
-  background-color: white;
   padding: 10;
   border-image: url("file://button.png") 10;
   font-family: "Liberation Sans";
@@ -15,11 +14,6 @@ NbtkButton:hover
 NbtkButton:active
 {
   border-image: url("file://button-active.png") 10;
-}
-
-NbtkScrollButton
-{
-  background-color: white;
 }
 
 NbtkScrollButton#backward-stepper
