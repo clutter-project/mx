@@ -484,6 +484,18 @@ nbtk_entry_key_press_event (ClutterActor    *actor,
       nbtk_clipboard_get_text (clipboard, nbtk_entry_clipboard_callback, actor);
     }
 
+  if ((event->modifier_state & CLUTTER_CONTROL_MASK)
+      && event->keyval == CLUTTER_c)
+    {
+      NbtkClipboard *clipboard;
+      gchar *text;
+
+      clipboard = nbtk_clipboard_get_default ();
+
+      text = clutter_text_get_selection ((ClutterText*) priv->entry);
+      nbtk_clipboard_set_text (clipboard, text);
+    }
+
   clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
 
   return TRUE;
