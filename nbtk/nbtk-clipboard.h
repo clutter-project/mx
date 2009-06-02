@@ -31,7 +31,7 @@ G_BEGIN_DECLS
 
 typedef struct _NbtkClipboard NbtkClipboard;
 typedef struct _NbtkClipboardClass NbtkClipboardClass;
-typedef struct _NbtkClipboard NbtkClipboardPrivate;
+typedef struct _NbtkClipboardPrivate NbtkClipboardPrivate;
 
 struct _NbtkClipboard
 {
@@ -44,14 +44,15 @@ struct _NbtkClipboardClass
   GObjectClass parent_class;
 };
 
-typedef void (*NbtkClipboardContentsFunc) (NbtkClipboard *clipboard,
-                                           gchar         *text);
+typedef void (*NbtkClipboardCallbackFunc) (NbtkClipboard *clipboard,
+                                           const gchar   *text,
+                                           gpointer       user_data);
 
 GType nbtk_clipboard_get_type (void);
 
 NbtkClipboard* nbtk_clipboard_get_default ();
-void nbtk_clipboard_get_text (NbtkClipboard *clipboard, NbtkClipboardContentsFunc cllback);
-void nbtk_clipboard_set_text (NbtkClipboard *clipboard);
+void nbtk_clipboard_get_text (NbtkClipboard *clipboard, NbtkClipboardCallbackFunc cllback, gpointer user_data);
+void nbtk_clipboard_set_text (NbtkClipboard *clipboard, const gchar *text);
 
 G_END_DECLS
 

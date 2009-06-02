@@ -28,6 +28,7 @@
 #include <nbtk/nbtk-bin.h>
 #include <nbtk/nbtk-button.h>
 #include <nbtk/nbtk-cell-renderer.h>
+#include <nbtk/nbtk-clipboard.h>
 #include <nbtk/nbtk-entry.h>
 #include <nbtk/nbtk-enum-types.h>
 #include <nbtk/nbtk-expander.h>
