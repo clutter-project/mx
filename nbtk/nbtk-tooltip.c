@@ -62,7 +62,7 @@ struct _NbtkTooltipPrivate
   ClutterActor *label;
   NbtkWidget   *widget;
 
-  gint          arrow_offset;
+  gfloat        arrow_offset;
 };
 
 G_DEFINE_TYPE (NbtkTooltip, nbtk_tooltip, NBTK_TYPE_WIDGET);
