@@ -4,6 +4,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <clutter/x11/clutter-x11.h>
+#include <string.h>
 
 G_DEFINE_TYPE (NbtkClipboard, nbtk_clipboard, G_TYPE_OBJECT)
 
@@ -13,6 +14,7 @@ G_DEFINE_TYPE (NbtkClipboard, nbtk_clipboard, G_TYPE_OBJECT)
 struct _NbtkClipboardPrivate
 {
   Window clipboard_window;
+  gchar *clipboard_text;
 };
 
 typedef struct _EventFilterData EventFilterData;
@@ -54,8 +56,56 @@ nbtk_clipboard_dispose (GObject *object)
 static void
 nbtk_clipboard_finalize (GObject *object)
 {
+  NbtkClipboardPrivate *priv = ((NbtkClipboard *) object)->priv;
+
+  g_free (priv->clipboard_text);
+  priv->clipboard_text = NULL;
+
   G_OBJECT_CLASS (nbtk_clipboard_parent_class)->finalize (object);
 }
+
+static ClutterX11FilterReturn
+nbtk_clipboard_provider (XEvent        *xev,
+                         ClutterEvent  *cev,
+                         NbtkClipboard *clipboard)
+{
+  XSelectionEvent notify_event;
+  XSelectionRequestEvent *req_event;
+
+  if (xev->type != SelectionRequest)
+    return CLUTTER_X11_FILTER_CONTINUE;
+
+  req_event = &xev->xselectionrequest;
+
+  XChangeProperty (req_event->display,
+                   req_event->requestor,
+                   req_event->property,
+                   req_event->target,
+                   8,
+                   PropModeReplace,
+                   (guchar*) clipboard->priv->clipboard_text,
+                   strlen (clipboard->priv->clipboard_text));
+
+  notify_event.type = SelectionNotify;
+  notify_event.display = req_event->display;
+  notify_event.requestor = req_event->requestor;
+  notify_event.selection = req_event->selection;
+  notify_event.target = req_event->target;
+  notify_event.time = req_event->time;
+
+  if (req_event->property == None)
+    notify_event.property = req_event->target;
+  else
+    notify_event.property = req_event->property;
+
+  /* notify the requestor that they have a copy of the selection */
+  XSendEvent (req_event->display, req_event->requestor, False, 0,
+              (XEvent *) &notify_event);
+  XFlush (clutter_x11_get_default_display());
+
+  return CLUTTER_X11_FILTER_REMOVE;
+}
+
 
 static void
 nbtk_clipboard_class_init (NbtkClipboardClass *klass)
@@ -80,6 +130,8 @@ nbtk_clipboard_init (NbtkClipboard *self)
                          clutter_x11_get_root_window (),
                          -1, -1, 1, 1, 0, 0, 0);
 
+  clutter_x11_add_filter ((ClutterX11FilterFunc) nbtk_clipboard_provider,
+                          self);
 }
 
 ClutterX11FilterReturn
@@ -166,7 +218,7 @@ nbtk_clipboard_x11_event_filter (XEvent          *xev,
 /**
  * nbtk_clipboard_get_default:
  *
- * Get the global #NbtkClipboard object that represents the cliboard.
+ * Get the global #NbtkClipboard object that represents the clipboard.
  *
  * Returns: a #NbtkClipboard owned by Nbtk and must not be unrefferenced or
  * freed.
@@ -225,7 +277,7 @@ nbtk_clipboard_get_text (NbtkClipboard             *clipboard,
 
 /**
  * nbtk_clipboard_set_text:
- * @cliboard: A #NbtkClipboard
+ * @clipboard: A #NbtkClipboard
  * @text: text to copy to the clipboard
  *
  * Sets text as the current contents of the clipboard.
@@ -235,6 +287,23 @@ void
 nbtk_clipboard_set_text (NbtkClipboard *clipboard,
                          const gchar   *text)
 {
+  NbtkClipboardPrivate *priv;
+  Atom clip;
+  Display *dpy;
+
   g_return_if_fail (NBTK_IS_CLIPBOARD (clipboard));
   g_return_if_fail (text != NULL);
+
+  priv = clipboard->priv;
+
+  /* make a copy of the text */
+  g_free (priv->clipboard_text);
+  priv->clipboard_text = g_strdup (text);
+
+  /* tell X we own the clipboard selection */
+  dpy = clutter_x11_get_default_display ();
+  clip = XInternAtom(dpy, "CLIPBOARD", 0);
+
+  XSetSelectionOwner (dpy, clip, priv->clipboard_window, CurrentTime);
+  XFlush (dpy);
 }
