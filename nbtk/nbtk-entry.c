@@ -573,9 +573,9 @@ nbtk_entry_init (NbtkEntry *entry)
                               "single-line-mode", TRUE,
                               NULL);
 
-  g_signal_connect (priv->entry, "focus-out",
+  g_signal_connect (priv->entry, "key-focus-out",
                     G_CALLBACK (clutter_text_focus_out_cb), entry);
-  g_signal_connect (priv->entry, "focus-in",
+  g_signal_connect (priv->entry, "key-focus-in",
                     G_CALLBACK (clutter_text_focus_in_cb), entry);
 
   priv->spacing = CLUTTER_UNITS_FROM_INT (6);
