@@ -59,6 +59,7 @@
 #include "nbtk-stylable.h"
 #include "nbtk-texture-cache.h"
 #include "nbtk-marshal.h"
+#include "nbtk-clipboard.h"
 
 #define HAS_FOCUS(actor) (clutter_actor_get_stage (actor) && clutter_stage_get_key_focus ((ClutterStage *) clutter_actor_get_stage (actor)) == actor)
 
@@ -454,11 +455,34 @@ nbtk_entry_pick (ClutterActor *actor,
     clutter_actor_paint (priv->secondary_icon);
 }
 
+static void
+nbtk_entry_clipboard_callback (NbtkClipboard *clipboard,
+                               const gchar   *text,
+                               gpointer       data)
+{
+  ClutterText *ctext = ((NbtkEntry *) data)->priv->entry;
+  gint cursor_pos;
+
+  cursor_pos = clutter_text_get_cursor_position (ctext);
+
+  clutter_text_insert_text (ctext, text, cursor_pos);
+}
+
 static gboolean
 nbtk_entry_key_press_event (ClutterActor    *actor,
                             ClutterKeyEvent *event)
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
+
+  if ((event->modifier_state & CLUTTER_CONTROL_MASK)
+      && event->keyval == CLUTTER_v)
+    {
+      NbtkClipboard *clipboard;
+
+      clipboard = nbtk_clipboard_get_default ();
+
+      nbtk_clipboard_get_text (clipboard, nbtk_entry_clipboard_callback, actor);
+    }
 
   clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
 
