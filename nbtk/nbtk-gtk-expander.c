@@ -215,6 +215,10 @@ nbtk_gtk_expander_size_request (GtkWidget      *widget,
       requisition->height += req.height;
     }
 
+  requisition->height = MAX (requisition->height,
+                             priv->indicator_size +
+                             widget->style->ythickness * 2);
+
   if (priv->is_open && child && GTK_WIDGET_VISIBLE (child))
     {
       gtk_widget_size_request (child, &req);
@@ -226,15 +230,29 @@ nbtk_gtk_expander_size_request (GtkWidget      *widget,
 }
 
 static void
+nbtk_gtk_expander_forall (GtkContainer *container,
+                          gboolean      include_internals,
+                          GtkCallback   callback,
+                          gpointer      callback_data)
+{
+  NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) container)->priv;
+
+  GTK_CONTAINER_CLASS (nbtk_gtk_expander_parent_class)->forall (container,
+                                                                include_internals,
+                                                                callback,
+                                                                callback_data);
+
+  if (priv->label)
+    (* callback) (priv->label, callback_data);
+}
+
+static void
 nbtk_gtk_expander_map (GtkWidget *widget)
 {
   NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
 
   if (priv->label)
-    {
-      gtk_widget_show (priv->label);
       gtk_widget_map (priv->label);
-    }
 
   if (priv->event_window)
     gdk_window_show (priv->event_window);
@@ -257,25 +275,26 @@ nbtk_gtk_expander_unmap (GtkWidget *widget)
 }
 
 static void
-nbtk_gtk_expander_show (GtkWidget *widget)
+nbtk_gtk_expander_add (GtkContainer *container,
+                       GtkWidget    *widget)
 {
-  NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
+  GTK_CONTAINER_CLASS (nbtk_gtk_expander_parent_class)->add (container, widget);
 
-  if (priv->label)
-    gtk_widget_show (priv->label);
-
-  GTK_WIDGET_CLASS (nbtk_gtk_expander_parent_class)->show (widget);
+  gtk_widget_set_child_visible (widget, NBTK_GTK_EXPANDER (container)->priv->is_open);
+  gtk_widget_queue_resize (GTK_WIDGET (container));
 }
 
 static void
-nbtk_gtk_expander_hide (GtkWidget *widget)
+nbtk_gtk_expander_remove (GtkContainer *container,
+                          GtkWidget    *widget)
 {
-  NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
+  NbtkGtkExpander *expander = NBTK_GTK_EXPANDER (container);
 
-  if (priv->label)
-    gtk_widget_hide (priv->label);
-
-  GTK_WIDGET_CLASS (nbtk_gtk_expander_parent_class)->hide (widget);
+  if (expander->priv->label == widget)
+    nbtk_gtk_expander_set_label_widget (expander, NULL);
+  else
+    GTK_CONTAINER_CLASS (nbtk_gtk_expander_parent_class)->remove (container,
+                                                                  widget);
 }
 
 static gboolean
@@ -401,6 +420,7 @@ nbtk_gtk_expander_class_init (NbtkGtkExpanderClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+  GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (NbtkGtkExpanderPrivate));
@@ -418,8 +438,10 @@ nbtk_gtk_expander_class_init (NbtkGtkExpanderClass *klass)
   widget_class->unrealize = nbtk_gtk_expander_unrealize;
   widget_class->map = nbtk_gtk_expander_map;
   widget_class->unmap = nbtk_gtk_expander_unmap;
-  widget_class->show = nbtk_gtk_expander_show;
-  widget_class->hide = nbtk_gtk_expander_hide;
+
+  container_class->add = nbtk_gtk_expander_add;
+  container_class->remove = nbtk_gtk_expander_remove;
+  container_class->forall = nbtk_gtk_expander_forall;
 
   widget_class->button_release_event = nbtk_gtk_expander_button_release;
 
@@ -489,10 +511,8 @@ nbtk_gtk_expander_set_expanded (NbtkGtkExpander *expander,
 
   priv->is_open = !priv->is_open;
 
-  if (priv->is_open)
-    gtk_widget_show (gtk_bin_get_child (GTK_BIN (expander)));
-  else
-    gtk_widget_hide (gtk_bin_get_child (GTK_BIN (expander)));
+  gtk_widget_set_child_visible (gtk_bin_get_child (GTK_BIN (expander)),
+                                priv->is_open);
 
   gtk_widget_queue_resize ((GtkWidget*) expander);
 

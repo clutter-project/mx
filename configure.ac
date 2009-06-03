@@ -1,5 +1,5 @@
 m4_define([nbtk_major], [0])
-m4_define([nbtk_minor], [9])
+m4_define([nbtk_minor], [10])
 m4_define([nbtk_micro], [0])
 
 m4_define([nbtk_version], [nbtk_major.nbtk_minor.nbtk_micro])
@@ -129,6 +129,8 @@ build/Makefile
 build/autotools/Makefile
 build/autotools/shave
 build/autotools/shave-libtool
+data/Makefile
+data/style/Makefile
 nbtk.pc
 nbtk-gtk.pc
 docs/Makefile

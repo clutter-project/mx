@@ -12,6 +12,7 @@ source_h = \
 	$(top_srcdir)/nbtk/nbtk-bin.h			\
 	$(top_srcdir)/nbtk/nbtk-button.h 		\
 	$(top_srcdir)/nbtk/nbtk-cell-renderer.h 	\
+	$(top_srcdir)/nbtk/nbtk-clipboard.h		\
 	$(top_srcdir)/nbtk/nbtk-entry.h 		\
 	$(top_srcdir)/nbtk/nbtk-expander.h 		\
 	$(top_srcdir)/nbtk/nbtk-fade-button.h 		\
@@ -133,6 +134,7 @@ libnbtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	nbtk-bin.c			\
 	nbtk-button.c 			\
 	nbtk-cell-renderer.c 		\
+	nbtk-clipboard.c 		\
 	nbtk-entry.c 			\
 	nbtk-expander.c 		\
 	nbtk-fade-button.c 		\
