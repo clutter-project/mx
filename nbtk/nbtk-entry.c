@@ -477,6 +477,7 @@ nbtk_entry_key_press_event (ClutterActor    *actor,
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
 
+  /* paste */
   if ((event->modifier_state & CLUTTER_CONTROL_MASK)
       && event->keyval == CLUTTER_v)
     {
@@ -487,6 +488,7 @@ nbtk_entry_key_press_event (ClutterActor    *actor,
       nbtk_clipboard_get_text (clipboard, nbtk_entry_clipboard_callback, actor);
     }
 
+  /* copy */
   if ((event->modifier_state & CLUTTER_CONTROL_MASK)
       && event->keyval == CLUTTER_c)
     {
@@ -497,6 +499,23 @@ nbtk_entry_key_press_event (ClutterActor    *actor,
 
       text = clutter_text_get_selection ((ClutterText*) priv->entry);
       nbtk_clipboard_set_text (clipboard, text);
+    }
+
+
+  /* cut */
+  if ((event->modifier_state & CLUTTER_CONTROL_MASK)
+      && event->keyval == CLUTTER_x)
+    {
+      NbtkClipboard *clipboard;
+      gchar *text;
+
+      clipboard = nbtk_clipboard_get_default ();
+
+      text = clutter_text_get_selection ((ClutterText*) priv->entry);
+      nbtk_clipboard_set_text (clipboard, text);
+
+      /* now delete the text */
+      clutter_text_delete_selection ((ClutterText *) priv->entry);
     }
 
   clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
