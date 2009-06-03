@@ -543,7 +543,7 @@ nbtk_widget_parent_set (ClutterActor *widget,
   new_parent = clutter_actor_get_parent (widget);
 
   /* don't send the style changed signal if we no longer have a parent actor */
-  if (new_parent)
+  if (new_parent && CLUTTER_ACTOR_IS_MAPPED (widget))
     g_signal_emit (widget, actor_signals[STYLE_CHANGED], 0);
 
   parent_class = CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class);
@@ -604,10 +604,6 @@ nbtk_widget_style_changed (NbtkWidget *self)
   if (!priv->is_stylable)
     return;
 
-
-  /* Skip retrieving style information until we are parented */
-  if (!clutter_actor_get_parent ((ClutterActor *) self))
-    return;
 
   /* cache these values for use in the paint function */
   nbtk_stylable_get (NBTK_STYLABLE (self),
@@ -1218,7 +1214,8 @@ nbtk_widget_set_style_class_name (NbtkWidget  *actor,
       g_free (priv->style_class);
       priv->style_class = g_strdup (style_class);
 
-      g_signal_emit (actor, actor_signals[STYLE_CHANGED], 0);
+      if (CLUTTER_ACTOR_IS_MAPPED ((ClutterActor *) actor))
+        g_signal_emit (actor, actor_signals[STYLE_CHANGED], 0);
 
       g_object_notify (G_OBJECT (actor), "style-class");
     }
@@ -1281,7 +1278,8 @@ nbtk_widget_set_style_pseudo_class (NbtkWidget  *actor,
       g_free (priv->pseudo_class);
       priv->pseudo_class = g_strdup (pseudo_class);
 
-      g_signal_emit (actor, actor_signals[STYLE_CHANGED], 0);
+      if (CLUTTER_ACTOR_IS_MAPPED (actor))
+        g_signal_emit (actor, actor_signals[STYLE_CHANGED], 0);
 
       g_object_notify (G_OBJECT (actor), "pseudo-class");
     }
@@ -1370,7 +1368,8 @@ nbtk_widget_name_notify (NbtkWidget *widget,
                          GParamSpec *pspec,
                          gpointer data)
 {
-  g_signal_emit (widget, actor_signals[STYLE_CHANGED], 0);
+  if (CLUTTER_ACTOR_IS_MAPPED ((ClutterActor *) widget))
+    g_signal_emit (widget, actor_signals[STYLE_CHANGED], 0);
 }
 
 static void
