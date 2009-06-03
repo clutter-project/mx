@@ -567,7 +567,7 @@ nbtk_widget_map (ClutterActor *actor)
     clutter_actor_map (priv->background_image);
 
   if (priv->tooltip)
-    clutter_actor_map (priv->tooltip);
+    clutter_actor_map ((ClutterActor *) priv->tooltip);
 }
 
 static void
@@ -584,7 +584,7 @@ nbtk_widget_unmap (ClutterActor *actor)
     clutter_actor_unmap (priv->background_image);
 
   if (priv->tooltip)
-    clutter_actor_unmap (priv->tooltip);
+    clutter_actor_unmap ((ClutterActor *) priv->tooltip);
 }
 
 static void
