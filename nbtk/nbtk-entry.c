@@ -460,8 +460,11 @@ nbtk_entry_clipboard_callback (NbtkClipboard *clipboard,
                                const gchar   *text,
                                gpointer       data)
 {
-  ClutterText *ctext = ((NbtkEntry *) data)->priv->entry;
+  ClutterText *ctext = (ClutterText*) ((NbtkEntry *) data)->priv->entry;
   gint cursor_pos;
+
+  if (!text)
+    return;
 
   cursor_pos = clutter_text_get_cursor_position (ctext);
 
