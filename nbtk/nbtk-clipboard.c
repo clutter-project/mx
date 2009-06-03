@@ -25,6 +25,8 @@ struct _EventFilterData
   gpointer user_data;
 };
 
+static Atom __atom_clip = None;
+
 static void
 nbtk_clipboard_get_property (GObject *object, guint property_id,
                               GValue *value, GParamSpec *pspec)
@@ -77,6 +79,8 @@ nbtk_clipboard_provider (XEvent        *xev,
 
   req_event = &xev->xselectionrequest;
 
+  clutter_x11_trap_x_errors ();
+
   XChangeProperty (req_event->display,
                    req_event->requestor,
                    req_event->property,
@@ -101,7 +105,10 @@ nbtk_clipboard_provider (XEvent        *xev,
   /* notify the requestor that they have a copy of the selection */
   XSendEvent (req_event->display, req_event->requestor, False, 0,
               (XEvent *) &notify_event);
-  XFlush (clutter_x11_get_default_display());
+  /* Make it happen non async */
+  XSync (clutter_x11_get_default_display(), FALSE);
+
+  clutter_x11_untrap_x_errors (); /* FIXME: Warn here on fail ? */
 
   return CLUTTER_X11_FILTER_REMOVE;
 }
@@ -130,6 +137,11 @@ nbtk_clipboard_init (NbtkClipboard *self)
                          clutter_x11_get_root_window (),
                          -1, -1, 1, 1, 0, 0, 0);
 
+  /* Only create once */
+  if (__atom_clip == None)
+    __atom_clip = XInternAtom(clutter_x11_get_default_display (), 
+			      "CLIPBOARD", 0);
+
   clutter_x11_add_filter ((ClutterX11FilterFunc) nbtk_clipboard_provider,
                           self);
 }
@@ -140,9 +152,9 @@ nbtk_clipboard_x11_event_filter (XEvent          *xev,
                                  EventFilterData *filter_data)
 {
   Atom actual_type;
-  int actual_format;
+  int actual_format, result;
   unsigned long nitems, bytes_after;
-  unsigned char *data;
+  unsigned char *data = NULL;
 
   if(xev->type != SelectionNotify)
     return CLUTTER_X11_FILTER_CONTINUE;
@@ -160,25 +172,37 @@ nbtk_clipboard_x11_event_filter (XEvent          *xev,
       return CLUTTER_X11_FILTER_REMOVE;
     }
 
-  XGetWindowProperty (xev->xselection.display,
-                      xev->xselection.requestor,
-                      xev->xselection.property,
-                      0L, G_MAXINT,
-                      True,
-                      AnyPropertyType,
-                      &actual_type,
-                      &actual_format,
-                      &nitems,
-                      &bytes_after,
-                      &data);
+  clutter_x11_trap_x_errors ();
 
-  filter_data->callback (filter_data->clipboard, (char*) data, filter_data->user_data);
+  result = XGetWindowProperty (xev->xselection.display,
+			       xev->xselection.requestor,
+			       xev->xselection.property,
+			       0L, G_MAXINT,
+			       True,
+			       AnyPropertyType,
+			       &actual_type,
+			       &actual_format,
+			       &nitems,
+			       &bytes_after,
+			       &data);
 
-  clutter_x11_remove_filter ((ClutterX11FilterFunc) nbtk_clipboard_x11_event_filter,
-                             filter_data);
+  if (clutter_x11_untrap_x_errors () || result != Success)
+    {
+      /* FIXME: handle failure better */
+      g_warning ("Clipboard: prop retrival failed");
+    }
+
+  filter_data->callback (filter_data->clipboard, (char*) data, 
+			 filter_data->user_data);
+
+  clutter_x11_remove_filter 
+                    ((ClutterX11FilterFunc) nbtk_clipboard_x11_event_filter,
+		     filter_data);
 
   g_free (filter_data);
-  XFree (data);
+
+  if (data)
+    XFree (data);
 
   return CLUTTER_X11_FILTER_REMOVE;
 }
@@ -219,7 +243,7 @@ nbtk_clipboard_get_text (NbtkClipboard             *clipboard,
                          gpointer                   user_data)
 {
   EventFilterData *data;
-  Atom clip;
+
   Display *dpy;
 
   g_return_if_fail (NBTK_IS_CLIPBOARD (clipboard));
@@ -230,17 +254,21 @@ nbtk_clipboard_get_text (NbtkClipboard             *clipboard,
   data->callback = callback;
   data->user_data = user_data;
 
-  clutter_x11_add_filter ((ClutterX11FilterFunc)nbtk_clipboard_x11_event_filter,
-                          data);
+  clutter_x11_add_filter 
+                   ((ClutterX11FilterFunc)nbtk_clipboard_x11_event_filter,
+		    data);
 
   dpy = clutter_x11_get_default_display ();
 
-  clip = XInternAtom(dpy, "CLIPBOARD", 0);
+  clutter_x11_trap_x_errors (); /* safety on */
+
   XConvertSelection (dpy,
-                     clip,
+                     __atom_clip,
                      XA_STRING, XA_STRING,
                      clipboard->priv->clipboard_window,
                      CurrentTime);
+
+  clutter_x11_untrap_x_errors ();
 }
 
 /**
@@ -256,7 +284,6 @@ nbtk_clipboard_set_text (NbtkClipboard *clipboard,
                          const gchar   *text)
 {
   NbtkClipboardPrivate *priv;
-  Atom clip;
   Display *dpy;
 
   g_return_if_fail (NBTK_IS_CLIPBOARD (clipboard));
@@ -270,8 +297,11 @@ nbtk_clipboard_set_text (NbtkClipboard *clipboard,
 
   /* tell X we own the clipboard selection */
   dpy = clutter_x11_get_default_display ();
-  clip = XInternAtom(dpy, "CLIPBOARD", 0);
 
-  XSetSelectionOwner (dpy, clip, priv->clipboard_window, CurrentTime);
-  XFlush (dpy);
+  clutter_x11_trap_x_errors ();
+
+  XSetSelectionOwner (dpy, __atom_clip, priv->clipboard_window, CurrentTime);
+  XSync (dpy, FALSE);
+
+  clutter_x11_untrap_x_errors ();
 }
