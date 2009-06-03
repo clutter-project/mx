@@ -486,6 +486,8 @@ nbtk_entry_key_press_event (ClutterActor    *actor,
       clipboard = nbtk_clipboard_get_default ();
 
       nbtk_clipboard_get_text (clipboard, nbtk_entry_clipboard_callback, actor);
+
+      return TRUE;
     }
 
   /* copy */
@@ -501,6 +503,8 @@ nbtk_entry_key_press_event (ClutterActor    *actor,
 
       if (text && strlen (text))
         nbtk_clipboard_set_text (clipboard, text);
+
+      return TRUE;
     }
 
 
@@ -522,6 +526,8 @@ nbtk_entry_key_press_event (ClutterActor    *actor,
           /* now delete the text */
           clutter_text_delete_selection ((ClutterText *) priv->entry);
         }
+
+      return TRUE;
     }
 
   clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
