@@ -142,10 +142,7 @@ nbtk_clipboard_x11_event_filter (XEvent          *xev,
   Atom actual_type;
   int actual_format;
   unsigned long nitems, bytes_after;
-  unsigned char *data1, *data2;
-  char *got;
-
-#define DEFAULT_PROP_SIZE 1024
+  unsigned char *data;
 
   if(xev->type != SelectionNotify)
     return CLUTTER_X11_FILTER_CONTINUE;
@@ -157,62 +154,33 @@ nbtk_clipboard_x11_event_filter (XEvent          *xev,
                              NULL,
                              filter_data->user_data);
 
+      clutter_x11_remove_filter ((ClutterX11FilterFunc) nbtk_clipboard_x11_event_filter,
+                                 filter_data);
       g_free (filter_data);
-      return CLUTTER_X11_FILTER_CONTINUE;
+      return CLUTTER_X11_FILTER_REMOVE;
     }
 
   XGetWindowProperty (xev->xselection.display,
                       xev->xselection.requestor,
                       xev->xselection.property,
-                      0L, DEFAULT_PROP_SIZE,
+                      0L, G_MAXINT,
                       True,
                       AnyPropertyType,
                       &actual_type,
                       &actual_format,
                       &nitems,
                       &bytes_after,
-                      &data1);
+                      &data);
 
-  if (bytes_after > 0)
-    {
-
-      if (XGetWindowProperty (xev->xselection.display,
-                              xev->xselection.requestor,
-                              xev->xselection.property,
-                              DEFAULT_PROP_SIZE, bytes_after,
-                              True,
-                              AnyPropertyType,
-                              &actual_type,
-                              &actual_format,
-                              &nitems,
-                              &bytes_after,
-                              &data2) != Success)
-        {
-          /* something went wrong, let's just return what's left */
-          got = (char*) data1;
-        }
-      else
-        {
-          got = g_strconcat ((char*) data1, data2, NULL);
-          g_free (data2);
-          g_free (data1);
-        }
-    }
-  else
-    {
-      got = (char*) data1;
-    }
-
-
-  filter_data->callback (filter_data->clipboard, got, filter_data->user_data);
+  filter_data->callback (filter_data->clipboard, (char*) data, filter_data->user_data);
 
   clutter_x11_remove_filter ((ClutterX11FilterFunc) nbtk_clipboard_x11_event_filter,
                              filter_data);
 
   g_free (filter_data);
-  g_free (got);
+  XFree (data);
 
-  return CLUTTER_X11_FILTER_CONTINUE;
+  return CLUTTER_X11_FILTER_REMOVE;
 }
 
 /**
