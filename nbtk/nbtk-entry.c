@@ -498,7 +498,9 @@ nbtk_entry_key_press_event (ClutterActor    *actor,
       clipboard = nbtk_clipboard_get_default ();
 
       text = clutter_text_get_selection ((ClutterText*) priv->entry);
-      nbtk_clipboard_set_text (clipboard, text);
+
+      if (text && strlen (text))
+        nbtk_clipboard_set_text (clipboard, text);
     }
 
 
@@ -512,10 +514,14 @@ nbtk_entry_key_press_event (ClutterActor    *actor,
       clipboard = nbtk_clipboard_get_default ();
 
       text = clutter_text_get_selection ((ClutterText*) priv->entry);
-      nbtk_clipboard_set_text (clipboard, text);
 
-      /* now delete the text */
-      clutter_text_delete_selection ((ClutterText *) priv->entry);
+      if (text && strlen (text))
+        {
+          nbtk_clipboard_set_text (clipboard, text);
+
+          /* now delete the text */
+          clutter_text_delete_selection ((ClutterText *) priv->entry);
+        }
     }
 
   clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
