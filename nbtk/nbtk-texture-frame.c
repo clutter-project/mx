@@ -545,7 +545,7 @@ nbtk_texture_frame_set_parent_texture (NbtkTextureFrame *frame,
 
   if (texture)
     {
-      priv->parent_texture = g_object_ref (texture);
+      priv->parent_texture = g_object_ref_sink (texture);
 
       if (was_visible && CLUTTER_ACTOR_IS_VISIBLE (priv->parent_texture))
         clutter_actor_show (CLUTTER_ACTOR (frame));
