@@ -61,8 +61,6 @@ struct _NbtkTextureFramePrivate
   gfloat right;
   gfloat bottom;
   gfloat left;
-
-  CoglHandle material;
 };
 
 static void
@@ -132,37 +130,11 @@ nbtk_texture_frame_get_preferred_height (ClutterActor *self,
 }
 
 static void
-nbtk_texture_frame_realize (ClutterActor *self)
-{
-  NbtkTextureFramePrivate *priv = NBTK_TEXTURE_FRAME (self)->priv;
-
-  if (priv->material != COGL_INVALID_HANDLE)
-    return;
-
-  priv->material = cogl_material_new ();
-
-  CLUTTER_ACTOR_SET_FLAGS (self, CLUTTER_ACTOR_REALIZED);
-}
-
-static void
-nbtk_texture_frame_unrealize (ClutterActor *self)
-{
-  NbtkTextureFramePrivate *priv = NBTK_TEXTURE_FRAME (self)->priv;
-
-  if (priv->material == COGL_INVALID_HANDLE)
-    return;
-
-  cogl_material_unref (priv->material);
-  priv->material = COGL_INVALID_HANDLE;
-
-  CLUTTER_ACTOR_UNSET_FLAGS (self, CLUTTER_ACTOR_REALIZED);
-}
-
-static void
 nbtk_texture_frame_paint (ClutterActor *self)
 {
   NbtkTextureFramePrivate *priv = NBTK_TEXTURE_FRAME (self)->priv;
   CoglHandle cogl_texture = COGL_INVALID_HANDLE;
+  CoglHandle cogl_material = COGL_INVALID_HANDLE;
   ClutterActorBox box = { 0, };
   gfloat width, height;
   gfloat tex_width, tex_height;
@@ -182,6 +154,9 @@ nbtk_texture_frame_paint (ClutterActor *self)
 
   cogl_texture = clutter_texture_get_cogl_texture (priv->parent_texture);
   if (cogl_texture == COGL_INVALID_HANDLE)
+    return;
+  cogl_material = clutter_texture_get_cogl_material (priv->parent_texture);
+  if (cogl_material == COGL_INVALID_HANDLE)
     return;
 
   tex_width  = cogl_texture_get_width (cogl_texture);
@@ -206,12 +181,10 @@ nbtk_texture_frame_paint (ClutterActor *self)
 
   opacity = clutter_actor_get_paint_opacity (self);
 
-  g_assert (priv->material != COGL_INVALID_HANDLE);
-
-  /* set the source material using the parent texture's COGL handle */
-  cogl_material_set_color4ub (priv->material, 255, 255, 255, opacity);
-  cogl_material_set_layer (priv->material, 0, cogl_texture);
-  cogl_set_source (priv->material);
+  /* Paint using the parent texture's material. It should already have
+     the cogl texture set as the first layer */
+  cogl_material_set_color4ub (cogl_material, 255, 255, 255, opacity);
+  cogl_set_source (cogl_material);
 
   {
     GLfloat rectangles[] =
@@ -414,12 +387,6 @@ nbtk_texture_frame_dispose (GObject *gobject)
       priv->parent_texture = NULL;
     }
 
-  if (priv->material)
-    {
-      cogl_material_unref (priv->material);
-      priv->material = COGL_INVALID_HANDLE;
-    }
-
   G_OBJECT_CLASS (nbtk_texture_frame_parent_class)->dispose (gobject);
 }
 
@@ -436,8 +403,6 @@ nbtk_texture_frame_class_init (NbtkTextureFrameClass *klass)
     nbtk_texture_frame_get_preferred_width;
   actor_class->get_preferred_height =
     nbtk_texture_frame_get_preferred_height;
-  actor_class->realize = nbtk_texture_frame_realize;
-  actor_class->unrealize = nbtk_texture_frame_unrealize;
   actor_class->paint = nbtk_texture_frame_paint;
 
   gobject_class->set_property = nbtk_texture_frame_set_property;
@@ -491,8 +456,6 @@ nbtk_texture_frame_init (NbtkTextureFrame *self)
   NbtkTextureFramePrivate *priv;
 
   self->priv = priv = NBTK_TEXTURE_FRAME_GET_PRIVATE (self);
-
-  priv->material = COGL_INVALID_HANDLE;
 }
 
 /**
