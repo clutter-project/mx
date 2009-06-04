@@ -245,12 +245,9 @@ nbtk_texture_cache_get_texture (NbtkTextureCache *self,
     {
       GError *err = NULL;
       res = cogl_texture_new_from_file (path,
-                                        COGL_TEXTURE_AUTO_MIPMAP |
                                         COGL_TEXTURE_NO_SLICING,
                                         COGL_PIXEL_FORMAT_ANY,
                                         &err);
-      cogl_texture_set_filters (res, COGL_TEXTURE_FILTER_LINEAR,
-                                COGL_TEXTURE_FILTER_LINEAR);
 
       /* XXX: pass up GError */
       if (!res)
