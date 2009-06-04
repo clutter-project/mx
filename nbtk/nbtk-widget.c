@@ -405,13 +405,13 @@ nbtk_widget_finalize (GObject *gobject)
 static void
 nbtk_widget_allocate (ClutterActor          *actor,
                       const ClutterActorBox *box,
-                      gboolean               origin_changed)
+                      ClutterAllocationFlags flags)
 {
   NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
   ClutterActorClass *klass;
 
   klass = CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class);
-  klass->allocate (actor, box, origin_changed);
+  klass->allocate (actor, box, flags);
 
   if (priv->border_image)
     {
@@ -424,7 +424,7 @@ nbtk_widget_allocate (ClutterActor          *actor,
 
       clutter_actor_allocate (CLUTTER_ACTOR (priv->border_image),
                               &frame_box,
-                              origin_changed);
+                              flags);
     }
 
   if (priv->background_image)
@@ -442,8 +442,8 @@ nbtk_widget_allocate (ClutterActor          *actor,
           gint new_h, new_w, offset;
           gint box_w, box_h;
 
-          box_w = CLUTTER_UNITS_TO_INT (frame_box.x2);
-          box_h = CLUTTER_UNITS_TO_INT (frame_box.y2);
+          box_w = (int) frame_box.x2;
+          box_h = (int) frame_box.y2;
 
           /* scale to fit */
           new_h = (int) ((h / w) * ((gfloat) box_w));
@@ -480,7 +480,7 @@ nbtk_widget_allocate (ClutterActor          *actor,
 
       clutter_actor_allocate (CLUTTER_ACTOR (priv->background_image),
                               &frame_box,
-                              origin_changed);
+                              flags);
     }
 }
 

@@ -162,13 +162,13 @@ nbtk_tooltip_style_changed (NbtkWidget *self)
 
 static void
 nbtk_tooltip_get_preferred_width (ClutterActor *self,
-                                  ClutterUnit   for_height,
-                                  ClutterUnit  *min_width_p,
-                                  ClutterUnit  *natural_width_p)
+                                  gfloat       for_height,
+                                  gfloat      *min_width_p,
+                                  gfloat      *natural_width_p)
 {
   NbtkTooltipPrivate *priv = NBTK_TOOLTIP (self)->priv;
-  ClutterUnit min_label_w, natural_label_w;
-  ClutterUnit label_height, arrow_height;
+  gfloat min_label_w, natural_label_w;
+  gfloat label_height, arrow_height;
   ClutterActor *arrow_image;
   NbtkPadding padding;
 
@@ -223,14 +223,14 @@ nbtk_tooltip_get_preferred_width (ClutterActor *self,
 
 static void
 nbtk_tooltip_get_preferred_height (ClutterActor *self,
-                                   ClutterUnit   for_width,
-                                   ClutterUnit  *min_height_p,
-                                   ClutterUnit  *natural_height_p)
+                                   gfloat        for_width,
+                                   gfloat       *min_height_p,
+                                   gfloat       *natural_height_p)
 {
   NbtkTooltipPrivate *priv = NBTK_TOOLTIP (self)->priv;
-  ClutterUnit arrow_height;
-  ClutterUnit min_label_h, natural_label_h;
-  ClutterUnit label_width;
+  gfloat arrow_height;
+  gfloat min_label_h, natural_label_h;
+  gfloat label_width;
   ClutterActor *arrow_image;
   NbtkPadding padding;
 
@@ -287,17 +287,17 @@ nbtk_tooltip_get_preferred_height (ClutterActor *self,
 static void
 nbtk_tooltip_allocate (ClutterActor          *self,
                        const ClutterActorBox *box,
-                       gboolean               origin_changed)
+                       ClutterAllocationFlags flags)
 {
   NbtkTooltipPrivate *priv = NBTK_TOOLTIP (self)->priv;
   ClutterActorBox child_box, arrow_box;
-  ClutterUnit arrow_height, arrow_width;
+  gfloat arrow_height, arrow_width;
   ClutterActor *border_image, *arrow_image;
   NbtkPadding padding;
 
   CLUTTER_ACTOR_CLASS (nbtk_tooltip_parent_class)->allocate (self,
                                                              box,
-                                                             origin_changed);
+                                                             flags);
 
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
@@ -308,12 +308,12 @@ nbtk_tooltip_allocate (ClutterActor          *self,
       clutter_actor_get_preferred_height (arrow_image, -1, NULL, &arrow_height);
       clutter_actor_get_preferred_width (arrow_image, -1, NULL, &arrow_width);
 
-      arrow_box.x1 = CLUTTER_UNITS_FROM_INT (priv->arrow_offset) - (int) (arrow_width / 2);
+      arrow_box.x1 = (float) (priv->arrow_offset) - (int) (arrow_width / 2);
       arrow_box.y1 = 0;
       arrow_box.x2 = arrow_box.x1 + arrow_width;
       arrow_box.y2 = arrow_box.y1 + arrow_height;
 
-      clutter_actor_allocate (arrow_image, &arrow_box, origin_changed);
+      clutter_actor_allocate (arrow_image, &arrow_box, flags);
     }
   else
     {
@@ -330,7 +330,7 @@ nbtk_tooltip_allocate (ClutterActor          *self,
 
   border_image = nbtk_widget_get_border_image (NBTK_WIDGET (self));
   if (border_image)
-    clutter_actor_allocate (border_image, &child_box, origin_changed);
+    clutter_actor_allocate (border_image, &child_box, flags);
 
   if (priv->label)
     {
@@ -340,7 +340,7 @@ nbtk_tooltip_allocate (ClutterActor          *self,
       child_box.x2 -= padding.right;
       child_box.y2 -= padding.bottom;
 
-      clutter_actor_allocate (priv->label, &child_box, origin_changed);
+      clutter_actor_allocate (priv->label, &child_box, flags);
     }
 }
 
@@ -581,7 +581,7 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
   ClutterActor *self = CLUTTER_ACTOR (tooltip);
   gfloat widget_x, widget_y, self_x, self_y;
   gfloat widget_w, widget_h;
-  ClutterUnit self_w, parent_w;
+  gfloat self_w, parent_w;
   ClutterAnimation *animation;
 
   if (!widget)
@@ -643,7 +643,7 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
     }
   else if (self_x + self_w > parent_w)
     {
-      self_x = CLUTTER_UNITS_TO_INT (parent_w) - self_w;
+      self_x = (int) (parent_w) - self_w;
     }
 
   /* calculate the arrow offset */

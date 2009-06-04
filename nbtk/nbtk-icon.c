@@ -6,12 +6,12 @@ G_DEFINE_TYPE (NbtkIcon, nbtk_icon, NBTK_TYPE_WIDGET)
 
 static void
 nbtk_icon_get_preferred_height (ClutterActor *actor,
-                                ClutterUnit   for_width,
-                                ClutterUnit  *min_height,
-                                ClutterUnit  *pref_height)
+                                gfloat        for_width,
+                                gfloat       *min_height,
+                                gfloat       *pref_height)
 {
   ClutterActor *background;
-  ClutterUnit height;
+  gfloat height;
 
   background = nbtk_widget_get_background_image (NBTK_WIDGET (actor));
 
@@ -33,12 +33,12 @@ nbtk_icon_get_preferred_height (ClutterActor *actor,
 
 static void
 nbtk_icon_get_preferred_width (ClutterActor *actor,
-                               ClutterUnit   for_height,
-                               ClutterUnit  *min_width,
-                               ClutterUnit  *pref_width)
+                               gfloat        for_height,
+                               gfloat       *min_width,
+                               gfloat       *pref_width)
 {
   ClutterActor *background;
-  ClutterUnit width;
+  gfloat width;
 
   background = nbtk_widget_get_background_image (NBTK_WIDGET (actor));
 

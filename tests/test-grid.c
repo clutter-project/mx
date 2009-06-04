@@ -190,7 +190,7 @@ int
 main (int argc, char **argv)
 {
   CallbackData data;
-  ClutterUnit layout_width, layout_height;
+  gfloat layout_width, layout_height;
   int i;
 
   clutter_init (&argc, &argv);
@@ -205,17 +205,17 @@ main (int argc, char **argv)
   data.layout =g_object_new (NBTK_TYPE_GRID,
                              "valign", 0.5,
                              "halign", 0.5,
-                             "row-gap", CLUTTER_UNITS_FROM_INT(5),
-                             "column-gap", CLUTTER_UNITS_FROM_INT(5),
+                             "row-gap", 5.0f,
+                             "column-gap", 5.0f,
                              NULL);
 
 
   { /* add controls */
     ClutterActor *vbox = g_object_new (NBTK_TYPE_GRID,
-                             "row-gap", CLUTTER_UNITS_FROM_INT(5),
+                             "row-gap", 5.0f,
                              "column-major", TRUE,
-                             "x", 60,
-                             "y", 60,
+                             "x", 60.0f,
+                             "y", 60.0f,
                              NULL);
     clutter_container_add (CLUTTER_CONTAINER (data.stage), CLUTTER_ACTOR (vbox), NULL);
 
@@ -282,8 +282,8 @@ main (int argc, char **argv)
 
   {
     ClutterActor *layout = g_object_new (NBTK_TYPE_GRID,
-                                         "x", 5,
-                                         "y", 5,
+                                         "x", 5.0f,
+                                         "y", 5.0f,
                                          "max-stride", 1,
                                          NULL);
     clutter_container_add (CLUTTER_CONTAINER (data.stage), layout, NULL);
@@ -293,8 +293,8 @@ main (int argc, char **argv)
 
   {
     ClutterActor *layout = g_object_new (NBTK_TYPE_GRID,
-                                         "x", 500,
-                                         "y", 5,
+                                         "x", 500.0f,
+                                         "y", 5.0f,
                                          "max-stride", 1,
                                          "halign", 0.5,
                                          "homogenous-columns", TRUE,
@@ -307,8 +307,8 @@ main (int argc, char **argv)
 
   {
     ClutterActor *layout = g_object_new (NBTK_TYPE_GRID,
-                                         "x",      60,
-                                         "y",      5,
+                                         "x",      60.0f,
+                                         "y",      5.0f,
                                          "max-stride", 1,
                                          "column-major", TRUE,
                                          NULL);
@@ -318,11 +318,11 @@ main (int argc, char **argv)
 
   {
     ClutterActor *layout = g_object_new (NBTK_TYPE_GRID,
-                                         "x",       60,
-                                         "y",       420,
+                                         "x",       60.0f,
+                                         "y",       420.0f,
                                          "valign",  1.0,
                                          "max-stride", 1,
-                                         "column-gap", CLUTTER_UNITS_FROM_INT(4),
+                                         "column-gap", 4.0f,
                                          NULL);
     clutter_container_add (CLUTTER_CONTAINER (data.stage), layout, NULL);
     fill_container (layout);
@@ -398,7 +398,7 @@ slider_motion (ClutterActor *actor,
 {
   if (event == NULL || clutter_event_get_state (event) & CLUTTER_BUTTON1_MASK )
     {
-      ClutterUnit x;
+      gfloat x;
       const gchar *prop_name;
       gdouble current;
 
@@ -410,8 +410,8 @@ slider_motion (ClutterActor *actor,
 
       if (event)
         {
-          clutter_actor_transform_stage_point (actor, CLUTTER_UNITS_FROM_INT (event->motion.x),
-                                                      CLUTTER_UNITS_FROM_INT (event->motion.y),
+          clutter_actor_transform_stage_point (actor, (float) event->motion.x,
+                                                      (float) event->motion.y,
                                                       &x, NULL);
           current = x / (clutter_actor_get_width (actor) * 65535.0);
         }
@@ -455,9 +455,9 @@ unit_slider_motion (ClutterActor *actor,
 {
   if (event == NULL || clutter_event_get_state (event) & CLUTTER_BUTTON1_MASK )
     {
-      ClutterUnit x;
+      gfloat x;
       const gchar *prop_name;
-      ClutterUnit current;
+      gfloat current;
 
       ClutterActor *indicator;
       indicator = g_object_get_data (G_OBJECT (actor), "indicator");
@@ -467,12 +467,12 @@ unit_slider_motion (ClutterActor *actor,
 
       if (event)
         {
-          clutter_actor_transform_stage_point (actor, CLUTTER_UNITS_FROM_INT (event->motion.x),
-                                                      CLUTTER_UNITS_FROM_INT (event->motion.y),
+          clutter_actor_transform_stage_point (actor, (gfloat) event->motion.x,
+                                                      (gfloat) event->motion.y,
                                                       &x, NULL);
           current = x;
         }
-      clutter_actor_set_x (indicator, clutter_actor_get_x (actor) + CLUTTER_UNITS_TO_INT (current));
+      clutter_actor_set_x (indicator, clutter_actor_get_x (actor) + current);
 
       g_object_set (data, prop_name, current, NULL);
     }

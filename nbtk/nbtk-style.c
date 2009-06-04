@@ -540,25 +540,25 @@ nbtk_style_fetch_ccss_property (ccss_style_t  *ccss_style,
 
           if (ccss_style_get_double (ccss_style, "padding-top", &number))
             {
-              padding.top = CLUTTER_UNITS_FROM_INT ((int) number);
+              padding.top = number;
               padding_set = TRUE;
             }
 
           if (ccss_style_get_double (ccss_style, "padding-right", &number))
             {
-              padding.right = CLUTTER_UNITS_FROM_INT ((int) number);
+              padding.right = number;
               padding_set = TRUE;
             }
 
           if (ccss_style_get_double (ccss_style, "padding-bottom", &number))
             {
-              padding.bottom = CLUTTER_UNITS_FROM_INT ((int) number);
+              padding.bottom = number;
               padding_set = TRUE;
             }
 
           if (ccss_style_get_double (ccss_style, "padding-left", &number))
             {
-              padding.left = CLUTTER_UNITS_FROM_INT ((int) number);
+              padding.left = number;
               padding_set = TRUE;
             }
 

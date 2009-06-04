@@ -433,13 +433,13 @@ nbtk_button_dispose (GObject *gobject)
 
 static void
 nbtk_button_get_preferred_width (ClutterActor *self,
-                                 ClutterUnit   for_height,
-                                 ClutterUnit  *min_width_p,
-                                 ClutterUnit  *natural_width_p)
+                                 gfloat        for_height,
+                                 gfloat       *min_width_p,
+                                 gfloat       *natural_width_p)
 {
   NbtkButtonPrivate *priv = NBTK_BUTTON (self)->priv;
   NbtkPadding padding;
-  ClutterUnit icon_w, min_child_w, natural_child_w;
+  gfloat icon_w, min_child_w, natural_child_w;
   ClutterActor *child;
 
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
@@ -481,13 +481,13 @@ nbtk_button_get_preferred_width (ClutterActor *self,
 
 static void
 nbtk_button_get_preferred_height (ClutterActor *self,
-                                  ClutterUnit   for_width,
-                                  ClutterUnit  *min_height_p,
-                                  ClutterUnit  *natural_height_p)
+                                  gfloat        for_width,
+                                  gfloat        *min_height_p,
+                                  gfloat        *natural_height_p)
 {
   NbtkButtonPrivate *priv = NBTK_BUTTON (self)->priv;
   NbtkPadding padding;
-  ClutterUnit icon_h, min_child_h, natural_child_h;
+  gfloat icon_h, min_child_h, natural_child_h;
   ClutterActor *child;
 
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
@@ -540,15 +540,15 @@ nbtk_button_get_preferred_height (ClutterActor *self,
 static void
 nbtk_button_allocate (ClutterActor          *self,
                       const ClutterActorBox *box,
-                      gboolean               absolute_origin_changed)
+                      ClutterAllocationFlags flags)
 {
   NbtkButton *button = NBTK_BUTTON (self);
   NbtkButtonPrivate *priv = button->priv;
   ClutterActor *child;
-  ClutterUnit icon_w, icon_h;
+  gfloat icon_w, icon_h;
   NbtkPadding padding;
 
-  CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->allocate (self, box, absolute_origin_changed);
+  CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->allocate (self, box, flags);
 
 
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
@@ -568,7 +568,7 @@ nbtk_button_allocate (ClutterActor          *self,
       icon_box.y1 = (int) (box->y2 - box->y1) / 2 - (int) icon_h / 2;
       icon_box.y2 = icon_box.y1 + icon_h;
 
-      clutter_actor_allocate (priv->icon, &icon_box, absolute_origin_changed);
+      clutter_actor_allocate (priv->icon, &icon_box, flags);
 
       /* increase icon_w to account for border-spacing */
       icon_w += priv->spacing;
@@ -582,10 +582,10 @@ nbtk_button_allocate (ClutterActor          *self,
   child = nbtk_bin_get_child (NBTK_BIN (self));
   if (child)
     {
-      ClutterUnit natural_width, natural_height;
-      ClutterUnit min_width, min_height;
-      ClutterUnit child_width, child_height;
-      ClutterUnit available_width, available_height;
+      gfloat natural_width, natural_height;
+      gfloat min_width, min_height;
+      gfloat child_width, child_height;
+      gfloat available_width, available_height;
       ClutterRequestMode request;
       ClutterActorBox allocation = { 0, };
       gdouble x_align, y_align;
@@ -643,7 +643,7 @@ nbtk_button_allocate (ClutterActor          *self,
       allocation.x2 = allocation.x1 + child_width;
       allocation.y2 = allocation.y1 + child_height;
 
-      clutter_actor_allocate (child, &allocation, absolute_origin_changed);
+      clutter_actor_allocate (child, &allocation, flags);
     }
 }
 

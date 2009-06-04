@@ -310,7 +310,7 @@ nbtk_table_dispose (GObject *gobject)
   G_OBJECT_CLASS (nbtk_table_parent_class)->dispose (gobject);
 }
 
-#define CLAMP_TO_PIXEL(x) CLUTTER_UNITS_FROM_INT (CLUTTER_UNITS_TO_INT (x))
+#define CLAMP_TO_PIXEL(x) ((float) ((int) (x)))
 
 /* Utility function to modify a child allocation box with respect to the
  * x/y-fill child properties. Expects childbox to contain the available
@@ -324,10 +324,10 @@ nbtk_table_allocate_fill (ClutterActor *child,
                           gboolean x_fill,
                           gboolean y_fill)
 {
-  ClutterUnit natural_width, natural_height;
-  ClutterUnit min_width, min_height;
-  ClutterUnit child_width, child_height;
-  ClutterUnit available_width, available_height;
+  gfloat natural_width, natural_height;
+  gfloat min_width, min_height;
+  gfloat child_width, child_height;
+  gfloat available_width, available_height;
   ClutterRequestMode request;
   ClutterActorBox allocation = { 0, };
 
@@ -410,18 +410,18 @@ nbtk_table_allocate_fill (ClutterActor *child,
 static void
 nbtk_table_homogeneous_allocate (ClutterActor          *self,
                                 const ClutterActorBox *box,
-                                gboolean               absolute_origin_changed)
+                                gboolean               flags)
 {
   GSList *list;
-  ClutterUnit col_width, row_height;
+  gfloat col_width, row_height;
   gint row_spacing, col_spacing;
   NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
   NbtkPadding padding;
 
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
-  col_spacing = CLUTTER_UNITS_FROM_DEVICE (priv->col_spacing);
-  row_spacing = CLUTTER_UNITS_FROM_DEVICE (priv->row_spacing);
+  col_spacing = priv->col_spacing;
+  row_spacing = priv->row_spacing;
 
   col_width = (box->x2 - box->x1
                - padding.left - padding.right
@@ -470,7 +470,7 @@ nbtk_table_homogeneous_allocate (ClutterActor          *self,
 
       if (keep_ratio)
         {
-          ClutterUnit w, h;
+          gfloat w, h;
           gint new_width;
           gint new_height;
           gint center_offset;
@@ -498,7 +498,7 @@ nbtk_table_homogeneous_allocate (ClutterActor          *self,
 
         }
 
-      clutter_actor_allocate (child, &childbox, absolute_origin_changed);
+      clutter_actor_allocate (child, &childbox, flags);
     }
 
 }
@@ -531,12 +531,12 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
   /* take off the padding values to calculate the allocatable width */
   nbtk_widget_get_padding (NBTK_WIDGET (table), &padding);
 
-  for_width -= CLUTTER_UNITS_TO_INT (padding.left + padding.right);
+  for_width -= (int) (padding.left + padding.right);
 
   for (list = priv->children; list; list = g_slist_next (list))
     {
       gint row, col;
-      ClutterUnit w_min, w_pref;
+      gfloat w_min, w_pref;
       gboolean x_expand;
       NbtkTableChild *meta;
       ClutterActor *child;
@@ -648,7 +648,7 @@ nbtk_table_calculate_row_heights (NbtkTable *table,
   nbtk_widget_get_padding (NBTK_WIDGET (table), &padding);
 
   /* take padding off available height */
-  for_height -= CLUTTER_UNITS_TO_INT (padding.top + padding.bottom);
+  for_height -= (int) (padding.top + padding.bottom);
 
   g_array_set_size (priv->row_heights, 0);
   g_array_set_size (priv->row_heights, priv->n_rows);
@@ -670,7 +670,7 @@ nbtk_table_calculate_row_heights (NbtkTable *table,
   for (list = priv->children; list; list = g_slist_next (list))
     {
       gint row, col, cell_width;
-      ClutterUnit h_min, h_pref;
+      gfloat h_min, h_pref;
       gboolean x_expand, y_expand;
       NbtkTableChild *meta;
       ClutterActor *child;
@@ -697,11 +697,11 @@ nbtk_table_calculate_row_heights (NbtkTable *table,
       /* calculate the cell width by including any spanned columns */
       cell_width = 0;
       for (i = 0; i < col_span; i++)
-        cell_width += CLUTTER_UNITS_FROM_INT (col_widths[col + i]);
+        cell_width += (float) (col_widths[col + i]);
 
       if (!meta->x_fill)
         {
-          ClutterUnit width;
+          gfloat width;
           clutter_actor_get_preferred_width (child, -1, NULL, &width);
           cell_width = MIN (cell_width, width);
         }
@@ -710,11 +710,11 @@ nbtk_table_calculate_row_heights (NbtkTable *table,
 
       if (row_span == 1 && h_pref > pref_heights[row])
         {
-          pref_heights[row] = CLUTTER_UNITS_TO_INT (h_pref);
+          pref_heights[row] = (int) (h_pref);
         }
       if (row_span == 1 && h_min > min_heights[row])
         {
-          min_heights[row] = CLUTTER_UNITS_TO_INT (h_min);
+          min_heights[row] = (int) (h_min);
         }
     }
 
@@ -815,7 +815,7 @@ nbtk_table_calculate_row_heights (NbtkTable *table,
 static void
 nbtk_table_preferred_allocate (ClutterActor          *self,
                                const ClutterActorBox *box,
-                               gboolean               absolute_origin_changed)
+                               gboolean               flags)
 {
   GSList *list;
   gint row_spacing, col_spacing;
@@ -834,20 +834,20 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
   row_spacing = (priv->row_spacing);
 
 
-  table_height = CLUTTER_UNITS_TO_INT (box->y2 - box->y1
+  table_height = (int) (box->y2 - box->y1
                                        - padding.top
                                        - padding.bottom);
-  table_width = CLUTTER_UNITS_TO_INT (box->x2 - box->x1
+  table_width = (int) (box->x2 - box->x1
                                       - padding.right
                                       - padding.left);
 
   col_widths =
     nbtk_table_calculate_col_widths (table,
-                                     CLUTTER_UNITS_TO_INT (box->x2 - box->x1));
+                                     (int) (box->x2 - box->x1));
 
   row_heights =
     nbtk_table_calculate_row_heights (table,
-                                      CLUTTER_UNITS_TO_INT (box->y2 - box->y1),
+                                      (int) (box->y2 - box->y1),
                                       col_widths);
 
 
@@ -914,23 +914,23 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
         }
 
       /* calculate child x */
-      child_x = CLUTTER_UNITS_TO_INT (padding.left)
+      child_x = (int) padding.left
               + col_spacing * col;
       for (i = 0; i < col; i++)
         child_x += col_widths[i];
 
       /* calculate child y */
-      child_y = CLUTTER_UNITS_TO_INT (padding.top)
+      child_y = (int) padding.top
               + row_spacing * row;
       for (i = 0; i < row; i++)
         child_y += row_heights[i];
 
       /* set up childbox */
-      childbox.x1 = CLUTTER_UNITS_FROM_INT (child_x);
-      childbox.x2 = CLUTTER_UNITS_FROM_INT (MAX (0, child_x + col_width));
+      childbox.x1 = (float) child_x;
+      childbox.x2 = (float) MAX (0, child_x + col_width);
 
-      childbox.y1 = CLUTTER_UNITS_FROM_INT (child_y);
-      childbox.y2 = CLUTTER_UNITS_FROM_INT (MAX (0, child_y + row_height));
+      childbox.y1 = (float) child_y;
+      childbox.y2 = (float) MAX (0, child_y + row_height);
 
 
       nbtk_table_allocate_fill (child, &childbox, x_align, y_align, x_fill, y_fill);
@@ -951,31 +951,31 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
           if (new_height > row_height)
             {
               /* apply new width */
-              center_offset = (CLUTTER_UNITS_TO_INT (childbox.x2 - childbox.x1) - new_width) * x_align;
-              childbox.x1 = childbox.x1 + CLUTTER_UNITS_FROM_INT (center_offset);
-              childbox.x2 = childbox.x1 + CLUTTER_UNITS_FROM_INT (new_width);
+              center_offset = ((int) (childbox.x2 - childbox.x1) - new_width) * x_align;
+              childbox.x1 = childbox.x1 + (float) center_offset;
+              childbox.x2 = childbox.x1 + (float) new_width;
             }
           else
             {
               /* apply new height */
-              center_offset = (CLUTTER_UNITS_TO_INT (childbox.y2 - childbox.y1) - new_height) * y_align;
-              childbox.y1 = childbox.y1 + CLUTTER_UNITS_FROM_INT (center_offset);
-              childbox.y2 = childbox.y1 + CLUTTER_UNITS_FROM_INT (new_height);
+              center_offset = ((int) (childbox.y2 - childbox.y1) - new_height) * y_align;
+              childbox.y1 = childbox.y1 + (float) center_offset;
+              childbox.y2 = childbox.y1 + (float) new_height;
             }
         }
 
-      clutter_actor_allocate (child, &childbox, absolute_origin_changed);
+      clutter_actor_allocate (child, &childbox, flags);
     }
 }
 
 static void
 nbtk_table_allocate (ClutterActor          *self,
                      const ClutterActorBox *box,
-                     gboolean               absolute_origin_changed)
+                     ClutterAllocationFlags flags)
 {
   NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
 
-  CLUTTER_ACTOR_CLASS (nbtk_table_parent_class)->allocate (self, box, absolute_origin_changed);
+  CLUTTER_ACTOR_CLASS (nbtk_table_parent_class)->allocate (self, box, flags);
 
   if (priv->n_cols < 1 || priv->n_rows < 1)
     {
@@ -983,19 +983,19 @@ nbtk_table_allocate (ClutterActor          *self,
     };
 
   if (priv->homogeneous)
-    nbtk_table_homogeneous_allocate (self, box, absolute_origin_changed);
+    nbtk_table_homogeneous_allocate (self, box, flags);
   else
-    nbtk_table_preferred_allocate (self, box, absolute_origin_changed);
+    nbtk_table_preferred_allocate (self, box, flags);
 }
 
 static void
 nbtk_table_get_preferred_width (ClutterActor *self,
-                                ClutterUnit   for_height,
-                                ClutterUnit  *min_width_p,
-                                ClutterUnit  *natural_width_p)
+                                gfloat        for_height,
+                                gfloat       *min_width_p,
+                                gfloat       *natural_width_p)
 {
   gint *min_widths, *pref_widths;
-  ClutterUnit total_min_width, total_pref_width;
+  gfloat total_min_width, total_pref_width;
   NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
   GSList *list;
   gint i;
@@ -1025,7 +1025,7 @@ nbtk_table_get_preferred_width (ClutterActor *self,
   for (list = priv->children; list; list = g_slist_next (list))
     {
       gint col, col_span;
-      ClutterUnit w_min, w_pref;
+      gfloat w_min, w_pref;
       NbtkTableChild *meta;
       ClutterActor *child;
 
@@ -1051,7 +1051,7 @@ nbtk_table_get_preferred_width (ClutterActor *self,
   total_min_width = padding.left
                   + padding.right
                   + (priv->n_cols - 1)
-                  * CLUTTER_UNITS_FROM_DEVICE (priv->col_spacing);
+                  * (float) priv->col_spacing;
   total_pref_width = total_min_width;
 
   for (i = 0; i < priv->n_cols; i++)
@@ -1068,12 +1068,12 @@ nbtk_table_get_preferred_width (ClutterActor *self,
 
 static void
 nbtk_table_get_preferred_height (ClutterActor *self,
-                                 ClutterUnit   for_width,
-                                 ClutterUnit  *min_height_p,
-                                 ClutterUnit  *natural_height_p)
+                                 gfloat        for_width,
+                                 gfloat       *min_height_p,
+                                 gfloat       *natural_height_p)
 {
   gint *min_heights, *pref_heights;
-  ClutterUnit total_min_height, total_pref_height;
+  gfloat total_min_height, total_pref_height;
   NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
   GSList *list;
   gint i;
@@ -1105,7 +1105,7 @@ nbtk_table_get_preferred_height (ClutterActor *self,
   for (list = priv->children; list; list = g_slist_next (list))
     {
       gint row, col, col_span, cell_width, row_span;
-      ClutterUnit min, pref;
+      gfloat min, pref;
       NbtkTableChild *meta;
       ClutterActor *child;
 
@@ -1128,7 +1128,7 @@ nbtk_table_get_preferred_height (ClutterActor *self,
 
 
       clutter_actor_get_preferred_height (child,
-              CLUTTER_UNITS_FROM_INT (cell_width), &min, &pref);
+              (float) cell_width, &min, &pref);
 
       if (row_span == 1 && min > min_heights[row])
         min_heights[row] = min;
@@ -1140,7 +1140,7 @@ nbtk_table_get_preferred_height (ClutterActor *self,
 
   /* start off with padding plus row spacing */
   total_min_height = padding.top + padding.bottom + (priv->n_rows - 1) *
-                     CLUTTER_UNITS_FROM_DEVICE (priv->row_spacing);
+                     (float) (priv->row_spacing);
 
   total_pref_height = total_min_height;
 

@@ -48,10 +48,10 @@ GType nbtk_border_image_get_type (void) G_GNUC_CONST;
  */
 struct _NbtkPadding
 {
-  ClutterUnit top;
-  ClutterUnit right;
-  ClutterUnit bottom;
-  ClutterUnit left;
+  gfloat top;
+  gfloat right;
+  gfloat bottom;
+  gfloat left;
 };
 
 GType nbtk_padding_get_type (void) G_GNUC_CONST;

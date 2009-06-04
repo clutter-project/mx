@@ -152,9 +152,9 @@ nbtk_label_style_changed (NbtkWidget *self)
 
 static void
 nbtk_label_get_preferred_width (ClutterActor *actor,
-                                ClutterUnit   for_height,
-                                ClutterUnit  *min_width_p,
-                                ClutterUnit  *natural_width_p)
+                                gfloat        for_height,
+                                gfloat       *min_width_p,
+                                gfloat       *natural_width_p)
 {
   NbtkLabelPrivate *priv = NBTK_LABEL (actor)->priv;
   NbtkPadding padding = { 0, };
@@ -174,9 +174,9 @@ nbtk_label_get_preferred_width (ClutterActor *actor,
 
 static void
 nbtk_label_get_preferred_height (ClutterActor *actor,
-                                 ClutterUnit   for_width,
-                                 ClutterUnit  *min_height_p,
-                                 ClutterUnit  *natural_height_p)
+                                 gfloat        for_width,
+                                 gfloat       *min_height_p,
+                                 gfloat       *natural_height_p)
 {
   NbtkLabelPrivate *priv = NBTK_LABEL (actor)->priv;
   NbtkPadding padding = { 0, };
@@ -197,7 +197,7 @@ nbtk_label_get_preferred_height (ClutterActor *actor,
 static void
 nbtk_label_allocate (ClutterActor          *actor,
                      const ClutterActorBox *box,
-                     gboolean               absolute_origin_changed)
+                     ClutterAllocationFlags flags)
 {
   NbtkLabelPrivate *priv = NBTK_LABEL (actor)->priv;
   ClutterActorClass *parent_class;
@@ -207,14 +207,14 @@ nbtk_label_allocate (ClutterActor          *actor,
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 
   parent_class = CLUTTER_ACTOR_CLASS (nbtk_label_parent_class);
-  parent_class->allocate (actor, box, absolute_origin_changed);
+  parent_class->allocate (actor, box, flags);
 
   child_box.x1 = padding.left;
   child_box.y1 = padding.top;
   child_box.x2 = box->x2 - box->x1 - padding.right;
   child_box.y2 = box->y2 - box->y1 - padding.bottom;
 
-  clutter_actor_allocate (priv->label, &child_box, absolute_origin_changed);
+  clutter_actor_allocate (priv->label, &child_box, flags);
 }
 
 static void

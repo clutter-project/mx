@@ -73,13 +73,13 @@ nbtk_fade_button_draw_background (NbtkWidget         *self,
 static void
 nbtk_fade_button_allocate (ClutterActor          *self,
                            const ClutterActorBox *box,
-                           gboolean               origin_changed)
+                           ClutterAllocationFlags flags)
 {
   NbtkFadeButtonPrivate *priv = NBTK_FADE_BUTTON (self)->priv;
 
   CLUTTER_ACTOR_CLASS (nbtk_fade_button_parent_class)->allocate (self,
                                                                  box,
-                                                                 origin_changed);
+                                                                 flags);
 
   if (priv->old_bg)
     {
@@ -89,7 +89,7 @@ nbtk_fade_button_allocate (ClutterActor          *self,
 
       clutter_actor_allocate (priv->old_bg,
                               &frame_box,
-                              origin_changed);
+                              flags);
     }
 }
 

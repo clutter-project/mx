@@ -93,11 +93,11 @@ void          nbtk_grid_set_column_major       (NbtkGrid    *self,
                                                 gboolean     value);
 gboolean      nbtk_grid_get_column_major       (NbtkGrid    *self);
 void          nbtk_grid_set_row_gap            (NbtkGrid    *self,
-                                                ClutterUnit  value);
-ClutterUnit   nbtk_grid_get_row_gap            (NbtkGrid    *self);
+                                                gfloat  value);
+gfloat        nbtk_grid_get_row_gap            (NbtkGrid    *self);
 void          nbtk_grid_set_column_gap         (NbtkGrid    *self,
-                                                ClutterUnit  value);
-ClutterUnit   nbtk_grid_get_column_gap         (NbtkGrid    *self);
+                                                gfloat  value);
+gfloat        nbtk_grid_get_column_gap         (NbtkGrid    *self);
 void          nbtk_grid_set_valign             (NbtkGrid    *self,
                                                 gdouble      value);
 gdouble       nbtk_grid_get_valign             (NbtkGrid    *self);

@@ -191,19 +191,19 @@ nbtk_bin_pick (ClutterActor       *self,
 static void
 nbtk_bin_allocate (ClutterActor          *self,
                    const ClutterActorBox *box,
-                   gboolean               origin_changed)
+                   ClutterAllocationFlags flags)
 {
   NbtkBinPrivate *priv = NBTK_BIN (self)->priv;
 
   CLUTTER_ACTOR_CLASS (nbtk_bin_parent_class)->allocate (self, box,
-                                                         origin_changed);
+                                                         flags);
 
   if (priv->child)
     {
-      ClutterUnit natural_width, natural_height;
-      ClutterUnit min_width, min_height;
-      ClutterUnit child_width, child_height;
-      ClutterUnit available_width, available_height;
+      gfloat natural_width, natural_height;
+      gfloat min_width, min_height;
+      gfloat child_width, child_height;
+      gfloat available_width, available_height;
       ClutterRequestMode request;
       ClutterActorBox allocation = { 0, };
       NbtkPadding padding = { 0, };
@@ -239,7 +239,7 @@ nbtk_bin_allocate (ClutterActor          *self,
       /* if we are filling horizontally and vertically then we're done */
       if (priv->x_fill && priv->y_fill)
         {
-          clutter_actor_allocate (priv->child, &allocation, origin_changed);
+          clutter_actor_allocate (priv->child, &allocation, flags);
           return;
         }
 
@@ -289,18 +289,18 @@ nbtk_bin_allocate (ClutterActor          *self,
           allocation.y2 = allocation.y1 + child_height;
         }
 
-      clutter_actor_allocate (priv->child, &allocation, origin_changed);
+      clutter_actor_allocate (priv->child, &allocation, flags);
     }
 }
 
 static void
 nbtk_bin_get_preferred_width (ClutterActor *self,
-                              ClutterUnit   for_height,
-                              ClutterUnit  *min_width_p,
-                              ClutterUnit  *natural_width_p)
+                              gfloat   for_height,
+                              gfloat  *min_width_p,
+                              gfloat  *natural_width_p)
 {
   NbtkBinPrivate *priv = NBTK_BIN (self)->priv;
-  ClutterUnit min_width, natural_width;
+  gfloat min_width, natural_width;
   NbtkPadding padding = { 0, };
 
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
@@ -332,12 +332,12 @@ nbtk_bin_get_preferred_width (ClutterActor *self,
 
 static void
 nbtk_bin_get_preferred_height (ClutterActor *self,
-                               ClutterUnit   for_width,
-                               ClutterUnit  *min_height_p,
-                               ClutterUnit  *natural_height_p)
+                               gfloat   for_width,
+                               gfloat  *min_height_p,
+                               gfloat  *natural_height_p)
 {
   NbtkBinPrivate *priv = NBTK_BIN (self)->priv;
-  ClutterUnit min_height, natural_height;
+  gfloat min_height, natural_height;
   NbtkPadding padding = { 0, };
 
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);

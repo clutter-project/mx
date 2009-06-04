@@ -94,7 +94,7 @@ struct _NbtkEntryPrivate
   ClutterActor *primary_icon;
   ClutterActor *secondary_icon;
 
-  ClutterUnit   spacing;
+  gfloat   spacing;
 };
 
 static guint entry_signals[LAST_SIGNAL] = { 0, };
@@ -265,13 +265,13 @@ nbtk_entry_style_changed (NbtkWidget *self)
 
 static void
 nbtk_entry_get_preferred_width (ClutterActor *actor,
-                                ClutterUnit   for_height,
-                                ClutterUnit  *min_width_p,
-                                ClutterUnit  *natural_width_p)
+                                gfloat   for_height,
+                                gfloat  *min_width_p,
+                                gfloat  *natural_width_p)
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
   NbtkPadding padding;
-  ClutterUnit icon_w;
+  gfloat icon_w;
 
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 
@@ -313,13 +313,13 @@ nbtk_entry_get_preferred_width (ClutterActor *actor,
 
 static void
 nbtk_entry_get_preferred_height (ClutterActor *actor,
-                                 ClutterUnit   for_width,
-                                 ClutterUnit  *min_height_p,
-                                 ClutterUnit  *natural_height_p)
+                                 gfloat   for_width,
+                                 gfloat  *min_height_p,
+                                 gfloat  *natural_height_p)
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
   NbtkPadding padding;
-  ClutterUnit icon_h;
+  gfloat icon_h;
 
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 
@@ -363,18 +363,18 @@ nbtk_entry_get_preferred_height (ClutterActor *actor,
 static void
 nbtk_entry_allocate (ClutterActor          *actor,
                      const ClutterActorBox *box,
-                     gboolean               absolute_origin_changed)
+                     ClutterAllocationFlags flags)
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
   ClutterActorClass *parent_class;
   ClutterActorBox child_box, icon_box;
   NbtkPadding padding;
-  ClutterUnit icon_w, icon_h;
+  gfloat icon_w, icon_h;
 
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 
   parent_class = CLUTTER_ACTOR_CLASS (nbtk_entry_parent_class);
-  parent_class->allocate (actor, box, absolute_origin_changed);
+  parent_class->allocate (actor, box, flags);
 
   child_box.x1 = padding.left;
   child_box.y1 = padding.top;
@@ -396,7 +396,7 @@ nbtk_entry_allocate (ClutterActor          *actor,
 
       clutter_actor_allocate (priv->primary_icon,
                               &icon_box,
-                              absolute_origin_changed);
+                              flags);
 
       /* reduce the size for the entry */
       child_box.x1 += icon_w + priv->spacing;
@@ -417,14 +417,14 @@ nbtk_entry_allocate (ClutterActor          *actor,
 
       clutter_actor_allocate (priv->secondary_icon,
                               &icon_box,
-                              absolute_origin_changed);
+                              flags);
 
       /* reduce the size for the entry */
       child_box.x2 -= icon_w - priv->spacing;
     }
 
 
-  clutter_actor_allocate (priv->entry, &child_box, absolute_origin_changed);
+  clutter_actor_allocate (priv->entry, &child_box, flags);
 }
 
 static void
@@ -756,7 +756,7 @@ nbtk_entry_init (NbtkEntry *entry)
   g_signal_connect (priv->entry, "key-focus-in",
                     G_CALLBACK (clutter_text_focus_in_cb), entry);
 
-  priv->spacing = CLUTTER_UNITS_FROM_INT (6);
+  priv->spacing = 6.0f;
 
   clutter_actor_set_parent (priv->entry, CLUTTER_ACTOR (entry));
   clutter_actor_set_reactive ((ClutterActor *) entry, TRUE);
