@@ -73,6 +73,7 @@ struct _NbtkWidgetPrivate
   gboolean dnd_grab   : 1;
   gboolean is_stylable : 1;
   gboolean has_tooltip : 1;
+  gboolean previously_mapped : 1;
 
   NbtkTooltip *tooltip;
 };
@@ -558,7 +559,13 @@ nbtk_widget_map (ClutterActor *actor)
 
   CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->map (actor);
 
-  g_signal_emit (actor, actor_signals[STYLE_CHANGED], 0);
+  if (!priv->previously_mapped)
+    {
+      /* make sure we do this only on first map */
+      priv->previously_mapped = TRUE;
+
+      g_signal_emit (actor, actor_signals[STYLE_CHANGED], 0);
+    }
 
   if (priv->border_image)
     clutter_actor_map (priv->border_image);
