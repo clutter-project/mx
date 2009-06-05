@@ -521,13 +521,10 @@ move_slider (NbtkScrollBar *bar, gfloat x, gfloat y)
   if (priv->mode == NBTK_SCROLL_BAR_MODE_INTERPOLATE)
     {
       guint mfreq = clutter_get_motion_events_frequency ();
-      guint fps = clutter_get_default_frame_rate ();
-      guint n_frames = fps / mfreq;
 
       nbtk_adjustment_interpolate (priv->adjustment,
                                    position,
-                                   n_frames,
-                                   fps);
+                                   mfreq);
       return;
     }
 

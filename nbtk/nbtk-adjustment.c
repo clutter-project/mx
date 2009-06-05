@@ -52,7 +52,6 @@ struct _NbtkAdjustmentPrivate
 
   /* For interpolation */
   ClutterTimeline *interpolation;
-  gdouble dx;
   gdouble old_position;
   gdouble new_position;
 
@@ -632,7 +631,7 @@ nbtk_adjustment_get_values (NbtkAdjustment *adjustment,
 
 static void
 interpolation_new_frame_cb (ClutterTimeline *timeline,
-                            gint             frame_num,
+                            guint            msecs,
                             NbtkAdjustment  *adjustment)
 {
   NbtkAdjustmentPrivate *priv = adjustment->priv;
@@ -650,7 +649,9 @@ interpolation_new_frame_cb (ClutterTimeline *timeline,
     }
   else
     nbtk_adjustment_set_value (adjustment,
-                               priv->old_position + (frame_num * priv->dx));
+                               priv->old_position +
+                               (priv->new_position - priv->old_position) *
+                               clutter_timeline_get_progress (timeline));
 
   priv->interpolation = timeline;
 }
@@ -690,14 +691,13 @@ bounce_alpha_func (ClutterAlpha *alpha,
 void
 nbtk_adjustment_interpolate (NbtkAdjustment *adjustment,
                              gdouble         value,
-                             guint           n_frames,
-                             guint           fps)
+                             guint           duration)
 {
   NbtkAdjustmentPrivate *priv = adjustment->priv;
 
   stop_interpolation (adjustment);
 
-  if (n_frames <= 1)
+  if (duration <= 1)
     {
       nbtk_adjustment_set_value (adjustment, value);
       return;
@@ -706,10 +706,7 @@ nbtk_adjustment_interpolate (NbtkAdjustment *adjustment,
   priv->old_position = priv->value;
   priv->new_position = value;
 
-  priv->dx = (priv->new_position - priv->old_position)
-           / (gdouble) n_frames;
-
-  priv->interpolation = clutter_timeline_new (n_frames, fps);
+  priv->interpolation = clutter_timeline_new (duration);
 
   if (priv->elastic)
     priv->bounce_alpha = clutter_alpha_new_full (priv->interpolation,
@@ -743,8 +740,7 @@ nbtk_adjustment_set_elastic (NbtkAdjustment *adjustment,
 gboolean
 nbtk_adjustment_clamp (NbtkAdjustment *adjustment,
                        gboolean        interpolate,
-                       guint           n_frames,
-                       guint           fps)
+                       guint           duration)
 {
   NbtkAdjustmentPrivate *priv = adjustment->priv;
   gdouble dest = priv->value;
@@ -758,7 +754,7 @@ nbtk_adjustment_clamp (NbtkAdjustment *adjustment,
   if (dest != priv->value)
     {
       if (interpolate)
-        nbtk_adjustment_interpolate (adjustment, dest, n_frames, fps);
+        nbtk_adjustment_interpolate (adjustment, dest, duration);
       else
         nbtk_adjustment_set_value (adjustment, dest);
 

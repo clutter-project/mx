@@ -610,7 +610,7 @@ nbtk_expander_init (NbtkExpander *self)
   priv->progress = 1.0;
   priv->expanded = 1;
 
-  priv->timeline = clutter_timeline_new_for_duration (250);
+  priv->timeline = clutter_timeline_new (250);
   clutter_timeline_set_direction (priv->timeline, CLUTTER_TIMELINE_BACKWARD);
   g_signal_connect (priv->timeline, "new-frame", G_CALLBACK (new_frame), self);
   g_signal_connect (priv->timeline, "completed", G_CALLBACK (timeline_complete), self);
