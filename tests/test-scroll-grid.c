@@ -59,9 +59,6 @@ main (int argc, char *argv[])
 
   clutter_init (&argc, &argv);
 
-  nbtk_style_load_from_file (nbtk_style_get_default (),
-                             "style/default.css", NULL);
-
   stage = clutter_stage_get_default ();
   clutter_actor_set_size (stage, 640, 480);
   clutter_stage_set_user_resizable (CLUTTER_STAGE (stage), TRUE);
