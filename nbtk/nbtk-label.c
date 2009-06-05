@@ -152,9 +152,9 @@ nbtk_label_style_changed (NbtkWidget *self)
 
 static void
 nbtk_label_get_preferred_width (ClutterActor *actor,
-                                ClutterUnit   for_height,
-                                ClutterUnit  *min_width_p,
-                                ClutterUnit  *natural_width_p)
+                                gfloat        for_height,
+                                gfloat       *min_width_p,
+                                gfloat       *natural_width_p)
 {
   NbtkLabelPrivate *priv = NBTK_LABEL (actor)->priv;
   NbtkPadding padding = { 0, };
@@ -174,9 +174,9 @@ nbtk_label_get_preferred_width (ClutterActor *actor,
 
 static void
 nbtk_label_get_preferred_height (ClutterActor *actor,
-                                 ClutterUnit   for_width,
-                                 ClutterUnit  *min_height_p,
-                                 ClutterUnit  *natural_height_p)
+                                 gfloat        for_width,
+                                 gfloat       *min_height_p,
+                                 gfloat       *natural_height_p)
 {
   NbtkLabelPrivate *priv = NBTK_LABEL (actor)->priv;
   NbtkPadding padding = { 0, };
@@ -197,7 +197,7 @@ nbtk_label_get_preferred_height (ClutterActor *actor,
 static void
 nbtk_label_allocate (ClutterActor          *actor,
                      const ClutterActorBox *box,
-                     gboolean               absolute_origin_changed)
+                     ClutterAllocationFlags flags)
 {
   NbtkLabelPrivate *priv = NBTK_LABEL (actor)->priv;
   ClutterActorClass *parent_class;
@@ -207,14 +207,14 @@ nbtk_label_allocate (ClutterActor          *actor,
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 
   parent_class = CLUTTER_ACTOR_CLASS (nbtk_label_parent_class);
-  parent_class->allocate (actor, box, absolute_origin_changed);
+  parent_class->allocate (actor, box, flags);
 
   child_box.x1 = padding.left;
   child_box.y1 = padding.top;
   child_box.x2 = box->x2 - box->x1 - padding.right;
   child_box.y2 = box->y2 - box->y1 - padding.bottom;
 
-  clutter_actor_allocate (priv->label, &child_box, absolute_origin_changed);
+  clutter_actor_allocate (priv->label, &child_box, flags);
 }
 
 static void
@@ -227,6 +227,26 @@ nbtk_label_paint (ClutterActor *actor)
   parent_class->paint (actor);
 
   clutter_actor_paint (priv->label);
+}
+
+static void
+nbtk_label_map (ClutterActor *actor)
+{
+  NbtkLabelPrivate *priv = NBTK_LABEL (actor)->priv;
+
+  CLUTTER_ACTOR_CLASS (nbtk_label_parent_class)->map (actor);
+
+  clutter_actor_map (priv->label);
+}
+
+static void
+nbtk_label_unmap (ClutterActor *actor)
+{
+  NbtkLabelPrivate *priv = NBTK_LABEL (actor)->priv;
+
+  CLUTTER_ACTOR_CLASS (nbtk_label_parent_class)->unmap (actor);
+
+  clutter_actor_unmap (priv->label);
 }
 
 static void
@@ -246,6 +266,8 @@ nbtk_label_class_init (NbtkLabelClass *klass)
   actor_class->allocate = nbtk_label_allocate;
   actor_class->get_preferred_width = nbtk_label_get_preferred_width;
   actor_class->get_preferred_height = nbtk_label_get_preferred_height;
+  actor_class->map = nbtk_label_map;
+  actor_class->unmap = nbtk_label_unmap;
 
   widget_class->style_changed = nbtk_label_style_changed;
 

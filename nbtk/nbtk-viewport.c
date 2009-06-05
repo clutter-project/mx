@@ -56,9 +56,9 @@ G_DEFINE_TYPE_WITH_CODE (NbtkViewport, nbtk_viewport, NBTK_TYPE_BIN,
 
 struct _NbtkViewportPrivate
 {
-  ClutterUnit x;
-  ClutterUnit y;
-  ClutterUnit z;
+  gfloat x;
+  gfloat y;
+  gfloat z;
 
   NbtkAdjustment *hadjustment;
   NbtkAdjustment *vadjustment;
@@ -91,15 +91,15 @@ nbtk_viewport_get_property (GObject    *object,
   switch (prop_id)
     {
     case PROP_X_ORIGIN:
-      g_value_set_int (value, CLUTTER_UNITS_TO_DEVICE (priv->x));
+      g_value_set_int (value, (int) priv->x);
       break;
 
     case PROP_Y_ORIGIN:
-      g_value_set_int (value, CLUTTER_UNITS_TO_DEVICE (priv->y));
+      g_value_set_int (value, (int) priv->y);
       break;
 
     case PROP_Z_ORIGIN:
-      g_value_set_int (value, CLUTTER_UNITS_TO_DEVICE (priv->z));
+      g_value_set_int (value, (int) priv->z);
       break;
 
     case PROP_HADJUST :
@@ -198,8 +198,8 @@ nbtk_viewport_dispose (GObject *gobject)
 
 static ClutterActor *
 get_child_and_natural_size (NbtkViewport  *self,
-                            ClutterUnit   *natural_width,
-                            ClutterUnit   *natural_height)
+                            gfloat   *natural_width,
+                            gfloat   *natural_height)
 {
   /* NbtkBin is a single-child container,
     * let it grow as big as it wants. */
@@ -258,16 +258,16 @@ nbtk_viewport_pick (ClutterActor       *self,
 static void
 nbtk_viewport_allocate (ClutterActor          *self,
                         const ClutterActorBox *box,
-                        gboolean               absolute_origin_changed)
+                        ClutterAllocationFlags flags)
 {
   NbtkViewportPrivate   *priv = NBTK_VIEWPORT (self)->priv;
   ClutterActor          *child;
   ClutterActorBox natural_box;
-  ClutterUnit     natural_width, natural_height;
+  gfloat     natural_width, natural_height;
 
   /* Chain up. */
   CLUTTER_ACTOR_CLASS (nbtk_viewport_parent_class)->
-    allocate (self, box, absolute_origin_changed);
+    allocate (self, box, flags);
 
   natural_box.x1 = 0;
   natural_box.y1 = 0;
@@ -278,7 +278,7 @@ nbtk_viewport_allocate (ClutterActor          *self,
     {
       natural_box.x2 = natural_width;
       natural_box.y2 = natural_height;
-      clutter_actor_allocate (child, &natural_box, absolute_origin_changed);
+      clutter_actor_allocate (child, &natural_box, flags);
     }
   else
     {
@@ -295,7 +295,7 @@ nbtk_viewport_allocate (ClutterActor          *self,
         {
           g_object_set (G_OBJECT (priv->hadjustment),
                        "lower", 0.0,
-                       "upper", CLUTTER_UNITS_TO_FLOAT (natural_box.x2 - natural_box.x1),
+                       "upper", (float) (natural_box.x2 - natural_box.x1),
                        NULL);
 
           /* Make sure value is clamped */
@@ -307,7 +307,7 @@ nbtk_viewport_allocate (ClutterActor          *self,
         {
           g_object_set (G_OBJECT (priv->vadjustment),
                        "lower", 0.0,
-                       "upper", CLUTTER_UNITS_TO_FLOAT (natural_box.y2 - natural_box.y1),
+                       "upper", (float) (natural_box.y2 - natural_box.y1),
                        NULL);
 
           prev_value = nbtk_adjustment_get_value (priv->vadjustment);
@@ -391,7 +391,7 @@ hadjustment_value_notify_cb (NbtkAdjustment *adjustment,
   value = nbtk_adjustment_get_value (adjustment);
 
   nbtk_viewport_set_originu (viewport,
-                             CLUTTER_UNITS_FROM_FLOAT (value),
+                             (float) (value),
                              priv->y,
                              priv->z);
 }
@@ -407,7 +407,7 @@ vadjustment_value_notify_cb (NbtkAdjustment *adjustment, GParamSpec *arg1,
 
   nbtk_viewport_set_originu (viewport,
                              priv->x,
-                             CLUTTER_UNITS_FROM_FLOAT (value),
+                             (float) (value),
                              priv->z);
 }
 
@@ -487,11 +487,11 @@ scrollable_get_adjustments (NbtkScrollable *scrollable,
           NbtkAdjustment *adjustment;
           gdouble width, stage_width, increment;
 
-          width = CLUTTER_UNITS_TO_FLOAT (clutter_actor_get_widthu (actor));
-          stage_width = CLUTTER_UNITS_TO_FLOAT (clutter_actor_get_widthu (stage));
+          width = clutter_actor_get_width (actor);
+          stage_width = clutter_actor_get_width (stage);
           increment = MAX (1.0, MIN (stage_width, width));
 
-          adjustment = nbtk_adjustment_new (CLUTTER_UNITS_TO_FLOAT (priv->x),
+          adjustment = nbtk_adjustment_new (priv->x,
                                             0,
                                             width,
                                             1.0,
@@ -515,11 +515,11 @@ scrollable_get_adjustments (NbtkScrollable *scrollable,
           NbtkAdjustment *adjustment;
           gdouble height, stage_height, increment;
 
-          height = CLUTTER_UNITS_TO_FLOAT (clutter_actor_get_heightu (actor));
-          stage_height = CLUTTER_UNITS_TO_FLOAT (clutter_actor_get_heightu (stage));
+          height = clutter_actor_get_height (actor);
+          stage_height = clutter_actor_get_height (stage);
           increment = MAX (1.0, MIN (stage_height, height));
 
-          adjustment = nbtk_adjustment_new (CLUTTER_UNITS_TO_FLOAT (priv->y),
+          adjustment = nbtk_adjustment_new (priv->y,
                                             0,
                                             height,
                                             1.0,
@@ -547,8 +547,8 @@ clip_notify_cb (ClutterActor *actor,
                 GParamSpec   *pspec,
                 NbtkViewport *self)
 {
-  gint width, height;
   NbtkViewportPrivate *priv = self->priv;
+  gfloat width, height;
 
   if (!priv->sync_adjustments)
     return;
@@ -556,19 +556,19 @@ clip_notify_cb (ClutterActor *actor,
   if (!clutter_actor_has_clip (actor))
     {
       if (priv->hadjustment)
-        g_object_set (priv->hadjustment, "page-size", (gdouble)1.0, NULL);
+        g_object_set (priv->hadjustment, "page-size", 1.0f, NULL);
       if (priv->vadjustment)
-        g_object_set (priv->vadjustment, "page-size", (gdouble)1.0, NULL);
+        g_object_set (priv->vadjustment, "page-size", 1.0f, NULL);
       return;
     }
 
   clutter_actor_get_clip (actor, NULL, NULL, &width, &height);
 
   if (priv->hadjustment)
-    g_object_set (priv->hadjustment, "page-size", (gdouble)width, NULL);
+    g_object_set (priv->hadjustment, "page-size", width, NULL);
 
   if (priv->vadjustment)
-    g_object_set (priv->vadjustment, "page-size", (gdouble)height, NULL);
+    g_object_set (priv->vadjustment, "page-size", height, NULL);
 }
 
 static void
@@ -593,9 +593,9 @@ nbtk_viewport_new (void)
 
 void
 nbtk_viewport_set_originu (NbtkViewport *viewport,
-                           ClutterUnit   x,
-                           ClutterUnit   y,
-                           ClutterUnit   z)
+                           gfloat   x,
+                           gfloat   y,
+                           gfloat   z)
 {
   NbtkViewportPrivate *priv;
 
@@ -612,7 +612,7 @@ nbtk_viewport_set_originu (NbtkViewport *viewport,
 
       if (priv->hadjustment)
         nbtk_adjustment_set_value (priv->hadjustment,
-                                   CLUTTER_UNITS_TO_FLOAT (x));
+                                   (float) (x));
     }
 
   if (y != priv->y)
@@ -622,7 +622,7 @@ nbtk_viewport_set_originu (NbtkViewport *viewport,
 
       if (priv->vadjustment)
         nbtk_adjustment_set_value (priv->vadjustment,
-                                   CLUTTER_UNITS_TO_FLOAT (y));
+                                   (float) (y));
     }
 
   if (z != priv->z)
@@ -645,16 +645,16 @@ nbtk_viewport_set_origin (NbtkViewport *viewport,
   g_return_if_fail (NBTK_IS_VIEWPORT (viewport));
 
   nbtk_viewport_set_originu (viewport,
-                             CLUTTER_UNITS_FROM_DEVICE (x),
-                             CLUTTER_UNITS_FROM_DEVICE (y),
-                             CLUTTER_UNITS_FROM_DEVICE (z));
+                             (float) (x),
+                             (float) (y),
+                             (float) (z));
 }
 
 void
 nbtk_viewport_get_originu (NbtkViewport *viewport,
-                           ClutterUnit  *x,
-                           ClutterUnit  *y,
-                           ClutterUnit  *z)
+                           gfloat  *x,
+                           gfloat  *y,
+                           gfloat  *z)
 {
   NbtkViewportPrivate *priv;
 
@@ -685,11 +685,11 @@ nbtk_viewport_get_origin (NbtkViewport *viewport,
   priv = viewport->priv;
 
   if (x)
-    *x = CLUTTER_UNITS_TO_DEVICE (priv->x);
+    *x = (int) priv->x;
 
   if (y)
-    *y = CLUTTER_UNITS_TO_DEVICE (priv->y);
+    *y = (int) priv->y;
 
   if (z)
-    *z = CLUTTER_UNITS_TO_DEVICE (priv->z);
+    *z = (int) priv->z;
 }

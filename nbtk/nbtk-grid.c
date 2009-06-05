@@ -77,19 +77,19 @@ static void nbtk_grid_pick (ClutterActor *actor,
 
 static void
 nbtk_grid_get_preferred_width (ClutterActor *self,
-                               ClutterUnit for_height,
-                               ClutterUnit *min_width_p,
-                               ClutterUnit *natural_width_p);
+                               gfloat for_height,
+                               gfloat *min_width_p,
+                               gfloat *natural_width_p);
 
 static void
 nbtk_grid_get_preferred_height (ClutterActor *self,
-                                ClutterUnit for_width,
-                                ClutterUnit *min_height_p,
-                                ClutterUnit *natural_height_p);
+                                gfloat for_width,
+                                gfloat *min_height_p,
+                                gfloat *natural_height_p);
 
 static void nbtk_grid_allocate (ClutterActor *self,
                                 const ClutterActorBox *box,
-                                gboolean absolute_origin_changed);
+                                ClutterAllocationFlags flags);
 
 static gboolean
 nbtk_grid_scroll_event (ClutterActor        *self,
@@ -98,10 +98,10 @@ nbtk_grid_scroll_event (ClutterActor        *self,
 static void
 nbtk_grid_do_allocate (ClutterActor *self,
                        const ClutterActorBox *box,
-                       gboolean absolute_origin_changed,
+                       ClutterAllocationFlags flags,
                        gboolean calculate_extents_only,
-                       ClutterUnit *actual_width,
-                       ClutterUnit *actual_height);
+                       gfloat *actual_width,
+                       gfloat *actual_height);
 
 static void nbtk_grid_style_changed (NbtkWidget *self);
 
@@ -126,15 +126,15 @@ struct _NbtkGridPrivate
   gboolean    homogenous_rows;
   gboolean    homogenous_columns;
   gboolean    end_align;
-  ClutterUnit column_gap, row_gap;
+  gfloat column_gap, row_gap;
   gdouble     valign, halign;
 
   gboolean    column_major;
 
   gboolean    first_of_batch;
-  ClutterUnit a_current_sum, a_wrap;
-  ClutterUnit max_extent_a;
-  ClutterUnit max_extent_b;
+  gfloat a_current_sum, a_wrap;
+  gfloat max_extent_a;
+  gfloat max_extent_b;
 
   gint        max_stride;
 
@@ -161,8 +161,8 @@ enum
 struct _NbtkGridActorData
 {
   gboolean    xpos_set,   ypos_set;
-  ClutterUnit xpos,       ypos;
-  ClutterUnit pref_width, pref_height;
+  gfloat xpos,       ypos;
+  gfloat pref_width, pref_height;
 };
 
 /* scrollable interface */
@@ -251,8 +251,8 @@ scrollable_get_adjustments (NbtkScrollable *scrollable,
           NbtkAdjustment *adjustment;
           gdouble width, stage_width, increment;
 
-          width = CLUTTER_UNITS_TO_FLOAT (clutter_actor_get_widthu (actor));
-          stage_width = CLUTTER_UNITS_TO_FLOAT (clutter_actor_get_widthu (stage));
+          width = clutter_actor_get_width (actor);
+          stage_width = clutter_actor_get_width (stage);
           increment = MAX (1.0, MIN (stage_width, width));
 
           adjustment = nbtk_adjustment_new (0,
@@ -279,8 +279,8 @@ scrollable_get_adjustments (NbtkScrollable *scrollable,
           NbtkAdjustment *adjustment;
           gdouble height, stage_height, increment;
 
-          height = CLUTTER_UNITS_TO_FLOAT (clutter_actor_get_heightu (actor));
-          stage_height = CLUTTER_UNITS_TO_FLOAT (clutter_actor_get_heightu (stage));
+          height = clutter_actor_get_height (actor);
+          stage_height = clutter_actor_get_height (stage);
           increment = MAX (1.0, MIN (stage_height, height));
 
           adjustment = nbtk_adjustment_new (0,
@@ -333,20 +333,20 @@ nbtk_grid_class_init (NbtkGridClass *klass)
   g_type_class_add_private (klass, sizeof (NbtkGridPrivate));
 
 
-  pspec = clutter_param_spec_unit ("row-gap",
-                                   "Row gap",
-                                   "gap between rows in the layout",
-                                   0, CLUTTER_MAXUNIT,
-                                   0,
-                                   G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
+  pspec = g_param_spec_float ("row-gap",
+                              "Row gap",
+                              "gap between rows in the layout",
+                              0, G_MAXFLOAT,
+                              0,
+                              G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
   g_object_class_install_property (gobject_class, PROP_ROW_GAP, pspec);
 
-  pspec = clutter_param_spec_unit ("column-gap",
-                                   "Column gap",
-                                   "gap between columns in the layout",
-                                   0, CLUTTER_MAXUNIT,
-                                   0,
-                                   G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
+  pspec = g_param_spec_float ("column-gap",
+                              "Column gap",
+                              "gap between columns in the layout",
+                              0, G_MAXFLOAT,
+                              0,
+                              G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
   g_object_class_install_property (gobject_class, PROP_COLUMN_GAP, pspec);
 
 
@@ -539,14 +539,14 @@ nbtk_grid_get_column_major (NbtkGrid *self)
 
 void
 nbtk_grid_set_column_gap (NbtkGrid    *self,
-                          ClutterUnit  value)
+                          gfloat  value)
 {
   NbtkGridPrivate *priv = NBTK_GRID_GET_PRIVATE (self);
   priv->column_gap = value;
   clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
 }
 
-ClutterUnit
+gfloat
 nbtk_grid_get_column_gap (NbtkGrid *self)
 {
   NbtkGridPrivate *priv = NBTK_GRID_GET_PRIVATE (self);
@@ -557,14 +557,14 @@ nbtk_grid_get_column_gap (NbtkGrid *self)
 
 void
 nbtk_grid_set_row_gap (NbtkGrid    *self,
-                       ClutterUnit  value)
+                       gfloat  value)
 {
   NbtkGridPrivate *priv = NBTK_GRID_GET_PRIVATE (self);
   priv->row_gap = value;
   clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
 }
 
-ClutterUnit
+gfloat
 nbtk_grid_get_row_gap (NbtkGrid *self)
 {
   NbtkGridPrivate *priv = NBTK_GRID_GET_PRIVATE (self);
@@ -652,10 +652,10 @@ nbtk_grid_set_property (GObject      *object,
       nbtk_grid_set_column_major (grid, g_value_get_boolean (value));
       break;
     case PROP_COLUMN_GAP:
-      nbtk_grid_set_column_gap (grid, clutter_value_get_unit (value));
+      nbtk_grid_set_column_gap (grid, g_value_get_float (value));
       break;
     case PROP_ROW_GAP:
-      nbtk_grid_set_row_gap (grid, clutter_value_get_unit (value));
+      nbtk_grid_set_row_gap (grid, g_value_get_float (value));
       break;
     case PROP_VALIGN:
       nbtk_grid_set_valign (grid, g_value_get_double (value));
@@ -710,10 +710,10 @@ nbtk_grid_get_property (GObject    *object,
       g_value_set_boolean (value, nbtk_grid_get_column_major (grid));
       break;
     case PROP_COLUMN_GAP:
-      clutter_value_set_unit (value, nbtk_grid_get_column_gap (grid));
+      g_value_set_float (value, nbtk_grid_get_column_gap (grid));
       break;
     case PROP_ROW_GAP:
-      clutter_value_set_unit (value, nbtk_grid_get_row_gap (grid));
+      g_value_set_float (value, nbtk_grid_get_row_gap (grid));
       break;
     case PROP_VALIGN:
       g_value_set_double (value, nbtk_grid_get_valign (grid));
@@ -919,16 +919,16 @@ nbtk_grid_pick (ClutterActor *actor,
 
 static void
 nbtk_grid_get_preferred_width (ClutterActor *self,
-                               ClutterUnit for_height,
-                               ClutterUnit *min_width_p,
-                               ClutterUnit *natural_width_p)
+                               gfloat for_height,
+                               gfloat *min_width_p,
+                               gfloat *natural_width_p)
 {
-  ClutterUnit actual_width, actual_height;
+  gfloat actual_width, actual_height;
   ClutterActorBox box;
 
   box.x1 = 0;
   box.y1 = 0;
-  box.x2 = CLUTTER_MAXUNIT;
+  box.x2 = G_MAXFLOAT;
   box.y2 = for_height;
 
   nbtk_grid_do_allocate (self, &box, FALSE,
@@ -942,17 +942,17 @@ nbtk_grid_get_preferred_width (ClutterActor *self,
 
 static void
 nbtk_grid_get_preferred_height (ClutterActor *self,
-                                ClutterUnit   for_width,
-                                ClutterUnit  *min_height_p,
-                                ClutterUnit  *natural_height_p)
+                                gfloat   for_width,
+                                gfloat  *min_height_p,
+                                gfloat  *natural_height_p)
 {
-  ClutterUnit actual_width, actual_height;
+  gfloat actual_width, actual_height;
   ClutterActorBox box;
 
   box.x1 = 0;
   box.y1 = 0;
   box.x2 = for_width;
-  box.y2 = CLUTTER_MAXUNIT;
+  box.y2 = G_MAXFLOAT;
 
   nbtk_grid_do_allocate (self, &box, FALSE,
                          TRUE, &actual_width, &actual_height);
@@ -963,17 +963,17 @@ nbtk_grid_get_preferred_height (ClutterActor *self,
     *natural_height_p = actual_height;
 }
 
-static ClutterUnit
+static gfloat
 compute_row_height (GList           *siblings,
-                    ClutterUnit      best_yet,
-                    ClutterUnit      current_a,
+                    gfloat           best_yet,
+                    gfloat           current_a,
                     NbtkGridPrivate *priv)
 {
   GList *l;
 
   gboolean homogenous_a;
   gboolean homogenous_b;
-  ClutterUnit gap;
+  gfloat gap;
 
   if (priv->column_major)
     {
@@ -991,7 +991,7 @@ compute_row_height (GList           *siblings,
   for (l = siblings; l != NULL; l = l->next)
     {
       ClutterActor *child = l->data;
-      ClutterUnit natural_width, natural_height;
+      gfloat natural_width, natural_height;
 
       /* each child will get as much space as they require */
       clutter_actor_get_preferred_size (CLUTTER_ACTOR (child),
@@ -1000,7 +1000,7 @@ compute_row_height (GList           *siblings,
 
       if (priv->column_major)
         {
-          ClutterUnit temp = natural_height;
+          gfloat temp = natural_height;
           natural_height = natural_width;
           natural_width = temp;
         }
@@ -1026,17 +1026,17 @@ compute_row_height (GList           *siblings,
 
 
 
-static ClutterUnit
+static gfloat
 compute_row_start (GList           *siblings,
-                   ClutterUnit      start_x,
+                   gfloat           start_x,
                    NbtkGridPrivate *priv)
 {
-  ClutterUnit current_a = start_x;
+  gfloat current_a = start_x;
   GList *l;
 
   gboolean homogenous_a;
   gboolean homogenous_b;
-  ClutterUnit gap;
+  gfloat gap;
 
   if (priv->column_major)
     {
@@ -1054,7 +1054,7 @@ compute_row_start (GList           *siblings,
   for (l = siblings; l != NULL; l = l->next)
     {
       ClutterActor *child = l->data;
-      ClutterUnit natural_width, natural_height;
+      gfloat natural_width, natural_height;
 
       /* each child will get as much space as they require */
       clutter_actor_get_preferred_size (CLUTTER_ACTOR (child),
@@ -1084,20 +1084,20 @@ compute_row_start (GList           *siblings,
 static void
 nbtk_grid_do_allocate (ClutterActor          *self,
                        const ClutterActorBox *box,
-                       gboolean               absolute_origin_changed,
+                       ClutterAllocationFlags flags,
                        gboolean               calculate_extents_only,
-                       ClutterUnit           *actual_width,
-                       ClutterUnit           *actual_height)
+                       gfloat                *actual_width,
+                       gfloat                *actual_height)
 {
   NbtkGrid *layout = (NbtkGrid *) self;
   NbtkGridPrivate *priv = layout->priv;
   NbtkPadding padding;
 
-  ClutterUnit current_a;
-  ClutterUnit current_b;
-  ClutterUnit next_b;
-  ClutterUnit agap;
-  ClutterUnit bgap;
+  gfloat current_a;
+  gfloat current_b;
+  gfloat next_b;
+  gfloat agap;
+  gfloat bgap;
 
   gboolean homogenous_a;
   gboolean homogenous_b;
@@ -1149,8 +1149,8 @@ nbtk_grid_do_allocate (ClutterActor          *self,
       for (iter = priv->list; iter; iter = iter->next)
         {
           ClutterActor *child = iter->data;
-          ClutterUnit natural_width;
-          ClutterUnit natural_height;
+          gfloat natural_width;
+          gfloat natural_height;
 
           if (!CLUTTER_ACTOR_IS_VISIBLE (child))
             continue;
@@ -1168,7 +1168,7 @@ nbtk_grid_do_allocate (ClutterActor          *self,
 
   if (priv->column_major)
     {
-      ClutterUnit temp = priv->max_extent_a;
+      gfloat temp = priv->max_extent_a;
       priv->max_extent_a = priv->max_extent_b;
       priv->max_extent_b = temp;
     }
@@ -1177,8 +1177,8 @@ nbtk_grid_do_allocate (ClutterActor          *self,
   for (iter = priv->list; iter; iter=iter->next)
     {
       ClutterActor *child = iter->data;
-      ClutterUnit natural_a;
-      ClutterUnit natural_b;
+      gfloat natural_a;
+      gfloat natural_b;
 
       if (!CLUTTER_ACTOR_IS_VISIBLE (child))
         continue;
@@ -1190,7 +1190,7 @@ nbtk_grid_do_allocate (ClutterActor          *self,
 
       if (priv->column_major) /* swap axes around if column is major */
         {
-          ClutterUnit temp = natural_a;
+          gfloat temp = natural_a;
           natural_a = natural_b;
           natural_b = temp;
         }
@@ -1220,7 +1220,7 @@ nbtk_grid_do_allocate (ClutterActor          *self,
           next_b = current_b + natural_b;
 
         {
-          ClutterUnit     row_height;
+          gfloat          row_height;
           ClutterActorBox child_box;
 
           if (homogenous_b)
@@ -1251,7 +1251,7 @@ nbtk_grid_do_allocate (ClutterActor          *self,
 
           if (priv->column_major)
             {
-              ClutterUnit temp = child_box.x1;
+              gfloat temp = child_box.x1;
               child_box.x1 = child_box.y1;
               child_box.y1 = temp;
 
@@ -1270,7 +1270,7 @@ nbtk_grid_do_allocate (ClutterActor          *self,
           if (!calculate_extents_only)
             clutter_actor_allocate (CLUTTER_ACTOR (child),
                                     &child_box,
-                                    absolute_origin_changed);
+                                    flags);
 
           /* update extents */
           if (actual_width && (child_box.x2 + padding.right) > *actual_width)
@@ -1294,7 +1294,7 @@ nbtk_grid_do_allocate (ClutterActor          *self,
 static void
 nbtk_grid_allocate (ClutterActor          *self,
                     const ClutterActorBox *box,
-                    gboolean               absolute_origin_changed)
+                    ClutterAllocationFlags flags)
 {
   NbtkGridPrivate *priv = NBTK_GRID (self)->priv;
   ClutterActorBox alloc_box = *box;
@@ -1306,19 +1306,19 @@ nbtk_grid_allocate (ClutterActor          *self,
    *  hadjustment is set)
    */
   CLUTTER_ACTOR_CLASS (nbtk_grid_parent_class)
-    ->allocate (self, box, absolute_origin_changed);
+    ->allocate (self, box, flags);
 
 
   /* only update vadjustment - we don't really want horizontal scrolling */
   if (priv->vadjustment && !priv->column_major)
     {
       gdouble prev_value;
-      ClutterUnit height;
+      gfloat height;
 
       /* get preferred height for this width */
       nbtk_grid_do_allocate (self,
                              box,
-                             absolute_origin_changed,
+                             flags,
                              TRUE,
                              NULL,
                              &height);
@@ -1349,12 +1349,12 @@ nbtk_grid_allocate (ClutterActor          *self,
   if (priv->hadjustment && priv->column_major)
     {
       gdouble prev_value;
-      ClutterUnit width;
+      gfloat width;
 
       /* get preferred width for this height */
       nbtk_grid_do_allocate (self,
                              box,
-                             absolute_origin_changed,
+                             flags,
                              TRUE,
                              &width,
                              NULL);
@@ -1386,7 +1386,7 @@ nbtk_grid_allocate (ClutterActor          *self,
 
   nbtk_grid_do_allocate (self,
                          &alloc_box,
-                         absolute_origin_changed,
+                         flags,
                          FALSE,
                          NULL,
                          NULL);
