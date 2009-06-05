@@ -22,14 +22,6 @@
 #include <clutter/clutter.h>
 #include <nbtk/nbtk.h>
 
-static gboolean
-set_focus (ClutterActor *actor, ClutterEvent *event, gpointer data)
-{
-  clutter_actor_grab_key_focus (actor);
-
-  return FALSE;
-}
-
 static void
 btn_clicked_cb (ClutterActor *button, NbtkEntry *entry)
 {
@@ -63,8 +55,6 @@ main (int argc, char *argv[])
 
   clutter_container_add (CLUTTER_CONTAINER (stage),
                          CLUTTER_ACTOR (entry), NULL);
-  g_signal_connect (entry, "button-press-event",
-                    G_CALLBACK (set_focus), NULL);
 
   clutter_stage_set_key_focus (CLUTTER_STAGE (stage),
                                CLUTTER_ACTOR (nbtk_entry_get_clutter_text (NBTK_ENTRY (entry))));
@@ -75,8 +65,6 @@ main (int argc, char *argv[])
   clutter_container_add (CLUTTER_CONTAINER (stage),
                          CLUTTER_ACTOR (entry), NULL);
   nbtk_entry_set_hint_text (NBTK_ENTRY (entry), "hint hint...");
-  g_signal_connect (entry, "button-press-event",
-                    G_CALLBACK (set_focus), NULL);
 
   button = nbtk_button_new_with_label ("Set");
   clutter_actor_set_position (CLUTTER_ACTOR (button), 20, 120);
@@ -107,9 +95,6 @@ main (int argc, char *argv[])
                             G_CALLBACK (g_print), "primary icon clicked\n");
   g_signal_connect_swapped (entry, "secondary-icon-clicked",
                             G_CALLBACK (g_print), "secondary icon clicked\n");
-  g_signal_connect (entry, "button-press-event",
-                    G_CALLBACK (set_focus), NULL);
-
 
   clutter_actor_show (stage);
 

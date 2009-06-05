@@ -30,6 +30,7 @@
 #include <nbtk/nbtk-draggable.h>
 #include <nbtk/nbtk-droppable.h>
 #include <nbtk/nbtk-cell-renderer.h>
+#include <nbtk/nbtk-clipboard.h>
 #include <nbtk/nbtk-entry.h>
 #include <nbtk/nbtk-enum-types.h>
 #include <nbtk/nbtk-expander.h>
@@ -38,6 +39,7 @@
 #include <nbtk/nbtk-icon.h>
 #include <nbtk/nbtk-icon-view.h>
 #include <nbtk/nbtk-label.h>
+#include <nbtk/nbtk-progress-bar.h>
 #include <nbtk/nbtk-scroll-bar.h>
 #include <nbtk/nbtk-scroll-view.h>
 #include <nbtk/nbtk-scrollable.h>

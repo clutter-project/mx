@@ -27,7 +27,7 @@ stage_size_notify_cb (ClutterActor *stage,
                       GParamSpec *pspec,
                       ClutterActor *table)
 {
-  guint width, height;
+  gfloat width, height;
 
   clutter_actor_get_size (stage, &width, &height);
   clutter_actor_set_size (table, width, height);
@@ -58,9 +58,6 @@ main (int argc, char *argv[])
   int i;
 
   clutter_init (&argc, &argv);
-
-  nbtk_style_load_from_file (nbtk_style_get_default (),
-                             "style/default.css", NULL);
 
   stage = clutter_stage_get_default ();
   clutter_actor_set_size (stage, 640, 480);

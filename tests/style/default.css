@@ -148,3 +148,13 @@ NbtkScrollBar *#handle {
 NbtkScrollBar *#handle:hover {
   background-color: red;
 }
+
+NbtkProgressBar {
+  padding: 8;
+  border-image: url('file://border-image-dark.png') 12 stretch stretch;
+}
+
+NbtkProgressBar NbtkProgressBarFill {
+  border-image: url('file://border-image-light.png') 12 stretch stretch;
+}
+

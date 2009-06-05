@@ -1,4 +1,3 @@
-
 /*
  * nbtk-table-child.h: Table child implementation
  *

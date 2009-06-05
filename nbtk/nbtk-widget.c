@@ -405,13 +405,13 @@ nbtk_widget_finalize (GObject *gobject)
 static void
 nbtk_widget_allocate (ClutterActor          *actor,
                       const ClutterActorBox *box,
-                      gboolean               origin_changed)
+                      ClutterAllocationFlags flags)
 {
   NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
   ClutterActorClass *klass;
 
   klass = CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class);
-  klass->allocate (actor, box, origin_changed);
+  klass->allocate (actor, box, flags);
 
   if (priv->border_image)
     {
@@ -424,15 +424,15 @@ nbtk_widget_allocate (ClutterActor          *actor,
 
       clutter_actor_allocate (CLUTTER_ACTOR (priv->border_image),
                               &frame_box,
-                              origin_changed);
+                              flags);
     }
 
   if (priv->background_image)
     {
-      guint w, h;
       ClutterActorBox frame_box = {
           0, 0, box->x2 - box->x1, box->y2 - box->y1
       };
+      gfloat w, h;
 
       clutter_actor_get_size (CLUTTER_ACTOR (priv->background_image), &w, &h);
 
@@ -442,12 +442,12 @@ nbtk_widget_allocate (ClutterActor          *actor,
           gint new_h, new_w, offset;
           gint box_w, box_h;
 
-          box_w = CLUTTER_UNITS_TO_INT (frame_box.x2);
-          box_h = CLUTTER_UNITS_TO_INT (frame_box.y2);
+          box_w = (int) frame_box.x2;
+          box_h = (int) frame_box.y2;
 
           /* scale to fit */
-          new_h = ((double) h / w) * ((double) box_w);
-          new_w = ((double) w / h) * ((double) box_h);
+          new_h = (int) ((h / w) * ((gfloat) box_w));
+          new_w = (int) ((w / h) * ((gfloat) box_h));
 
           if (new_h > box_h)
             {
@@ -480,7 +480,7 @@ nbtk_widget_allocate (ClutterActor          *actor,
 
       clutter_actor_allocate (CLUTTER_ACTOR (priv->background_image),
                               &frame_box,
-                              origin_changed);
+                              flags);
     }
 }
 
@@ -529,7 +529,7 @@ nbtk_widget_paint (ClutterActor *self)
                           priv->border_image,
                           priv->bg_color);
 
-  if (priv->background_image)
+  if (priv->background_image != NULL)
     clutter_actor_paint (priv->background_image);
 }
 
@@ -543,12 +543,48 @@ nbtk_widget_parent_set (ClutterActor *widget,
   new_parent = clutter_actor_get_parent (widget);
 
   /* don't send the style changed signal if we no longer have a parent actor */
-  if (new_parent)
+  if (new_parent && CLUTTER_ACTOR_IS_MAPPED (widget))
     g_signal_emit (widget, actor_signals[STYLE_CHANGED], 0);
 
   parent_class = CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class);
   if (parent_class->parent_set)
     parent_class->parent_set (widget, old_parent);
+}
+
+static void
+nbtk_widget_map (ClutterActor *actor)
+{
+  NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
+
+  CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->map (actor);
+
+  g_signal_emit (actor, actor_signals[STYLE_CHANGED], 0);
+
+  if (priv->border_image)
+    clutter_actor_map (priv->border_image);
+
+  if (priv->background_image)
+    clutter_actor_map (priv->background_image);
+
+  if (priv->tooltip)
+    clutter_actor_map ((ClutterActor *) priv->tooltip);
+}
+
+static void
+nbtk_widget_unmap (ClutterActor *actor)
+{
+  NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
+
+  CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->unmap (actor);
+
+  if (priv->border_image)
+    clutter_actor_unmap (priv->border_image);
+
+  if (priv->background_image)
+    clutter_actor_unmap (priv->background_image);
+
+  if (priv->tooltip)
+    clutter_actor_unmap ((ClutterActor *) priv->tooltip);
 }
 
 static void
@@ -568,10 +604,6 @@ nbtk_widget_style_changed (NbtkWidget *self)
   if (!priv->is_stylable)
     return;
 
-
-  /* Skip retrieving style information until we are parented */
-  if (!clutter_actor_get_parent ((ClutterActor *) self))
-    return;
 
   /* cache these values for use in the paint function */
   nbtk_stylable_get (NBTK_STYLABLE (self),
@@ -624,12 +656,13 @@ nbtk_widget_style_changed (NbtkWidget *self)
 
   if (priv->border_image)
     {
-       clutter_actor_unparent (CLUTTER_ACTOR (priv->border_image));
+       clutter_actor_unparent (priv->border_image);
        priv->border_image = NULL;
     }
+
   if (priv->background_image)
     {
-      clutter_actor_unparent (CLUTTER_ACTOR (priv->background_image));
+      clutter_actor_unparent (priv->background_image);
       priv->background_image = NULL;
     }
 
@@ -661,36 +694,34 @@ nbtk_widget_style_changed (NbtkWidget *self)
                                                    border_right,
                                                    border_bottom,
                                                    border_left);
-      clutter_actor_set_parent (CLUTTER_ACTOR (priv->border_image),
-                                               CLUTTER_ACTOR (self));
+      clutter_actor_set_parent (priv->border_image, CLUTTER_ACTOR (self));
       g_boxed_free (NBTK_TYPE_BORDER_IMAGE, border_image);
 
       has_changed = TRUE;
       relayout_needed = TRUE;
     }
-  if (bg_file)
+
+  if (bg_file != NULL)
     {
       texture = nbtk_texture_cache_get_texture (texture_cache,
                                                 bg_file,
                                                 FALSE);
       priv->background_image = (ClutterActor*) texture;
 
-      if (!texture)
+      if (priv->background_image != NULL)
         {
-          g_warning ("Could not load %s", bg_file);
-        }
-      else
-        {
-          clutter_actor_set_parent (CLUTTER_ACTOR (priv->background_image),
+          clutter_actor_set_parent (priv->background_image,
                                     CLUTTER_ACTOR (self));
         }
+      else
+        g_warning ("Could not load %s", bg_file);
+
       g_free (bg_file);
       has_changed = TRUE;
       relayout_needed = TRUE;
     }
 
-  /*
-   * If there are any properties above that need to cause a relayout thay
+  /* If there are any properties above that need to cause a relayout thay
    * should set this flag.
    */
   if (has_changed)
@@ -793,6 +824,8 @@ nbtk_widget_class_init (NbtkWidgetClass *klass)
   actor_class->allocate = nbtk_widget_allocate;
   actor_class->paint = nbtk_widget_paint;
   actor_class->parent_set = nbtk_widget_parent_set;
+  actor_class->map = nbtk_widget_map;
+  actor_class->unmap = nbtk_widget_unmap;
 
   actor_class->enter_event = nbtk_widget_enter;
   actor_class->leave_event = nbtk_widget_leave;
@@ -1181,7 +1214,8 @@ nbtk_widget_set_style_class_name (NbtkWidget  *actor,
       g_free (priv->style_class);
       priv->style_class = g_strdup (style_class);
 
-      g_signal_emit (actor, actor_signals[STYLE_CHANGED], 0);
+      if (CLUTTER_ACTOR_IS_MAPPED ((ClutterActor *) actor))
+        g_signal_emit (actor, actor_signals[STYLE_CHANGED], 0);
 
       g_object_notify (G_OBJECT (actor), "style-class");
     }
@@ -1244,7 +1278,8 @@ nbtk_widget_set_style_pseudo_class (NbtkWidget  *actor,
       g_free (priv->pseudo_class);
       priv->pseudo_class = g_strdup (pseudo_class);
 
-      g_signal_emit (actor, actor_signals[STYLE_CHANGED], 0);
+      if (CLUTTER_ACTOR_IS_MAPPED (actor))
+        g_signal_emit (actor, actor_signals[STYLE_CHANGED], 0);
 
       g_object_notify (G_OBJECT (actor), "pseudo-class");
     }
@@ -1333,7 +1368,8 @@ nbtk_widget_name_notify (NbtkWidget *widget,
                          GParamSpec *pspec,
                          gpointer data)
 {
-  g_signal_emit (widget, actor_signals[STYLE_CHANGED], 0);
+  if (CLUTTER_ACTOR_IS_MAPPED ((ClutterActor *) widget))
+    g_signal_emit (widget, actor_signals[STYLE_CHANGED], 0);
 }
 
 static void
@@ -1506,7 +1542,7 @@ nbtk_widget_child_dnd_release_cb (ClutterActor *child,
 
       stage = CLUTTER_STAGE (clutter_actor_get_stage (child));
 
-      dest = clutter_stage_get_actor_at_pos (stage, x, y);
+      dest = clutter_stage_get_actor_at_pos (stage, CLUTTER_PICK_ALL, x, y);
 
       g_object_ref (child);
       /* We do not need reference on the clone, as we already have one.*/
@@ -1635,7 +1671,7 @@ nbtk_widget_child_dnd_motion_cb (ClutterActor *child,
     {
       ClutterActor *clone;
       gdouble scale_x, scale_y;
-      guint child_w, child_h;
+      gfloat child_w, child_h;
 
       if (priv->dnd_last_dest)
         {

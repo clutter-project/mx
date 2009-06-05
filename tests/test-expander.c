@@ -53,7 +53,7 @@ stage_size_notify_cb (ClutterActor *stage,
                       GParamSpec *pspec,
                       ClutterActor *table)
 {
-  guint width, height;
+  gfloat width, height;
 
   clutter_actor_get_size (stage, &width, &height);
 }

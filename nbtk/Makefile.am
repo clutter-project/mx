@@ -14,6 +14,7 @@ source_h = \
 	$(top_srcdir)/nbtk/nbtk-draggable.h 		\
 	$(top_srcdir)/nbtk/nbtk-droppable.h 		\
 	$(top_srcdir)/nbtk/nbtk-cell-renderer.h 	\
+	$(top_srcdir)/nbtk/nbtk-clipboard.h		\
 	$(top_srcdir)/nbtk/nbtk-entry.h 		\
 	$(top_srcdir)/nbtk/nbtk-expander.h 		\
 	$(top_srcdir)/nbtk/nbtk-fade-button.h 		\
@@ -24,6 +25,7 @@ source_h = \
 	$(top_srcdir)/nbtk/nbtk-icon-view.h \
 	$(top_srcdir)/nbtk/nbtk-icon.h \
 	$(top_srcdir)/nbtk/nbtk-label.h 		\
+	$(top_srcdir)/nbtk/nbtk-progress-bar.h		\
 	$(top_srcdir)/nbtk/nbtk-scroll-bar.h 		\
 	$(top_srcdir)/nbtk/nbtk-scroll-view.h 		\
 	$(top_srcdir)/nbtk/nbtk-scrollable.h 		\
@@ -137,6 +139,7 @@ libnbtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	nbtk-draggable.c		\
 	nbtk-droppable.c		\
 	nbtk-cell-renderer.c 		\
+	nbtk-clipboard.c 		\
 	nbtk-entry.c 			\
 	nbtk-expander.c 		\
 	nbtk-fade-button.c 		\
@@ -144,6 +147,7 @@ libnbtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	nbtk-icon.c 			\
 	nbtk-icon-view.c 		\
 	nbtk-label.c 			\
+	nbtk-progress-bar.c		\
 	nbtk-scroll-bar.c 		\
 	nbtk-scroll-button.c \
 	nbtk-scroll-button.h \

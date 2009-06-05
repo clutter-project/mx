@@ -1,6 +1,5 @@
 NbtkButton
 {
-  background-color: white;
   padding: 10;
   border-image: url("file://button.png") 10;
   font-family: "Liberation Sans";
@@ -17,9 +16,16 @@ NbtkButton:active
   border-image: url("file://button-active.png") 10;
 }
 
-NbtkScrollButton
+NbtkScrollBar
 {
-  background-color: white;
+  background-color: #dee2e5;
+  padding: 2px;
+}
+
+NbtkScrollView
+{
+  scrollbar-width: 22;
+  scrollbar-height: 22;
 }
 
 NbtkScrollButton#backward-stepper
@@ -44,12 +50,12 @@ NbtkScrollButton#forward-stepper:active
   border-image: url("file://scroll-button-down-hover.png") 5;
 }
 
-NbtkScrollBar *#handle
+NbtkScrollBar NbtkButton#handle
 {
   border-image: url("file://scroll-handle.png") 5;
 }
 
-NbtkScrollBar *#handle:hover
+NbtkScrollBar NbtkButton#handle:hover
 {
   border-image: url("file://scroll-handle-hover.png") 5;
 }

@@ -106,8 +106,7 @@ void            nbtk_adjustment_get_values   (NbtkAdjustment *adjustment,
 
 void            nbtk_adjustment_interpolate  (NbtkAdjustment *adjustment,
                                               gdouble         value,
-                                              guint           n_frames,
-                                              guint           fps);
+                                              guint           duration);
 
 gboolean        nbtk_adjustment_get_elastic  (NbtkAdjustment *adjustment);
 void            nbtk_adjustment_set_elastic  (NbtkAdjustment *adjustment,
@@ -115,8 +114,7 @@ void            nbtk_adjustment_set_elastic  (NbtkAdjustment *adjustment,
 
 gboolean        nbtk_adjustment_clamp        (NbtkAdjustment *adjustment,
                                               gboolean        interpolate,
-                                              guint           n_frames,
-                                              guint           fps);
+                                              guint           duration);
 
 G_END_DECLS
 
