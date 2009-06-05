@@ -23,6 +23,7 @@ source_h = \
 	$(top_srcdir)/nbtk/nbtk-icon-view.h \
 	$(top_srcdir)/nbtk/nbtk-icon.h \
 	$(top_srcdir)/nbtk/nbtk-label.h 		\
+	$(top_srcdir)/nbtk/nbtk-progress-bar.h		\
 	$(top_srcdir)/nbtk/nbtk-scroll-bar.h 		\
 	$(top_srcdir)/nbtk/nbtk-scroll-view.h 		\
 	$(top_srcdir)/nbtk/nbtk-scrollable.h 		\
@@ -142,6 +143,7 @@ libnbtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	nbtk-icon.c 			\
 	nbtk-icon-view.c 		\
 	nbtk-label.c 			\
+	nbtk-progress-bar.c		\
 	nbtk-scroll-bar.c 		\
 	nbtk-scroll-button.c \
 	nbtk-scroll-button.h \

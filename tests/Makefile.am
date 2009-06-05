@@ -23,6 +23,7 @@ noinst_PROGRAMS = 		\
 	test-texture-frame 	\
 	test-tooltips 		\
 	test-icon-view 		\
+	test-progress-bar	\
 	test-scroll-bar		\
 	test-scroll-grid	\
 	test-scroll-view-2	\
@@ -42,6 +43,7 @@ test_expander_SOURCES = test-expander.c
 test_grid_SOURCES = test-grid.c
 test_gtk_SOURCES = test-gtk.c
 test_icon_view_SOURCES = test-icon-view.c
+test_progress_bar_SOURCES = test-progress-bar.c
 
 test_scroll_bar_SOURCES = test-scroll-bar.c
 test_scroll_grid_SOURCES = test-scroll-grid.c
