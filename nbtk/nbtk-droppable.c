@@ -40,7 +40,7 @@ on_stage_capture (ClutterActor *actor,
   NbtkDroppable *droppable;
   NbtkDraggable *draggable;
   ClutterActor *target;
-  gint event_x, event_y;
+  gfloat event_x, event_y;
 
   if (!(event->type == CLUTTER_MOTION ||
         event->type == CLUTTER_BUTTON_RELEASE))
@@ -60,6 +60,7 @@ on_stage_capture (ClutterActor *actor,
   clutter_actor_hide (CLUTTER_ACTOR (draggable));
 
   target = clutter_stage_get_actor_at_pos (CLUTTER_STAGE (actor),
+                                           CLUTTER_PICK_REACTIVE,
                                            event_x,
                                            event_y);
 
@@ -124,7 +125,7 @@ on_stage_capture (ClutterActor *actor,
     }
   else if (event->type == CLUTTER_BUTTON_RELEASE)
     {
-      ClutterUnit drop_x, drop_y;
+      gfloat drop_x, drop_y;
       gboolean res;
       ClutterActor *last_target = CLUTTER_ACTOR (context->last_target);
 
@@ -138,8 +139,8 @@ on_stage_capture (ClutterActor *actor,
       g_signal_emit (context->last_target,
                      droppable_signals[DROP], 0,
                      draggable,
-                     CLUTTER_UNITS_TO_FLOAT (drop_x),
-                     CLUTTER_UNITS_TO_FLOAT (drop_y),
+                     drop_x,
+                     drop_y,
                      event->button.button,
                      event->button.modifier_state);
 

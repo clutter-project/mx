@@ -67,11 +67,11 @@ draggable_rectangle_drag_begin (NbtkDraggable       *draggable,
            event_y);
 
   clutter_actor_set_opacity (self, 224);
-  clutter_actor_set_rotationu (self, CLUTTER_Y_AXIS,
-                               30.0,
-                               clutter_actor_get_widthu (self) / 2,
-                               0,
-                               clutter_actor_get_heightu (self) / 2);
+  clutter_actor_set_rotation (self, CLUTTER_Y_AXIS,
+                              30.0,
+                              clutter_actor_get_width (self) / 2.0,
+                              0,
+                              clutter_actor_get_height (self) / 2.0);
 }
 
 static void
@@ -85,7 +85,7 @@ draggable_rectangle_drag_motion (NbtkDraggable *draggable,
            delta_x,
            delta_y);
 
-  clutter_actor_move_byu (CLUTTER_ACTOR (draggable), delta_x, delta_y);
+  clutter_actor_move_by (CLUTTER_ACTOR (draggable), delta_x, delta_y);
 }
 
 static void
@@ -102,7 +102,7 @@ draggable_rectangle_drag_end (NbtkDraggable *draggable,
            event_y);
 
   clutter_actor_set_opacity (self, 255);
-  clutter_actor_set_rotationu (self, CLUTTER_Y_AXIS, 0, 0, 0, 0);
+  clutter_actor_set_rotation (self, CLUTTER_Y_AXIS, 0.0, 0.0, 0.0, 0.0);
 }
 
 static void
@@ -199,7 +199,7 @@ draggable_rectangle_get_property (GObject    *gobject,
 static void
 draggable_rectangle_paint (ClutterActor *actor)
 {
-  ClutterUnit text_x, text_y;
+  gfloat text_x, text_y;
   ClutterActorBox box = { 0, };
   gint layout_width, layout_height;
   CoglColor color = { 0, };

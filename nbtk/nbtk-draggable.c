@@ -54,15 +54,15 @@ draggable_release (DragContext        *context,
 {
   ClutterActor *actor = CLUTTER_ACTOR (context->draggable);
   ClutterActor *stage;
-  ClutterUnit event_x, event_y;
-  ClutterUnit actor_x, actor_y;
+  gfloat event_x, event_y;
+  gfloat actor_x, actor_y;
   gboolean res;
 
   if (!context->in_drag)
     return FALSE;
 
-  event_x = CLUTTER_UNITS_FROM_DEVICE (event->x);
-  event_y = CLUTTER_UNITS_FROM_DEVICE (event->y);
+  event_x = event->x;
+  event_y = event->y;
   actor_x = 0;
   actor_y = 0;
 
@@ -74,8 +74,8 @@ draggable_release (DragContext        *context,
 
   stage = clutter_actor_get_stage (actor);
 
-  context->last_x = CLUTTER_UNITS_TO_FLOAT (actor_x);
-  context->last_y = CLUTTER_UNITS_TO_FLOAT (actor_y);
+  context->last_x = actor_x;
+  context->last_y = actor_y;
 
   context->in_drag = FALSE;
 
@@ -98,16 +98,16 @@ draggable_motion (DragContext        *context,
 {
   NbtkDraggable *draggable = NBTK_DRAGGABLE (context->draggable);
   ClutterActor *actor = CLUTTER_ACTOR (draggable);
-  ClutterUnit event_x, event_y;
-  ClutterUnit actor_x, actor_y;
+  gfloat event_x, event_y;
+  gfloat actor_x, actor_y;
   gfloat delta_x, delta_y;
   gboolean res;
 
   if (!context->in_drag)
     return FALSE;
 
-  event_x = CLUTTER_UNITS_FROM_DEVICE (event->x);
-  event_y = CLUTTER_UNITS_FROM_DEVICE (event->y);
+  event_x = event->x;
+  event_y = event->y;
   actor_x = 0;
   actor_y = 0;
 
@@ -117,8 +117,8 @@ draggable_motion (DragContext        *context,
   if (!res)
     return FALSE;
 
-  context->last_x = CLUTTER_UNITS_TO_FLOAT (actor_x);
-  context->last_y = CLUTTER_UNITS_TO_FLOAT (actor_y);
+  context->last_x = actor_x;
+  context->last_y = actor_y;
 
   delta_x = delta_y = 0;
 
@@ -194,12 +194,12 @@ on_draggable_press (ClutterActor       *actor,
 {
   NbtkDraggable *draggable = context->draggable;
   ClutterActor *stage;
-  ClutterUnit event_x, event_y;
-  ClutterUnit actor_x, actor_y;
+  gfloat event_x, event_y;
+  gfloat actor_x, actor_y;
   gboolean res;
 
-  event_x = CLUTTER_UNITS_FROM_DEVICE (event->x);
-  event_y = CLUTTER_UNITS_FROM_DEVICE (event->y);
+  event_x = event->x;
+  event_y = event->y;
   actor_x = 0;
   actor_y = 0;
 
@@ -211,8 +211,8 @@ on_draggable_press (ClutterActor       *actor,
 
   stage = clutter_actor_get_stage (actor);
 
-  context->press_x = CLUTTER_UNITS_TO_FLOAT (actor_x);
-  context->press_y = CLUTTER_UNITS_TO_FLOAT (actor_y);
+  context->press_x = actor_x;
+  context->press_y = actor_y;
   context->last_x = context->press_x;
   context->last_y = context->press_y;
   context->press_button = event->button;

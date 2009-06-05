@@ -256,7 +256,7 @@ draggable_rectangle_drag_begin (NbtkDraggable       *draggable,
 {
   ClutterActor *self = CLUTTER_ACTOR (draggable);
   ClutterActor *stage = clutter_actor_get_stage (self);
-  gint orig_x, orig_y;
+  gfloat orig_x, orig_y;
 
   g_object_ref (self);
 
@@ -276,7 +276,7 @@ draggable_rectangle_drag_motion (NbtkDraggable *draggable,
                                  gfloat         delta_x,
                                  gfloat         delta_y)
 {
-  clutter_actor_move_byu (CLUTTER_ACTOR (draggable), delta_x, delta_y);
+  clutter_actor_move_by (CLUTTER_ACTOR (draggable), delta_x, delta_y);
 }
 
 static void
