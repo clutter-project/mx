@@ -481,8 +481,8 @@ nbtk_bin_style_changed (NbtkWidget *self)
 {
   NbtkBinPrivate *priv = NBTK_BIN (self)->priv;
 
-  /* Skip retrieving style information until we are parented */
-  if (!clutter_actor_get_parent ((ClutterActor*) self))
+  /* Skip retrieving style information until we are mapped */
+  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor*) self))
     return;
 
   NBTK_WIDGET_CLASS (nbtk_bin_parent_class)->style_changed (self);

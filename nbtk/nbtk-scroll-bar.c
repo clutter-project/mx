@@ -332,6 +332,10 @@ nbtk_scroll_bar_style_changed (NbtkWidget *widget)
 {
   NbtkScrollBarPrivate *priv = NBTK_SCROLL_BAR (widget)->priv;
 
+  /* Skip retrieving style information until we are mapped */
+  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor*) widget))
+    return;
+
   NBTK_WIDGET_CLASS (nbtk_scroll_bar_parent_class)->style_changed (widget);
 
   NBTK_WIDGET_GET_CLASS (NBTK_WIDGET (priv->bw_stepper))

@@ -213,6 +213,10 @@ nbtk_entry_style_changed (NbtkWidget *self)
   gchar *font_string;
   gint font_size;
 
+  /* Skip retrieving style information until we are mapped */
+  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor*) self))
+    return;
+
   if (NBTK_WIDGET_CLASS (nbtk_entry_parent_class)->style_changed)
     NBTK_WIDGET_CLASS (nbtk_entry_parent_class)->style_changed (self);
 

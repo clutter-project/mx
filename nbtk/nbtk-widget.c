@@ -607,6 +607,10 @@ nbtk_widget_style_changed (NbtkWidget *self)
   gboolean has_changed = FALSE;
   ClutterColor *color;
 
+  /* Skip retrieving style information until we are mapped */
+  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor*) self))
+    return;
+
   /* application has request this widget is not stylable */
   if (!priv->is_stylable)
     return;

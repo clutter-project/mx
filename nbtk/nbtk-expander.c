@@ -476,6 +476,10 @@ nbtk_expander_style_changed (NbtkWidget *widget)
   gchar *font_string;
   gint font_size;
 
+  /* Skip retrieving style information until we are mapped */
+  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor*) widget))
+    return;
+
   NBTK_WIDGET_CLASS (nbtk_expander_parent_class)->style_changed (widget);
 
   pseudo_class = nbtk_widget_get_style_pseudo_class (widget);

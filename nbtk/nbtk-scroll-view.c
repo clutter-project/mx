@@ -337,6 +337,10 @@ nbtk_scroll_view_style_changed (NbtkWidget *widget)
 {
   NbtkScrollViewPrivate *priv = NBTK_SCROLL_VIEW (widget)->priv;
 
+  /* Skip retrieving style information until we are mapped */
+  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor*) widget))
+    return;
+
   NBTK_WIDGET_CLASS (nbtk_scroll_view_parent_class)->style_changed (widget);
 
   if (priv->child)

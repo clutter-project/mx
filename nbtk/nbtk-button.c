@@ -195,6 +195,10 @@ nbtk_button_style_changed (NbtkWidget *widget)
   ClutterActor *bg_image = NULL;
   NbtkButtonClass *button_class = NBTK_BUTTON_GET_CLASS (button);
 
+  /* Skip retrieving style information until we are mapped */
+  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor*) widget))
+    return;
+
   /* get the spacing value */
   nbtk_stylable_get (NBTK_STYLABLE (widget),
                      "border-spacing", &priv->spacing,

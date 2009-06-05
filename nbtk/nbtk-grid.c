@@ -845,6 +845,10 @@ nbtk_grid_style_changed (NbtkWidget *self)
 
   NBTK_WIDGET_CLASS (nbtk_grid_parent_class)->style_changed (self);
 
+  /* Skip retrieving style information until we are mapped */
+  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor*) self))
+    return;
+
   for (c = priv->list; c; c = c->next)
     if (NBTK_IS_WIDGET (c->data))
       g_signal_emit_by_name (c->data, "style-changed");
