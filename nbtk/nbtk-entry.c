@@ -552,8 +552,11 @@ nbtk_entry_clipboard_callback (NbtkClipboard *clipboard,
   if (!text)
     return;
 
-  cursor_pos = clutter_text_get_cursor_position (ctext);
+  /* delete the current selection before pasting */
+  clutter_text_delete_selection (ctext);
 
+  /* "paste" the clipboard text into the entry */
+  cursor_pos = clutter_text_get_cursor_position (ctext);
   clutter_text_insert_text (ctext, text, cursor_pos);
 }
 
