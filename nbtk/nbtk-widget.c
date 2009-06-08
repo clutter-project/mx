@@ -73,7 +73,7 @@ struct _NbtkWidgetPrivate
   gboolean dnd_grab   : 1;
   gboolean is_stylable : 1;
   gboolean has_tooltip : 1;
-  gboolean previously_mapped : 1;
+  gboolean has_style : 1; /* has the style information been read */
 
   NbtkTooltip *tooltip;
 };
@@ -559,13 +559,7 @@ nbtk_widget_map (ClutterActor *actor)
 
   CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->map (actor);
 
-  if (!priv->previously_mapped)
-    {
-      /* make sure we do this only on first map */
-      priv->previously_mapped = TRUE;
-
-      g_signal_emit (actor, actor_signals[STYLE_CHANGED], 0);
-    }
+  nbtk_widget_ensure_style ((NbtkWidget*) actor);
 
   if (priv->border_image)
     clutter_actor_map (priv->border_image);
@@ -607,14 +601,11 @@ nbtk_widget_style_changed (NbtkWidget *self)
   gboolean has_changed = FALSE;
   ClutterColor *color;
 
-  /* Skip retrieving style information until we are mapped */
-  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor*) self))
-    return;
-
   /* application has request this widget is not stylable */
   if (!priv->is_stylable)
     return;
 
+  self->priv->has_style = TRUE;
 
   /* cache these values for use in the paint function */
   nbtk_stylable_get (NBTK_STYLABLE (self),
@@ -1879,6 +1870,25 @@ nbtk_widget_get_border (NbtkWidget *actor,
   g_warning ("%s is deprecated and may be removed in the future.",
              __FUNCTION__);
 }
+
+/**
+ * nbtk_widget_ensure_style:
+ * @widget: A #NbtkWidget
+ *
+ * Ensures that @widget has read its style information.
+ *
+ */
+void
+nbtk_widget_ensure_style (NbtkWidget *widget)
+{
+  g_return_if_fail (NBTK_IS_WIDGET (widget));
+
+  if (!widget->priv->has_style)
+    {
+      g_signal_emit (widget, actor_signals[STYLE_CHANGED], 0);
+    }
+}
+
 
 /**
  * nbtk_widget_get_border_image:

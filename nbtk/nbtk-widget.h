@@ -157,6 +157,7 @@ const gchar* nbtk_widget_get_tooltip_text (NbtkWidget *widget);
 void nbtk_widget_show_tooltip (NbtkWidget *widget);
 void nbtk_widget_hide_tooltip (NbtkWidget *widget);
 
+void nbtk_widget_ensure_style (NbtkWidget *widget);
 
 
 /* Only to be used by sub-classes of NbtkWidget */
