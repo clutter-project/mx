@@ -34,7 +34,7 @@ struct _NbtkGtkExpanderPrivate
   gint child_padding; /* padding between label and child */
 
   GtkWidget *label;
-  GdkWindow *event_window;
+  //GdkWindow *event_window;
 };
 
 enum
@@ -206,11 +206,11 @@ nbtk_gtk_expander_size_allocate (GtkWidget     *widget,
     }
 
 
-  if (priv->event_window)
+  /*if (priv->event_window)
     {
       gdk_window_move_resize (priv->event_window, allocation->x, allocation->y,
                               allocation->width, allocation->height);
-    }
+                              }*/
 
 }
 
@@ -276,8 +276,8 @@ nbtk_gtk_expander_map (GtkWidget *widget)
   if (priv->label)
       gtk_widget_map (priv->label);
 
-  if (priv->event_window)
-    gdk_window_show (priv->event_window);
+  /*if (priv->event_window)
+    gdk_window_show (priv->event_window);*/
 
   GTK_WIDGET_CLASS (nbtk_gtk_expander_parent_class)->map (widget);
 }
@@ -290,8 +290,8 @@ nbtk_gtk_expander_unmap (GtkWidget *widget)
   if (priv->label)
     gtk_widget_unmap (priv->label);
 
-  if (priv->event_window)
-    gdk_window_hide (priv->event_window);
+  /*if (priv->event_window)
+    gdk_window_hide (priv->event_window);*/
 
   GTK_WIDGET_CLASS (nbtk_gtk_expander_parent_class)->unmap (widget);
 }
@@ -334,11 +334,11 @@ static void
 nbtk_gtk_expander_realize (GtkWidget *widget)
 {
   NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
-  GdkWindowAttr attributes;
+  //GdkWindowAttr attributes;
 
   GTK_WIDGET_CLASS (nbtk_gtk_expander_parent_class)->realize (widget);
 
-  attributes.window_type = GDK_WINDOW_CHILD;
+  /*attributes.window_type = GDK_WINDOW_CHILD;
   attributes.wclass = GDK_INPUT_ONLY;
   attributes.event_mask = gtk_widget_get_events (widget) |
                             GDK_BUTTON_PRESS_MASK        |
@@ -354,7 +354,7 @@ nbtk_gtk_expander_realize (GtkWidget *widget)
                           widget->allocation.x,
                           widget->allocation.y,
                           widget->allocation.width,
-                          widget->allocation.height);
+                          widget->allocation.height);*/
 
 }
 
@@ -363,11 +363,11 @@ nbtk_gtk_expander_unrealize (GtkWidget *widget)
 {
   NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
 
-  if (priv->event_window)
+  /*if (priv->event_window)
     {
       gdk_window_destroy (priv->event_window);
       priv->event_window = NULL;
-    }
+      }*/
 
   GTK_WIDGET_CLASS (nbtk_gtk_expander_parent_class)->unrealize (widget);
 }

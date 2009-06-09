@@ -29,10 +29,19 @@ _toggle_cb (GtkToggleButton *toggle,
   nbtk_gtk_light_switch_set_active (NBTK_GTK_LIGHT_SWITCH (user_data), active);
 }
 
+static void
+_button_cb (GtkButton *button,
+            gpointer   user_data)
+{
+  NbtkGtkExpander *expander = NBTK_GTK_EXPANDER (user_data);
+  gboolean expanded = nbtk_gtk_expander_get_expanded (expander);
+  nbtk_gtk_expander_set_expanded (expander, !expanded);
+}
+
 int
 main (int argc, char **argv)
 {
-  GtkWidget *window, *vbox, *frame, *swtch, *toggle, *expander;
+  GtkWidget *window, *vbox, *frame, *swtch, *toggle, *expander, *button;
   gboolean is_active = FALSE;
 
   gtk_init (&argc, &argv);
@@ -57,10 +66,14 @@ main (int argc, char **argv)
   nbtk_gtk_light_switch_set_active (NBTK_GTK_LIGHT_SWITCH (swtch), is_active);
   gtk_container_add (GTK_CONTAINER (frame), swtch);
 
+  button = gtk_button_new ();
   expander = nbtk_gtk_expander_new ();
+  gtk_button_set_label (GTK_BUTTON (button),
+                        "Press to expand");
+  g_signal_connect (button, "clicked", G_CALLBACK (_button_cb), expander);
   gtk_box_pack_start (GTK_BOX (vbox), expander, FALSE, FALSE, 10);
   nbtk_gtk_expander_set_label_widget (NBTK_GTK_EXPANDER (expander),
-                                      gtk_label_new ("Simple Expander"));
+                                      button);
 
   frame = gtk_alignment_new (0, 0, 0, 0);
   gtk_alignment_set_padding (GTK_ALIGNMENT (frame), 10, 10, 10, 10);
