@@ -477,15 +477,6 @@ nbtk_bin_get_property (GObject    *gobject,
 }
 
 static void
-nbtk_bin_style_changed (NbtkWidget *self)
-{
-  NbtkBinPrivate *priv = NBTK_BIN (self)->priv;
-
-  if (priv->child && NBTK_IS_STYLABLE (priv->child))
-    nbtk_stylable_changed ((NbtkStylable *) priv->child);
-}
-
-static void
 nbtk_bin_class_init (NbtkBinClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -602,9 +593,6 @@ nbtk_bin_init (NbtkBin *bin)
 
   bin->priv->x_align = NBTK_ALIGN_CENTER;
   bin->priv->y_align = NBTK_ALIGN_CENTER;
-
-  g_signal_connect (bin, "stylable-changed",
-                    G_CALLBACK (nbtk_bin_style_changed), NULL);
 }
 
 /**

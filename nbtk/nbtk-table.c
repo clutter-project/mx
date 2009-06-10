@@ -616,17 +616,6 @@ nbtk_table_calculate_col_widths (NbtkTable *table, gint for_width)
   return pref_widths;
 }
 
-static void
-nbtk_table_style_changed (NbtkWidget *self)
-{
-  NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
-  GSList *c;
-
-  for (c = priv->children; c; c = c->next)
-    if (NBTK_IS_WIDGET (c->data))
-      nbtk_stylable_changed ((NbtkStylable *) c->data);
-}
-
 static gint *
 nbtk_table_calculate_row_heights (NbtkTable *table,
                                   gint       for_height,
@@ -1352,9 +1341,6 @@ nbtk_table_init (NbtkTable *table)
   table->priv->row_heights = g_array_new (FALSE,
                                           TRUE,
                                           sizeof (gint));
-
-  g_signal_connect (table, "stylable-changed",
-                    G_CALLBACK (nbtk_table_style_changed), NULL);
 }
 
 /* used by NbtkTableChild to update row/column count */

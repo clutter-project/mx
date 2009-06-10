@@ -337,18 +337,8 @@ nbtk_scroll_view_style_changed (NbtkWidget *widget)
 {
   NbtkScrollViewPrivate *priv = NBTK_SCROLL_VIEW (widget)->priv;
 
-  /* Skip retrieving style information until we are mapped */
-  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor*) widget))
-    return;
-
-  if (priv->child)
-    {
-      nbtk_stylable_changed ((NbtkStylable*) priv->child);
-    }
-
   nbtk_stylable_changed ((NbtkStylable *) priv->hscroll);
   nbtk_stylable_changed ((NbtkStylable *) priv->vscroll);
-
 }
 
 static void
@@ -523,7 +513,7 @@ nbtk_scroll_view_init (NbtkScrollView *self)
 
   g_object_set (G_OBJECT (self), "reactive", FALSE, NULL);
 
-  g_signal_connect (self, "stylable-changed",
+  g_signal_connect (self, "style-changed",
                     G_CALLBACK (nbtk_scroll_view_style_changed), NULL);
 }
 

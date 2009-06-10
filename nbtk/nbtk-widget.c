@@ -540,15 +540,15 @@ nbtk_widget_parent_set (ClutterActor *widget,
   ClutterActorClass *parent_class;
   ClutterActor *new_parent;
 
-  new_parent = clutter_actor_get_parent (widget);
-
-  /* don't send the style changed signal if we no longer have a parent actor */
-  if (new_parent && CLUTTER_ACTOR_IS_MAPPED (widget))
-    nbtk_stylable_changed ((NbtkStylable*) widget);
-
   parent_class = CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class);
   if (parent_class->parent_set)
     parent_class->parent_set (widget, old_parent);
+
+  new_parent = clutter_actor_get_parent (widget);
+
+  /* don't send the style changed signal if we no longer have a parent actor */
+  if (new_parent)
+    nbtk_stylable_changed ((NbtkStylable*) widget);
 }
 
 static void
@@ -588,7 +588,7 @@ nbtk_widget_unmap (ClutterActor *actor)
 }
 
 static void
-nbtk_widget_stylable_changed (NbtkStylable *self)
+nbtk_widget_style_changed (NbtkStylable *self)
 {
   NbtkWidgetPrivate *priv = NBTK_WIDGET (self)->priv;
   NbtkBorderImage *border_image = NULL;
@@ -731,6 +731,26 @@ nbtk_widget_stylable_changed (NbtkStylable *self)
       else
         clutter_actor_queue_redraw ((ClutterActor *) self);
     }
+}
+
+static void
+nbtk_widget_stylable_changed (NbtkStylable *stylable)
+{
+  /* update the style only if we are mapped */
+  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor *) stylable))
+    return;
+
+  g_signal_emit_by_name (stylable, "style-changed", 0);
+
+
+  if (CLUTTER_IS_CONTAINER (stylable))
+    {
+      /* notify our children that their parent stylable has changed */
+      clutter_container_foreach ((ClutterContainer *) stylable,
+                                 (ClutterCallback) nbtk_stylable_changed,
+                                 NULL);
+    }
+  g_debug ("stylable changed on %s", G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (stylable)));
 }
 
 static void
@@ -1197,8 +1217,7 @@ nbtk_widget_set_style_class_name (NbtkWidget  *actor,
       g_free (priv->style_class);
       priv->style_class = g_strdup (style_class);
 
-      if (CLUTTER_ACTOR_IS_MAPPED ((ClutterActor *) actor))
-        nbtk_stylable_changed ((NbtkStylable*) actor);
+      nbtk_stylable_changed ((NbtkStylable*) actor);
 
       g_object_notify (G_OBJECT (actor), "style-class");
     }
@@ -1261,8 +1280,7 @@ nbtk_widget_set_style_pseudo_class (NbtkWidget  *actor,
       g_free (priv->pseudo_class);
       priv->pseudo_class = g_strdup (pseudo_class);
 
-      if (CLUTTER_ACTOR_IS_MAPPED (actor))
-        nbtk_stylable_changed ((NbtkStylable*) actor);
+      nbtk_stylable_changed ((NbtkStylable*) actor);
 
       g_object_notify (G_OBJECT (actor), "pseudo-class");
     }
@@ -1332,7 +1350,8 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
                                   G_PARAM_READWRITE);
       nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
-      iface->changed = nbtk_widget_stylable_changed;
+      iface->style_changed = nbtk_widget_style_changed;
+      iface->stylable_changed = nbtk_widget_stylable_changed;
 
       iface->get_style = nbtk_widget_get_style;
       iface->set_style = nbtk_widget_set_style;
@@ -1353,8 +1372,7 @@ nbtk_widget_name_notify (NbtkWidget *widget,
                          GParamSpec *pspec,
                          gpointer data)
 {
-  if (CLUTTER_ACTOR_IS_MAPPED ((ClutterActor *) widget))
-    nbtk_stylable_changed ((NbtkStylable*) widget);
+  nbtk_stylable_changed ((NbtkStylable*) widget);
 }
 
 static void
@@ -1868,7 +1886,7 @@ nbtk_widget_ensure_style (NbtkWidget *widget)
 
   if (!widget->priv->has_style)
     {
-      nbtk_stylable_changed ((NbtkStylable*) widget);
+      g_signal_emit_by_name (widget, "style-changed", 0);
     }
 }
 

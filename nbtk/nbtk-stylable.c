@@ -53,7 +53,7 @@
 
 enum
 {
-  STYLE_SET,
+  STYLE_CHANGED,
   STYLE_NOTIFY,
   CHANGED,
 
@@ -133,25 +133,24 @@ nbtk_stylable_base_init (gpointer g_iface)
                                                                 NBTK_PARAM_READWRITE));
 
       /**
-       * NbtkStylable::style-set:
+       * NbtkStylable::style-changed:
        * @stylable: the #NbtkStylable that received the signal
        * @old_style: the previously set #NbtkStyle for @stylable
        *
-       * The ::style-set signal is emitted each time the #NbtkStyle attached
-       * to @stylable has been changed.
+       * The ::style-changed signal is emitted each time one of the style
+       * properties have changed.
        */
-      stylable_signals[STYLE_SET] =
-        g_signal_new (I_("style-set"),
+      stylable_signals[STYLE_CHANGED] =
+        g_signal_new (I_("style-changed"),
                       iface_type,
-                      G_SIGNAL_RUN_LAST,
-                      G_STRUCT_OFFSET (NbtkStylableIface, style_set),
+                      G_SIGNAL_RUN_FIRST,
+                      G_STRUCT_OFFSET (NbtkStylableIface, style_changed),
                       NULL, NULL,
-                      _nbtk_marshal_VOID__OBJECT,
-                      G_TYPE_NONE, 1,
-                      NBTK_TYPE_STYLE);
+                      _nbtk_marshal_VOID__VOID,
+                      G_TYPE_NONE, 0);
 
   /**
-   * NbtkStylable::changed:
+   * NbtkStylable::stylable-changed:
    * @actor: the actor that received the signal
    *
    * The ::changed signal is emitted each time any of the properties of the
@@ -160,8 +159,8 @@ nbtk_stylable_base_init (gpointer g_iface)
   stylable_signals[CHANGED] =
     g_signal_new (I_("stylable-changed"),
                   iface_type,
-                  G_SIGNAL_RUN_FIRST,
-                  G_STRUCT_OFFSET (NbtkStylableIface, changed),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (NbtkStylableIface, style_changed),
                   NULL, NULL,
                   _nbtk_marshal_VOID__VOID,
                   G_TYPE_NONE, 0);
@@ -650,7 +649,7 @@ nbtk_stylable_set_style (NbtkStylable *stylable,
                                g_object_unref);
     }
 
-  g_signal_emit (stylable, stylable_signals[STYLE_SET], 0, old_style);
+  g_signal_emit (stylable, stylable_signals[STYLE_CHANGED], 0, old_style);
   g_object_unref (old_style);
 
   g_object_notify (G_OBJECT (stylable), "style");
@@ -879,7 +878,6 @@ nbtk_stylable_get_viewport (NbtkStylable *stylable,
  * @stylable: A #NbtkStylable
  *
  * Emit the "stylable-changed" signal on @stylable
- *
  */
 void
 nbtk_stylable_changed (NbtkStylable *stylable)

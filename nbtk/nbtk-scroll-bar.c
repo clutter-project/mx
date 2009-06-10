@@ -812,7 +812,7 @@ nbtk_scroll_bar_init (NbtkScrollBar *self)
   g_signal_connect (self->priv->handle, "button-press-event",
                     G_CALLBACK (handle_button_press_event_cb), self);
 
-  g_signal_connect (self, "stylable-changed",
+  g_signal_connect (self, "style-changed",
                     G_CALLBACK (nbtk_scroll_bar_style_changed), NULL);
 }
 

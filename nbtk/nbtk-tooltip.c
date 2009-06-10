@@ -473,7 +473,7 @@ nbtk_tooltip_init (NbtkTooltip *tooltip)
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (tooltip), FALSE);
 
-  g_signal_connect (tooltip, "stylable-changed",
+  g_signal_connect (tooltip, "style-changed",
                     G_CALLBACK (nbtk_tooltip_style_changed), NULL);
 }
 

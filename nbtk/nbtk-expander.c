@@ -614,7 +614,7 @@ nbtk_expander_init (NbtkExpander *self)
 
   clutter_actor_set_reactive ((ClutterActor *) self, TRUE);
 
-  g_signal_connect (self, "stylable-changed",
+  g_signal_connect (self, "style-changed",
                     G_CALLBACK (nbtk_expander_style_changed), NULL);
 }
 

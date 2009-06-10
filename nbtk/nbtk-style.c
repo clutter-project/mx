@@ -431,6 +431,11 @@ get_container (nbtk_style_node_t *node)
   if (!parent)
     return NULL;
 
+
+  g_debug ("parent of %s is %s",
+           G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (node->stylable)),
+           G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (parent)));
+
   container = g_new0 (nbtk_style_node_t, 1);
   ccss_node_init ((ccss_node_t*) container, peek_node_class ());
   container->iface = node->iface;
@@ -628,6 +633,10 @@ nbtk_style_get_ccss_query (NbtkStyle         *style,
       ccss_node->stylable = stylable;
 
       g_hash_table_insert (style->priv->node_hash, stylable, ccss_node);
+      g_signal_connect_swapped (stylable, "stylable-changed",
+                                G_CALLBACK (g_hash_table_remove),
+                                style->priv->node_hash);
+
 
       g_object_weak_ref ((GObject*) stylable,
                         (GWeakNotify) g_hash_table_remove, style->priv->node_hash);

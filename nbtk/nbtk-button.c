@@ -770,7 +770,7 @@ nbtk_button_init (NbtkButton *button)
 
   clutter_actor_set_reactive ((ClutterActor *) button, TRUE);
 
-  g_signal_connect (button, "stylable-changed",
+  g_signal_connect (button, "style-changed",
                     G_CALLBACK (nbtk_button_style_changed), NULL);
 }
 

@@ -68,12 +68,11 @@ struct _NbtkStylableIface
                                      gint         *height);
 
   /* signals, not vfuncs */
-  void (* style_notify) (NbtkStylable *stylable,
-                         GParamSpec   *pspec);
-  void (* changed)      (NbtkStylable *stylable);
+  void (* style_notify)     (NbtkStylable *stylable,
+                             GParamSpec   *pspec);
+  void (* style_changed)    (NbtkStylable *stylable);
 
-  void (* style_set)    (NbtkStylable *stylable,
-                         NbtkStyle    *old_style);
+  void (* stylable_changed) (NbtkStylable *stylable);
 };
 
 GType        nbtk_stylable_get_type               (void) G_GNUC_CONST;

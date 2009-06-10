@@ -761,7 +761,7 @@ nbtk_entry_init (NbtkEntry *entry)
   /* set cursor hidden until we receive focus */
   clutter_text_set_cursor_visible ((ClutterText *) priv->entry, FALSE);
 
-  g_signal_connect (entry, "stylable-changed",
+  g_signal_connect (entry, "style-changed",
                     G_CALLBACK (nbtk_entry_style_changed), NULL);
 }
 

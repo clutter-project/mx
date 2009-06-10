@@ -288,7 +288,7 @@ nbtk_label_init (NbtkLabel *label)
 
   clutter_actor_set_parent (priv->label, CLUTTER_ACTOR (label));
 
-  g_signal_connect (label, "stylable-changed",
+  g_signal_connect (label, "style-changed",
                     G_CALLBACK (nbtk_label_style_changed), NULL);
 }
 

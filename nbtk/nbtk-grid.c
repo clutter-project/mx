@@ -104,8 +104,6 @@ nbtk_grid_do_allocate (ClutterActor *self,
                        gfloat *actual_width,
                        gfloat *actual_height);
 
-static void nbtk_grid_style_changed (NbtkWidget *self);
-
 static void scrollable_interface_init (NbtkScrollableInterface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (NbtkGrid, nbtk_grid,
@@ -437,9 +435,6 @@ nbtk_grid_init (NbtkGrid *self)
                              g_direct_equal,
                              NULL,
                              nbtk_grid_free_actor_data);
-
-  g_signal_connect (self, "stylable-changed",
-                    G_CALLBACK (nbtk_grid_style_changed), NULL);
 }
 
 static void
@@ -836,17 +831,6 @@ static void
 nbtk_grid_real_sort_depth_order (ClutterContainer *container)
 {
   /* STUB */
-}
-
-static void
-nbtk_grid_style_changed (NbtkWidget *self)
-{
-  NbtkGridPrivate *priv = ((NbtkGrid *)self)->priv;
-  GList *c;
-
-  for (c = priv->list; c; c = c->next)
-    if (NBTK_IS_WIDGET (c->data))
-      nbtk_stylable_changed ((NbtkStylable *) c->data);
 }
 
 static void
