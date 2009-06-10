@@ -399,6 +399,7 @@ nbtk_widget_finalize (GObject *gobject)
   NbtkWidgetPrivate *priv = NBTK_WIDGET (gobject)->priv;
 
   g_free (priv->style_class);
+  g_free (priv->pseudo_class);
 
   G_OBJECT_CLASS (nbtk_widget_parent_class)->finalize (gobject);
 }
