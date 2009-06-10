@@ -596,7 +596,7 @@ nbtk_widget_style_changed (NbtkWidget *self)
   NbtkBorderImage *border_image = NULL;
   NbtkTextureCache *texture_cache;
   ClutterTexture *texture;
-  gchar *bg_file;
+  gchar *bg_file = NULL;
   NbtkPadding *padding = NULL;
   gboolean relayout_needed = FALSE;
   gboolean has_changed = FALSE;
@@ -704,7 +704,8 @@ nbtk_widget_style_changed (NbtkWidget *self)
       relayout_needed = TRUE;
     }
 
-  if (bg_file != NULL)
+  if (bg_file != NULL &&
+      strcmp (bg_file, "none"))
     {
       texture = nbtk_texture_cache_get_texture (texture_cache,
                                                 bg_file,
@@ -719,10 +720,10 @@ nbtk_widget_style_changed (NbtkWidget *self)
       else
         g_warning ("Could not load %s", bg_file);
 
-      g_free (bg_file);
       has_changed = TRUE;
       relayout_needed = TRUE;
     }
+    g_free (bg_file);
 
   /* If there are any properties above that need to cause a relayout thay
    * should set this flag.
