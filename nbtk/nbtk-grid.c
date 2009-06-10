@@ -168,13 +168,66 @@ struct _NbtkGridActorData
   gfloat pref_width, pref_height;
 };
 
-/* scrollable interface */
+static void
+ensure_children_are_visible (NbtkGrid *grid)
+{
+  NbtkGridPrivate *priv = grid->priv;
+  GList *child_item;
+  gfloat x, y;
+  ClutterActorBox grid_b;
 
+  if (priv->hadjustment)
+    x = nbtk_adjustment_get_value (priv->hadjustment);
+  else
+    x = 0;
+
+  if (priv->vadjustment)
+    y = nbtk_adjustment_get_value (priv->vadjustment);
+  else
+    y = 0;
+
+  clutter_actor_get_allocation_box ((ClutterActor *)grid, &grid_b);
+  grid_b.x2 = (grid_b.x2 - grid_b.x1) + x;
+  grid_b.x1 = 0;
+  grid_b.y2 = (grid_b.y2 - grid_b.y1) + y;
+  grid_b.y1 = 0;
+
+  for (child_item = priv->list;
+       child_item != NULL;
+       child_item = child_item->next)
+    {
+      ClutterActor *child = child_item->data;
+      ClutterActorBox child_b;
+
+      g_assert (child != NULL);
+
+      /* check if the child is "on screen" */
+      clutter_actor_get_allocation_box (child, &child_b);
+
+      if ((child_b.x1 < grid_b.x2)
+          && (child_b.x2 > grid_b.x1)
+          && (child_b.y1 < grid_b.y2)
+          && (child_b.y2 > grid_b.y1))
+        {
+          clutter_actor_show (child);
+        } else {
+          clutter_actor_hide (child);
+        }
+    }
+}
+
+/* scrollable interface */
 static void
 adjustment_value_notify_cb (NbtkAdjustment *adjustment,
                             GParamSpec     *pspec,
                             NbtkGrid       *grid)
 {
+  NbtkGridPrivate *priv = grid->priv;
+
+  /* Mark children as visible if they are inside the visible area */
+  if (priv->allocate_hidden)
+    ensure_children_are_visible (grid);
+
   clutter_actor_queue_redraw (CLUTTER_ACTOR (grid));
 }
 
@@ -1420,6 +1473,11 @@ nbtk_grid_allocate (ClutterActor          *self,
                          FALSE,
                          NULL,
                          NULL);
+
+  if (priv->allocate_hidden)
+  {
+    ensure_children_are_visible ((NbtkGrid *)self);
+  }
 }
 
 static gboolean
