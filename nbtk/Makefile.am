@@ -29,6 +29,7 @@ source_h = \
 	$(top_srcdir)/nbtk/nbtk-scrollable.h 		\
 	$(top_srcdir)/nbtk/nbtk-stylable.h 		\
 	$(top_srcdir)/nbtk/nbtk-style.h 		\
+	$(top_srcdir)/nbtk/nbtk-subtexture.h		\
 	$(top_srcdir)/nbtk/nbtk-table-child.h 		\
 	$(top_srcdir)/nbtk/nbtk-table.h 		\
 	$(top_srcdir)/nbtk/nbtk-texture-cache.h 	\
@@ -151,6 +152,7 @@ libnbtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	nbtk-scrollable.c 		\
 	nbtk-stylable.c 		\
 	nbtk-style.c 			\
+	nbtk-subtexture.c		\
 	nbtk-table.c 			\
 	nbtk-table-child.c 		\
 	nbtk-texture-cache.c 		\
