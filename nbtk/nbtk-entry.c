@@ -213,13 +213,6 @@ nbtk_entry_style_changed (NbtkWidget *self)
   gchar *font_string;
   gint font_size;
 
-  /* Skip retrieving style information until we are mapped */
-  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor*) self))
-    return;
-
-  if (NBTK_WIDGET_CLASS (nbtk_entry_parent_class)->style_changed)
-    NBTK_WIDGET_CLASS (nbtk_entry_parent_class)->style_changed (self);
-
   nbtk_stylable_get (NBTK_STYLABLE (self),
                      "color", &color,
                      "caret-color", &caret_color,
@@ -675,7 +668,6 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (NbtkEntryPrivate));
@@ -701,8 +693,6 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
   actor_class->button_press_event = nbtk_entry_button_press_event;
   actor_class->button_release_event = nbtk_entry_button_release_event;
   actor_class->motion_event = nbtk_entry_motion_event;
-
-  widget_class->style_changed = nbtk_entry_style_changed;
 
   pspec = g_param_spec_string ("text",
                                "Text",
@@ -770,6 +760,9 @@ nbtk_entry_init (NbtkEntry *entry)
 
   /* set cursor hidden until we receive focus */
   clutter_text_set_cursor_visible ((ClutterText *) priv->entry, FALSE);
+
+  g_signal_connect (entry, "stylable-changed",
+                    G_CALLBACK (nbtk_entry_style_changed), NULL);
 }
 
 /**

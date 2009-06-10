@@ -98,7 +98,6 @@ struct _NbtkWidgetClass
                             const ClutterColor *color);
 
   /* signals */
-  void (* style_changed) (NbtkWidget *self);
   void (* dnd_begin)     (NbtkWidget   *self,
 			  ClutterActor *dragged,
 			  ClutterActor *icon,

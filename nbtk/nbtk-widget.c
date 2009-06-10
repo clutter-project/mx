@@ -203,7 +203,6 @@ enum
 
 enum
 {
-  STYLE_CHANGED,
   DND_BEGIN,
   DND_MOTION,
   DND_END,
@@ -545,7 +544,7 @@ nbtk_widget_parent_set (ClutterActor *widget,
 
   /* don't send the style changed signal if we no longer have a parent actor */
   if (new_parent && CLUTTER_ACTOR_IS_MAPPED (widget))
-    g_signal_emit (widget, actor_signals[STYLE_CHANGED], 0);
+    nbtk_stylable_changed ((NbtkStylable*) widget);
 
   parent_class = CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class);
   if (parent_class->parent_set)
@@ -589,9 +588,9 @@ nbtk_widget_unmap (ClutterActor *actor)
 }
 
 static void
-nbtk_widget_style_changed (NbtkWidget *self)
+nbtk_widget_stylable_changed (NbtkStylable *self)
 {
-  NbtkWidgetPrivate *priv = self->priv;
+  NbtkWidgetPrivate *priv = NBTK_WIDGET (self)->priv;
   NbtkBorderImage *border_image = NULL;
   NbtkTextureCache *texture_cache;
   ClutterTexture *texture;
@@ -605,16 +604,15 @@ nbtk_widget_style_changed (NbtkWidget *self)
   if (!priv->is_stylable)
     return;
 
-  self->priv->has_style = TRUE;
+  priv->has_style = TRUE;
 
   /* cache these values for use in the paint function */
-  nbtk_stylable_get (NBTK_STYLABLE (self),
+  nbtk_stylable_get (self,
                     "background-color", &color,
                     "background-image", &bg_file,
                     "border-image", &border_image,
                     "padding", &padding,
                     NULL);
-
 
   if (color)
     {
@@ -835,7 +833,6 @@ nbtk_widget_class_init (NbtkWidgetClass *klass)
 
   klass->draw_background = nbtk_widget_real_draw_background;
 
-  klass->style_changed = nbtk_widget_style_changed;
   klass->dnd_dropped = nbtk_widget_dnd_dropped;
 
   /**
@@ -940,22 +937,6 @@ nbtk_widget_class_init (NbtkWidgetClass *klass)
   g_object_class_install_property (gobject_class, PROP_TOOLTIP_TEXT, pspec);
 
 
-  /**
-   * NbtkWidget::style-changed:
-   * @actor: the actor that received the signal
-   *
-   * The ::style-changed signal will be emitted each time the style for the
-   * object changes. This includes when any of the properties linked to the
-   * style change, including #pseudo-class and #style-class
-   */
-  actor_signals[STYLE_CHANGED] =
-    g_signal_new (I_("style-changed"),
-                  G_TYPE_FROM_CLASS (gobject_class),
-                  G_SIGNAL_RUN_LAST,
-                  G_STRUCT_OFFSET (NbtkWidgetClass, style_changed),
-                  NULL, NULL,
-                  _nbtk_marshal_VOID__VOID,
-                  G_TYPE_NONE, 0);
 
   /**
    * NbtkWidget::dnd-begin:
@@ -1104,7 +1085,7 @@ static void
 nbtk_style_changed_cb (NbtkStyle    *style,
                        NbtkStylable *stylable)
 {
-  g_signal_emit (stylable, actor_signals[STYLE_CHANGED], 0, NULL);
+  nbtk_stylable_changed (stylable);
 }
 
 
@@ -1217,7 +1198,7 @@ nbtk_widget_set_style_class_name (NbtkWidget  *actor,
       priv->style_class = g_strdup (style_class);
 
       if (CLUTTER_ACTOR_IS_MAPPED ((ClutterActor *) actor))
-        g_signal_emit (actor, actor_signals[STYLE_CHANGED], 0);
+        nbtk_stylable_changed ((NbtkStylable*) actor);
 
       g_object_notify (G_OBJECT (actor), "style-class");
     }
@@ -1281,7 +1262,7 @@ nbtk_widget_set_style_pseudo_class (NbtkWidget  *actor,
       priv->pseudo_class = g_strdup (pseudo_class);
 
       if (CLUTTER_ACTOR_IS_MAPPED (actor))
-        g_signal_emit (actor, actor_signals[STYLE_CHANGED], 0);
+        nbtk_stylable_changed ((NbtkStylable*) actor);
 
       g_object_notify (G_OBJECT (actor), "pseudo-class");
     }
@@ -1351,6 +1332,8 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
                                   G_PARAM_READWRITE);
       nbtk_stylable_iface_install_property (iface, NBTK_TYPE_WIDGET, pspec);
 
+      iface->changed = nbtk_widget_stylable_changed;
+
       iface->get_style = nbtk_widget_get_style;
       iface->set_style = nbtk_widget_set_style;
       iface->get_base_style = nbtk_widget_get_base_style;
@@ -1371,7 +1354,7 @@ nbtk_widget_name_notify (NbtkWidget *widget,
                          gpointer data)
 {
   if (CLUTTER_ACTOR_IS_MAPPED ((ClutterActor *) widget))
-    g_signal_emit (widget, actor_signals[STYLE_CHANGED], 0);
+    nbtk_stylable_changed ((NbtkStylable*) widget);
 }
 
 static void
@@ -1885,7 +1868,7 @@ nbtk_widget_ensure_style (NbtkWidget *widget)
 
   if (!widget->priv->has_style)
     {
-      g_signal_emit (widget, actor_signals[STYLE_CHANGED], 0);
+      nbtk_stylable_changed ((NbtkStylable*) widget);
     }
 }
 

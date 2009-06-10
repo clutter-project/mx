@@ -70,6 +70,7 @@ struct _NbtkStylableIface
   /* signals, not vfuncs */
   void (* style_notify) (NbtkStylable *stylable,
                          GParamSpec   *pspec);
+  void (* changed)      (NbtkStylable *stylable);
 
   void (* style_set)    (NbtkStylable *stylable,
                          NbtkStyle    *old_style);
@@ -123,6 +124,7 @@ gboolean      nbtk_stylable_get_viewport      (NbtkStylable *stylable,
                                                gint         *width,
                                                gint         *height);
 
+void nbtk_stylable_changed (NbtkStylable *stylable);
 G_END_DECLS
 
 #endif /* __NBTK_STYLABLE_H__ */

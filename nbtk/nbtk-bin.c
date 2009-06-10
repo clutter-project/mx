@@ -481,14 +481,8 @@ nbtk_bin_style_changed (NbtkWidget *self)
 {
   NbtkBinPrivate *priv = NBTK_BIN (self)->priv;
 
-  /* Skip retrieving style information until we are mapped */
-  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor*) self))
-    return;
-
-  NBTK_WIDGET_CLASS (nbtk_bin_parent_class)->style_changed (self);
-
-  if (priv->child && NBTK_IS_WIDGET (priv->child))
-    g_signal_emit_by_name (priv->child, "style-changed");
+  if (priv->child && NBTK_IS_STYLABLE (priv->child))
+    nbtk_stylable_changed ((NbtkStylable *) priv->child);
 }
 
 static void
@@ -496,7 +490,6 @@ nbtk_bin_class_init (NbtkBinClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (NbtkBinPrivate));
@@ -510,8 +503,6 @@ nbtk_bin_class_init (NbtkBinClass *klass)
   actor_class->allocate = nbtk_bin_allocate;
   actor_class->paint = nbtk_bin_paint;
   actor_class->pick = nbtk_bin_pick;
-
-  widget_class->style_changed = nbtk_bin_style_changed;
 
   /**
    * NbtkBin:child:
@@ -611,6 +602,9 @@ nbtk_bin_init (NbtkBin *bin)
 
   bin->priv->x_align = NBTK_ALIGN_CENTER;
   bin->priv->y_align = NBTK_ALIGN_CENTER;
+
+  g_signal_connect (bin, "stylable-changed",
+                    G_CALLBACK (nbtk_bin_style_changed), NULL);
 }
 
 /**

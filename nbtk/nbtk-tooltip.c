@@ -156,8 +156,6 @@ nbtk_tooltip_style_changed (NbtkWidget *self)
       g_free (font_string);
     }
 
-  if (NBTK_WIDGET_CLASS (nbtk_tooltip_parent_class)->style_changed)
-    NBTK_WIDGET_CLASS (nbtk_tooltip_parent_class)->style_changed (self);
 }
 
 static void
@@ -404,7 +402,6 @@ static void
 nbtk_tooltip_class_init (NbtkTooltipClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-  NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
   GParamSpec *pspec;
 
@@ -419,8 +416,6 @@ nbtk_tooltip_class_init (NbtkTooltipClass *klass)
   actor_class->paint = nbtk_tooltip_paint;
   actor_class->map = nbtk_tooltip_map;
   actor_class->unmap = nbtk_tooltip_unmap;
-
-  widget_class->style_changed = nbtk_tooltip_style_changed;
 
   pspec = g_param_spec_string ("label",
                                "Label",
@@ -477,6 +472,9 @@ nbtk_tooltip_init (NbtkTooltip *tooltip)
   g_object_set (tooltip, "show-on-set-parent", FALSE, NULL);
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (tooltip), FALSE);
+
+  g_signal_connect (tooltip, "stylable-changed",
+                    G_CALLBACK (nbtk_tooltip_style_changed), NULL);
 }
 
 

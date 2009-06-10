@@ -46,6 +46,7 @@
 #include "nbtk-marshal.h"
 #include "nbtk-private.h"
 #include "nbtk-table-child.h"
+#include "nbtk-stylable.h"
 
 enum
 {
@@ -621,15 +622,9 @@ nbtk_table_style_changed (NbtkWidget *self)
   NbtkTablePrivate *priv = NBTK_TABLE (self)->priv;
   GSList *c;
 
-  /* Skip retrieving style information until we are mapped */
-  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor*) self))
-    return;
-
-  NBTK_WIDGET_CLASS (nbtk_table_parent_class)->style_changed (self);
-
   for (c = priv->children; c; c = c->next)
     if (NBTK_IS_WIDGET (c->data))
-      g_signal_emit_by_name (c->data, "style-changed");
+      nbtk_stylable_changed ((NbtkStylable *) c->data);
 }
 
 static gint *
@@ -1285,7 +1280,6 @@ nbtk_table_class_init (NbtkTableClass *klass)
   actor_class->hide_all = nbtk_table_hide_all;
 
   widget_class->dnd_dropped = nbtk_table_dnd_dropped;
-  widget_class->style_changed = nbtk_table_style_changed;
 
   pspec = g_param_spec_boolean ("homogeneous",
                                 "Homogeneous",
@@ -1358,6 +1352,9 @@ nbtk_table_init (NbtkTable *table)
   table->priv->row_heights = g_array_new (FALSE,
                                           TRUE,
                                           sizeof (gint));
+
+  g_signal_connect (table, "stylable-changed",
+                    G_CALLBACK (nbtk_table_style_changed), NULL);
 }
 
 /* used by NbtkTableChild to update row/column count */

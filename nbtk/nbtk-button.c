@@ -218,8 +218,10 @@ nbtk_button_style_changed (NbtkWidget *widget)
         g_object_ref (bg_image);
     }
 
+#if 0
   /* Chain up to update style bits */
   NBTK_WIDGET_CLASS (nbtk_button_parent_class)->style_changed (widget);
+#endif
 
   /* run a transition if applicable */
   if (button_class->transition)
@@ -691,7 +693,6 @@ nbtk_button_class_init (NbtkButtonClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  NbtkWidgetClass *nbtk_widget_class = NBTK_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (NbtkButtonPrivate));
@@ -715,8 +716,6 @@ nbtk_button_class_init (NbtkButtonClass *klass)
   actor_class->paint = nbtk_button_paint;
   actor_class->map = nbtk_button_map;
   actor_class->unmap = nbtk_button_unmap;
-
-  nbtk_widget_class->style_changed = nbtk_button_style_changed;
 
   pspec = g_param_spec_string ("label",
                                "Label",
@@ -770,6 +769,9 @@ nbtk_button_init (NbtkButton *button)
   button->priv->spacing = 6;
 
   clutter_actor_set_reactive ((ClutterActor *) button, TRUE);
+
+  g_signal_connect (button, "stylable-changed",
+                    G_CALLBACK (nbtk_button_style_changed), NULL);
 }
 
 /**

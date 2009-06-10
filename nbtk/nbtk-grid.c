@@ -34,6 +34,7 @@
 
 #include "nbtk-scrollable.h"
 #include "nbtk-grid.h"
+#include "nbtk-stylable.h"
 
 typedef struct _NbtkGridActorData NbtkGridActorData;
 
@@ -311,7 +312,6 @@ nbtk_grid_class_init (NbtkGridClass *klass)
 {
   GObjectClass *gobject_class = (GObjectClass *) klass;
   ClutterActorClass *actor_class = (ClutterActorClass *) klass;
-  NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
 
   GParamSpec *pspec;
 
@@ -327,8 +327,6 @@ nbtk_grid_class_init (NbtkGridClass *klass)
   actor_class->get_preferred_height = nbtk_grid_get_preferred_height;
   actor_class->allocate             = nbtk_grid_allocate;
   actor_class->scroll_event         = nbtk_grid_scroll_event;
-
-  widget_class->style_changed = nbtk_grid_style_changed;
 
   g_type_class_add_private (klass, sizeof (NbtkGridPrivate));
 
@@ -439,6 +437,9 @@ nbtk_grid_init (NbtkGrid *self)
                              g_direct_equal,
                              NULL,
                              nbtk_grid_free_actor_data);
+
+  g_signal_connect (self, "stylable-changed",
+                    G_CALLBACK (nbtk_grid_style_changed), NULL);
 }
 
 static void
@@ -843,15 +844,9 @@ nbtk_grid_style_changed (NbtkWidget *self)
   NbtkGridPrivate *priv = ((NbtkGrid *)self)->priv;
   GList *c;
 
-  NBTK_WIDGET_CLASS (nbtk_grid_parent_class)->style_changed (self);
-
-  /* Skip retrieving style information until we are mapped */
-  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor*) self))
-    return;
-
   for (c = priv->list; c; c = c->next)
     if (NBTK_IS_WIDGET (c->data))
-      g_signal_emit_by_name (c->data, "style-changed");
+      nbtk_stylable_changed ((NbtkStylable *) c->data);
 }
 
 static void
