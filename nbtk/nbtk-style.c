@@ -70,6 +70,9 @@ struct _NbtkStylePrivate
   ccss_stylesheet_t *stylesheet;
   GList *image_paths;
   GSList *monitors;
+
+  GHashTable *style_hash;
+  GHashTable *node_hash;
 };
 
 typedef struct {
@@ -366,6 +369,12 @@ nbtk_style_init (NbtkStyle *style)
 
   style->priv = priv = NBTK_STYLE_GET_PRIVATE (style);
 
+  /* create a hash table to look up pointer keys and values */
+  style->priv->node_hash = g_hash_table_new_full (NULL, NULL,
+                                                  NULL, g_free);
+  style->priv->style_hash = g_hash_table_new_full (NULL, NULL,
+                                                   NULL, (GDestroyNotify) ccss_style_destroy);
+
   nbtk_style_load (style);
 }
 
@@ -601,6 +610,53 @@ nbtk_style_fetch_ccss_property (ccss_style_t  *ccss_style,
     g_param_value_set_default (pspec, value);
 }
 
+ccss_style_t*
+nbtk_style_get_ccss_query (NbtkStyle         *style,
+                           NbtkStylable      *stylable)
+{
+  NbtkStylableIface *iface = NBTK_STYLABLE_GET_IFACE (stylable);
+  ccss_style_t *ccss_style;
+  nbtk_style_node_t *ccss_node;
+
+  ccss_node = g_hash_table_lookup (style->priv->node_hash, stylable);
+
+  if (!ccss_node)
+    {
+      ccss_node = g_new0 (nbtk_style_node_t, 1);
+      ccss_node_init ((ccss_node_t*) ccss_node, peek_node_class ());
+      ccss_node->iface = iface;
+      ccss_node->stylable = stylable;
+
+      g_hash_table_insert (style->priv->node_hash, stylable, ccss_node);
+
+      g_object_weak_ref ((GObject*) stylable,
+                        (GWeakNotify) g_hash_table_remove, style->priv->node_hash);
+    }
+
+
+  ccss_style = g_hash_table_lookup (style->priv->style_hash, stylable);
+
+  if (!ccss_style)
+    {
+      ccss_style = ccss_stylesheet_query (style->priv->stylesheet,
+                                          (ccss_node_t *) ccss_node);
+
+      g_hash_table_insert (style->priv->style_hash, stylable, ccss_style);
+
+      /* remove the cache if the stylable changes */
+      g_signal_connect_swapped (stylable, "stylable-changed",
+                                G_CALLBACK (g_hash_table_remove),
+                                style->priv->style_hash);
+
+      g_object_weak_ref ((GObject*) stylable,
+                         (GWeakNotify) g_hash_table_remove, style->priv->style_hash);
+    }
+
+  return ccss_style;
+
+}
+
+
 /**
  * nbtk_style_get_property:
  * @style: the style data store object
@@ -630,24 +686,14 @@ nbtk_style_get_property (NbtkStyle    *style,
   /* look up the property in the css */
   if (priv->stylesheet)
     {
-      NbtkStylableIface *iface = NBTK_STYLABLE_GET_IFACE (stylable);
       ccss_style_t *ccss_style;
-      nbtk_style_node_t *ccss_node;
 
-      ccss_node = g_new0 (nbtk_style_node_t, 1);
-      ccss_node_init ((ccss_node_t*) ccss_node, peek_node_class ());
-      ccss_node->iface = iface;
-      ccss_node->stylable = stylable;
-
-      ccss_style = ccss_stylesheet_query (priv->stylesheet,
-                                          (ccss_node_t *) ccss_node);
+      ccss_style = nbtk_style_get_ccss_query (style, stylable);
       if (ccss_style)
         {
           nbtk_style_fetch_ccss_property (ccss_style, pspec, value);
           value_set = TRUE;
         }
-      ccss_style_destroy (ccss_style);
-      g_free (ccss_node);
     }
 
   /* no value was found in css, so copy in the default value */
@@ -689,16 +735,10 @@ nbtk_style_get_valist (NbtkStyle     *style,
   /* look up the property in the css */
   if (priv->stylesheet)
     {
-      NbtkStylableIface *iface = NBTK_STYLABLE_GET_IFACE (stylable);
       ccss_style_t *ccss_style;
-      nbtk_style_node_t *ccss_node;
 
-      ccss_node = g_new0 (nbtk_style_node_t, 1);
-      ccss_node_init ((ccss_node_t*) ccss_node, peek_node_class ());
-      ccss_node->iface = iface;
-      ccss_node->stylable = stylable;
-      ccss_style = ccss_stylesheet_query (priv->stylesheet,
-                                          (ccss_node_t *) ccss_node);
+      ccss_style = nbtk_style_get_ccss_query (style, stylable);
+
       if (ccss_style)
         {
           while (name)
@@ -718,10 +758,8 @@ nbtk_style_get_valist (NbtkStyle     *style,
               g_value_unset (&value);
               name = va_arg (va_args, gchar*);
             }
-          ccss_style_destroy (ccss_style);
           values_set = TRUE;
         }
-      g_free (ccss_node);
     }
 
   if (!values_set)
