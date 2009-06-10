@@ -140,6 +140,8 @@ struct _NbtkGridPrivate
 
   NbtkAdjustment *hadjustment;
   NbtkAdjustment *vadjustment;
+
+  gboolean allocate_hidden;
 };
 
 enum
@@ -155,7 +157,8 @@ enum
   PROP_COLUMN_MAJOR,
   PROP_HADJUST,
   PROP_VADJUST,
-  PROP_MAX_STRIDE
+  PROP_MAX_STRIDE,
+  PROP_ALLOCATE_HIDDEN
 };
 
 struct _NbtkGridActorData
@@ -411,6 +414,16 @@ nbtk_grid_class_init (NbtkGridClass *klass)
   g_object_class_override_property (gobject_class,
                                     PROP_VADJUST,
                                     "vadjustment");
+
+  pspec = g_param_spec_boolean ("allocate-hidden",
+                                "Allocate children that are not visible",
+                                "This flag determines whether hidden children"
+                                " should be treated allocated or whether they"
+                                " should be skipped from the allocation and"
+                                " treated as if they are not present",
+                                FALSE,
+                                G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+  g_object_class_install_property (gobject_class, PROP_ALLOCATE_HIDDEN, pspec);
 }
 
 static void
@@ -439,6 +452,11 @@ nbtk_grid_init (NbtkGrid *self)
                              g_direct_equal,
                              NULL,
                              nbtk_grid_free_actor_data);
+
+  /* allocate_hidden defaults to FALSE. This is the original NbtkGrid
+   * behaviour
+   */
+  priv->allocate_hidden = FALSE;
 }
 
 static void
@@ -676,6 +694,10 @@ nbtk_grid_set_property (GObject      *object,
     case PROP_MAX_STRIDE:
       nbtk_grid_set_max_stride (grid, g_value_get_int (value));
       break;
+    case PROP_ALLOCATE_HIDDEN:
+      priv->allocate_hidden = g_value_get_boolean (value);
+      clutter_actor_queue_relayout ((ClutterActor *)object);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -731,6 +753,10 @@ nbtk_grid_get_property (GObject    *object,
       break;
     case PROP_MAX_STRIDE:
       g_value_set_int (value, nbtk_grid_get_max_stride (grid));
+      break;
+    case PROP_ALLOCATE_HIDDEN:
+      g_value_set_boolean (value, priv->allocate_hidden);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -796,7 +822,7 @@ nbtk_grid_real_remove (ClutterContainer *container,
 
       g_signal_emit_by_name (container, "actor-removed", actor);
 
-      if (CLUTTER_ACTOR_IS_VISIBLE (CLUTTER_ACTOR (layout)))
+      if (!priv->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (actor))
         clutter_actor_queue_redraw (CLUTTER_ACTOR (layout));
     }
   priv->list = g_list_remove (priv->list, actor);
@@ -1156,7 +1182,7 @@ nbtk_grid_do_allocate (ClutterActor          *self,
           gfloat natural_width;
           gfloat natural_height;
 
-          if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+          if (!priv->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
             continue;
 
           /* each child will get as much space as they require */
@@ -1184,7 +1210,7 @@ nbtk_grid_do_allocate (ClutterActor          *self,
       gfloat natural_a;
       gfloat natural_b;
 
-      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+      if (!priv->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
         continue;
 
       /* each child will get as much space as they require */
