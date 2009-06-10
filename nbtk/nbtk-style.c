@@ -431,11 +431,6 @@ get_container (nbtk_style_node_t *node)
   if (!parent)
     return NULL;
 
-
-  g_debug ("parent of %s is %s",
-           G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (node->stylable)),
-           G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (parent)));
-
   container = g_new0 (nbtk_style_node_t, 1);
   ccss_node_init ((ccss_node_t*) container, peek_node_class ());
   container->iface = node->iface;
