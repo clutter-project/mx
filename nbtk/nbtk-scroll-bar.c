@@ -49,7 +49,6 @@ G_DEFINE_TYPE_WITH_CODE (NbtkScrollBar, nbtk_scroll_bar, NBTK_TYPE_BIN,
 
 struct _NbtkScrollBarPrivate
 {
-  NbtkScrollBarMode  mode;
   NbtkAdjustment    *adjustment;
   guint              refresh_source;
 
@@ -522,24 +521,7 @@ move_slider (NbtkScrollBar *bar, gfloat x, gfloat y)
            * (upper - lower - page_size))
            + lower;
 
-  if (priv->mode == NBTK_SCROLL_BAR_MODE_INTERPOLATE)
-    {
-      guint mfreq = clutter_get_motion_events_frequency ();
-
-      nbtk_adjustment_interpolate (priv->adjustment,
-                                   position,
-                                   mfreq);
-      return;
-    }
-
   nbtk_adjustment_set_value (priv->adjustment, position);
-}
-
-static gboolean
-move_slider_cb (NbtkScrollBar *bar)
-{
-  move_slider (bar, bar->priv->move_x, bar->priv->move_y);
-  return FALSE;
 }
 
 static gboolean
@@ -549,24 +531,9 @@ handle_capture_event_cb (ClutterActor       *trough,
 {
   if (clutter_event_type (event) == CLUTTER_MOTION)
     {
-      if (bar->priv->mode == NBTK_SCROLL_BAR_MODE_IDLE)
-	{
-	  if (bar->priv->idle_move_id)
-	    g_source_remove (bar->priv->idle_move_id);
-	  
-	  bar->priv->move_x = ((ClutterMotionEvent*)event)->x;
-	  bar->priv->move_y = ((ClutterMotionEvent*)event)->y;
-	  bar->priv->idle_move_id 
-	                    = g_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
-					       (GSourceFunc) move_slider_cb,
-					       bar, NULL);
-	}
-      else
-	{
-	  move_slider (bar, 
-		       ((ClutterMotionEvent*)event)->x, 
-		       ((ClutterMotionEvent*)event)->y);
-	}
+      move_slider (bar,
+                   ((ClutterMotionEvent*)event)->x,
+                   ((ClutterMotionEvent*)event)->y);
     }
   else if (clutter_event_type (event) == CLUTTER_BUTTON_RELEASE
 	   && ((ClutterButtonEvent*)event)->button == 1)
@@ -938,22 +905,5 @@ nbtk_scroll_bar_get_adjustment (NbtkScrollBar *bar)
   g_return_val_if_fail (NBTK_IS_SCROLL_BAR (bar), NULL);
 
   return bar->priv->adjustment;
-}
-
-NbtkScrollBarMode
-nbtk_scroll_bar_get_mode (NbtkScrollBar *bar)
-{
-  g_return_val_if_fail (NBTK_IS_SCROLL_BAR (bar), NBTK_SCROLL_BAR_MODE_DEFAULT);
-
-  return bar->priv->mode;
-}
-
-void
-nbtk_scroll_bar_set_mode (NbtkScrollBar     *bar,
-                          NbtkScrollBarMode  mode)
-{
-  g_return_if_fail (NBTK_IS_SCROLL_BAR (bar));
-
-  bar->priv->mode = mode;
 }
 
