@@ -183,7 +183,9 @@ nbtk_texture_frame_paint (ClutterActor *self)
 
   /* Paint using the parent texture's material. It should already have
      the cogl texture set as the first layer */
-  cogl_material_set_color4ub (cogl_material, 255, 255, 255, opacity);
+  /* NB: for correct blending we need set a preumultiplied color here: */
+  cogl_material_set_color4ub (cogl_material,
+                              opacity, opacity, opacity, opacity);
   cogl_set_source (cogl_material);
 
   {
