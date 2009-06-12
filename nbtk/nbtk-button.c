@@ -76,6 +76,7 @@ struct _NbtkButtonPrivate
 
   ClutterActor *label;
   ClutterActor *icon;
+  ClutterActor *old_bg;
 
   guint8 old_opacity;
 
@@ -204,30 +205,20 @@ nbtk_button_style_changed (NbtkWidget *widget)
   if (priv->label)
     nbtk_button_update_label_style (button);
 
-  /* Store background, NbtkWidget will unparent it */
-  if (button_class->transition)
-    {
-      bg_image = nbtk_widget_get_border_image (widget);
-
-      /* ref because widget->style_changed will unparent it */
-      if (bg_image)
-        g_object_ref (bg_image);
-    }
-
-#if 0
-  /* Chain up to update style bits */
-  NBTK_WIDGET_CLASS (nbtk_button_parent_class)->style_changed (widget);
-#endif
-
   /* run a transition if applicable */
   if (button_class->transition)
     {
-      button_class->transition (button, bg_image);
-
-      /* unref our earlier ref */
-      if (bg_image)
-        g_object_unref (bg_image);
+      button_class->transition (button, priv->old_bg);
     }
+
+  if (priv->old_bg)
+    g_object_unref (priv->old_bg);
+
+  bg_image = nbtk_widget_get_border_image (widget);
+  if (bg_image)
+    priv->old_bg = g_object_ref (bg_image);
+  else
+    priv->old_bg = NULL;
 }
 
 static void
@@ -428,6 +419,12 @@ nbtk_button_dispose (GObject *gobject)
     {
       clutter_actor_unparent (priv->icon);
       priv->icon = NULL;
+    }
+
+  if (priv->old_bg)
+    {
+      g_object_unref (priv->old_bg);
+      priv->old_bg = NULL;
     }
 
   G_OBJECT_CLASS (nbtk_button_parent_class)->dispose (gobject);
