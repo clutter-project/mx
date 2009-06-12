@@ -26,7 +26,11 @@
 #include "nbtk-stylable.h"
 #include "nbtk-icon.h"
 
-G_DEFINE_TYPE (NbtkExpander, nbtk_expander, NBTK_TYPE_BIN)
+static void clutter_container_iface_init (ClutterContainerIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE (NbtkExpander, nbtk_expander, NBTK_TYPE_BIN,
+                         G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
+                                                clutter_container_iface_init))
 
 #define GET_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), NBTK_TYPE_EXPANDER, NbtkExpanderPrivate))
@@ -437,6 +441,9 @@ nbtk_expander_allocate (ClutterActor          *actor,
 static void
 nbtk_expander_paint (ClutterActor *actor)
 {
+  if (!((NbtkExpander *) actor)->priv->expanded)
+    clutter_actor_hide (nbtk_bin_get_child ((NbtkBin*) actor));
+
   CLUTTER_ACTOR_CLASS (nbtk_expander_parent_class)->paint (actor);
 
   clutter_actor_paint (((NbtkExpander* ) actor)->priv->label);
@@ -447,8 +454,9 @@ static void
 nbtk_expander_map (ClutterActor *actor)
 {
   NbtkExpanderPrivate *priv = NBTK_EXPANDER (actor)->priv;
+  ClutterActorClass *parent_parent_class = g_type_class_peek_parent (nbtk_expander_parent_class);
 
-  CLUTTER_ACTOR_CLASS (nbtk_expander_parent_class)->map (actor);
+  CLUTTER_ACTOR_CLASS (parent_parent_class)->map (actor);
 
   clutter_actor_map (priv->label);
   clutter_actor_map (priv->arrow);
@@ -536,6 +544,24 @@ nbtk_expander_leave (ClutterActor         *actor,
 }
 
 static void
+nbtk_expander_foreach (ClutterContainer *container,
+                       ClutterCallback   callback,
+                       gpointer          user_data)
+{
+  NbtkExpanderPrivate *priv = NBTK_EXPANDER (container)->priv;
+
+  if (priv->expanded)
+    callback (nbtk_bin_get_child ((NbtkBin*) container),
+              user_data);
+}
+
+static void
+clutter_container_iface_init (ClutterContainerIface *iface)
+{
+  iface->foreach = nbtk_expander_foreach;
+}
+
+static void
 nbtk_expander_class_init (NbtkExpanderClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -562,7 +588,7 @@ nbtk_expander_class_init (NbtkExpanderClass *klass)
   pspec = g_param_spec_boolean ("expanded",
                                 "Expanded",
                                 "Indicates that the expander is open or closed",
-                                TRUE,
+                                FALSE,
                                 NBTK_PARAM_READWRITE);
   g_object_class_install_property (object_class,
                                    PROP_EXPANDED,
@@ -596,14 +622,10 @@ nbtk_expander_init (NbtkExpander *self)
 
   priv->arrow = (ClutterActor *) nbtk_icon_new ();
   clutter_actor_set_parent (priv->arrow, (ClutterActor *) self);
-  clutter_actor_set_name (priv->arrow, "nbtk-expander-arrow-open");
-  nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (self), "active");
+  clutter_actor_set_name (priv->arrow, "nbtk-expander-arrow-closed");
 
   /* TODO: make this a style property */
   priv->spacing = 10.0f;
-
-  priv->progress = 1.0;
-  priv->expanded = 1;
 
   priv->timeline = clutter_timeline_new (250);
   clutter_timeline_set_direction (priv->timeline, CLUTTER_TIMELINE_BACKWARD);

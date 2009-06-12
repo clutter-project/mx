@@ -333,12 +333,15 @@ nbtk_gtk_expander_button_release (GtkWidget      *widget,
 static void
 nbtk_gtk_expander_realize (GtkWidget *widget)
 {
+  /*
   NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
-  //GdkWindowAttr attributes;
+  GdkWindowAttr attributes;
+  */
 
   GTK_WIDGET_CLASS (nbtk_gtk_expander_parent_class)->realize (widget);
 
-  /*attributes.window_type = GDK_WINDOW_CHILD;
+  /*
+  attributes.window_type = GDK_WINDOW_CHILD;
   attributes.wclass = GDK_INPUT_ONLY;
   attributes.event_mask = gtk_widget_get_events (widget) |
                             GDK_BUTTON_PRESS_MASK        |
@@ -354,20 +357,22 @@ nbtk_gtk_expander_realize (GtkWidget *widget)
                           widget->allocation.x,
                           widget->allocation.y,
                           widget->allocation.width,
-                          widget->allocation.height);*/
-
+                          widget->allocation.height);
+  */
 }
 
 static void
 nbtk_gtk_expander_unrealize (GtkWidget *widget)
 {
+  /*
   NbtkGtkExpanderPrivate *priv = ((NbtkGtkExpander*) widget)->priv;
 
-  /*if (priv->event_window)
+  if (priv->event_window)
     {
       gdk_window_destroy (priv->event_window);
       priv->event_window = NULL;
-      }*/
+      }
+   */
 
   GTK_WIDGET_CLASS (nbtk_gtk_expander_parent_class)->unrealize (widget);
 }

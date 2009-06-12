@@ -139,6 +139,8 @@ struct _NbtkGridPrivate
 
   NbtkAdjustment *hadjustment;
   NbtkAdjustment *vadjustment;
+
+  gboolean allocate_hidden;
 };
 
 enum
@@ -154,7 +156,8 @@ enum
   PROP_COLUMN_MAJOR,
   PROP_HADJUST,
   PROP_VADJUST,
-  PROP_MAX_STRIDE
+  PROP_MAX_STRIDE,
+  PROP_ALLOCATE_HIDDEN
 };
 
 struct _NbtkGridActorData
@@ -164,13 +167,66 @@ struct _NbtkGridActorData
   gfloat pref_width, pref_height;
 };
 
-/* scrollable interface */
+static void
+ensure_children_are_visible (NbtkGrid *grid)
+{
+  NbtkGridPrivate *priv = grid->priv;
+  GList *child_item;
+  gfloat x, y;
+  ClutterActorBox grid_b;
 
+  if (priv->hadjustment)
+    x = nbtk_adjustment_get_value (priv->hadjustment);
+  else
+    x = 0;
+
+  if (priv->vadjustment)
+    y = nbtk_adjustment_get_value (priv->vadjustment);
+  else
+    y = 0;
+
+  clutter_actor_get_allocation_box ((ClutterActor *)grid, &grid_b);
+  grid_b.x2 = (grid_b.x2 - grid_b.x1) + x;
+  grid_b.x1 = 0;
+  grid_b.y2 = (grid_b.y2 - grid_b.y1) + y;
+  grid_b.y1 = 0;
+
+  for (child_item = priv->list;
+       child_item != NULL;
+       child_item = child_item->next)
+    {
+      ClutterActor *child = child_item->data;
+      ClutterActorBox child_b;
+
+      g_assert (child != NULL);
+
+      /* check if the child is "on screen" */
+      clutter_actor_get_allocation_box (child, &child_b);
+
+      if ((child_b.x1 < grid_b.x2)
+          && (child_b.x2 > grid_b.x1)
+          && (child_b.y1 < grid_b.y2)
+          && (child_b.y2 > grid_b.y1))
+        {
+          clutter_actor_show (child);
+        } else {
+          clutter_actor_hide (child);
+        }
+    }
+}
+
+/* scrollable interface */
 static void
 adjustment_value_notify_cb (NbtkAdjustment *adjustment,
                             GParamSpec     *pspec,
                             NbtkGrid       *grid)
 {
+  NbtkGridPrivate *priv = grid->priv;
+
+  /* Mark children as visible if they are inside the visible area */
+  if (priv->allocate_hidden)
+    ensure_children_are_visible (grid);
+
   clutter_actor_queue_redraw (CLUTTER_ACTOR (grid));
 }
 
@@ -407,6 +463,16 @@ nbtk_grid_class_init (NbtkGridClass *klass)
   g_object_class_override_property (gobject_class,
                                     PROP_VADJUST,
                                     "vadjustment");
+
+  pspec = g_param_spec_boolean ("allocate-hidden",
+                                "Allocate children that are not visible",
+                                "This flag determines whether hidden children"
+                                " should be treated allocated or whether they"
+                                " should be skipped from the allocation and"
+                                " treated as if they are not present",
+                                FALSE,
+                                G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+  g_object_class_install_property (gobject_class, PROP_ALLOCATE_HIDDEN, pspec);
 }
 
 static void
@@ -435,6 +501,11 @@ nbtk_grid_init (NbtkGrid *self)
                              g_direct_equal,
                              NULL,
                              nbtk_grid_free_actor_data);
+
+  /* allocate_hidden defaults to FALSE. This is the original NbtkGrid
+   * behaviour
+   */
+  priv->allocate_hidden = FALSE;
 }
 
 static void
@@ -672,6 +743,10 @@ nbtk_grid_set_property (GObject      *object,
     case PROP_MAX_STRIDE:
       nbtk_grid_set_max_stride (grid, g_value_get_int (value));
       break;
+    case PROP_ALLOCATE_HIDDEN:
+      priv->allocate_hidden = g_value_get_boolean (value);
+      clutter_actor_queue_relayout ((ClutterActor *)object);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -727,6 +802,10 @@ nbtk_grid_get_property (GObject    *object,
       break;
     case PROP_MAX_STRIDE:
       g_value_set_int (value, nbtk_grid_get_max_stride (grid));
+      break;
+    case PROP_ALLOCATE_HIDDEN:
+      g_value_set_boolean (value, priv->allocate_hidden);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -792,7 +871,7 @@ nbtk_grid_real_remove (ClutterContainer *container,
 
       g_signal_emit_by_name (container, "actor-removed", actor);
 
-      if (CLUTTER_ACTOR_IS_VISIBLE (CLUTTER_ACTOR (layout)))
+      if (!priv->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (actor))
         clutter_actor_queue_redraw (CLUTTER_ACTOR (layout));
     }
   priv->list = g_list_remove (priv->list, actor);
@@ -1135,7 +1214,7 @@ nbtk_grid_do_allocate (ClutterActor          *self,
           gfloat natural_width;
           gfloat natural_height;
 
-          if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+          if (!priv->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
             continue;
 
           /* each child will get as much space as they require */
@@ -1163,7 +1242,7 @@ nbtk_grid_do_allocate (ClutterActor          *self,
       gfloat natural_a;
       gfloat natural_b;
 
-      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+      if (!priv->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
         continue;
 
       /* each child will get as much space as they require */
@@ -1373,6 +1452,11 @@ nbtk_grid_allocate (ClutterActor          *self,
                          FALSE,
                          NULL,
                          NULL);
+
+  if (priv->allocate_hidden)
+  {
+    ensure_children_are_visible ((NbtkGrid *)self);
+  }
 }
 
 static gboolean

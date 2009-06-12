@@ -93,6 +93,7 @@ tests/test-gtk
 tests/test-icon-view
 tests/test-label
 tests/test-padding
+tests/test-progress-bar
 tests/test-script
 tests/test-scroll-bar
 tests/test-scroll-grid

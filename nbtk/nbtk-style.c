@@ -322,6 +322,12 @@ ccss_url (GSList const  *args,
     return NULL;
   filename = &given_path[7];
 
+  /*
+   * Handle absolute paths correctly
+   */
+  if (*filename == '/')
+    return strdup (filename);
+
   /* first try looking in the theme dir */
   test_path = g_build_filename (g_get_user_config_dir (),
                                 "nbtk",

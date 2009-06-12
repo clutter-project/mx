@@ -35,13 +35,6 @@
 
 G_BEGIN_DECLS
 
-typedef enum
-{
-  NBTK_SCROLL_BAR_MODE_DEFAULT = 0,
-  NBTK_SCROLL_BAR_MODE_INTERPOLATE,
-  NBTK_SCROLL_BAR_MODE_IDLE
-} NbtkScrollBarMode;
-
 #define NBTK_TYPE_SCROLL_BAR            (nbtk_scroll_bar_get_type())
 #define NBTK_SCROLL_BAR(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_SCROLL_BAR, NbtkScrollBar))
 #define NBTK_IS_SCROLL_BAR(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NBTK_TYPE_SCROLL_BAR))
@@ -78,10 +71,6 @@ NbtkWidget *    nbtk_scroll_bar_new            (NbtkAdjustment *adjustment);
 void            nbtk_scroll_bar_set_adjustment (NbtkScrollBar  *bar,
                                                 NbtkAdjustment *adjustment);
 NbtkAdjustment *nbtk_scroll_bar_get_adjustment (NbtkScrollBar  *bar);
-
-NbtkScrollBarMode nbtk_scroll_bar_get_mode     (NbtkScrollBar     *bar);
-void              nbtk_scroll_bar_set_mode     (NbtkScrollBar     *bar,
-                                                NbtkScrollBarMode  mode);
 
 G_END_DECLS
 

@@ -398,6 +398,7 @@ nbtk_widget_finalize (GObject *gobject)
   NbtkWidgetPrivate *priv = NBTK_WIDGET (gobject)->priv;
 
   g_free (priv->style_class);
+  g_free (priv->pseudo_class);
 
   G_OBJECT_CLASS (nbtk_widget_parent_class)->finalize (gobject);
 }
@@ -594,7 +595,7 @@ nbtk_widget_style_changed (NbtkStylable *self)
   NbtkBorderImage *border_image = NULL;
   NbtkTextureCache *texture_cache;
   ClutterTexture *texture;
-  gchar *bg_file;
+  gchar *bg_file = NULL;
   NbtkPadding *padding = NULL;
   gboolean relayout_needed = FALSE;
   gboolean has_changed = FALSE;
@@ -701,7 +702,8 @@ nbtk_widget_style_changed (NbtkStylable *self)
       relayout_needed = TRUE;
     }
 
-  if (bg_file != NULL)
+  if (bg_file != NULL &&
+      strcmp (bg_file, "none"))
     {
       texture = nbtk_texture_cache_get_texture (texture_cache,
                                                 bg_file,
@@ -716,10 +718,10 @@ nbtk_widget_style_changed (NbtkStylable *self)
       else
         g_warning ("Could not load %s", bg_file);
 
-      g_free (bg_file);
       has_changed = TRUE;
       relayout_needed = TRUE;
     }
+    g_free (bg_file);
 
   /* If there are any properties above that need to cause a relayout thay
    * should set this flag.

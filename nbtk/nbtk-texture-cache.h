@@ -82,8 +82,12 @@ NbtkTextureCache* nbtk_texture_cache_get_default (void);
 ClutterTexture*   nbtk_texture_cache_get_texture (NbtkTextureCache *self,
                                                   const gchar *path,
                                                   gboolean want_clone);
+ClutterActor*     nbtk_texture_cache_get_actor (NbtkTextureCache *self,
+                                                  const gchar *path);
 
 gint              nbtk_texture_cache_get_size    (NbtkTextureCache *self);
+
+void nbtk_texture_cache_load_cache(NbtkTextureCache *self, char *filename);
 
 G_END_DECLS
 
