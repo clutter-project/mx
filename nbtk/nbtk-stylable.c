@@ -160,7 +160,7 @@ nbtk_stylable_base_init (gpointer g_iface)
     g_signal_new (I_("stylable-changed"),
                   iface_type,
                   G_SIGNAL_RUN_LAST,
-                  G_STRUCT_OFFSET (NbtkStylableIface, style_changed),
+                  G_STRUCT_OFFSET (NbtkStylableIface, stylable_changed),
                   NULL, NULL,
                   _nbtk_marshal_VOID__VOID,
                   G_TYPE_NONE, 0);
