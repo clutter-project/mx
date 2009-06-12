@@ -111,10 +111,6 @@ nbtk_label_style_changed (NbtkWidget *self)
   gchar *font_string;
   gint font_size;
 
-  /* Skip retrieving style information until we are mapped */
-  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor*) self))
-    return;
-
   nbtk_stylable_get (NBTK_STYLABLE (self),
                      "color", &color,
                      "font-family", &font_name,
