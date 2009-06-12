@@ -736,6 +736,14 @@ nbtk_widget_style_changed (NbtkStylable *self)
 }
 
 static void
+nbtk_widget_stylable_child_notify (ClutterActor *actor,
+                                   gpointer      user_data)
+{
+  if (NBTK_IS_STYLABLE (actor))
+    nbtk_stylable_changed ((NbtkStylable*) actor);
+}
+
+static void
 nbtk_widget_stylable_changed (NbtkStylable *stylable)
 {
   /* update the style only if we are mapped */
@@ -749,10 +757,9 @@ nbtk_widget_stylable_changed (NbtkStylable *stylable)
     {
       /* notify our children that their parent stylable has changed */
       clutter_container_foreach ((ClutterContainer *) stylable,
-                                 (ClutterCallback) nbtk_stylable_changed,
+                                 nbtk_widget_stylable_child_notify,
                                  NULL);
     }
-  g_debug ("stylable changed on %s", G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (stylable)));
 }
 
 static void
