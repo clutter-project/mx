@@ -337,21 +337,8 @@ nbtk_scroll_view_style_changed (NbtkWidget *widget)
 {
   NbtkScrollViewPrivate *priv = NBTK_SCROLL_VIEW (widget)->priv;
 
-  /* Skip retrieving style information until we are mapped */
-  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor*) widget))
-    return;
-
-  NBTK_WIDGET_CLASS (nbtk_scroll_view_parent_class)->style_changed (widget);
-
-  if (priv->child)
-    {
-      NBTK_WIDGET_GET_CLASS (NBTK_WIDGET (priv->child))
-        ->style_changed (NBTK_WIDGET (priv->child));
-    }
-  NBTK_WIDGET_GET_CLASS (NBTK_WIDGET (priv->hscroll))
-    ->style_changed (NBTK_WIDGET (priv->hscroll));
-  NBTK_WIDGET_GET_CLASS (NBTK_WIDGET (priv->vscroll))
-    ->style_changed (NBTK_WIDGET (priv->vscroll));
+  nbtk_stylable_changed ((NbtkStylable *) priv->hscroll);
+  nbtk_stylable_changed ((NbtkStylable *) priv->vscroll);
 }
 
 static void
@@ -359,7 +346,6 @@ nbtk_scroll_view_class_init (NbtkScrollViewClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
 
   g_type_class_add_private (klass, sizeof (NbtkScrollViewPrivate));
 
@@ -373,8 +359,6 @@ nbtk_scroll_view_class_init (NbtkScrollViewClass *klass)
   actor_class->get_preferred_width = nbtk_scroll_view_get_preferred_width;
   actor_class->get_preferred_height = nbtk_scroll_view_get_preferred_height;
   actor_class->allocate = nbtk_scroll_view_allocate;
-
-  widget_class->style_changed = nbtk_scroll_view_style_changed;
 
   g_object_class_install_property (object_class,
                                    PROP_HSCROLL,
@@ -528,6 +512,9 @@ nbtk_scroll_view_init (NbtkScrollView *self)
   clutter_actor_set_rotation (priv->vscroll, CLUTTER_Z_AXIS, 90.0, 0, 0, 0);
 
   g_object_set (G_OBJECT (self), "reactive", FALSE, NULL);
+
+  g_signal_connect (self, "style-changed",
+                    G_CALLBACK (nbtk_scroll_view_style_changed), NULL);
 }
 
 static void

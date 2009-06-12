@@ -331,20 +331,11 @@ nbtk_scroll_bar_style_changed (NbtkWidget *widget)
 {
   NbtkScrollBarPrivate *priv = NBTK_SCROLL_BAR (widget)->priv;
 
-  /* Skip retrieving style information until we are mapped */
-  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor*) widget))
-    return;
+  nbtk_stylable_changed ((NbtkStylable *) priv->bw_stepper);
+  nbtk_stylable_changed ((NbtkStylable *) priv->fw_stepper);
+  nbtk_stylable_changed ((NbtkStylable *) priv->trough);
+  nbtk_stylable_changed ((NbtkStylable *) priv->handle);
 
-  NBTK_WIDGET_CLASS (nbtk_scroll_bar_parent_class)->style_changed (widget);
-
-  NBTK_WIDGET_GET_CLASS (NBTK_WIDGET (priv->bw_stepper))
-    ->style_changed (NBTK_WIDGET (priv->bw_stepper));
-  NBTK_WIDGET_GET_CLASS (NBTK_WIDGET (priv->fw_stepper))
-    ->style_changed (NBTK_WIDGET (priv->fw_stepper));
-  NBTK_WIDGET_GET_CLASS (NBTK_WIDGET (priv->trough))
-    ->style_changed (NBTK_WIDGET (priv->trough));
-  NBTK_WIDGET_GET_CLASS (NBTK_WIDGET (priv->handle))
-    ->style_changed (NBTK_WIDGET (priv->handle));
 }
 
 static void
@@ -427,7 +418,6 @@ nbtk_scroll_bar_class_init (NbtkScrollBarClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
 
   g_type_class_add_private (klass, sizeof (NbtkScrollBarPrivate));
 
@@ -442,8 +432,6 @@ nbtk_scroll_bar_class_init (NbtkScrollBarClass *klass)
   actor_class->scroll_event   = nbtk_scroll_bar_scroll_event;
   actor_class->map            = nbtk_scroll_bar_map;
   actor_class->unmap          = nbtk_scroll_bar_unmap;
-
-  widget_class->style_changed = nbtk_scroll_bar_style_changed;
 
   g_object_class_install_property
            (object_class,
@@ -791,6 +779,8 @@ nbtk_scroll_bar_init (NbtkScrollBar *self)
   g_signal_connect (self->priv->handle, "button-press-event",
                     G_CALLBACK (handle_button_press_event_cb), self);
 
+  g_signal_connect (self, "style-changed",
+                    G_CALLBACK (nbtk_scroll_bar_style_changed), NULL);
 }
 
 NbtkWidget *

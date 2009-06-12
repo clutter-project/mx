@@ -111,10 +111,6 @@ nbtk_label_style_changed (NbtkWidget *self)
   gchar *font_string;
   gint font_size;
 
-  /* Skip retrieving style information until we are mapped */
-  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor*) self))
-    return;
-
   nbtk_stylable_get (NBTK_STYLABLE (self),
                      "color", &color,
                      "font-family", &font_name,
@@ -146,8 +142,6 @@ nbtk_label_style_changed (NbtkWidget *self)
       g_free (font_string);
     }
 
-  if (NBTK_WIDGET_CLASS (nbtk_label_parent_class)->style_changed)
-    NBTK_WIDGET_CLASS (nbtk_label_parent_class)->style_changed (self);
 }
 
 static void
@@ -254,7 +248,6 @@ nbtk_label_class_init (NbtkLabelClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (NbtkLabelPrivate));
@@ -268,8 +261,6 @@ nbtk_label_class_init (NbtkLabelClass *klass)
   actor_class->get_preferred_height = nbtk_label_get_preferred_height;
   actor_class->map = nbtk_label_map;
   actor_class->unmap = nbtk_label_unmap;
-
-  widget_class->style_changed = nbtk_label_style_changed;
 
   pspec = g_param_spec_string ("text",
                                "Text",
@@ -292,6 +283,9 @@ nbtk_label_init (NbtkLabel *label)
                                      NULL);
 
   clutter_actor_set_parent (priv->label, CLUTTER_ACTOR (label));
+
+  g_signal_connect (label, "style-changed",
+                    G_CALLBACK (nbtk_label_style_changed), NULL);
 }
 
 /**

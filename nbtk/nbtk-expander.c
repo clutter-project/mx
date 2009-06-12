@@ -484,12 +484,6 @@ nbtk_expander_style_changed (NbtkWidget *widget)
   gchar *font_string;
   gint font_size;
 
-  /* Skip retrieving style information until we are mapped */
-  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor*) widget))
-    return;
-
-  NBTK_WIDGET_CLASS (nbtk_expander_parent_class)->style_changed (widget);
-
   pseudo_class = nbtk_widget_get_style_pseudo_class (widget);
 
   nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (expander->priv->arrow),
@@ -572,7 +566,6 @@ nbtk_expander_class_init (NbtkExpanderClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (NbtkExpanderPrivate));
@@ -591,8 +584,6 @@ nbtk_expander_class_init (NbtkExpanderClass *klass)
   actor_class->leave_event = nbtk_expander_leave;
   actor_class->map = nbtk_expander_map;
   actor_class->unmap = nbtk_expander_unmap;
-
-  widget_class->style_changed = nbtk_expander_style_changed;
 
   pspec = g_param_spec_boolean ("expanded",
                                 "Expanded",
@@ -644,6 +635,9 @@ nbtk_expander_init (NbtkExpander *self)
   priv->alpha = clutter_alpha_new_full (priv->timeline, CLUTTER_EASE_IN_SINE);
 
   clutter_actor_set_reactive ((ClutterActor *) self, TRUE);
+
+  g_signal_connect (self, "style-changed",
+                    G_CALLBACK (nbtk_expander_style_changed), NULL);
 }
 
 /**
