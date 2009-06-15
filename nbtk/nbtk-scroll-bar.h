@@ -63,6 +63,10 @@ struct _NbtkScrollBar
 struct _NbtkScrollBarClass
 {
   NbtkBinClass parent_class;
+
+  /* signals */
+  void (*scroll_start) (NbtkScrollBar *bar);
+  void (*scroll_stop)  (NbtkScrollBar *bar);
 };
 
 GType nbtk_scroll_bar_get_type (void) G_GNUC_CONST;

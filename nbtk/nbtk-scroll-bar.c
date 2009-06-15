@@ -77,6 +77,16 @@ enum
   PROP_ADJUSTMENT
 };
 
+enum
+{
+  SCROLL_START,
+  SCROLL_STOP,
+
+  LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL] = { 0, };
+
 static gboolean
 handle_button_press_event_cb (ClutterActor       *actor,
                               ClutterButtonEvent *event,
@@ -441,6 +451,24 @@ nbtk_scroll_bar_class_init (NbtkScrollBarClass *klass)
                                  "The adjustment",
                                  NBTK_TYPE_ADJUSTMENT,
                                  NBTK_PARAM_READWRITE));
+
+  signals[SCROLL_START] =
+    g_signal_new ("scroll-start",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (NbtkScrollBarClass, scroll_start),
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
+
+  signals[SCROLL_STOP] =
+    g_signal_new ("scroll-stop",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (NbtkScrollBarClass, scroll_stop),
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
 }
 
 static void
@@ -537,6 +565,7 @@ handle_capture_event_cb (ClutterActor       *trough,
 	}
 
       clutter_set_motion_events_enabled (TRUE); 
+      g_signal_emit (bar, signals[SCROLL_STOP], 0);
     }
 
   return TRUE;
@@ -569,6 +598,7 @@ handle_button_press_event_cb (ClutterActor       *actor,
 				  "captured-event",
 				  G_CALLBACK (handle_capture_event_cb),
 				  bar);
+  g_signal_emit (bar, signals[SCROLL_START], 0);
 
   return TRUE;
 }
