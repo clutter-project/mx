@@ -1,5 +1,12 @@
 NULL =
 
+# installed utilities
+bin_PROGRAMS = nbtk-create-image-cache
+nbtk_create_image_cache_SOURCES = nbtk-create-image-cache.c
+nbtk_create_image_cache_LDADD = $(GTK_LIBS)
+nbtk_create_image_cache_CFLAGS = $(GTK_CFLAGS) $(NBTK_MAINTAINER_CFLAGS)
+
+
 BUILT_SOURCES = 		\
 	nbtk-enum-types.h 	\
 	nbtk-enum-types.c 	\
