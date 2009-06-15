@@ -772,6 +772,19 @@ forward_stepper_clicked (NbtkButton    *stepper,
 }
 
 static void
+nbtk_scroll_bar_notify_reactive (NbtkScrollBar *self)
+{
+  NbtkScrollBarPrivate *priv = self->priv;
+
+  gboolean reactive = CLUTTER_ACTOR_IS_REACTIVE (self);
+
+  clutter_actor_set_reactive (CLUTTER_ACTOR (priv->bw_stepper), reactive);
+  clutter_actor_set_reactive (CLUTTER_ACTOR (priv->fw_stepper), reactive);
+  clutter_actor_set_reactive (CLUTTER_ACTOR (priv->trough), reactive);
+  clutter_actor_set_reactive (CLUTTER_ACTOR (priv->handle), reactive);
+}
+
+static void
 nbtk_scroll_bar_init (NbtkScrollBar *self)
 {
   self->priv = NBTK_SCROLL_BAR_GET_PRIVATE (self);
@@ -809,8 +822,12 @@ nbtk_scroll_bar_init (NbtkScrollBar *self)
   g_signal_connect (self->priv->handle, "button-press-event",
                     G_CALLBACK (handle_button_press_event_cb), self);
 
+  clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
+
   g_signal_connect (self, "style-changed",
                     G_CALLBACK (nbtk_scroll_bar_style_changed), NULL);
+  g_signal_connect (self, "notify::reactive",
+                    G_CALLBACK (nbtk_scroll_bar_notify_reactive), NULL);
 }
 
 NbtkWidget *
