@@ -52,6 +52,7 @@
 #include <glib.h>
 
 #include <clutter/clutter.h>
+#include <clutter-imcontext/clutter-imtext.h>
 
 #include "nbtk-entry.h"
 
@@ -743,7 +744,7 @@ nbtk_entry_init (NbtkEntry *entry)
 
   priv = entry->priv = NBTK_ENTRY_GET_PRIVATE (entry);
 
-  priv->entry = g_object_new (CLUTTER_TYPE_TEXT,
+  priv->entry = g_object_new (CLUTTER_TYPE_IMTEXT,
                               "line-alignment", PANGO_ALIGN_LEFT,
                               "editable", TRUE,
                               "reactive", TRUE,

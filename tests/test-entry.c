@@ -20,6 +20,7 @@
 #include <stdlib.h>
 
 #include <clutter/clutter.h>
+#include <clutter-imcontext/clutter-imtext.h>
 #include <nbtk/nbtk.h>
 
 static void
@@ -65,6 +66,8 @@ main (int argc, char *argv[])
   clutter_container_add (CLUTTER_CONTAINER (stage),
                          CLUTTER_ACTOR (entry), NULL);
   nbtk_entry_set_hint_text (NBTK_ENTRY (entry), "hint hint...");
+
+  clutter_imtext_set_autoshow_im (CLUTTER_IMTEXT (nbtk_entry_get_clutter_text (NBTK_ENTRY (entry))), TRUE);
 
   button = nbtk_button_new_with_label ("Set");
   clutter_actor_set_position (CLUTTER_ACTOR (button), 20, 120);
