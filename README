@@ -4,7 +4,6 @@ NBTK
 'NBTK' is a currently experiemental toolkit for the moblin-netbook
 implementation.
 
-It depends on libccss of which can be obtained via 
+It depends on libccss of which can be obtained from:
 
-  git clone    ssh://git@git.moblin.org/libccss.git
-  git checkout -b branch-for-nbtk origin/branch-for-nbtk
+http://people.freedesktop.org/~robsta/libccss/
