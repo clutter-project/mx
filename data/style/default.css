@@ -65,3 +65,40 @@ NbtkEntry
   padding: 5px;
   border-image: url("file://text-entry.png") 5;
 }
+
+/*
+ * Expander
+ */
+
+NbtkExpander {
+  color: blank;
+  font-size: 15;
+  border-image: url('file://expander-closed.png') 6;
+  padding: 6 12;
+}
+
+NbtkExpander:hover {
+  border-image: url('file://expander-hover.png') 6;
+}
+
+NbtkExpander:active {
+  border-image: url('file://expander-open.png') 36 6 6 6;
+}
+
+NbtkExpander > *#nbtk-expander-arrow-closed {
+    padding: 0;
+    background-image: url('file://expander-arrow-up.png');
+}
+
+NbtkExpander > *#nbtk-expander-arrow-closed:hover {
+    background-image: url('file://expander-arrow-up-hover.png');
+}
+
+NbtkExpander > *#nbtk-expander-arrow-open {
+    background-image: url('file://expander-arrow-down.png');
+}
+
+NbtkExpander > *#nbtk-expander-arrow-open:hover {
+    background-image: url('file://expander-arrow-down-hover.png');
+}
+
