@@ -397,7 +397,7 @@ nbtk_icon_view_set_model (NbtkIconView *icon_view,
   NbtkIconViewPrivate *priv;
 
   g_return_if_fail (NBTK_IS_ICON_VIEW (icon_view));
-  g_return_if_fail (CLUTTER_IS_MODEL (model));
+  g_return_if_fail (model == NULL || CLUTTER_IS_MODEL (model));
 
   priv = icon_view->priv;
 
