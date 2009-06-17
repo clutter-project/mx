@@ -73,7 +73,7 @@ struct _NbtkWidgetPrivate
   gboolean dnd_grab   : 1;
   gboolean is_stylable : 1;
   gboolean has_tooltip : 1;
-  gboolean has_style : 1; /* has the style information been read */
+  gboolean is_style_dirty : 1;
 
   NbtkTooltip *tooltip;
 };
@@ -605,8 +605,6 @@ nbtk_widget_style_changed (NbtkStylable *self)
   if (!priv->is_stylable)
     return;
 
-  priv->has_style = TRUE;
-
   /* cache these values for use in the paint function */
   nbtk_stylable_get (self,
                     "background-color", &color,
@@ -733,6 +731,8 @@ nbtk_widget_style_changed (NbtkStylable *self)
       else
         clutter_actor_queue_redraw ((ClutterActor *) self);
     }
+
+  priv->is_style_dirty = FALSE;
 }
 
 static void
@@ -746,6 +746,9 @@ nbtk_widget_stylable_child_notify (ClutterActor *actor,
 static void
 nbtk_widget_stylable_changed (NbtkStylable *stylable)
 {
+
+  NBTK_WIDGET (stylable)->priv->is_style_dirty = TRUE;
+
   /* update the style only if we are mapped */
   if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor *) stylable))
     return;
@@ -1893,7 +1896,7 @@ nbtk_widget_ensure_style (NbtkWidget *widget)
 {
   g_return_if_fail (NBTK_IS_WIDGET (widget));
 
-  if (!widget->priv->has_style)
+  if (widget->priv->is_style_dirty)
     {
       g_signal_emit_by_name (widget, "style-changed", 0);
     }
