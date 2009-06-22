@@ -426,7 +426,6 @@ nbtk_table_homogeneous_allocate (ClutterActor          *self,
   for (list = priv->children; list; list = g_slist_next (list))
     {
       gint row, col, row_span, col_span;
-      gboolean keep_ratio;
       NbtkTableChild *meta;
       ClutterActor *child;
       ClutterActorBox childbox;
@@ -445,7 +444,6 @@ nbtk_table_homogeneous_allocate (ClutterActor          *self,
       row = meta->row;
       row_span = meta->row_span;
       col_span = meta->col_span;
-      keep_ratio = meta->keep_ratio;
       x_align = meta->x_align;
       y_align = meta->y_align;
       x_fill = meta->x_fill;
@@ -458,36 +456,6 @@ nbtk_table_homogeneous_allocate (ClutterActor          *self,
       childbox.y2 = childbox.y1 + (row_height * row_span) + (row_spacing * (row_span - 1));
 
       nbtk_table_allocate_fill (child, &childbox, x_align, y_align, x_fill, y_fill);
-
-      if (keep_ratio)
-        {
-          gfloat w, h;
-          gint new_width;
-          gint new_height;
-          gint center_offset;
-
-          clutter_actor_get_size (child, &w, &h);
-
-          new_height = ((gdouble) h / w)  * ((gdouble) childbox.x2 - childbox.x1);
-          new_width = ((gdouble) w / h)  * ((gdouble) childbox.y2 - childbox.y1);
-
-
-          if (new_height > row_height)
-            {
-              /* center for new width */
-              center_offset = ((childbox.x2 - childbox.x1) - new_width) * x_align;
-              childbox.x1 = childbox.x1 + center_offset;
-              childbox.x2 = childbox.x1 + new_width;
-            }
-          else
-            {
-              /* center for new height */
-              center_offset = ((childbox.y2 - childbox.y1) - new_height) * y_align;
-              childbox.y1 = childbox.y1 + center_offset;
-              childbox.y2 = childbox.y1 + new_height;
-            }
-
-        }
 
       clutter_actor_allocate (child, &childbox, flags);
     }
@@ -829,7 +797,6 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
     {
       gint row, col, row_span, col_span;
       gint col_width, row_height;
-      gboolean keep_ratio;
       NbtkTableChild *meta;
       ClutterActor *child;
       ClutterActorBox childbox;
@@ -849,7 +816,6 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
       row = meta->row;
       row_span = meta->row_span;
       col_span = meta->col_span;
-      keep_ratio = meta->keep_ratio;
       x_align = meta->x_align;
       y_align = meta->y_align;
       x_fill = meta->x_fill;
@@ -908,35 +874,6 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
 
 
       nbtk_table_allocate_fill (child, &childbox, x_align, y_align, x_fill, y_fill);
-
-      if (keep_ratio)
-        {
-          gfloat w, h;
-          gfloat new_width;
-          gfloat new_height;
-          gint center_offset;
-
-          clutter_actor_get_size (child, &w, &h);
-
-          new_height = (h / w)  * (gfloat) col_width;
-          new_width = (w / h)  * (gfloat) row_height;
-
-
-          if (new_height > row_height)
-            {
-              /* apply new width */
-              center_offset = ((int) (childbox.x2 - childbox.x1) - new_width) * x_align;
-              childbox.x1 = childbox.x1 + (float) center_offset;
-              childbox.x2 = childbox.x1 + (float) new_width;
-            }
-          else
-            {
-              /* apply new height */
-              center_offset = ((int) (childbox.y2 - childbox.y1) - new_height) * y_align;
-              childbox.y1 = childbox.y1 + (float) center_offset;
-              childbox.y2 = childbox.y1 + (float) new_height;
-            }
-        }
 
       clutter_actor_allocate (child, &childbox, flags);
     }
@@ -1172,26 +1109,9 @@ nbtk_table_dnd_dropped (NbtkWidget   *actor,
 			gint          y)
 {
   ClutterActor *parent;
-  gboolean keep_ratio = FALSE;
 
   g_object_ref (dragged);
   parent = clutter_actor_get_parent (dragged);
-
-  if (NBTK_IS_TABLE (parent))
-    {
-      NbtkTableChild *meta;
-
-      meta = NBTK_TABLE_CHILD (
-		clutter_container_get_child_meta (CLUTTER_CONTAINER (parent),
-						  dragged));
-
-      /*
-       * Must do it like this, as meta->keep_ratio is a 1 bit field, and
-       * we can only pass actual TRUE/FALSE values into the property setter.
-       */
-      if (meta->keep_ratio)
-	keep_ratio = TRUE;
-    }
 
   clutter_container_remove_actor (CLUTTER_CONTAINER (parent), dragged);
   nbtk_table_add_actor (NBTK_TABLE (actor), dragged, NBTK_TABLE (actor)->priv->n_rows, 0);

@@ -46,7 +46,6 @@ enum {
   CHILD_PROP_ROW,
   CHILD_PROP_COL_SPAN,
   CHILD_PROP_ROW_SPAN,
-  CHILD_PROP_KEEP_RATIO,
   CHILD_PROP_X_EXPAND,
   CHILD_PROP_Y_EXPAND,
   CHILD_PROP_X_ALIGN,
@@ -88,13 +87,6 @@ table_child_set_property (GObject      *gobject,
       break;
     case CHILD_PROP_ROW_SPAN:
       child->row_span = g_value_get_int (value);
-      clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
-      break;
-    case CHILD_PROP_KEEP_RATIO:
-      g_warning ("The \"keep-aspect-ratio\" property of NbtkTableChild is"
-                 " deprecated. Please implement this feature using the child's"
-                 " preferred width and height mechanism");
-      child->keep_ratio = g_value_get_boolean (value);
       clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
     case CHILD_PROP_X_EXPAND:
@@ -156,9 +148,6 @@ table_child_get_property (GObject    *gobject,
       break;
     case CHILD_PROP_ROW_SPAN:
       g_value_set_int (value, child->row_span);
-      break;
-    case CHILD_PROP_KEEP_RATIO:
-      g_value_set_boolean (value, child->keep_ratio);
       break;
     case CHILD_PROP_X_EXPAND:
       g_value_set_boolean (value, child->x_expand);
@@ -241,16 +230,6 @@ nbtk_table_child_class_init (NbtkTableChildClass *klass)
                             NBTK_PARAM_READWRITE);
 
   g_object_class_install_property (gobject_class, CHILD_PROP_COL_SPAN, pspec);
-
-  pspec = g_param_spec_boolean ("keep-aspect-ratio",
-                                "Keep Aspect Ratio",
-                                "Whether the container should attempt to "
-                                "preserve the child's aspect ratio when "
-                                "allocating it's size",
-                                FALSE,
-                                NBTK_PARAM_READWRITE);
-
-  g_object_class_install_property (gobject_class, CHILD_PROP_KEEP_RATIO, pspec);
 
   pspec = g_param_spec_boolean ("x-expand",
                                 "X Expand",
