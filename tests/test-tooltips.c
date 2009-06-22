@@ -86,6 +86,16 @@ main (int argc, char *argv[])
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 250, 5);
 
+  button = nbtk_button_new_with_label ("Bottom");
+  nbtk_widget_set_tooltip_text (button,
+                           "Hello Hello Hello");
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage),
+                               CLUTTER_ACTOR (button));
+  clutter_actor_set_position (CLUTTER_ACTOR (button), 250, 440);
+
+
+
+
   clutter_actor_show (stage);
 
   clutter_main ();
