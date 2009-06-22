@@ -460,25 +460,6 @@ nbtk_stylable_get_property (NbtkStylable *stylable,
 }
 
 /**
- * nbtk_stylable_set_property:
- * @stylable: a #NbtkStylable
- * @property_name: the name of the property to set
- * @value: an initialized #GValue
- *
- * Sets the property @property_name with @value.
- *
- * @Deprecated: this function is deprecated and should not be used
- */
-G_GNUC_DEPRECATED void
-nbtk_stylable_set_property (NbtkStylable *stylable,
-                            const gchar  *property_name,
-                            const GValue *value)
-{
-  g_warning ("%s is deprecated and will be removed in future versions",
-             __FUNCTION__);
-}
-
-/**
  * nbtk_stylable_get:
  * @stylable: a #NbtkStylable
  * @first_property_name: name of the first property to get
@@ -527,24 +508,6 @@ nbtk_stylable_get (NbtkStylable *stylable,
   va_start (args, first_property_name);
   nbtk_style_get_valist (style, stylable, first_property_name, args);
   va_end (args);
-}
-
-/**
- * nbtk_stylable_set:
- * @stylable: a #NbtkStylable
- * @first_property_name: name of the first property to set
- * @Varargs: value for the first property, followed optionally by
- *   more name/value pairs, followed by %NULL
- *
- * Sets the style properties of @stylable.
- */
-G_GNUC_DEPRECATED void
-nbtk_stylable_set (NbtkStylable *stylable,
-                   const gchar  *first_property_name,
-                   ...)
-{
-  g_warning ("%s is deprecated and will be removed in future versions",
-             __FUNCTION__);
 }
 
 /**
