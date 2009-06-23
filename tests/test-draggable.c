@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <cogl/cogl.h>
+#include <cogl/cogl-pango.h>
 #include <clutter/clutter.h>
 #include <nbtk/nbtk.h>
 
