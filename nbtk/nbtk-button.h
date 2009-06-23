@@ -88,10 +88,6 @@ gboolean              nbtk_button_get_toggle_mode    (NbtkButton *button);
 void                  nbtk_button_set_checked        (NbtkButton *button, gboolean checked);
 gboolean              nbtk_button_get_checked        (NbtkButton *button);
 
-#ifndef NBTK_DISABLE_DEPRECATED
-G_GNUC_DEPRECATED void nbtk_button_set_tooltip (NbtkButton *button, const gchar *label);
-#endif /* NBTK_DISABLE_DEPRECATED */
-
 G_END_DECLS
 
 #endif /* __NBTK_BUTTON_H__ */
