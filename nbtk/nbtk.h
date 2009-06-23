@@ -27,6 +27,8 @@
 #include <nbtk/nbtk-adjustment.h>
 #include <nbtk/nbtk-bin.h>
 #include <nbtk/nbtk-button.h>
+#include <nbtk/nbtk-draggable.h>
+#include <nbtk/nbtk-droppable.h>
 #include <nbtk/nbtk-cell-renderer.h>
 #include <nbtk/nbtk-clipboard.h>
 #include <nbtk/nbtk-entry.h>

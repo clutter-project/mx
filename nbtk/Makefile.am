@@ -18,6 +18,8 @@ source_h = \
 	$(top_srcdir)/nbtk/nbtk-adjustment.h		\
 	$(top_srcdir)/nbtk/nbtk-bin.h			\
 	$(top_srcdir)/nbtk/nbtk-button.h 		\
+	$(top_srcdir)/nbtk/nbtk-draggable.h 		\
+	$(top_srcdir)/nbtk/nbtk-droppable.h 		\
 	$(top_srcdir)/nbtk/nbtk-cell-renderer.h 	\
 	$(top_srcdir)/nbtk/nbtk-clipboard.h		\
 	$(top_srcdir)/nbtk/nbtk-entry.h 		\
@@ -142,6 +144,8 @@ libnbtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	nbtk-adjustment.c 		\
 	nbtk-bin.c			\
 	nbtk-button.c 			\
+	nbtk-draggable.c		\
+	nbtk-droppable.c		\
 	nbtk-cell-renderer.c 		\
 	nbtk-clipboard.c 		\
 	nbtk-entry.c 			\

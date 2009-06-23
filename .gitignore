@@ -86,6 +86,8 @@ stamp-h*
 tests/test-border-image
 tests/test-buttons
 tests/test-container-matching
+tests/test-draggable
+tests/test-droppable
 tests/test-entry
 tests/test-expander
 tests/test-grid

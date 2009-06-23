@@ -11,6 +11,8 @@ INCLUDES = \
 
 noinst_PROGRAMS = 		\
 	test-buttons 		\
+	test-draggable		\
+	test-droppable		\
 	test-label 		\
 	test-entry 		\
 	test-expander 		\
@@ -49,6 +51,9 @@ test_scroll_bar_SOURCES = test-scroll-bar.c
 test_scroll_grid_SOURCES = test-scroll-grid.c
 test_scroll_view_2_SOURCES = test-scroll-view-2.c
 test_scroll_view_3_SOURCES = test-scroll-view-3.c
+
+test_draggable_SOURCES = test-draggable.c
+test_droppable_SOURCES = test-droppable.c
 
 EXTRA_DIST = \
         redhand.png rounded-corner.png \
