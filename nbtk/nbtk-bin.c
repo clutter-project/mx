@@ -59,8 +59,6 @@ enum
   PROP_0,
 
   PROP_CHILD,
-  PROP_PADDING,
-  PROP_PADDING_SET,
   PROP_X_ALIGN,
   PROP_Y_ALIGN,
   PROP_X_FILL,
@@ -395,11 +393,6 @@ nbtk_bin_set_property (GObject      *gobject,
       nbtk_bin_set_child (bin, g_value_get_object (value));
       break;
 
-    case PROP_PADDING:
-      g_warning ("The padding property is deprecated, please set padding using"
-                 " a stylesheet");
-      break;
-
     case PROP_X_ALIGN:
       nbtk_bin_set_alignment (bin,
                               g_value_get_enum (value),
@@ -436,31 +429,11 @@ nbtk_bin_get_property (GObject    *gobject,
                        GParamSpec *pspec)
 {
   NbtkBinPrivate *priv = NBTK_BIN (gobject)->priv;
-  NbtkPadding padding = { 0, };
 
   switch (prop_id)
     {
     case PROP_CHILD:
       g_value_set_object (value, priv->child);
-      break;
-
-    case PROP_PADDING:
-      g_warning ("The padding property on NbtkBin is deprecated, please use"                          " nbtk_widget_get_padding() instead.");
-      nbtk_widget_get_padding (NBTK_WIDGET (gobject), &padding);
-      g_value_set_boxed (value, &padding);
-      break;
-
-    case PROP_PADDING_SET:
-      g_warning ("The padding-set property on NbtkBin is deprecated, it should not"
-                 " be used.");
-      break;
-
-    case PROP_X_ALIGN:
-      g_value_set_enum (value, priv->x_align);
-      break;
-
-    case PROP_Y_ALIGN:
-      g_value_set_enum (value, priv->y_align);
       break;
 
     case PROP_X_FILL:
@@ -506,32 +479,6 @@ nbtk_bin_class_init (NbtkBinClass *klass)
                                CLUTTER_TYPE_ACTOR,
                                NBTK_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_CHILD, pspec);
-
-  /**
-   * NbtkBin:padding:
-   *
-   * The padding of the #NbtkBin child from the internal border
-   * of the #NbtkBin actor.
-   */
-  pspec = g_param_spec_boxed ("padding",
-                              "Padding",
-                              "The padding of the child",
-                              NBTK_TYPE_PADDING,
-                              NBTK_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class, PROP_PADDING, pspec);
-
-  /**
-   * NbtkBin:padding-set:
-   *
-   * Whether the #NbtkBin:padding has been set using
-   * nbtk_bin_set_padding() or by the CSS theme.
-   */
-  pspec = g_param_spec_boolean ("padding-set",
-                                "Padding Set",
-                                "Whether the padding has been set",
-                                FALSE,
-                                NBTK_PARAM_READABLE);
-  g_object_class_install_property (gobject_class, PROP_PADDING_SET, pspec);
 
   /**
    * NbtkBin:x-align:
@@ -672,49 +619,6 @@ nbtk_bin_get_child (NbtkBin *bin)
   g_return_val_if_fail (NBTK_IS_BIN (bin), NULL);
 
   return bin->priv->child;
-}
-
-/**
- * nbtk_bin_set_padding:
- * @bin: a #NbtkBin
- * @padding: the padding of the bin, or %NULL
- *
- * Sets the padding of #NbtkBin. The padding is the space from
- * the internal border of the #NbtkBin used when allocating the
- * child.
- *
- * If @padding is %NULL the default padding provided by the
- * CSS theme will be used instead.
- *
- * Deprecated: please set padding using a stylesheet
- */
-void
-nbtk_bin_set_padding (NbtkBin           *bin,
-                      const NbtkPadding *padding)
-{
-  g_warning ("%s is deprecated, please set padding using a stylesheet",
-             __FUNCTION__);
-}
-
-/**
- * nbtk_bin_get_padding:
- * @bin: a #NbtkBin
- * @padding: return location for a #NbtkPadding
- *
- * Retrieves the padding set using nbtk_bin_set_padding().
- *
- * Deprecated: Please use nbtk_widget_get_padding instead
- */
-G_GNUC_DEPRECATED void
-nbtk_bin_get_padding (NbtkBin     *bin,
-                      NbtkPadding *padding)
-{
-  g_return_if_fail (NBTK_IS_BIN (bin));
-  g_return_if_fail (padding != NULL);
-
-  g_warning ("%s is deprecated. Please use nbtk_widget_get_padding instead",
-             __FUNCTION__);
-  nbtk_widget_get_padding (NBTK_WIDGET (bin), padding);
 }
 
 /**

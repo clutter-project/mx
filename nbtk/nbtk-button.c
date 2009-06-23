@@ -1018,18 +1018,3 @@ nbtk_button_set_icon (NbtkButton    *button,
     }
 }
 
-/**
- * nbtk_button_set_tooltip:
- * @button: a #NbtkButton
- * @label: text to display in the tooltip, or NULL to unset the tooltip
- *
- * Set or remove a tooltip from the button.
- *
- * Deprecated: use nbtk_widget_set_tooltip_text() instead
- */
-void
-nbtk_button_set_tooltip (NbtkButton  *button,
-                         const gchar *label)
-{
-  nbtk_widget_set_tooltip_text (NBTK_WIDGET (button), label);
-}

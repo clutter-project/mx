@@ -93,15 +93,9 @@ void         nbtk_stylable_set_style              (NbtkStylable      *stylable,
                                                    NbtkStyle         *style);
 NbtkStyle *  nbtk_stylable_get_style              (NbtkStylable      *stylable);
 
-G_GNUC_DEPRECATED void  nbtk_stylable_set         (NbtkStylable      *stylable,
-                                                   const gchar       *first_property_name,
-                                                   ...) G_GNUC_NULL_TERMINATED;
 void         nbtk_stylable_get                    (NbtkStylable      *stylable,
                                                    const gchar       *first_property_name,
                                                    ...) G_GNUC_NULL_TERMINATED;
-G_GNUC_DEPRECATED void nbtk_stylable_set_property (NbtkStylable      *stylable,
-                                                   const gchar       *property_name,
-                                                   const GValue      *value);
 void         nbtk_stylable_get_property           (NbtkStylable      *stylable,
                                                    const gchar       *property_name,
                                                    GValue            *value);

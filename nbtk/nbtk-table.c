@@ -230,10 +230,6 @@ nbtk_table_set_property (GObject       *gobject,
         }
       break;
 
-    case PROP_PADDING:
-      g_warning ("The 'padding' property of NbtkTable is deprecated. Please set padding using a stylesheet.");
-      break;
-
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -247,7 +243,6 @@ nbtk_table_get_property (GObject    *gobject,
                           GParamSpec *pspec)
 {
   NbtkTablePrivate *priv = NBTK_TABLE (gobject)->priv;
-  NbtkPadding padding;
 
   switch (prop_id)
     {
@@ -261,11 +256,6 @@ nbtk_table_get_property (GObject    *gobject,
 
     case PROP_HOMOGENEOUS:
       g_value_set_boolean (value, priv->homogeneous);
-      break;
-
-    case PROP_PADDING:
-      nbtk_widget_get_padding (NBTK_WIDGET (gobject), &padding);
-      g_value_set_boxed (value, &padding);
       break;
 
     default:
@@ -436,7 +426,6 @@ nbtk_table_homogeneous_allocate (ClutterActor          *self,
   for (list = priv->children; list; list = g_slist_next (list))
     {
       gint row, col, row_span, col_span;
-      gboolean keep_ratio;
       NbtkTableChild *meta;
       ClutterActor *child;
       ClutterActorBox childbox;
@@ -455,7 +444,6 @@ nbtk_table_homogeneous_allocate (ClutterActor          *self,
       row = meta->row;
       row_span = meta->row_span;
       col_span = meta->col_span;
-      keep_ratio = meta->keep_ratio;
       x_align = meta->x_align;
       y_align = meta->y_align;
       x_fill = meta->x_fill;
@@ -468,36 +456,6 @@ nbtk_table_homogeneous_allocate (ClutterActor          *self,
       childbox.y2 = childbox.y1 + (row_height * row_span) + (row_spacing * (row_span - 1));
 
       nbtk_table_allocate_fill (child, &childbox, x_align, y_align, x_fill, y_fill);
-
-      if (keep_ratio)
-        {
-          gfloat w, h;
-          gint new_width;
-          gint new_height;
-          gint center_offset;
-
-          clutter_actor_get_size (child, &w, &h);
-
-          new_height = ((gdouble) h / w)  * ((gdouble) childbox.x2 - childbox.x1);
-          new_width = ((gdouble) w / h)  * ((gdouble) childbox.y2 - childbox.y1);
-
-
-          if (new_height > row_height)
-            {
-              /* center for new width */
-              center_offset = ((childbox.x2 - childbox.x1) - new_width) * x_align;
-              childbox.x1 = childbox.x1 + center_offset;
-              childbox.x2 = childbox.x1 + new_width;
-            }
-          else
-            {
-              /* center for new height */
-              center_offset = ((childbox.y2 - childbox.y1) - new_height) * y_align;
-              childbox.y1 = childbox.y1 + center_offset;
-              childbox.y2 = childbox.y1 + new_height;
-            }
-
-        }
 
       clutter_actor_allocate (child, &childbox, flags);
     }
@@ -839,7 +797,6 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
     {
       gint row, col, row_span, col_span;
       gint col_width, row_height;
-      gboolean keep_ratio;
       NbtkTableChild *meta;
       ClutterActor *child;
       ClutterActorBox childbox;
@@ -859,7 +816,6 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
       row = meta->row;
       row_span = meta->row_span;
       col_span = meta->col_span;
-      keep_ratio = meta->keep_ratio;
       x_align = meta->x_align;
       y_align = meta->y_align;
       x_fill = meta->x_fill;
@@ -918,35 +874,6 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
 
 
       nbtk_table_allocate_fill (child, &childbox, x_align, y_align, x_fill, y_fill);
-
-      if (keep_ratio)
-        {
-          gfloat w, h;
-          gfloat new_width;
-          gfloat new_height;
-          gint center_offset;
-
-          clutter_actor_get_size (child, &w, &h);
-
-          new_height = (h / w)  * (gfloat) col_width;
-          new_width = (w / h)  * (gfloat) row_height;
-
-
-          if (new_height > row_height)
-            {
-              /* apply new width */
-              center_offset = ((int) (childbox.x2 - childbox.x1) - new_width) * x_align;
-              childbox.x1 = childbox.x1 + (float) center_offset;
-              childbox.x2 = childbox.x1 + (float) new_width;
-            }
-          else
-            {
-              /* apply new height */
-              center_offset = ((int) (childbox.y2 - childbox.y1) - new_height) * y_align;
-              childbox.y1 = childbox.y1 + (float) center_offset;
-              childbox.y2 = childbox.y1 + (float) new_height;
-            }
-        }
 
       clutter_actor_allocate (child, &childbox, flags);
     }
@@ -1182,26 +1109,9 @@ nbtk_table_dnd_dropped (NbtkWidget   *actor,
 			gint          y)
 {
   ClutterActor *parent;
-  gboolean keep_ratio = FALSE;
 
   g_object_ref (dragged);
   parent = clutter_actor_get_parent (dragged);
-
-  if (NBTK_IS_TABLE (parent))
-    {
-      NbtkTableChild *meta;
-
-      meta = NBTK_TABLE_CHILD (
-		clutter_container_get_child_meta (CLUTTER_CONTAINER (parent),
-						  dragged));
-
-      /*
-       * Must do it like this, as meta->keep_ratio is a 1 bit field, and
-       * we can only pass actual TRUE/FALSE values into the property setter.
-       */
-      if (meta->keep_ratio)
-	keep_ratio = TRUE;
-    }
 
   clutter_container_remove_actor (CLUTTER_CONTAINER (parent), dragged);
   nbtk_table_add_actor (NBTK_TABLE (actor), dragged, NBTK_TABLE (actor)->priv->n_rows, 0);
@@ -1296,15 +1206,6 @@ nbtk_table_class_init (NbtkTableClass *klass)
                             NBTK_PARAM_READWRITE);
   g_object_class_install_property (gobject_class,
                                    PROP_ROW_SPACING,
-                                   pspec);
-
-  pspec = g_param_spec_boxed ("padding",
-                              "Padding",
-                              "Padding of the table",
-                              NBTK_TYPE_PADDING,
-                              NBTK_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class,
-                                   PROP_PADDING,
                                    pspec);
 }
 
@@ -1538,284 +1439,3 @@ nbtk_table_add_actor_with_properties (NbtkTable    *table,
   va_end (args);
 }
 
-/**
- * nbtk_table_add_actor_full:
- * @table:
- * @widget:
- * @row:
- * @column:
- * @rowspan:
- * @colspan:
- * @options:
- * @xalign:
- * @yalign:
- *
- * Deprecated: Please use nbtk_table_add_actor_with_properties() instead.
- */
-G_GNUC_DEPRECATED void
-nbtk_table_add_actor_full (NbtkTable            *table,
-                           ClutterActor         *actor,
-                           gint                  row,
-                           gint                  column,
-                           gint                  rowspan,
-                           gint                  colspan,
-                           NbtkTableChildOptions options,
-                           gdouble               xalign,
-                           gdouble               yalign)
-{
-  g_return_if_fail (NBTK_IS_TABLE (table));
-  g_return_if_fail (CLUTTER_IS_ACTOR (actor));
-  g_return_if_fail (row >= -1);
-  g_return_if_fail (column >= -1);
-  g_return_if_fail (rowspan >= 1);
-  g_return_if_fail (colspan >= 1);
-  g_return_if_fail ((xalign >= 0) && (xalign <= 1.0));
-  g_return_if_fail ((yalign >= 0) && (yalign <= 1.0));
-
-  g_warning ("%s is deprecated. Please use nbtk_table_add_actor_with_properties"
-             " instead.",
-             __FUNCTION__);
-
-  nbtk_table_add_actor (table, actor, row, column);
-  clutter_container_child_set (CLUTTER_CONTAINER (table),
-                               actor,
-                               "row-span", rowspan,
-                               "col-span", colspan,
-                               "x-expand", (options & NBTK_X_EXPAND) ?
-                                 TRUE : FALSE,
-                               "y-expand", (options & NBTK_Y_EXPAND) ?
-                                 TRUE : FALSE,
-                               "x-align", xalign,
-                               "y-align", yalign,
-                               "x-fill", (options & NBTK_X_FILL) ?
-                                 TRUE : FALSE,
-                               "y-fill", (options & NBTK_Y_FILL) ?
-                                 TRUE : FALSE,
-                               NULL);
-  /* deprecated options */
-  if (options & NBTK_KEEP_ASPECT_RATIO)
-    {
-      clutter_container_child_set (CLUTTER_CONTAINER (table),
-                                   actor,
-                                   "keep-aspect-ratio", TRUE,
-                                   NULL);
-    }
-}
-
-/**
- * nbtk_table_add_widget:
- * @table: a #NbtkTable
- * @widget: a #NbtkWidget
- * @row: row to insert the widget in
- * @column: column to insert the widget in
- *
- * Add a widget to the table at the specified row and column.
- *
- * Note: row and column numberings start from 0 in the top left corner.
- * Therefore, the top left most cell is at column 0, row 0.
- *
- * Deprecated: Please use nbtk_table_add_actor() instead.
- */
-G_GNUC_DEPRECATED void
-nbtk_table_add_widget (NbtkTable  *table,
-                       NbtkWidget *widget,
-                       gint        row,
-                       gint        column)
-{
-
-  g_warning ("%s is deprecated. Please use nbtk_table_add_actor instead.",
-             __FUNCTION__);
-
-  nbtk_table_add_actor (table, CLUTTER_ACTOR (widget), row, column);
-}
-
-/**
- * nbtk_table_add_widget_full:
- * @table: a #NbtkTable
- * @widget: a #NbtkWidget
- * @row: row to insert the widget in
- * @column: column to insert the widget in
- * @rowspan: rows to span the widget over
- * @colspan: columns to span the widget over
- * @options: a #NbtkTableChildOptions
- * @xalign: horizontal alignment of the widget
- * @yalign: vertical alignment of the widget
- *
- * Convenience function to add a widget to the table and set all of its
- * child properties simultaneously.
- *
- * See nbtk_table_add_widget().
- *
- * Deprecated: Please use nbtk_table_add_actor_with_properties() instead.
- */
-G_GNUC_DEPRECATED void
-nbtk_table_add_widget_full (NbtkTable            *table,
-                            NbtkWidget           *widget,
-                            gint                  row,
-                            gint                  column,
-                            gint                  rowspan,
-                            gint                  colspan,
-                            NbtkTableChildOptions options,
-                            gdouble               xalign,
-                            gdouble               yalign)
-{
-
-  g_warning ("%s is deprecated. Please use nbtk_table_add_actor_with_properties"
-             " instead.",
-             __FUNCTION__);
-
-  nbtk_table_add_actor (table, CLUTTER_ACTOR (widget), row, column);
-  clutter_container_child_set (CLUTTER_CONTAINER (table),
-                               CLUTTER_ACTOR (widget),
-                               "row-span", rowspan,
-                               "col-span", colspan,
-                               "x-expand", (options & NBTK_X_EXPAND) ?
-                                 TRUE : FALSE,
-                               "y-expand", (options & NBTK_Y_EXPAND) ?
-                                 TRUE : FALSE,
-                               "x-align", xalign,
-                               "y-align", yalign,
-                               "x-fill", (options & NBTK_X_FILL) ?
-                                 TRUE : FALSE,
-                               "y-fill", (options & NBTK_Y_FILL) ?
-                                 TRUE : FALSE,
-                               NULL);
-  /* deprecated options */
-  if (options & NBTK_KEEP_ASPECT_RATIO)
-    {
-      clutter_container_child_set (CLUTTER_CONTAINER (table),
-                                   CLUTTER_ACTOR (widget),
-                                   "keep-aspect-ratio", TRUE,
-                                   NULL);
-    }
-}
-
-/**
- * nbtk_table_set_widget_colspan:
- * @table: a #NbtkTable
- * @widget: a #NbtkWidget
- * @colspan: The number of columns to span
- *
- * Set the number of columns a widget should span, starting with the current
- * column and moving right. For example, a widget placed in column 1 with
- * colspan set to 3 will occupy columns 1, 2 and 3.
- *
- * Deprecated: please use nbtk_table_child_set_col_span() instead
- */
-G_GNUC_DEPRECATED void
-nbtk_table_set_widget_colspan (NbtkTable *table,
-                               NbtkWidget *widget,
-                               gint colspan)
-{
-  ClutterChildMeta *meta;
-
-  g_return_if_fail (NBTK_TABLE (table));
-  g_return_if_fail (NBTK_WIDGET (widget));
-  g_return_if_fail (colspan >= 1);
-
-  g_warning ("%s is deprecated. Please use nbtk_table_child_set_col_span()"
-             " instead", __FUNCTION__);
-
-  meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (table),
-                                           CLUTTER_ACTOR (widget));
-  g_object_set (meta, "col-span", colspan, NULL);
-
-}
-
-/**
- * nbtk_table_set_widget_rowspan:
- * @table: a #NbtkTable
- * @widget: a #NbtkWidget
- * @rowspan: The number of rows to span
- *
- * Set the number of rows a widget should span, starting with the current
- * row and moving down. For example, a widget placed in row 1 with rowspan
- * set to 3 will occupy rows 1, 2 and 3.
- *
- * Deprecated: Please use nbtk_table_child_set_row_span() instead.
- */
-G_GNUC_DEPRECATED void
-nbtk_table_set_widget_rowspan (NbtkTable *table,
-                               NbtkWidget *widget,
-                               gint rowspan)
-{
-  ClutterChildMeta *meta;
-
-  g_return_if_fail (NBTK_TABLE (table));
-  g_return_if_fail (NBTK_WIDGET (widget));
-  g_return_if_fail (rowspan >= 1);
-
-  g_warning ("%s is deprecated. Please use nbtk_table_child_set_row_span()"
-             " instead", __FUNCTION__);
-
-  meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (table),
-                                           CLUTTER_ACTOR (widget));
-  g_object_set (meta, "row-span", rowspan, NULL);
-}
-
-/**
- * nbtk_table_insert_actor_at_position
- * @table: a #NbtkTable
- * @actor: a #ClutterActor
- * @x: screen coordinate of the insertion
- * @y: screen coordiante of the insertion
- *
- *
- * Deprecated: This function has never been implemented.
- */
-G_GNUC_DEPRECATED void
-nbtk_table_insert_actor_at_position (NbtkTable *table,
-				     ClutterActor *actor, gint x, gint y)
-{
-  NbtkTablePrivate *priv;
-
-  g_return_if_fail (NBTK_IS_TABLE (table));
-  g_return_if_fail (CLUTTER_IS_ACTOR (actor));
-
-  priv = NBTK_TABLE (table)->priv;
-
-  g_warning ("%s is deprecated and has never been implemented", __FUNCTION__);
-
-  /*
-   * FIXME -- this is just a stub; do something sensible with the coords
-   */
-  nbtk_table_add_actor (NBTK_TABLE (table), actor, priv->n_rows, 0);
-}
-
-/**
- * nbtk_table_set_padding:
- * @table: A #NbtkTable
- * @padding: A #NbtkPadding
- *
- * Deprecated: Please set padding using a stylesheet.
- *
- */
-void
-nbtk_table_set_padding (NbtkTable         *table,
-                        const NbtkPadding *padding)
-{
-  g_return_if_fail (NBTK_IS_TABLE (table));
-
-  g_warning ("%s is deprecated. Please set padding using a stylesheet.", __FUNCTION__);
-}
-
-/**
- * nbtk_table_get_padding:
- * @table: A #NbtkTable
- * @padding: A #NbtkPadding
- *
- * Deprecated: Please use nbtk_widget_get_padding()
- *
- */
-void
-nbtk_table_get_padding (NbtkTable   *table,
-                        NbtkPadding *padding)
-{
-  g_return_if_fail (NBTK_TABLE (table));
-  g_return_if_fail (padding != NULL);
-
-  g_warning ("%s is deprecated. Please use nbtk_widget_get_padding",
-             __FUNCTION__);
-
-  nbtk_widget_get_padding ((NbtkWidget*) table, padding);
-}

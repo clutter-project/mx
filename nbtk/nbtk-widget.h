@@ -165,8 +165,6 @@ ClutterActor *nbtk_widget_get_border_image     (NbtkWidget *actor);
 void          nbtk_widget_get_padding          (NbtkWidget  *widget,
                                                 NbtkPadding *padding);
 
-G_GNUC_DEPRECATED void  nbtk_widget_get_border (NbtkWidget *actor,
-                                                NbtkPadding *border);
 G_END_DECLS
 
 #endif /* __NBTK_WIDGET_H__ */

@@ -63,7 +63,6 @@ struct _NbtkTableChild
   gdouble x_align;
   gdouble y_align;
   guint allocate_hidden : 1;
-  guint keep_ratio : 1;
   guint x_expand : 1;
   guint y_expand : 1;
   guint x_fill : 1;

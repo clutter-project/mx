@@ -1876,14 +1876,6 @@ nbtk_border_image_get_type (void)
   return our_type;
 }
 
-G_GNUC_DEPRECATED void
-nbtk_widget_get_border (NbtkWidget *actor,
-                        NbtkPadding *border)
-{
-  g_warning ("%s is deprecated and may be removed in the future.",
-             __FUNCTION__);
-}
-
 /**
  * nbtk_widget_ensure_style:
  * @widget: A #NbtkWidget
