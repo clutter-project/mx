@@ -493,6 +493,8 @@ nbtk_grid_init (NbtkGrid *self)
 
   self->priv = priv = NBTK_GRID_GET_PRIVATE (self);
 
+  clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
+
   /* do not unref in the hashtable, the reference is for now kept by the list
    * (double bookkeeping sucks)
    */
