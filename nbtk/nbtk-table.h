@@ -96,6 +96,9 @@ void        nbtk_table_add_actor_with_properties (NbtkTable    *table,
                                                   gint          column,
                                                   const gchar  *first_property_name,
                                                   ...);
+
+gint        nbtk_table_get_row_count      (NbtkTable *table);
+gint        nbtk_table_get_column_count   (NbtkTable *table);
 G_END_DECLS
 
 #endif /* __NBTK_TABLE_H__ */

@@ -58,6 +58,9 @@ enum
   PROP_ROW_SPACING,
 
   PROP_HOMOGENEOUS,
+
+  PROP_ROW_COUNT,
+  PROP_COL_COUNT,
 };
 
 #define NBTK_TABLE_GET_PRIVATE(obj)    \
@@ -256,6 +259,14 @@ nbtk_table_get_property (GObject    *gobject,
 
     case PROP_HOMOGENEOUS:
       g_value_set_boolean (value, priv->homogeneous);
+      break;
+
+    case PROP_COL_COUNT:
+      g_value_set_int (value, priv->n_cols);
+      break;
+
+    case PROP_ROW_COUNT:
+      g_value_set_int (value, priv->n_rows);
       break;
 
     default:
@@ -1165,12 +1176,6 @@ nbtk_table_class_init (NbtkTableClass *klass)
   gobject_class->dispose = nbtk_table_dispose;
   gobject_class->finalize = nbtk_table_finalize;
 
-/*
-  actor_class->table_press_event = nbtk_table_table_press;
-  actor_class->table_release_event = nbtk_table_table_release;
-  actor_class->enter_event = nbtk_table_enter;
-  actor_class->leave_event = nbtk_table_leave;
-*/
   actor_class->paint = nbtk_table_paint;
   actor_class->pick = nbtk_table_pick;
   actor_class->allocate = nbtk_table_allocate;
@@ -1206,6 +1211,24 @@ nbtk_table_class_init (NbtkTableClass *klass)
                             NBTK_PARAM_READWRITE);
   g_object_class_install_property (gobject_class,
                                    PROP_ROW_SPACING,
+                                   pspec);
+
+  pspec = g_param_spec_int ("row-count",
+                            "Row Count",
+                            "The number of rows in the table",
+                            0, G_MAXINT, 0,
+                            NBTK_PARAM_READABLE);
+  g_object_class_install_property (gobject_class,
+                                   PROP_ROW_COUNT,
+                                   pspec);
+
+  pspec = g_param_spec_int ("column-count",
+                            "Column Count",
+                            "The number of columns in the table",
+                            0, G_MAXINT, 0,
+                            NBTK_PARAM_READABLE);
+  g_object_class_install_property (gobject_class,
+                                   PROP_COL_COUNT,
                                    pspec);
 }
 
@@ -1439,3 +1462,18 @@ nbtk_table_add_actor_with_properties (NbtkTable    *table,
   va_end (args);
 }
 
+gint
+nbtk_table_get_row_count (NbtkTable *table)
+{
+  g_return_val_if_fail (NBTK_IS_TABLE (table), -1);
+
+  return NBTK_TABLE (table)->priv->n_rows;
+}
+
+gint
+nbtk_table_get_column_count (NbtkTable *table)
+{
+  g_return_val_if_fail (NBTK_IS_TABLE (table), -1);
+
+  return NBTK_TABLE (table)->priv->n_cols;
+}
