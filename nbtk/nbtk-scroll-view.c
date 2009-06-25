@@ -313,27 +313,25 @@ nbtk_scroll_view_allocate (ClutterActor          *actor,
                           &child_box,
                           flags);
 
+
   /* Child */
-  child_box.x1 = 0;
-  child_box.x2 = box->x2 - box->x1;
-  if (CLUTTER_ACTOR_IS_REACTIVE (priv->vscroll))
+  child_box.x1 = box->x1 + padding.left;
+  child_box.x2 = box->x2 - box->x1 - padding.right;
+  if (CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll))
     child_box.x2 -= xthicknessu;
-  child_box.y1 = 0;
-  child_box.y2 = box->y2 - box->y1;
-  if (CLUTTER_ACTOR_IS_REACTIVE (priv->hscroll))
+
+  child_box.y1 = box->y1 + padding.top;
+  child_box.y2 = box->y2 - box->y1 - padding.bottom;
+  if (CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
     child_box.y2 -= ythicknessu;
 
-  child_box.x1 += padding.left;
-  child_box.x2 -= padding.left + padding.right;
-  child_box.y1 += padding.top;
-  child_box.y2 -= padding.top + padding.bottom;
 
   if (priv->child)
     {
       clutter_actor_allocate (priv->child, &child_box, flags);
       clutter_actor_set_clip (priv->child,
-                              child_box.x1,
-                              child_box.y1,
+                              0,
+                              0,
                               child_box.x2 - child_box.x1,
                               child_box.y2 - child_box.y1);
     }
