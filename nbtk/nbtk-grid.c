@@ -92,10 +92,6 @@ static void nbtk_grid_allocate (ClutterActor *self,
                                 const ClutterActorBox *box,
                                 ClutterAllocationFlags flags);
 
-static gboolean
-nbtk_grid_scroll_event (ClutterActor        *self,
-                        ClutterScrollEvent  *event);
-
 static void
 nbtk_grid_do_allocate (ClutterActor *self,
                        const ClutterActorBox *box,
@@ -380,7 +376,6 @@ nbtk_grid_class_init (NbtkGridClass *klass)
   actor_class->get_preferred_width  = nbtk_grid_get_preferred_width;
   actor_class->get_preferred_height = nbtk_grid_get_preferred_height;
   actor_class->allocate             = nbtk_grid_allocate;
-  actor_class->scroll_event         = nbtk_grid_scroll_event;
 
   g_type_class_add_private (klass, sizeof (NbtkGridPrivate));
 
@@ -1459,69 +1454,4 @@ nbtk_grid_allocate (ClutterActor          *self,
   }
 }
 
-static gboolean
-nbtk_grid_scroll_event (ClutterActor        *self,
-                        ClutterScrollEvent  *event)
-{
-  NbtkGridPrivate     *priv = NBTK_GRID (self)->priv;
-  gdouble lower, value, upper, step;
-
-  switch (event->direction)
-    {
-      case CLUTTER_SCROLL_UP:
-      case CLUTTER_SCROLL_DOWN:
-        if (priv->vadjustment)
-          g_object_get (priv->vadjustment,
-                        "lower", &lower,
-                        "step-increment", &step,
-                        "value", &value,
-                        "upper", &upper,
-                        NULL);
-        else
-          return FALSE;  
-        break;
-      case CLUTTER_SCROLL_LEFT:
-      case CLUTTER_SCROLL_RIGHT:
-        if (priv->vadjustment)
-          g_object_get (priv->hadjustment,
-                        "lower", &lower,
-                        "step-increment", &step,
-                        "value", &value,
-                        "upper", &upper,
-                        NULL);
-          else
-            return FALSE;
-        break;
-    }
-
-  switch (event->direction)
-    {
-      case CLUTTER_SCROLL_UP:
-        if (value == lower)
-          return FALSE;
-        else
-          nbtk_adjustment_set_value (priv->vadjustment, value - step);
-        break;
-      case CLUTTER_SCROLL_DOWN:
-        if (value == upper)
-          return FALSE;
-        else
-          nbtk_adjustment_set_value (priv->vadjustment, value + step);
-        break;
-      case CLUTTER_SCROLL_LEFT:
-        if (value == lower)
-          return FALSE;
-        else
-          nbtk_adjustment_set_value (priv->hadjustment, value - step);
-        break;
-      case CLUTTER_SCROLL_RIGHT:
-        if (value == upper)
-          return FALSE;
-        else
-          nbtk_adjustment_set_value (priv->hadjustment, value + step);
-        break;
-    }
-
-  return TRUE;
-}
 

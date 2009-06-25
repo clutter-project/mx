@@ -60,13 +60,15 @@ struct _NbtkScrollViewPrivate
 
   gboolean        row_size_set : 1;
   gboolean        column_size_set : 1;
+  guint           mouse_scroll : 1;
 };
 
 enum {
   PROP_0,
 
   PROP_HSCROLL,
-  PROP_VSCROLL
+  PROP_VSCROLL,
+  PROP_MOUSE_SCROLL
 };
 
 static void
@@ -83,6 +85,9 @@ nbtk_scroll_view_get_property (GObject *object, guint property_id,
     case PROP_VSCROLL :
       g_value_set_object (value, priv->vscroll);
       break;
+    case PROP_MOUSE_SCROLL:
+      g_value_set_boolean (value, priv->mouse_scroll);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -94,6 +99,9 @@ nbtk_scroll_view_set_property (GObject *object, guint property_id,
 {
   switch (property_id)
     {
+    case PROP_MOUSE_SCROLL:
+      nbtk_scroll_view_set_mouse_scrolling ((NbtkScrollView *) object,
+                                         g_value_get_boolean (value));
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -341,9 +349,84 @@ nbtk_scroll_view_style_changed (NbtkWidget *widget)
   nbtk_stylable_changed ((NbtkStylable *) priv->vscroll);
 }
 
+static gboolean
+nbtk_scroll_view_scroll_event (ClutterActor        *self,
+                               ClutterScrollEvent  *event)
+{
+  NbtkScrollViewPrivate *priv = NBTK_SCROLL_VIEW (self)->priv;
+  gdouble lower, value, upper, step;
+  NbtkAdjustment *vadjustment, *hadjustment;
+
+  /* don't handle scroll events if requested not to */
+  if (!priv->mouse_scroll)
+    return FALSE;
+
+  hadjustment = nbtk_scroll_bar_get_adjustment (NBTK_SCROLL_BAR(priv->hscroll));
+  vadjustment = nbtk_scroll_bar_get_adjustment (NBTK_SCROLL_BAR(priv->vscroll));
+
+  switch (event->direction)
+    {
+      case CLUTTER_SCROLL_UP:
+      case CLUTTER_SCROLL_DOWN:
+        if (vadjustment)
+          g_object_get (vadjustment,
+                        "lower", &lower,
+                        "step-increment", &step,
+                        "value", &value,
+                        "upper", &upper,
+                        NULL);
+        else
+          return FALSE;
+        break;
+      case CLUTTER_SCROLL_LEFT:
+      case CLUTTER_SCROLL_RIGHT:
+        if (vadjustment)
+          g_object_get (hadjustment,
+                        "lower", &lower,
+                        "step-increment", &step,
+                        "value", &value,
+                        "upper", &upper,
+                        NULL);
+          else
+            return FALSE;
+        break;
+    }
+
+  switch (event->direction)
+    {
+      case CLUTTER_SCROLL_UP:
+        if (value == lower)
+          return FALSE;
+        else
+          nbtk_adjustment_set_value (vadjustment, value - step);
+        break;
+      case CLUTTER_SCROLL_DOWN:
+        if (value == upper)
+          return FALSE;
+        else
+          nbtk_adjustment_set_value (vadjustment, value + step);
+        break;
+      case CLUTTER_SCROLL_LEFT:
+        if (value == lower)
+          return FALSE;
+        else
+          nbtk_adjustment_set_value (hadjustment, value - step);
+        break;
+      case CLUTTER_SCROLL_RIGHT:
+        if (value == upper)
+          return FALSE;
+        else
+          nbtk_adjustment_set_value (hadjustment, value + step);
+        break;
+    }
+
+  return TRUE;
+}
+
 static void
 nbtk_scroll_view_class_init (NbtkScrollViewClass *klass)
 {
+  GParamSpec *pspec;
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
 
@@ -359,6 +442,7 @@ nbtk_scroll_view_class_init (NbtkScrollViewClass *klass)
   actor_class->get_preferred_width = nbtk_scroll_view_get_preferred_width;
   actor_class->get_preferred_height = nbtk_scroll_view_get_preferred_height;
   actor_class->allocate = nbtk_scroll_view_allocate;
+  actor_class->scroll_event = nbtk_scroll_view_scroll_event;
 
   g_object_class_install_property (object_class,
                                    PROP_HSCROLL,
@@ -375,6 +459,16 @@ nbtk_scroll_view_class_init (NbtkScrollViewClass *klass)
                                                        "Vertical scroll indicator",
                                                        NBTK_TYPE_SCROLL_BAR,
                                                        G_PARAM_READABLE));
+
+  pspec = g_param_spec_boolean ("enable-mouse-scrolling",
+                                "Enable Mouse Scrolling",
+                                "Enable automatic mouse wheel scrolling",
+                                TRUE,
+                                G_PARAM_READWRITE);
+  g_object_class_install_property (object_class,
+                                   PROP_MOUSE_SCROLL,
+                                   pspec);
+
 }
 
 static void
@@ -511,7 +605,9 @@ nbtk_scroll_view_init (NbtkScrollView *self)
   clutter_actor_show (priv->vscroll);
   clutter_actor_set_rotation (priv->vscroll, CLUTTER_Z_AXIS, 90.0, 0, 0, 0);
 
-  g_object_set (G_OBJECT (self), "reactive", FALSE, NULL);
+  /* mouse scroll is enabled by default, so we also need to be reactive */
+  priv->mouse_scroll = TRUE;
+  g_object_set (G_OBJECT (self), "reactive", TRUE, NULL);
 
   g_signal_connect (self, "style-changed",
                     G_CALLBACK (nbtk_scroll_view_style_changed), NULL);
@@ -718,3 +814,34 @@ nbtk_scroll_view_set_row_size (NbtkScrollView *scroll,
     }
 }
 
+void
+nbtk_scroll_view_set_mouse_scrolling (NbtkScrollView *scroll,
+                                      gboolean        enabled)
+{
+  NbtkScrollViewPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_SCROLL_VIEW (scroll));
+
+  priv = NBTK_SCROLL_VIEW (scroll)->priv;
+
+  if (priv->mouse_scroll != enabled)
+    {
+      priv->mouse_scroll = enabled;
+
+      /* make sure we can receive mouse wheel events */
+      if (enabled)
+        clutter_actor_set_reactive ((ClutterActor *) scroll, TRUE);
+    }
+}
+
+gboolean
+nbtk_scroll_view_get_mouse_scrolling (NbtkScrollView *scroll)
+{
+  NbtkScrollViewPrivate *priv;
+
+  g_return_val_if_fail (NBTK_IS_SCROLL_VIEW (scroll), FALSE);
+
+  priv = NBTK_SCROLL_VIEW (scroll)->priv;
+
+  return priv->mouse_scroll;
+}

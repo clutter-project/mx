@@ -80,6 +80,9 @@ gfloat     nbtk_scroll_view_get_row_size    (NbtkScrollView *scroll);
 void            nbtk_scroll_view_set_row_size    (NbtkScrollView *scroll,
                                                   gfloat          row_size);
 
+void nbtk_scroll_view_set_mouse_scrolling (NbtkScrollView *scroll, gboolean enabled);
+gboolean nbtk_scroll_view_get_mouse_scrolling (NbtkScrollView *scroll);
+
 G_END_DECLS
 
 #endif /* __NBTK_SCROLL_VIEW_H__ */
