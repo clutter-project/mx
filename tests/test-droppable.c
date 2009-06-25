@@ -102,7 +102,9 @@ droppable_group_drop (NbtkDroppable       *droppable,
   g_object_ref (draggable);
 
   clutter_actor_reparent (child, self);
-  clutter_actor_set_position (CLUTTER_ACTOR (draggable), 50, 50);
+  clutter_actor_set_position (CLUTTER_ACTOR (draggable),
+                              (event_x < 100) ? 50 : 100,
+                              (event_y < 100) ? 50 : 100);
 
   g_object_unref (draggable);
 }
@@ -439,7 +441,10 @@ main (int argc, char *argv[])
 {
   ClutterActor *stage;
   ClutterActor *draggable, *droppable;
-  ClutterColor rect_color = { 204, 204, 204, 255 };
+  ClutterColor rect_color1 = { 146, 123,  81, 255 };
+  ClutterColor rect_color2 = { 128, 195,  28, 255 };
+  ClutterColor rect_color3 = { 255, 122,   2, 255 };
+  ClutterColor rect_color4 = { 141, 195, 233, 255 };
 
   clutter_init (&argc, &argv);
 
@@ -462,13 +467,43 @@ main (int argc, char *argv[])
   nbtk_droppable_enable (NBTK_DROPPABLE (droppable));
 
   draggable = g_object_new (DRAGGABLE_TYPE_RECTANGLE,
-                            "color", &rect_color,
+                            "color", &rect_color1,
                             NULL);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), draggable);
-  clutter_actor_set_size (draggable, 100, 100);
-  clutter_actor_set_position (draggable, 100, 250);
+  clutter_actor_set_size (draggable, 50, 50);
+  clutter_actor_set_position (draggable, 75, 250);
   clutter_actor_set_reactive (draggable, TRUE);
   nbtk_draggable_enable (NBTK_DRAGGABLE (draggable));
+
+  draggable = g_object_new (DRAGGABLE_TYPE_RECTANGLE,
+                            "color", &rect_color2,
+                            NULL);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), draggable);
+  clutter_actor_set_size (draggable, 50, 50);
+  clutter_actor_set_position (draggable, 125, 250);
+  clutter_actor_set_reactive (draggable, TRUE);
+  nbtk_draggable_enable (NBTK_DRAGGABLE (draggable));
+
+  draggable = g_object_new (DRAGGABLE_TYPE_RECTANGLE,
+                            "color", &rect_color3,
+                            NULL);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), draggable);
+  clutter_actor_set_size (draggable, 50, 50);
+  clutter_actor_set_position (draggable, 75, 300);
+  clutter_actor_set_reactive (draggable, TRUE);
+  nbtk_draggable_enable (NBTK_DRAGGABLE (draggable));
+
+  draggable = g_object_new (DRAGGABLE_TYPE_RECTANGLE,
+                            "color", &rect_color4,
+                            NULL);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), draggable);
+  clutter_actor_set_size (draggable, 50, 50);
+  clutter_actor_set_position (draggable, 125, 300);
+  clutter_actor_set_reactive (draggable, TRUE);
+  nbtk_draggable_enable (NBTK_DRAGGABLE (draggable));
+
+
+
 
   clutter_actor_show_all (stage);
 
