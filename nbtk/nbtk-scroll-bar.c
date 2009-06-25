@@ -50,7 +50,6 @@ G_DEFINE_TYPE_WITH_CODE (NbtkScrollBar, nbtk_scroll_bar, NBTK_TYPE_BIN,
 struct _NbtkScrollBarPrivate
 {
   NbtkAdjustment    *adjustment;
-  guint              refresh_source;
 
   gulong             capture_handler;
   gfloat             x_origin;
@@ -137,12 +136,6 @@ nbtk_scroll_bar_dispose (GObject *gobject)
 {
   NbtkScrollBar *bar = NBTK_SCROLL_BAR (gobject);
   NbtkScrollBarPrivate *priv = bar->priv;
-
-  if (priv->refresh_source)
-    {
-      g_source_remove (priv->refresh_source);
-      priv->refresh_source = 0;
-    }
 
   if (priv->adjustment)
     nbtk_scroll_bar_set_adjustment (bar, NULL);
@@ -276,20 +269,20 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
 
   if (priv->adjustment)
     {
-      gfloat real_width, real_height, min_sizeu, max_sizeu;
-      gdouble lower, upper, page_size, size, increment;
+      gfloat trough_width, real_height, handle_width, position;
+      gdouble value, lower, upper, page_size, size, increment;
       ClutterActorBox handle_box = { 0, };
       guint min_size, max_size;
 
       nbtk_adjustment_get_values (priv->adjustment,
-                                  NULL,
+                                  &value,
                                   &lower,
                                   &upper,
                                   NULL,
                                   NULL,
                                   &page_size);
 
-      real_width = trough_box.x2 - trough_box.x1;
+      trough_width = trough_box.x2 - trough_box.x1;
       real_height = trough_box.y2 - trough_box.y1;
 
       if (upper == lower)
@@ -297,32 +290,22 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
       else
         increment = page_size / (upper - lower);
 
-      size = real_width * increment;
-      if (size > real_width)
-        size = real_width;
+      size = trough_width * increment;
+      if (size > trough_width)
+        size = trough_width;
 
       nbtk_stylable_get (NBTK_STYLABLE (actor),
                          "min-size", &min_size,
                          "max-size", &max_size,
                          NULL);
 
-      min_sizeu = min_size;
-      max_sizeu = max_size;
+      position = (value - lower) / (upper - lower - page_size);
+      handle_width = MIN (max_size, MAX (min_size, size));
 
-      clutter_actor_get_position (priv->handle, &handle_box.x1, &handle_box.y1);
-
-      /* Get initial position right.
-       * Need to account for the fact that the handle is only a "clutter"-child
-       * of the trough, not an "nbtk" one. */
-      if (handle_box.x1 <= 0.)
-        handle_box.x1 = trough_box.x1;
-
+      handle_box.x1 = bw_box.x2 + position * (trough_width - handle_width);
       handle_box.y1 = clutter_actor_get_y (priv->trough);
 
-      handle_box.x2 = handle_box.x1 +
-                      MIN (max_sizeu,
-                           MAX (min_sizeu,
-                                size));
+      handle_box.x2 = handle_box.x1 + handle_width;
       handle_box.y2 = handle_box.y1 + real_height;
 
       handle_box.x1 = (int) handle_box.x1;
@@ -838,68 +821,6 @@ nbtk_scroll_bar_new (NbtkAdjustment *adjustment)
                        NULL);
 }
 
-static gboolean
-nbtk_scroll_bar_refresh (NbtkScrollBar *bar)
-{
-  ClutterActor *actor = CLUTTER_ACTOR (bar);
-  NbtkScrollBarPrivate *priv = bar->priv;
-  gfloat width, button_width, handle_offset_x, handle_offset_y;
-  gdouble lower, upper, value, page_size;
-  gdouble x, position;
-
-  /* Work out scroll handle size */
-  nbtk_adjustment_get_values (priv->adjustment,
-                              &value,
-                              &lower,
-                              &upper,
-                              NULL,
-                              NULL,
-                              &page_size);
-
-  /* Need to account for the fact that the handle is only a "clutter"-child
-   * of the trough, not an "nbtk" one. */
-  handle_offset_x = clutter_actor_get_x (priv->trough);
-  handle_offset_y = clutter_actor_get_y (priv->trough);
-
-  if (upper - page_size <= lower)
-    {
-      clutter_actor_set_position (CLUTTER_ACTOR (priv->handle),
-                                  handle_offset_x,
-                                  handle_offset_y);
-      priv->refresh_source = 0;
-      return FALSE;
-    }
-
-  width = clutter_actor_get_width (priv->trough);
-  button_width = clutter_actor_get_width (priv->handle);
-
-  position = (value - lower) / (upper - lower - page_size);
-
-  /* Set padding on trough */
-  x = (position * (width - button_width));
-  clutter_actor_set_position (CLUTTER_ACTOR (priv->handle),
-                              x + handle_offset_x,
-                              handle_offset_y);
-
-  clutter_actor_queue_redraw (actor);
-
-  priv->refresh_source = 0;
-  return FALSE;
-}
-
-static void
-adjustment_changed_cb (NbtkScrollBar *bar)
-{
-  NbtkScrollBarPrivate *priv = bar->priv;
-
-  if (!priv->refresh_source)
-    priv->refresh_source = g_idle_add_full (CLUTTER_PRIORITY_EVENTS,
-                                            (GSourceFunc)
-                                            nbtk_scroll_bar_refresh,
-                                            bar,
-                                            NULL);
-}
-
 void
 nbtk_scroll_bar_set_adjustment (NbtkScrollBar *bar,
                                 NbtkAdjustment *adjustment)
@@ -915,7 +836,7 @@ nbtk_scroll_bar_set_adjustment (NbtkScrollBar *bar,
                                             clutter_actor_queue_relayout,
                                             bar);
       g_signal_handlers_disconnect_by_func (priv->adjustment,
-                                            adjustment_changed_cb,
+                                            clutter_actor_queue_relayout,
                                             bar);
       g_object_unref (priv->adjustment);
       priv->adjustment = NULL;
@@ -926,7 +847,7 @@ nbtk_scroll_bar_set_adjustment (NbtkScrollBar *bar,
       priv->adjustment = g_object_ref (adjustment);
 
       g_signal_connect_swapped (priv->adjustment, "notify::value",
-                                G_CALLBACK (adjustment_changed_cb),
+                                G_CALLBACK (clutter_actor_queue_relayout),
                                 bar);
       g_signal_connect_swapped (priv->adjustment, "changed",
 				G_CALLBACK (clutter_actor_queue_relayout),

@@ -39,7 +39,7 @@ main (int argc, char *argv[])
   stage = clutter_stage_get_default ();
   clutter_actor_set_size (stage, 400, 200);
 
-  adjustment = nbtk_adjustment_new (0., 0., 100., 1., 10., 10.);
+  adjustment = nbtk_adjustment_new (50., 0., 100., 1., 10., 10.);
   g_signal_connect (adjustment, "notify::value", 
                     G_CALLBACK (changed_cb), NULL);  
 
