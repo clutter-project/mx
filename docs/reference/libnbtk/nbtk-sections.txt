@@ -33,6 +33,47 @@ NBTK_CELL_RENDERER_GET_CLASS
 </SECTION>
 
 <SECTION>
+<FILE>nbtk-droppable</FILE>
+NbtkDroppable
+NbtkDroppableIface
+nbtk_droppable_enable
+nbtk_droppable_disable
+nbtk_droppable_is_enabled
+nbtk_droppable_accept_drop
+<SUBSECTION Standard>
+NBTK_DROPPABLE
+NBTK_IS_DROPPABLE
+NBTK_TYPE_DROPPABLE
+nbtk_droppable_get_type
+NBTK_DROPPABLE_GET_IFACE
+</SECTION>
+
+<SECTION>
+<FILE>nbtk-draggable</FILE>
+NbtkDraggable
+NbtkDraggableIface
+NbtkDragAxis
+NbtkDragContainment
+nbtk_draggable_set_axis
+nbtk_draggable_get_axis
+nbtk_draggable_set_drag_threshold
+nbtk_draggable_get_drag_threshold
+nbtk_draggable_set_containment_type
+nbtk_draggable_get_containment_type
+nbtk_draggable_set_containment_area
+nbtk_draggable_get_containment_area
+nbtk_draggable_disable
+nbtk_draggable_enable
+nbtk_draggable_is_enabled
+<SUBSECTION Standard>
+NBTK_DRAGGABLE
+NBTK_IS_DRAGGABLE
+NBTK_TYPE_DRAGGABLE
+nbtk_draggable_get_type
+NBTK_DRAGGABLE_GET_IFACE
+</SECTION>
+
+<SECTION>
 <FILE>nbtk-widget</FILE>
 <TITLE>NbtkWidgetChild</TITLE>
 NbtkWidgetChild

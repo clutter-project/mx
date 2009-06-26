@@ -23,6 +23,8 @@
     <xi:include href="xml/nbtk-bin.xml"/>
     <xi:include href="xml/nbtk-button.xml"/>
     <xi:include href="xml/nbtk-clipboard.xml"/>
+    <xi:include href="xml/nbtk-draggable.xml"/>
+    <xi:include href="xml/nbtk-droppable.xml"/>
     <xi:include href="xml/nbtk-entry.xml"/>
     <xi:include href="xml/nbtk-grid.xml"/>
     <xi:include href="xml/nbtk-label.xml"/>

@@ -45,8 +45,10 @@ typedef enum {
  */
 struct _NbtkDraggableIface
 {
+  /*< private >*/
   GTypeInterface g_iface;
 
+  /*< public >*/
   /* vfuncs, not signals */
   void (* enable)  (NbtkDraggable *draggable);
   void (* disable) (NbtkDraggable *draggable);
