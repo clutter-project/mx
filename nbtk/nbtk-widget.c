@@ -2051,6 +2051,13 @@ nbtk_widget_get_tooltip_text (NbtkWidget *widget)
   return nbtk_tooltip_get_label (widget->priv->tooltip);
 }
 
+/**
+ * nbtk_widget_show_tooltip:
+ * @widget: A #NbtkWidget
+ *
+ * Show the tooltip for @widget
+ *
+ */
 void
 nbtk_widget_show_tooltip (NbtkWidget *widget)
 {
@@ -2060,6 +2067,13 @@ nbtk_widget_show_tooltip (NbtkWidget *widget)
     nbtk_tooltip_show (widget->priv->tooltip);
 }
 
+/**
+ * nbtk_widget_hide_tooltip:
+ * @widget: A #NbtkWidget
+ *
+ * Hide the tooltip for @widget
+ *
+ */
 void
 nbtk_widget_hide_tooltip (NbtkWidget *widget)
 {

@@ -42,12 +42,19 @@ G_BEGIN_DECLS
 typedef struct _NbtkWidgetChild                 NbtkWidgetChild;
 typedef struct _NbtkWidgetChildClass            NbtkWidgetChildClass;
 
+#ifndef NBTK_DISABLE_DEPRECATED
+/**
+ * NbtkWidgetChild:
+ *
+ * Deprecated: please do not use NbtkWidgetChild
+ */
 struct _NbtkWidgetChild
 {
   ClutterChildMeta parent_instance;
 
   guint dnd_disabled : 1;
 };
+#endif /* NBTK_DISABLE_DEPRECATED */
 
 struct _NbtkWidgetChildClass
 {
