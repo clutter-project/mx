@@ -957,21 +957,60 @@ nbtk_grid_paint (ClutterActor *actor)
           clutter_actor_paint (child);
         }
     }
-
 }
 
 static void
 nbtk_grid_pick (ClutterActor *actor,
                 const ClutterColor *color)
 {
+  NbtkGrid *layout = (NbtkGrid *) actor;
+  NbtkGridPrivate *priv = layout->priv;
+  GList *child_item;
+  gfloat x, y;
+  ClutterActorBox grid_b;
+
+  if (priv->hadjustment)
+    x = nbtk_adjustment_get_value (priv->hadjustment);
+  else
+    x = 0;
+
+  if (priv->vadjustment)
+    y = nbtk_adjustment_get_value (priv->vadjustment);
+  else
+    y = 0;
+
   /* Chain up so we get a bounding box pained (if we are reactive) */
   CLUTTER_ACTOR_CLASS (nbtk_grid_parent_class)->pick (actor, color);
 
-  /* Just forward to the paint call which in turn will trigger
-   * the child actors also getting 'picked'.
-   */
-  if (CLUTTER_ACTOR_IS_VISIBLE (actor))
-   nbtk_grid_paint (actor);
+  cogl_translate ((int) x * -1, (int) y * -1, 0);
+
+  clutter_actor_get_allocation_box (actor, &grid_b);
+  grid_b.x2 = (grid_b.x2 - grid_b.x1) + x;
+  grid_b.x1 = 0;
+  grid_b.y2 = (grid_b.y2 - grid_b.y1) + y;
+  grid_b.y1 = 0;
+
+  for (child_item = priv->list;
+       child_item != NULL;
+       child_item = child_item->next)
+    {
+      ClutterActor *child = child_item->data;
+      ClutterActorBox child_b;
+
+      g_assert (child != NULL);
+
+      /* ensure the child is "on screen" */
+      clutter_actor_get_allocation_box (CLUTTER_ACTOR (child), &child_b);
+
+      if ((child_b.x1 < grid_b.x2)
+          && (child_b.x2 > grid_b.x1)
+          && (child_b.y1 < grid_b.y2)
+          && (child_b.y2 > grid_b.y1)
+          && CLUTTER_ACTOR_IS_VISIBLE (child))
+        {
+          clutter_actor_paint (child);
+        }
+    }
 }
 
 static void
