@@ -189,11 +189,34 @@ nbtk_button_update_label_style (NbtkButton *button)
 }
 
 static void
+nbtk_button_stylable_changed (NbtkStylable *stylable)
+{
+  NbtkButton *button = NBTK_BUTTON (stylable);
+  ClutterActor *bg_image;
+
+  bg_image = nbtk_widget_get_border_image ((NbtkWidget*) button);
+  if (bg_image)
+    {
+      button->priv->old_bg = g_object_ref (bg_image);
+    }
+  else
+    button->priv->old_bg = NULL;
+}
+
+static void
+nbtk_animation_completed (ClutterAnimation  *animation,
+                          NbtkButtonPrivate *priv)
+{
+  if (priv->old_bg)
+    clutter_actor_unparent (priv->old_bg);
+  priv->old_bg = NULL;
+}
+
+static void
 nbtk_button_style_changed (NbtkWidget *widget)
 {
   NbtkButton *button = NBTK_BUTTON (widget);
   NbtkButtonPrivate *priv = button->priv;
-  ClutterActor *bg_image = NULL;
   NbtkButtonClass *button_class = NBTK_BUTTON_GET_CLASS (button);
 
   /* get the spacing value */
@@ -210,15 +233,21 @@ nbtk_button_style_changed (NbtkWidget *widget)
     {
       button_class->transition (button, priv->old_bg);
     }
-
-  if (priv->old_bg)
-    g_object_unref (priv->old_bg);
-
-  bg_image = nbtk_widget_get_border_image (widget);
-  if (bg_image)
-    priv->old_bg = g_object_ref (bg_image);
   else
-    priv->old_bg = NULL;
+    {
+      if (priv->old_bg &&
+          (!nbtk_widget_get_style_pseudo_class (widget)))
+        {
+          ClutterAnimation *animation;
+          clutter_actor_set_parent (priv->old_bg, (ClutterActor*) widget);
+          animation = clutter_actor_animate (priv->old_bg,
+                                             CLUTTER_LINEAR, 150,
+                                             "opacity", 0,
+                                             NULL);
+          g_signal_connect (animation, "completed",
+                            G_CALLBACK (nbtk_animation_completed), priv);
+        }
+    }
 }
 
 static void
@@ -546,11 +575,19 @@ nbtk_button_allocate (ClutterActor          *self,
   ClutterActor *child;
   gfloat icon_w, icon_h;
   NbtkPadding padding;
+  ClutterActorBox bg_box;
 
   CLUTTER_ACTOR_CLASS (nbtk_button_parent_class)->allocate (self, box, flags);
 
+  bg_box.x1 = 0;
+  bg_box.y1 = 0;
+  bg_box.x2 = (box->x2 - box->x1);
+  bg_box.y2 = (box->y2 - box->y1);
 
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
+
+  if (priv->old_bg)
+    clutter_actor_allocate (priv->old_bg, &bg_box, flags);
 
 
   /* we re-allocate the contents if an icon is set */
@@ -682,10 +719,26 @@ nbtk_button_unmap (ClutterActor *self)
 }
 
 static void
+nbtk_button_draw_background (NbtkWidget         *widget,
+                             ClutterActor       *background,
+                             const ClutterColor *color)
+{
+  NbtkButtonPrivate *priv;
+
+  NBTK_WIDGET_CLASS (nbtk_button_parent_class)->draw_background (widget, background, color);
+
+  priv = NBTK_BUTTON (widget)->priv;
+
+  if (priv->old_bg)
+      clutter_actor_paint (priv->old_bg);
+}
+
+static void
 nbtk_button_class_init (NbtkButtonClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
+  NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (NbtkButtonPrivate));
@@ -709,6 +762,8 @@ nbtk_button_class_init (NbtkButtonClass *klass)
   actor_class->paint = nbtk_button_paint;
   actor_class->map = nbtk_button_map;
   actor_class->unmap = nbtk_button_unmap;
+
+  widget_class->draw_background = nbtk_button_draw_background;
 
   pspec = g_param_spec_string ("label",
                                "Label",
@@ -765,6 +820,9 @@ nbtk_button_init (NbtkButton *button)
 
   g_signal_connect (button, "style-changed",
                     G_CALLBACK (nbtk_button_style_changed), NULL);
+
+  g_signal_connect (button, "stylable-changed",
+                    G_CALLBACK (nbtk_button_stylable_changed), NULL);
 }
 
 /**
