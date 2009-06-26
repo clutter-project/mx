@@ -1,6 +1,7 @@
 #include <nbtk/nbtk.h>
 
 nbtk_adjustment_get_type
+nbtk_bin_get_type
 nbtk_button_get_type
 nbtk_entry_get_type
 nbtk_grid_get_type

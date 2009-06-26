@@ -20,8 +20,8 @@
   <chapter>
     <title>libnbtk</title>
     <xi:include href="xml/nbtk-adjustment.xml"/>
+    <xi:include href="xml/nbtk-bin.xml"/>
     <xi:include href="xml/nbtk-button.xml"/>
-    <xi:include href="xml/nbtk-enum-types.xml"/>
     <xi:include href="xml/nbtk-entry.xml"/>
     <xi:include href="xml/nbtk-grid.xml"/>
     <xi:include href="xml/nbtk-label.xml"/>
