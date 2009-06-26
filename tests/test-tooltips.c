@@ -37,10 +37,6 @@ main (int argc, char *argv[])
 
   clutter_init (&argc, &argv);
 
-  /* load the style sheet */
-  nbtk_style_load_from_file (nbtk_style_get_default (),
-                             "style/default.css", NULL);
-
   stage = clutter_stage_get_default ();
   clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
 

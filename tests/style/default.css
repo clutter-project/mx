@@ -11,22 +11,6 @@ NbtkLabel#padded-label {
   padding: 10;
 }
 
-NbtkEntry {
-  color: red;
-  background-color: yellow;
-  font-size: 30;
-  font-family: "Times";
-  padding: 3;
-}
-
-NbtkEntry:indeterminate {
-  color: gray;
-}
-
-NbtkEntry:focus {
-  background-color: lime;
-}
-
 NbtkButton, NbtkFadeButton, NbtkScrollButton {
   color: blue;
   padding: 12;
@@ -85,68 +69,6 @@ NbtkTable {
   background-color: #ddd;
   border-image: url('file://rounded-corner.png') 30;
   padding: 10;
-}
-
-NbtkExpander {
-  color: blank;
-  font-size: 15;
-  border-image: url('file://expander-closed.png') 6;
-  padding: 6 12;
-}
-
-NbtkExpander:hover {
-  border-image: url('file://expander-hover.png') 6;
-}
-
-NbtkExpander:active {
-  border-image: url('file://expander-open.png') 36 6 6 6;
-}
-
-*#nbtk-expander-arrow-closed {
-    padding: 0;
-    background-image: url('file://arrow-up.png');
-}
-
-*#nbtk-expander-arrow-closed:hover {
-    background-image: url('file://arrow-up-hover.png');
-}
-
-*#nbtk-expander-arrow-open {
-    background-image: url('file://arrow-down.png');
-}
-
-*#nbtk-expander-arrow-open:hover {
-    background-image: url('file://arrow-down-hover.png');
-}
-
-NbtkTooltip {
-  color: white;
-  padding: 4 10 12 10;
-  background-image: url('file://tooltip-arrow.png');
-  border-image: url('file://tooltip-background.png') 4 11 12 11;
-  font-size: 15px;
-}
-
-NbtkTable NbtkButton {
-  color: yellow;
-}
-
-NbtkScrollBar {
-  background-color: darkgrey;
-  padding: 2;
-}
-
-NbtkScrollBar *#trough {
-  background-color: lightgrey;
-}
-
-NbtkScrollBar *#handle {
-  background-color: black;
-  border-image: none;
-}
-
-NbtkScrollBar *#handle:hover {
-  background-color: red;
 }
 
 NbtkProgressBar {
