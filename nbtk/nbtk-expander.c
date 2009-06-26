@@ -142,20 +142,17 @@ timeline_complete (ClutterTimeline *timeline,
   if (!child)
     return;
 
-  /* if we are "opening" */
-  if (clutter_timeline_get_direction (priv->timeline)
-      != CLUTTER_TIMELINE_FORWARD)
+  /* continue only if we are "opening" */
+  if (!priv->expanded)
     return;
 
   /* we can't do an animation if there is already one in progress,
-   * because we cannot reliably get the actors true opacity
-   */
+   * because we cannot get the actors original opacity */
   if (clutter_actor_get_animation (child))
     {
       clutter_actor_show (child);
       return;
     }
-
 
   opacity = clutter_actor_get_opacity (child);
   clutter_actor_set_opacity (child, 0);
@@ -203,7 +200,7 @@ nbtk_expander_toggle_expanded (NbtkExpander *expander)
   if (!child)
     return;
 
-
+  /* setup and start the expansion animation */
   if (!priv->expanded)
     {
       clutter_actor_hide (child);
@@ -305,6 +302,8 @@ nbtk_expander_get_preferred_height (ClutterActor *actor,
       min_child_h += priv->spacing;
       pref_child_h += priv->spacing;
 
+      /* allocate the space multiplied by the progress of the "expansion"
+       * animation */
       min_child_h *= priv->progress;
       pref_child_h *= priv->progress;
     }
@@ -628,11 +627,11 @@ nbtk_expander_init (NbtkExpander *self)
   priv->spacing = 10.0f;
 
   priv->timeline = clutter_timeline_new (250);
-  clutter_timeline_set_direction (priv->timeline, CLUTTER_TIMELINE_BACKWARD);
   g_signal_connect (priv->timeline, "new-frame", G_CALLBACK (new_frame), self);
   g_signal_connect (priv->timeline, "completed", G_CALLBACK (timeline_complete), self);
 
   priv->alpha = clutter_alpha_new_full (priv->timeline, CLUTTER_EASE_IN_SINE);
+  g_object_ref_sink (priv->alpha);
 
   clutter_actor_set_reactive ((ClutterActor *) self, TRUE);
 
