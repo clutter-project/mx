@@ -232,6 +232,7 @@ nbtk_clipboard_get_default ()
  * nbtk_clipboard_get_text:
  * @clipboard: A #NbtkCliboard
  * @callback: function to be called when the text is retreived
+ * @user_data: data to be passed to the callback
  *
  * Request the data from the clipboard in text form. @callback is executed
  * when the data is retreived.

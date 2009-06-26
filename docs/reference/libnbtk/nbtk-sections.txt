@@ -1,4 +1,23 @@
 <SECTION>
+<FILE>nbtk-clipboard</FILE>
+NbtkClipboardPrivate
+<TITLE>NbtkClipboard</TITLE>
+NbtkClipboard
+NbtkClipboardCallbackFunc
+nbtk_clipboard_get_default
+nbtk_clipboard_get_text
+nbtk_clipboard_set_text
+<SUBSECTION Standard>
+NBTK_CLIPBOARD
+NBTK_IS_CLIPBOARD
+NBTK_TYPE_CLIPBOARD
+nbtk_clipboard_get_type
+NBTK_CLIPBOARD_CLASS
+NBTK_IS_CLIPBOARD_CLASS
+NBTK_CLIPBOARD_GET_CLASS
+</SECTION>
+
+<SECTION>
 <FILE>nbtk-cell-renderer</FILE>
 <TITLE>NbtkCellRenderer</TITLE>
 NbtkCellRenderer

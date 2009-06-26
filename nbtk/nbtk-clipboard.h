@@ -51,7 +51,7 @@ typedef void (*NbtkClipboardCallbackFunc) (NbtkClipboard *clipboard,
 GType nbtk_clipboard_get_type (void);
 
 NbtkClipboard* nbtk_clipboard_get_default ();
-void nbtk_clipboard_get_text (NbtkClipboard *clipboard, NbtkClipboardCallbackFunc cllback, gpointer user_data);
+void nbtk_clipboard_get_text (NbtkClipboard *clipboard, NbtkClipboardCallbackFunc callback, gpointer user_data);
 void nbtk_clipboard_set_text (NbtkClipboard *clipboard, const gchar *text);
 
 G_END_DECLS
