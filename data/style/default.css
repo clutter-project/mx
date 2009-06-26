@@ -102,3 +102,9 @@ NbtkExpander > *#nbtk-expander-arrow-open:hover {
     background-image: url('file://expander-arrow-down-hover.png');
 }
 
+NbtkTooltip {
+  color: white;
+  padding: 4 10 12 10;
+  border-image: url('file://tooltip-background.png') 4 11 12 11;
+  font-size: 15px;
+}
