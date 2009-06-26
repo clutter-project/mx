@@ -30,7 +30,13 @@ nbtk_widget_undo_child_dnd
 nbtk_widget_get_background_image
 nbtk_widget_get_border_image
 nbtk_widget_get_padding
-nbtk_widget_get_border
+nbtk_widget_ensure_style
+nbtk_widget_get_has_tooltip
+nbtk_widget_get_tooltip_text
+nbtk_widget_hide_tooltip
+nbtk_widget_set_has_tooltip
+nbtk_widget_set_tooltip_text
+nbtk_widget_show_tooltip
 <SUBSECTION Standard>
 nbtk_widget_get_type
 NBTK_TYPE_WIDGET
@@ -57,8 +63,6 @@ NbtkBin
 nbtk_bin_new
 nbtk_bin_set_child
 nbtk_bin_get_child
-nbtk_bin_set_padding
-nbtk_bin_get_padding
 nbtk_bin_set_alignment
 nbtk_bin_get_alignment
 nbtk_bin_set_fill
@@ -192,10 +196,8 @@ NbtkAdjustmentPrivate
 <FILE>nbtk-texture-cache</FILE>
 <TITLE>NbtkTextureCache</TITLE>
 NbtkTextureCache
-nbtk_texture_cache_new
 nbtk_texture_cache_get_default
 nbtk_texture_cache_get_texture
-nbtk_texture_cache_get_texture_async
 nbtk_texture_cache_get_size
 <SUBSECTION Standard>
 NBTK_TEXTURE_CACHE
@@ -245,14 +247,11 @@ NBTK_ICON_GET_CLASS
 
 <SECTION>
 <FILE>nbtk-scroll-bar</FILE>
-NbtkScrollBarMode
 <TITLE>NbtkScrollBar</TITLE>
 NbtkScrollBar
 nbtk_scroll_bar_new
 nbtk_scroll_bar_set_adjustment
 nbtk_scroll_bar_get_adjustment
-nbtk_scroll_bar_get_mode
-nbtk_scroll_bar_set_mode
 <SUBSECTION Standard>
 NbtkScrollBarPrivate
 NBTK_SCROLL_BAR
@@ -302,7 +301,6 @@ nbtk_button_set_toggle_mode
 nbtk_button_get_toggle_mode
 nbtk_button_set_checked
 nbtk_button_get_checked
-nbtk_button_set_tooltip
 <SUBSECTION Standard>
 NBTK_BUTTON
 NBTK_IS_BUTTON
@@ -388,8 +386,6 @@ NBTK_TABLE_CHILD_GET_CLASS
 
 <SECTION>
 <FILE>nbtk-style</FILE>
-NbtkStylable
-NbtkStylableIface
 NbtkStyleError
 <TITLE>NbtkStyle</TITLE>
 NbtkStyle
@@ -442,16 +438,8 @@ nbtk_table_set_col_spacing
 nbtk_table_set_row_spacing
 nbtk_table_get_col_spacing
 nbtk_table_get_row_spacing
-nbtk_table_set_padding
-nbtk_table_get_padding
-nbtk_table_add_widget
-nbtk_table_add_widget_full
 nbtk_table_add_actor
-nbtk_table_add_actor_full
 nbtk_table_add_actor_with_properties
-nbtk_table_set_widget_colspan
-nbtk_table_set_widget_rowspan
-nbtk_table_insert_actor_at_position
 <SUBSECTION Standard>
 NBTK_TABLE
 NBTK_IS_TABLE
@@ -476,9 +464,7 @@ nbtk_stylable_list_properties
 nbtk_stylable_find_property
 nbtk_stylable_set_style
 nbtk_stylable_get_style
-nbtk_stylable_set
 nbtk_stylable_get
-nbtk_stylable_set_property
 nbtk_stylable_get_property
 nbtk_stylable_get_default_value
 nbtk_stylable_get_container
@@ -545,3 +531,15 @@ NBTK_IS_ENTRY_CLASS
 NBTK_ENTRY_GET_CLASS
 </SECTION>
 
+<SECTION>
+<FILE>nbtk-types</FILE>
+NbtkBorderImage
+NbtkPadding
+NbtkAlignment
+NbtkAlign
+<SUBSECTION Standard>
+NBTK_TYPE_BORDER_IMAGE
+NBTK_TYPE_PADDING
+nbtk_border_image_get_type
+nbtk_padding_get_type
+</SECTION>
