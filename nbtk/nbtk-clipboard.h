@@ -33,8 +33,15 @@ typedef struct _NbtkClipboard NbtkClipboard;
 typedef struct _NbtkClipboardClass NbtkClipboardClass;
 typedef struct _NbtkClipboardPrivate NbtkClipboardPrivate;
 
+/**
+ * NbtkClipboard:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
 struct _NbtkClipboard
 {
+  /*< private >*/
   GObject parent;
   NbtkClipboardPrivate *priv;
 };
@@ -44,6 +51,14 @@ struct _NbtkClipboardClass
   GObjectClass parent_class;
 };
 
+/**
+ * NbtkClipboardCallbackFunc:
+ * @clipboard: A #NbtkClipboard
+ * @text: text from the clipboard
+ * @user_data: user data
+ *
+ * Callback function called when text is retrieved from the clipboard.
+ */
 typedef void (*NbtkClipboardCallbackFunc) (NbtkClipboard *clipboard,
                                            const gchar   *text,
                                            gpointer       user_data);
