@@ -1,5 +1,5 @@
 m4_define([nbtk_major], [0])
-m4_define([nbtk_minor], [13])
+m4_define([nbtk_minor], [14])
 m4_define([nbtk_micro], [0])
 
 m4_define([nbtk_version], [nbtk_major.nbtk_minor.nbtk_micro])
