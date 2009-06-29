@@ -239,7 +239,8 @@ nbtk_button_style_changed (NbtkWidget *widget)
           (!nbtk_widget_get_style_pseudo_class (widget)))
         {
           ClutterAnimation *animation;
-          clutter_actor_set_parent (priv->old_bg, (ClutterActor*) widget);
+          if (!clutter_actor_get_parent (priv->old_bg))
+            clutter_actor_set_parent (priv->old_bg, (ClutterActor*) widget);
           animation = clutter_actor_animate (priv->old_bg,
                                              CLUTTER_LINEAR, 150,
                                              "opacity", 0,
