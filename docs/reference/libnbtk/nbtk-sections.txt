@@ -554,6 +554,8 @@ nbtk_tooltip_get_label
 nbtk_tooltip_set_label
 nbtk_tooltip_show
 nbtk_tooltip_hide
+nbtk_tooltip_set_tip_area
+nbtk_tooltip_get_tip_area
 <SUBSECTION Standard>
 NBTK_TOOLTIP
 NBTK_IS_TOOLTIP
