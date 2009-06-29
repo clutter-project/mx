@@ -385,7 +385,9 @@ nbtk_widget_dispose (GObject *gobject)
 
   if (priv->tooltip)
     {
-      clutter_actor_unparent (CLUTTER_ACTOR (priv->tooltip));
+      /* the tooltip should be parented on the stage */
+      clutter_container_remove_actor (clutter_actor_get_parent (priv->tooltip),
+                                      priv->tooltip);
       priv->tooltip = NULL;
     }
 
