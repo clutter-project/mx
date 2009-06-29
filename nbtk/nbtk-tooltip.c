@@ -52,7 +52,6 @@ enum
   PROP_0,
 
   PROP_LABEL,
-  PROP_WIDGET,
   PROP_TIP_AREA
 };
 
@@ -425,12 +424,6 @@ nbtk_tooltip_class_init (NbtkTooltipClass *klass)
                                "Label of the tooltip",
                                NULL, G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_LABEL, pspec);
-
-  pspec = g_param_spec_pointer ("widget",
-                                "Widget",
-                                "Widget the tooltip is associated with",
-                                G_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class, PROP_WIDGET, pspec);
 
   pspec = g_param_spec_boxed ("tip-area",
                               "Tip Area",
