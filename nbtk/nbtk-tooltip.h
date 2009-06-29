@@ -69,8 +69,6 @@ NbtkWidget *          nbtk_tooltip_new       (NbtkWidget  *widget, const gchar *
 G_CONST_RETURN gchar *nbtk_tooltip_get_label (NbtkTooltip *tooltip);
 void                  nbtk_tooltip_set_label (NbtkTooltip *tooltip,
                                               const gchar *text);
-NbtkWidget*           nbtk_tooltip_get_widget (NbtkTooltip *tooltip);
-void                  nbtk_tooltip_set_widget (NbtkTooltip *tooltip, NbtkWidget *widget);
 void                  nbtk_tooltip_show      (NbtkTooltip *tooltip);
 void                  nbtk_tooltip_hide      (NbtkTooltip *tooltip);
 

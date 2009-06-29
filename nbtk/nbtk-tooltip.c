@@ -62,7 +62,6 @@ enum
 struct _NbtkTooltipPrivate
 {
   ClutterActor *label;
-  NbtkWidget   *widget;
 
   gfloat        arrow_offset;
   gboolean      actor_below;
@@ -86,10 +85,6 @@ nbtk_tooltip_set_property (GObject      *gobject,
       nbtk_tooltip_set_label (tooltip, g_value_get_string (value));
       break;
 
-    case PROP_WIDGET:
-      nbtk_tooltip_set_widget (tooltip, g_value_get_pointer (value));
-      break;
-
     case PROP_TIP_AREA:
       nbtk_tooltip_set_tip_area (tooltip, g_value_get_boxed (value));
 
@@ -111,10 +106,6 @@ nbtk_tooltip_get_property (GObject    *gobject,
     {
     case PROP_LABEL:
       g_value_set_string (value, clutter_text_get_text (CLUTTER_TEXT (priv->label)));
-      break;
-
-    case PROP_WIDGET:
-      g_value_set_pointer (value, priv->widget);
       break;
 
     case PROP_TIP_AREA:
@@ -449,31 +440,6 @@ nbtk_tooltip_class_init (NbtkTooltipClass *klass)
   g_object_class_install_property (gobject_class, PROP_TIP_AREA, pspec);
 }
 
-
-static void
-nbtk_tooltip_weak_ref_notify (gpointer tooltip, GObject *obj)
-{
-  NbtkTooltipPrivate *priv = NBTK_TOOLTIP (tooltip)->priv;
-
-  priv->widget = NULL;
-
-  if (!clutter_actor_get_parent (CLUTTER_ACTOR (tooltip)))
-    {
-      g_object_ref_sink (G_OBJECT (tooltip));
-      g_object_unref (G_OBJECT (tooltip));
-    }
-  else
-    {
-      ClutterActor *actor = CLUTTER_ACTOR (tooltip);
-      ClutterActor *parent = clutter_actor_get_parent (actor);
-
-      if (CLUTTER_IS_CONTAINER (parent))
-        clutter_container_remove_actor (CLUTTER_CONTAINER (parent), actor);
-      else
-        clutter_actor_unparent (actor);
-    }
-}
-
 static void
 nbtk_tooltip_init (NbtkTooltip *tooltip)
 {
@@ -607,53 +573,6 @@ nbtk_tooltip_set_label (NbtkTooltip *tooltip,
 }
 
 /**
- * nbtk_tooltip_get_widget:
- * @tooltip: a #NbtkTooltip
- *
- * Get the widget associated with the tooltip
- *
- * Returns: the associated tooltip
- */
-NbtkWidget*
-nbtk_tooltip_get_widget (NbtkTooltip *tooltip)
-{
-  g_return_val_if_fail (NBTK_IS_TOOLTIP (tooltip), NULL);
-
-  return tooltip->priv->widget;
-}
-
-/**
- * nbtk_tooltip_set_widget:
- * @tooltip: a #NbtkTooltip
- * @widget: text to set the widget to
- *
- * Sets the text displayed on the tooltip
- */
-void
-nbtk_tooltip_set_widget (NbtkTooltip *tooltip,
-                         NbtkWidget  *widget)
-{
-  NbtkTooltipPrivate *priv;
-
-  g_return_if_fail (NBTK_IS_TOOLTIP (tooltip));
-
-  priv = tooltip->priv;
-
-  if (G_UNLIKELY (priv->widget))
-    {
-      /* remove the weak ref from the old widget */
-      g_object_weak_unref (G_OBJECT (priv->widget),
-                           nbtk_tooltip_weak_ref_notify,
-                           tooltip);
-    }
-
-  priv->widget = widget;
-
-  g_object_weak_ref (G_OBJECT (widget), nbtk_tooltip_weak_ref_notify, tooltip);
-}
-
-
-/**
  * nbtk_tooltip_show:
  * @tooltip: a #NbtkTooltip
  *
@@ -665,12 +584,8 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
   NbtkTooltipPrivate *priv;
   ClutterActor *parent;
   ClutterActor *stage;
-  ClutterActor *widget = CLUTTER_ACTOR (tooltip->priv->widget);
   ClutterActor *self = CLUTTER_ACTOR (tooltip);
   ClutterAnimation *animation;
-
-  if (!widget)
-    return;
 
   /* make sure we're not currently already animating (e.g. hiding) */
   animation = clutter_actor_get_animation (CLUTTER_ACTOR (tooltip));
@@ -679,21 +594,21 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
 
   priv = tooltip->priv;
   parent = clutter_actor_get_parent (self);
-  stage = clutter_actor_get_stage (widget);
+  stage = clutter_actor_get_stage (self);
 
   if (!stage)
     {
-      g_warning ("NbtkTooltip associated widget is not on any stage.");
+      g_warning ("NbtkTooltip is not on any stage.");
       return;
     }
 
   /* make sure we're parented on the stage */
   if (G_UNLIKELY (parent != stage))
     {
-      if (parent)
-        g_warning ("NbtkTooltip must be parented directly on the stage");
-
-      clutter_actor_reparent (self, stage);
+      g_object_ref (self);
+      clutter_actor_unparent (self);
+      clutter_actor_set_parent (self, stage);
+      g_object_unref (self);
       parent = stage;
     }
 

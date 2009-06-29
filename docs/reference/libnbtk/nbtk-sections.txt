@@ -552,8 +552,6 @@ NBTK_STYLABLE_GET_IFACE
 NbtkTooltip
 nbtk_tooltip_get_label
 nbtk_tooltip_set_label
-nbtk_tooltip_get_widget
-nbtk_tooltip_set_widget
 nbtk_tooltip_show
 nbtk_tooltip_hide
 <SUBSECTION Standard>

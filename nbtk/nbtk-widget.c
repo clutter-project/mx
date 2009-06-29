@@ -1998,9 +1998,11 @@ nbtk_widget_set_has_tooltip (NbtkWidget *widget,
       clutter_actor_set_reactive ((ClutterActor*) widget, TRUE);
 
       if (!priv->tooltip)
-        priv->tooltip = g_object_new (NBTK_TYPE_TOOLTIP,
-                                      "widget", widget,
-                                      NULL);
+        {
+          priv->tooltip = g_object_new (NBTK_TYPE_TOOLTIP, NULL);
+          clutter_actor_set_parent ((ClutterActor *) priv->tooltip,
+                                    (ClutterActor *) widget);
+        }
     }
   else
     {
