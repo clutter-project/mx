@@ -410,9 +410,30 @@ nbtk_widget_allocate (ClutterActor          *actor,
 {
   NbtkWidgetPrivate *priv = NBTK_WIDGET (actor)->priv;
   ClutterActorClass *klass;
+  ClutterGeometry area;
+  ClutterVertex in_v, out_v;
 
   klass = CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class);
   klass->allocate (actor, box, flags);
+
+  /* update tooltip position */
+  if (priv->tooltip)
+    {
+      in_v.x = in_v.y = in_v.z = 0;
+      clutter_actor_apply_transform_to_point (actor, &in_v, &out_v);
+      area.x = out_v.x;
+      area.y = out_v.y;
+
+      in_v.x = box->x2 - box->x1;
+      in_v.y = box->y2 - box->y1;
+      clutter_actor_apply_transform_to_point (actor, &in_v, &out_v);
+      area.width = out_v.x - area.x;
+      area.height = out_v.y - area.y;
+
+      nbtk_tooltip_set_tip_area (priv->tooltip, &area);
+    }
+
+
 
   if (priv->border_image)
     {
@@ -802,7 +823,7 @@ nbtk_widget_enter (ClutterActor         *actor,
 
 
   if (priv->has_tooltip)
-      nbtk_tooltip_show (priv->tooltip);
+      nbtk_widget_show_tooltip ((NbtkWidget*) actor);
 
   if (CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->enter_event)
     return CLUTTER_ACTOR_CLASS (nbtk_widget_parent_class)->enter_event (actor, event);
@@ -2061,10 +2082,29 @@ nbtk_widget_get_tooltip_text (NbtkWidget *widget)
 void
 nbtk_widget_show_tooltip (NbtkWidget *widget)
 {
+  gfloat x, y, width, height;
+  ClutterGeometry area;
+
   g_return_if_fail (NBTK_IS_WIDGET (widget));
 
+  /* XXX not necceary, but first allocate transform is wrong */
+
+  clutter_actor_get_transformed_position ((ClutterActor*) widget,
+                                          &x, &y);
+
+  clutter_actor_get_size ((ClutterActor*) widget, &width, &height);
+
+  area.x = x;
+  area.y = y;
+  area.width = width;
+  area.height = height;
+
+
   if (widget->priv->tooltip)
-    nbtk_tooltip_show (widget->priv->tooltip);
+    {
+      nbtk_tooltip_set_tip_area (widget->priv->tooltip, &area);
+      nbtk_tooltip_show (widget->priv->tooltip);
+    }
 }
 
 /**

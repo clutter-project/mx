@@ -45,6 +45,7 @@
 
 #include "nbtk-widget.h"
 #include "nbtk-stylable.h"
+#include "nbtk-private.h"
 
 enum
 {
@@ -52,6 +53,7 @@ enum
 
   PROP_LABEL,
   PROP_WIDGET,
+  PROP_TIP_AREA
 };
 
 #define NBTK_TOOLTIP_GET_PRIVATE(obj)    \
@@ -64,6 +66,8 @@ struct _NbtkTooltipPrivate
 
   gfloat        arrow_offset;
   gboolean      actor_below;
+
+  ClutterGeometry *tip_area;
 };
 
 G_DEFINE_TYPE (NbtkTooltip, nbtk_tooltip, NBTK_TYPE_WIDGET);
@@ -85,6 +89,9 @@ nbtk_tooltip_set_property (GObject      *gobject,
     case PROP_WIDGET:
       nbtk_tooltip_set_widget (tooltip, g_value_get_pointer (value));
       break;
+
+    case PROP_TIP_AREA:
+      nbtk_tooltip_set_tip_area (tooltip, g_value_get_boxed (value));
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -108,6 +115,10 @@ nbtk_tooltip_get_property (GObject    *gobject,
 
     case PROP_WIDGET:
       g_value_set_pointer (value, priv->widget);
+      break;
+
+    case PROP_TIP_AREA:
+      g_value_set_boxed (value, priv->tip_area);
       break;
 
     default:
@@ -429,6 +440,13 @@ nbtk_tooltip_class_init (NbtkTooltipClass *klass)
                                 "Widget the tooltip is associated with",
                                 G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_WIDGET, pspec);
+
+  pspec = g_param_spec_boxed ("tip-area",
+                              "Tip Area",
+                              "Area on the stage the tooltip applies to",
+                              CLUTTER_TYPE_GEOMETRY,
+                              NBTK_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_TIP_AREA, pspec);
 }
 
 
@@ -467,6 +485,8 @@ nbtk_tooltip_init (NbtkTooltip *tooltip)
                                        "use-markup", TRUE,
                                        NULL);
 
+  tooltip->priv->tip_area = NULL;
+
   clutter_actor_set_parent (CLUTTER_ACTOR (tooltip->priv->label),
                             CLUTTER_ACTOR (tooltip));
 
@@ -478,6 +498,75 @@ nbtk_tooltip_init (NbtkTooltip *tooltip)
                     G_CALLBACK (nbtk_tooltip_style_changed), NULL);
 }
 
+static void
+nbtk_tooltip_update_position (NbtkTooltip *tooltip)
+{
+  NbtkTooltipPrivate *priv = tooltip->priv;
+  ClutterGeometry *tip_area = tooltip->priv->tip_area;
+  gfloat tooltip_w, tooltip_h, tooltip_x, tooltip_y;
+  gfloat stage_w, stage_h;
+  ClutterActor *stage;
+
+  /* if no area set, just position ourselves top left */
+  if (!priv->tip_area)
+    {
+      clutter_actor_set_position ((ClutterActor*) tooltip, 0, 0);
+      return;
+    }
+
+  /* we need to have a style in case there are padding values to take into
+   * account when calculating width/height */
+  nbtk_widget_ensure_style ((NbtkWidget *) tooltip);
+
+  /* find out the tooltip's size */
+  clutter_actor_get_size ((ClutterActor*) tooltip, &tooltip_w, &tooltip_h);
+
+  /* attempt to place the tooltip */
+  tooltip_x = (int) (tip_area->x + (tip_area->width / 2) - (tooltip_w / 2));
+  tooltip_y = (int) (tip_area->y + tip_area->height);
+
+  stage = clutter_actor_get_stage ((ClutterActor *) tooltip);
+  if (!stage)
+    {
+      return;
+    }
+  clutter_actor_get_size (stage, &stage_w, &stage_h);
+
+  /* make sure the tooltip is not off screen vertically */
+  if (tooltip_w > stage_w)
+    {
+      tooltip_x = 0;
+      clutter_actor_set_width ((ClutterActor*) tooltip, stage_w);
+    }
+  else if (tooltip_x < 0)
+    {
+      tooltip_x = 0;
+    }
+  else if (tooltip_x + tooltip_w > stage_w)
+    {
+      tooltip_x = (int) (stage_w) - tooltip_w;
+    }
+
+  /* make sure the tooltip is not off screen horizontally */
+  if (tooltip_y + tooltip_h > stage_h)
+    {
+      priv->actor_below = TRUE;
+
+      /* re-query size as may have changed */
+      clutter_actor_get_preferred_height ((ClutterActor*) tooltip,
+                                          -1, NULL, &tooltip_h);
+      tooltip_y = tip_area->y - tooltip_h;
+    }
+  else
+    {
+      priv->actor_below = FALSE;
+    }
+
+  /* calculate the arrow offset */
+  priv->arrow_offset = tip_area->x + tip_area->width / 2 - tooltip_x;
+
+  clutter_actor_set_position ((ClutterActor*) tooltip, tooltip_x, tooltip_y);
+}
 
 /**
  * nbtk_tooltip_get_label:
@@ -578,9 +667,6 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
   ClutterActor *stage;
   ClutterActor *widget = CLUTTER_ACTOR (tooltip->priv->widget);
   ClutterActor *self = CLUTTER_ACTOR (tooltip);
-  gfloat widget_x, widget_y, self_x, self_y;
-  gfloat widget_w, widget_h;
-  gfloat self_w, self_h, stage_w, stage_h;
   ClutterAnimation *animation;
 
   if (!widget)
@@ -611,67 +697,20 @@ nbtk_tooltip_show (NbtkTooltip *tooltip)
       parent = stage;
     }
 
-  nbtk_widget_ensure_style ((NbtkWidget *) tooltip);
-
   /* raise the tooltip to the top */
   clutter_container_raise_child (CLUTTER_CONTAINER (stage),
                                  CLUTTER_ACTOR (tooltip),
                                  NULL);
 
-  /* place the tooltip under the associated actor */
-  clutter_actor_get_transformed_position (widget, &widget_x, &widget_y);
-  clutter_actor_get_transformed_size (widget, &widget_w, &widget_h);
-
-  /* find out the tooltip's width */
-  clutter_actor_get_size (self, &self_w, &self_h);
-
-  /* attempt to place the tooltip */
-  self_x = (int) (widget_x + (widget_w / 2) - (self_w / 2));
-  self_y = (int) (widget_y + widget_h);
-
-  clutter_actor_get_size (stage, &stage_w, &stage_h);
-
-  /* make sure the tooltip is not off screen vertically */
-  if (self_w > stage_w)
-    {
-      self_x = 0;
-      clutter_actor_set_width (CLUTTER_ACTOR (self), stage_w);
-    }
-  else if (self_x < 0)
-    {
-      self_x = 0;
-    }
-  else if (self_x + self_w > stage_w)
-    {
-      self_x = (int) (stage_w) - self_w;
-    }
-
-  /* make sure the tooltip is not off screen horizontally */
-  if (self_y + self_h > stage_h)
-    {
-      priv->actor_below = TRUE;
-
-      /* re-query size as may have changed */
-      clutter_actor_get_preferred_height (self, -1, NULL, &self_h);
-      self_y = widget_y - self_h;
-    }
-  else
-    {
-      priv->actor_below = FALSE;
-    }
-
-  /* calculate the arrow offset */
-  priv->arrow_offset = widget_x + widget_w / 2 - self_x;
-
-  clutter_actor_set_position (self, self_x, self_y);
+  nbtk_tooltip_update_position (tooltip);
 
   /* finally show the tooltip... */
   CLUTTER_ACTOR_CLASS (nbtk_tooltip_parent_class)->show (self);
 
   /* and give it some bounce! */
   g_object_set (G_OBJECT (self),
-                "scale-center-x", tooltip->priv->arrow_offset,
-                "scale-center-y", (priv->actor_below) ? self_h : 0,
+                "scale-center-x", priv->arrow_offset,
+                "scale-center-y", (priv->actor_below) ? clutter_actor_get_height (self) : 0,
                 NULL);
   clutter_actor_set_scale (self, 0.0, 0.0);
   clutter_actor_animate (self, CLUTTER_EASE_OUT_ELASTIC,
@@ -720,4 +759,41 @@ nbtk_tooltip_hide (NbtkTooltip *tooltip)
                            NULL);
   g_signal_connect (animation, "completed",
                     G_CALLBACK (nbtk_tooltip_hide_complete), tooltip);
+}
+
+/**
+ * nbtk_tooltip_set_tip_area:
+ * @tooltip: A #NbtkTooltip
+ * @area: A #ClutterGeometry
+ *
+ * Set the area on the stage that the tooltip applies to.
+ */
+void
+nbtk_tooltip_set_tip_area (NbtkTooltip           *tooltip,
+                           const ClutterGeometry *area)
+{
+  g_return_if_fail (NBTK_IS_TOOLTIP (tooltip));
+
+  if (tooltip->priv->tip_area)
+    g_boxed_free (CLUTTER_TYPE_GEOMETRY, tooltip->priv->tip_area);
+  tooltip->priv->tip_area = g_boxed_copy (CLUTTER_TYPE_GEOMETRY, area);
+
+  nbtk_tooltip_update_position (tooltip);
+}
+
+/**
+ * nbtk_tooltip_get_tip_area:
+ * @tooltip: A #NbtkTooltip
+ *
+ * Retrieve the area on the stage that the tooltip currently applies to
+ *
+ * Returns: the #ClutterGeometry, owned by the tooltip which must not be freed
+ * by the application.
+ */
+G_CONST_RETURN ClutterGeometry*
+nbtk_tooltip_get_tip_area (NbtkTooltip *tooltip)
+{
+  g_return_val_if_fail (NBTK_IS_TOOLTIP (tooltip), NULL);
+
+  return tooltip->priv->tip_area;
 }

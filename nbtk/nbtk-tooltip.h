@@ -74,6 +74,9 @@ void                  nbtk_tooltip_set_widget (NbtkTooltip *tooltip, NbtkWidget 
 void                  nbtk_tooltip_show      (NbtkTooltip *tooltip);
 void                  nbtk_tooltip_hide      (NbtkTooltip *tooltip);
 
+void                  nbtk_tooltip_set_tip_area (NbtkTooltip *tooltip, const ClutterGeometry *area);
+G_CONST_RETURN ClutterGeometry* nbtk_tooltip_get_tip_area (NbtkTooltip *tooltip);
+
 G_END_DECLS
 
 #endif /* __NBTK_TOOLTIP_H__ */

@@ -31,7 +31,7 @@ button_hide (NbtkButton *button)
 int
 main (int argc, char *argv[])
 {
-  NbtkWidget *button;
+  NbtkWidget *button, *bin;
   ClutterColor stage_color =  { 0xff, 0xff, 0xff, 0xff };
   ClutterActor *stage;
 
@@ -49,12 +49,15 @@ main (int argc, char *argv[])
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 50, 100);
 
-  button = nbtk_button_new_with_label ("Testing 123");
-  nbtk_widget_set_tooltip_text (button, "Testing the Tooltips...");
+  bin = nbtk_bin_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
-                               CLUTTER_ACTOR (button));
-  clutter_actor_set_position (CLUTTER_ACTOR (button), 50, 200);
+                               CLUTTER_ACTOR (bin));
+  clutter_actor_set_position (CLUTTER_ACTOR (bin), 50, 200);
 
+  button = nbtk_button_new_with_label ("Testing 123");
+  nbtk_widget_set_tooltip_text (button, "Testing tooltips in a container...");
+  clutter_container_add_actor (CLUTTER_CONTAINER (bin),
+                               CLUTTER_ACTOR (button));
 
   button = nbtk_button_new_with_label ("Testing Long Text");
   nbtk_widget_set_tooltip_text (button,
