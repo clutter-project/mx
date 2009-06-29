@@ -908,7 +908,7 @@ nbtk_button_set_label (NbtkButton  *button,
     }
 
 
-  nbtk_button_update_label_style (button);
+  nbtk_stylable_changed ((NbtkStylable*) button);
 
   g_object_notify (G_OBJECT (button), "label");
 }
