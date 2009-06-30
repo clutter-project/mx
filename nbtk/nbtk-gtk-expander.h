@@ -58,14 +58,14 @@ typedef struct _NbtkGtkExpanderPrivate NbtkGtkExpanderPrivate;
 
 struct _NbtkGtkExpander
 {
-  GtkExpander parent;
+  GtkBin parent;
 
   NbtkGtkExpanderPrivate *priv;
 };
 
 struct _NbtkGtkExpanderClass
 {
-  GtkExpanderClass parent_class;
+  GtkBinClass parent_class;
 };
 
 GType nbtk_gtk_expander_get_type (void);
