@@ -178,12 +178,11 @@ nbtk_gtk_expander_size_allocate (GtkWidget     *widget,
 
       label_alloc.x = allocation->x + widget->style->xthickness;
       label_alloc.y = allocation->y + widget->style->ythickness;
-      label_alloc.width = label_req.width;
+      label_alloc.width = allocation->width - 2 * widget->style->xthickness;
       label_alloc.height = label_req.height;
 
       if (priv->has_indicator)
         label_alloc.x += priv->indicator_size + priv->indicator_padding;
-
 
       gtk_widget_size_allocate (label, &label_alloc);
 
@@ -196,10 +195,10 @@ nbtk_gtk_expander_size_allocate (GtkWidget     *widget,
     {
       gtk_widget_size_request (child, &child_req);
 
-      child_alloc.x = allocation->x + widget->style->xthickness;
+      child_alloc.x = allocation->x + 2 * widget->style->xthickness;
       child_alloc.y = allocation->y + widget->style->ythickness + label_h
         + priv->child_padding;
-      child_alloc.width = child_req.width;
+      child_alloc.width = allocation->width - 4 * widget->style->xthickness;
       child_alloc.height = child_req.height;
 
       gtk_widget_size_allocate (child, &child_alloc);
@@ -246,8 +245,8 @@ nbtk_gtk_expander_size_request (GtkWidget      *widget,
       gtk_widget_size_request (child, &req);
 
       requisition->width = MAX (requisition->width,
-                                req.width + widget->style->xthickness * 2);
-      requisition->height += req.height + widget->style->ythickness;
+                                req.width + widget->style->xthickness * 4);
+      requisition->height += req.height + 2 * widget->style->ythickness;
     }
 }
 
