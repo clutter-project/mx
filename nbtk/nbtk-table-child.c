@@ -770,6 +770,14 @@ nbtk_table_child_set_y_align (NbtkTable    *table,
   clutter_actor_queue_relayout (child);
 }
 
+/**
+ * nbtk_table_child_set_allocate_hidden:
+ * @table: A #NbtkTable
+ * @child: A #ClutterActor
+ * @value: #TRUE if the actor should be allocated when hidden
+ *
+ * Set whether the child should be allocate even if it is hidden
+ */
 void
 nbtk_table_child_set_allocate_hidden (NbtkTable    *table,
                                       ClutterActor *child,
@@ -792,6 +800,15 @@ nbtk_table_child_set_allocate_hidden (NbtkTable    *table,
     }
 }
 
+/**
+ * nbtk_table_child_get_allocate_hidden:
+ * @table: A #NbtkTable
+ * @child: A #ClutterActor
+ *
+ * Determine if the child is allocated even if it is hidden
+ *
+ * Returns: #TRUE if the actor is allocated when hidden
+ */
 gboolean
 nbtk_table_child_get_allocate_hidden (NbtkTable    *table,
                                       ClutterActor *child)

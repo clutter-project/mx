@@ -1462,6 +1462,14 @@ nbtk_table_add_actor_with_properties (NbtkTable    *table,
   va_end (args);
 }
 
+/**
+ * nbtk_table_get_row_count:
+ * @table: A #NbtkTable
+ *
+ * Retrieve the current number rows in the @table
+ *
+ * Returns: the number of rows
+ */
 gint
 nbtk_table_get_row_count (NbtkTable *table)
 {
@@ -1470,6 +1478,14 @@ nbtk_table_get_row_count (NbtkTable *table)
   return NBTK_TABLE (table)->priv->n_rows;
 }
 
+/**
+ * nbtk_table_get_column_count:
+ * @table: A #NbtkTable
+ *
+ * Retrieve the current number of columns in @table
+ *
+ * Returns: the number of columns
+ */
 gint
 nbtk_table_get_column_count (NbtkTable *table)
 {

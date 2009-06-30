@@ -434,6 +434,8 @@ nbtk_table_child_get_x_align
 nbtk_table_child_set_x_align
 nbtk_table_child_get_y_align
 nbtk_table_child_set_y_align
+nbtk_table_child_get_allocate_hidden
+nbtk_table_child_set_allocate_hidden
 <SUBSECTION Standard>
 NBTK_TABLE_CHILD
 NBTK_IS_TABLE_CHILD
@@ -477,6 +479,8 @@ nbtk_icon_view_get_model
 nbtk_icon_view_set_cell_renderer
 nbtk_icon_view_get_cell_renderer
 nbtk_icon_view_add_attribute
+nbtk_icon_view_freeze
+nbtk_icon_view_thaw
 <SUBSECTION Standard>
 NbtkIconViewPrivate
 NBTK_ICON_VIEW
@@ -498,6 +502,8 @@ nbtk_table_set_col_spacing
 nbtk_table_set_row_spacing
 nbtk_table_get_col_spacing
 nbtk_table_get_row_spacing
+nbtk_table_get_column_count
+nbtk_table_get_row_count
 nbtk_table_add_actor
 nbtk_table_add_actor_with_properties
 <SUBSECTION Standard>
@@ -535,6 +541,7 @@ nbtk_stylable_get_style_class
 nbtk_stylable_get_pseudo_class
 nbtk_stylable_get_attribute
 nbtk_stylable_get_viewport
+nbtk_stylable_changed
 <SUBSECTION Standard>
 NBTK_STYLABLE_IFACE
 NBTK_IS_STYLABLE_IFACE

@@ -100,7 +100,7 @@ void nbtk_table_child_set_x_align (NbtkTable *table, ClutterActor *child, NbtkAl
 
 NbtkAlign nbtk_table_child_get_y_align (NbtkTable *table, ClutterActor *child);
 void nbtk_table_child_set_y_align (NbtkTable *table, ClutterActor *child, NbtkAlign align);
-void nbtk_table_child_set_allocate_hidden (NbtkTable *table, ClutterActor *child, gboolean allocate);
+void nbtk_table_child_set_allocate_hidden (NbtkTable *table, ClutterActor *child, gboolean value);
 gboolean nbtk_table_child_get_allocate_hidden (NbtkTable *table, ClutterActor *child);
 
 G_END_DECLS
