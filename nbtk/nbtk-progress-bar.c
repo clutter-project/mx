@@ -238,12 +238,27 @@ nbtk_progress_bar_init (NbtkProgressBar *self)
   clutter_actor_set_parent (priv->fill, CLUTTER_ACTOR (self));
 }
 
+/**
+ * nbtk_progress_bar_new:
+ *
+ * Create a new progress bar
+ *
+ * Returns: a new #NbtkProgressBar
+ */
 NbtkWidget *
 nbtk_progress_bar_new (void)
 {
   return g_object_new (NBTK_TYPE_PROGRESS_BAR, NULL);
 }
 
+/**
+ * nbtk_progress_bar_set_progress:
+ * @bar: A #NbtkProgressBar
+ * @progress: A value between 0.0 and 1.0
+ *
+ * Set the progress of the progress bar
+ *
+ */
 void
 nbtk_progress_bar_set_progress (NbtkProgressBar *bar,
                                 gdouble          progress)
@@ -259,6 +274,14 @@ nbtk_progress_bar_set_progress (NbtkProgressBar *bar,
     }
 }
 
+/**
+ * nbtk_progress_bar_get_progress:
+ * @bar: A #NbtkProgressBar
+ *
+ * Get the progress of the progress bar
+ *
+ * Returns: A value between 0.0 and 1.0
+ */
 gdouble
 nbtk_progress_bar_get_progress (NbtkProgressBar *bar)
 {

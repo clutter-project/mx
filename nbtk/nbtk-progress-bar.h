@@ -58,8 +58,15 @@ typedef struct _NbtkProgressBar NbtkProgressBar;
 typedef struct _NbtkProgressBarClass NbtkProgressBarClass;
 typedef struct _NbtkProgressBarPrivate NbtkProgressBarPrivate;
 
+/**
+ * NbtkProgressBar:
+ *
+ * The contents of this structure are private and should only be
+ * accessed through the public API.
+ */
 struct _NbtkProgressBar
 {
+  /*< private >*/
   NbtkWidget parent;
 
   NbtkProgressBarPrivate *priv;

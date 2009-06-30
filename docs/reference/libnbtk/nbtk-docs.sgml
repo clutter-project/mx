@@ -28,6 +28,7 @@
     <xi:include href="xml/nbtk-entry.xml"/>
     <xi:include href="xml/nbtk-grid.xml"/>
     <xi:include href="xml/nbtk-label.xml"/>
+    <xi:include href="xml/nbtk-progress-bar.xml"/>
     <xi:include href="xml/nbtk-scroll-bar.xml"/>
     <xi:include href="xml/nbtk-scroll-view.xml"/>
     <xi:include href="xml/nbtk-scrollable.xml"/>

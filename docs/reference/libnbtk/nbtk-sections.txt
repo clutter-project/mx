@@ -603,3 +603,23 @@ NBTK_TYPE_PADDING
 nbtk_border_image_get_type
 nbtk_padding_get_type
 </SECTION>
+
+
+<SECTION>
+<FILE>nbtk-progress-bar</FILE>
+<TITLE>NbtkProgressBar</TITLE>
+NbtkProgressBar
+nbtk_progress_bar_new
+nbtk_progress_bar_set_progress
+nbtk_progress_bar_get_progress
+<SUBSECTION Standard>
+NBTK_PROGRESS_BAR
+NBTK_IS_PROGRESS_BAR
+NBTK_TYPE_PROGRESS_BAR
+nbtk_progress_bar_get_type
+NBTK_PROGRESS_BAR_CLASS
+NBTK_IS_PROGRESS_BAR_CLASS
+NBTK_PROGRESS_BAR_GET_CLASS
+<SUBSECTION Private>
+NbtkProgressBarPrivate
+</SECTION>
