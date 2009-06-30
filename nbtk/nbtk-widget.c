@@ -385,9 +385,16 @@ nbtk_widget_dispose (GObject *gobject)
 
   if (priv->tooltip)
     {
-      /* the tooltip should be parented on the stage */
-      clutter_container_remove_actor (clutter_actor_get_parent (priv->tooltip),
-                                      priv->tooltip);
+      ClutterContainer *parent;
+      ClutterActor *tooltip = CLUTTER_ACTOR (priv->tooltip);
+
+      /* this is just a little bit awkward because the tooltip is parented
+       * on the stage, but we still want to "own" it */
+      parent = CLUTTER_CONTAINER (clutter_actor_get_parent (tooltip));
+
+      if (parent)
+        clutter_container_remove_actor (parent, tooltip);
+
       priv->tooltip = NULL;
     }
 
