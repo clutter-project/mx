@@ -536,14 +536,19 @@ nbtk_gtk_expander_set_expanded (NbtkGtkExpander *expander,
 
   priv = ((NbtkGtkExpander*) expander)->priv;
 
-  priv->is_open = !priv->is_open;
+  if (priv->is_open != expanded)
+    {
+      GtkWidget *child;
 
-  gtk_widget_set_child_visible (gtk_bin_get_child (GTK_BIN (expander)),
-                                priv->is_open);
+      priv->is_open = expanded;
 
-  gtk_widget_queue_resize ((GtkWidget*) expander);
+      child = gtk_bin_get_child (GTK_BIN (expander));
+      gtk_widget_set_child_visible (child, priv->is_open);
 
-  g_object_notify ((GObject*) expander, "expanded");
+      gtk_widget_queue_resize ((GtkWidget*) expander);
+
+      g_object_notify ((GObject*) expander, "expanded");
+    }
 }
 
 gboolean
