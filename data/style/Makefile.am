@@ -18,5 +18,7 @@ dist_style_DATA = \
 		scroll-handle-hover.png \
 		scroll-handle.png \
 		text-entry.png \
-		tooltip-background.png
+		tooltip-background.png \
+		progress-bar-background.png \
+		progress-bar-bar.png
 

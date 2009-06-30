@@ -70,13 +70,3 @@ NbtkTable {
   border-image: url('file://rounded-corner.png') 30;
   padding: 10;
 }
-
-NbtkProgressBar {
-  padding: 8;
-  border-image: url('file://border-image-dark.png') 12 stretch stretch;
-}
-
-NbtkProgressBar NbtkProgressBarFill {
-  border-image: url('file://border-image-light.png') 12 stretch stretch;
-}
-

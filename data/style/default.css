@@ -108,3 +108,14 @@ NbtkTooltip {
   border-image: url('file://tooltip-background.png') 4 11 12 11;
   font-size: 15px;
 }
+
+
+NbtkProgressBar {
+  padding: 3;
+  border-image: url('file://progress-bar-background.png') 2 stretch stretch;
+}
+
+NbtkProgressBar NbtkProgressBarFill {
+  border-image: url('file://progress-bar-bar.png') 2 stretch stretch;
+}
+
