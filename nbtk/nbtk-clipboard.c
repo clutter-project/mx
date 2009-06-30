@@ -26,6 +26,7 @@ struct _EventFilterData
 };
 
 static Atom __atom_clip = None;
+static Atom __utf8_string = None;
 
 static void
 nbtk_clipboard_get_property (GObject *object, guint property_id,
@@ -130,6 +131,8 @@ nbtk_clipboard_class_init (NbtkClipboardClass *klass)
 static void
 nbtk_clipboard_init (NbtkClipboard *self)
 {
+  Display *dpy;
+
   self->priv = CLIPBOARD_PRIVATE (self);
 
   self->priv->clipboard_window =
@@ -137,10 +140,14 @@ nbtk_clipboard_init (NbtkClipboard *self)
                          clutter_x11_get_root_window (),
                          -1, -1, 1, 1, 0, 0, 0);
 
+  dpy = clutter_x11_get_default_display ();
+
   /* Only create once */
   if (__atom_clip == None)
-    __atom_clip = XInternAtom (clutter_x11_get_default_display (),
-                               "CLIPBOARD", 0);
+    __atom_clip = XInternAtom (dpy, "CLIPBOARD", 0);
+
+  if (__utf8_string == None)
+    __utf8_string = XInternAtom (dpy, "UTF8_STRING", 0);
 
   clutter_x11_add_filter ((ClutterX11FilterFunc) nbtk_clipboard_provider,
                           self);
@@ -264,7 +271,7 @@ nbtk_clipboard_get_text (NbtkClipboard             *clipboard,
 
   XConvertSelection (dpy,
                      __atom_clip,
-                     XA_STRING, XA_STRING,
+                     __utf8_string, __utf8_string,
                      clipboard->priv->clipboard_window,
                      CurrentTime);
 
