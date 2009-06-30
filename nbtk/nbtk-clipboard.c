@@ -139,8 +139,8 @@ nbtk_clipboard_init (NbtkClipboard *self)
 
   /* Only create once */
   if (__atom_clip == None)
-    __atom_clip = XInternAtom(clutter_x11_get_default_display (), 
-			      "CLIPBOARD", 0);
+    __atom_clip = XInternAtom (clutter_x11_get_default_display (),
+                               "CLIPBOARD", 0);
 
   clutter_x11_add_filter ((ClutterX11FilterFunc) nbtk_clipboard_provider,
                           self);
@@ -175,16 +175,16 @@ nbtk_clipboard_x11_event_filter (XEvent          *xev,
   clutter_x11_trap_x_errors ();
 
   result = XGetWindowProperty (xev->xselection.display,
-			       xev->xselection.requestor,
-			       xev->xselection.property,
-			       0L, G_MAXINT,
-			       True,
-			       AnyPropertyType,
-			       &actual_type,
-			       &actual_format,
-			       &nitems,
-			       &bytes_after,
-			       &data);
+                               xev->xselection.requestor,
+                               xev->xselection.property,
+                               0L, G_MAXINT,
+                               True,
+                               AnyPropertyType,
+                               &actual_type,
+                               &actual_format,
+                               &nitems,
+                               &bytes_after,
+                               &data);
 
   if (clutter_x11_untrap_x_errors () || result != Success)
     {
@@ -192,12 +192,12 @@ nbtk_clipboard_x11_event_filter (XEvent          *xev,
       g_warning ("Clipboard: prop retrival failed");
     }
 
-  filter_data->callback (filter_data->clipboard, (char*) data, 
-			 filter_data->user_data);
+  filter_data->callback (filter_data->clipboard, (char*) data,
+                         filter_data->user_data);
 
-  clutter_x11_remove_filter 
+  clutter_x11_remove_filter
                     ((ClutterX11FilterFunc) nbtk_clipboard_x11_event_filter,
-		     filter_data);
+                     filter_data);
 
   g_free (filter_data);
 
@@ -255,9 +255,8 @@ nbtk_clipboard_get_text (NbtkClipboard             *clipboard,
   data->callback = callback;
   data->user_data = user_data;
 
-  clutter_x11_add_filter 
-                   ((ClutterX11FilterFunc)nbtk_clipboard_x11_event_filter,
-		    data);
+  clutter_x11_add_filter ((ClutterX11FilterFunc)nbtk_clipboard_x11_event_filter,
+                          data);
 
   dpy = clutter_x11_get_default_display ();
 
