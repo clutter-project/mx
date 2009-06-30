@@ -172,7 +172,6 @@ static void
 droppable_group_class_init (DroppableGroupClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-  ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
 
   gobject_class->set_property = droppable_group_set_property;
   gobject_class->get_property = droppable_group_get_property;

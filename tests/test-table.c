@@ -184,8 +184,10 @@ main (int argc, char *argv[])
 
   clutter_actor_show (stage);
 
-  g_debug ("table row count = %d", nbtk_table_get_row_count (table));
-  g_debug ("table column count = %d", nbtk_table_get_column_count (table));
+  g_debug ("table row count = %d",
+           nbtk_table_get_row_count (NBTK_TABLE (table)));
+  g_debug ("table column count = %d",
+           nbtk_table_get_column_count (NBTK_TABLE (table)));
 
   clutter_main ();
 
