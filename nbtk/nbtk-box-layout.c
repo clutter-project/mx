@@ -3,16 +3,19 @@
 #include "nbtk-box-layout.h"
 
 #include "nbtk-private.h"
-#include <clutter/clutter.h>
+#include "nbtk-scrollable.h"
 
 
 
 
 static void nbtk_box_container_iface_init (ClutterContainerIface *iface);
+static void nbtk_box_scrollable_interface_init (NbtkScrollableInterface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (NbtkBoxLayout, nbtk_box_layout, NBTK_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
-                                                nbtk_box_container_iface_init));
+                                                nbtk_box_container_iface_init)
+                         G_IMPLEMENT_INTERFACE (NBTK_TYPE_SCROLLABLE,
+                                                nbtk_box_scrollable_interface_init));
 
 #define BOX_LAYOUT_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), NBTK_TYPE_BOX_LAYOUT, NbtkBoxLayoutPrivate))
@@ -21,7 +24,10 @@ enum {
   PROP_0,
 
   PROP_VERTICAL,
-  PROP_PACK_START
+  PROP_PACK_START,
+
+  PROP_HADJUST,
+  PROP_VADJUST
 };
 
 struct _NbtkBoxLayoutPrivate
@@ -30,7 +36,152 @@ struct _NbtkBoxLayoutPrivate
 
   guint is_vertical : 1;
   guint is_pack_start : 1;
+
+  NbtkAdjustment *hadjustment;
+  NbtkAdjustment *vadjustment;
 };
+
+/*
+ * NbtkScrollable Interface Implementation
+ */
+static void
+adjustment_value_notify_cb (NbtkAdjustment *adjustment,
+                            GParamSpec     *pspec,
+                            NbtkBoxLayout  *box)
+{
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (box));
+}
+
+static void
+scrollable_set_adjustments (NbtkScrollable *scrollable,
+                            NbtkAdjustment *hadjustment,
+                            NbtkAdjustment *vadjustment)
+{
+  NbtkBoxLayoutPrivate *priv = NBTK_BOX_LAYOUT (scrollable)->priv;
+
+  if (hadjustment != priv->hadjustment)
+    {
+      if (priv->hadjustment)
+        {
+          g_signal_handlers_disconnect_by_func (priv->hadjustment,
+                                                adjustment_value_notify_cb,
+                                                scrollable);
+          g_object_unref (priv->hadjustment);
+        }
+
+      if (hadjustment)
+        {
+          g_object_ref (hadjustment);
+          g_signal_connect (hadjustment, "notify::value",
+                            G_CALLBACK (adjustment_value_notify_cb),
+                            scrollable);
+        }
+
+      priv->hadjustment = hadjustment;
+    }
+
+  if (vadjustment != priv->vadjustment)
+    {
+      if (priv->vadjustment)
+        {
+          g_signal_handlers_disconnect_by_func (priv->vadjustment,
+                                                adjustment_value_notify_cb,
+                                                scrollable);
+          g_object_unref (priv->vadjustment);
+        }
+
+      if (vadjustment)
+        {
+          g_object_ref (vadjustment);
+          g_signal_connect (vadjustment, "notify::value",
+                            G_CALLBACK (adjustment_value_notify_cb),
+                            scrollable);
+        }
+
+      priv->vadjustment = vadjustment;
+    }
+}
+
+static void
+scrollable_get_adjustments (NbtkScrollable *scrollable,
+                            NbtkAdjustment **hadjustment,
+                            NbtkAdjustment **vadjustment)
+{
+  NbtkBoxLayoutPrivate *priv;
+  ClutterActor *actor, *stage;
+
+  priv = (NBTK_BOX_LAYOUT (scrollable))->priv;
+
+  actor = CLUTTER_ACTOR (scrollable);
+  stage = clutter_actor_get_stage (actor);
+  if (G_UNLIKELY (stage == NULL))
+    stage = clutter_stage_get_default ();
+
+  if (hadjustment)
+    {
+      if (priv->hadjustment)
+        *hadjustment = priv->hadjustment;
+      else
+        {
+          NbtkAdjustment *adjustment;
+          gdouble width, stage_width, increment;
+
+          width = clutter_actor_get_width (actor);
+          stage_width = clutter_actor_get_width (stage);
+          increment = MAX (1.0, MIN (stage_width, width));
+
+          adjustment = nbtk_adjustment_new (0,
+                                            0,
+                                            width,
+                                            1.0,
+                                            increment,
+                                            increment);
+
+          scrollable_set_adjustments (scrollable,
+                                      adjustment,
+                                      priv->vadjustment);
+
+          *hadjustment = adjustment;
+        }
+    }
+
+  if (vadjustment)
+    {
+      if (priv->vadjustment)
+        *vadjustment = priv->vadjustment;
+      else
+        {
+          NbtkAdjustment *adjustment;
+          gdouble height, stage_height, increment;
+
+          height = clutter_actor_get_height (actor);
+          stage_height = clutter_actor_get_height (stage);
+          increment = MAX (1.0, MIN (stage_height, height));
+
+          adjustment = nbtk_adjustment_new (0,
+                                            0,
+                                            height,
+                                            1.0,
+                                            increment,
+                                            increment);
+
+          scrollable_set_adjustments (scrollable,
+                                      priv->hadjustment,
+                                      adjustment);
+
+          *vadjustment = adjustment;
+        }
+    }
+}
+
+
+
+static void
+nbtk_box_scrollable_interface_init (NbtkScrollableInterface *iface)
+{
+  iface->set_adjustments = scrollable_set_adjustments;
+  iface->get_adjustments = scrollable_get_adjustments;
+}
 
 /*
  * ClutterContainer Implementation
@@ -132,6 +283,8 @@ nbtk_box_layout_get_property (GObject    *object,
                               GParamSpec *pspec)
 {
   NbtkBoxLayoutPrivate *priv = NBTK_BOX_LAYOUT (object)->priv;
+  NbtkAdjustment *adjustment;
+
   switch (property_id)
     {
     case PROP_VERTICAL:
@@ -140,6 +293,16 @@ nbtk_box_layout_get_property (GObject    *object,
 
     case PROP_PACK_START:
       g_value_set_boolean (value, priv->is_pack_start);
+      break;
+
+    case PROP_HADJUST :
+      scrollable_get_adjustments (NBTK_SCROLLABLE (object), &adjustment, NULL);
+      g_value_set_object (value, adjustment);
+      break;
+
+    case PROP_VADJUST :
+      scrollable_get_adjustments (NBTK_SCROLLABLE (object), NULL, &adjustment);
+      g_value_set_object (value, adjustment);
       break;
 
     default:
@@ -161,6 +324,18 @@ nbtk_box_layout_set_property (GObject *object, guint property_id,
 
     case PROP_PACK_START:
       nbtk_box_layout_set_pack_start (box, g_value_get_boolean (value));
+      break;
+
+    case PROP_HADJUST :
+      scrollable_set_adjustments (NBTK_SCROLLABLE (object),
+                                  g_value_get_object (value),
+                                  box->priv->vadjustment);
+      break;
+
+    case PROP_VADJUST :
+      scrollable_set_adjustments (NBTK_SCROLLABLE (object),
+                                  box->priv->hadjustment,
+                                  g_value_get_object (value));
       break;
 
     default:
@@ -275,6 +450,53 @@ nbtk_box_layout_allocate (ClutterActor          *actor,
   GList *l;
   gfloat position = 0;
 
+  CLUTTER_ACTOR_CLASS (nbtk_box_layout_parent_class)->allocate (actor, box,
+                                                                flags);
+
+
+  /* update adjustments for scrolling */
+  if (priv->vadjustment)
+    {
+      gdouble prev_value;
+      gfloat height;
+
+      clutter_actor_get_preferred_height (actor, box->x2 - box->x1, NULL,
+                                          &height);
+
+      g_object_set (G_OBJECT (priv->vadjustment),
+                   "lower", 0.0,
+                   "upper", height,
+                   "page-size", box->y2 - box->y1,
+                   "step-increment", (box->y2 - box->y1) / 6,
+                   "page-increment", box->y2 - box->y1,
+                   NULL);
+
+      prev_value = nbtk_adjustment_get_value (priv->vadjustment);
+      nbtk_adjustment_set_value (priv->vadjustment, prev_value);
+    }
+
+  if (priv->hadjustment)
+    {
+      gdouble prev_value;
+      gfloat width;
+
+      /* get preferred width for this height */
+      clutter_actor_get_preferred_width (actor, box->y2 - box->y1, NULL,
+                                         &width);
+
+      g_object_set (G_OBJECT (priv->hadjustment),
+                   "lower", 0.0,
+                   "upper", width,
+                   "page-size", box->x2 - box->x1,
+                   "step-increment", (box->x2 - box->x1) / 6,
+                   "page-increment", box->x2 - box->x1,
+                   NULL);
+
+      prev_value = nbtk_adjustment_get_value (priv->hadjustment);
+      nbtk_adjustment_set_value (priv->hadjustment, prev_value);
+    }
+
+
   if (priv->is_pack_start)
     l = g_list_last (priv->children);
   else
@@ -324,6 +546,21 @@ nbtk_box_layout_paint (ClutterActor *actor)
 {
   NbtkBoxLayoutPrivate *priv = NBTK_BOX_LAYOUT (actor)->priv;
   GList *l;
+  gdouble x, y;
+
+  if (priv->hadjustment)
+    x = nbtk_adjustment_get_value (priv->hadjustment);
+  else
+    x = 0;
+
+  if (priv->vadjustment)
+    y = nbtk_adjustment_get_value (priv->vadjustment);
+  else
+    y = 0;
+
+  cogl_translate ((int) x * -1, (int) y * -1, 0);
+
+  CLUTTER_ACTOR_CLASS (nbtk_box_layout_parent_class)->paint (actor);
 
   for (l = priv->children; l; l = g_list_next (l))
     {
@@ -367,6 +604,16 @@ nbtk_box_layout_class_init (NbtkBoxLayoutClass *klass)
                                 FALSE,
                                 NBTK_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_PACK_START, pspec);
+
+
+  /* NbtkScrollable properties */
+  g_object_class_override_property (object_class,
+                                    PROP_HADJUST,
+                                    "hadjustment");
+
+  g_object_class_override_property (object_class,
+                                    PROP_VADJUST,
+                                    "vadjustment");
 
 }
 

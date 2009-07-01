@@ -29,6 +29,20 @@ find_last_child (ClutterActor *actor, ClutterActor **child)
   *child = actor;
 }
 
+void
+add_actor (ClutterContainer *container)
+{
+  ClutterActor *rect;
+  ClutterColor color = { 0, 0, 0, 255 };
+
+  clutter_color_from_hls (&color,
+                          g_random_double_range (0.0, 360.0), 0.5, 0.5);
+
+  rect = clutter_rectangle_new_with_color (&color);
+  clutter_actor_set_size (rect, 32, 64);
+  clutter_container_add_actor (container, rect);
+}
+
 gboolean
 key_release_cb (ClutterActor    *actor,
                 ClutterKeyEvent *event,
@@ -49,15 +63,7 @@ key_release_cb (ClutterActor    *actor,
 
   if (event->keyval == '=')
     {
-      ClutterActor *rect;
-      ClutterColor color;
-
-      clutter_color_from_hls (&color,
-                              g_random_double_range (0.0, 360.0), 0.5, 0.5);
-
-      rect = clutter_rectangle_new_with_color (&color);
-      clutter_actor_set_size (rect, 32, 64);
-      clutter_container_add_actor (CLUTTER_CONTAINER (box), rect);
+      add_actor ((ClutterContainer*) box);
     }
 
   if (event->keyval == '-')
@@ -76,35 +82,25 @@ key_release_cb (ClutterActor    *actor,
 int
 main (int argc, char *argv[])
 {
-  NbtkWidget *box;
-  ClutterActor *stage, *rect;
-  ClutterColor color;
+  NbtkWidget *box, *scrollview;
+  ClutterActor *stage;
 
   clutter_init (&argc, &argv);
 
   stage = clutter_stage_get_default ();
+  clutter_actor_set_size (stage, 220, 220);
+
+  scrollview = nbtk_scroll_view_new ();
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), (ClutterActor*) scrollview);
+  clutter_actor_set_position ((ClutterActor*) scrollview, 10, 10);
+  clutter_actor_set_size ((ClutterActor*) scrollview, 200, 200);
 
   box = nbtk_box_layout_new ();
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage), (ClutterActor*) box);
-  clutter_actor_set_position ((ClutterActor*) box, 10, 10);
+  clutter_container_add_actor (CLUTTER_CONTAINER (scrollview), (ClutterActor*) box);
 
-  clutter_color_from_hls (&color,
-                          g_random_double_range (0.0, 360.0), 0.5, 0.5);
-  rect = clutter_rectangle_new_with_color (&color);
-  clutter_actor_set_size (rect, 32, 64);
-  clutter_container_add_actor (CLUTTER_CONTAINER (box), rect);
-
-  clutter_color_from_hls (&color,
-                          g_random_double_range (0.0, 360.0), 0.5, 0.5);
-  rect = clutter_rectangle_new_with_color (&color);
-  clutter_actor_set_size (rect, 32, 64);
-  clutter_container_add_actor (CLUTTER_CONTAINER (box), rect);
-
-  clutter_color_from_hls (&color,
-                          g_random_double_range (0.0, 360.0), 0.5, 0.5);
-  rect = clutter_rectangle_new_with_color (&color);
-  clutter_actor_set_size (rect, 32, 64);
-  clutter_container_add_actor (CLUTTER_CONTAINER (box), rect);
+  add_actor ((ClutterContainer*) box);
+  add_actor ((ClutterContainer*) box);
+  add_actor ((ClutterContainer*) box);
 
 
   g_signal_connect (stage, "key-release-event", G_CALLBACK (key_release_cb),
