@@ -30,6 +30,7 @@ noinst_PROGRAMS = 		\
 	test-scroll-grid	\
 	test-scroll-view-2	\
 	test-scroll-view-3	\
+	test-box-layout		\
 	$(NULL)
 
 test_buttons_SOURCES = test-buttons.c
@@ -54,6 +55,8 @@ test_scroll_view_3_SOURCES = test-scroll-view-3.c
 
 test_draggable_SOURCES = test-draggable.c
 test_droppable_SOURCES = test-droppable.c
+
+test_box_layout_SOURCES = test-box-layout.c
 
 EXTRA_DIST = \
 	     style/border-image-dark.png \

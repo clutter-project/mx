@@ -1,0 +1,116 @@
+/*
+ * Copyright 2009 Intel Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU Lesser General Public License,
+ * version 2.1, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+ * Boston, MA 02111-1307, USA.
+ *
+ */
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <clutter/clutter.h>
+#include <nbtk/nbtk.h>
+
+
+void
+find_last_child (ClutterActor *actor, ClutterActor **child)
+{
+  *child = actor;
+}
+
+gboolean
+key_release_cb (ClutterActor    *actor,
+                ClutterKeyEvent *event,
+                NbtkBoxLayout   *box)
+{
+
+  if (event->keyval == 'v')
+    {
+      nbtk_box_layout_set_vertical (box,
+                                    !nbtk_box_layout_get_vertical (box));
+    }
+
+  if (event->keyval == 'p')
+    {
+      nbtk_box_layout_set_pack_start (box,
+                                      !nbtk_box_layout_get_pack_start (box));
+    }
+
+  if (event->keyval == '=')
+    {
+      ClutterActor *rect;
+      ClutterColor color;
+
+      clutter_color_from_hls (&color,
+                              g_random_double_range (0.0, 360.0), 0.5, 0.5);
+
+      rect = clutter_rectangle_new_with_color (&color);
+      clutter_actor_set_size (rect, 32, 64);
+      clutter_container_add_actor (CLUTTER_CONTAINER (box), rect);
+    }
+
+  if (event->keyval == '-')
+    {
+      ClutterActor *child = NULL;
+
+      clutter_container_foreach (CLUTTER_CONTAINER (box), (ClutterCallback) find_last_child, &child);
+
+      if (child)
+        clutter_container_remove_actor (CLUTTER_CONTAINER (box), child);
+    }
+
+  return FALSE;
+}
+
+int
+main (int argc, char *argv[])
+{
+  NbtkWidget *box;
+  ClutterActor *stage, *rect;
+  ClutterColor color;
+
+  clutter_init (&argc, &argv);
+
+  stage = clutter_stage_get_default ();
+
+  box = nbtk_box_layout_new ();
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), (ClutterActor*) box);
+  clutter_actor_set_position ((ClutterActor*) box, 10, 10);
+
+  clutter_color_from_hls (&color,
+                          g_random_double_range (0.0, 360.0), 0.5, 0.5);
+  rect = clutter_rectangle_new_with_color (&color);
+  clutter_actor_set_size (rect, 32, 64);
+  clutter_container_add_actor (CLUTTER_CONTAINER (box), rect);
+
+  clutter_color_from_hls (&color,
+                          g_random_double_range (0.0, 360.0), 0.5, 0.5);
+  rect = clutter_rectangle_new_with_color (&color);
+  clutter_actor_set_size (rect, 32, 64);
+  clutter_container_add_actor (CLUTTER_CONTAINER (box), rect);
+
+  clutter_color_from_hls (&color,
+                          g_random_double_range (0.0, 360.0), 0.5, 0.5);
+  rect = clutter_rectangle_new_with_color (&color);
+  clutter_actor_set_size (rect, 32, 64);
+  clutter_container_add_actor (CLUTTER_CONTAINER (box), rect);
+
+
+  g_signal_connect (stage, "key-release-event", G_CALLBACK (key_release_cb),
+                    box);
+  clutter_actor_show (stage);
+  clutter_main ();
+
+  return EXIT_SUCCESS;
+}
