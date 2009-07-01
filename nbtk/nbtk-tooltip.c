@@ -466,6 +466,9 @@ nbtk_tooltip_update_position (NbtkTooltip *tooltip)
   gfloat stage_w, stage_h;
   ClutterActor *stage;
 
+  /* ensure the tooltip with is not fixed size */
+  clutter_actor_set_size ((ClutterActor*) tooltip, -1, -1);
+
   /* if no area set, just position ourselves top left */
   if (!priv->tip_area)
     {
