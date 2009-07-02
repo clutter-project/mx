@@ -82,6 +82,7 @@ main (int argc, char *argv[])
       button = nbtk_button_new_with_label (label);
       clutter_container_add_actor (CLUTTER_CONTAINER (grid),
                                    CLUTTER_ACTOR (button));
+      nbtk_widget_set_tooltip_text (NBTK_WIDGET (button), "test");
       if (i == 1)
         g_signal_connect (button,
                           "clicked",
