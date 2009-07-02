@@ -23,6 +23,66 @@ NbtkTableChild
 </para>
 
 
+<!-- ##### ARG NbtkTableChild:allocate-hidden ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkTableChild:col ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkTableChild:col-span ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkTableChild:column ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkTableChild:row ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkTableChild:row-span ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkTableChild:x-align ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkTableChild:x-expand ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkTableChild:x-fill ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkTableChild:y-align ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkTableChild:y-expand ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkTableChild:y-fill ##### -->
+<para>
+
+</para>
+
 <!-- ##### FUNCTION nbtk_table_child_get_col_span ##### -->
 <para>
 

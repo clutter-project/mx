@@ -17,6 +17,7 @@ nbtk_scroll_view_get_type
 nbtk_stylable_get_type
 nbtk_style_get_type
 nbtk_table_get_type
+nbtk_table_child_get_type
 nbtk_texture_cache_get_type
 nbtk_texture_frame_get_type
 nbtk_tooltip_get_type
