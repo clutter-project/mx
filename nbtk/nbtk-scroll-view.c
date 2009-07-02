@@ -325,17 +325,8 @@ nbtk_scroll_view_allocate (ClutterActor          *actor,
   if (CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
     child_box.y2 -= ythicknessu;
 
-
   if (priv->child)
-    {
       clutter_actor_allocate (priv->child, &child_box, flags);
-      clutter_actor_set_clip (priv->child,
-                              0,
-                              0,
-                              child_box.x2 - child_box.x1,
-                              child_box.y2 - child_box.y1);
-    }
-
 }
 
 static void
@@ -605,7 +596,8 @@ nbtk_scroll_view_init (NbtkScrollView *self)
 
   /* mouse scroll is enabled by default, so we also need to be reactive */
   priv->mouse_scroll = TRUE;
-  g_object_set (G_OBJECT (self), "reactive", TRUE, NULL);
+  g_object_set (G_OBJECT (self), "reactive", TRUE, "clip-to-allocation", TRUE,
+                NULL);
 
   g_signal_connect (self, "style-changed",
                     G_CALLBACK (nbtk_scroll_view_style_changed), NULL);
