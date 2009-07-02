@@ -358,6 +358,27 @@ scrollable_interface_init (NbtkScrollableInterface *iface)
 }
 
 static void
+nbtk_grid_apply_transform (ClutterActor *a, CoglMatrix *m)
+{
+  NbtkGridPrivate *priv = NBTK_GRID (a)->priv;
+  gdouble x, y;
+
+  CLUTTER_ACTOR_CLASS (nbtk_grid_parent_class)->apply_transform (a, m);
+
+  if (priv->hadjustment)
+    x = nbtk_adjustment_get_value (priv->hadjustment);
+  else
+    x = 0;
+
+  if (priv->vadjustment)
+    y = nbtk_adjustment_get_value (priv->vadjustment);
+  else
+    y = 0;
+
+  cogl_matrix_translate (m , -x, -y, 0);
+}
+
+static void
 nbtk_grid_class_init (NbtkGridClass *klass)
 {
   GObjectClass *gobject_class = (GObjectClass *) klass;
@@ -376,6 +397,7 @@ nbtk_grid_class_init (NbtkGridClass *klass)
   actor_class->get_preferred_width  = nbtk_grid_get_preferred_width;
   actor_class->get_preferred_height = nbtk_grid_get_preferred_height;
   actor_class->allocate             = nbtk_grid_allocate;
+  actor_class->apply_transform      = nbtk_grid_apply_transform;
 
   g_type_class_add_private (klass, sizeof (NbtkGridPrivate));
 
@@ -926,8 +948,6 @@ nbtk_grid_paint (ClutterActor *actor)
   else
     y = 0;
 
-  cogl_translate ((int) x * -1, (int) y * -1, 0);
-
   CLUTTER_ACTOR_CLASS (nbtk_grid_parent_class)->paint (actor);
 
   clutter_actor_get_allocation_box (actor, &grid_b);
@@ -982,7 +1002,6 @@ nbtk_grid_pick (ClutterActor *actor,
   /* Chain up so we get a bounding box pained (if we are reactive) */
   CLUTTER_ACTOR_CLASS (nbtk_grid_parent_class)->pick (actor, color);
 
-  cogl_translate ((int) x * -1, (int) y * -1, 0);
 
   clutter_actor_get_allocation_box (actor, &grid_b);
   grid_b.x2 = (grid_b.x2 - grid_b.x1) + x;
