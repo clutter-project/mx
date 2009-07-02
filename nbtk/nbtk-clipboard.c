@@ -15,6 +15,9 @@ struct _NbtkClipboardPrivate
 {
   Window clipboard_window;
   gchar *clipboard_text;
+
+  Atom *supported_targets;
+  gint n_targets;
 };
 
 typedef struct _EventFilterData EventFilterData;
@@ -27,6 +30,7 @@ struct _EventFilterData
 
 static Atom __atom_clip = None;
 static Atom __utf8_string = None;
+static Atom __atom_targets = None;
 
 static void
 nbtk_clipboard_get_property (GObject *object, guint property_id,
@@ -64,6 +68,10 @@ nbtk_clipboard_finalize (GObject *object)
   g_free (priv->clipboard_text);
   priv->clipboard_text = NULL;
 
+  g_free (priv->supported_targets);
+  priv->supported_targets = NULL;
+  priv->n_targets = 0;
+
   G_OBJECT_CLASS (nbtk_clipboard_parent_class)->finalize (object);
 }
 
@@ -82,14 +90,28 @@ nbtk_clipboard_provider (XEvent        *xev,
 
   clutter_x11_trap_x_errors ();
 
-  XChangeProperty (req_event->display,
-                   req_event->requestor,
-                   req_event->property,
-                   req_event->target,
-                   8,
-                   PropModeReplace,
-                   (guchar*) clipboard->priv->clipboard_text,
-                   strlen (clipboard->priv->clipboard_text));
+  if (req_event->target == __atom_targets)
+    {
+      XChangeProperty (req_event->display,
+                       req_event->requestor,
+                       req_event->property,
+                       XA_ATOM,
+                       32,
+                       PropModeReplace,
+                       (guchar*) clipboard->priv->supported_targets,
+                       clipboard->priv->n_targets);
+    }
+  else
+    {
+      XChangeProperty (req_event->display,
+                       req_event->requestor,
+                       req_event->property,
+                       req_event->target,
+                       32,
+                       PropModeReplace,
+                       (guchar*) clipboard->priv->clipboard_text,
+                       strlen (clipboard->priv->clipboard_text));
+    }
 
   notify_event.type = SelectionNotify;
   notify_event.display = req_event->display;
@@ -132,10 +154,11 @@ static void
 nbtk_clipboard_init (NbtkClipboard *self)
 {
   Display *dpy;
+  NbtkClipboardPrivate *priv;
 
-  self->priv = CLIPBOARD_PRIVATE (self);
+  priv = self->priv = CLIPBOARD_PRIVATE (self);
 
-  self->priv->clipboard_window =
+  priv->clipboard_window =
     XCreateSimpleWindow (clutter_x11_get_default_display (),
                          clutter_x11_get_root_window (),
                          -1, -1, 1, 1, 0, 0, 0);
@@ -148,6 +171,15 @@ nbtk_clipboard_init (NbtkClipboard *self)
 
   if (__utf8_string == None)
     __utf8_string = XInternAtom (dpy, "UTF8_STRING", 0);
+
+  if (__atom_targets == None)
+    __atom_targets = XInternAtom (dpy, "TARGETS", 0);
+
+  priv->n_targets = 2;
+  priv->supported_targets = g_new (Atom, priv->n_targets);
+
+  priv->supported_targets[0] = __utf8_string;
+  priv->supported_targets[1] = __atom_targets;
 
   clutter_x11_add_filter ((ClutterX11FilterFunc) nbtk_clipboard_provider,
                           self);
