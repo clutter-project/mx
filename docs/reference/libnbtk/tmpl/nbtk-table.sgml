@@ -1,0 +1,147 @@
+<!-- ##### SECTION Title ##### -->
+NbtkTable
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT NbtkTable ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NbtkTable:col-spacing ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkTable:column-count ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkTable:homogeneous ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkTable:row-count ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkTable:row-spacing ##### -->
+<para>
+
+</para>
+
+<!-- ##### ENUM NbtkTableChildOptions ##### -->
+<para>
+
+</para>
+
+@NBTK_KEEP_ASPECT_RATIO: 
+@NBTK_X_EXPAND: 
+@NBTK_Y_EXPAND: 
+@NBTK_X_FILL: 
+@NBTK_Y_FILL: 
+
+<!-- ##### FUNCTION nbtk_table_new ##### -->
+<para>
+
+</para>
+
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_table_set_col_spacing ##### -->
+<para>
+
+</para>
+
+@table: 
+@spacing: 
+
+
+<!-- ##### FUNCTION nbtk_table_set_row_spacing ##### -->
+<para>
+
+</para>
+
+@table: 
+@spacing: 
+
+
+<!-- ##### FUNCTION nbtk_table_get_col_spacing ##### -->
+<para>
+
+</para>
+
+@table: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_table_get_row_spacing ##### -->
+<para>
+
+</para>
+
+@table: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_table_get_column_count ##### -->
+<para>
+
+</para>
+
+@table: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_table_get_row_count ##### -->
+<para>
+
+</para>
+
+@table: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_table_add_actor ##### -->
+<para>
+
+</para>
+
+@table: 
+@actor: 
+@row: 
+@column: 
+
+
+<!-- ##### FUNCTION nbtk_table_add_actor_with_properties ##### -->
+<para>
+
+</para>
+
+@table: 
+@actor: 
+@row: 
+@column: 
+@first_property_name: 
+@Varargs: 
+
+

@@ -1,0 +1,71 @@
+<!-- ##### SECTION Title ##### -->
+NbtkScrollBar
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT NbtkScrollBar ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL NbtkScrollBar::scroll-start ##### -->
+<para>
+
+</para>
+
+@nbtkscrollbar: the object which received the signal.
+
+<!-- ##### SIGNAL NbtkScrollBar::scroll-stop ##### -->
+<para>
+
+</para>
+
+@nbtkscrollbar: the object which received the signal.
+
+<!-- ##### ARG NbtkScrollBar:adjustment ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION nbtk_scroll_bar_new ##### -->
+<para>
+
+</para>
+
+@adjustment: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_scroll_bar_set_adjustment ##### -->
+<para>
+
+</para>
+
+@bar: 
+@adjustment: 
+
+
+<!-- ##### FUNCTION nbtk_scroll_bar_get_adjustment ##### -->
+<para>
+
+</para>
+
+@bar: 
+@Returns: 
+
+

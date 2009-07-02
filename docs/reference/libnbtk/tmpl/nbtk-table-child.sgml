@@ -1,0 +1,205 @@
+<!-- ##### SECTION Title ##### -->
+NbtkTableChild
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT NbtkTableChild ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION nbtk_table_child_get_col_span ##### -->
+<para>
+
+</para>
+
+@table: 
+@child: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_table_child_set_col_span ##### -->
+<para>
+
+</para>
+
+@table: 
+@child: 
+@span: 
+
+
+<!-- ##### FUNCTION nbtk_table_child_get_row_span ##### -->
+<para>
+
+</para>
+
+@table: 
+@child: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_table_child_set_row_span ##### -->
+<para>
+
+</para>
+
+@table: 
+@child: 
+@span: 
+
+
+<!-- ##### FUNCTION nbtk_table_child_get_x_fill ##### -->
+<para>
+
+</para>
+
+@table: 
+@child: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_table_child_set_x_fill ##### -->
+<para>
+
+</para>
+
+@table: 
+@child: 
+@fill: 
+
+
+<!-- ##### FUNCTION nbtk_table_child_get_y_fill ##### -->
+<para>
+
+</para>
+
+@table: 
+@child: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_table_child_set_y_fill ##### -->
+<para>
+
+</para>
+
+@table: 
+@child: 
+@fill: 
+
+
+<!-- ##### FUNCTION nbtk_table_child_get_col_expand ##### -->
+<para>
+
+</para>
+
+@table: 
+@child: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_table_child_set_col_expand ##### -->
+<para>
+
+</para>
+
+@table: 
+@child: 
+@expand: 
+
+
+<!-- ##### FUNCTION nbtk_table_child_get_row_expand ##### -->
+<para>
+
+</para>
+
+@table: 
+@child: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_table_child_set_row_expand ##### -->
+<para>
+
+</para>
+
+@table: 
+@child: 
+@expand: 
+
+
+<!-- ##### FUNCTION nbtk_table_child_get_x_align ##### -->
+<para>
+
+</para>
+
+@table: 
+@child: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_table_child_set_x_align ##### -->
+<para>
+
+</para>
+
+@table: 
+@child: 
+@align: 
+
+
+<!-- ##### FUNCTION nbtk_table_child_get_y_align ##### -->
+<para>
+
+</para>
+
+@table: 
+@child: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_table_child_set_y_align ##### -->
+<para>
+
+</para>
+
+@table: 
+@child: 
+@align: 
+
+
+<!-- ##### FUNCTION nbtk_table_child_get_allocate_hidden ##### -->
+<para>
+
+</para>
+
+@table: 
+@child: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_table_child_set_allocate_hidden ##### -->
+<para>
+
+</para>
+
+@table: 
+@child: 
+@value: 
+
+

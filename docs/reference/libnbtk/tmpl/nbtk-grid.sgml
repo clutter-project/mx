@@ -1,0 +1,245 @@
+<!-- ##### SECTION Title ##### -->
+NbtkGrid
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT NbtkGrid ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NbtkGrid:allocate-hidden ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkGrid:column-gap ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkGrid:column-major ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkGrid:end-align ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkGrid:halign ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkGrid:homogenous-columns ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkGrid:homogenous-rows ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkGrid:max-stride ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkGrid:row-gap ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkGrid:valign ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION nbtk_grid_new ##### -->
+<para>
+
+</para>
+
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_grid_set_end_align ##### -->
+<para>
+
+</para>
+
+@self: 
+@value: 
+
+
+<!-- ##### FUNCTION nbtk_grid_get_end_align ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_grid_set_homogenous_rows ##### -->
+<para>
+
+</para>
+
+@self: 
+@value: 
+
+
+<!-- ##### FUNCTION nbtk_grid_get_homogenous_rows ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_grid_set_homogenous_columns ##### -->
+<para>
+
+</para>
+
+@self: 
+@value: 
+
+
+<!-- ##### FUNCTION nbtk_grid_get_homogenous_columns ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_grid_set_column_major ##### -->
+<para>
+
+</para>
+
+@self: 
+@value: 
+
+
+<!-- ##### FUNCTION nbtk_grid_get_column_major ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_grid_set_row_gap ##### -->
+<para>
+
+</para>
+
+@self: 
+@value: 
+
+
+<!-- ##### FUNCTION nbtk_grid_get_row_gap ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_grid_set_column_gap ##### -->
+<para>
+
+</para>
+
+@self: 
+@value: 
+
+
+<!-- ##### FUNCTION nbtk_grid_get_column_gap ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_grid_set_valign ##### -->
+<para>
+
+</para>
+
+@self: 
+@value: 
+
+
+<!-- ##### FUNCTION nbtk_grid_get_valign ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_grid_set_halign ##### -->
+<para>
+
+</para>
+
+@self: 
+@value: 
+
+
+<!-- ##### FUNCTION nbtk_grid_get_halign ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_grid_set_max_stride ##### -->
+<para>
+
+</para>
+
+@self: 
+@value: 
+
+
+<!-- ##### FUNCTION nbtk_grid_get_max_stride ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+

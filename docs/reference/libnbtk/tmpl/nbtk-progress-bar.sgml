@@ -1,0 +1,56 @@
+<!-- ##### SECTION Title ##### -->
+NbtkProgressBar
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT NbtkProgressBar ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NbtkProgressBar:progress ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION nbtk_progress_bar_new ##### -->
+<para>
+
+</para>
+
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_progress_bar_set_progress ##### -->
+<para>
+
+</para>
+
+@bar: 
+@progress: 
+
+
+<!-- ##### FUNCTION nbtk_progress_bar_get_progress ##### -->
+<para>
+
+</para>
+
+@bar: 
+@Returns: 
+
+

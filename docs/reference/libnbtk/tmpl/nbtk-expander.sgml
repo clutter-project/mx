@@ -1,0 +1,60 @@
+<!-- ##### SECTION Title ##### -->
+NbtkExpander
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT NbtkExpander ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION nbtk_expander_new ##### -->
+<para>
+
+</para>
+
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_expander_set_label ##### -->
+<para>
+
+</para>
+
+@expander: 
+@label: 
+
+
+<!-- ##### FUNCTION nbtk_expander_get_expanded ##### -->
+<para>
+
+</para>
+
+@expander: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_expander_set_expanded ##### -->
+<para>
+
+</para>
+
+@expander: 
+@expanded: 
+
+

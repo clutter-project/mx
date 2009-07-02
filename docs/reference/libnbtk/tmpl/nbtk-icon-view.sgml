@@ -1,0 +1,95 @@
+<!-- ##### SECTION Title ##### -->
+NbtkIconView
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT NbtkIconView ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION nbtk_icon_view_new ##### -->
+<para>
+
+</para>
+
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_icon_view_set_model ##### -->
+<para>
+
+</para>
+
+@icon_view: 
+@model: 
+
+
+<!-- ##### FUNCTION nbtk_icon_view_get_model ##### -->
+<para>
+
+</para>
+
+@icon_view: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_icon_view_set_cell_renderer ##### -->
+<para>
+
+</para>
+
+@icon_view: 
+@renderer: 
+
+
+<!-- ##### FUNCTION nbtk_icon_view_get_cell_renderer ##### -->
+<para>
+
+</para>
+
+@icon_view: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_icon_view_add_attribute ##### -->
+<para>
+
+</para>
+
+@icon_view: 
+@attribute: 
+@column: 
+
+
+<!-- ##### FUNCTION nbtk_icon_view_freeze ##### -->
+<para>
+
+</para>
+
+@icon_view: 
+
+
+<!-- ##### FUNCTION nbtk_icon_view_thaw ##### -->
+<para>
+
+</para>
+
+@icon_view: 
+
+

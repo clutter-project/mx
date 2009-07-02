@@ -1,0 +1,64 @@
+<!-- ##### SECTION Title ##### -->
+nbtk-version
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### MACRO NBTK_MAJOR_VERSION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NBTK_MINOR_VERSION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NBTK_MICRO_VERSION ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NBTK_VERSION_S ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NBTK_VERSION_HEX ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO NBTK_CHECK_VERSION ##### -->
+<para>
+
+</para>
+
+@major: 
+@minor: 
+@micro: 
+
+

@@ -1,0 +1,111 @@
+<!-- ##### SECTION Title ##### -->
+NbtkScrollView
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT NbtkScrollView ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NbtkScrollView:enable-mouse-scrolling ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkScrollView:hscroll ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkScrollView:vscroll ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION nbtk_scroll_view_new ##### -->
+<para>
+
+</para>
+
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_scroll_view_get_hscroll_bar ##### -->
+<para>
+
+</para>
+
+@scroll: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_scroll_view_get_vscroll_bar ##### -->
+<para>
+
+</para>
+
+@scroll: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_scroll_view_get_child ##### -->
+<para>
+
+</para>
+
+@scroll: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_scroll_view_get_column_size ##### -->
+<para>
+
+</para>
+
+@scroll: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_scroll_view_set_column_size ##### -->
+<para>
+
+</para>
+
+@scroll: 
+@column_size: 
+
+
+<!-- ##### FUNCTION nbtk_scroll_view_get_row_size ##### -->
+<para>
+
+</para>
+
+@scroll: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_scroll_view_set_row_size ##### -->
+<para>
+
+</para>
+
+@scroll: 
+@row_size: 
+
+

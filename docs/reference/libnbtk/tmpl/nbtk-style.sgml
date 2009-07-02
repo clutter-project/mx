@@ -1,0 +1,99 @@
+<!-- ##### SECTION Title ##### -->
+NbtkStyle
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### ENUM NbtkStyleError ##### -->
+<para>
+
+</para>
+
+@NBTK_STYLE_ERROR_INVALID_FILE: 
+
+<!-- ##### STRUCT NbtkStyle ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL NbtkStyle::changed ##### -->
+<para>
+
+</para>
+
+@nbtkstyle: the object which received the signal.
+
+<!-- ##### FUNCTION nbtk_style_get_default ##### -->
+<para>
+
+</para>
+
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_style_new ##### -->
+<para>
+
+</para>
+
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_style_load_from_file ##### -->
+<para>
+
+</para>
+
+@style: 
+@filename: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_style_get_property ##### -->
+<para>
+
+</para>
+
+@style: 
+@stylable: 
+@pspec: 
+@value: 
+
+
+<!-- ##### FUNCTION nbtk_style_get ##### -->
+<para>
+
+</para>
+
+@style: 
+@stylable: 
+@first_property_name: 
+@Varargs: 
+
+
+<!-- ##### FUNCTION nbtk_style_get_valist ##### -->
+<para>
+
+</para>
+
+@style: 
+@stylable: 
+@first_property_name: 
+@va_args: 
+
+

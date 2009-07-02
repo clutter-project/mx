@@ -1,0 +1,42 @@
+<!-- ##### SECTION Title ##### -->
+NbtkFadeButton
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT NbtkFadeButton ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION nbtk_fade_button_new ##### -->
+<para>
+
+</para>
+
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_fade_button_new_with_label ##### -->
+<para>
+
+</para>
+
+@text: 
+@Returns: 
+
+

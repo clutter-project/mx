@@ -1,0 +1,55 @@
+<!-- ##### SECTION Title ##### -->
+nbtk-types
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### TYPEDEF NbtkBorderImage ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### STRUCT NbtkPadding ##### -->
+<para>
+
+</para>
+
+@top: 
+@right: 
+@bottom: 
+@left: 
+
+<!-- ##### ENUM NbtkAlignment ##### -->
+<para>
+
+</para>
+
+@NBTK_ALIGN_TOP: 
+@NBTK_ALIGN_RIGHT: 
+@NBTK_ALIGN_BOTTOM: 
+@NBTK_ALIGN_LEFT: 
+@NBTK_ALIGN_CENTER: 
+
+<!-- ##### ENUM NbtkAlign ##### -->
+<para>
+
+</para>
+
+@NBTK_ALIGN_START: 
+@NBTK_ALIGN_MIDDLE: 
+@NBTK_ALIGN_END: 
+

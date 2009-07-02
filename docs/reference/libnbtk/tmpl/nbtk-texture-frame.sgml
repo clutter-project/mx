@@ -1,0 +1,105 @@
+<!-- ##### SECTION Title ##### -->
+NbtkTextureFrame
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT NbtkTextureFrame ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NbtkTextureFrame:bottom ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkTextureFrame:left ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkTextureFrame:parent-texture ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkTextureFrame:right ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkTextureFrame:top ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION nbtk_texture_frame_new ##### -->
+<para>
+
+</para>
+
+@texture: 
+@top: 
+@right: 
+@bottom: 
+@left: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_texture_frame_set_parent_texture ##### -->
+<para>
+
+</para>
+
+@frame: 
+@texture: 
+
+
+<!-- ##### FUNCTION nbtk_texture_frame_get_parent_texture ##### -->
+<para>
+
+</para>
+
+@frame: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_texture_frame_set_frame ##### -->
+<para>
+
+</para>
+
+@frame: 
+@top: 
+@right: 
+@bottom: 
+@left: 
+
+
+<!-- ##### FUNCTION nbtk_texture_frame_get_frame ##### -->
+<para>
+
+</para>
+
+@frame: 
+@top: 
+@right: 
+@bottom: 
+@left: 
+
+

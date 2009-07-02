@@ -1,0 +1,116 @@
+<!-- ##### SECTION Title ##### -->
+NbtkBin
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT NbtkBin ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NbtkBin:child ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkBin:x-align ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkBin:x-fill ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkBin:y-align ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkBin:y-fill ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION nbtk_bin_new ##### -->
+<para>
+
+</para>
+
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_bin_set_child ##### -->
+<para>
+
+</para>
+
+@bin: 
+@child: 
+
+
+<!-- ##### FUNCTION nbtk_bin_get_child ##### -->
+<para>
+
+</para>
+
+@bin: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_bin_set_alignment ##### -->
+<para>
+
+</para>
+
+@bin: 
+@x_align: 
+@y_align: 
+
+
+<!-- ##### FUNCTION nbtk_bin_get_alignment ##### -->
+<para>
+
+</para>
+
+@bin: 
+@x_align: 
+@y_align: 
+
+
+<!-- ##### FUNCTION nbtk_bin_set_fill ##### -->
+<para>
+
+</para>
+
+@bin: 
+@x_fill: 
+@y_fill: 
+
+
+<!-- ##### FUNCTION nbtk_bin_get_fill ##### -->
+<para>
+
+</para>
+
+@bin: 
+@x_fill: 
+@y_fill: 
+
+

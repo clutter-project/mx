@@ -1,0 +1,121 @@
+<!-- ##### SECTION Title ##### -->
+NbtkEntry
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT NbtkEntry ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL NbtkEntry::primary-icon-clicked ##### -->
+<para>
+
+</para>
+
+@nbtkentry: the object which received the signal.
+
+<!-- ##### SIGNAL NbtkEntry::secondary-icon-clicked ##### -->
+<para>
+
+</para>
+
+@nbtkentry: the object which received the signal.
+
+<!-- ##### ARG NbtkEntry:hint-text ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkEntry:text ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION nbtk_entry_new ##### -->
+<para>
+
+</para>
+
+@text: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_entry_get_text ##### -->
+<para>
+
+</para>
+
+@entry: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_entry_set_text ##### -->
+<para>
+
+</para>
+
+@entry: 
+@text: 
+
+
+<!-- ##### FUNCTION nbtk_entry_get_clutter_text ##### -->
+<para>
+
+</para>
+
+@entry: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_entry_set_hint_text ##### -->
+<para>
+
+</para>
+
+@entry: 
+@text: 
+
+
+<!-- ##### FUNCTION nbtk_entry_get_hint_text ##### -->
+<para>
+
+</para>
+
+@entry: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_entry_set_primary_icon_from_file ##### -->
+<para>
+
+</para>
+
+@entry: 
+@filename: 
+
+
+<!-- ##### FUNCTION nbtk_entry_set_secondary_icon_from_file ##### -->
+<para>
+
+</para>
+
+@entry: 
+@filename: 
+
+

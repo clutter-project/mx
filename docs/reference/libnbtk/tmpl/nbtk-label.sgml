@@ -1,0 +1,66 @@
+<!-- ##### SECTION Title ##### -->
+NbtkLabel
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT NbtkLabel ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NbtkLabel:text ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION nbtk_label_new ##### -->
+<para>
+
+</para>
+
+@text: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_label_get_text ##### -->
+<para>
+
+</para>
+
+@label: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_label_set_text ##### -->
+<para>
+
+</para>
+
+@label: 
+@text: 
+
+
+<!-- ##### FUNCTION nbtk_label_get_clutter_text ##### -->
+<para>
+
+</para>
+
+@label: 
+@Returns: 
+
+

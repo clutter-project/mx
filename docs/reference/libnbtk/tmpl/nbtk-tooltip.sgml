@@ -1,0 +1,87 @@
+<!-- ##### SECTION Title ##### -->
+NbtkTooltip
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT NbtkTooltip ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG NbtkTooltip:label ##### -->
+<para>
+
+</para>
+
+<!-- ##### ARG NbtkTooltip:tip-area ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION nbtk_tooltip_get_label ##### -->
+<para>
+
+</para>
+
+@tooltip: 
+@Returns: 
+
+
+<!-- ##### FUNCTION nbtk_tooltip_set_label ##### -->
+<para>
+
+</para>
+
+@tooltip: 
+@text: 
+
+
+<!-- ##### FUNCTION nbtk_tooltip_show ##### -->
+<para>
+
+</para>
+
+@tooltip: 
+
+
+<!-- ##### FUNCTION nbtk_tooltip_hide ##### -->
+<para>
+
+</para>
+
+@tooltip: 
+
+
+<!-- ##### FUNCTION nbtk_tooltip_set_tip_area ##### -->
+<para>
+
+</para>
+
+@tooltip: 
+@area: 
+
+
+<!-- ##### FUNCTION nbtk_tooltip_get_tip_area ##### -->
+<para>
+
+</para>
+
+@tooltip: 
+@Returns: 
+
+
