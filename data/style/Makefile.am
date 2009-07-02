@@ -22,3 +22,5 @@ dist_style_DATA = \
 		progress-bar-background.png \
 		progress-bar-bar.png
 
+-include $(top_srcdir)/git.mk
+

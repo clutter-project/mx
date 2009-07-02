@@ -69,3 +69,5 @@ EXTRA_DIST = \
 	     style/red-button.png \
 	     style/redhand.png \
 	     style/rounded-corner.png
+
+-include $(top_srcdir)/git.mk

@@ -217,3 +217,5 @@ libnbtk_gtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	$(NULL)
 
 libnbtk_gtk_@NBTK_API_VERSION@_la_LIBADD = $(GTK_LIBS)
+
+-include $(top_srcdir)/git.mk

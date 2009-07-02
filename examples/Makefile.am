@@ -6,3 +6,6 @@ noinst_PROGRAMS = moblin-sample-app
 moblin_sample_app_SOURCES = moblin-sample-app.c
 
 EXTRA_DIST = custom.css
+
+-include $(top_srcdir)/git.mk
+
