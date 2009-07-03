@@ -77,6 +77,7 @@ struct _NbtkButtonPrivate
   ClutterActor *label;
   ClutterActor *icon;
   ClutterActor *old_bg;
+  gboolean old_bg_parented; /* TRUE if we have adopted old_bg */
 
   guint8 old_opacity;
 
@@ -189,27 +190,40 @@ nbtk_button_update_label_style (NbtkButton *button)
 }
 
 static void
+nbtk_button_dispose_old_bg (NbtkButton *button)
+{
+  NbtkButtonPrivate *priv = button->priv;
+
+  if (priv->old_bg)
+    {
+      if (priv->old_bg_parented)
+        {
+          clutter_actor_unparent (priv->old_bg);
+          priv->old_bg_parented = FALSE;
+        }
+      g_object_unref (priv->old_bg);
+      priv->old_bg = NULL;
+    }
+}
+
+static void
 nbtk_button_stylable_changed (NbtkStylable *stylable)
 {
   NbtkButton *button = NBTK_BUTTON (stylable);
   ClutterActor *bg_image;
 
+  nbtk_button_dispose_old_bg (button);
+
   bg_image = nbtk_widget_get_border_image ((NbtkWidget*) button);
   if (bg_image)
-    {
-      button->priv->old_bg = g_object_ref (bg_image);
-    }
-  else
-    button->priv->old_bg = NULL;
+    button->priv->old_bg = g_object_ref (bg_image);
 }
 
 static void
 nbtk_animation_completed (ClutterAnimation  *animation,
-                          NbtkButtonPrivate *priv)
+                          NbtkButton        *button)
 {
-  if (priv->old_bg)
-    clutter_actor_unparent (priv->old_bg);
-  priv->old_bg = NULL;
+  nbtk_button_dispose_old_bg (button);
 }
 
 static void
@@ -240,13 +254,16 @@ nbtk_button_style_changed (NbtkWidget *widget)
         {
           ClutterAnimation *animation;
           if (!clutter_actor_get_parent (priv->old_bg))
-            clutter_actor_set_parent (priv->old_bg, (ClutterActor*) widget);
+            {
+              clutter_actor_set_parent (priv->old_bg, (ClutterActor*) widget);
+              priv->old_bg_parented = TRUE;
+            }
           animation = clutter_actor_animate (priv->old_bg,
                                              CLUTTER_LINEAR, 150,
                                              "opacity", 0,
                                              NULL);
           g_signal_connect (animation, "completed",
-                            G_CALLBACK (nbtk_animation_completed), priv);
+                            G_CALLBACK (nbtk_animation_completed), button);
         }
     }
 }
@@ -451,11 +468,7 @@ nbtk_button_dispose (GObject *gobject)
       priv->icon = NULL;
     }
 
-  if (priv->old_bg)
-    {
-      g_object_unref (priv->old_bg);
-      priv->old_bg = NULL;
-    }
+  nbtk_button_dispose_old_bg (NBTK_BUTTON (gobject));
 
   G_OBJECT_CLASS (nbtk_button_parent_class)->dispose (gobject);
 }
@@ -587,7 +600,7 @@ nbtk_button_allocate (ClutterActor          *self,
 
   nbtk_widget_get_padding (NBTK_WIDGET (self), &padding);
 
-  if (priv->old_bg)
+  if (priv->old_bg && priv->old_bg_parented)
     clutter_actor_allocate (priv->old_bg, &bg_box, flags);
 
 
@@ -706,6 +719,9 @@ nbtk_button_map (ClutterActor *self)
 
   if (priv->icon)
     clutter_actor_map (priv->icon);
+
+  if (priv->old_bg && priv->old_bg_parented)
+    clutter_actor_map (priv->old_bg);
 }
 
 static void
@@ -717,6 +733,9 @@ nbtk_button_unmap (ClutterActor *self)
 
   if (priv->icon)
     clutter_actor_unmap (priv->icon);
+
+  if (priv->old_bg && priv->old_bg_parented)
+    clutter_actor_unmap (priv->old_bg);
 }
 
 static void
@@ -730,7 +749,7 @@ nbtk_button_draw_background (NbtkWidget         *widget,
 
   priv = NBTK_BUTTON (widget)->priv;
 
-  if (priv->old_bg)
+  if (priv->old_bg && priv->old_bg_parented)
       clutter_actor_paint (priv->old_bg);
 }
 
