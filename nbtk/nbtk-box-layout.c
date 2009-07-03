@@ -569,6 +569,8 @@ nbtk_box_layout_paint (ClutterActor *actor)
   NbtkBoxLayoutPrivate *priv = NBTK_BOX_LAYOUT (actor)->priv;
   GList *l;
   gdouble x, y;
+  ClutterActorBox child_b;
+  ClutterActorBox box_b;
 
   if (priv->hadjustment)
     x = nbtk_adjustment_get_value (priv->hadjustment);
@@ -582,11 +584,25 @@ nbtk_box_layout_paint (ClutterActor *actor)
 
   CLUTTER_ACTOR_CLASS (nbtk_box_layout_parent_class)->paint (actor);
 
+  clutter_actor_get_allocation_box (actor, &box_b);
+  box_b.x2 = (box_b.x2 - box_b.x1) + x;
+  box_b.x1 = x;
+  box_b.y2 = (box_b.y2 - box_b.y1) + y;
+  box_b.y1 = y;
+
   for (l = priv->children; l; l = g_list_next (l))
     {
       ClutterActor *child = (ClutterActor*) l->data;
 
-      clutter_actor_paint (child);
+      clutter_actor_get_allocation_box (child, &child_b);
+
+      if ((child_b.x1 < box_b.x2)
+          && (child_b.x2 > box_b.x1)
+          && (child_b.y1 < box_b.y2)
+          && (child_b.y2 > box_b.y1))
+        {
+          clutter_actor_paint (child);
+        }
     }
 }
 
@@ -597,6 +613,8 @@ nbtk_box_layout_pick (ClutterActor *actor,
   NbtkBoxLayoutPrivate *priv = NBTK_BOX_LAYOUT (actor)->priv;
   GList *l;
   gdouble x, y;
+  ClutterActorBox child_b;
+  ClutterActorBox box_b;
 
   if (priv->hadjustment)
     x = nbtk_adjustment_get_value (priv->hadjustment);
@@ -610,11 +628,25 @@ nbtk_box_layout_pick (ClutterActor *actor,
 
   CLUTTER_ACTOR_CLASS (nbtk_box_layout_parent_class)->pick (actor, color);
 
+  clutter_actor_get_allocation_box (actor, &box_b);
+  box_b.x2 = (box_b.x2 - box_b.x1) + x;
+  box_b.x1 = x;
+  box_b.y2 = (box_b.y2 - box_b.y1) + y;
+  box_b.y1 = y;
+
   for (l = priv->children; l; l = g_list_next (l))
     {
       ClutterActor *child = (ClutterActor*) l->data;
 
-      clutter_actor_paint (child);
+      clutter_actor_get_allocation_box (child, &child_b);
+
+      if ((child_b.x1 < box_b.x2)
+          && (child_b.x2 > box_b.x1)
+          && (child_b.y1 < box_b.y2)
+          && (child_b.y2 > box_b.y1))
+        {
+          clutter_actor_paint (child);
+        }
     }
 }
 
