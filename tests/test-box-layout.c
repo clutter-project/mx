@@ -94,6 +94,14 @@ key_release_cb (ClutterActor    *actor,
         clutter_container_remove_actor (CLUTTER_CONTAINER (box), child);
     }
 
+  if (event->keyval == 'c')
+    {
+      gboolean clip;
+
+      g_object_get (actor, "clip-to-allocation", &clip, NULL);
+      g_object_set (actor, "clip-to-allocation", !clip, NULL);
+    }
+
   return FALSE;
 }
 
@@ -106,11 +114,13 @@ main (int argc, char *argv[])
   clutter_init (&argc, &argv);
 
   stage = clutter_stage_get_default ();
-  clutter_actor_set_size (stage, 220, 220);
+  clutter_actor_set_size (stage, 300, 300);
 
   scrollview = nbtk_scroll_view_new ();
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage), (ClutterActor*) scrollview);
-  clutter_actor_set_position ((ClutterActor*) scrollview, 10, 10);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage),
+                               (ClutterActor*) scrollview);
+
+  clutter_actor_set_position ((ClutterActor*) scrollview, 50, 50);
   clutter_actor_set_size ((ClutterActor*) scrollview, 200, 200);
 
   box = nbtk_box_layout_new ();
