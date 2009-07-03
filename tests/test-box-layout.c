@@ -30,10 +30,25 @@ find_last_child (ClutterActor *actor, ClutterActor **child)
 }
 
 void
+enter_event (ClutterActor *actor, ClutterEvent *event, gpointer data)
+{
+  ClutterColor color = { 0xff, 0xff, 0xff, 0xff };
+  clutter_rectangle_set_border_width (CLUTTER_RECTANGLE (actor), 2);
+  clutter_rectangle_set_border_color (CLUTTER_RECTANGLE (actor), &color);
+}
+
+void
+leave_event (ClutterActor *actor, ClutterEvent *event, gpointer data)
+{
+  clutter_rectangle_set_border_width (CLUTTER_RECTANGLE (actor), 0);
+}
+
+
+void
 add_actor (ClutterContainer *container)
 {
   ClutterActor *rect;
-  ClutterColor color = { 0, 0, 0, 255 };
+  ClutterColor color = { 0xff, 0xff, 0xff, 255 };
 
   clutter_color_from_hls (&color,
                           g_random_double_range (0.0, 360.0), 0.5, 0.5);
@@ -41,6 +56,9 @@ add_actor (ClutterContainer *container)
   rect = clutter_rectangle_new_with_color (&color);
   clutter_actor_set_size (rect, 32, 64);
   clutter_container_add_actor (container, rect);
+  clutter_actor_set_reactive (rect, TRUE);
+  g_signal_connect (rect, "enter-event", G_CALLBACK (enter_event), NULL);
+  g_signal_connect (rect, "leave-event", G_CALLBACK (leave_event), NULL);
 }
 
 gboolean
