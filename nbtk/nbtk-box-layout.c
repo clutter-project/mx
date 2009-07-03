@@ -542,6 +542,28 @@ nbtk_box_layout_allocate (ClutterActor          *actor,
 }
 
 static void
+nbtk_box_layout_apply_transform (ClutterActor *a, CoglMatrix *m)
+{
+  NbtkBoxLayoutPrivate *priv = NBTK_BOX_LAYOUT (a)->priv;
+  gdouble x, y;
+
+  CLUTTER_ACTOR_CLASS (nbtk_box_layout_parent_class)->apply_transform (a, m);
+
+  if (priv->hadjustment)
+    x = nbtk_adjustment_get_value (priv->hadjustment);
+  else
+    x = 0;
+
+  if (priv->vadjustment)
+    y = nbtk_adjustment_get_value (priv->vadjustment);
+  else
+    y = 0;
+
+  cogl_matrix_translate (m , -x, -y, 0);
+}
+
+
+static void
 nbtk_box_layout_paint (ClutterActor *actor)
 {
   NbtkBoxLayoutPrivate *priv = NBTK_BOX_LAYOUT (actor)->priv;
@@ -557,8 +579,6 @@ nbtk_box_layout_paint (ClutterActor *actor)
     y = nbtk_adjustment_get_value (priv->vadjustment);
   else
     y = 0;
-
-  cogl_translate ((int) x * -1, (int) y * -1, 0);
 
   CLUTTER_ACTOR_CLASS (nbtk_box_layout_parent_class)->paint (actor);
 
@@ -587,6 +607,7 @@ nbtk_box_layout_class_init (NbtkBoxLayoutClass *klass)
   actor_class->allocate = nbtk_box_layout_allocate;
   actor_class->get_preferred_width = nbtk_box_layout_get_preferred_width;
   actor_class->get_preferred_height = nbtk_box_layout_get_preferred_height;
+  actor_class->apply_transform = nbtk_box_layout_apply_transform;
 
   actor_class->paint = nbtk_box_layout_paint;
 
