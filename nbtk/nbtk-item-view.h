@@ -80,9 +80,9 @@ void         nbtk_item_view_set_model (NbtkItemView *item_view,
                                        ClutterModel *model);
 ClutterModel* nbtk_item_view_get_model (NbtkItemView *item_view);
 
-void              nbtk_item_view_set_cell_renderer (NbtkItemView     *item_view,
-                                                    NbtkCellRenderer *renderer);
-NbtkCellRenderer* nbtk_item_view_get_cell_renderer (NbtkItemView *item_view);
+void          nbtk_item_view_set_item_type (NbtkItemView *item_view,
+                                            GType         item_type);
+GType         nbtk_item_view_get_item_type (NbtkItemView *item_view);
 
 void
 nbtk_item_view_add_attribute (NbtkItemView *item_view,

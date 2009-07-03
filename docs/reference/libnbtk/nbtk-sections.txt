@@ -476,8 +476,8 @@ NbtkItemView
 nbtk_item_view_new
 nbtk_item_view_set_model
 nbtk_item_view_get_model
-nbtk_item_view_set_cell_renderer
-nbtk_item_view_get_cell_renderer
+nbtk_item_view_get_item_type
+nbtk_item_view_set_item_type
 nbtk_item_view_add_attribute
 nbtk_item_view_freeze
 nbtk_item_view_thaw

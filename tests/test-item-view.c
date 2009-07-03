@@ -22,47 +22,6 @@
 #include <clutter/clutter.h>
 #include <nbtk/nbtk.h>
 
-
-/* simple rectangle renderer */
-#define TEST_TYPE_RENDERER test_renderer_get_type()
-
-typedef struct {
-  NbtkCellRenderer parent;
-} TestRenderer;
-
-typedef struct {
-  NbtkCellRendererClass parent_class;
-} TestRendererClass;
-
-GType test_renderer_get_type (void);
-
-G_DEFINE_TYPE (TestRenderer, test_renderer, NBTK_TYPE_CELL_RENDERER)
-
-ClutterActor *
-test_renderer_get_actor (NbtkCellRenderer *renderer)
-{
-  ClutterActor *rectangle;
-
-  rectangle = clutter_rectangle_new ();
-  clutter_actor_set_size (rectangle, 64, 64);
-
-  return rectangle;
-}
-
-static void
-test_renderer_class_init (TestRendererClass *klass)
-{
-  NbtkCellRendererClass *renderer = NBTK_CELL_RENDERER_CLASS (klass);
-
-  renderer->get_actor = test_renderer_get_actor;
-}
-
-static void
-test_renderer_init (TestRenderer *renderer)
-{
-}
-
-
 gint
 sort_func (ClutterModel *model,
            const GValue *a,
@@ -70,15 +29,15 @@ sort_func (ClutterModel *model,
            gpointer user_data)
 {
   const ClutterColor *ca, *cb;
-  guint pa, pb;
+  gfloat h1, h2;
 
   ca = clutter_value_get_color (a);
   cb = clutter_value_get_color (b);
 
-  pa = clutter_color_to_pixel (ca);
-  pb = clutter_color_to_pixel (cb);
+  clutter_color_to_hls (ca, &h1, NULL, NULL);
+  clutter_color_to_hls (cb, &h2, NULL, NULL);
 
-  return pa-pb;
+  return h1 - h2;
 }
 
 gboolean
@@ -87,15 +46,16 @@ filter_func (ClutterModel *model,
              gpointer user_data)
 {
   ClutterColor *color;
-  ClutterColor red = { 0xff, 0x00, 0x00, 0xff };
   gboolean show;
+  gfloat h;
 
   clutter_model_iter_get (iter, 0, &color, -1);
 
-  show = clutter_color_equal (color, &red);
+  clutter_color_to_hls (color, &h, NULL, NULL);
+
+  show = (h > 90 && h < 180);
 
   clutter_color_free (color);
-
 
   return show;
 }
@@ -139,9 +99,8 @@ main (int argc, char *argv[])
   NbtkWidget *view;
   ClutterActor *stage;
   ClutterModel *model;
-  ClutterColor red = { 0xff, 0x00, 0x00, 0xff};
-  ClutterColor green = { 0x00, 0xff, 0x00, 0xff};
-  ClutterColor blue = { 0x00, 0x00, 0xff, 0xff};
+  ClutterColor color = { 0x00, 0xff, 0xff, 0xff };
+  gint i;
 
   clutter_init (&argc, &argv);
 
@@ -154,26 +113,21 @@ main (int argc, char *argv[])
                                CLUTTER_ACTOR (view));
 
 
-  model = clutter_list_model_new (1, CLUTTER_TYPE_COLOR, "color");
+  model = clutter_list_model_new (2, CLUTTER_TYPE_COLOR, "color",
+                                  G_TYPE_FLOAT, "size");
 
-  clutter_model_append (model, 0, &red, -1);
-  clutter_model_append (model, 0, &green, -1);
-  clutter_model_append (model, 0, &blue, -1);
-  clutter_model_append (model, 0, &red, -1);
-  clutter_model_append (model, 0, &green, -1);
-  clutter_model_append (model, 0, &blue, -1);
-  clutter_model_append (model, 0, &red, -1);
-  clutter_model_append (model, 0, &green, -1);
-  clutter_model_append (model, 0, &blue, -1);
-  clutter_model_append (model, 0, &red, -1);
-  clutter_model_append (model, 0, &green, -1);
-  clutter_model_append (model, 0, &blue, -1);
+  for (i = 0; i < 360; i++)
+    {
+      clutter_color_from_hls (&color,
+                              g_random_double_range (0.0, 360.0), 0.6, 0.6);
+      clutter_model_append (model, 0, &color, 1, 32.0, -1);
+    }
 
   nbtk_item_view_set_model (NBTK_ITEM_VIEW (view), model);
-  nbtk_item_view_set_cell_renderer (NBTK_ITEM_VIEW (view),
-                                    g_object_new (TEST_TYPE_RENDERER,
-                                                  NULL));
+  nbtk_item_view_set_item_type (NBTK_ITEM_VIEW (view), CLUTTER_TYPE_RECTANGLE);
   nbtk_item_view_add_attribute (NBTK_ITEM_VIEW (view), "color", 0);
+  nbtk_item_view_add_attribute (NBTK_ITEM_VIEW (view), "width", 1);
+  nbtk_item_view_add_attribute (NBTK_ITEM_VIEW (view), "height", 1);
 
 
   g_signal_connect (stage, "key-release-event", G_CALLBACK (key_release_cb), model);

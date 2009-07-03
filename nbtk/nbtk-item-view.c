@@ -42,14 +42,14 @@ enum
   PROP_0,
 
   PROP_MODEL,
-  PROP_RENDERER
+  PROP_ITEM_TYPE
 };
 
 struct _NbtkItemViewPrivate
 {
-  ClutterModel      *model;
-  NbtkCellRenderer  *renderer;
-  GSList            *attributes;
+  ClutterModel *model;
+  GSList       *attributes;
+  GType         item_type;
 
   gulong filter_changed;
   gulong row_added;
@@ -72,8 +72,8 @@ nbtk_item_view_get_property (GObject    *object,
     case PROP_MODEL:
       g_value_set_object (value, priv->model);
       break;
-    case PROP_RENDERER:
-      g_value_set_object (value, priv->renderer);
+    case PROP_ITEM_TYPE:
+      g_value_set_gtype (value, priv->item_type);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -91,10 +91,9 @@ nbtk_item_view_set_property (GObject      *object,
     case PROP_MODEL:
       nbtk_item_view_set_model ((NbtkItemView*) object,
                                 (ClutterModel*) g_value_get_object (value));
-    case PROP_RENDERER:
-      nbtk_item_view_set_cell_renderer ((NbtkItemView*) object,
-                                        (NbtkCellRenderer*)
-                                          g_value_get_object (value));
+    case PROP_ITEM_TYPE:
+      nbtk_item_view_set_item_type ((NbtkItemView*) object,
+                                    g_value_get_gtype (value));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -104,18 +103,10 @@ nbtk_item_view_set_property (GObject      *object,
 static void
 nbtk_item_view_dispose (GObject *object)
 {
-  NbtkItemViewPrivate *priv = NBTK_ITEM_VIEW (object)->priv;
-
   G_OBJECT_CLASS (nbtk_item_view_parent_class)->dispose (object);
 
   /* This will cause the unref of the model and also disconnect the signals */
   nbtk_item_view_set_model (NBTK_ITEM_VIEW (object), NULL);
-
-  if (priv->renderer)
-    {
-      g_object_unref (priv->renderer);
-      priv->renderer = NULL;
-    }
 }
 
 static void
@@ -154,12 +145,13 @@ nbtk_item_view_class_init (NbtkItemViewClass *klass)
                                NBTK_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_MODEL, pspec);
 
-  pspec = g_param_spec_object ("cell-renderer",
-                               "cell-renderer",
-                               "The renderer to use for the item view",
+  pspec = g_param_spec_object ("item-type",
+                               "Item Type",
+                               "The GType to use as the items in the view. "
+                               "Must be a subclass of ClutterActor",
                                NBTK_TYPE_CELL_RENDERER,
                                NBTK_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_RENDERER, pspec);
+  g_object_class_install_property (object_class, PROP_ITEM_TYPE, pspec);
 }
 
 static void
@@ -181,9 +173,18 @@ model_changed_cb (ClutterModel *model,
   gint model_n = 0, child_n = 0;
 
 
-  /* bail out if we don't yet have a renderer */
-  if (!priv->renderer)
+  /* bail out if we don't yet have an item type */
+  if (!priv->item_type)
     return;
+
+  /* check the item-type is an descendant of ClutterActor */
+  if (!g_type_is_a (priv->item_type, CLUTTER_TYPE_ACTOR))
+    {
+      g_warning ("%s is not a subclass of ClutterActor and therefore"
+                 " cannot be used as items in an NbtkItemView",
+                 g_type_name (priv->item_type));
+      return;
+    }
 
   children = clutter_container_get_children (CLUTTER_CONTAINER (item_view));
   child_n = g_list_length (children);
@@ -208,14 +209,8 @@ model_changed_cb (ClutterModel *model,
         {
           ClutterActor *new_child;
 
-          new_child = nbtk_cell_renderer_get_actor (priv->renderer);
-          if (!CLUTTER_IS_ACTOR (new_child))
-            {
-              g_warning ("NbtkCellRenderer of type '%s' returned NULL "
-                         "for nbtk_cell_renderer_get_actor ()",
-                         G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (priv->renderer)));
-              break;
-            }
+          new_child = g_object_new (priv->item_type, NULL);
+
 
           clutter_container_add_actor (CLUTTER_CONTAINER (item_view),
                                        new_child);
@@ -315,56 +310,41 @@ nbtk_item_view_new (void)
 }
 
 /**
- * nbtk_item_view_get_cell_renderer:
+ * nbtk_item_view_get_item_type:
  * @item_view: An #NbtkItemView
  *
- * Get the cell renderer currently being used to create items
+ * Get the item type currently being used to create items
  *
- * Returns: the current #NbtkCellRenderer
+ * Returns: a #GType
  */
-NbtkCellRenderer*
-nbtk_item_view_get_cell_renderer (NbtkItemView *item_view)
+GType
+nbtk_item_view_get_item_type (NbtkItemView *item_view)
 {
-  g_return_val_if_fail (NBTK_IS_ITEM_VIEW (item_view), NULL);
+  g_return_val_if_fail (NBTK_IS_ITEM_VIEW (item_view), G_TYPE_INVALID);
 
-  return item_view->priv->renderer;
+  return item_view->priv->item_type;
 }
 
 
 /**
- * nbtk_item_view_set_cell_renderer:
+ * nbtk_item_view_set_item_type:
  * @item_view: An #NbtkItemView
- * @renderer: An #NbtkCellRenderer
+ * @item_type: A #GType
  *
- * Set the cell renderer used to create items representing each row in the
+ * Set the item type used to create items representing each row in the
  * model
  */
 void
-nbtk_item_view_set_cell_renderer (NbtkItemView     *item_view,
-                                  NbtkCellRenderer *renderer)
+nbtk_item_view_set_item_type (NbtkItemView *item_view,
+                              GType         item_type)
 {
-  NbtkItemViewPrivate *priv;
-
   g_return_if_fail (NBTK_IS_ITEM_VIEW (item_view));
-  g_return_if_fail (NBTK_IS_CELL_RENDERER (renderer));
+  g_return_if_fail (g_type_is_a (item_type, CLUTTER_TYPE_ACTOR));
 
-  priv = item_view->priv;
+  item_view->priv->item_type = item_type;
 
-  if (priv->renderer)
-    {
-      g_object_unref (priv->renderer);
-    }
-
-  if (renderer)
-    {
-      priv->renderer = g_object_ref_sink (renderer);
-    }
-  else
-    {
-      priv->renderer = NULL;
-    }
-
-  model_changed_cb (priv->model, item_view);
+  /* update the view */
+  model_changed_cb (item_view->priv->model, item_view);
 }
 
 /**
