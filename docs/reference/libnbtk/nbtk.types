@@ -10,6 +10,7 @@ nbtk_entry_get_type
 nbtk_grid_get_type
 nbtk_label_get_type
 nbtk_padding_get_type
+nbtk_item_view_get_type
 nbtk_progress_bar_get_type
 nbtk_scrollable_get_type
 nbtk_scroll_bar_get_type

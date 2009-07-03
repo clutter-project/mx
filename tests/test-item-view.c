@@ -148,7 +148,7 @@ main (int argc, char *argv[])
   stage = clutter_stage_get_default ();
   clutter_actor_set_size (stage, 320, 240);
 
-  view = nbtk_icon_view_new ();
+  view = nbtk_item_view_new ();
   clutter_actor_set_size (CLUTTER_ACTOR (view), 320, 240);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (view));
@@ -169,11 +169,11 @@ main (int argc, char *argv[])
   clutter_model_append (model, 0, &green, -1);
   clutter_model_append (model, 0, &blue, -1);
 
-  nbtk_icon_view_set_model (NBTK_ICON_VIEW (view), model);
-  nbtk_icon_view_set_cell_renderer (NBTK_ICON_VIEW (view),
+  nbtk_item_view_set_model (NBTK_ITEM_VIEW (view), model);
+  nbtk_item_view_set_cell_renderer (NBTK_ITEM_VIEW (view),
                                     g_object_new (TEST_TYPE_RENDERER,
                                                   NULL));
-  nbtk_icon_view_add_attribute (NBTK_ICON_VIEW (view), "color", 0);
+  nbtk_item_view_add_attribute (NBTK_ITEM_VIEW (view), "color", 0);
 
 
   g_signal_connect (stage, "key-release-event", G_CALLBACK (key_release_cb), model);

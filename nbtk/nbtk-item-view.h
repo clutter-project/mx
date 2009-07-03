@@ -1,5 +1,5 @@
 /*
- * nbtk-icon-view.h: NbtkGrid powered by a model
+ * nbtk-item-view.h: NbtkGrid powered by a model
  *
  * Copyright 2009 Intel Corporation.
  *
@@ -22,8 +22,8 @@
  */
 
 
-#ifndef _NBTK_ICON_VIEW_H
-#define _NBTK_ICON_VIEW_H
+#ifndef _NBTK_ITEM_VIEW_H
+#define _NBTK_ITEM_VIEW_H
 
 #include <glib-object.h>
 #include "nbtk-grid.h"
@@ -31,32 +31,32 @@
 
 G_BEGIN_DECLS
 
-#define NBTK_TYPE_ICON_VIEW nbtk_icon_view_get_type()
+#define NBTK_TYPE_ITEM_VIEW nbtk_item_view_get_type()
 
-#define NBTK_ICON_VIEW(obj) \
+#define NBTK_ITEM_VIEW(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-  NBTK_TYPE_ICON_VIEW, NbtkIconView))
+  NBTK_TYPE_ITEM_VIEW, NbtkItemView))
 
-#define NBTK_ICON_VIEW_CLASS(klass) \
+#define NBTK_ITEM_VIEW_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_CAST ((klass), \
-  NBTK_TYPE_ICON_VIEW, NbtkIconViewClass))
+  NBTK_TYPE_ITEM_VIEW, NbtkItemViewClass))
 
-#define NBTK_IS_ICON_VIEW(obj) \
+#define NBTK_IS_ITEM_VIEW(obj) \
   (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
-  NBTK_TYPE_ICON_VIEW))
+  NBTK_TYPE_ITEM_VIEW))
 
-#define NBTK_IS_ICON_VIEW_CLASS(klass) \
+#define NBTK_IS_ITEM_VIEW_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_TYPE ((klass), \
-  NBTK_TYPE_ICON_VIEW))
+  NBTK_TYPE_ITEM_VIEW))
 
-#define NBTK_ICON_VIEW_GET_CLASS(obj) \
+#define NBTK_ITEM_VIEW_GET_CLASS(obj) \
   (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-  NBTK_TYPE_ICON_VIEW, NbtkIconViewClass))
+  NBTK_TYPE_ITEM_VIEW, NbtkItemViewClass))
 
-typedef struct _NbtkIconViewPrivate NbtkIconViewPrivate;
+typedef struct _NbtkItemViewPrivate NbtkItemViewPrivate;
 
 /**
- * NbtkIconView:
+ * NbtkItemView:
  *
  * The contents of the this structure are private and should only be accessed
  * through the public API.
@@ -65,34 +65,34 @@ typedef struct {
   /*< private >*/
   NbtkGrid parent;
 
-  NbtkIconViewPrivate *priv;
-} NbtkIconView;
+  NbtkItemViewPrivate *priv;
+} NbtkItemView;
 
 typedef struct {
   NbtkGridClass parent_class;
-} NbtkIconViewClass;
+} NbtkItemViewClass;
 
-GType nbtk_icon_view_get_type (void);
+GType nbtk_item_view_get_type (void);
 
-NbtkWidget* nbtk_icon_view_new (void);
+NbtkWidget* nbtk_item_view_new (void);
 
-void         nbtk_icon_view_set_model (NbtkIconView *icon_view,
+void         nbtk_item_view_set_model (NbtkItemView *item_view,
                                        ClutterModel *model);
-ClutterModel* nbtk_icon_view_get_model (NbtkIconView *icon_view);
+ClutterModel* nbtk_item_view_get_model (NbtkItemView *item_view);
 
-void              nbtk_icon_view_set_cell_renderer (NbtkIconView     *icon_view,
+void              nbtk_item_view_set_cell_renderer (NbtkItemView     *item_view,
                                                     NbtkCellRenderer *renderer);
-NbtkCellRenderer* nbtk_icon_view_get_cell_renderer (NbtkIconView *icon_view);
+NbtkCellRenderer* nbtk_item_view_get_cell_renderer (NbtkItemView *item_view);
 
 void
-nbtk_icon_view_add_attribute (NbtkIconView *icon_view,
+nbtk_item_view_add_attribute (NbtkItemView *item_view,
                               const gchar *attribute,
                               gint column);
 
-void nbtk_icon_view_freeze (NbtkIconView *icon_view);
-void nbtk_icon_view_thaw (NbtkIconView *icon_view);
+void nbtk_item_view_freeze (NbtkItemView *item_view);
+void nbtk_item_view_thaw (NbtkItemView *item_view);
 
 
 G_END_DECLS
 
-#endif /* _NBTK_ICON_VIEW_H */
+#endif /* _NBTK_ITEM_VIEW_H */

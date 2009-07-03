@@ -471,25 +471,25 @@ NbtkStylePrivate
 
 <SECTION>
 <FILE>nbtk-icon-view</FILE>
-<TITLE>NbtkIconView</TITLE>
-NbtkIconView
-nbtk_icon_view_new
-nbtk_icon_view_set_model
-nbtk_icon_view_get_model
-nbtk_icon_view_set_cell_renderer
-nbtk_icon_view_get_cell_renderer
-nbtk_icon_view_add_attribute
-nbtk_icon_view_freeze
-nbtk_icon_view_thaw
+<TITLE>NbtkItemView</TITLE>
+NbtkItemView
+nbtk_item_view_new
+nbtk_item_view_set_model
+nbtk_item_view_get_model
+nbtk_item_view_set_cell_renderer
+nbtk_item_view_get_cell_renderer
+nbtk_item_view_add_attribute
+nbtk_item_view_freeze
+nbtk_item_view_thaw
 <SUBSECTION Standard>
-NbtkIconViewPrivate
-NBTK_ICON_VIEW
-NBTK_IS_ICON_VIEW
-NBTK_TYPE_ICON_VIEW
-nbtk_icon_view_get_type
-NBTK_ICON_VIEW_CLASS
-NBTK_IS_ICON_VIEW_CLASS
-NBTK_ICON_VIEW_GET_CLASS
+NbtkItemViewPrivate
+NBTK_ITEM_VIEW
+NBTK_IS_ITEM_VIEW
+NBTK_TYPE_ITEM_VIEW
+nbtk_item_view_get_type
+NBTK_ITEM_VIEW_CLASS
+NBTK_IS_ITEM_VIEW_CLASS
+NBTK_ITEM_VIEW_GET_CLASS
 </SECTION>
 
 <SECTION>
