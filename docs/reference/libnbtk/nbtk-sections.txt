@@ -18,21 +18,6 @@ NBTK_CLIPBOARD_GET_CLASS
 </SECTION>
 
 <SECTION>
-<FILE>nbtk-cell-renderer</FILE>
-<TITLE>NbtkCellRenderer</TITLE>
-NbtkCellRenderer
-nbtk_cell_renderer_get_actor
-<SUBSECTION Standard>
-NBTK_CELL_RENDERER
-NBTK_IS_CELL_RENDERER
-NBTK_TYPE_CELL_RENDERER
-nbtk_cell_renderer_get_type
-NBTK_CELL_RENDERER_CLASS
-NBTK_IS_CELL_RENDERER_CLASS
-NBTK_CELL_RENDERER_GET_CLASS
-</SECTION>
-
-<SECTION>
 <FILE>nbtk-droppable</FILE>
 NbtkDroppable
 NbtkDroppableIface

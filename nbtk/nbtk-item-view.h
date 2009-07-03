@@ -27,7 +27,6 @@
 
 #include <glib-object.h>
 #include "nbtk-grid.h"
-#include "nbtk-cell-renderer.h"
 
 G_BEGIN_DECLS
 

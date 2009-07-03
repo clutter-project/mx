@@ -23,7 +23,6 @@
 
 
 #include "nbtk-item-view.h"
-#include "nbtk-cell-renderer.h"
 #include "nbtk-private.h"
 
 G_DEFINE_TYPE (NbtkItemView, nbtk_item_view, NBTK_TYPE_GRID)
@@ -145,12 +144,12 @@ nbtk_item_view_class_init (NbtkItemViewClass *klass)
                                NBTK_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_MODEL, pspec);
 
-  pspec = g_param_spec_object ("item-type",
-                               "Item Type",
-                               "The GType to use as the items in the view. "
-                               "Must be a subclass of ClutterActor",
-                               NBTK_TYPE_CELL_RENDERER,
-                               NBTK_PARAM_READWRITE);
+  pspec = g_param_spec_gtype ("item-type",
+                              "Item Type",
+                              "The GType to use as the items in the view. "
+                              "Must be a subclass of ClutterActor",
+                              CLUTTER_TYPE_ACTOR,
+                              NBTK_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_ITEM_TYPE, pspec);
 }
 
