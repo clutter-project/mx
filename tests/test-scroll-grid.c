@@ -30,7 +30,7 @@ stage_size_notify_cb (ClutterActor *stage,
   gfloat width, height;
 
   clutter_actor_get_size (stage, &width, &height);
-  clutter_actor_set_size (table, width - 20, height - 20);
+  clutter_actor_set_size (table, width - 100, height - 100);
 }
 
 static void
@@ -65,7 +65,7 @@ main (int argc, char *argv[])
   scroll = (NbtkWidget *) nbtk_scroll_view_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (scroll));
-  clutter_actor_set_position (CLUTTER_ACTOR (scroll), 10, 10);
+  clutter_actor_set_position (CLUTTER_ACTOR (scroll), 50, 50);
 
   grid = nbtk_grid_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (scroll),
