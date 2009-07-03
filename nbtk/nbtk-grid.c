@@ -952,9 +952,9 @@ nbtk_grid_paint (ClutterActor *actor)
 
   clutter_actor_get_allocation_box (actor, &grid_b);
   grid_b.x2 = (grid_b.x2 - grid_b.x1) + x;
-  grid_b.x1 = 0;
+  grid_b.x1 = x;
   grid_b.y2 = (grid_b.y2 - grid_b.y1) + y;
-  grid_b.y1 = 0;
+  grid_b.y1 = y;
 
   for (child_item = priv->list;
        child_item != NULL;
@@ -1005,9 +1005,9 @@ nbtk_grid_pick (ClutterActor *actor,
 
   clutter_actor_get_allocation_box (actor, &grid_b);
   grid_b.x2 = (grid_b.x2 - grid_b.x1) + x;
-  grid_b.x1 = 0;
+  grid_b.x1 = x;
   grid_b.y2 = (grid_b.y2 - grid_b.y1) + y;
-  grid_b.y1 = 0;
+  grid_b.y1 = y;
 
   for (child_item = priv->list;
        child_item != NULL;
