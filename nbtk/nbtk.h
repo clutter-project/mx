@@ -38,6 +38,7 @@
 #include <nbtk/nbtk-grid.h>
 #include <nbtk/nbtk-icon.h>
 #include <nbtk/nbtk-item-view.h>
+#include <nbtk/nbtk-list-view.h>
 #include <nbtk/nbtk-label.h>
 #include <nbtk/nbtk-progress-bar.h>
 #include <nbtk/nbtk-scroll-bar.h>
