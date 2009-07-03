@@ -591,6 +591,34 @@ nbtk_box_layout_paint (ClutterActor *actor)
 }
 
 static void
+nbtk_box_layout_pick (ClutterActor *actor,
+                      ClutterColor *color)
+{
+  NbtkBoxLayoutPrivate *priv = NBTK_BOX_LAYOUT (actor)->priv;
+  GList *l;
+  gdouble x, y;
+
+  if (priv->hadjustment)
+    x = nbtk_adjustment_get_value (priv->hadjustment);
+  else
+    x = 0;
+
+  if (priv->vadjustment)
+    y = nbtk_adjustment_get_value (priv->vadjustment);
+  else
+    y = 0;
+
+  CLUTTER_ACTOR_CLASS (nbtk_box_layout_parent_class)->pick (actor, color);
+
+  for (l = priv->children; l; l = g_list_next (l))
+    {
+      ClutterActor *child = (ClutterActor*) l->data;
+
+      clutter_actor_paint (child);
+    }
+}
+
+static void
 nbtk_box_layout_class_init (NbtkBoxLayoutClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -610,6 +638,7 @@ nbtk_box_layout_class_init (NbtkBoxLayoutClass *klass)
   actor_class->apply_transform = nbtk_box_layout_apply_transform;
 
   actor_class->paint = nbtk_box_layout_paint;
+  actor_class->pick = nbtk_box_layout_pick;
 
   pspec = g_param_spec_boolean ("vertical",
                                 "Vertical",
