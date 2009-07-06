@@ -96,7 +96,7 @@ key_release_cb (ClutterActor *actor,
 int
 main (int argc, char *argv[])
 {
-  NbtkWidget *view;
+  NbtkWidget *view, *scroll;
   ClutterActor *stage;
   ClutterModel *model;
   ClutterColor color = { 0x00, 0xff, 0xff, 0xff };
@@ -107,9 +107,13 @@ main (int argc, char *argv[])
   stage = clutter_stage_get_default ();
   clutter_actor_set_size (stage, 320, 240);
 
-  view = nbtk_item_view_new ();
-  clutter_actor_set_size (CLUTTER_ACTOR (view), 320, 240);
+  scroll = nbtk_scroll_view_new ();
+  clutter_actor_set_size (CLUTTER_ACTOR (scroll), 320, 240);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
+                               CLUTTER_ACTOR (scroll));
+
+  view = nbtk_item_view_new ();
+  clutter_container_add_actor (CLUTTER_CONTAINER (scroll),
                                CLUTTER_ACTOR (view));
 
 
