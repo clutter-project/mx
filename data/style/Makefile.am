@@ -4,6 +4,8 @@ dist_style_DATA = \
 		button-hover.png \
 		button.png \
 		default.css \
+		entry.png \
+		entry-active.png \
 		expander-arrow-down-hover.png \
 		expander-arrow-down.png \
 		expander-arrow-up-hover.png \
@@ -17,7 +19,6 @@ dist_style_DATA = \
 		scroll-button-up.png \
 		scroll-handle-hover.png \
 		scroll-handle.png \
-		text-entry.png \
 		tooltip-background.png \
 		progress-bar-background.png \
 		progress-bar-bar.png

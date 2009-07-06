@@ -17,6 +17,25 @@ NbtkButton:active, NbtkButton:checked
   border-image: url("file://button-active.png") 10;
 }
 
+NbtkEntry
+{
+  padding: 5 6 6 5;
+  border-image: url("file://entry.png") 5;
+  font-family: "Liberation Sans";
+  font-size: 13;
+}
+
+NbtkEntry:focus
+{
+  border-image: url("file://entry-active.png") 5;
+}
+
+NbtkEntry:indeterminate
+{
+  color: #8e8e8e;
+}
+
+
 NbtkScrollBar
 {
   background-color: #dee2e5;
@@ -59,12 +78,6 @@ NbtkScrollBar NbtkButton#handle
 NbtkScrollBar NbtkButton#handle:hover
 {
   border-image: url("file://scroll-handle-hover.png") 5;
-}
-
-NbtkEntry
-{
-  padding: 5px;
-  border-image: url("file://text-entry.png") 5;
 }
 
 /*
