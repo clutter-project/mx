@@ -11,8 +11,9 @@ NbtkButton:hover
   border-image: url("file://button-hover.png") 10;
 }
 
-NbtkButton:active
+NbtkButton:active, NbtkButton:checked
 {
+  padding: 11 9 9 11;
   border-image: url("file://button-active.png") 10;
 }
 
