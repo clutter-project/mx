@@ -132,25 +132,14 @@ draw (GtkWidget *lightswitch,
   /* draw the trough */
   gtk_paint_box (style,
                  lightswitch->window,
-                 GTK_STATE_SELECTED,
+                 (priv->active) ? GTK_STATE_SELECTED : GTK_STATE_NORMAL,
                  GTK_SHADOW_IN,
                  NULL,
                  NULL,
-                 NULL,
+                 "light-switch-trough",
                  0,
                  0,
-                 (priv->trough_width / 2),
-                 priv->switch_height);
-  gtk_paint_box (style,
-                 lightswitch->window,
-                 GTK_STATE_NORMAL,
-                 GTK_SHADOW_IN,
-                 NULL,
-                 NULL,
-                 NULL,
-                 (priv->trough_width / 2),
-                 0,
-                 (priv->trough_width / 2),
+                 (priv->trough_width),
                  priv->switch_height);
 
   /* Draw the first label; "On" */
@@ -163,23 +152,33 @@ draw (GtkWidget *lightswitch,
   pango_layout_get_size (layout,
                          &label_width,
                          &label_height);
-  gdk_draw_layout (lightswitch->window,
-                   style->fg_gc[GTK_STATE_SELECTED],
-                   on_label_x,
-                   (priv->switch_height
-                    - (label_height / PANGO_SCALE)) / 2,
-                   layout);
+  gtk_paint_layout (style,
+                    lightswitch->window,
+                    (priv->active) ? GTK_STATE_SELECTED : GTK_STATE_NORMAL,
+                    FALSE,
+                    NULL,
+                    (GtkWidget*) lightswitch,
+                    "lightswitch-label",
+                    on_label_x,
+                    (priv->switch_height
+                     - (label_height / PANGO_SCALE)) / 2,
+                    layout);
   /* Draw the second label; "Off" */
   pango_layout_set_text (layout, _ ("Off"), -1);
   pango_layout_get_size (layout,
                          &label_width,
                          &label_height);
-  gdk_draw_layout (lightswitch->window,
-                   style->fg_gc[GTK_STATE_NORMAL],
-                   off_label_x,
-                   (priv->switch_height
-                    - (label_height / PANGO_SCALE)) / 2,
-                   layout);
+  gtk_paint_layout (style,
+                    lightswitch->window,
+                    (priv->active) ? GTK_STATE_SELECTED : GTK_STATE_NORMAL,
+                    FALSE,
+                    NULL,
+                    (GtkWidget*) lightswitch,
+                    "lightswitch-label",
+                    off_label_x,
+                    (priv->switch_height
+                     - (label_height / PANGO_SCALE)) / 2,
+                    layout);
 
   /* draw the switch itself */
   gtk_paint_box (style,
@@ -188,11 +187,11 @@ draw (GtkWidget *lightswitch,
                  GTK_SHADOW_OUT,
                  NULL,
                  NULL,
-                 NULL,
-                 priv->x,
-                 0,
-                 priv->switch_width,
-                 priv->switch_height);
+                 "light-switch-handle",
+                 priv->x + style->xthickness,
+                 style->ythickness,
+                 priv->switch_width - style->xthickness * 2,
+                 priv->switch_height - style->ythickness * 2);
 
   g_object_unref (layout);
 }
