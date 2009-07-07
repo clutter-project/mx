@@ -608,7 +608,7 @@ nbtk_box_layout_paint (ClutterActor *actor)
 
 static void
 nbtk_box_layout_pick (ClutterActor *actor,
-                      ClutterColor *color)
+                      const ClutterColor *color)
 {
   NbtkBoxLayoutPrivate *priv = NBTK_BOX_LAYOUT (actor)->priv;
   GList *l;
