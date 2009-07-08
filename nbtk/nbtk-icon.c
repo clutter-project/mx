@@ -1,5 +1,5 @@
 /*
- * nbtk-icon.h: Icon actor
+ * nbtk-icon.c: icon widget
  *
  * Copyright 2009 Intel Corporation.
  *
@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
- * Boston, MA 02111-1307, USA.
  *
  * Written by: Thomas Wood <thomas.wood@intel.com>
  *
