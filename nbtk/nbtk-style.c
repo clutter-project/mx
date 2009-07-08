@@ -116,22 +116,12 @@ stylesheet_monitor_changed_cb (GFileMonitor      *monitor,
 }
 
 
-/**
- * nbtk_style_load_from_file:
- * @style: a #NbtkStyle
- * @filename: filename of the style sheet to load
- * @error: a #GError or #NULL
- *
- * Load style information from the specified file.
- *
- * returns: TRUE if the style information was loaded successfully. Returns
- * FALSE on error.
- */
 
 gboolean
-nbtk_style_load_from_file (NbtkStyle    *style,
-                           const gchar  *filename,
-                           GError      **error)
+nbtk_style_real_load_from_file (NbtkStyle    *style,
+                                const gchar  *filename,
+                                GError      **error,
+                                gint          priority)
 {
   NbtkStylePrivate *priv;
   ccss_grammar_t *grammar;
@@ -189,7 +179,7 @@ nbtk_style_load_from_file (NbtkStyle    *style,
     }
   else
     {
-      ccss_stylesheet_add_from_file (priv->stylesheet, filename, CCSS_STYLESHEET_AUTHOR, path);
+      ccss_stylesheet_add_from_file (priv->stylesheet, filename, priority, path);
     }
 
   g_signal_emit (style, style_signals[CHANGED], 0, NULL);
@@ -216,6 +206,25 @@ nbtk_style_load_from_file (NbtkStyle    *style,
   return TRUE;
 }
 
+/**
+ * nbtk_style_load_from_file:
+ * @style: a #NbtkStyle
+ * @filename: filename of the style sheet to load
+ * @error: a #GError or #NULL
+ *
+ * Load style information from the specified file.
+ *
+ * returns: TRUE if the style information was loaded successfully. Returns
+ * FALSE on error.
+ */
+gboolean
+nbtk_style_load_from_file (NbtkStyle    *style,
+                           const gchar  *filename,
+                           GError      **error)
+{
+  nbtk_style_real_load_from_file (style, filename, error, CCSS_STYLESHEET_AUTHOR);
+}
+
 static void
 nbtk_style_load (NbtkStyle *style)
 {
@@ -238,9 +247,10 @@ nbtk_style_load (NbtkStyle *style)
 
   if (g_file_test (rc_file, G_FILE_TEST_EXISTS))
     {
-      if (!nbtk_style_load_from_file (style, rc_file, &error))
+      /* load the default theme with lowest priority */
+      if (!nbtk_style_real_load_from_file (style, rc_file, &error, CCSS_STYLESHEET_USER_AGENT))
         {
-          g_critical ("Unable to load resource file `%s': %s",
+          g_critical ("Unable to load resource file '%s': %s",
                       rc_file,
                       error->message);
           g_error_free (error);
