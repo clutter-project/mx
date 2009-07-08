@@ -674,6 +674,9 @@ trough_button_press_event_cb (ClutterActor       *actor,
 {
   g_return_val_if_fail (self, FALSE);
 
+  if (event->button != 1)
+    return FALSE;
+
   if (NULL == self->priv->adjustment)
     return FALSE;
 
@@ -691,6 +694,9 @@ trough_button_release_event_cb (ClutterActor       *actor,
                                 ClutterButtonEvent *event,
                                 NbtkScrollBar      *self)
 {
+  if (event->button != 1)
+    return FALSE;
+
   if (self->priv->paging_source_id)
     {
       g_source_remove (self->priv->paging_source_id);
