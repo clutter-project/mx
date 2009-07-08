@@ -69,17 +69,6 @@ on_stage_capture (ClutterActor *actor,
   if (G_UNLIKELY (target == NULL))
     return FALSE;
 
-  /* we are on a new target, so emit ::over-out and unset the last target */
-  if (context->last_target != NULL && target != context->last_target)
-    {
-      g_signal_emit (context->last_target,
-                     droppable_signals[OVER_OUT], 0,
-                     draggable);
-
-      context->last_target = NULL;
-      return FALSE;
-    }
-
   droppable = NULL;
   if (!NBTK_IS_DROPPABLE (target))
     {
@@ -103,6 +92,18 @@ on_stage_capture (ClutterActor *actor,
       if (nbtk_droppable_accept_drop (NBTK_DROPPABLE (target), draggable))
         droppable = NBTK_DROPPABLE (target);
     }
+
+  /* we are on a new target, so emit ::over-out and unset the last target */
+  if (context->last_target && droppable != context->last_target)
+    {
+      g_signal_emit (context->last_target,
+                     droppable_signals[OVER_OUT], 0,
+                     draggable);
+
+      context->last_target = NULL;
+      return FALSE;
+    }
+
 
   if (droppable == NULL)
     return FALSE;
