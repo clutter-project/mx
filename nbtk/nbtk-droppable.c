@@ -69,20 +69,14 @@ on_stage_capture (ClutterActor *actor,
   if (G_UNLIKELY (target == NULL))
     return FALSE;
 
-  if (target == context->stage)
+  /* we are on a new target, so emit ::over-out and unset the last target */
+  if (context->last_target != NULL && target != context->last_target)
     {
-      /* fast path: we are on the stage and we were on a droppable
-       * emit ::over-out and unset the last target
-       */
-      if (context->last_target != NULL)
-        {
-          g_signal_emit (context->last_target,
-                         droppable_signals[OVER_OUT], 0,
-                         draggable);
+      g_signal_emit (context->last_target,
+                     droppable_signals[OVER_OUT], 0,
+                     draggable);
 
-          context->last_target = NULL;
-        }
-
+      context->last_target = NULL;
       return FALSE;
     }
 
