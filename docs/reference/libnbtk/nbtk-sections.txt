@@ -60,18 +60,12 @@ NBTK_DRAGGABLE_GET_IFACE
 
 <SECTION>
 <FILE>nbtk-widget</FILE>
-<TITLE>NbtkWidgetChild</TITLE>
-NbtkWidgetChild
 <TITLE>NbtkWidget</TITLE>
 NbtkWidget
 nbtk_widget_set_style_pseudo_class
 nbtk_widget_get_style_pseudo_class
 nbtk_widget_set_style_class_name
 nbtk_widget_get_style_class_name
-nbtk_widget_get_dnd_threshold
-nbtk_widget_set_dnd_threshold
-nbtk_widget_setup_child_dnd
-nbtk_widget_undo_child_dnd
 nbtk_widget_get_background_image
 nbtk_widget_get_border_image
 nbtk_widget_get_padding
@@ -90,13 +84,6 @@ NBTK_IS_WIDGET
 NBTK_WIDGET_CLASS
 NBTK_IS_WIDGET_CLASS
 NBTK_WIDGET_GET_CLASS
-NBTK_WIDGET_CHILD
-NBTK_IS_WIDGET_CHILD
-NBTK_TYPE_WIDGET_CHILD
-nbtk_widget_child_get_type
-NBTK_WIDGET_CHILD_CLASS
-NBTK_IS_WIDGET_CHILD_CLASS
-NBTK_WIDGET_CHILD_GET_CLASS
 <SUBSECTION Private>
 NbtkWidgetPrivate
 </SECTION>

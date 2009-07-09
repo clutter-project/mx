@@ -54,7 +54,7 @@ typedef struct _NbtkTableChildClass    NbtkTableChildClass;
 struct _NbtkTableChild
 {
   /*< private >*/
-  NbtkWidgetChild parent_instance;
+  ClutterChildMeta parent_instance;
 
   gint col;
   gint row;
@@ -72,7 +72,7 @@ struct _NbtkTableChild
 
 struct _NbtkTableChildClass
 {
-  NbtkWidgetChildClass parent_class;
+  ClutterChildMetaClass parent_class;
 };
 
 GType nbtk_table_child_get_type (void) G_GNUC_CONST;

@@ -109,17 +109,11 @@ nbtk_container_add_actor (ClutterContainer *container,
                           ClutterActor     *actor)
 {
   NbtkTablePrivate *priv = NBTK_TABLE (container)->priv;
-  guint             dnd_threshold;
 
   clutter_actor_set_parent (actor, CLUTTER_ACTOR (container));
 
 
   priv->children = g_slist_append (priv->children, actor);
-
-  dnd_threshold = nbtk_widget_get_dnd_threshold (NBTK_WIDGET (container));
-
-  if (dnd_threshold > 0)
-    nbtk_widget_setup_child_dnd (NBTK_WIDGET (container), actor);
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
 
@@ -145,8 +139,6 @@ nbtk_container_remove_actor (ClutterContainer *container,
     }
 
   g_object_ref (actor);
-
-  nbtk_widget_undo_child_dnd (NBTK_WIDGET (container), actor);
 
   priv->children = g_slist_delete_link (priv->children, item);
   clutter_actor_unparent (actor);
@@ -1113,29 +1105,6 @@ nbtk_table_pick (ClutterActor       *self,
 }
 
 static void
-nbtk_table_dnd_dropped (NbtkWidget   *actor,
-			ClutterActor *dragged,
-			ClutterActor *icon,
-			gint          x,
-			gint          y)
-{
-  ClutterActor *parent;
-
-  g_object_ref (dragged);
-  parent = clutter_actor_get_parent (dragged);
-
-  clutter_container_remove_actor (CLUTTER_CONTAINER (parent), dragged);
-  nbtk_table_add_actor (NBTK_TABLE (actor), dragged, NBTK_TABLE (actor)->priv->n_rows, 0);
-
-  clutter_container_child_set (CLUTTER_CONTAINER (actor), dragged,
-                               "x-fill", FALSE,
-                               "y-fill", FALSE,
-                               NULL);
-
-  g_object_unref (dragged);
-}
-
-static void
 nbtk_table_show_all (ClutterActor *table)
 {
   NbtkTablePrivate *priv = NBTK_TABLE (table)->priv;
@@ -1165,7 +1134,6 @@ nbtk_table_class_init (NbtkTableClass *klass)
   GParamSpec *pspec;
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  NbtkWidgetClass *widget_class = NBTK_WIDGET_CLASS (klass);
 
   /* NbtkWidgetClass *nbtk_widget_class = NBTK_WIDGET_CLASS (klass); */
 
@@ -1183,8 +1151,6 @@ nbtk_table_class_init (NbtkTableClass *klass)
   actor_class->get_preferred_height = nbtk_table_get_preferred_height;
   actor_class->show_all = nbtk_table_show_all;
   actor_class->hide_all = nbtk_table_hide_all;
-
-  widget_class->dnd_dropped = nbtk_table_dnd_dropped;
 
   pspec = g_param_spec_boolean ("homogeneous",
                                 "Homogeneous",

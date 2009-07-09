@@ -55,7 +55,7 @@ enum {
   CHILD_PROP_ALLOCATE_HIDDEN,
 };
 
-G_DEFINE_TYPE (NbtkTableChild, nbtk_table_child, NBTK_TYPE_WIDGET_CHILD);
+G_DEFINE_TYPE (NbtkTableChild, nbtk_table_child, CLUTTER_TYPE_CHILD_META);
 
 static void
 table_child_set_property (GObject      *gobject,

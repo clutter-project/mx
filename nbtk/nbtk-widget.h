@@ -32,37 +32,6 @@
 
 G_BEGIN_DECLS
 
-#define NBTK_TYPE_WIDGET_CHILD                  (nbtk_widget_child_get_type ())
-#define NBTK_WIDGET_CHILD(obj)                  (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_WIDGET_CHILD, NbtkWidgetChild))
-#define NBTK_IS_WIDGET_CHILD(obj)               (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NBTK_TYPE_WIDGET_CHILD))
-#define NBTK_WIDGET_CHILD_CLASS(klass)          (G_TYPE_CHECK_CLASS_CAST ((klass), NBTK_TYPE_WIDGET_CHILD, NbtkWidgetChildClass))
-#define NBTK_IS_WIDGET_CHILD_CLASS(klass)       (G_TYPE_CHECK_CLASS_TYPE ((klass), NBTK_TYPE_WIDGET_CHILD))
-#define NBTK_WIDGET_CHILD_GET_CLASS(obj)        (G_TYPE_INSTANCE_GET_CLASS ((obj), NBTK_TYPE_WIDGET_CHILD, NbtkWidgetChildClass))
-
-typedef struct _NbtkWidgetChild                 NbtkWidgetChild;
-typedef struct _NbtkWidgetChildClass            NbtkWidgetChildClass;
-
-#ifndef NBTK_DISABLE_DEPRECATED
-/**
- * NbtkWidgetChild:
- *
- * Deprecated: please do not use NbtkWidgetChild
- */
-struct _NbtkWidgetChild
-{
-  ClutterChildMeta parent_instance;
-
-  guint dnd_disabled : 1;
-};
-#endif /* NBTK_DISABLE_DEPRECATED */
-
-struct _NbtkWidgetChildClass
-{
-  ClutterChildMetaClass parent_class;
-};
-
-GType nbtk_widget_child_get_type (void) G_GNUC_CONST;
-
 #define NBTK_TYPE_WIDGET                 (nbtk_widget_get_type ())
 #define NBTK_WIDGET(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), NBTK_TYPE_WIDGET, NbtkWidget))
 #define NBTK_IS_WIDGET(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), NBTK_TYPE_WIDGET))
@@ -103,38 +72,6 @@ struct _NbtkWidgetClass
   void (* draw_background) (NbtkWidget         *self,
                             ClutterActor       *background,
                             const ClutterColor *color);
-
-  /* signals */
-  void (* dnd_begin)     (NbtkWidget   *self,
-			  ClutterActor *dragged,
-			  ClutterActor *icon,
-			  gint          x,
-			  gint          y);
-  void (* dnd_motion)    (NbtkWidget   *self,
-			  ClutterActor *dragged,
-			  ClutterActor *icon,
-			  gint          x,
-			  gint          y);
-  void (* dnd_end)       (NbtkWidget   *self,
-			  ClutterActor *dragged,
-			  ClutterActor *icon,
-			  gint          x,
-			  gint          y);
-  void (* dnd_dropped)   (NbtkWidget   *self,
-			  ClutterActor *dragged,
-			  ClutterActor *icon,
-			  gint          x,
-			  gint          y);
-  void (* dnd_enter)     (NbtkWidget   *self,
-			  ClutterActor *dragged,
-			  ClutterActor *icon,
-			  gint          x,
-			  gint          y);
-  void (* dnd_leave)     (NbtkWidget   *self,
-			  ClutterActor *dragged,
-			  ClutterActor *icon,
-			  gint          x,
-			  gint          y);
 };
 
 GType nbtk_widget_get_type (void) G_GNUC_CONST;
@@ -145,14 +82,6 @@ G_CONST_RETURN gchar *nbtk_widget_get_style_pseudo_class (NbtkWidget   *actor);
 void                  nbtk_widget_set_style_class_name   (NbtkWidget   *actor,
                                                           const gchar  *style_class);
 G_CONST_RETURN gchar *nbtk_widget_get_style_class_name   (NbtkWidget   *actor);
-
-guint                 nbtk_widget_get_dnd_threshold      (NbtkWidget   *actor);
-void                  nbtk_widget_set_dnd_threshold      (NbtkWidget   *actor,
-                                                          guint         threshold);
-void                  nbtk_widget_setup_child_dnd        (NbtkWidget   *actor,
-                                                          ClutterActor *child);
-void                  nbtk_widget_undo_child_dnd         (NbtkWidget   *actor,
-                                                          ClutterActor *child);
 
 
 void     nbtk_widget_set_has_tooltip (NbtkWidget *widget, gboolean has_tooltip);
