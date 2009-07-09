@@ -127,7 +127,8 @@ dnl ***************************************************************************
 
 AM_PROG_LIBTOOL
 
-PKG_CHECK_MODULES(NBTK, [clutter-0.9 >= 0.9.6 clutter-imcontext-0.1 libccss-1 gio-2.0])
+NBTK_REQUIRES="clutter-0.9 >= 0.9.6 clutter-imcontext-0.1 libccss-1 = 0.3.1 gio-2.0"
+PKG_CHECK_MODULES(NBTK, [$NBTK_REQUIRES])
 PKG_CHECK_MODULES(GTK, [gtk+-2.0])
 
 # check for gtk-doc
