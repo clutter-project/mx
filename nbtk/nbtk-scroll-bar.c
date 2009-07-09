@@ -67,6 +67,8 @@ struct _NbtkScrollBarPrivate
   enum { NONE, UP, DOWN }  paging_direction;
   guint              paging_source_id;
   guint              paging_event_no;
+
+  ClutterAnimation  *paging_animation;
 };
 
 enum
@@ -594,9 +596,15 @@ trough_paging_cb (NbtkScrollBar *self)
   gdouble page_increment;
   gboolean ret;
 
+  gulong mode;
+  ClutterAnimation *a;
+  GValue v = { 0, };
+  ClutterTimeline *t;
+
   if (self->priv->paging_event_no == 0)
     {
       /* Scroll on after initial timeout. */
+      mode = CLUTTER_EASE_OUT_CUBIC;
       ret = FALSE;
       self->priv->paging_event_no = 1;
       self->priv->paging_source_id = g_timeout_add (
@@ -608,6 +616,7 @@ trough_paging_cb (NbtkScrollBar *self)
     {
       /* Scroll on after subsequent timeout. */
       ret = FALSE;
+      mode = CLUTTER_EASE_IN_CUBIC;
       self->priv->paging_event_no = 2;
       self->priv->paging_source_id = g_timeout_add (
                                       PAGING_SUBSEQUENT_REPEAT_TIMEOUT,
@@ -618,6 +627,7 @@ trough_paging_cb (NbtkScrollBar *self)
     {
       /* Keep scrolling. */
       ret = TRUE;
+      mode = CLUTTER_LINEAR;
       self->priv->paging_event_no++;
     }
 
@@ -662,7 +672,24 @@ trough_paging_cb (NbtkScrollBar *self)
       value -= page_increment;
     }
 
-  nbtk_adjustment_set_value (self->priv->adjustment, value);
+  if (self->priv->paging_animation)
+    {
+      clutter_animation_completed (self->priv->paging_animation);
+      g_object_unref (self->priv->paging_animation);
+    }
+
+  /* FIXME: Creating a new animation for each scroll is probably not the best
+   * idea, but it's a lot less involved than extenind the current animation */
+  a = self->priv->paging_animation = g_object_new (CLUTTER_TYPE_ANIMATION,
+                                                   "object", self->priv->adjustment,
+                                                   "duration", PAGING_SUBSEQUENT_REPEAT_TIMEOUT,
+                                                   "mode", mode,
+                                                   NULL);
+  g_value_init (&v, G_TYPE_DOUBLE);
+  g_value_set_double (&v, value);
+  clutter_animation_bind (self->priv->paging_animation, "value", &v);
+  t = clutter_animation_get_timeline (self->priv->paging_animation);
+  clutter_timeline_start (t);
 
   return ret;
 }
