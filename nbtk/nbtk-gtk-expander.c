@@ -182,7 +182,10 @@ nbtk_gtk_expander_size_allocate (GtkWidget     *widget,
       label_alloc.height = label_req.height;
 
       if (priv->has_indicator)
-        label_alloc.x += priv->indicator_size + priv->indicator_padding;
+        {
+          label_alloc.x += priv->indicator_size + priv->indicator_padding;
+          label_alloc.width -= priv->indicator_size + priv->indicator_padding;
+        }
 
       gtk_widget_size_allocate (label, &label_alloc);
 
