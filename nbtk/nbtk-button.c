@@ -657,7 +657,7 @@ nbtk_button_set_label (NbtkButton  *button,
       label = g_object_new (CLUTTER_TYPE_TEXT,
                             "text", priv->text,
                             "line-alignment", PANGO_ALIGN_CENTER,
-                            "ellipsize", PANGO_ELLIPSIZE_MIDDLE,
+                            "ellipsize", PANGO_ELLIPSIZE_END,
                             "use-markup", TRUE,
                             NULL);
       nbtk_bin_set_child ((NbtkBin*) button, label);
