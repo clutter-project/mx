@@ -153,6 +153,7 @@ AC_CONFIG_FILES([
         examples/Makefile
         nbtk/Makefile
         nbtk/nbtk-version.h
+        po/Makefile.in
         tests/Makefile
 ])
 
