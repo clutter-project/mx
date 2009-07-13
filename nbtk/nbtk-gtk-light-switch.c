@@ -148,7 +148,7 @@ draw (GtkWidget *lightswitch,
   g_object_unref (context);
   pango_layout_set_font_description (layout,
                                      style->font_desc);
-  pango_layout_set_text (layout, _ ("On"), -1);
+  pango_layout_set_text (layout, _("On"), -1);
   pango_layout_get_size (layout,
                          &label_width,
                          &label_height);
@@ -164,7 +164,7 @@ draw (GtkWidget *lightswitch,
                      - (label_height / PANGO_SCALE)) / 2,
                     layout);
   /* Draw the second label; "Off" */
-  pango_layout_set_text (layout, _ ("Off"), -1);
+  pango_layout_set_text (layout, _("Off"), -1);
   pango_layout_get_size (layout,
                          &label_width,
                          &label_height);
@@ -217,9 +217,9 @@ nbtk_gtk_light_switch_style_set (GtkWidget *lightswitch,
   gint on_width, on_height;
 
   layout = gtk_widget_create_pango_layout (GTK_WIDGET (lightswitch), NULL);
-  pango_layout_set_text (layout, _ ("Off"), -1);
+  pango_layout_set_text (layout, _("Off"), -1);
   pango_layout_get_pixel_size (layout, &off_width, &off_height);
-  pango_layout_set_text (layout, _ ("On"), -1);
+  pango_layout_set_text (layout, _("On"), -1);
   pango_layout_get_pixel_size (layout, &on_width, &on_height);
   g_object_unref (layout);
 
