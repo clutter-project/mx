@@ -613,9 +613,7 @@ nbtk_entry_key_press_event (ClutterActor    *actor,
       return TRUE;
     }
 
-  clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
-
-  return TRUE;
+  return clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
 }
 
 static gboolean
@@ -624,9 +622,7 @@ nbtk_entry_key_release_event (ClutterActor    *actor,
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
 
-  clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
-
-  return TRUE;
+  return clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
 }
 
 static gboolean
@@ -637,9 +633,7 @@ nbtk_entry_button_press_event (ClutterActor       *actor,
 
   clutter_actor_grab_key_focus (actor);
 
-  clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
-
-  return TRUE;
+  return clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
 }
 
 static gboolean
@@ -648,9 +642,7 @@ nbtk_entry_button_release_event (ClutterActor       *actor,
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
 
-  clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
-
-  return TRUE;
+  return clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
 }
 
 static gboolean
@@ -659,9 +651,7 @@ nbtk_entry_motion_event (ClutterActor       *actor,
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
 
-  clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
-
-  return TRUE;
+  return clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
 }
 
 static void
