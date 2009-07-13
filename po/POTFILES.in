@@ -1,4 +1,3 @@
 # List of source files containing translatable strings.
 
-src/main.c
 nbtk/nbtk-gtk-light-switch.c
