@@ -80,9 +80,6 @@ NbtkWidget *          nbtk_button_new_with_label (const gchar  *text);
 G_CONST_RETURN gchar *nbtk_button_get_label      (NbtkButton   *button);
 void                  nbtk_button_set_label      (NbtkButton   *button,
                                                   const gchar  *text);
-void                  nbtk_button_set_icon_from_file (NbtkButton *button,
-                                                      gchar      *filename);
-void                  nbtk_button_set_icon           (NbtkButton *button, ClutterActor *icon);
 void                  nbtk_button_set_toggle_mode    (NbtkButton *button, gboolean toggle);
 gboolean              nbtk_button_get_toggle_mode    (NbtkButton *button);
 void                  nbtk_button_set_checked        (NbtkButton *button, gboolean checked);
