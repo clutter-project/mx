@@ -728,10 +728,9 @@ trough_button_release_event_cb (ClutterActor       *actor,
     {
       g_source_remove (self->priv->paging_source_id);
       self->priv->paging_source_id = 0;
-      return TRUE;
     }
 
-  return FALSE;
+  return TRUE;
 }
 
 static gboolean
