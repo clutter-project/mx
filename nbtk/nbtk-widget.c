@@ -133,6 +133,10 @@ nbtk_widget_set_property (GObject      *gobject,
       nbtk_widget_set_has_tooltip (actor, g_value_get_boolean (value));
       break;
 
+    case PROP_TOOLTIP_TEXT:
+      nbtk_widget_set_tooltip_text (actor, g_value_get_string (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
