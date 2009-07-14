@@ -47,7 +47,7 @@ m4_define([lt_revision], [nbtk_interface_age])
 m4_define([lt_age], [m4_eval(nbtk_binary_age - nbtk_interface_age)])
 NBTK_LT_CURRENT=lt_current
 NBTK_LT_REV=lt_revision
-NBTKLT_AGE=lt_age
+NBTK_LT_AGE=lt_age
 NBTK_LT_VERSION="$NBTK_LT_CURRENT:$NBTK_LT_REV:$NBTK_LT_AGE"
 NBTK_LT_LDFLAGS="-version-info $NBTK_LT_VERSION"
 
