@@ -433,7 +433,7 @@ nbtk_box_layout_get_preferred_width (ClutterActor *actor,
     }
 
 
-  if (!priv->is_vertical)
+  if (!priv->is_vertical && n_children > 1)
     {
       if (min_width_p)
         *min_width_p += priv->spacing * (n_children - 1);
@@ -488,7 +488,7 @@ nbtk_box_layout_get_preferred_height (ClutterActor *actor,
         }
     }
 
-  if (priv->is_vertical)
+  if (priv->is_vertical && n_children > 1)
     {
       if (min_height_p)
         *min_height_p += priv->spacing * (n_children - 1);
