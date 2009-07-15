@@ -76,6 +76,7 @@ nbtk_widget_hide_tooltip
 nbtk_widget_set_has_tooltip
 nbtk_widget_set_tooltip_text
 nbtk_widget_show_tooltip
+nbtk_widget_draw_background
 <SUBSECTION Standard>
 nbtk_widget_get_type
 NBTK_TYPE_WIDGET

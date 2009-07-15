@@ -1322,3 +1322,30 @@ nbtk_widget_hide_tooltip (NbtkWidget *widget)
   if (widget->priv->tooltip)
     nbtk_tooltip_hide (widget->priv->tooltip);
 }
+
+/**
+ * nbtk_widget_draw_background:
+ * @widget: a #NbtkWidget
+ *
+ * Invokes #NbtkWidget::draw_background() using the default background
+ * image and/or color from the @widget style
+ *
+ * This function should be used by subclasses of #NbtkWidget that override
+ * the paint() virtual function and cannot chain up
+ */
+void
+nbtk_widget_draw_background (NbtkWidget *self)
+{
+  NbtkWidgetPrivate *priv;
+  NbtkWidgetClass *klass;
+
+  g_return_if_fail (NBTK_IS_WIDGET (self));
+
+  priv = self->priv;
+
+  klass = NBTK_WIDGET_GET_CLASS (self);
+  klass->draw_background (NBTK_WIDGET (self),
+                          priv->border_image,
+                          priv->bg_color);
+
+}
