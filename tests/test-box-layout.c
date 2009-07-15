@@ -32,7 +32,7 @@ find_last_child (ClutterActor *actor, ClutterActor **child)
 void
 enter_event (ClutterActor *actor, ClutterEvent *event, gpointer data)
 {
-  ClutterColor color = { 0xff, 0xff, 0xff, 0xff };
+  ClutterColor color = { 0x00, 0x00, 0x00, 0xff };
   clutter_rectangle_set_border_width (CLUTTER_RECTANGLE (actor), 2);
   clutter_rectangle_set_border_color (CLUTTER_RECTANGLE (actor), &color);
 }
@@ -100,6 +100,20 @@ key_release_cb (ClutterActor    *actor,
 
       g_object_get (actor, "clip-to-allocation", &clip, NULL);
       g_object_set (actor, "clip-to-allocation", !clip, NULL);
+    }
+
+  if (event->keyval == 's')
+    {
+      guint spacing;
+
+      spacing = nbtk_box_layout_get_spacing (box);
+
+      if (spacing > 6)
+        spacing = 0;
+      else
+        spacing++;
+
+      nbtk_box_layout_set_spacing (box, spacing);
     }
 
   return FALSE;

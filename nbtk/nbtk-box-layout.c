@@ -46,6 +46,7 @@ enum {
 
   PROP_VERTICAL,
   PROP_PACK_START,
+  PROP_SPACING,
 
   PROP_HADJUST,
   PROP_VADJUST
@@ -54,6 +55,8 @@ enum {
 struct _NbtkBoxLayoutPrivate
 {
   GList *children;
+
+  guint spacing;
 
   guint is_vertical : 1;
   guint is_pack_start : 1;
@@ -316,6 +319,10 @@ nbtk_box_layout_get_property (GObject    *object,
       g_value_set_boolean (value, priv->is_pack_start);
       break;
 
+    case PROP_SPACING:
+      g_value_set_uint (value, priv->spacing);
+      break;
+
     case PROP_HADJUST :
       scrollable_get_adjustments (NBTK_SCROLLABLE (object), &adjustment, NULL);
       g_value_set_object (value, adjustment);
@@ -345,6 +352,10 @@ nbtk_box_layout_set_property (GObject *object, guint property_id,
 
     case PROP_PACK_START:
       nbtk_box_layout_set_pack_start (box, g_value_get_boolean (value));
+      break;
+
+    case PROP_SPACING:
+      nbtk_box_layout_set_spacing (box, g_value_get_uint (value));
       break;
 
     case PROP_HADJUST :
@@ -385,6 +396,7 @@ nbtk_box_layout_get_preferred_width (ClutterActor *actor,
 {
   NbtkBoxLayoutPrivate *priv = NBTK_BOX_LAYOUT (actor)->priv;
   GList *l;
+  gint n_children = 0;
 
   if (min_width_p)
     *min_width_p = 0;
@@ -394,6 +406,8 @@ nbtk_box_layout_get_preferred_width (ClutterActor *actor,
   for (l = priv->children; l; l = g_list_next (l))
     {
       gfloat child_min = 0, child_nat = 0;
+
+      n_children++;
 
       clutter_actor_get_preferred_width ((ClutterActor*) l->data,
                                          -1,
@@ -418,6 +432,16 @@ nbtk_box_layout_get_preferred_width (ClutterActor *actor,
         }
     }
 
+
+  if (!priv->is_vertical)
+    {
+      if (min_width_p)
+        *min_width_p += priv->spacing * (n_children - 1);
+
+      if (natural_width_p)
+        *natural_width_p += priv->spacing * (n_children - 1);
+    }
+
 }
 
 static void
@@ -428,6 +452,7 @@ nbtk_box_layout_get_preferred_height (ClutterActor *actor,
 {
   NbtkBoxLayoutPrivate *priv = NBTK_BOX_LAYOUT (actor)->priv;
   GList *l;
+  gint n_children = 0;
 
   if (min_height_p)
     *min_height_p = 0;
@@ -437,6 +462,8 @@ nbtk_box_layout_get_preferred_height (ClutterActor *actor,
   for (l = priv->children; l; l = g_list_next (l))
     {
       gfloat child_min = 0, child_nat = 0;
+
+      n_children++;
 
       clutter_actor_get_preferred_height ((ClutterActor*) l->data,
                                           -1,
@@ -459,6 +486,15 @@ nbtk_box_layout_get_preferred_height (ClutterActor *actor,
           if (natural_height_p)
             *natural_height_p += child_nat;
         }
+    }
+
+  if (priv->is_vertical)
+    {
+      if (min_height_p)
+        *min_height_p += priv->spacing * (n_children - 1);
+
+      if (natural_height_p)
+        *natural_height_p += priv->spacing * (n_children - 1);
     }
 }
 
@@ -539,7 +575,7 @@ nbtk_box_layout_allocate (ClutterActor          *actor,
           child_box.x1 = 0;
           child_box.x2 = (box->x2 - box->x1);
           clutter_actor_allocate (child, &child_box, flags);
-          position += child_nat;
+          position += (child_nat + priv->spacing);
         }
       else
         {
@@ -552,7 +588,7 @@ nbtk_box_layout_allocate (ClutterActor          *actor,
           child_box.y1 = 0;
           child_box.y2 = (box->y2 - box->y1);
           clutter_actor_allocate (child, &child_box, flags);
-          position += child_nat;
+          position += (child_nat + priv->spacing);
         }
 
       if (priv->is_pack_start)
@@ -708,6 +744,12 @@ nbtk_box_layout_class_init (NbtkBoxLayoutClass *klass)
                                 NBTK_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_PACK_START, pspec);
 
+  pspec = g_param_spec_uint ("spacing",
+                             "Spacing",
+                             "Spacing between children",
+                             0, G_MAXUINT, 0,
+                             NBTK_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_SPACING, pspec);
 
   /* NbtkScrollable properties */
   g_object_class_override_property (object_class,
@@ -742,6 +784,8 @@ nbtk_box_layout_set_vertical (NbtkBoxLayout *box,
     {
       box->priv->is_vertical = vertical;
       clutter_actor_queue_relayout ((ClutterActor*) box);
+
+      g_object_notify (G_OBJECT (box), "vertical");
     }
 }
 
@@ -763,6 +807,8 @@ nbtk_box_layout_set_pack_start (NbtkBoxLayout *box,
     {
       box->priv->is_pack_start = pack_start;
       clutter_actor_queue_relayout ((ClutterActor*) box);
+
+      g_object_notify (G_OBJECT (box), "pack-start");
     }
 }
 
@@ -772,4 +818,48 @@ nbtk_box_layout_get_pack_start (NbtkBoxLayout *box)
   g_return_val_if_fail (NBTK_IS_BOX_LAYOUT (box), FALSE);
 
   return box->priv->is_pack_start;
+}
+
+/**
+ * nbtk_box_layout_set_spacing:
+ * @box: A #NbtkBoxLayout
+ * @spacing: the spacing value
+ *
+ * Set the amount of spacing between children in pixels
+ *
+ */
+void
+nbtk_box_layout_set_spacing (NbtkBoxLayout *box,
+                             guint          spacing)
+{
+  NbtkBoxLayoutPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_BOX_LAYOUT (box));
+
+  priv = box->priv;
+
+  if (priv->spacing != spacing)
+    {
+      priv->spacing = spacing;
+
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (box));
+
+      g_object_notify (G_OBJECT (box), "spacing");
+    }
+}
+
+/**
+ * nbtk_box_layout_get_spacing:
+ * @box: A #NbtkBoxLayout
+ *
+ * Get the spacing between children in pixels
+ *
+ * Returns: the spacing value
+ */
+guint
+nbtk_box_layout_get_spacing (NbtkBoxLayout *box)
+{
+  g_return_val_if_fail (NBTK_IS_BOX_LAYOUT (box), 0);
+
+  return box->priv->spacing;
 }

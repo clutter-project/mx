@@ -76,6 +76,9 @@ gboolean nbtk_box_layout_get_vertical (NbtkBoxLayout *box);
 void nbtk_box_layout_set_pack_start (NbtkBoxLayout *box, gboolean pack_start);
 gboolean nbtk_box_layout_get_pack_start (NbtkBoxLayout *box);
 
+void nbtk_box_layout_set_spacing (NbtkBoxLayout *box, guint spacing);
+guint nbtk_box_layout_get_spacing (NbtkBoxLayout *box);
+
 G_END_DECLS
 
 #endif /* _NBTK_BOX_LAYOUT_H */
