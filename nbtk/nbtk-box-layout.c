@@ -410,7 +410,7 @@ nbtk_box_layout_get_preferred_width (ClutterActor *actor,
       n_children++;
 
       clutter_actor_get_preferred_width ((ClutterActor*) l->data,
-                                         -1,
+                                         (!priv->is_vertical) ? for_height : -1,
                                          &child_min,
                                          &child_nat);
 
@@ -466,7 +466,7 @@ nbtk_box_layout_get_preferred_height (ClutterActor *actor,
       n_children++;
 
       clutter_actor_get_preferred_height ((ClutterActor*) l->data,
-                                          -1,
+                                          (priv->is_vertical) ? for_width : -1,
                                           &child_min,
                                           &child_nat);
 
