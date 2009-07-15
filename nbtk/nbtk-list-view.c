@@ -219,6 +219,7 @@ model_changed_cb (ClutterModel *model,
           child = G_OBJECT (new_child);
           /* we've changed the number of children, so update the children list
            */
+          g_list_free (children);
           children
             = clutter_container_get_children (CLUTTER_CONTAINER (list_view));
           child_n = g_list_length (children);
@@ -245,6 +246,7 @@ model_changed_cb (ClutterModel *model,
       clutter_model_iter_next (iter);
     }
 
+  g_list_free (children);
   children = clutter_container_get_children (CLUTTER_CONTAINER (list_view));
   child_n = g_list_length (children);
 
@@ -263,10 +265,12 @@ model_changed_cb (ClutterModel *model,
       /* remove some children */
       clutter_container_remove_actor (CLUTTER_CONTAINER (list_view),
                                       child);
-
+      g_list_free (children);
       children = clutter_container_get_children (CLUTTER_CONTAINER (list_view));
       child_n = g_list_length (children);
     }
+
+  g_list_free (children);
 
   if (iter)
     g_object_unref (iter);
