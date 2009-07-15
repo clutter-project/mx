@@ -160,7 +160,8 @@ draggable_motion (DragContext        *context,
 
   if (context->emit_delayed_press)
     {
-      if (delta_x >= context->threshold || delta_y >= context->threshold)
+      if (ABS (delta_x) >= context->threshold
+          || ABS (delta_y) >= context->threshold)
         {
           ClutterActor *stage;
 
