@@ -375,7 +375,7 @@ nbtk_grid_apply_transform (ClutterActor *a, CoglMatrix *m)
   else
     y = 0;
 
-  cogl_matrix_translate (m , -x, -y, 0);
+  cogl_matrix_translate (m , (int) -x, (int) -y, 0);
 }
 
 static void
