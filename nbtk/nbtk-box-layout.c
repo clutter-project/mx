@@ -400,12 +400,16 @@ nbtk_box_layout_get_preferred_width (ClutterActor *actor,
 
   if (min_width_p)
     *min_width_p = 0;
+
   if (natural_width_p)
     *natural_width_p = 0;
 
   for (l = priv->children; l; l = g_list_next (l))
     {
       gfloat child_min = 0, child_nat = 0;
+
+      if (!CLUTTER_ACTOR_IS_VISIBLE ((ClutterActor*) l->data))
+        continue;
 
       n_children++;
 
@@ -456,12 +460,16 @@ nbtk_box_layout_get_preferred_height (ClutterActor *actor,
 
   if (min_height_p)
     *min_height_p = 0;
+
   if (natural_height_p)
     *natural_height_p = 0;
 
   for (l = priv->children; l; l = g_list_next (l))
     {
       gfloat child_min = 0, child_nat = 0;
+
+      if (!CLUTTER_ACTOR_IS_VISIBLE ((ClutterActor*) l->data))
+        continue;
 
       n_children++;
 
@@ -565,6 +573,14 @@ nbtk_box_layout_allocate (ClutterActor          *actor,
       gfloat child_nat;
       ClutterActorBox child_box;
 
+      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+        {
+          if (priv->is_pack_start)
+            l = g_list_previous (l);
+          else
+            l = g_list_next (l);
+        }
+
       if (priv->is_vertical)
         {
           clutter_actor_get_preferred_height (child, (box->x2 - box->x1),
@@ -651,6 +667,9 @@ nbtk_box_layout_paint (ClutterActor *actor)
     {
       ClutterActor *child = (ClutterActor*) l->data;
 
+      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
+
       clutter_actor_get_allocation_box (child, &child_b);
 
       if ((child_b.x1 < box_b.x2)
@@ -694,6 +713,9 @@ nbtk_box_layout_pick (ClutterActor *actor,
   for (l = priv->children; l; l = g_list_next (l))
     {
       ClutterActor *child = (ClutterActor*) l->data;
+
+      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
 
       clutter_actor_get_allocation_box (child, &child_b);
 
