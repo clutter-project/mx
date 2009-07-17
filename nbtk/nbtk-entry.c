@@ -368,16 +368,17 @@ nbtk_entry_allocate (ClutterActor          *actor,
   ClutterActorBox child_box, icon_box;
   NbtkPadding padding;
   gfloat icon_w, icon_h;
+  gfloat entry_h, min_h, pref_h, avail_h;
 
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 
   parent_class = CLUTTER_ACTOR_CLASS (nbtk_entry_parent_class);
   parent_class->allocate (actor, box, flags);
 
+  avail_h = (box->y2 - box->y1) - padding.top - padding.bottom;
+
   child_box.x1 = padding.left;
-  child_box.y1 = padding.top;
   child_box.x2 = box->x2 - box->x1 - padding.right;
-  child_box.y2 = box->y2 - box->y1 - padding.bottom;
 
   if (priv->primary_icon)
     {
@@ -389,7 +390,7 @@ nbtk_entry_allocate (ClutterActor          *actor,
       icon_box.x1 = padding.left;
       icon_box.x2 = icon_box.x1 + icon_w;
 
-      icon_box.y1 = (int) (box->y2 - box->y1) / 2 - (int) (icon_h / 2);
+      icon_box.y1 = (int) (padding.top + avail_h / 2 - icon_h / 2);
       icon_box.y2 = icon_box.y1 + icon_h;
 
       clutter_actor_allocate (priv->primary_icon,
@@ -410,7 +411,7 @@ nbtk_entry_allocate (ClutterActor          *actor,
       icon_box.x2 = (box->x2 - box->x1) - padding.right;
       icon_box.x1 = icon_box.x2 - icon_w;
 
-      icon_box.y1 = (int) (box->y2 - box->y1) / 2 - (int) (icon_h / 2);
+      icon_box.y1 = (int) (padding.top + avail_h / 2 - icon_h / 2);
       icon_box.y2 = icon_box.y1 + icon_h;
 
       clutter_actor_allocate (priv->secondary_icon,
@@ -421,6 +422,13 @@ nbtk_entry_allocate (ClutterActor          *actor,
       child_box.x2 -= icon_w - priv->spacing;
     }
 
+  clutter_actor_get_preferred_height (priv->entry, child_box.x2 - child_box.x1,
+                                      &min_h, &pref_h);
+
+  entry_h = CLAMP (pref_h, min_h, avail_h);
+
+  child_box.y1 = (int) (padding.top + avail_h / 2 - entry_h / 2);
+  child_box.y2 = child_box.y1 + entry_h;
 
   clutter_actor_allocate (priv->entry, &child_box, flags);
 }
