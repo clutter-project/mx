@@ -394,6 +394,9 @@ nbtk_box_layout_get_preferred_width (ClutterActor *actor,
   if (natural_width_p)
     *natural_width_p = padding.left + padding.right;
 
+  if (priv->children == NULL)
+    return;
+
   for (l = priv->children; l; l = g_list_next (l))
     {
       gfloat child_min = 0, child_nat = 0;
@@ -435,7 +438,6 @@ nbtk_box_layout_get_preferred_width (ClutterActor *actor,
       if (natural_width_p)
         *natural_width_p += priv->spacing * (n_children - 1);
     }
-
 }
 
 static void
@@ -456,6 +458,9 @@ nbtk_box_layout_get_preferred_height (ClutterActor *actor,
 
   if (natural_height_p)
     *natural_height_p = padding.top + padding.bottom;
+
+  if (priv->children == NULL)
+    return;
 
   for (l = priv->children; l; l = g_list_next (l))
     {
@@ -512,6 +517,9 @@ nbtk_box_layout_allocate (ClutterActor          *actor,
 
   CLUTTER_ACTOR_CLASS (nbtk_box_layout_parent_class)->allocate (actor, box,
                                                                 flags);
+
+  if (priv->children == NULL)
+    return;
 
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
   avail_width  = box->x2 - box->x1
@@ -653,6 +661,11 @@ nbtk_box_layout_paint (ClutterActor *actor)
   ClutterActorBox child_b;
   ClutterActorBox box_b;
 
+  CLUTTER_ACTOR_CLASS (nbtk_box_layout_parent_class)->paint (actor);
+
+  if (priv->children == NULL)
+    return;
+
   if (priv->hadjustment)
     x = nbtk_adjustment_get_value (priv->hadjustment);
   else
@@ -662,8 +675,6 @@ nbtk_box_layout_paint (ClutterActor *actor)
     y = nbtk_adjustment_get_value (priv->vadjustment);
   else
     y = 0;
-
-  CLUTTER_ACTOR_CLASS (nbtk_box_layout_parent_class)->paint (actor);
 
   clutter_actor_get_allocation_box (actor, &box_b);
   box_b.x2 = (box_b.x2 - box_b.x1) + x;
@@ -680,10 +691,10 @@ nbtk_box_layout_paint (ClutterActor *actor)
 
       clutter_actor_get_allocation_box (child, &child_b);
 
-      if ((child_b.x1 < box_b.x2)
-          && (child_b.x2 > box_b.x1)
-          && (child_b.y1 < box_b.y2)
-          && (child_b.y2 > box_b.y1))
+      if ((child_b.x1 < box_b.x2) &&
+          (child_b.x2 > box_b.x1) &&
+          (child_b.y1 < box_b.y2) &&
+          (child_b.y2 > box_b.y1))
         {
           clutter_actor_paint (child);
         }
@@ -700,6 +711,11 @@ nbtk_box_layout_pick (ClutterActor *actor,
   ClutterActorBox child_b;
   ClutterActorBox box_b;
 
+  CLUTTER_ACTOR_CLASS (nbtk_box_layout_parent_class)->pick (actor, color);
+
+  if (priv->children == NULL)
+    return;
+
   if (priv->hadjustment)
     x = nbtk_adjustment_get_value (priv->hadjustment);
   else
@@ -709,8 +725,6 @@ nbtk_box_layout_pick (ClutterActor *actor,
     y = nbtk_adjustment_get_value (priv->vadjustment);
   else
     y = 0;
-
-  CLUTTER_ACTOR_CLASS (nbtk_box_layout_parent_class)->pick (actor, color);
 
   clutter_actor_get_allocation_box (actor, &box_b);
   box_b.x2 = (box_b.x2 - box_b.x1) + x;
