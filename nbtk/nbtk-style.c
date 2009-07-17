@@ -26,15 +26,14 @@
  */
 
 
-#ifndef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include <config.h>
 
 #include <stdlib.h>
 #include <string.h>
 
 #include <glib-object.h>
 #include <gobject/gvaluecollector.h>
+#include <glib/gi18n-lib.h>
 
 #include <clutter/clutter.h>
 
@@ -116,7 +115,7 @@ nbtk_style_real_load_from_file (NbtkStyle    *style,
     {
       internal_error = g_error_new (NBTK_STYLE_ERROR,
                                     NBTK_STYLE_ERROR_INVALID_FILE,
-                                    "Invalid theme file '%s'", filename);
+                                    _("Invalid theme file '%s'"), filename);
       g_propagate_error (error, internal_error);
       return FALSE;
     }
