@@ -376,19 +376,6 @@ nbtk_box_layout_set_property (GObject *object, guint property_id,
 }
 
 static void
-nbtk_box_layout_dispose (GObject *object)
-{
-  G_OBJECT_CLASS (nbtk_box_layout_parent_class)->dispose (object);
-}
-
-static void
-nbtk_box_layout_finalize (GObject *object)
-{
-  G_OBJECT_CLASS (nbtk_box_layout_parent_class)->finalize (object);
-}
-
-
-static void
 nbtk_box_layout_get_preferred_width (ClutterActor *actor,
                                      gfloat        for_height,
                                      gfloat       *min_width_p,
@@ -761,8 +748,6 @@ nbtk_box_layout_class_init (NbtkBoxLayoutClass *klass)
 
   object_class->get_property = nbtk_box_layout_get_property;
   object_class->set_property = nbtk_box_layout_set_property;
-  object_class->dispose = nbtk_box_layout_dispose;
-  object_class->finalize = nbtk_box_layout_finalize;
 
   actor_class->allocate = nbtk_box_layout_allocate;
   actor_class->get_preferred_width = nbtk_box_layout_get_preferred_width;
