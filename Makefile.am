@@ -1,6 +1,7 @@
 SUBDIRS = nbtk data examples tests docs build po
 
-GITIGNOREFILES=$(top_srcdir)/build/autotools
+GITIGNOREFILES= $(top_srcdir)/build/autotools\
+		$(top_srcdir)/docs/reference/libnbtk/tmpl
 
 ACLOCAL_AMFLAGS = -I build/autotools
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
