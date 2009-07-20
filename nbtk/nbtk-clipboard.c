@@ -128,7 +128,7 @@ nbtk_clipboard_provider (XEvent        *xev,
                        req_event->requestor,
                        req_event->property,
                        req_event->target,
-                       32,
+                       8,
                        PropModeReplace,
                        (guchar*) clipboard->priv->clipboard_text,
                        strlen (clipboard->priv->clipboard_text));
