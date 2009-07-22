@@ -122,9 +122,11 @@ draw (GtkWidget *lightswitch,
   GtkStyle     *style;
   PangoLayout  *layout;
   PangoContext *context;
+  GtkStateType state_type;
 
   priv = NBTK_GTK_LIGHT_SWITCH_GET_PRIVATE (lightswitch);
   style = lightswitch->style;
+  state_type = GTK_WIDGET_STATE (lightswitch);
 
   on_label_x = (priv->trough_width / 5) * 0.75;
   off_label_x = (priv->trough_width / 8) * 5;
@@ -132,7 +134,7 @@ draw (GtkWidget *lightswitch,
   /* draw the trough */
   gtk_paint_box (style,
                  lightswitch->window,
-                 (priv->active) ? GTK_STATE_SELECTED : GTK_STATE_NORMAL,
+                 (priv->active) ? GTK_STATE_SELECTED : state_type,
                  GTK_SHADOW_IN,
                  NULL,
                  NULL,
@@ -141,6 +143,24 @@ draw (GtkWidget *lightswitch,
                  0,
                  (priv->trough_width),
                  priv->switch_height);
+
+  if (state_type == GTK_STATE_INSENSITIVE)
+    {
+      context = gdk_pango_context_get ();
+      layout = pango_layout_new (context);
+      g_object_unref (context);
+
+      pango_layout_set_font_description (layout, style->font_desc);
+      pango_layout_set_text (layout, _("Unavailable"), -1);
+      pango_layout_get_size (layout, &label_width, &label_height);
+      gtk_paint_layout (style, lightswitch->window, state_type, FALSE,
+                        NULL, lightswitch, "lighswitch-label",
+                        (priv->trough_width - (label_width / PANGO_SCALE)) / 2,
+                        (priv->switch_height - (label_height / PANGO_SCALE)) / 2,
+                        layout);
+      g_object_unref (layout);
+      return;
+    }
 
   /* Draw the first label; "On" */
   context = gdk_pango_context_get ();
