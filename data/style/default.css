@@ -44,8 +44,8 @@ NbtkScrollBar
 
 NbtkScrollView
 {
-  scrollbar-width: 22;
-  scrollbar-height: 22;
+  scrollbar-width: 28;
+  scrollbar-height: 28;
 }
 
 NbtkScrollButton#backward-stepper

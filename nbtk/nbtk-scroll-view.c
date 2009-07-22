@@ -181,7 +181,7 @@ nbtk_scroll_view_get_preferred_width (ClutterActor *actor,
 
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
   nbtk_stylable_get (NBTK_STYLABLE (actor),
-                     "xthickness", &xthickness,
+                     "scrollbar-width", &xthickness,
                      NULL);
 
   /* Our natural width is the natural width of the child */
@@ -226,7 +226,7 @@ nbtk_scroll_view_get_preferred_height (ClutterActor *actor,
 
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
   nbtk_stylable_get (NBTK_STYLABLE (actor),
-                     "ythickness", &ythickness,
+                     "scrollbar-height", &ythickness,
                      NULL);
 
   /* Our natural height is the natural height of the child */
@@ -284,8 +284,8 @@ nbtk_scroll_view_allocate (ClutterActor          *actor,
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 
   nbtk_stylable_get (NBTK_STYLABLE (actor),
-                     "xthickness", &xthickness,
-                     "ythickness", &ythickness,
+                     "scrollbar-width", &xthickness,
+                     "scrollbar-height", &ythickness,
                      NULL);
   xthicknessu = CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll) ?
     xthickness : 0;
@@ -471,14 +471,14 @@ nbtk_stylable_iface_init (NbtkStylableIface *iface)
 
       is_initialized = TRUE;
 
-      pspec = g_param_spec_uint ("xthickness",
+      pspec = g_param_spec_uint ("scrollbar-width",
                                   "Vertical scroll-bar thickness",
                                   "Thickness of vertical scrollbar, in px",
                                   0, G_MAXUINT, 24,
                                   G_PARAM_READWRITE);
       nbtk_stylable_iface_install_property (iface, NBTK_TYPE_SCROLL_VIEW, pspec);
 
-      pspec = g_param_spec_uint ("ythickness",
+      pspec = g_param_spec_uint ("scrollbar-height",
                                   "Horizontal scroll-bar thickness",
                                   "Thickness of horizontal scrollbar, in px",
                                   0, G_MAXUINT, 24,
