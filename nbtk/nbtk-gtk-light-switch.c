@@ -21,6 +21,15 @@
 
 #include <glib/gi18n-lib.h>
 
+/* We use the special gcc constructor attribute so we can avoid requiring an
+ * init function to get translations to work! */
+void __attribute__ ((constructor))
+_start (void)
+{
+  bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
+  bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+}
+
 G_DEFINE_TYPE (NbtkGtkLightSwitch, nbtk_gtk_light_switch, GTK_TYPE_DRAWING_AREA)
 
 #define NBTK_GTK_LIGHT_SWITCH_GET_PRIVATE(o)                                 \
@@ -246,7 +255,7 @@ nbtk_gtk_light_switch_style_set (GtkWidget *lightswitch,
   label_width = MAX (off_width, on_width);
   label_height = MAX (off_height, on_height);
 
-  priv->trough_width = label_width * 5;
+  priv->trough_width = MAX (label_width * 5, 80);
   priv->switch_width = (priv->trough_width / 2) * 1.1;
   priv->switch_height = (label_height * 2) * 1.1;
 }
