@@ -110,7 +110,7 @@ AC_SUBST(NBTK_MAINTAINER_CFLAGS)
 dnl ***************************************************************************
 dnl Internationalization
 dnl ***************************************************************************
-GETTEXT_PACKAGE="nbtk-$(NBTK_API_VERSION)"
+GETTEXT_PACKAGE="nbtk-$NBTK_API_VERSION"
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [GETTEXT package name])
 ALL_LINGUAS="`grep -v '^#' "$srcdir/po/LINGUAS" | tr '\n' ' '`"
