@@ -178,7 +178,8 @@ draw (GtkWidget *lightswitch,
   pango_layout_set_font_description (layout,
                                      style->font_desc);
   /* TRANSLATORS: If this string takes more than four or five characters in
-   * your language, please use this symbol instead: ❙ */
+   * your language, please use the MEDIUM VERTICAL BAR unicode character
+   * instead */
   pango_layout_set_text (layout, _("On"), -1);
   pango_layout_get_size (layout,
                          &label_width,
@@ -196,7 +197,7 @@ draw (GtkWidget *lightswitch,
                     layout);
   /* Draw the second label; "Off" */
   /* TRANSLATORS: If this string takes more than four or five characters in
-   * your language, please use this symbol instead: ○ */
+   * your language, please use the ROUND CIRCLE unicode character instead */
   pango_layout_set_text (layout, _("Off"), -1);
   pango_layout_get_size (layout,
                          &label_width,
