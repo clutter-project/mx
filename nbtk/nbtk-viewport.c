@@ -264,10 +264,14 @@ nbtk_viewport_allocate (ClutterActor          *self,
   ClutterActor          *child;
   ClutterActorBox natural_box;
   gfloat     natural_width, natural_height;
+  gfloat     available_width, available_height;
 
   /* Chain up. */
   CLUTTER_ACTOR_CLASS (nbtk_viewport_parent_class)->
     allocate (self, box, flags);
+
+  available_width = box->x2 - box->x1;
+  available_height = box->y2 - box->y1;
 
   natural_box.x1 = 0;
   natural_box.y1 = 0;
@@ -282,8 +286,8 @@ nbtk_viewport_allocate (ClutterActor          *self,
     }
   else
     {
-      natural_box.x2 = box->x2 - box->x1;
-      natural_box.y2 = box->y2 - box->y1;
+      natural_box.x2 = available_width;
+      natural_box.y2 = available_height;
     }
 
   /* Refresh adjustments */
@@ -295,7 +299,7 @@ nbtk_viewport_allocate (ClutterActor          *self,
         {
           g_object_set (G_OBJECT (priv->hadjustment),
                        "lower", 0.0,
-                       "upper", (float) (natural_box.x2 - natural_box.x1),
+                       "upper", MAX (0, natural_width - available_width),
                        NULL);
 
           /* Make sure value is clamped */
@@ -307,7 +311,7 @@ nbtk_viewport_allocate (ClutterActor          *self,
         {
           g_object_set (G_OBJECT (priv->vadjustment),
                        "lower", 0.0,
-                       "upper", (float) (natural_box.y2 - natural_box.y1),
+                       "upper", MAX (0, natural_height - available_height),
                        NULL);
 
           prev_value = nbtk_adjustment_get_value (priv->vadjustment);
