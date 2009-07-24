@@ -239,9 +239,9 @@ nbtk_viewport_paint (ClutterActor *self)
 
   cogl_push_matrix ();
 
-  cogl_translate (priv->x * -1,
-                  priv->y * -1,
-                  priv->z * -1);
+  cogl_translate ((int) priv->x * -1,
+                  (int) priv->y * -1,
+                  (int) priv->z * -1);
 
   CLUTTER_ACTOR_CLASS (nbtk_viewport_parent_class)->paint (self);
 
