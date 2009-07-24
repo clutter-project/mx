@@ -588,12 +588,7 @@ nbtk_box_layout_allocate (ClutterActor          *actor,
       gfloat child_nat;
 
       if (!CLUTTER_ACTOR_IS_VISIBLE (child))
-        {
-          if (priv->is_pack_start)
-            l = g_list_previous (l);
-          else
-            l = g_list_next (l);
-        }
+        goto next_child;
 
       if (priv->is_vertical)
         {
@@ -622,6 +617,8 @@ nbtk_box_layout_allocate (ClutterActor          *actor,
 
           position += (child_nat + priv->spacing);
         }
+
+    next_child:
 
       if (priv->is_pack_start)
         l = g_list_previous (l);
