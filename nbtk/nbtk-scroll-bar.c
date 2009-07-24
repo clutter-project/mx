@@ -539,7 +539,7 @@ handle_capture_event_cb (ClutterActor       *trough,
   else if (clutter_event_type (event) == CLUTTER_BUTTON_RELEASE
 	   && ((ClutterButtonEvent*)event)->button == 1)
     {
-      ClutterActor *stage;
+      ClutterActor *stage, *target;
 
       stage = clutter_actor_get_stage(bar->priv->trough);
 
@@ -549,8 +549,21 @@ handle_capture_event_cb (ClutterActor       *trough,
 	  bar->priv->capture_handler = 0;
 	}
 
-      clutter_set_motion_events_enabled (TRUE); 
+      clutter_set_motion_events_enabled (TRUE);
       g_signal_emit (bar, signals[SCROLL_STOP], 0);
+
+      /* check if the mouse pointer has left the handle during the drag and
+       * remove the hover state if it has */
+      target = clutter_stage_get_actor_at_pos ((ClutterStage*) stage,
+                                               CLUTTER_PICK_REACTIVE,
+                                               ((ClutterButtonEvent*) event)->x,
+                                               ((ClutterButtonEvent*) event)->y);
+      if (target != bar->priv->handle)
+        {
+          nbtk_widget_set_style_pseudo_class ((NbtkWidget*) bar->priv->handle, NULL);
+        }
+
+
     }
 
   return TRUE;
