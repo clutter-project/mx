@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-07-20 09:20+0000\n"
+"POT-Creation-Date: 2009-07-22 16:49+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Tomás Galicia <tomas.galicia@intel.com>\n"
 "Language-Team: \n"
@@ -12,14 +12,18 @@ msgstr ""
 "X-Poedit-Language: Spanish\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: ../nbtk/nbtk-gtk-light-switch.c:151
-#: ../nbtk/nbtk-gtk-light-switch.c:222
+#: ../nbtk/nbtk-gtk-light-switch.c:154
+msgid "Unavailable"
+msgstr "No disponible"
+
+#: ../nbtk/nbtk-gtk-light-switch.c:171
+#: ../nbtk/nbtk-gtk-light-switch.c:242
 msgid "On"
 msgstr "Encendido"
 
 #. Draw the second label; "Off"
-#: ../nbtk/nbtk-gtk-light-switch.c:167
-#: ../nbtk/nbtk-gtk-light-switch.c:220
+#: ../nbtk/nbtk-gtk-light-switch.c:187
+#: ../nbtk/nbtk-gtk-light-switch.c:240
 msgid "Off"
 msgstr "Apagado"
 
