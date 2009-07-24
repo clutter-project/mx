@@ -328,8 +328,8 @@ nbtk_widget_allocate (ClutterActor          *actor,
       else
         {
           /* center the background on the widget */
-          frame_box.x1 = (int) ((box->x2 - box->x1) / 2) - (w / 2);
-          frame_box.y1 = (int) ((box->y2 - box->y1) / 2) - (h / 2);
+          frame_box.x1 = (int) (((box->x2 - box->x1) / 2) - (w / 2));
+          frame_box.y1 = (int) (((box->y2 - box->y1) / 2) - (h / 2));
           frame_box.x2 = frame_box.x1 + w;
           frame_box.y2 = frame_box.y1 + h;
         }
