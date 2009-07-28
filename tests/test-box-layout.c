@@ -43,6 +43,48 @@ leave_event (ClutterActor *actor, ClutterEvent *event, gpointer data)
   clutter_rectangle_set_border_width (CLUTTER_RECTANGLE (actor), 0);
 }
 
+void
+button_release_event (ClutterActor *actor, ClutterButtonEvent *event,
+                      ClutterContainer *box)
+{
+  gboolean xfill, yfill;
+  gint xalign, yalign;
+
+  if (event->button == 1)
+    {
+      clutter_container_child_get (box, actor,
+                                   "x-fill", &xfill,
+                                   "y-fill", &yfill,
+                                   NULL);
+
+      clutter_container_child_set (box, actor,
+                                   "x-fill", !xfill,
+                                   "y-fill", !yfill,
+                                   NULL);
+    }
+  else
+    {
+      clutter_container_child_get (box, actor,
+                                   "x-align", &xalign,
+                                   "y-align", &yalign,
+                                   NULL);
+
+      if (xalign < 2)
+        xalign++;
+      else
+        xalign = 0;
+
+      if (yalign < 2)
+        yalign++;
+      else
+        yalign = 0;
+
+      clutter_container_child_set (box, actor,
+                                   "x-align", xalign,
+                                   "y-align", yalign,
+                                   NULL);
+    }
+}
 
 void
 add_actor (ClutterContainer *container)
@@ -59,6 +101,8 @@ add_actor (ClutterContainer *container)
   clutter_actor_set_reactive (rect, TRUE);
   g_signal_connect (rect, "enter-event", G_CALLBACK (enter_event), NULL);
   g_signal_connect (rect, "leave-event", G_CALLBACK (leave_event), NULL);
+  g_signal_connect (rect, "button-release-event",
+                    G_CALLBACK (button_release_event), container);
 }
 
 gboolean
