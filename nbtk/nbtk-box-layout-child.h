@@ -59,10 +59,10 @@ struct _NbtkBoxLayoutChild
   ClutterChildMeta parent;
 
   gboolean expand;
-  gboolean x_fill;
-  gboolean y_fill;
-  NbtkAlign x_align;
-  NbtkAlign y_align;
+  gboolean x_fill : 1;
+  gboolean y_fill : 1;
+  NbtkAlign x_align : 2;
+  NbtkAlign y_align : 2;
 };
 
 struct _NbtkBoxLayoutChildClass
