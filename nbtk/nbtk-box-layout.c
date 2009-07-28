@@ -25,7 +25,7 @@
 
 #include "nbtk-private.h"
 #include "nbtk-scrollable.h"
-
+#include "nbtk-box-layout-child.h"
 
 
 
@@ -297,6 +297,8 @@ nbtk_box_container_iface_init (ClutterContainerIface *iface)
   iface->lower = nbtk_box_container_lower;
   iface->raise = nbtk_box_container_raise;
   iface->sort_depth_order = nbtk_box_container_sort_depth_order;
+
+  iface->child_meta_type = NBTK_TYPE_BOX_LAYOUT_CHILD;
 }
 
 
