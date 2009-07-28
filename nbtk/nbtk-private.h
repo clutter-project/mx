@@ -48,4 +48,6 @@ void _nbtk_bin_get_align_factors (NbtkBin *bin, gdouble *x_align, gdouble *y_ali
 /* used by NbtkTableChild to update row/column count */
 void _nbtk_table_update_row_col (NbtkTable *table, gint row, gint col);
 
+void _nbtk_allocate_fill (ClutterActor *child, ClutterActorBox *childbox, NbtkAlign x_align, NbtkAlign y_align, gboolean x_fill, gboolean y_fill);
+
 #endif /* __NBTK_PRIVATE_H__ */

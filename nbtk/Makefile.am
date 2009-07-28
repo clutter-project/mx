@@ -175,6 +175,7 @@ libnbtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	nbtk-tooltip.c 			\
 	nbtk-viewport.c 		\
 	nbtk-widget.c			\
+	nbtk-private.c			\
 	nbtk.h 				\
 	$(NULL)
 
