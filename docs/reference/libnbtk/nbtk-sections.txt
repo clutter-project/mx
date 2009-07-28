@@ -328,8 +328,6 @@ nbtk_button_new
 nbtk_button_new_with_label
 nbtk_button_get_label
 nbtk_button_set_label
-nbtk_button_set_icon_from_file
-nbtk_button_set_icon
 nbtk_button_set_toggle_mode
 nbtk_button_get_toggle_mode
 nbtk_button_set_checked
