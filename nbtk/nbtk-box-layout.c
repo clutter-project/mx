@@ -583,14 +583,25 @@ nbtk_box_layout_allocate (ClutterActor          *actor,
   else
     l = priv->children;
 
-  while (l)
+  for (l = (priv->is_pack_start) ? g_list_last (priv->children) : priv->children;
+       l;
+       l = (priv->is_pack_start) ? l->prev : l->next)
     {
       ClutterActor *child = (ClutterActor*) l->data;
       ClutterActorBox child_box;
       gfloat child_nat;
+      gboolean xfill, yfill;
+      NbtkAlign xalign, yalign;
 
       if (!CLUTTER_ACTOR_IS_VISIBLE (child))
-        goto next_child;
+        continue;
+
+      clutter_container_child_get ((ClutterContainer*) actor, child,
+                                   "x-fill", &xfill,
+                                   "y-fill", &yfill,
+                                   "x-align", &xalign,
+                                   "y-align", &yalign,
+                                   NULL);
 
       if (priv->is_vertical)
         {
@@ -601,6 +612,8 @@ nbtk_box_layout_allocate (ClutterActor          *actor,
           child_box.y2 = position + child_nat;
           child_box.x1 = padding.left;
           child_box.x2 = avail_width;
+
+          _nbtk_allocate_fill (child, &child_box, xalign, yalign, xfill, yfill);
           clutter_actor_allocate (child, &child_box, flags);
 
           position += (child_nat + priv->spacing);
@@ -615,17 +628,11 @@ nbtk_box_layout_allocate (ClutterActor          *actor,
           child_box.x2 = position + child_nat;
           child_box.y1 = padding.top;
           child_box.y2 = avail_width;
+          _nbtk_allocate_fill (child, &child_box, xalign, yalign, xfill, yfill);
           clutter_actor_allocate (child, &child_box, flags);
 
           position += (child_nat + priv->spacing);
         }
-
-    next_child:
-
-      if (priv->is_pack_start)
-        l = g_list_previous (l);
-      else
-        l = g_list_next (l);
     }
 }
 
