@@ -1,6 +1,6 @@
-m4_define([nbtk_major], [0])
-m4_define([nbtk_minor], [16])
-m4_define([nbtk_micro], [3])
+m4_define([nbtk_major], [1])
+m4_define([nbtk_minor], [0])
+m4_define([nbtk_micro], [0])
 
 m4_define([nbtk_version], [nbtk_major.nbtk_minor.nbtk_micro])
 m4_define([nbtk_api_version], [1.0])
@@ -120,7 +120,7 @@ GLIB_DEFINE_LOCALEDIR(LOCALEDIR)
 
 AM_PROG_LIBTOOL
 
-NBTK_REQUIRES="clutter-0.9 >= 0.9.6 clutter-imcontext-0.1 libccss-1 = 0.3.1"
+NBTK_REQUIRES="clutter-1.0 clutter-imcontext-0.1 libccss-1 = 0.3.1"
 PKG_CHECK_MODULES(NBTK, [$NBTK_REQUIRES])
 PKG_CHECK_MODULES(GTK, [gtk+-2.0])
 
