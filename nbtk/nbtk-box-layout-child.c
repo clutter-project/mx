@@ -126,7 +126,7 @@ nbtk_box_layout_child_class_init (NbtkBoxLayoutChildClass *klass)
 
   pspec = g_param_spec_boolean ("expand", "Expand",
                                 "Allocate the child extra space",
-                                TRUE,
+                                FALSE,
                                 NBTK_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_EXPAND, pspec);
 
@@ -166,7 +166,7 @@ nbtk_box_layout_child_class_init (NbtkBoxLayoutChildClass *klass)
 static void
 nbtk_box_layout_child_init (NbtkBoxLayoutChild *self)
 {
-  self->expand = TRUE;
+  self->expand = FALSE;
 
   self->x_fill = TRUE;
   self->y_fill = TRUE;
