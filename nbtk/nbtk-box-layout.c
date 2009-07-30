@@ -428,6 +428,7 @@ nbtk_box_layout_get_preferred_width (ClutterActor *actor,
 
           if (natural_width_p)
             *natural_width_p += child_nat;
+
         }
     }
 
@@ -512,10 +513,11 @@ nbtk_box_layout_allocate (ClutterActor          *actor,
                           ClutterAllocationFlags flags)
 {
   NbtkBoxLayoutPrivate *priv = NBTK_BOX_LAYOUT (actor)->priv;
-  gfloat avail_width, avail_height;
+  gfloat avail_width, avail_height, pref_width, pref_height;
   NbtkPadding padding = { 0, };
   gfloat position = 0;
   GList *l;
+  gint n_expand_children, extra_space;
 
   CLUTTER_ACTOR_CLASS (nbtk_box_layout_parent_class)->allocate (actor, box,
                                                                 flags);
@@ -531,18 +533,19 @@ nbtk_box_layout_allocate (ClutterActor          *actor,
                - padding.top
                - padding.bottom;
 
+  nbtk_box_layout_get_preferred_height (actor, avail_width, NULL,
+                                        &pref_height);
+  nbtk_box_layout_get_preferred_width (actor, avail_height, NULL,
+                                       &pref_width);
+
   /* update adjustments for scrolling */
   if (priv->vadjustment)
     {
       gdouble prev_value;
-      gfloat height;
-
-      clutter_actor_get_preferred_height (actor, avail_width, NULL,
-                                          &height);
 
       g_object_set (G_OBJECT (priv->vadjustment),
                    "lower", 0.0,
-                   "upper", height,
+                   "upper", pref_height,
                    "page-size", avail_height,
                    "step-increment", avail_height / 6,
                    "page-increment", avail_height,
@@ -555,15 +558,10 @@ nbtk_box_layout_allocate (ClutterActor          *actor,
   if (priv->hadjustment)
     {
       gdouble prev_value;
-      gfloat width;
-
-      /* get preferred width for this height */
-      clutter_actor_get_preferred_width (actor, avail_height, NULL,
-                                         &width);
 
       g_object_set (G_OBJECT (priv->hadjustment),
                    "lower", 0.0,
-                   "upper", width,
+                   "upper", pref_width,
                    "page-size", avail_width,
                    "step-increment", avail_width / 6,
                    "page-increment", avail_width,
@@ -571,6 +569,36 @@ nbtk_box_layout_allocate (ClutterActor          *actor,
 
       prev_value = nbtk_adjustment_get_value (priv->hadjustment);
       nbtk_adjustment_set_value (priv->hadjustment, prev_value);
+    }
+
+  /* count the number of children with expand set to TRUE */
+  n_expand_children = 0;
+  for (l = priv->children; l; l = l->next)
+    {
+      gboolean expand;
+      clutter_container_child_get ((ClutterContainer *) actor,
+                                   (ClutterActor*) l->data,
+                                   "expand", &expand,
+                                   NULL);
+      if (expand)
+          n_expand_children++;
+    }
+
+  if (n_expand_children == 0)
+    {
+      extra_space = 0;
+      n_expand_children = 1;
+    }
+  else
+    {
+      if (priv->is_vertical)
+        extra_space = (avail_height - pref_height) / n_expand_children;
+      else
+        extra_space = (avail_width - pref_width) / n_expand_children;
+
+      /* don't shrink anything */
+      if (extra_space < 0)
+        extra_space = 0;
     }
 
   if (priv->is_vertical)
@@ -590,7 +618,7 @@ nbtk_box_layout_allocate (ClutterActor          *actor,
       ClutterActor *child = (ClutterActor*) l->data;
       ClutterActorBox child_box;
       gfloat child_nat;
-      gboolean xfill, yfill;
+      gboolean xfill, yfill, expand;
       NbtkAlign xalign, yalign;
 
       if (!CLUTTER_ACTOR_IS_VISIBLE (child))
@@ -601,6 +629,7 @@ nbtk_box_layout_allocate (ClutterActor          *actor,
                                    "y-fill", &yfill,
                                    "x-align", &xalign,
                                    "y-align", &yalign,
+                                   "expand", &expand,
                                    NULL);
 
       if (priv->is_vertical)
@@ -609,14 +638,20 @@ nbtk_box_layout_allocate (ClutterActor          *actor,
                                               NULL, &child_nat);
 
           child_box.y1 = position;
-          child_box.y2 = position + child_nat;
+          if (expand)
+            child_box.y2 = position + child_nat + extra_space;
+          else
+            child_box.y2 = position + child_nat;
           child_box.x1 = padding.left;
           child_box.x2 = avail_width;
 
           _nbtk_allocate_fill (child, &child_box, xalign, yalign, xfill, yfill);
           clutter_actor_allocate (child, &child_box, flags);
 
-          position += (child_nat + priv->spacing);
+          if (expand)
+            position += (child_nat + priv->spacing + extra_space);
+          else
+            position += (child_nat + priv->spacing);
         }
       else
         {
@@ -625,13 +660,21 @@ nbtk_box_layout_allocate (ClutterActor          *actor,
                                              NULL, &child_nat);
 
           child_box.x1 = position;
-          child_box.x2 = position + child_nat;
+
+          if (expand)
+            child_box.x2 = position + child_nat + extra_space;
+          else
+            child_box.x2 = position + child_nat;
+
           child_box.y1 = padding.top;
-          child_box.y2 = avail_width;
+          child_box.y2 = avail_height;
           _nbtk_allocate_fill (child, &child_box, xalign, yalign, xfill, yfill);
           clutter_actor_allocate (child, &child_box, flags);
 
-          position += (child_nat + priv->spacing);
+          if (expand)
+            position += (child_nat + priv->spacing + extra_space);
+          else
+            position += (child_nat + priv->spacing);
         }
     }
 }

@@ -22,6 +22,7 @@
 #include <clutter/clutter.h>
 #include <nbtk/nbtk.h>
 
+static ClutterActor *hover_actor;
 
 void
 find_last_child (ClutterActor *actor, ClutterActor **child)
@@ -35,12 +36,16 @@ enter_event (ClutterActor *actor, ClutterEvent *event, gpointer data)
   ClutterColor color = { 0x00, 0x00, 0x00, 0xff };
   clutter_rectangle_set_border_width (CLUTTER_RECTANGLE (actor), 2);
   clutter_rectangle_set_border_color (CLUTTER_RECTANGLE (actor), &color);
+
+  hover_actor = actor;
 }
 
 void
 leave_event (ClutterActor *actor, ClutterEvent *event, gpointer data)
 {
   clutter_rectangle_set_border_width (CLUTTER_RECTANGLE (actor), 0);
+
+  hover_actor = NULL;
 }
 
 void
@@ -91,6 +96,7 @@ add_actor (ClutterContainer *container)
 {
   ClutterActor *rect;
   ClutterColor color = { 0xff, 0xff, 0xff, 255 };
+  static gboolean expand = TRUE;
 
   clutter_color_from_hls (&color,
                           g_random_double_range (0.0, 360.0), 0.5, 0.5);
@@ -103,6 +109,9 @@ add_actor (ClutterContainer *container)
   g_signal_connect (rect, "leave-event", G_CALLBACK (leave_event), NULL);
   g_signal_connect (rect, "button-release-event",
                     G_CALLBACK (button_release_event), container);
+
+  clutter_container_child_set (container, rect, "expand", expand, NULL);
+  expand = !expand;
 }
 
 gboolean
@@ -160,19 +169,41 @@ key_release_cb (ClutterActor    *actor,
       nbtk_box_layout_set_spacing (box, spacing);
     }
 
+  if (event->keyval == 'e')
+    {
+      if (hover_actor)
+        {
+          gboolean expand;
+          clutter_container_child_get ((ClutterContainer*) box, hover_actor,
+                                       "expand", &expand, NULL);
+          clutter_container_child_set ((ClutterContainer*) box, hover_actor,
+                                       "expand", !expand, NULL);
+        }
+    }
+
   return FALSE;
+}
+
+static void
+stage_size_changed_cb (ClutterActor *stage, GParamSpec *pspec, ClutterActor *scrollview)
+{
+  gfloat width, height;
+
+  clutter_actor_get_size (stage, &width, &height);
+  clutter_actor_set_size (scrollview, width - 100, height - 100);
 }
 
 int
 main (int argc, char *argv[])
 {
-  NbtkWidget *box, *scrollview;
+  NbtkWidget *box;
   ClutterActor *stage;
+  NbtkWidget *scrollview;
 
   clutter_init (&argc, &argv);
 
   stage = clutter_stage_get_default ();
-  clutter_actor_set_size (stage, 300, 300);
+  clutter_stage_set_user_resizable ((ClutterStage *) stage, TRUE);
 
   scrollview = nbtk_scroll_view_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
@@ -191,6 +222,8 @@ main (int argc, char *argv[])
 
   g_signal_connect (stage, "key-release-event", G_CALLBACK (key_release_cb),
                     box);
+  g_signal_connect (stage, "notify::allocation",
+                    G_CALLBACK (stage_size_changed_cb), scrollview);
   clutter_actor_show (stage);
   clutter_main ();
 
