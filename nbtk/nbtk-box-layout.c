@@ -627,7 +627,7 @@ nbtk_box_layout_allocate (ClutterActor          *actor,
           child_box.x1 = position;
           child_box.x2 = position + child_nat;
           child_box.y1 = padding.top;
-          child_box.y2 = avail_width;
+          child_box.y2 = avail_height;
           _nbtk_allocate_fill (child, &child_box, xalign, yalign, xfill, yfill);
           clutter_actor_allocate (child, &child_box, flags);
 
