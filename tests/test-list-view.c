@@ -93,6 +93,17 @@ key_release_cb (ClutterActor *actor,
   return FALSE;
 }
 
+static void
+allocation_notify_cb (ClutterActor *stage,
+                      GParamSpec   *pspec,
+                      ClutterActor *scroll)
+{
+  gfloat width, height;
+
+  clutter_actor_get_size (stage, &width, &height);
+  clutter_actor_set_size (scroll, width - 100, height - 100);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -105,10 +116,10 @@ main (int argc, char *argv[])
   clutter_init (&argc, &argv);
 
   stage = clutter_stage_get_default ();
-  clutter_actor_set_size (stage, 320, 240);
+  clutter_stage_set_user_resizable ((ClutterStage*) stage, TRUE);
 
   scroll = nbtk_scroll_view_new ();
-  clutter_actor_set_size (CLUTTER_ACTOR (scroll), 320, 240);
+  clutter_actor_set_position (scroll, 50, 50);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (scroll));
 
@@ -121,11 +132,11 @@ main (int argc, char *argv[])
   model = clutter_list_model_new (2, CLUTTER_TYPE_COLOR, "color",
                                   G_TYPE_FLOAT, "size");
 
-  for (i = 0; i < 360; i++)
+  for (i = 0; i < 180; i++)
     {
       clutter_color_from_hls (&color,
                               g_random_double_range (0.0, 360.0), 0.6, 0.6);
-      clutter_model_append (model, 0, &color, 1, 32.0, -1);
+      clutter_model_append (model, 0, &color, 1, 10.0, -1);
     }
 
   nbtk_list_view_set_model (NBTK_LIST_VIEW (view), model);
@@ -136,6 +147,8 @@ main (int argc, char *argv[])
 
 
   g_signal_connect (stage, "key-release-event", G_CALLBACK (key_release_cb), model);
+  g_signal_connect (stage, "notify::allocation",
+                    G_CALLBACK (allocation_notify_cb), scroll);
   clutter_actor_show (stage);
   clutter_main ();
 
