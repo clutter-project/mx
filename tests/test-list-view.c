@@ -119,7 +119,7 @@ main (int argc, char *argv[])
   clutter_stage_set_user_resizable ((ClutterStage*) stage, TRUE);
 
   scroll = nbtk_scroll_view_new ();
-  clutter_actor_set_position (scroll, 50, 50);
+  clutter_actor_set_position ((ClutterActor*) scroll, 50, 50);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (scroll));
 
