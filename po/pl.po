@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Moblin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-07-27 09:21+0000\n"
+"POT-Creation-Date: 2009-07-29 09:21+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Andrzej Zaborowski <andrew.zaborowski@intel.com>\n"
 "Language-Team: Moblin\n"
@@ -21,7 +21,7 @@ msgstr ""
 
 #: ../nbtk/nbtk-gtk-light-switch.c:154
 msgid "Unavailable"
-msgstr ""
+msgstr "Niedostępne"
 
 #: ../nbtk/nbtk-gtk-light-switch.c:171 ../nbtk/nbtk-gtk-light-switch.c:242
 msgid "On"
