@@ -744,7 +744,6 @@ trough_paging_cb (NbtkScrollBar *self)
   nbtk_adjustment_get_values (self->priv->adjustment,
                               &value, NULL, NULL,
                               NULL, &page_increment, NULL);
-  g_debug ("%f", value);
 
   if (self->priv->vertical)
     handle_pos = clutter_actor_get_y (self->priv->handle);
