@@ -669,8 +669,6 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
   actor_class->get_preferred_width = nbtk_entry_get_preferred_width;
   actor_class->get_preferred_height = nbtk_entry_get_preferred_height;
   actor_class->allocate = nbtk_entry_allocate;
-  actor_class->key_focus_in = nbtk_entry_focus_in;
-  actor_class->key_focus_out = nbtk_entry_focus_out;
   actor_class->paint = nbtk_entry_paint;
   actor_class->pick = nbtk_entry_pick;
   actor_class->map = nbtk_entry_map;
