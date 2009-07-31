@@ -689,6 +689,14 @@ handle_button_press_event_cb (ClutterActor       *actor,
   return TRUE;
 }
 
+static void
+animation_completed_cb (ClutterAnimation     *animation,
+                        NbtkScrollBarPrivate *priv)
+{
+  g_object_unref (priv->paging_animation);
+  priv->paging_animation = NULL;
+}
+
 static gboolean
 trough_paging_cb (NbtkScrollBar *self)
 {
@@ -785,7 +793,6 @@ trough_paging_cb (NbtkScrollBar *self)
   if (self->priv->paging_animation)
     {
       clutter_animation_completed (self->priv->paging_animation);
-      g_object_unref (self->priv->paging_animation);
     }
 
   /* FIXME: Creating a new animation for each scroll is probably not the best
@@ -799,6 +806,8 @@ trough_paging_cb (NbtkScrollBar *self)
   g_value_set_double (&v, value);
   clutter_animation_bind (self->priv->paging_animation, "value", &v);
   t = clutter_animation_get_timeline (self->priv->paging_animation);
+  g_signal_connect (a, "completed", G_CALLBACK (animation_completed_cb),
+                    self->priv);
   clutter_timeline_start (t);
 
   return ret;
