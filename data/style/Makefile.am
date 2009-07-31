@@ -17,6 +17,10 @@ dist_style_DATA = \
 		scroll-button-down.png \
 		scroll-button-up-hover.png \
 		scroll-button-up.png \
+		scroll-button-left-hover.png \
+		scroll-button-left.png \
+		scroll-button-right-hover.png \
+		scroll-button-right.png \
 		scroll-handle-hover.png \
 		scroll-handle.png \
 		tooltip-background.png \

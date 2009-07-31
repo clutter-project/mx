@@ -50,25 +50,49 @@ NbtkScrollView
 
 NbtkScrollButton#backward-stepper
 {
-  border-image: url("file://scroll-button-up.png") 5;
+  border-image: url("file://scroll-button-left.png") 5;
 }
 
 NbtkScrollButton#backward-stepper:hover,
 NbtkScrollButton#backward-stepper:active
 {
-  border-image: url("file://scroll-button-up-hover.png") 5;
+  border-image: url("file://scroll-button-left-hover.png") 5;
 }
 
 NbtkScrollButton#forward-stepper
 {
-  border-image: url("file://scroll-button-down.png") 5;
+  border-image: url("file://scroll-button-right.png") 5;
 }
 
 NbtkScrollButton#forward-stepper:hover,
 NbtkScrollButton#forward-stepper:active
 {
+  border-image: url("file://scroll-button-right-hover.png") 5;
+}
+
+NbtkScrollButton#up-stepper
+{
+  border-image: url("file://scroll-button-up.png") 5;
+}
+
+NbtkScrollButton#up-stepper:hover,
+NbtkScrollButton#up-stepper:active
+{
+  border-image: url("file://scroll-button-up-hover.png") 5;
+}
+
+NbtkScrollButton#down-stepper
+{
+  border-image: url("file://scroll-button-down.png") 5;
+}
+
+NbtkScrollButton#down-stepper:hover,
+NbtkScrollButton#down-stepper:active
+{
   border-image: url("file://scroll-button-down-hover.png") 5;
 }
+
+
 
 NbtkScrollBar NbtkButton#handle
 {
