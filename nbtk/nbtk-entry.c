@@ -434,10 +434,10 @@ nbtk_entry_allocate (ClutterActor          *actor,
 }
 
 static void
-nbtk_entry_focus_in (ClutterActor *actor)
+clutter_text_focus_in_cb (ClutterText *text,
+                          ClutterActor *actor)
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
-  ClutterText *text = CLUTTER_TEXT (priv->entry);
 
   /* remove the hint if visible */
   if (priv->hint
@@ -450,10 +450,10 @@ nbtk_entry_focus_in (ClutterActor *actor)
 }
 
 static void
-nbtk_entry_focus_out (ClutterActor *actor)
+clutter_text_focus_out_cb (ClutterText  *text,
+                           ClutterActor *actor)
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
-  ClutterText *text = CLUTTER_TEXT (priv->entry);
 
   /* add a hint if the entry is empty */
   if (priv->hint && !strcmp (clutter_text_get_text (text), ""))
@@ -466,14 +466,6 @@ nbtk_entry_focus_out (ClutterActor *actor)
       nbtk_widget_set_style_pseudo_class (NBTK_WIDGET (actor), NULL);
     }
   clutter_text_set_cursor_visible (text, FALSE);
-}
-
-static void
-clutter_text_focus_in_cb (ClutterActor *actor,
-                          ClutterActor *entry)
-{
-  /* override the clutter text focus handling */
-  clutter_actor_grab_key_focus (entry);
 }
 
 static void
@@ -639,8 +631,6 @@ nbtk_entry_button_press_event (ClutterActor       *actor,
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
 
-  clutter_actor_grab_key_focus (actor);
-
   return clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
 }
 
@@ -751,6 +741,9 @@ nbtk_entry_init (NbtkEntry *entry)
 
   g_signal_connect (priv->entry, "key-focus-in",
                     G_CALLBACK (clutter_text_focus_in_cb), entry);
+
+  g_signal_connect (priv->entry, "key-focus-out",
+                    G_CALLBACK (clutter_text_focus_out_cb), entry);
 
   priv->spacing = 6.0f;
 
