@@ -262,9 +262,8 @@ nbtk_scroll_view_allocate (ClutterActor          *actor,
 {
   NbtkPadding padding;
   ClutterActorBox child_box;
-  guint xthickness, ythickness;
-  gfloat xthicknessu, ythicknessu;
   ClutterActorClass *parent_parent_class;
+  gfloat avail_width, avail_height, sb_width, sb_height;
 
   NbtkScrollViewPrivate *priv = NBTK_SCROLL_VIEW (actor)->priv;
 
@@ -283,47 +282,50 @@ nbtk_scroll_view_allocate (ClutterActor          *actor,
 
   nbtk_widget_get_padding (NBTK_WIDGET (actor), &padding);
 
+  avail_width = (box->x2 - box->x1) - padding.left - padding.right;
+  avail_height = (box->y2 - box->y1) - padding.top - padding.bottom;
+
   nbtk_stylable_get (NBTK_STYLABLE (actor),
-                     "scrollbar-width", &xthickness,
-                     "scrollbar-height", &ythickness,
+                     "scrollbar-width", &sb_width,
+                     "scrollbar-height", &sb_height,
                      NULL);
-  xthicknessu = CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll) ?
-    xthickness : 0;
-  ythicknessu = CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll) ?
-    ythickness : 0;
+  sb_width = 28;
+  sb_height = 28;
+
+  if (!CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll))
+    sb_width = 0;
+
+  if (!CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
+    sb_height = 0;
 
   /* Vertical scrollbar */
-  child_box.x1 = box->x2 - box->x1 - padding.top;
-  child_box.x2 = MAX(0, (box->y2 - box->y1 - ythicknessu)) +
-                     child_box.x1 - padding.top - padding.bottom;
-  child_box.y1 = padding.right;
-  child_box.y2 = MIN(xthicknessu, box->x2 - box->x1) + padding.right;
+  if (CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll))
+    {
+      child_box.x1 = avail_width - sb_width;
+      child_box.y1 = padding.top;
+      child_box.x2 = avail_width;
+      child_box.y2 = child_box.y1 + avail_height;
 
-  clutter_actor_allocate (priv->vscroll,
-                          &child_box,
-                          flags);
+      clutter_actor_allocate (priv->vscroll, &child_box, flags);
+    }
 
   /* Horizontal scrollbar */
-  child_box.x1 = padding.left;
-  child_box.x2 = MAX(0, box->x2 - box->x1 - xthicknessu - padding.right);
-  child_box.y1 = MAX(0, box->y2 - box->y1 - ythicknessu) - padding.bottom;
-  child_box.y2 = box->y2 - box->y1 - padding.bottom;
+  if (CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
+    {
+      child_box.x1 = padding.left;
+      child_box.x2 = child_box.x1 + avail_width;
+      child_box.y1 = avail_height - sb_height;
+      child_box.y2 = avail_height;
 
-  clutter_actor_allocate (priv->hscroll,
-                          &child_box,
-                          flags);
+      clutter_actor_allocate (priv->hscroll, &child_box, flags);
+    }
 
 
   /* Child */
   child_box.x1 = padding.left;
-  child_box.x2 = box->x2 - box->x1 - padding.right;
-  if (CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll))
-    child_box.x2 -= xthicknessu;
-
+  child_box.x2 = avail_width - sb_width;
   child_box.y1 = padding.top;
-  child_box.y2 = box->y2 - box->y1 - padding.bottom;
-  if (CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
-    child_box.y2 -= ythicknessu;
+  child_box.y2 = avail_height - sb_height;
 
   if (priv->child)
       clutter_actor_allocate (priv->child, &child_box, flags);
@@ -585,14 +587,10 @@ nbtk_scroll_view_init (NbtkScrollView *self)
   NbtkScrollViewPrivate *priv = self->priv = SCROLL_VIEW_PRIVATE (self);
 
   priv->hscroll = CLUTTER_ACTOR (nbtk_scroll_bar_new (NULL));
-  priv->vscroll = CLUTTER_ACTOR (nbtk_scroll_bar_new (NULL));
+  priv->vscroll = g_object_new (NBTK_TYPE_SCROLL_BAR, "vertical", TRUE, NULL);
 
   clutter_actor_set_parent (priv->hscroll, CLUTTER_ACTOR (self));
   clutter_actor_set_parent (priv->vscroll, CLUTTER_ACTOR (self));
-
-  clutter_actor_show (priv->hscroll);
-  clutter_actor_show (priv->vscroll);
-  clutter_actor_set_rotation (priv->vscroll, CLUTTER_Z_AXIS, 90.0, 0, 0, 0);
 
   /* mouse scroll is enabled by default, so we also need to be reactive */
   priv->mouse_scroll = TRUE;
