@@ -136,6 +136,20 @@ nbtk_scroll_bar_set_property (GObject      *gobject,
 
     case PROP_VERTICAL:
       bar->priv->vertical = g_value_get_boolean (value);
+      if (bar->priv->vertical)
+        {
+          clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->bw_stepper),
+                                  "up-stepper");
+          clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->fw_stepper),
+                                  "down-stepper");
+        }
+      else
+        {
+          clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->fw_stepper),
+                                  "forward-stepper");
+          clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->bw_stepper),
+                                  "backward-stepper");
+        }
       clutter_actor_queue_relayout ((ClutterActor*) gobject);
       break;
 
@@ -722,6 +736,7 @@ trough_paging_cb (NbtkScrollBar *self)
   nbtk_adjustment_get_values (self->priv->adjustment,
                               &value, NULL, NULL,
                               NULL, &page_increment, NULL);
+  g_debug ("%f", value);
 
   if (self->priv->vertical)
     handle_pos = clutter_actor_get_y (self->priv->handle);
