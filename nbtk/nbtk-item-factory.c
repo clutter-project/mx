@@ -46,11 +46,12 @@ nbtk_item_factory_get_type (void)
 
   if (!type)
     {
-      const GTypeInfo info = {
-        sizeof (NbtkItemFactoryIface),
-        nbtk_item_factory_base_init,
-        NULL,
-      };
+      const GTypeInfo info =
+        {
+          sizeof (NbtkItemFactoryIface),
+          nbtk_item_factory_base_init,
+          NULL,
+        };
 
       type = g_type_register_static (G_TYPE_INTERFACE,
                                      "NbtkItemFactory", &info, 0);

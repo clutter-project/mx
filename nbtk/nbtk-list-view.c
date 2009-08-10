@@ -113,10 +113,11 @@ nbtk_list_view_dispose (GObject *object)
   /* This will cause the unref of the model and also disconnect the signals */
   nbtk_list_view_set_model (NBTK_LIST_VIEW (object), NULL);
 
-  if (priv->factory) {
-    g_object_unref (priv->factory);
-    priv->factory = NULL;
-  }
+  if (priv->factory)
+    {
+      g_object_unref (priv->factory);
+      priv->factory = NULL;
+    }
 }
 
 static void
