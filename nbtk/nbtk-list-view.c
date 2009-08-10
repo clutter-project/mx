@@ -189,16 +189,17 @@ model_changed_cb (ClutterModel *model,
   if (!priv->item_type && !priv->factory)
     return;
 
-  if (priv->item_type) {
-    /* check the item-type is an descendant of ClutterActor */
-    if (!g_type_is_a (priv->item_type, CLUTTER_TYPE_ACTOR))
-      {
-        g_warning ("%s is not a subclass of ClutterActor and therefore"
-                   " cannot be used as items in an NbtkListView",
-                   g_type_name (priv->item_type));
-        return;
-      }
-  }
+  if (priv->item_type)
+    {
+      /* check the item-type is an descendant of ClutterActor */
+      if (!g_type_is_a (priv->item_type, CLUTTER_TYPE_ACTOR))
+        {
+          g_warning ("%s is not a subclass of ClutterActor and therefore"
+                     " cannot be used as items in an NbtkListView",
+                     g_type_name (priv->item_type));
+          return;
+        }
+    }
 
   children = clutter_container_get_children (CLUTTER_CONTAINER (list_view));
   child_n = g_list_length (children);
@@ -572,9 +573,10 @@ nbtk_list_view_set_item_factory (NbtkListView    *list_view,
 
   priv = list_view->priv;
 
-  if (priv->factory) {
-    g_object_unref (priv->factory);
-  }
+  if (priv->factory)
+    {
+      g_object_unref (priv->factory);
+    }
 
   priv->factory = g_object_ref (factory);
 }
