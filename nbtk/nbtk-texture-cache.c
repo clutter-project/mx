@@ -41,17 +41,6 @@
 #include "nbtk-marshal.h"
 #include "nbtk-private.h"
 #include "nbtk-subtexture.h"
-
-/*
- * Convention: posX with a value of -1 indicates whole texture 
- */
-struct imgcache_element {
-	char filename[256];
-	int  width, height;
-	int  posX, posY;
-	void *ptr;
-};
-
 G_DEFINE_TYPE (NbtkTextureCache, nbtk_texture_cache, G_TYPE_OBJECT)
 
 #define TEXTURE_CACHE_PRIVATE(o) \
@@ -77,11 +66,33 @@ enum
 
 static NbtkTextureCache* __cache_singleton = NULL;
 
+/*
+ * Convention: posX with a value of -1 indicates whole texture 
+ */
+typedef struct NbtkTextureCacheItem {
+  char filename[256];
+  int  width, height;
+  int  posX, posY;
+  ClutterActor *ptr;
+} NbtkTextureCacheItem;
+
+static NbtkTextureCacheItem *
+nbtk_texture_cache_item_new (void)
+{
+  return g_slice_new0 (NbtkTextureCacheItem);
+}
+
+static void
+nbtk_texture_cache_item_free (NbtkTextureCacheItem *item)
+{
+  g_slice_free (NbtkTextureCacheItem, item);
+}
+
 static void
 nbtk_texture_cache_set_property (GObject      *object,
-				 guint         prop_id,
-				 const GValue *value,
-				 GParamSpec   *pspec)
+                                 guint         prop_id,
+                                 const GValue *value,
+                                 GParamSpec   *pspec)
 {
   switch (prop_id)
     {
@@ -93,9 +104,9 @@ nbtk_texture_cache_set_property (GObject      *object,
 
 static void
 nbtk_texture_cache_get_property (GObject    *object,
-				 guint       prop_id,
-				 GValue     *value,
-				 GParamSpec *pspec)
+                                 guint       prop_id,
+                                 GValue     *value,
+                                 GParamSpec *pspec)
 {
   switch (prop_id)
     {
@@ -116,13 +127,13 @@ static void
 nbtk_texture_cache_finalize (GObject *object)
 {
   NbtkTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE(object);
-  
+
   if (priv->cache)
     {
       g_hash_table_unref (priv->cache);
       priv->cache = NULL;
     }
-  
+
   G_OBJECT_CLASS (nbtk_texture_cache_parent_class)->finalize (object);
 }
 
@@ -145,7 +156,10 @@ nbtk_texture_cache_init (NbtkTextureCache *self)
 {
   NbtkTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE(self);
 
-  priv->cache = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+  priv->cache = g_hash_table_new_full (g_str_hash,
+                                       g_str_equal,
+                                       g_free,
+                                       NULL);
 
 }
 
@@ -162,7 +176,7 @@ nbtk_texture_cache_get_default (void)
 {
   if (G_UNLIKELY (__cache_singleton == NULL))
     __cache_singleton = g_object_new (NBTK_TYPE_TEXTURE_CACHE, NULL);
-  
+
   return  __cache_singleton;
 }
 
@@ -198,14 +212,14 @@ nbtk_texture_cache_get_size (NbtkTextureCache *self)
 }
 
 static void
-add_texture_to_cache (NbtkTextureCache *self,
-                      const gchar      *path,
-                      struct imgcache_element *res)
+add_texture_to_cache (NbtkTextureCache     *self,
+                      const gchar          *path,
+                      NbtkTextureCacheItem *item)
 {
   /*  FinalizedClosure        *closure; */
   NbtkTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE(self);
 
-  g_hash_table_insert (priv->cache, g_strdup (path), res);
+  g_hash_table_insert (priv->cache, g_strdup (path), item);
 
 #if 0
   /* Make sure we can remove from hash */
@@ -239,7 +253,7 @@ nbtk_texture_cache_get_texture (NbtkTextureCache *self,
 {
   ClutterActor *texture;
   NbtkTextureCachePrivate *priv;
-  struct imgcache_element *cache;
+  NbtkTextureCacheItem *item;
 
   g_return_val_if_fail (NBTK_IS_TEXTURE_CACHE (self), NULL);
   g_return_val_if_fail (path != NULL, NULL);
@@ -251,10 +265,10 @@ nbtk_texture_cache_get_texture (NbtkTextureCache *self,
     g_warning ("The want_clone parameter of %s is now ignored. This function "
                "always returns a new ClutterTexture", __FUNCTION__);
 
-  cache = g_hash_table_lookup (priv->cache, path);
+  item = g_hash_table_lookup (priv->cache, path);
 
-  if (cache && cache->posX != -1)
-    { 
+  if (item && item->posX != -1)
+    {
       GError *err = NULL;
       /*
        * We have a cache hit, but it's for a partial texture. The only
@@ -263,22 +277,17 @@ nbtk_texture_cache_get_texture (NbtkTextureCache *self,
        */
       return CLUTTER_TEXTURE(clutter_texture_new_from_file(path, &err));
     }
-  if (!cache)
+  if (!item)
     {
       GError *err = NULL;
 
-      cache = g_malloc(sizeof(struct imgcache_element));
-      if (!cache)
-		return CLUTTER_TEXTURE(clutter_texture_new_from_file(path, &err));
+      item = nbtk_texture_cache_item_new ();
+      item->posX = -1;
+      item->posY = -1;
+      item->ptr = clutter_texture_new_from_file (path, &err);
+      clutter_texture_get_base_size(item->ptr, &item->width, &item->height);
 
-      memset(cache, 0, sizeof(struct imgcache_element));
-      cache->posX = -1;
-      cache->posY = -1;
-      cache->ptr = clutter_texture_new_from_file (path, &err);
-      clutter_texture_get_base_size(cache->ptr, &cache->width, &cache->height);
-
-      /* XXX: pass up GError */
-      if (!cache->ptr)
+      if (!item->ptr)
         {
           if (err)
             {
@@ -289,12 +298,12 @@ nbtk_texture_cache_get_texture (NbtkTextureCache *self,
           return NULL;
         }
 
-      add_texture_to_cache (self, path, cache);
+      add_texture_to_cache (self, path, item);
     }
-	  
+
   texture = clutter_texture_new ();
-  clutter_texture_set_cogl_texture ((ClutterTexture*) texture, 
-	clutter_texture_get_cogl_texture(cache->ptr));
+  clutter_texture_set_cogl_texture ((ClutterTexture*) texture,
+                                    clutter_texture_get_cogl_texture (item->ptr));
 
   return (ClutterTexture*) texture;
 }
@@ -316,46 +325,38 @@ nbtk_texture_cache_get_texture (NbtkTextureCache *self,
  */
 ClutterActor*
 nbtk_texture_cache_get_actor (NbtkTextureCache *self,
-                                const gchar      *path)
+                              const gchar      *path)
 {
   NbtkTextureCachePrivate *priv;
-  struct imgcache_element *cache;
+  NbtkTextureCacheItem *item;
   GError *err = NULL;
 
   g_return_val_if_fail (NBTK_IS_TEXTURE_CACHE (self), NULL);
   g_return_val_if_fail (path != NULL, NULL);
 
-
-
   priv = TEXTURE_CACHE_PRIVATE (self);
 
 
-  cache = g_hash_table_lookup (priv->cache, path);
+  item = g_hash_table_lookup (priv->cache, path);
 
-  if (cache)
-    { 
-      int posX = cache->posX;
-      int posY = cache->posY;
+  if (item)
+    {
+      int posX = item->posX;
+      int posY = item->posY;
       if (posX == -1)
-	  posX = 0;
+          posX = 0;
       if (posY == -1)
           posY = 0;
-      return nbtk_subtexture_new(cache->ptr, posX, posY, cache->width, cache->height);
+      return nbtk_subtexture_new(item->ptr, posX, posY, item->width, item->height);
     }
 
-    
-  cache = g_malloc(sizeof(struct imgcache_element));
-  if (!cache)
-     return clutter_texture_new_from_file(path, &err);
+  item = nbtk_texture_cache_item_new ();
+  item->posX = -1;
+  item->posY = -1;
+  item->ptr = clutter_texture_new_from_file (path, &err);
+  clutter_texture_get_base_size(item->ptr, &item->width, &item->height);
 
-  memset(cache, 0, sizeof(struct imgcache_element));
-  cache->posX = -1;
-  cache->posY = -1;
-  cache->ptr = clutter_texture_new_from_file (path, &err);
-  clutter_texture_get_base_size(cache->ptr, &cache->width, &cache->height);
-
-  /* XXX: pass up GError */
-  if (!cache->ptr)
+  if (!item->ptr)
     {
       if (err)
         {
@@ -366,23 +367,21 @@ nbtk_texture_cache_get_actor (NbtkTextureCache *self,
       return NULL;
     }
 
-  add_texture_to_cache (self, path, cache);
-	  
-  return nbtk_subtexture_new(cache->ptr, 0, 0, cache->width, cache->height);;
+  add_texture_to_cache (self, path, item);
+
+  return nbtk_subtexture_new(item->ptr, 0, 0, item->width, item->height);
 }
 
-
-
-void nbtk_texture_cache_load_cache(NbtkTextureCache *self, char *filename)
+void
+nbtk_texture_cache_load_cache (NbtkTextureCache *self,
+                               const gchar      *filename)
 {
    FILE *file;
-   struct imgcache_element *element, head;
+   NbtkTextureCacheItem *element, head;
    int ret;
    ClutterActor *actor;
-   GError *Error = NULL;
+   GError *error = NULL;
    NbtkTextureCachePrivate *priv;
-   
-
 
    g_return_if_fail (NBTK_IS_TEXTURE_CACHE (self));
    g_return_if_fail (filename != NULL);
@@ -393,52 +392,59 @@ void nbtk_texture_cache_load_cache(NbtkTextureCache *self, char *filename)
    if (!file)
       return;
 
-   ret = fread(&head, sizeof(struct imgcache_element), 1, file);
+   ret = fread (&head, sizeof(NbtkTextureCacheItem), 1, file);
    if (ret < 0)
      {
-   	fclose(file);
-	return;
+        fclose (file);
+        return;
      }
 
    /* check if we already if this texture in the cache */
-   if (g_hash_table_lookup(priv->cache, head.filename))
+   if (g_hash_table_lookup (priv->cache, head.filename))
      {
         /* skip it, we're done */
-	fclose(file);
-	return;
+        fclose (file);
+        return;
      }
 
-   actor = clutter_texture_new_from_file(head.filename, &Error);
+   actor = clutter_texture_new_from_file (head.filename, &error);
 
-   element = malloc(sizeof(struct imgcache_element));
-   memset(element, 0, sizeof(struct imgcache_element));
+   if (error)
+   {
+     g_critical (G_STRLOC ": Error opening cache image file: %s",
+                 error->message);
+     g_clear_error (&error);
+     fclose (file);
+     return;
+   }
+
+   element = nbtk_texture_cache_item_new ();
    element->posX = -1;
    element->posY = -1;
    element->ptr = actor;
-   strcpy(element->filename, head.filename);
+   strncpy (element->filename, head.filename, 256);
    clutter_texture_get_base_size(element->ptr, &element->width, &element->height);
    g_hash_table_insert (priv->cache, element->filename, element);
 
-   while (!feof(file)) 
+   while (!feof (file))
      {
-        element = malloc(sizeof(struct imgcache_element));
-	if (!element)
-	    break;
-	ret = fread(element, sizeof(struct imgcache_element), 1, file);
-	if (ret < 1)
+        element = nbtk_texture_cache_item_new ();
+        ret = fread (element, sizeof (NbtkTextureCacheItem), 1, file);
+        if (ret < 1)
           {
-	     /* end of file */
-	     free(element);
-	     break;
-	  }
-	element->ptr = actor;
-	if (g_hash_table_lookup(priv->cache, element->filename)) 
- 	  {
-	    /* file is already in the cache.... */
-	    free(element);
-	  } else {
+             /* end of file */
+             nbtk_texture_cache_item_free (element);
+             break;
+          }
+
+        element->ptr = actor;
+
+        if (g_hash_table_lookup (priv->cache, element->filename)) 
+          {
+            /* file is already in the cache.... */
+            nbtk_texture_cache_item_free (element);
+          } else {
             g_hash_table_insert (priv->cache, element->filename, element);
-	  }
+          }
      }
-     fclose(file);
 }
