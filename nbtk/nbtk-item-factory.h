@@ -42,7 +42,7 @@ typedef struct _NbtkItemFactoryIface NbtkItemFactoryIface;
 
 /**
  * NbtkItemFactoryIface:
- * @create_item: virtual function called when creating a new item
+ * @create: virtual function called when creating a new item
  *
  * Interface for creating custom items
  */
@@ -52,11 +52,11 @@ struct _NbtkItemFactoryIface
 
     /*< public >*/
     /* vfuncs, not signals */
-    ClutterActor *(* create_item) (NbtkItemFactory *factory);
+    ClutterActor *(* create) (NbtkItemFactory *factory);
 };
 
 GType nbtk_item_factory_get_type (void) G_GNUC_CONST;
 
-ClutterActor *nbtk_item_factory_create_item (NbtkItemFactory *factory);
+ClutterActor *nbtk_item_factory_create (NbtkItemFactory *factory);
 
 #endif

@@ -50,6 +50,8 @@ struct _NbtkItemViewPrivate
   GSList       *attributes;
   GType         item_type;
 
+  NbtkItemFactory *factory;
+
   gulong filter_changed;
   gulong row_added;
   gulong row_changed;
@@ -173,16 +175,19 @@ model_changed_cb (ClutterModel *model,
 
 
   /* bail out if we don't yet have an item type */
-  if (!priv->item_type)
+  if (!priv->item_type && !priv->factory)
     return;
 
-  /* check the item-type is an descendant of ClutterActor */
-  if (!g_type_is_a (priv->item_type, CLUTTER_TYPE_ACTOR))
+  if (priv->item_type)
     {
-      g_warning ("%s is not a subclass of ClutterActor and therefore"
-                 " cannot be used as items in an NbtkItemView",
-                 g_type_name (priv->item_type));
-      return;
+      /* check the item-type is an descendant of ClutterActor */
+      if (!g_type_is_a (priv->item_type, CLUTTER_TYPE_ACTOR))
+        {
+          g_warning ("%s is not a subclass of ClutterActor and therefore"
+                     " cannot be used as items in an NbtkItemView",
+                     g_type_name (priv->item_type));
+          return;
+        }
     }
 
   children = clutter_container_get_children (CLUTTER_CONTAINER (item_view));
@@ -208,8 +213,14 @@ model_changed_cb (ClutterModel *model,
         {
           ClutterActor *new_child;
 
-          new_child = g_object_new (priv->item_type, NULL);
-
+          if (priv->item_type)
+            {
+              new_child = g_object_new (priv->item_type, NULL);
+            }
+          else
+            {
+              new_child = nbtk_item_factory_create (priv->factory);
+            }
 
           clutter_container_add_actor (CLUTTER_CONTAINER (item_view),
                                        new_child);
@@ -535,3 +546,27 @@ nbtk_item_view_thaw (NbtkItemView *item_view)
   model_changed_cb (priv->model, item_view);
 }
 
+/**
+ * nbtk_item_view_set_item_factory:
+ * @item_view: A #NbtkItemView
+ * @factory: A #NbtkItemFactory
+ *
+ * Sets @factory to be the factory used for creating new items
+ */
+void
+nbtk_item_view_set_factory (NbtkItemView    *item_view,
+                            NbtkItemFactory *factory)
+{
+  NbtkItemViewPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_ITEM_VIEW (item_view));
+
+  priv = item_view->priv;
+
+  if (priv->factory)
+    {
+      g_object_unref (priv->factory);
+    }
+
+  priv->factory = g_object_ref (factory);
+}

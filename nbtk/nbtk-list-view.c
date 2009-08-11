@@ -231,7 +231,7 @@ model_changed_cb (ClutterModel *model,
             }
           else
             {
-              new_child = nbtk_item_factory_create_item (priv->factory);
+              new_child = nbtk_item_factory_create (priv->factory);
             }
 
           clutter_container_add_actor (CLUTTER_CONTAINER (list_view),
@@ -558,15 +558,15 @@ nbtk_list_view_thaw (NbtkListView *list_view)
 }
 
 /**
- * nbtk_list_view_set_item_factory:
+ * nbtk_list_view_set_factory:
  * @list_view: A #NbtkListView
  * @factory: A #NbtkItemFactory
  *
  * Sets @factory to be the factory used for creating new list items
  */
 void
-nbtk_list_view_set_item_factory (NbtkListView    *list_view,
-                                 NbtkItemFactory *factory)
+nbtk_list_view_set_factory (NbtkListView    *list_view,
+                            NbtkItemFactory *factory)
 {
   NbtkListViewPrivate *priv;
 

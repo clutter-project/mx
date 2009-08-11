@@ -61,7 +61,7 @@ nbtk_item_factory_get_type (void)
 }
 
 ClutterActor *
-nbtk_item_factory_create_item (NbtkItemFactory *factory)
+nbtk_item_factory_create (NbtkItemFactory *factory)
 {
-  return NBTK_ITEM_FACTORY_GET_IFACE (factory)->create_item (factory);
+  return NBTK_ITEM_FACTORY_GET_IFACE (factory)->create (factory);
 }

@@ -91,8 +91,8 @@ nbtk_list_view_add_attribute (NbtkListView *list_view,
 
 void nbtk_list_view_freeze (NbtkListView *list_view);
 void nbtk_list_view_thaw (NbtkListView *list_view);
-void nbtk_list_view_set_item_factory (NbtkListView    *list_view,
-                                      NbtkItemFactory *factory);
+void nbtk_list_view_set_factory (NbtkListView    *list_view,
+                                 NbtkItemFactory *factory);
 
 
 G_END_DECLS
