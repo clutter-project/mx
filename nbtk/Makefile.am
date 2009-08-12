@@ -19,6 +19,7 @@ source_h = \
 	$(top_srcdir)/nbtk/nbtk-bin.h			\
 	$(top_srcdir)/nbtk/nbtk-box-layout.h		\
 	$(top_srcdir)/nbtk/nbtk-box-layout-child.h	\
+	$(top_srcdir)/nbtk/nbtk-combo-box.h 		\
 	$(top_srcdir)/nbtk/nbtk-button.h 		\
 	$(top_srcdir)/nbtk/nbtk-draggable.h 		\
 	$(top_srcdir)/nbtk/nbtk-droppable.h 		\
@@ -147,6 +148,7 @@ libnbtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	nbtk-bin.c			\
 	nbtk-box-layout.c		\
 	nbtk-box-layout-child.c		\
+	nbtk-combo-box.c		\
 	nbtk-button.c 			\
 	nbtk-draggable.c		\
 	nbtk-droppable.c		\
