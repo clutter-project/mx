@@ -50,6 +50,15 @@ GType nbtk_combo_box_get_type (void);
 
 NbtkComboBox *nbtk_combo_box_new (void);
 
+
+void nbtk_combo_box_insert_text (NbtkComboBox *box, gint position, const gchar *text);
+void nbtk_combo_box_append_text (NbtkComboBox *box, const gchar *text);
+void nbtk_combo_box_prepend_text (NbtkComboBox *box, const gchar *text);
+void nbtk_combo_box_remove_text (NbtkComboBox *box, gint position);
+
+void nbtk_combo_box_set_title (NbtkComboBox *box, const gchar *title);
+const gchar* nbtk_combo_box_get_title (NbtkComboBox *box);
+
 G_END_DECLS
 
 #endif /* _NBTK_COMBO_BOX_H */

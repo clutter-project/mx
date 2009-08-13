@@ -1,6 +1,7 @@
 /* nbtk-combo-box.c */
 
 #include "nbtk-combo-box.h"
+#include "nbtk-popup.h"
 
 G_DEFINE_TYPE (NbtkComboBox, nbtk_combo_box, NBTK_TYPE_WIDGET)
 
@@ -10,6 +11,17 @@ G_DEFINE_TYPE (NbtkComboBox, nbtk_combo_box, NBTK_TYPE_WIDGET)
 struct _NbtkComboBoxPrivate
 {
   ClutterActor *label;
+  ClutterActor *popup;
+  GSList       *text_list;
+  gfloat        clip_x;
+  gfloat        clip_y;
+};
+
+enum
+{
+  PROP_0,
+
+  PROP_TITLE
 };
 
 static void
@@ -18,8 +30,15 @@ nbtk_combo_box_get_property (GObject    *object,
                              GValue     *value,
                              GParamSpec *pspec)
 {
+  NbtkComboBoxPrivate *priv = NBTK_COMBO_BOX (object)->priv;
+
   switch (property_id)
     {
+    case PROP_TITLE:
+      g_value_set_string (value,
+                          clutter_text_get_text ((ClutterText*) priv->label));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -31,8 +50,14 @@ nbtk_combo_box_set_property (GObject      *object,
                              const GValue *value,
                              GParamSpec   *pspec)
 {
+  NbtkComboBox *combo = (NbtkComboBox*) object;
+
   switch (property_id)
     {
+    case PROP_TITLE:
+      nbtk_combo_box_set_title (combo, g_value_get_string (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -50,12 +75,28 @@ nbtk_combo_box_dispose (GObject *object)
       g_object_unref (priv->label);
       priv->label = NULL;
     }
+
+  if (priv->popup)
+    {
+      ClutterActor *stage;
+
+      stage = clutter_actor_get_stage (CLUTTER_ACTOR (object));
+      clutter_container_remove_actor ((ClutterContainer*) stage, priv->popup);
+    }
 }
 
 static void
 nbtk_combo_box_finalize (GObject *object)
 {
+  NbtkComboBoxPrivate *priv = NBTK_COMBO_BOX (object)->priv;
+
   G_OBJECT_CLASS (nbtk_combo_box_parent_class)->finalize (object);
+
+  if (priv->text_list)
+    {
+      g_slist_foreach (priv->text_list, (GFunc) g_free, NULL);
+      g_slist_free (priv->text_list);
+    }
 }
 
 static void
@@ -103,10 +144,24 @@ nbtk_combo_box_get_preferred_width (ClutterActor *actor,
 
   height = for_height - padding.top - padding.bottom;
 
-  clutter_actor_get_preferred_width (priv->label,
-                                     height,
-                                     &min_label_w,
-                                     &nat_label_w);
+  if (priv->popup)
+    {
+      /* reset the width so we do not get a cached size */
+      clutter_actor_set_size (priv->popup, -1, -1);
+
+      nbtk_widget_ensure_style ((NbtkWidget*) priv->popup);
+      clutter_actor_get_preferred_width (priv->popup,
+                                         -1,
+                                         &min_label_w,
+                                         &nat_label_w);
+    }
+  else
+    {
+      clutter_actor_get_preferred_width (priv->label,
+                                         height,
+                                         &min_label_w,
+                                         &nat_label_w);
+    }
 
   if (min_width_p)
     *min_width_p = padding.left + padding.right + min_label_w;
@@ -176,11 +231,104 @@ nbtk_combo_box_allocate (ClutterActor            *actor,
   clutter_actor_allocate (priv->label, &childbox, flags);
 }
 
+static void
+nbtk_combo_box_action_activated_cb (ClutterActor *popup,
+                                    NbtkAction   *action,
+                                    NbtkComboBox *box)
+{
+  nbtk_combo_box_set_title (box, nbtk_action_get_name (action));
+}
+
+static void
+paint_cb (ClutterActor        *actor,
+          NbtkComboBoxPrivate *priv)
+{
+  ClutterActorBox box;
+
+  /* set a clip so the menu appears to slide out of the button */
+  clutter_actor_get_allocation_box (actor, &box);
+  cogl_clip_push (priv->clip_x - box.x1, priv->clip_y - box.y1,
+                  box.x2 - box.x1, box.y2 - box.y1);
+}
+
+static void
+paint_after_cb (ClutterActor *actor,
+                gpointer     *data)
+{
+  /* reset the clip from above*/
+  cogl_clip_pop ();
+}
+
+static void
+nbtk_combo_box_update_popup (NbtkComboBox *box)
+{
+  NbtkComboBoxPrivate *priv = box->priv;
+  GSList *l;
+
+  if (!priv->popup)
+    {
+      ClutterActor *stage;
+
+      stage = clutter_actor_get_stage ((ClutterActor*) box);
+
+      priv->popup = (ClutterActor*) nbtk_popup_new ();
+      clutter_container_add_actor ((ClutterContainer *) stage, priv->popup);
+    }
+  else
+    {
+      nbtk_popup_clear (NBTK_POPUP (priv->popup));
+    }
+
+  for (l = priv->text_list; l; l = g_slist_next (l))
+    {
+      NbtkAction *action;
+      action = nbtk_action_new ();
+      nbtk_action_set_name (action, (gchar*) l->data);
+
+      nbtk_popup_add_action (NBTK_POPUP (priv->popup), action);
+    }
+
+  /* queue a relayout so the combobox size can match the new popup */
+  clutter_actor_queue_relayout ((ClutterActor*) box);
+}
+
 static gboolean
 nbtk_combo_box_button_release_event (ClutterActor       *actor,
                                      ClutterButtonEvent *event)
 {
-  g_debug ("clicked");
+  NbtkComboBoxPrivate *priv = NBTK_COMBO_BOX (actor)->priv;
+  ClutterContainer *stage;
+  gfloat x, y, width, height, popup_height;
+
+  stage = (ClutterContainer *) clutter_actor_get_stage (actor);
+
+
+  clutter_actor_get_transformed_position (actor, &x, &y);
+  clutter_actor_get_size (actor, &width, &height);
+
+
+  clutter_actor_set_scale (priv->popup, 1.0, 1.0);
+  clutter_actor_set_width (priv->popup, width);
+
+
+  g_signal_connect (priv->popup, "action-activated",
+                    G_CALLBACK (nbtk_combo_box_action_activated_cb), actor);
+
+  clutter_actor_show (priv->popup);
+
+  priv->clip_x = x;
+  priv->clip_y = y + height;
+  g_signal_connect (priv->popup, "paint", G_CALLBACK (paint_cb), priv);
+  g_signal_connect_after (priv->popup, "paint", G_CALLBACK (paint_after_cb),
+                          NULL);
+
+  popup_height = clutter_actor_get_height (priv->popup);
+  clutter_actor_set_position (priv->popup, x,
+                              y + height - popup_height);
+
+  clutter_actor_animate (priv->popup, CLUTTER_EASE_OUT_CUBIC, 250,
+                         "y", y + height, NULL);
+
   return FALSE;
 }
 
@@ -215,7 +363,6 @@ nbtk_combo_box_init (NbtkComboBox *self)
 
   self->priv->label = clutter_text_new ();
   clutter_actor_set_parent (self->priv->label, (ClutterActor*) self);
-  clutter_text_set_text ((ClutterText*) self->priv->label, "testing");
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
 }
@@ -225,3 +372,69 @@ nbtk_combo_box_new (void)
 {
   return g_object_new (NBTK_TYPE_COMBO_BOX, NULL);
 }
+
+void
+nbtk_combo_box_insert_text (NbtkComboBox *box,
+                            gint          position,
+                            const gchar  *text)
+{
+  g_return_if_fail (NBTK_IS_COMBO_BOX (box));
+
+  box->priv->text_list = g_slist_insert (box->priv->text_list, g_strdup (text),
+                                         position);
+  nbtk_combo_box_update_popup (box);
+}
+
+void
+nbtk_combo_box_append_text (NbtkComboBox *box,
+                            const gchar  *text)
+{
+  g_return_if_fail (NBTK_IS_COMBO_BOX (box));
+
+  box->priv->text_list = g_slist_append (box->priv->text_list, g_strdup (text));
+  nbtk_combo_box_update_popup (box);
+}
+
+void
+nbtk_combo_box_prepend_text (NbtkComboBox *box,
+                             const gchar  *text)
+{
+  g_return_if_fail (NBTK_IS_COMBO_BOX (box));
+
+  box->priv->text_list = g_slist_prepend (box->priv->text_list,
+                                          g_strdup (text));
+  nbtk_combo_box_update_popup (box);
+}
+
+void
+nbtk_combo_box_remove_text (NbtkComboBox *box,
+                            gint          position)
+{
+  GSList *item;
+
+  g_return_if_fail (NBTK_IS_COMBO_BOX (box));
+
+  /* find the item, free the string and remove it from the list */
+  item = g_slist_nth (box->priv->text_list, position);
+  g_free (item->data);
+  box->priv->text_list = g_slist_delete_link (box->priv->text_list, item);
+  nbtk_combo_box_update_popup (box);
+}
+
+void
+nbtk_combo_box_set_title (NbtkComboBox *box,
+                          const gchar  *title)
+{
+  g_return_if_fail (NBTK_IS_COMBO_BOX (box));
+
+  clutter_text_set_text ((ClutterText*) box->priv->label, title);
+}
+
+const gchar*
+nbtk_combo_box_get_title (NbtkComboBox *box)
+{
+  g_return_val_if_fail (NBTK_IS_COMBO_BOX (box), NULL);
+
+  return clutter_text_get_text ((ClutterText*) box->priv->label);
+}
+
