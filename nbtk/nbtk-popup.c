@@ -177,8 +177,8 @@ nbtk_popup_get_preferred_height (ClutterActor *actor,
                                           &child_min_height,
                                           &child_nat_height);
 
-      min_height += child_min_height;
-      nat_height += child_nat_height;
+      min_height += child_min_height + 1;
+      nat_height += child_nat_height + 1;
     }
 
   if (min_height_p)
