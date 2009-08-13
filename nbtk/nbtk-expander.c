@@ -32,6 +32,8 @@ G_DEFINE_TYPE_WITH_CODE (NbtkExpander, nbtk_expander, NBTK_TYPE_BIN,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
                                                 clutter_container_iface_init))
 
+static ClutterContainerIface *container_parent_class = NULL;
+
 #define GET_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), NBTK_TYPE_EXPANDER, NbtkExpanderPrivate))
 
@@ -440,9 +442,6 @@ nbtk_expander_allocate (ClutterActor          *actor,
 static void
 nbtk_expander_paint (ClutterActor *actor)
 {
-  if (!((NbtkExpander *) actor)->priv->expanded)
-    clutter_actor_hide (nbtk_bin_get_child ((NbtkBin*) actor));
-
   CLUTTER_ACTOR_CLASS (nbtk_expander_parent_class)->paint (actor);
 
   clutter_actor_paint (((NbtkExpander* ) actor)->priv->label);
@@ -555,9 +554,33 @@ nbtk_expander_foreach (ClutterContainer *container,
 }
 
 static void
+nbtk_expander_add (ClutterContainer *container,
+                   ClutterActor *actor)
+{
+  NbtkExpander *expander = NBTK_EXPANDER (container);
+  NbtkExpanderPrivate *priv = expander->priv;
+
+  /* Override the container add method so we can hide the actor if the
+     expander is not expanded */
+
+  /* chain up */
+  container_parent_class->add (container, actor);
+
+  if (!priv->expanded)
+    {
+      actor = nbtk_bin_get_child (NBTK_BIN (container));
+      if (actor)
+        clutter_actor_hide (actor);
+    }
+}
+
+static void
 clutter_container_iface_init (ClutterContainerIface *iface)
 {
+  container_parent_class = g_type_interface_peek_parent (iface);
+
   iface->foreach = nbtk_expander_foreach;
+  iface->add = nbtk_expander_add;
 }
 
 static void
