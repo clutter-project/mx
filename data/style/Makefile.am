@@ -25,6 +25,8 @@ dist_style_DATA = \
 		scroll-handle-hover.png \
 		scroll-handle.png \
 		tooltip-background.png \
+		menu.png \
+		menu-item.png \
 		progress-bar-background.png \
 		progress-bar-bar.png
 

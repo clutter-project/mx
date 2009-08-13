@@ -163,3 +163,18 @@ NbtkComboBox {
   font-family: "Liberation Sans";
   font-size: 13;
 }
+
+NbtkPopup {
+  padding: 3;
+  border-image: url('file://menu.png') 2;
+}
+
+NbtkPopup > NbtkButton {
+  padding: 3;
+  border-image: none;
+}
+
+NbtkPopup > NbtkButton:hover, NbtkPopup > NbtkButton:active {
+  color: white;
+  border-image: url('file://menu-item.png') 2;
+}
