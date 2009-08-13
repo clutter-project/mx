@@ -157,3 +157,9 @@ NbtkProgressBar NbtkProgressBarFill {
   border-image: url('file://progress-bar-bar.png') 2 stretch stretch;
 }
 
+NbtkComboBox {
+  padding: 5 38 5 5;
+  border-image: url('file://combobox.png') 4 32 4 4;
+  font-family: "Liberation Sans";
+  font-size: 13;
+}
