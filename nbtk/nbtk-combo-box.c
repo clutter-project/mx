@@ -146,14 +146,16 @@ nbtk_combo_box_get_preferred_width (ClutterActor *actor,
 
   if (priv->popup)
     {
-      /* reset the width so we do not get a cached size */
-      clutter_actor_set_size (priv->popup, -1, -1);
+      ClutterActorClass *actor_class;
 
       nbtk_widget_ensure_style ((NbtkWidget*) priv->popup);
-      clutter_actor_get_preferred_width (priv->popup,
-                                         -1,
-                                         &min_label_w,
-                                         &nat_label_w);
+
+      /* call the vfunc directly to prevent retrieving any cached value */
+      actor_class = CLUTTER_ACTOR_CLASS (G_OBJECT_GET_CLASS (priv->popup));
+      actor_class->get_preferred_width (priv->popup,
+                                        -1,
+                                        &min_label_w,
+                                        &nat_label_w);
     }
   else
     {
