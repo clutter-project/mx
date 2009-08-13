@@ -350,9 +350,6 @@ nbtk_popup_init (NbtkPopup *self)
   priv->children = g_array_new (FALSE, FALSE, sizeof (NbtkPopupChild));
 
   g_object_set (G_OBJECT (self),
-                "scale-gravity", CLUTTER_GRAVITY_CENTER,
-                "scale-x", 0.0,
-                "scale-y", 0.0,
                 "show-on-set-parent", FALSE,
                 "reactive", TRUE,
                 NULL);
@@ -373,8 +370,6 @@ nbtk_popup_button_clicked_cb (NbtkButton *button,
 
   g_signal_emit (popup, signals[ACTION_ACTIVATED], 0, action);
   g_signal_emit_by_name (action, "activated");
-
-  nbtk_popup_hide (popup);
 }
 
 void
@@ -436,65 +431,5 @@ nbtk_popup_clear (NbtkPopup *popup)
     nbtk_popup_free_action_at (popup, i, FALSE);
 
   g_array_remove_range (priv->children, 0, priv->children->len);
-}
-
-static void
-nbtk_popup_anim_out_cb (ClutterAnimation *animation,
-                        NbtkPopup        *popup)
-{
-  NbtkPopupPrivate *priv = popup->priv;
-  clutter_actor_hide (CLUTTER_ACTOR (popup));
-  priv->transition_out = FALSE;
-}
-
-void
-nbtk_popup_show (NbtkPopup *popup)
-{
-  NbtkPopupPrivate *priv = popup->priv;
-
-  if (!CLUTTER_ACTOR_IS_VISIBLE (popup) || priv->transition_out)
-    {
-      clutter_actor_show (CLUTTER_ACTOR (popup));
-
-      priv->transition_out = FALSE;
-      g_signal_handlers_disconnect_by_func (
-        clutter_actor_animate (CLUTTER_ACTOR (popup),
-                               CLUTTER_EASE_OUT_BOUNCE,
-                               150,
-                               "scale-x", 1.0,
-                               "scale-y", 1.0,
-                               NULL),
-        nbtk_popup_anim_out_cb,
-        popup);
-    }
-}
-
-void
-nbtk_popup_hide (NbtkPopup *popup)
-{
-  NbtkPopupPrivate *priv = popup->priv;
-
-  if (CLUTTER_ACTOR_IS_VISIBLE (popup) && !priv->transition_out)
-    {
-      priv->transition_out = TRUE;
-      clutter_actor_animate (CLUTTER_ACTOR (
-                               popup),
-                             CLUTTER_EASE_OUT_SINE,
-                             150,
-                             "scale-x", 0.0,
-                             "scale-y", 0.0,
-                             "signal::completed", nbtk_popup_anim_out_cb,
-                             popup,
-                             NULL);
-    }
-}
-
-gboolean
-nbtk_popup_is_visible (NbtkPopup *popup)
-{
-  if (CLUTTER_ACTOR_IS_VISIBLE (popup))
-    return !popup->priv->transition_out;
-  else
-    return FALSE;
 }
 

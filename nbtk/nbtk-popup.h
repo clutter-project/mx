@@ -79,12 +79,6 @@ void nbtk_popup_remove_action (NbtkPopup  *popup,
 
 void nbtk_popup_clear (NbtkPopup *popup);
 
-void nbtk_popup_show (NbtkPopup *popup);
-
-void nbtk_popup_hide (NbtkPopup *popup);
-
-gboolean nbtk_popup_is_visible (NbtkPopup *popup);
-
 G_END_DECLS
 
 #endif /* _NBTK_POPUP_H */
