@@ -239,6 +239,10 @@ nbtk_combo_box_action_activated_cb (ClutterActor *popup,
                                     NbtkComboBox *box)
 {
   nbtk_combo_box_set_title (box, nbtk_action_get_name (action));
+  clutter_actor_animate (popup, CLUTTER_LINEAR, 250,
+                         "opacity", (guchar) 0,
+                         "signal-swapped::completed", clutter_actor_hide, popup,
+                         NULL);
 }
 
 static void
@@ -309,7 +313,7 @@ nbtk_combo_box_button_release_event (ClutterActor       *actor,
   clutter_actor_get_size (actor, &width, &height);
 
 
-  clutter_actor_set_scale (priv->popup, 1.0, 1.0);
+  clutter_actor_set_opacity (priv->popup, 0xff);
   clutter_actor_set_width (priv->popup, width);
 
 
