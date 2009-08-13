@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-07-22 16:49+0000\n"
+"POT-Creation-Date: 2009-07-29 09:21+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Glscht_Wen <wen.hsinx.moh@intel.com>\n"
 "Language-Team: \n"
@@ -16,14 +16,11 @@ msgstr ""
 msgid "Unavailable"
 msgstr "不可用"
 
-#: ../nbtk/nbtk-gtk-light-switch.c:171
-#: ../nbtk/nbtk-gtk-light-switch.c:242
+#: ../nbtk/nbtk-gtk-light-switch.c:171 ../nbtk/nbtk-gtk-light-switch.c:242
 msgid "On"
 msgstr "啟動"
 
 #. Draw the second label; "Off"
-#: ../nbtk/nbtk-gtk-light-switch.c:187
-#: ../nbtk/nbtk-gtk-light-switch.c:240
+#: ../nbtk/nbtk-gtk-light-switch.c:187 ../nbtk/nbtk-gtk-light-switch.c:240
 msgid "Off"
 msgstr "關閉"
-
