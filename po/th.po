@@ -1,0 +1,39 @@
+# Thai locale nbtk-nbtk_api_version
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Anuchit Chalothorn <anoochit@gmail.com>, 2009.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: nbtk-nbtk_api_version 2.x\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-08-13 01:11+0000\n"
+"PO-Revision-Date: 2009-08-14 16:21+0700\n"
+"Last-Translator: Anuchit Chalothorn <anoochit@gmail.com>\n"
+"Language-Team: Thai <anoochit@gmail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: Thai\n"
+"X-Poedit-Country: THAILAND\n"
+
+#: ../nbtk/nbtk-gtk-light-switch.c:163
+msgid "Unavailable"
+msgstr "ใช้การไม่ได้"
+
+#. TRANSLATORS: If this string takes more than four or five characters in
+#. * your language, please use the MEDIUM VERTICAL BAR unicode character
+#. * instead
+#: ../nbtk/nbtk-gtk-light-switch.c:183
+#: ../nbtk/nbtk-gtk-light-switch.c:256
+msgid "On"
+msgstr "เปิด"
+
+#. Draw the second label; "Off"
+#. TRANSLATORS: If this string takes more than four or five characters in
+#. * your language, please use the ROUND CIRCLE unicode character instead
+#: ../nbtk/nbtk-gtk-light-switch.c:201
+#: ../nbtk/nbtk-gtk-light-switch.c:254
+msgid "Off"
+msgstr "ปิด"
+
