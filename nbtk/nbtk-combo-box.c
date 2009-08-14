@@ -298,9 +298,16 @@ nbtk_combo_box_update_popup (NbtkComboBox *box)
   clutter_actor_queue_relayout ((ClutterActor*) box);
 }
 
+static void
+popout_completed_cb (ClutterAnimation *animation,
+                     ClutterActor     *popup)
+{
+  clutter_actor_set_reactive (popup, TRUE);
+}
+
 static gboolean
-nbtk_combo_box_button_release_event (ClutterActor       *actor,
-                                     ClutterButtonEvent *event)
+nbtk_combo_box_button_press_event (ClutterActor       *actor,
+                                   ClutterButtonEvent *event)
 {
   NbtkComboBoxPrivate *priv = NBTK_COMBO_BOX (actor)->priv;
   ClutterContainer *stage;
@@ -321,6 +328,8 @@ nbtk_combo_box_button_release_event (ClutterActor       *actor,
                     G_CALLBACK (nbtk_combo_box_action_activated_cb), actor);
 
   clutter_actor_show (priv->popup);
+  /* don't set reactive until we have finished the "popup" animation */
+  clutter_actor_set_reactive (priv->popup, FALSE);
 
   priv->clip_x = x;
   priv->clip_y = y + height;
@@ -333,7 +342,9 @@ nbtk_combo_box_button_release_event (ClutterActor       *actor,
                               y + height - popup_height);
 
   clutter_actor_animate (priv->popup, CLUTTER_EASE_OUT_CUBIC, 250,
-                         "y", y + height, NULL);
+                         "y", y + height,
+                        "signal::completed", popout_completed_cb, priv->popup,
+                        NULL);
 
   return FALSE;
 }
@@ -359,7 +370,7 @@ nbtk_combo_box_class_init (NbtkComboBoxClass *klass)
   actor_class->get_preferred_height = nbtk_combo_box_get_preferred_height;
   actor_class->allocate = nbtk_combo_box_allocate;
 
-  actor_class->button_release_event = nbtk_combo_box_button_release_event;
+  actor_class->button_press_event = nbtk_combo_box_button_press_event;
 }
 
 static void
