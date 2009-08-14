@@ -59,6 +59,9 @@ void nbtk_combo_box_remove_text (NbtkComboBox *box, gint position);
 void nbtk_combo_box_set_title (NbtkComboBox *box, const gchar *title);
 const gchar* nbtk_combo_box_get_title (NbtkComboBox *box);
 
+void nbtk_combo_box_set_index (NbtkComboBox *box, gint index);
+const gint nbtk_combo_box_get_index (NbtkComboBox *box);
+
 G_END_DECLS
 
 #endif /* _NBTK_COMBO_BOX_H */

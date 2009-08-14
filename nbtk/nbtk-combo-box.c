@@ -3,6 +3,8 @@
 #include "nbtk-combo-box.h"
 #include "nbtk-popup.h"
 
+#include "nbtk-private.h"
+
 G_DEFINE_TYPE (NbtkComboBox, nbtk_combo_box, NBTK_TYPE_WIDGET)
 
 #define COMBO_BOX_PRIVATE(o) \
@@ -15,13 +17,15 @@ struct _NbtkComboBoxPrivate
   GSList       *text_list;
   gfloat        clip_x;
   gfloat        clip_y;
+  gint          index;
 };
 
 enum
 {
   PROP_0,
 
-  PROP_TITLE
+  PROP_TITLE,
+  PROP_INDEX
 };
 
 static void
@@ -37,6 +41,10 @@ nbtk_combo_box_get_property (GObject    *object,
     case PROP_TITLE:
       g_value_set_string (value,
                           clutter_text_get_text ((ClutterText*) priv->label));
+      break;
+
+    case PROP_INDEX:
+      g_value_set_int (value, priv->index);
       break;
 
     default:
@@ -56,6 +64,10 @@ nbtk_combo_box_set_property (GObject      *object,
     {
     case PROP_TITLE:
       nbtk_combo_box_set_title (combo, g_value_get_string (value));
+      break;
+
+    case PROP_INDEX:
+      nbtk_combo_box_set_index (combo, g_value_get_int (value));
       break;
 
     default:
@@ -238,7 +250,17 @@ nbtk_combo_box_action_activated_cb (ClutterActor *popup,
                                     NbtkAction   *action,
                                     NbtkComboBox *box)
 {
-  nbtk_combo_box_set_title (box, nbtk_action_get_name (action));
+  gint index;
+
+  /* set the title */
+  clutter_text_set_text ((ClutterText*) box->priv->label,
+                         nbtk_action_get_name (action));
+  g_object_notify ((GObject*) box, "title");
+
+  index = GPOINTER_TO_INT (g_object_get_data ((GObject*) action, "index"));
+  box->priv->index = index;
+  g_object_notify ((GObject*) box, "index");
+
   clutter_actor_animate (popup, CLUTTER_LINEAR, 250,
                          "opacity", (guchar) 0,
                          "signal-swapped::completed", clutter_actor_hide, popup,
@@ -270,6 +292,7 @@ nbtk_combo_box_update_popup (NbtkComboBox *box)
 {
   NbtkComboBoxPrivate *priv = box->priv;
   GSList *l;
+  gint index;
 
   if (!priv->popup)
     {
@@ -279,16 +302,23 @@ nbtk_combo_box_update_popup (NbtkComboBox *box)
 
       priv->popup = (ClutterActor*) nbtk_popup_new ();
       clutter_container_add_actor ((ClutterContainer *) stage, priv->popup);
+
+      g_signal_connect (priv->popup, "action-activated",
+                        G_CALLBACK (nbtk_combo_box_action_activated_cb),
+                        box);
+
     }
   else
     {
       nbtk_popup_clear (NBTK_POPUP (priv->popup));
     }
 
-  for (l = priv->text_list; l; l = g_slist_next (l))
+  for (index = 0, l = priv->text_list; l; l = g_slist_next (l), index++)
     {
       NbtkAction *action;
+
       action = nbtk_action_new ();
+      g_object_set_data ((GObject*) action, "index", GINT_TO_POINTER (index));
       nbtk_action_set_name (action, (gchar*) l->data);
 
       nbtk_popup_add_action (NBTK_POPUP (priv->popup), action);
@@ -323,10 +353,6 @@ nbtk_combo_box_button_press_event (ClutterActor       *actor,
   clutter_actor_set_opacity (priv->popup, 0xff);
   clutter_actor_set_width (priv->popup, width);
 
-
-  g_signal_connect (priv->popup, "action-activated",
-                    G_CALLBACK (nbtk_combo_box_action_activated_cb), actor);
-
   clutter_actor_show (priv->popup);
   /* don't set reactive until we have finished the "popup" animation */
   clutter_actor_set_reactive (priv->popup, FALSE);
@@ -352,6 +378,7 @@ nbtk_combo_box_button_press_event (ClutterActor       *actor,
 static void
 nbtk_combo_box_class_init (NbtkComboBoxClass *klass)
 {
+  GParamSpec *pspec;
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
 
@@ -371,6 +398,22 @@ nbtk_combo_box_class_init (NbtkComboBoxClass *klass)
   actor_class->allocate = nbtk_combo_box_allocate;
 
   actor_class->button_press_event = nbtk_combo_box_button_press_event;
+
+  pspec = g_param_spec_string ("title",
+                               "Title",
+                               "Text currently displayed in the combo box"
+                               " button",
+                               "",
+                               NBTK_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_TITLE, pspec);
+
+  pspec = g_param_spec_int ("index",
+                            "Index",
+                            "Index of the selected item, or -1 if no item is"
+                            " selected.",
+                            -1, G_MAXINT, -1,
+                            NBTK_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_INDEX, pspec);
 }
 
 static void
@@ -444,7 +487,11 @@ nbtk_combo_box_set_title (NbtkComboBox *box,
 {
   g_return_if_fail (NBTK_IS_COMBO_BOX (box));
 
+  box->priv->index = -1;
   clutter_text_set_text ((ClutterText*) box->priv->label, title);
+
+  g_object_notify (G_OBJECT (box), "index");
+  g_object_notify (G_OBJECT (box), "title");
 }
 
 const gchar*
@@ -453,5 +500,37 @@ nbtk_combo_box_get_title (NbtkComboBox *box)
   g_return_val_if_fail (NBTK_IS_COMBO_BOX (box), NULL);
 
   return clutter_text_get_text ((ClutterText*) box->priv->label);
+}
+
+void
+nbtk_combo_box_set_index (NbtkComboBox *box,
+                          gint          index)
+{
+  GSList *item;
+
+  g_return_if_fail (NBTK_IS_COMBO_BOX (box));
+
+  item = g_slist_nth (box->priv->text_list, index);
+
+  if (!item)
+    {
+      box->priv->index = -1;
+      clutter_text_set_text ((ClutterText*) box->priv->label, NULL);
+      return;
+    }
+
+  box->priv->index = index;
+  clutter_text_set_text ((ClutterText*) box->priv->label, item->data);
+
+  g_object_notify (G_OBJECT (box), "index");
+  g_object_notify (G_OBJECT (box), "title");
+}
+
+const gint
+nbtk_combo_box_get_index (NbtkComboBox *box)
+{
+  g_return_val_if_fail (NBTK_IS_COMBO_BOX (box), 0);
+
+  return box->priv->index;
 }
 
