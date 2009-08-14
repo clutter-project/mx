@@ -246,17 +246,21 @@ static void
 nbtk_popup_pick (ClutterActor       *actor,
                  const ClutterColor *color)
 {
-  ClutterActorBox box;
+  gint i;
+  NbtkPopupPrivate *priv = NBTK_POPUP (actor)->priv;
 
-  cogl_set_source_color4ub (color->red,
-                            color->green,
-                            color->blue,
-                            color->alpha);
-  clutter_actor_get_allocation_box (actor, &box);
-  cogl_rectangle (0, 0, box.x2 - box.x1, box.y2 - box.y1);
+  CLUTTER_ACTOR_CLASS (nbtk_popup_parent_class)->pick (actor, color);
 
-  /* Use paint to pick children */
-  nbtk_popup_paint (actor);
+  /* pick children */
+  for (i = 0; i < priv->children->len; i++)
+    {
+      NbtkPopupChild *child = &g_array_index (priv->children, NbtkPopupChild,
+                                              i);
+      if (clutter_actor_should_pick_paint (CLUTTER_ACTOR (actor)))
+        {
+          clutter_actor_paint ((ClutterActor*) child->button);
+        }
+    }
 }
 
 static void
@@ -311,6 +315,16 @@ nbtk_popup_event (ClutterActor *actor,
 }
 
 static void
+nbtk_popup_show (ClutterActor *actor)
+{
+  CLUTTER_ACTOR_CLASS (nbtk_popup_parent_class)->show (actor);
+
+  /* set reactive, since this may have been unset by a previous activation
+   * (see: nbtk_popup_button_clicked_cb) */
+  clutter_actor_set_reactive (actor, TRUE);
+}
+
+static void
 nbtk_popup_class_init (NbtkPopupClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -323,6 +337,7 @@ nbtk_popup_class_init (NbtkPopupClass *klass)
   object_class->dispose = nbtk_popup_dispose;
   object_class->finalize = nbtk_popup_finalize;
 
+  actor_class->show = nbtk_popup_show;
   actor_class->get_preferred_width = nbtk_popup_get_preferred_width;
   actor_class->get_preferred_height = nbtk_popup_get_preferred_height;
   actor_class->allocate = nbtk_popup_allocate;
@@ -351,7 +366,6 @@ nbtk_popup_init (NbtkPopup *self)
 
   g_object_set (G_OBJECT (self),
                 "show-on-set-parent", FALSE,
-                "reactive", TRUE,
                 NULL);
 }
 
@@ -365,11 +379,16 @@ static void
 nbtk_popup_button_clicked_cb (NbtkButton *button,
                               NbtkAction *action)
 {
-  NbtkPopup *popup =
-    NBTK_POPUP (clutter_actor_get_parent (CLUTTER_ACTOR (button)));
+  NbtkPopup *popup;
+
+  popup = NBTK_POPUP (clutter_actor_get_parent (CLUTTER_ACTOR (button)));
+
+  /* set the popup unreactive to prevent other items being hilighted */
+  clutter_actor_set_reactive ((ClutterActor*) popup, FALSE);
 
   g_signal_emit (popup, signals[ACTION_ACTIVATED], 0, action);
   g_signal_emit_by_name (action, "activated");
+
 }
 
 void
