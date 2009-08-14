@@ -1,5 +1,37 @@
 #include <nbtk/nbtk.h>
 
+
+static void
+title_changed_cb (NbtkComboBox *box)
+{
+  printf ("title now: %s\n", nbtk_combo_box_get_title (box));
+}
+
+static void
+index_changed_cb (NbtkComboBox *box)
+{
+  printf ("index now: %d\n", nbtk_combo_box_get_index (box));
+}
+
+static gboolean
+stage_key_press_cb (ClutterActor *actor,
+                    ClutterKeyEvent *event,
+                    NbtkComboBox *box)
+{
+  if (event->keyval == 'r')
+    {
+      nbtk_combo_box_set_title (box, "London");
+    }
+
+  if (event->keyval >= '0' && event->keyval <= '9')
+    {
+      nbtk_combo_box_set_index (box, event->keyval - 48);
+    }
+
+  return FALSE;
+}
+
+
 int
 main (int argc, char **argv)
 {
@@ -21,6 +53,14 @@ main (int argc, char **argv)
   nbtk_combo_box_append_text (NBTK_COMBO_BOX (combo), "Coventry Street");
   nbtk_combo_box_append_text (NBTK_COMBO_BOX (combo), "Piccadilly");
   nbtk_combo_box_set_title (NBTK_COMBO_BOX (combo), "London");
+
+  g_signal_connect (combo, "notify::title", G_CALLBACK (title_changed_cb),
+                    NULL);
+  g_signal_connect (combo, "notify::index", G_CALLBACK (index_changed_cb),
+                    NULL);
+
+  g_signal_connect (stage, "key-press-event", G_CALLBACK (stage_key_press_cb),
+                    combo);
 
   clutter_actor_show (stage);
 
