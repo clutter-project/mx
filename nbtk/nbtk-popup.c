@@ -382,7 +382,11 @@ nbtk_popup_add_action (NbtkPopup  *popup,
 
   child.action = g_object_ref_sink (action);
   /* TODO: Connect to notify signals in case action properties change */
-  child.button = nbtk_button_new_with_label (nbtk_action_get_name (action));
+  child.button = g_object_new (NBTK_TYPE_BUTTON,
+                               "label", nbtk_action_get_name (action),
+                               "transition-duration", 0,
+                               NULL);
+
   nbtk_bin_set_alignment (NBTK_BIN (child.button),
                           NBTK_ALIGN_LEFT,
                           NBTK_ALIGN_CENTER);
