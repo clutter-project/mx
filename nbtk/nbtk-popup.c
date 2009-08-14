@@ -320,7 +320,7 @@ nbtk_popup_show (ClutterActor *actor)
   CLUTTER_ACTOR_CLASS (nbtk_popup_parent_class)->show (actor);
 
   /* set reactive, since this may have been unset by a previous activation
-   * (see: nbtk_popup_button_clicked_cb) */
+   * (see: nbtk_popup_button_release_cb) */
   clutter_actor_set_reactive (actor, TRUE);
 }
 
@@ -376,8 +376,9 @@ nbtk_popup_new (void)
 }
 
 static void
-nbtk_popup_button_clicked_cb (NbtkButton *button,
-                              NbtkAction *action)
+nbtk_popup_button_release_cb (NbtkButton   *button,
+                              ClutterEvent *event,
+                              NbtkAction   *action)
 {
   NbtkPopup *popup;
 
@@ -409,8 +410,8 @@ nbtk_popup_add_action (NbtkPopup  *popup,
   nbtk_bin_set_alignment (NBTK_BIN (child.button),
                           NBTK_ALIGN_LEFT,
                           NBTK_ALIGN_CENTER);
-  g_signal_connect (child.button, "clicked",
-                    G_CALLBACK (nbtk_popup_button_clicked_cb), action);
+  g_signal_connect (child.button, "button-release-event",
+                    G_CALLBACK (nbtk_popup_button_release_cb), action);
   clutter_actor_set_parent (CLUTTER_ACTOR (child.button),
                             CLUTTER_ACTOR (popup));
 
