@@ -549,7 +549,7 @@ nbtk_button_class_init (NbtkButtonClass *klass)
   pspec = g_param_spec_int ("transition-duration",
                             "Transition Duration",
                             "Duration of the state transition effect",
-                            0, G_MAXINT, 250, G_PARAM_READWRITE);
+                            0, G_MAXINT, 120, G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_TRANSITION, pspec);
 
 
@@ -575,7 +575,7 @@ static void
 nbtk_button_init (NbtkButton *button)
 {
   button->priv = NBTK_BUTTON_GET_PRIVATE (button);
-  button->priv->transition_duration = 250;
+  button->priv->transition_duration = 120;
   button->priv->spacing = 6;
 
   clutter_actor_set_reactive ((ClutterActor *) button, TRUE);
