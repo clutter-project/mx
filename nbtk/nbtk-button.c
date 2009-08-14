@@ -246,12 +246,21 @@ nbtk_button_style_changed (NbtkWidget *widget)
               clutter_actor_set_parent (priv->old_bg, (ClutterActor*) widget);
               priv->old_bg_parented = TRUE;
             }
-          animation = clutter_actor_animate (priv->old_bg,
-                                             CLUTTER_LINEAR, 150,
-                                             "opacity", 0,
-                                             NULL);
-          g_signal_connect (animation, "completed",
-                            G_CALLBACK (nbtk_animation_completed), button);
+          if (priv->transition_duration > 0)
+            {
+              animation = clutter_actor_animate (priv->old_bg,
+                                                 CLUTTER_LINEAR,
+                                                 priv->transition_duration,
+                                                 "opacity", 0,
+                                                 NULL);
+              g_signal_connect (animation, "completed",
+                                G_CALLBACK (nbtk_animation_completed), button);
+            }
+          else
+            {
+              nbtk_button_dispose_old_bg (button);
+            }
+
         }
     }
 }
