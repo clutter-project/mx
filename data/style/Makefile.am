@@ -3,6 +3,7 @@ dist_style_DATA = \
 		button-active.png \
 		button-hover.png \
 		button.png \
+		combobox.png \
 		default.css \
 		entry.png \
 		entry-active.png \
@@ -24,6 +25,8 @@ dist_style_DATA = \
 		scroll-handle-hover.png \
 		scroll-handle.png \
 		tooltip-background.png \
+		menu.png \
+		menu-item.png \
 		progress-bar-background.png \
 		progress-bar-bar.png
 

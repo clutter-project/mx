@@ -15,10 +15,12 @@ BUILT_SOURCES = 		\
 
 # keep sorted alphabetically, please
 source_h = \
+	$(top_srcdir)/nbtk/nbtk-action.h		\
 	$(top_srcdir)/nbtk/nbtk-adjustment.h		\
 	$(top_srcdir)/nbtk/nbtk-bin.h			\
 	$(top_srcdir)/nbtk/nbtk-box-layout.h		\
 	$(top_srcdir)/nbtk/nbtk-box-layout-child.h	\
+	$(top_srcdir)/nbtk/nbtk-combo-box.h 		\
 	$(top_srcdir)/nbtk/nbtk-button.h 		\
 	$(top_srcdir)/nbtk/nbtk-draggable.h 		\
 	$(top_srcdir)/nbtk/nbtk-droppable.h 		\
@@ -36,6 +38,7 @@ source_h = \
 	$(top_srcdir)/nbtk/nbtk-icon.h \
 	$(top_srcdir)/nbtk/nbtk-label.h 		\
 	$(top_srcdir)/nbtk/nbtk-progress-bar.h		\
+	$(top_srcdir)/nbtk/nbtk-popup.h 		\
 	$(top_srcdir)/nbtk/nbtk-scroll-bar.h 		\
 	$(top_srcdir)/nbtk/nbtk-scroll-view.h 		\
 	$(top_srcdir)/nbtk/nbtk-scrollable.h 		\
@@ -145,9 +148,11 @@ libnbtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	$(source_h)			\
 	$(source_h_priv)		\
 	nbtk-adjustment.c 		\
+	nbtk-action.c 			\
 	nbtk-bin.c			\
 	nbtk-box-layout.c		\
 	nbtk-box-layout-child.c		\
+	nbtk-combo-box.c		\
 	nbtk-button.c 			\
 	nbtk-draggable.c		\
 	nbtk-droppable.c		\
@@ -162,6 +167,7 @@ libnbtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	nbtk-list-view.c 		\
 	nbtk-label.c 			\
 	nbtk-progress-bar.c		\
+	nbtk-popup.c			\
 	nbtk-scroll-bar.c 		\
 	nbtk-scroll-button.c \
 	nbtk-scroll-button.h \

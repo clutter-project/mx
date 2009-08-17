@@ -28,6 +28,7 @@
 #include <nbtk/nbtk-bin.h>
 #include <nbtk/nbtk-box-layout.h>
 #include <nbtk/nbtk-button.h>
+#include <nbtk/nbtk-combo-box.h>
 #include <nbtk/nbtk-draggable.h>
 #include <nbtk/nbtk-droppable.h>
 #include <nbtk/nbtk-clipboard.h>

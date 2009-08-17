@@ -157,3 +157,24 @@ NbtkProgressBar NbtkProgressBarFill {
   border-image: url('file://progress-bar-bar.png') 2 stretch stretch;
 }
 
+NbtkComboBox {
+  padding: 5 38 5 5;
+  border-image: url('file://combobox.png') 4 32 4 4;
+  font-family: "Liberation Sans";
+  font-size: 13;
+}
+
+NbtkPopup {
+  padding: 3;
+  border-image: url('file://menu.png') 2;
+}
+
+NbtkPopup > NbtkButton {
+  padding: 3;
+  border-image: none;
+}
+
+NbtkPopup > NbtkButton:hover, NbtkPopup > NbtkButton:active {
+  color: white;
+  border-image: url('file://menu-item.png') 2;
+}

@@ -246,12 +246,21 @@ nbtk_button_style_changed (NbtkWidget *widget)
               clutter_actor_set_parent (priv->old_bg, (ClutterActor*) widget);
               priv->old_bg_parented = TRUE;
             }
-          animation = clutter_actor_animate (priv->old_bg,
-                                             CLUTTER_LINEAR, 150,
-                                             "opacity", 0,
-                                             NULL);
-          g_signal_connect (animation, "completed",
-                            G_CALLBACK (nbtk_animation_completed), button);
+          if (priv->transition_duration > 0)
+            {
+              animation = clutter_actor_animate (priv->old_bg,
+                                                 CLUTTER_LINEAR,
+                                                 priv->transition_duration,
+                                                 "opacity", 0,
+                                                 NULL);
+              g_signal_connect (animation, "completed",
+                                G_CALLBACK (nbtk_animation_completed), button);
+            }
+          else
+            {
+              nbtk_button_dispose_old_bg (button);
+            }
+
         }
     }
 }
@@ -540,7 +549,7 @@ nbtk_button_class_init (NbtkButtonClass *klass)
   pspec = g_param_spec_int ("transition-duration",
                             "Transition Duration",
                             "Duration of the state transition effect",
-                            0, G_MAXINT, 250, G_PARAM_READWRITE);
+                            0, G_MAXINT, 120, G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_TRANSITION, pspec);
 
 
@@ -566,7 +575,7 @@ static void
 nbtk_button_init (NbtkButton *button)
 {
   button->priv = NBTK_BUTTON_GET_PRIVATE (button);
-  button->priv->transition_duration = 250;
+  button->priv->transition_duration = 120;
   button->priv->spacing = 6;
 
   clutter_actor_set_reactive ((ClutterActor *) button, TRUE);
