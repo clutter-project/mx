@@ -25,6 +25,7 @@
 #include "nbtk-list-view.h"
 #include "nbtk-box-layout.h"
 #include "nbtk-private.h"
+#include "nbtk-item-factory.h"
 
 G_DEFINE_TYPE (NbtkListView, nbtk_list_view, NBTK_TYPE_BOX_LAYOUT)
 
@@ -50,6 +51,8 @@ struct _NbtkListViewPrivate
   ClutterModel *model;
   GSList       *attributes;
   GType         item_type;
+
+  NbtkItemFactory *factory;
 
   gulong filter_changed;
   gulong row_added;
@@ -103,10 +106,18 @@ nbtk_list_view_set_property (GObject      *object,
 static void
 nbtk_list_view_dispose (GObject *object)
 {
+  NbtkListViewPrivate *priv = NBTK_LIST_VIEW (object)->priv;
+
   G_OBJECT_CLASS (nbtk_list_view_parent_class)->dispose (object);
 
   /* This will cause the unref of the model and also disconnect the signals */
   nbtk_list_view_set_model (NBTK_LIST_VIEW (object), NULL);
+
+  if (priv->factory)
+    {
+      g_object_unref (priv->factory);
+      priv->factory = NULL;
+    }
 }
 
 static void
@@ -175,17 +186,20 @@ model_changed_cb (ClutterModel *model,
   gint model_n = 0, child_n = 0;
 
 
-  /* bail out if we don't yet have an item type */
-  if (!priv->item_type)
+  /* bail out if we don't yet have an item type or a factory */
+  if (!priv->item_type && !priv->factory)
     return;
 
-  /* check the item-type is an descendant of ClutterActor */
-  if (!g_type_is_a (priv->item_type, CLUTTER_TYPE_ACTOR))
+  if (priv->item_type)
     {
-      g_warning ("%s is not a subclass of ClutterActor and therefore"
-                 " cannot be used as items in an NbtkListView",
-                 g_type_name (priv->item_type));
-      return;
+      /* check the item-type is an descendant of ClutterActor */
+      if (!g_type_is_a (priv->item_type, CLUTTER_TYPE_ACTOR))
+        {
+          g_warning ("%s is not a subclass of ClutterActor and therefore"
+                     " cannot be used as items in an NbtkListView",
+                     g_type_name (priv->item_type));
+          return;
+        }
     }
 
   children = clutter_container_get_children (CLUTTER_CONTAINER (list_view));
@@ -211,8 +225,14 @@ model_changed_cb (ClutterModel *model,
         {
           ClutterActor *new_child;
 
-          new_child = g_object_new (priv->item_type, NULL);
-
+          if (priv->item_type)
+            {
+              new_child = g_object_new (priv->item_type, NULL);
+            }
+          else
+            {
+              new_child = nbtk_item_factory_create (priv->factory);
+            }
 
           clutter_container_add_actor (CLUTTER_CONTAINER (list_view),
                                        new_child);
@@ -537,3 +557,27 @@ nbtk_list_view_thaw (NbtkListView *list_view)
   model_changed_cb (priv->model, list_view);
 }
 
+/**
+ * nbtk_list_view_set_factory:
+ * @list_view: A #NbtkListView
+ * @factory: A #NbtkItemFactory
+ *
+ * Sets @factory to be the factory used for creating new list items
+ */
+void
+nbtk_list_view_set_factory (NbtkListView    *list_view,
+                            NbtkItemFactory *factory)
+{
+  NbtkListViewPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_LIST_VIEW (list_view));
+
+  priv = list_view->priv;
+
+  if (priv->factory)
+    {
+      g_object_unref (priv->factory);
+    }
+
+  priv->factory = g_object_ref (factory);
+}

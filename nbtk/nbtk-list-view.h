@@ -27,6 +27,7 @@
 
 #include <glib-object.h>
 #include "nbtk-grid.h"
+#include "nbtk-item-factory.h"
 
 G_BEGIN_DECLS
 
@@ -90,6 +91,8 @@ nbtk_list_view_add_attribute (NbtkListView *list_view,
 
 void nbtk_list_view_freeze (NbtkListView *list_view);
 void nbtk_list_view_thaw (NbtkListView *list_view);
+void nbtk_list_view_set_factory (NbtkListView    *list_view,
+                                 NbtkItemFactory *factory);
 
 
 G_END_DECLS
