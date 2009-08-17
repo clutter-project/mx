@@ -252,6 +252,7 @@ nbtk_texture_cache_get_texture (NbtkTextureCache *self,
                                 gboolean          want_clone)
 {
   ClutterActor *texture;
+  CoglHandle *handle;
   NbtkTextureCachePrivate *priv;
   NbtkTextureCacheItem *item;
 
@@ -285,7 +286,8 @@ nbtk_texture_cache_get_texture (NbtkTextureCache *self,
       item->posX = -1;
       item->posY = -1;
       item->ptr = clutter_texture_new_from_file (path, &err);
-      clutter_texture_get_base_size(item->ptr, &item->width, &item->height);
+      clutter_texture_get_base_size (CLUTTER_TEXTURE (item->ptr),
+                                     &item->width, &item->height);
 
       if (!item->ptr)
         {
@@ -302,8 +304,8 @@ nbtk_texture_cache_get_texture (NbtkTextureCache *self,
     }
 
   texture = clutter_texture_new ();
-  clutter_texture_set_cogl_texture ((ClutterTexture*) texture,
-                                    clutter_texture_get_cogl_texture (item->ptr));
+  handle = clutter_texture_get_cogl_texture (CLUTTER_TEXTURE (item->ptr));
+  clutter_texture_set_cogl_texture ((ClutterTexture*) texture, handle);
 
   return (ClutterTexture*) texture;
 }
@@ -347,14 +349,16 @@ nbtk_texture_cache_get_actor (NbtkTextureCache *self,
           posX = 0;
       if (posY == -1)
           posY = 0;
-      return nbtk_subtexture_new(item->ptr, posX, posY, item->width, item->height);
+      return nbtk_subtexture_new (CLUTTER_TEXTURE (item->ptr), posX, posY,
+                                  item->width, item->height);
     }
 
   item = nbtk_texture_cache_item_new ();
   item->posX = -1;
   item->posY = -1;
   item->ptr = clutter_texture_new_from_file (path, &err);
-  clutter_texture_get_base_size(item->ptr, &item->width, &item->height);
+  clutter_texture_get_base_size (CLUTTER_TEXTURE (item->ptr),
+                                 &item->width, &item->height);
 
   if (!item->ptr)
     {
@@ -369,7 +373,8 @@ nbtk_texture_cache_get_actor (NbtkTextureCache *self,
 
   add_texture_to_cache (self, path, item);
 
-  return nbtk_subtexture_new(item->ptr, 0, 0, item->width, item->height);
+  return nbtk_subtexture_new (CLUTTER_TEXTURE (item->ptr), 0, 0, item->width,
+                              item->height);
 }
 
 void
@@ -423,7 +428,8 @@ nbtk_texture_cache_load_cache (NbtkTextureCache *self,
    element->posY = -1;
    element->ptr = actor;
    strncpy (element->filename, head.filename, 256);
-   clutter_texture_get_base_size(element->ptr, &element->width, &element->height);
+   clutter_texture_get_base_size (CLUTTER_TEXTURE (element->ptr),
+                                  &element->width, &element->height);
    g_hash_table_insert (priv->cache, element->filename, element);
 
    while (!feof (file))

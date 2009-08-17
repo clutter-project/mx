@@ -87,7 +87,7 @@ ClutterActor*     nbtk_texture_cache_get_actor (NbtkTextureCache *self,
 
 gint              nbtk_texture_cache_get_size    (NbtkTextureCache *self);
 
-void nbtk_texture_cache_load_cache(NbtkTextureCache *self, char *filename);
+void nbtk_texture_cache_load_cache(NbtkTextureCache *self, const char *filename);
 
 G_END_DECLS
 
