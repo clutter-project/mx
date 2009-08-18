@@ -18,6 +18,7 @@
  */
 
 #include <nbtk/nbtk.h>
+#include <clutter/clutter.h>
 
 static void
 changed_cb (NbtkAdjustment *adjustment,
@@ -25,6 +26,38 @@ changed_cb (NbtkAdjustment *adjustment,
 {
   printf ("%s() %.2f\n", __FUNCTION__,
                          nbtk_adjustment_get_value (adjustment));
+}
+
+static gboolean
+key_press_event (ClutterActor    *actor,
+                 ClutterKeyEvent *event,
+                 NbtkAdjustment  *adjustment)
+{
+  gdouble value, lower, upper, step_increment, page_increment, page_size;
+  nbtk_adjustment_get_values (adjustment,
+                              &value,
+                              &lower,
+                              &upper,
+                              &step_increment,
+                              &page_increment,
+                              &page_size);
+  if (event->keyval == CLUTTER_Up)
+    {
+      page_size += 5;
+    }
+  else if (event->keyval == CLUTTER_Down)
+    {
+      page_size -= 5;
+    }
+
+  nbtk_adjustment_set_values (adjustment, value, lower, upper,
+                              step_increment, page_increment, page_size);
+
+  printf ("value: %f, lower: %f, upper: %f, step-inc: %f, page-inc: %f, "
+          "page: %f\n", value, lower, upper, step_increment, page_increment,
+          page_size);
+
+  return TRUE;
 }
 
 int
@@ -49,6 +82,9 @@ main (int argc, char *argv[])
   clutter_container_add (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (scroll), NULL);
 
   clutter_actor_show (stage);
+
+  g_signal_connect (stage, "key-press-event", G_CALLBACK (key_press_event),
+                    adjustment);
 
   clutter_main ();
 
