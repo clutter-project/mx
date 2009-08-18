@@ -342,28 +342,27 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
                                   NULL,
                                   &page_size);
 
-      if (upper == lower)
+      if ((upper == lower)
+          || (page_size >= (upper - lower)))
         increment = 1.0;
       else
         increment = page_size / (upper - lower);
-
-      if (priv->vertical)
-        handle_size = height * increment;
-      else
-        handle_size = width * increment;
-
 
       nbtk_stylable_get (NBTK_STYLABLE (actor),
                          "min-size", &min_size,
                          "max-size", &max_size,
                          NULL);
 
-      position = (value - lower) / (upper - lower - page_size);
-      handle_size = CLAMP (handle_size, min_size, max_size);
+      if (upper - lower - page_size <= 0)
+        position = 0;
+      else
+        position = (value - lower) / (upper - lower - page_size);
 
       if (priv->vertical)
         {
           avail_size = height - stepper_size * 2;
+          handle_size = increment * avail_size;
+          handle_size = CLAMP (handle_size, min_size, max_size);
 
           handle_box.x1 = x;
           handle_box.y1 = bw_box.y2 + position * (avail_size - handle_size);
@@ -374,6 +373,8 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
       else
         {
           avail_size = width - stepper_size * 2;
+          handle_size = increment * avail_size;
+          handle_size = CLAMP (handle_size, min_size, max_size);
 
           handle_box.x1 = bw_box.x2 + position * (avail_size - handle_size);
           handle_box.y1 = y;
@@ -387,7 +388,6 @@ nbtk_scroll_bar_allocate (ClutterActor          *actor,
       handle_box.y1 = (int) handle_box.y1;
       handle_box.x2 = (int) handle_box.x2;
       handle_box.y2 = (int) handle_box.y2;
-
 
       clutter_actor_allocate (priv->handle,
                               &handle_box,
