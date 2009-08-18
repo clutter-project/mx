@@ -304,7 +304,7 @@ nbtk_scroll_view_allocate (ClutterActor          *actor,
       child_box.x1 = avail_width - sb_width;
       child_box.y1 = padding.top;
       child_box.x2 = avail_width;
-      child_box.y2 = child_box.y1 + avail_height;
+      child_box.y2 = child_box.y1 + avail_height - sb_height;
 
       clutter_actor_allocate (priv->vscroll, &child_box, flags);
     }
@@ -313,7 +313,7 @@ nbtk_scroll_view_allocate (ClutterActor          *actor,
   if (CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
     {
       child_box.x1 = padding.left;
-      child_box.x2 = child_box.x1 + avail_width;
+      child_box.x2 = child_box.x1 + avail_width - sb_width;
       child_box.y1 = avail_height - sb_height;
       child_box.y2 = avail_height;
 
