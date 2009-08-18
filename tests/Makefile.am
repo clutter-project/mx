@@ -30,8 +30,7 @@ noinst_PROGRAMS = 		\
 	test-progress-bar	\
 	test-scroll-bar		\
 	test-scroll-grid	\
-	test-scroll-view-2	\
-	test-scroll-view-3	\
+	test-scroll-view	\
 	test-box-layout		\
 	$(NULL)
 
@@ -54,8 +53,7 @@ test_progress_bar_SOURCES = test-progress-bar.c
 
 test_scroll_bar_SOURCES = test-scroll-bar.c
 test_scroll_grid_SOURCES = test-scroll-grid.c
-test_scroll_view_2_SOURCES = test-scroll-view-2.c
-test_scroll_view_3_SOURCES = test-scroll-view-3.c
+test_scroll_view_SOURCES = test-scroll-view.c
 
 test_draggable_SOURCES = test-draggable.c
 test_droppable_SOURCES = test-droppable.c
