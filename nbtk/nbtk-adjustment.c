@@ -282,7 +282,7 @@ nbtk_adjustment_class_init (NbtkAdjustmentClass *klass)
                                    g_param_spec_double ("step-increment",
                                                         "Step Increment",
                                                         "Step increment",
-                                                        -G_MAXDOUBLE,
+                                                        0.0,
                                                         G_MAXDOUBLE,
                                                         0.0,
                                                         NBTK_PARAM_READWRITE |
@@ -292,7 +292,7 @@ nbtk_adjustment_class_init (NbtkAdjustmentClass *klass)
                                    g_param_spec_double ("page-increment",
                                                         "Page Increment",
                                                         "Page increment",
-                                                        -G_MAXDOUBLE,
+                                                        0.0,
                                                         G_MAXDOUBLE,
                                                         0.0,
                                                         NBTK_PARAM_READWRITE |
@@ -302,7 +302,7 @@ nbtk_adjustment_class_init (NbtkAdjustmentClass *klass)
                                    g_param_spec_double ("page-size",
                                                         "Page Size",
                                                         "Page size",
-                                                        -G_MAXDOUBLE,
+                                                        0.0,
                                                         G_MAXDOUBLE,
                                                         0.0,
                                                         NBTK_PARAM_READWRITE |
@@ -568,6 +568,9 @@ nbtk_adjustment_set_values (NbtkAdjustment *adjustment,
   gboolean emit_changed = FALSE;
 
   g_return_if_fail (NBTK_IS_ADJUSTMENT (adjustment));
+  g_return_if_fail (page_size >= 0 && page_size <= G_MAXDOUBLE);
+  g_return_if_fail (step_increment >= 0 && step_increment <= G_MAXDOUBLE);
+  g_return_if_fail (page_increment >= 0 && page_increment <= G_MAXDOUBLE);
 
   priv = adjustment->priv;
 
