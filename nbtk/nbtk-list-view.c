@@ -476,20 +476,20 @@ nbtk_list_view_set_model (NbtkListView *list_view,
  */
 void
 nbtk_list_view_add_attribute (NbtkListView *list_view,
-                              const gchar  *attribute,
+                              const gchar  *_attribute,
                               gint          column)
 {
   NbtkListViewPrivate *priv;
   AttributeData *prop;
 
   g_return_if_fail (NBTK_IS_LIST_VIEW (list_view));
-  g_return_if_fail (attribute != NULL);
+  g_return_if_fail (_attribute != NULL);
   g_return_if_fail (column >= 0);
 
   priv = list_view->priv;
 
   prop = g_new (AttributeData, 1);
-  prop->name = g_strdup (attribute);
+  prop->name = g_strdup (_attribute);
   prop->col = column;
 
   priv->attributes = g_slist_prepend (priv->attributes, prop);

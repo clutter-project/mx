@@ -23,7 +23,7 @@
 
 /* We use the special gcc constructor attribute so we can avoid requiring an
  * init function to get translations to work! */
-void __attribute__ ((constructor))
+static void __attribute__ ((constructor))
 _start (void)
 {
   bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);

@@ -24,13 +24,13 @@
 
 static ClutterActor *hover_actor;
 
-void
+static void
 find_last_child (ClutterActor *actor, ClutterActor **child)
 {
   *child = actor;
 }
 
-void
+static void
 enter_event (ClutterActor *actor, ClutterEvent *event, gpointer data)
 {
   ClutterColor color = { 0x00, 0x00, 0x00, 0xff };
@@ -40,7 +40,7 @@ enter_event (ClutterActor *actor, ClutterEvent *event, gpointer data)
   hover_actor = actor;
 }
 
-void
+static void
 leave_event (ClutterActor *actor, ClutterEvent *event, gpointer data)
 {
   clutter_rectangle_set_border_width (CLUTTER_RECTANGLE (actor), 0);
@@ -48,7 +48,7 @@ leave_event (ClutterActor *actor, ClutterEvent *event, gpointer data)
   hover_actor = NULL;
 }
 
-void
+static void
 button_release_event (ClutterActor *actor, ClutterButtonEvent *event,
                       ClutterContainer *box)
 {
@@ -91,7 +91,7 @@ button_release_event (ClutterActor *actor, ClutterButtonEvent *event,
     }
 }
 
-void
+static void
 add_actor (ClutterContainer *container)
 {
   ClutterActor *rect;
@@ -114,7 +114,7 @@ add_actor (ClutterContainer *container)
   expand = !expand;
 }
 
-gboolean
+static gboolean
 key_release_cb (ClutterActor    *actor,
                 ClutterKeyEvent *event,
                 NbtkBoxLayout   *box)

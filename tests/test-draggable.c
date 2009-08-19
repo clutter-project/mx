@@ -46,7 +46,7 @@ enum
 };
 
 static void nbtk_draggable_iface_init (NbtkDraggableIface *iface);
-
+static GType draggable_rectangle_get_type ();
 G_DEFINE_TYPE_WITH_CODE (DraggableRectangle,
                          draggable_rectangle,
                          CLUTTER_TYPE_RECTANGLE,

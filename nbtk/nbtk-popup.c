@@ -74,7 +74,7 @@ nbtk_popup_set_property (GObject      *object,
 static void
 nbtk_popup_free_action_at (NbtkPopup *popup,
                            gint       index,
-                           gboolean   remove)
+                           gboolean   remove_action)
 {
   NbtkPopupPrivate *priv = popup->priv;
   NbtkPopupChild *child = &g_array_index (priv->children, NbtkPopupChild,
@@ -83,7 +83,7 @@ nbtk_popup_free_action_at (NbtkPopup *popup,
   clutter_actor_unparent (CLUTTER_ACTOR (child->button));
   g_object_unref (child->action);
 
-  if (remove)
+  if (remove_action)
     g_array_remove_index (priv->children, index);
 }
 

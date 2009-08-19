@@ -22,7 +22,7 @@
 #include <clutter/clutter.h>
 #include <nbtk/nbtk.h>
 
-gint
+static gint
 sort_func (ClutterModel *model,
            const GValue *a,
            const GValue *b,
@@ -40,7 +40,7 @@ sort_func (ClutterModel *model,
   return h1 - h2;
 }
 
-gboolean
+static gboolean
 filter_func (ClutterModel *model,
              ClutterModelIter *iter,
              gpointer user_data)
@@ -60,7 +60,7 @@ filter_func (ClutterModel *model,
   return show;
 }
 
-gboolean
+static gboolean
 key_release_cb (ClutterActor *actor,
                 ClutterKeyEvent *event,
                 ClutterModel *model)

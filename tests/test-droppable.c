@@ -38,6 +38,7 @@ enum
 static const ClutterColor default_background_color = { 204, 204, 0, 255 };
 
 static void nbtk_droppable_iface_init (NbtkDroppableIface *iface);
+static GType droppable_group_get_type ();
 
 G_DEFINE_TYPE_WITH_CODE (DroppableGroup, droppable_group, CLUTTER_TYPE_GROUP,
                          G_IMPLEMENT_INTERFACE (NBTK_TYPE_DROPPABLE,
@@ -241,6 +242,7 @@ enum
 };
 
 static void nbtk_draggable_iface_init (NbtkDraggableIface *iface);
+static GType draggable_rectangle_get_type ();
 
 G_DEFINE_TYPE_WITH_CODE (DraggableRectangle,
                          draggable_rectangle,

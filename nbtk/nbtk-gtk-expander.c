@@ -50,7 +50,7 @@ G_DEFINE_TYPE (NbtkGtkExpander, nbtk_gtk_expander, GTK_TYPE_BIN)
 
 #define DEFAULT_INDICATOR_SIZE 12
 
-gboolean
+static gboolean
 nbtk_gtk_expander_expose_event (GtkWidget      *widget,
                                 GdkEventExpose *event)
 {
@@ -156,7 +156,7 @@ nbtk_gtk_expander_expose_event (GtkWidget      *widget,
   return FALSE;
 }
 
-void
+static void
 nbtk_gtk_expander_size_allocate (GtkWidget     *widget,
                                  GtkAllocation *allocation)
 {
@@ -216,7 +216,7 @@ nbtk_gtk_expander_size_allocate (GtkWidget     *widget,
 
 }
 
-void
+static void
 nbtk_gtk_expander_size_request (GtkWidget      *widget,
                                 GtkRequisition *requisition)
 {

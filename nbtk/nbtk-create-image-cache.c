@@ -96,7 +96,7 @@ static void do_one_file(char *filename)
 	element->posY = -1;
 	element->ptr = image;
 	totalarea += element->width * element->height;
-	sprintf(element->filename, filename);
+	strncpy(element->filename, filename, 256);
 
 	if (element->width > sizes[0])
 		sizes[0] = element->width;
@@ -405,7 +405,7 @@ static void makecache(char *directory, int recurse)
 	images = g_list_sort(images, sort_by_size);
 }
 
-void write_cache_file(char *directory, char *pngfile)
+static void write_cache_file(char *directory, char *pngfile)
 {
 	FILE *file;
 	char filename[PATH_MAX *2];

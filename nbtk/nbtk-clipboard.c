@@ -206,7 +206,7 @@ nbtk_clipboard_init (NbtkClipboard *self)
                           self);
 }
 
-ClutterX11FilterReturn
+static ClutterX11FilterReturn
 nbtk_clipboard_x11_event_filter (XEvent          *xev,
                                  ClutterEvent    *cev,
                                  EventFilterData *filter_data)

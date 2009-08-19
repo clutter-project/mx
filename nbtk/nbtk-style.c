@@ -94,7 +94,7 @@ g_style_error_quark (void)
   return g_quark_from_static_string ("nbtk-style-error-quark");
 }
 
-gboolean
+static gboolean
 nbtk_style_real_load_from_file (NbtkStyle    *style,
                                 const gchar  *filename,
                                 GError      **error,
@@ -568,7 +568,7 @@ nbtk_style_fetch_ccss_property (ccss_style_t  *ccss_style,
     g_param_value_set_default (pspec, value);
 }
 
-ccss_style_t*
+static ccss_style_t*
 nbtk_style_get_ccss_query (NbtkStyle         *style,
                            NbtkStylable      *stylable)
 {
