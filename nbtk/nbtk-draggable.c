@@ -35,6 +35,7 @@ typedef struct _DragContext     DragContext;
 struct _DragContext
 {
   NbtkDraggable *draggable;
+  ClutterActor  *stage;
 
   guint threshold;
 
@@ -265,6 +266,7 @@ on_draggable_press (ClutterActor       *actor,
 
   context->in_drag = TRUE;
 
+  context->stage = stage;
   g_signal_connect_after (stage,
                           "captured-event", G_CALLBACK (on_stage_capture),
                           context);
@@ -279,7 +281,17 @@ drag_context_free (gpointer data)
     {
       DragContext *context = data;
 
-      g_object_unref (context->draggable);
+      /* disconnect any signal handlers we may have installed */
+      g_signal_handlers_disconnect_by_func (context->draggable,
+                                            G_CALLBACK (on_draggable_press),
+                                            context);
+      if (context->stage)
+        {
+          g_signal_handlers_disconnect_by_func (context->stage,
+                                                G_CALLBACK (on_stage_capture),
+                                                context);
+          context->stage = NULL;
+        }
 
       if (context->containment_area)
         g_boxed_free (CLUTTER_TYPE_ACTOR_BOX, context->containment_area);
@@ -295,13 +307,14 @@ drag_context_create (NbtkDraggable *draggable)
 
   context = g_slice_new (DragContext);
 
-  context->draggable = g_object_ref (draggable);
+  context->draggable = draggable;
   context->threshold = 0;
   context->axis = 0;
   context->containment = NBTK_DISABLE_CONTAINMENT;
   context->containment_area = NULL;
   context->in_drag = FALSE;
   context->emit_delayed_press = FALSE;
+  context->stage = NULL;
 
   /* attach the context to the draggable */
   g_object_set_qdata_full (G_OBJECT (draggable), quark_draggable_context,
@@ -355,6 +368,7 @@ nbtk_draggable_real_disable (NbtkDraggable *draggable)
   g_signal_handlers_disconnect_by_func (stage,
                                         G_CALLBACK (on_stage_capture),
                                         context);
+  context->stage = NULL;
 
   g_object_set_qdata (G_OBJECT (draggable), quark_draggable_context, NULL);
 
