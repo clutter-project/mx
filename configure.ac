@@ -127,6 +127,8 @@ PKG_CHECK_MODULES(GTK, [gtk+-2.0])
 # check for gtk-doc
 GTK_DOC_CHECK([1.9])
 
+GOBJECT_INTROSPECTION_CHECK([0.6.4])
+
 SHAVE_INIT([build/autotools], [enable])
 
 AC_CONFIG_FILES([

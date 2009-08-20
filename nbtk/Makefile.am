@@ -6,7 +6,6 @@ nbtk_create_image_cache_SOURCES = nbtk-create-image-cache.c
 nbtk_create_image_cache_LDADD = $(GTK_LIBS)
 nbtk_create_image_cache_CFLAGS = $(GTK_CFLAGS) $(NBTK_MAINTAINER_CFLAGS)
 
-
 BUILT_SOURCES = 		\
 	nbtk-enum-types.h 	\
 	nbtk-enum-types.c 	\
@@ -28,14 +27,11 @@ source_h = \
 	$(top_srcdir)/nbtk/nbtk-entry.h 		\
 	$(top_srcdir)/nbtk/nbtk-expander.h 		\
 	$(top_srcdir)/nbtk/nbtk-fade-button.h 		\
-	$(top_srcdir)/nbtk/nbtk-grid.h \
-	$(top_srcdir)/nbtk/nbtk-gtk-frame.h 	\
-	$(top_srcdir)/nbtk/nbtk-gtk-expander.h 	\
-	$(top_srcdir)/nbtk/nbtk-gtk-light-switch.h 	\
+	$(top_srcdir)/nbtk/nbtk-grid.h 			\
 	$(top_srcdir)/nbtk/nbtk-item-factory.h		\
-	$(top_srcdir)/nbtk/nbtk-item-view.h \
-	$(top_srcdir)/nbtk/nbtk-list-view.h \
-	$(top_srcdir)/nbtk/nbtk-icon.h \
+	$(top_srcdir)/nbtk/nbtk-item-view.h 		\
+	$(top_srcdir)/nbtk/nbtk-list-view.h 		\
+	$(top_srcdir)/nbtk/nbtk-icon.h 			\
 	$(top_srcdir)/nbtk/nbtk-label.h 		\
 	$(top_srcdir)/nbtk/nbtk-progress-bar.h		\
 	$(top_srcdir)/nbtk/nbtk-popup.h 		\
@@ -55,8 +51,59 @@ source_h = \
 	$(top_srcdir)/nbtk/nbtk-widget.h		\
 	$(NULL)
 
+source_gtk_h = \
+	$(top_srcdir)/nbtk/nbtk-gtk-frame.h 		\
+	$(top_srcdir)/nbtk/nbtk-gtk-expander.h 		\
+	$(top_srcdir)/nbtk/nbtk-gtk-light-switch.h 	\
+	$(NULL)
+
 source_h_priv = \
 	$(top_srcdir)/nbtk/nbtk-private.h
+
+source_c = \
+	nbtk-adjustment.c 		\
+	nbtk-action.c 			\
+	nbtk-bin.c			\
+	nbtk-box-layout.c		\
+	nbtk-box-layout-child.c		\
+	nbtk-combo-box.c		\
+	nbtk-button.c 			\
+	nbtk-draggable.c		\
+	nbtk-droppable.c		\
+	nbtk-clipboard.c 		\
+	nbtk-entry.c 			\
+	nbtk-expander.c 		\
+	nbtk-fade-button.c 		\
+	nbtk-grid.c 			\
+	nbtk-icon.c 			\
+	nbtk-item-factory.c		\
+	nbtk-item-view.c 		\
+	nbtk-list-view.c 		\
+	nbtk-label.c 			\
+	nbtk-progress-bar.c		\
+	nbtk-popup.c			\
+	nbtk-scroll-bar.c 		\
+	nbtk-scroll-button.c 		\
+	nbtk-scroll-button.h 		\
+	nbtk-scroll-view.c 		\
+	nbtk-scrollable.c 		\
+	nbtk-stylable.c 		\
+	nbtk-style.c 			\
+	nbtk-subtexture.c		\
+	nbtk-table.c 			\
+	nbtk-table-child.c 		\
+	nbtk-texture-cache.c 		\
+	nbtk-texture-frame.c 		\
+	nbtk-tooltip.c 			\
+	nbtk-viewport.c 		\
+	nbtk-widget.c			\
+	$(NULL)
+
+source_gtk_c = \
+	nbtk-gtk-frame.c 		\
+	nbtk-gtk-expander.c 		\
+	nbtk-gtk-light-switch.c 	\
+	$(NULL)
 
 EXTRA_DIST = \
 	nbtk-marshal.list \
@@ -113,6 +160,7 @@ nbtk-enum-types.c: stamp-nbtk-enum-types.h nbtk-enum-types.c.in
 nbtkincludedir = $(includedir)/nbtk-$(NBTK_API_VERSION)/nbtk
 nbtkinclude_DATA = 				\
 	$(source_h) 				\
+	$(source_gtk_h)				\
 	$(top_srcdir)/nbtk/nbtk.h 		\
 	$(top_srcdir)/nbtk/nbtk-gtk.h 		\
 	$(top_builddir)/nbtk/nbtk-version.h     \
@@ -122,67 +170,35 @@ nbtkinclude_DATA = 				\
 lib_LTLIBRARIES = libnbtk-@NBTK_API_VERSION@.la \
 		  libnbtk-gtk-@NBTK_API_VERSION@.la
 
-libnbtk_@NBTK_API_VERSION@_la_CFLAGS =					\
+common_includes = \
 	-I$(top_srcdir)							\
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" 	\
 	-DPACKAGE_SRC_DIR=\""$(srcdir)"\" 				\
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\"				\
-	-DG_LOG_DOMAIN=\"Nbtk\"						\
 	-DNBTK_COMPILATION						\
-	-DG_DISABLE_DEPRECATED						\
-	-DCLUTTER_DISABLE_DEPRECATED					\
-	$(NBTK_MAINTAINER_CFLAGS)					\
-	$(NBTK_DEBUG_CFLAGS)						\
-	$(NBTK_CFLAGS)							\
-	$(NULL)
+	-DG_DISABLE_DEPRECATED
 
-libnbtk_@NBTK_API_VERSION@_la_LDFLAGS = \
-	$(NBTK_LT_LDFLAGS)		\
+common_ldflags = \
 	-export-dynamic			\
 	-export-symbols-regex "^nbtk.*"	\
-	-rpath $(libdir) 		\
+	-rpath $(libdir)
+
+libnbtk_@NBTK_API_VERSION@_la_CFLAGS =	\
+	$(common_includes)		\
+	-DG_LOG_DOMAIN=\"Nbtk\"		\
+	-DCLUTTER_DISABLE_DEPRECATED	\
+	$(NBTK_MAINTAINER_CFLAGS)	\
+	$(NBTK_DEBUG_CFLAGS)		\
+	$(NBTK_CFLAGS)			\
 	$(NULL)
+
+libnbtk_@NBTK_API_VERSION@_la_LDFLAGS = $(NBTK_LT_LDFLAGS) $(common_ldflags)
 
 libnbtk_@NBTK_API_VERSION@_la_SOURCES =	\
 	$(BUILT_SOURCES) 		\
 	$(source_h)			\
 	$(source_h_priv)		\
-	nbtk-adjustment.c 		\
-	nbtk-action.c 			\
-	nbtk-bin.c			\
-	nbtk-box-layout.c		\
-	nbtk-box-layout-child.c		\
-	nbtk-combo-box.c		\
-	nbtk-button.c 			\
-	nbtk-draggable.c		\
-	nbtk-droppable.c		\
-	nbtk-clipboard.c 		\
-	nbtk-entry.c 			\
-	nbtk-expander.c 		\
-	nbtk-fade-button.c 		\
-	nbtk-grid.c 			\
-	nbtk-icon.c 			\
-	nbtk-item-factory.c		\
-	nbtk-item-view.c 		\
-	nbtk-list-view.c 		\
-	nbtk-label.c 			\
-	nbtk-progress-bar.c		\
-	nbtk-popup.c			\
-	nbtk-scroll-bar.c 		\
-	nbtk-scroll-button.c \
-	nbtk-scroll-button.h \
-	nbtk-scroll-view.c 		\
-	nbtk-scrollable.c 		\
-	nbtk-stylable.c 		\
-	nbtk-style.c 			\
-	nbtk-subtexture.c		\
-	nbtk-table.c 			\
-	nbtk-table-child.c 		\
-	nbtk-texture-cache.c 		\
-	nbtk-texture-frame.c 		\
-	nbtk-tooltip.c 			\
-	nbtk-viewport.c 		\
-	nbtk-widget.c			\
+	$(source_c)			\
 	nbtk-private.c			\
 	nbtk.h 				\
 	$(NULL)
@@ -198,35 +214,86 @@ libnbtk_@NBTK_API_VERSION@_la_LIBADD = $(NBTK_LIBS)
 
 # libnbtk-gtk library
 
-libnbtk_gtk_@NBTK_API_VERSION@_la_CFLAGS =				\
-	-I$(top_srcdir)							\
-	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" 	\
-	-DPACKAGE_SRC_DIR=\""$(srcdir)"\" 				\
-	-DPACKAGE_DATA_DIR=\""$(datadir)"\"				\
-	-DG_LOG_DOMAIN=\"NbtkGtk\"					\
-	-DNBTK_COMPILATION						\
-	-DG_DISABLE_DEPRECATED						\
-	-DGTK_DISABLE_DEPRECATED					\
-	$(NBTK_MAINTAINER_CFLAGS)					\
-	$(NBTK_DEBUG_CFLAGS)						\
-	$(GTK_CFLAGS)							\
+libnbtk_gtk_@NBTK_API_VERSION@_la_CFLAGS =	\
+	$(common_includes)			\
+	-DG_LOG_DOMAIN=\"NbtkGtk\"		\
+	-DGTK_DISABLE_DEPRECATED		\
+	$(NBTK_MAINTAINER_CFLAGS)		\
+	$(NBTK_DEBUG_CFLAGS)			\
+	$(GTK_CFLAGS)				\
 	$(NULL)
 
-libnbtk_gtk_@NBTK_API_VERSION@_la_LDFLAGS = \
-	$(GTK_LT_LDFLAGS)		\
-	-export-dynamic			\
-	-export-symbols-regex "^nbtk.*"	\
-	-rpath $(libdir) 		\
-	$(NULL)
+libnbtk_gtk_@NBTK_API_VERSION@_la_LDFLAGS = $(GTK_LT_LDFLAGS) $(common_ldflags)
 
 libnbtk_gtk_@NBTK_API_VERSION@_la_SOURCES =	\
-	$(source_h)			\
-	nbtk-gtk-frame.c 		\
-	nbtk-gtk-expander.c 		\
-	nbtk-gtk-light-switch.c 	\
+	$(source_gtk_h)			\
+	$(source_h_priv)		\
+	$(source_gtk_c)			\
 	nbtk-gtk.h 			\
 	$(NULL)
 
 libnbtk_gtk_@NBTK_API_VERSION@_la_LIBADD = $(GTK_LIBS)
+
+if HAVE_INTROSPECTION
+
+BUILT_GIRSOURCES =
+
+Nbtk-@NBTK_API_VERSION@.gir: $(INTROSPECTION_SCANNER) libnbtk-@NBTK_API_VERSION@.la
+	$(QUIET_GEN)$(INTROSPECTION_SCANNER) -v \
+		--namespace Nbtk --nsversion=@NBTK_API_VERSION@ \
+		$(common_includes) \
+		--c-include="nbtk/nbtk.h" \
+		--include=GObject-2.0 \
+		--include=Clutter-1.0 \
+		--library=libnbtk-@NBTK_API_VERSION@.la \
+		--libtool="$(top_builddir)/libtool" \
+		--pkg gobject-2.0 \
+		--pkg clutter-1.0 \
+		--pkg libccss-1 \
+		--output $@ \
+		$(source_h) \
+		$(top_srcdir)/nbtk/nbtk.h \
+		$(top_builddir)/nbtk/nbtk-version.h \
+		$(top_builddir)/nbtk/nbtk-enum-types.h \
+		$(source_c)
+
+BUILT_GIRSOURCES += Nbtk-@NBTK_API_VERSION@.gir
+
+NbtkGtk-@NBTK_API_VERSION@.gir: $(INTROSPECTION_SCANNER) libnbtk-gtk-@NBTK_API_VERSION@.la
+	$(QUIET_GEN)$(INTROSPECTION_SCANNER) -v \
+		--namespace NbtkGtk --nsversion=@NBTK_API_VERSION@ \
+		$(common_includes) \
+		--c-include="nbtk/nbtk-gtk.h" \
+		--include=GObject-2.0 \
+		--include=Gtk-2.0 \
+		--library=libnbtk-gtk-@NBTK_API_VERSION@.la \
+		--libtool="$(top_builddir)/libtool" \
+		--pkg gobject-2.0 \
+		--pkg gtk+-2.0 \
+		--pkg libccss-1 \
+		--output $@ \
+		$(source_gtk_h) \
+		$(top_srcdir)/nbtk/nbtk-gtk.h \
+		$(source_gtk_c)
+
+BUILT_GIRSOURCES += NbtkGtk-@NBTK_API_VERSION@.gir
+
+girdir = $(datadir)/gir-1.0
+gir_DATA = $(BUILT_GIRSOURCES)
+
+typelibsdir = $(libdir)/girepository-1.0/
+typelibs_DATA = $(BUILT_SOURCES:.gir=.typelib)
+
+%.typelib: %.gir $(INTROSPECTION_COMPILER)
+	$(QUIET_GEN) \
+	LD_LIBRARY_PATH=.libs${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} \
+	$(INTROSPECTION_COMPILER) \
+		--includedir=$(srcdir) \
+		--includedir=. \
+		$(INTROSPECTION_COMPILER_OPTS) $< -o $(@F)
+
+CLEANFILES += $(BUILT_GIRSOURCES) $(typelibs_DATA)
+
+endif # HAVE_INTROSPECTION
 
 -include $(top_srcdir)/git.mk
