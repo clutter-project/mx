@@ -282,7 +282,7 @@ girdir = $(datadir)/gir-1.0
 gir_DATA = $(BUILT_GIRSOURCES)
 
 typelibsdir = $(libdir)/girepository-1.0/
-typelibs_DATA = $(BUILT_SOURCES:.gir=.typelib)
+typelibs_DATA = $(BUILT_GIRSOURCES:.gir=.typelib)
 
 %.typelib: %.gir $(INTROSPECTION_COMPILER)
 	$(QUIET_GEN) \
