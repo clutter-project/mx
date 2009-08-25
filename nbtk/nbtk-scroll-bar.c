@@ -30,11 +30,11 @@
 
 #include "nbtk-scroll-bar.h"
 #include "nbtk-bin.h"
-#include "nbtk-scroll-button.h"
 #include "nbtk-marshal.h"
 #include "nbtk-stylable.h"
 #include "nbtk-enum-types.h"
 #include "nbtk-private.h"
+#include "nbtk-button.h"
 
 static void nbtk_stylable_iface_init (NbtkStylableIface *iface);
 

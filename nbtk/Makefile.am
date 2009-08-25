@@ -83,8 +83,6 @@ source_c = \
 	nbtk-progress-bar.c		\
 	nbtk-popup.c			\
 	nbtk-scroll-bar.c 		\
-	nbtk-scroll-button.c 		\
-	nbtk-scroll-button.h 		\
 	nbtk-scroll-view.c 		\
 	nbtk-scrollable.c 		\
 	nbtk-stylable.c 		\
