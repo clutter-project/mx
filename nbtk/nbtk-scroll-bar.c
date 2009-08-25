@@ -68,6 +68,9 @@ struct _NbtkScrollBarPrivate
   guint              paging_source_id;
   guint              paging_event_no;
 
+  gboolean           stepper_forward;
+  guint              stepper_source_id;
+
   ClutterAnimation  *paging_animation;
 
   gboolean           vertical;
@@ -867,41 +870,106 @@ trough_leave_event_cb (ClutterActor   *actor,
 }
 
 static void
-backward_stepper_clicked (NbtkButton    *stepper,
-                          NbtkScrollBar *self)
+stepper_animation_completed_cb (ClutterAnimation *a,
+                                gpointer          data)
 {
-  gdouble value;
-  gdouble step_increment;
-
-  g_return_if_fail (self);
-
-  if (NULL == self->priv->adjustment)
-    return;
-
-  nbtk_adjustment_get_values (self->priv->adjustment,
-                              &value, NULL, NULL,
-                              &step_increment, NULL, NULL);
-
-  nbtk_adjustment_set_value (self->priv->adjustment, value - step_increment);
+  g_object_unref (a);
 }
 
 static void
-forward_stepper_clicked (NbtkButton    *stepper,
-                         NbtkScrollBar *self)
+stepper_move_on (NbtkScrollBarPrivate *priv,
+                 gint                  mode)
 {
-  gdouble value;
-  gdouble step_increment;
+  ClutterAnimation *a;
+  ClutterTimeline *t;
+  GValue v = { 0, };
+  double value, inc;
 
-  g_return_if_fail (self);
+  a = g_object_new (CLUTTER_TYPE_ANIMATION,
+                    "object", priv->adjustment,
+                    "duration", PAGING_SUBSEQUENT_REPEAT_TIMEOUT,
+                    "mode", mode,
+                    NULL);
 
-  if (NULL == self->priv->adjustment)
-    return;
+  g_signal_connect (a, "completed", G_CALLBACK (stepper_animation_completed_cb),
+                    NULL);
 
-  nbtk_adjustment_get_values (self->priv->adjustment,
-                              &value, NULL, NULL,
-                              &step_increment, NULL, NULL);
+  g_object_get (priv->adjustment,
+                "step-increment", &inc,
+                "value", &value,
+                NULL);
 
-  nbtk_adjustment_set_value (self->priv->adjustment, value + step_increment);
+  if (priv->stepper_forward)
+    value = value + inc;
+  else
+    value = value - inc;
+
+  g_value_init (&v, G_TYPE_DOUBLE);
+  g_value_set_double (&v, value);
+  clutter_animation_bind (a, "value", &v);
+
+  t = clutter_animation_get_timeline (a);
+  clutter_timeline_start (t);
+}
+
+static gboolean
+stepper_button_subsequent_timeout (NbtkScrollBarPrivate *priv)
+{
+  stepper_move_on (priv, CLUTTER_LINEAR);
+
+  return TRUE;
+}
+
+static gboolean
+stepper_button_repeat_timeout (NbtkScrollBarPrivate *priv)
+{
+  priv->stepper_source_id = 0;
+
+  stepper_move_on (priv, CLUTTER_EASE_IN_CUBIC);
+
+  priv->stepper_source_id = g_timeout_add (PAGING_SUBSEQUENT_REPEAT_TIMEOUT,
+                                           (GSourceFunc)
+                                           stepper_button_subsequent_timeout,
+                                           priv);
+  return FALSE;
+}
+
+static gboolean
+stepper_button_press_event_cb (ClutterActor       *actor,
+                               ClutterButtonEvent *event,
+                               NbtkScrollBar      *bar)
+{
+  NbtkScrollBarPrivate *priv = bar->priv;
+
+  if (event->button != 1)
+    return FALSE;
+
+  if (bar->priv->adjustment == NULL)
+    return FALSE;
+
+  bar->priv->stepper_forward = (actor == priv->fw_stepper);
+
+  stepper_move_on (priv, CLUTTER_EASE_OUT_CUBIC);
+
+  priv->stepper_source_id = g_timeout_add (PAGING_INITIAL_REPEAT_TIMEOUT,
+                                           (GSourceFunc)
+                                           stepper_button_repeat_timeout,
+                                           priv);
+
+  return TRUE;
+}
+
+static gboolean
+stepper_button_release_cb (ClutterActor        *actor,
+                           ClutterButtonEvent  *event,
+                           NbtkScrollBar       *self)
+{
+  if (event->button != 1)
+    return FALSE;
+
+  g_source_remove (self->priv->stepper_source_id);
+
+  return FALSE;
 }
 
 static void
@@ -922,19 +990,25 @@ nbtk_scroll_bar_init (NbtkScrollBar *self)
 {
   self->priv = NBTK_SCROLL_BAR_GET_PRIVATE (self);
 
-  self->priv->bw_stepper = (ClutterActor *) nbtk_scroll_button_new ();
-  clutter_actor_set_name (CLUTTER_ACTOR (self->priv->bw_stepper), "backward-stepper");
+  self->priv->bw_stepper = (ClutterActor *) nbtk_button_new ();
+  clutter_actor_set_name (CLUTTER_ACTOR (self->priv->bw_stepper),
+                          "backward-stepper");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->bw_stepper),
                             CLUTTER_ACTOR (self));
-  g_signal_connect (self->priv->bw_stepper, "clicked",
-                    G_CALLBACK (backward_stepper_clicked), self);
+  g_signal_connect (self->priv->bw_stepper, "button-press-event",
+                    G_CALLBACK (stepper_button_press_event_cb), self);
+  g_signal_connect (self->priv->bw_stepper, "button-release-event",
+                    G_CALLBACK (stepper_button_release_cb), self);
 
-  self->priv->fw_stepper = (ClutterActor *) nbtk_scroll_button_new ();
-  clutter_actor_set_name (CLUTTER_ACTOR (self->priv->fw_stepper), "forward-stepper");
+  self->priv->fw_stepper = (ClutterActor *) nbtk_button_new ();
+  clutter_actor_set_name (CLUTTER_ACTOR (self->priv->fw_stepper),
+                          "forward-stepper");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->fw_stepper),
                             CLUTTER_ACTOR (self));
-  g_signal_connect (self->priv->fw_stepper, "clicked",
-                    G_CALLBACK (forward_stepper_clicked), self);
+  g_signal_connect (self->priv->fw_stepper, "button-press-event",
+                    G_CALLBACK (stepper_button_press_event_cb), self);
+  g_signal_connect (self->priv->fw_stepper, "button-release-event",
+                    G_CALLBACK (stepper_button_release_cb), self);
 
   self->priv->trough = (ClutterActor *) nbtk_bin_new ();
   clutter_actor_set_reactive ((ClutterActor *) self->priv->trough, TRUE);
