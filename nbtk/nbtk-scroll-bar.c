@@ -761,7 +761,7 @@ trough_paging_cb (NbtkScrollBar *self)
   if (self->priv->vertical)
     event_pos = ty;
   else
-    event_pos = ty;
+    event_pos = tx;
 
   if (event_pos > handle_pos)
     {
