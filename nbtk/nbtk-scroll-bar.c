@@ -145,6 +145,8 @@ nbtk_scroll_bar_set_property (GObject      *gobject,
                                   "up-stepper");
           clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->fw_stepper),
                                   "down-stepper");
+          clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->handle),
+                                  "vhandle");
         }
       else
         {
@@ -152,6 +154,8 @@ nbtk_scroll_bar_set_property (GObject      *gobject,
                                   "forward-stepper");
           clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->bw_stepper),
                                   "backward-stepper");
+          clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->handle),
+                                  "hhandle");
         }
       clutter_actor_queue_relayout ((ClutterActor*) gobject);
       break;
@@ -1023,7 +1027,7 @@ nbtk_scroll_bar_init (NbtkScrollBar *self)
                     G_CALLBACK (trough_leave_event_cb), self);
 
   self->priv->handle = (ClutterActor *) nbtk_button_new ();
-  clutter_actor_set_name (CLUTTER_ACTOR (self->priv->handle), "handle");
+  clutter_actor_set_name (CLUTTER_ACTOR (self->priv->handle), "hhandle");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->handle),
                             self->priv->trough);
   g_signal_connect (self->priv->handle, "button-press-event",

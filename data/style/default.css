@@ -39,7 +39,7 @@ NbtkEntry:indeterminate
 NbtkScrollBar
 {
   background-color: #dee2e5;
-  padding: 2px;
+  padding: 0px;
 }
 
 NbtkScrollView
@@ -92,17 +92,26 @@ NbtkButton#down-stepper:active
   border-image: url("file://scroll-button-down-hover.png") 5;
 }
 
-
-
-NbtkScrollBar NbtkButton#handle
+NbtkScrollBar NbtkButton#vhandle
 {
-  border-image: url("file://scroll-handle.png") 5;
+  border-image: url("file://scroll-vhandle.png") 5;
 }
 
-NbtkScrollBar NbtkButton#handle:hover
+NbtkScrollBar NbtkButton#vhandle:hover
 {
-  border-image: url("file://scroll-handle-hover.png") 5;
+  border-image: url("file://scroll-vhandle-hover.png") 5;
 }
+
+NbtkScrollBar NbtkButton#hhandle
+{
+  border-image: url("file://scroll-hhandle.png") 5;
+}
+
+NbtkScrollBar NbtkButton#hhandle:hover
+{
+  border-image: url("file://scroll-hhandle-hover.png") 5;
+}
+
 
 /*
  * Expander

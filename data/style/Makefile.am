@@ -22,8 +22,10 @@ dist_style_DATA = \
 		scroll-button-left.png \
 		scroll-button-right-hover.png \
 		scroll-button-right.png \
-		scroll-handle-hover.png \
-		scroll-handle.png \
+		scroll-hhandle.png \
+		scroll-hhandle-hover.png \
+		scroll-vhandle.png \
+		scroll-vhandle-hover.png \
 		tooltip-background.png \
 		menu.png \
 		menu-item.png \
