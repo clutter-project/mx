@@ -64,6 +64,8 @@ struct _NbtkGtkLightSwitchPrivate {
   gboolean active; /* boolean state of switch */
   gboolean dragging; /* true if dragging switch */
   gint x;     /* the x position of the switch */
+  gint drag_start; /* position dragging started at */
+  gint drag_threshold;
   gint switch_width;
   gint switch_height;
   gint trough_width;
@@ -309,6 +311,9 @@ nbtk_gtk_light_switch_motion_notify (GtkWidget      *lightswitch,
 
   priv = NBTK_GTK_LIGHT_SWITCH_GET_PRIVATE (lightswitch);
 
+  if (ABS (event->x - priv->drag_start) < priv->drag_threshold)
+    return TRUE;
+
   if (event->state & GDK_BUTTON1_MASK)
     {
       gint position = event->x - priv->offset;
@@ -376,6 +381,12 @@ nbtk_gtk_light_switch_button_press (GtkWidget      *lightswitch,
     priv->offset = event->x - (priv->trough_width - priv->switch_width);
   else
     priv->offset = event->x;
+
+  priv->drag_start = event->x;
+
+  g_object_get (gtk_widget_get_settings (lightswitch),
+                "gtk-dnd-drag-threshold", &priv->drag_threshold,
+                NULL);
 
   return FALSE;
 }
