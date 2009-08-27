@@ -61,7 +61,10 @@ draggable_rectangle_drag_begin (NbtkDraggable       *draggable,
                                 gint                 event_button,
                                 ClutterModifierType  modifiers)
 {
+  gfloat x, y;
   ClutterActor *self = CLUTTER_ACTOR (draggable);
+  ClutterActor *clone = nbtk_draggable_get_clone (draggable);
+  ClutterActor *stage = clutter_actor_get_stage (self);
 
   g_debug ("%s: drag of '%s' begin at %.2f, %.2f",
            G_STRLOC,
@@ -69,12 +72,17 @@ draggable_rectangle_drag_begin (NbtkDraggable       *draggable,
            event_x,
            event_y);
 
-  clutter_actor_set_opacity (self, 224);
-  clutter_actor_set_rotation (self, CLUTTER_Y_AXIS,
+  clutter_actor_get_position (self, &x, &y);
+  clutter_actor_set_position (clone, x, y);
+
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), clone);
+
+  clutter_actor_set_opacity (clone, 224);
+  clutter_actor_set_rotation (clone, CLUTTER_Y_AXIS,
                               30.0,
-                              clutter_actor_get_width (self) / 2.0,
+                              clutter_actor_get_width (clone) / 2.0,
                               0,
-                              clutter_actor_get_height (self) / 2.0);
+                              clutter_actor_get_height (clone) / 2.0);
 }
 
 static void
@@ -82,13 +90,15 @@ draggable_rectangle_drag_motion (NbtkDraggable *draggable,
                                  gfloat         delta_x,
                                  gfloat         delta_y)
 {
+  ClutterActor *clone = nbtk_draggable_get_clone (draggable);
+
   g_debug ("%s: drag motion of '%s' (dx: %.2f, dy: %.2f)",
            G_STRLOC,
            clutter_actor_get_name (CLUTTER_ACTOR (draggable)),
            delta_x,
            delta_y);
 
-  clutter_actor_move_by (CLUTTER_ACTOR (draggable), delta_x, delta_y);
+  clutter_actor_move_by (CLUTTER_ACTOR (clone), delta_x, delta_y);
 }
 
 static void
@@ -96,7 +106,10 @@ draggable_rectangle_drag_end (NbtkDraggable *draggable,
                               gfloat         event_x,
                               gfloat         event_y)
 {
+  gfloat x, y;
   ClutterActor *self = CLUTTER_ACTOR (draggable);
+  ClutterActor *clone = nbtk_draggable_get_clone (draggable);
+  ClutterActor *stage = clutter_actor_get_stage (self);
 
   g_debug ("%s: drag of '%s' end at %.2f, %.2f",
            G_STRLOC,
@@ -104,8 +117,13 @@ draggable_rectangle_drag_end (NbtkDraggable *draggable,
            event_x,
            event_y);
 
-  clutter_actor_set_opacity (self, 255);
-  clutter_actor_set_rotation (self, CLUTTER_Y_AXIS, 0.0, 0.0, 0.0, 0.0);
+  clutter_actor_get_position (clone, &x, &y);
+  clutter_actor_animate (self, CLUTTER_EASE_OUT_QUAD, 150,
+                         "x", x,
+                         "y", y,
+                         NULL);
+
+  clutter_container_remove_actor (CLUTTER_CONTAINER (stage), clone);
 }
 
 static void
@@ -197,7 +215,7 @@ draggable_rectangle_get_property (GObject    *gobject,
       break;
 
     case PROP_USE_CLONE:
-      g_value_set_boolean (value, FALSE);
+      g_value_set_boolean (value, TRUE);
       break;
 
     default:

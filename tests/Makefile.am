@@ -13,6 +13,7 @@ noinst_PROGRAMS = 		\
 	test-buttons 		\
 	test-combo-box		\
 	test-draggable		\
+	test-draggable-clone	\
 	test-droppable		\
 	test-label 		\
 	test-entry 		\
@@ -56,6 +57,7 @@ test_scroll_grid_SOURCES = test-scroll-grid.c
 test_scroll_view_SOURCES = test-scroll-view.c
 
 test_draggable_SOURCES = test-draggable.c
+test_draggable_clone_SOURCES = test-draggable-clone.c
 test_droppable_SOURCES = test-droppable.c
 
 test_box_layout_SOURCES = test-box-layout.c

@@ -238,7 +238,8 @@ enum
   DRAG_PROP_AXIS,
   DRAG_PROP_CONTAINMENT_TYPE,
   DRAG_PROP_CONTAINMENT_AREA,
-  DRAG_PROP_ENABLED
+  DRAG_PROP_ENABLED,
+  DRAG_PROP_USE_CLONE,
 };
 
 static void nbtk_draggable_iface_init (NbtkDraggableIface *iface);
@@ -356,6 +357,9 @@ draggable_rectangle_set_property (GObject      *gobject,
         nbtk_draggable_disable (NBTK_DRAGGABLE (gobject));
       break;
 
+    case DRAG_PROP_USE_CLONE:
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -392,6 +396,10 @@ draggable_rectangle_get_property (GObject    *gobject,
       g_value_set_boolean (value, rect->is_enabled);
       break;
 
+    case DRAG_PROP_USE_CLONE:
+      g_value_set_boolean (value, FALSE);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -424,6 +432,9 @@ draggable_rectangle_class_init (DraggableRectangleClass *klass)
   g_object_class_override_property (gobject_class,
                                     DRAG_PROP_ENABLED,
                                     "enabled");
+  g_object_class_override_property (gobject_class,
+                                    DRAG_PROP_USE_CLONE,
+                                    "use-clone");
 }
 
 static void
