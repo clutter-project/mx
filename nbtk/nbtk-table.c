@@ -641,7 +641,7 @@ nbtk_table_calculate_row_heights (NbtkTable *table,
 
       /* calculate the cell width by including any spanned columns */
       cell_width = 0;
-      for (i = 0; i < col_span; i++)
+      for (i = 0; i < col_span && col + i < priv->n_cols; i++)
         cell_width += (float) (col_widths[col + i]);
 
       if (!meta->x_fill)
@@ -837,6 +837,11 @@ nbtk_table_preferred_allocate (ClutterActor          *self,
        * uninitialised memory. We add the spacing in here too since we only
        * want to add as much spacing as times we successfully span.
        */
+      if (col + col_span > priv->n_cols)
+        g_warning ("NbtkTable: col-span exceeds number of columns");
+      if (row + row_span > priv->n_rows)
+        g_warning ("NbtkTable: row-span exceeds number of rows");
+
       if (col_span > 1)
         {
           for (i = col + 1; i < col + col_span && i < priv->n_cols; i++)
@@ -1037,9 +1042,8 @@ nbtk_table_get_preferred_height (ClutterActor *self,
       row_span = meta->row_span;
 
       cell_width = 0;
-      for (i = 0; i < col_span; i++)
+      for (i = 0; i < col_span && col + i < priv->n_cols; i++)
         cell_width += min_widths[col + i];
-
 
       clutter_actor_get_preferred_height (child,
               (float) cell_width, &min, &pref);
