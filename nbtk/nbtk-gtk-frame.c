@@ -133,39 +133,31 @@ nbtk_gtk_frame_paint (GtkWidget *widget, GdkRectangle *area)
   cairo = gdk_cairo_create (widget->window);
   width = gtk_container_get_border_width (GTK_CONTAINER (widget));
 
+  /* clip to area */
+  gdk_cairo_rectangle (cairo, area);
+  cairo_clip (cairo);
+
+  /* initialise the background */
+  gdk_cairo_set_source_color (cairo, &style->bg[GTK_WIDGET_STATE (widget)]);
+  cairo_rectangle (cairo, widget->allocation.x, widget->allocation.y,
+                   widget->allocation.width, widget->allocation.height);
+  cairo_fill (cairo);
+
   /* draw border */
   if (width != 0)
     {
       gdk_cairo_set_source_color (cairo, &frame->border_color);
+      cairo_set_line_width (cairo, width);
 
       rounded_rectangle (cairo,
-                         widget->allocation.x,
-                         widget->allocation.y,
-                         widget->allocation.width,
-                         widget->allocation.height,
+                         widget->allocation.x + (width / 2),
+                         widget->allocation.y + (width / 2),
+                         widget->allocation.width - (width),
+                         widget->allocation.height - (width),
                          width);
-      cairo_clip (cairo);
 
-      gdk_cairo_rectangle (cairo, area);
-      cairo_clip (cairo);
-
-      cairo_paint (cairo);
+      cairo_stroke (cairo);
     }
-
-  /* draw background */
-  gdk_cairo_set_source_color (cairo, &style->bg[GTK_WIDGET_STATE (widget)]);
-  rounded_rectangle (cairo,
-                     widget->allocation.x + width,
-                     widget->allocation.y + width,
-                     widget->allocation.width - 2 * width,
-                     widget->allocation.height - 2 * width,
-                     width);
-  cairo_clip (cairo);
-
-  gdk_cairo_rectangle (cairo, area);
-  cairo_clip (cairo);
-
-  cairo_paint (cairo);
 
   cairo_destroy (cairo);
 }
