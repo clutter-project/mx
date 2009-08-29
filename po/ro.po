@@ -1,6 +1,6 @@
-# Romanian translations for anerley package.
-# Copyright (C) 2009 The anerley copyright holder
-# This file is distributed under the same license as the anerley package.
+# Romanian translations for nbtk package.
+# Copyright (C) 2009 The nbtk copyright holder
+# This file is distributed under the same license as the nbtk package.
 # Cosmin Bordeianu <elloxar@gmail.com>, 2009.
 #
 msgid ""
