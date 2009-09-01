@@ -193,51 +193,55 @@ model_changed_cb (ClutterModel *model,
   children = clutter_container_get_children (CLUTTER_CONTAINER (item_view));
   child_n = g_list_length (children);
 
-  /* set the properties on the objects */
-  if (priv->model)
-    iter = clutter_model_get_first_iter (priv->model);
+  if (model)
+    model_n = clutter_model_get_n_rows (priv->model);
+  else
+    model_n = 0;
 
-  model_n = 0;
+  /* add children as needed */
+  while (model_n > child_n)
+    {
+      ClutterActor *new_child;
 
-  /* We count the number of rows in the model ourselves, as
-   * clutter_list_model_get_n_rows() does not currently take into account the
-   * filtered model. See Clutter bug 1562.
-   */
+      if (priv->item_type)
+        {
+          new_child = g_object_new (priv->item_type, NULL);
+        }
+      else
+        {
+          new_child = nbtk_item_factory_create (priv->factory);
+        }
+
+      clutter_container_add_actor (CLUTTER_CONTAINER (item_view),
+                                   new_child);
+      child_n++;
+    }
+
+  /* remove children as needed */
+  l = g_list_last (children);
+  while (child_n > model_n)
+    {
+      clutter_container_remove_actor (CLUTTER_CONTAINER (item_view),
+                                      (ClutterActor*) l->data);
+      l = g_list_previous (l);
+      child_n--;
+    }
+
+  g_list_free (children);
+
+  if (!priv->model)
+    return;
+
+  children = clutter_container_get_children (CLUTTER_CONTAINER (item_view));
+
+  /* set the properties on the children */
+  iter = clutter_model_get_first_iter (priv->model);
+  l = children;
   while (iter && !clutter_model_iter_is_last (iter))
     {
       GObject *child;
 
-      model_n++;
-
-      if (child_n < model_n)
-        {
-          ClutterActor *new_child;
-
-          if (priv->item_type)
-            {
-              new_child = g_object_new (priv->item_type, NULL);
-            }
-          else
-            {
-              new_child = nbtk_item_factory_create (priv->factory);
-            }
-
-          clutter_container_add_actor (CLUTTER_CONTAINER (item_view),
-                                       new_child);
-          child = G_OBJECT (new_child);
-          /* we've changed the number of children, so update the children list
-           */
-          g_list_free (children);
-          children
-            = clutter_container_get_children (CLUTTER_CONTAINER (item_view));
-          child_n = g_list_length (children);
-
-        }
-      else
-        {
-          l = g_list_nth (children, model_n - 1);
-          child = G_OBJECT (l->data);
-        }
+      child = G_OBJECT (l->data);
 
       g_object_freeze_notify (child);
       for (p = priv->attributes; p; p = p->next)
@@ -251,32 +255,8 @@ model_changed_cb (ClutterModel *model,
         }
       g_object_thaw_notify (child);
 
+      l = g_list_next (l);
       clutter_model_iter_next (iter);
-    }
-
-  g_list_free (children);
-  children = clutter_container_get_children (CLUTTER_CONTAINER (item_view));
-  child_n = g_list_length (children);
-
-  /* if the model shrank, we need to remove some items */
-  while (child_n > model_n)
-    {
-      ClutterActor *child;
-
-      /*
-       * Here we remove surplus children from the end of the list as we have
-       * already set properties on children at the beginning of the list.
-       */
-      l = g_list_last (children);
-      child = CLUTTER_ACTOR (l->data);
-
-      /* remove some children */
-      clutter_container_remove_actor (CLUTTER_CONTAINER (item_view),
-                                      child);
-
-      g_list_free (children);
-      children = clutter_container_get_children (CLUTTER_CONTAINER (item_view));
-      child_n = g_list_length (children);
     }
 
   g_list_free (children);
