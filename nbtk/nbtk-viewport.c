@@ -299,7 +299,8 @@ nbtk_viewport_allocate (ClutterActor          *self,
         {
           g_object_set (G_OBJECT (priv->hadjustment),
                        "lower", 0.0,
-                       "upper", MAX (0, natural_width - available_width),
+                       "page-size", available_width,
+                       "upper", natural_width,
                        NULL);
 
           /* Make sure value is clamped */
@@ -311,7 +312,8 @@ nbtk_viewport_allocate (ClutterActor          *self,
         {
           g_object_set (G_OBJECT (priv->vadjustment),
                        "lower", 0.0,
-                       "upper", MAX (0, natural_height - available_height),
+                       "page-size", available_height,
+                       "upper", natural_height,
                        NULL);
 
           prev_value = nbtk_adjustment_get_value (priv->vadjustment);
