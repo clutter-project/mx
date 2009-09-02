@@ -90,7 +90,7 @@ draggable_release (DragContext        *context,
   actor_x = 0;
   actor_y = 0;
 
-  if (context->actor)
+  if (context->actor && !context->emit_delayed_press)
     actor = context->actor;
   else
     actor = CLUTTER_ACTOR (context->draggable);
@@ -112,9 +112,10 @@ draggable_release (DragContext        *context,
                                         G_CALLBACK (on_stage_capture),
                                         context);
 
-  g_signal_emit (context->draggable, draggable_signals[DRAG_END], 0,
-                 context->last_x,
-                 context->last_y);
+  if (!context->emit_delayed_press)
+    g_signal_emit (context->draggable, draggable_signals[DRAG_END], 0,
+                   context->last_x,
+                   context->last_y);
 
   g_object_set_data (G_OBJECT (stage), "nbtk-drag-actor", NULL);
 
@@ -139,7 +140,7 @@ draggable_motion (DragContext        *context,
   actor_x = 0;
   actor_y = 0;
 
-  if (context->actor)
+  if (context->actor && !context->emit_delayed_press)
     actor = context->actor;
   else
     actor = CLUTTER_ACTOR (context->draggable);
@@ -207,7 +208,17 @@ on_stage_capture (ClutterActor *stage,
     {
     case CLUTTER_MOTION:
       if (context->in_drag)
-        return draggable_motion (context, (ClutterMotionEvent *) event);
+        {
+          ClutterMotionEvent *mevent = (ClutterMotionEvent *)event;
+
+          /* We can miss release events in the case of grabs, so check that
+           * the button is still down here.
+           */
+          if (!(mevent->modifier_state & CLUTTER_BUTTON1_MASK))
+            return draggable_release (context, (ClutterButtonEvent *) event);
+          else
+            return draggable_motion (context, (ClutterMotionEvent *) event);
+        }
       break;
 
     case CLUTTER_BUTTON_RELEASE:
