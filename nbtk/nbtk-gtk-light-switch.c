@@ -199,7 +199,8 @@ draw (GtkWidget *lightswitch,
                     layout);
   /* Draw the second label; "Off" */
   /* TRANSLATORS: If this string takes more than four or five characters in
-   * your language, please use the ROUND CIRCLE unicode character instead */
+   * your language, please use the WHITE CIRCLE U+25CB unicode character
+   * instead */
   pango_layout_set_text (layout, _("Off"), -1);
   pango_layout_get_size (layout,
                          &label_width,
