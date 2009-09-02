@@ -547,44 +547,11 @@ scrollable_interface_init (NbtkScrollableInterface *iface)
 }
 
 static void
-clip_notify_cb (ClutterActor *actor,
-                GParamSpec   *pspec,
-                NbtkViewport *self)
-{
-  NbtkViewportPrivate *priv = self->priv;
-  gfloat width, height;
-
-  if (!priv->sync_adjustments)
-    return;
-
-  if (!clutter_actor_has_clip (actor))
-    {
-      if (priv->hadjustment)
-        g_object_set (priv->hadjustment, "page-size", 1.0f, NULL);
-      if (priv->vadjustment)
-        g_object_set (priv->vadjustment, "page-size", 1.0f, NULL);
-      return;
-    }
-
-  clutter_actor_get_clip (actor, NULL, NULL, &width, &height);
-
-  if (priv->hadjustment)
-    g_object_set (priv->hadjustment, "page-size", width, NULL);
-
-  if (priv->vadjustment)
-    g_object_set (priv->vadjustment, "page-size", height, NULL);
-}
-
-static void
 nbtk_viewport_init (NbtkViewport *self)
 {
   self->priv = VIEWPORT_PRIVATE (self);
 
   self->priv->sync_adjustments = TRUE;
-
-  g_signal_connect (self, "notify::clip",
-                    G_CALLBACK (clip_notify_cb), self);
-
 
   g_object_set (G_OBJECT (self), "reactive", FALSE, NULL);
 }
