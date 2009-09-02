@@ -1363,6 +1363,9 @@ nbtk_table_add_actor (NbtkTable    *table,
                       gint          row,
                       gint          column)
 {
+  NbtkTableChild *meta;
+  ClutterContainer *container;
+
   g_return_if_fail (NBTK_IS_TABLE (table));
   g_return_if_fail (CLUTTER_IS_ACTOR (actor));
   g_return_if_fail (row >= -1);
@@ -1374,12 +1377,15 @@ nbtk_table_add_actor (NbtkTable    *table,
   if (column < 0)
     column = table->priv->n_cols + 1;
 
-  clutter_container_add_actor (CLUTTER_CONTAINER (table), actor);
-  clutter_container_child_set (CLUTTER_CONTAINER (table), actor,
-                               "row", row,
-                               "col", column,
-                               NULL);
+  container = CLUTTER_CONTAINER (table);
+  clutter_container_add_actor (container, actor);
 
+  meta = (NbtkTableChild *) clutter_container_get_child_meta (container, actor);
+  meta->row = row;
+  meta->col = column;
+  _nbtk_table_update_row_col (table, row, column);
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
 }
 
 /**
@@ -1420,16 +1426,17 @@ nbtk_table_add_actor_with_properties (NbtkTable    *table,
 
   container = (ClutterContainer *)table;
   clutter_container_add_actor (container, actor);
-  clutter_container_child_set (CLUTTER_CONTAINER (table), actor,
-                               "row", row,
-                               "col", column,
-                               NULL);
-  meta = (NbtkTableChild*) clutter_container_get_child_meta (container,
-                                                             actor);
+
+  meta = (NbtkTableChild *) clutter_container_get_child_meta (container, actor);
+  meta->row = row;
+  meta->col = column;
+  _nbtk_table_update_row_col (table, row, column);
 
   va_start (args, first_property_name);
   g_object_set_valist ((GObject*) meta, first_property_name, args);
   va_end (args);
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
 }
 
 /**
