@@ -279,7 +279,6 @@ nbtk_label_init (NbtkLabel *label)
 
   label->priv->label = g_object_new (CLUTTER_TYPE_TEXT,
                                      "ellipsize", PANGO_ELLIPSIZE_END,
-                                     "use-markup", TRUE,
                                      NULL);
 
   clutter_actor_set_parent (priv->label, CLUTTER_ACTOR (label));
@@ -299,9 +298,12 @@ nbtk_label_init (NbtkLabel *label)
 NbtkWidget *
 nbtk_label_new (const gchar *text)
 {
-  return g_object_new (NBTK_TYPE_LABEL,
-                       "text", (text != NULL && *text != '\0') ? text : "",
-                       NULL);
+  if (text == NULL || *text == '\0')
+    return g_object_new (NBTK_TYPE_LABEL, NULL);
+  else
+    return g_object_new (NBTK_TYPE_LABEL,
+                         "text", text,
+                         NULL);
 }
 
 /**
