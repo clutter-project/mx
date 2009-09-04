@@ -159,12 +159,29 @@ nbtk_action_init (NbtkAction *self)
   priv->active = TRUE;
 }
 
+/**
+ * nbtk_action_new:
+ *
+ * Create a new, blank, NbtkAction
+ *
+ * Returns: a newly allocated NbtkAction
+ */
 NbtkAction *
 nbtk_action_new (void)
 {
   return g_object_new (NBTK_TYPE_ACTION, NULL);
 }
 
+/**
+ * nbtk_action_new_full:
+ * @name: name of the action
+ * @activated_cb: callback to connect to the activated signal
+ * @user_data: user data to be passed to the callback
+ *
+ * Create a new NbtkAction with the name and callback set
+ *
+ * Returns: a newly allocation NbtkAction
+ */
 NbtkAction *
 nbtk_action_new_full (const gchar *name,
                       GCallback    activated_cb,
@@ -178,12 +195,28 @@ nbtk_action_new_full (const gchar *name,
   return action;
 }
 
+/**
+ * nbtk_action_get_name:
+ * @action: A #NbtkAction
+ *
+ * Get the name of the action
+ *
+ * Returns: name of the action, owned by NbtkAction
+ */
 const gchar *
 nbtk_action_get_name (NbtkAction *action)
 {
   return action->priv->name;
 }
 
+/**
+ * nbtk_action_set_name:
+ * @action: A #NbtkAction
+ * @name: new name to set
+ *
+ * Set the name of the action
+ *
+ */
 void
 nbtk_action_set_name (NbtkAction  *action,
                       const gchar *name)
@@ -194,12 +227,28 @@ nbtk_action_set_name (NbtkAction  *action,
   g_object_notify (G_OBJECT (action), "name");
 }
 
+/**
+ * nbtk_action_get_active:
+ * @action: A #NbtkAction
+ *
+ * Get the value of the active property
+ *
+ * Returns: #TRUE if the action is active
+ */
 gboolean
 nbtk_action_get_active (NbtkAction *action)
 {
   return action->priv->active;
 }
 
+/**
+ * nbtk_action_set_active:
+ * @action: A #NbtkAction
+ * @active: the value to set
+ *
+ * Set the value of the active property
+ *
+ */
 void
 nbtk_action_set_active (NbtkAction *action,
                         gboolean    active)
