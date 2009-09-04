@@ -419,10 +419,10 @@ nbtk_subtexture_init (NbtkSubtexture *self)
 /**
  * nbtk_subtexture_new:
  * @texture: a #ClutterTexture or %NULL
- * @left: left margin preserving its content
- * @top: top margin preserving its content
- * @right: right margin preserving its content
- * @bottom: bottom margin preserving its content
+ * @left: left
+ * @top: top
+ * @width: width
+ * @height: height
  *
  * A #NbtkSubtexture is a specialized texture that efficiently clones
  * an area of the given @texture while keeping preserving portions of the
@@ -517,13 +517,12 @@ nbtk_subtexture_set_parent_texture (NbtkSubtexture *frame,
 /**
  * nbtk_subtexture_set_frame:
  * @frame: A #NbtkSubtexture
- * @top: width of the top slice
- * @right: width of the right slice
- * @bottom: width of the bottom slice
- * @left: width of the left slice
+ * @left: left
+ * @top: top
+ * @width: width
+ * @height: height
  *
- * Set the slice lines of the specified frame. The slices are calculated as
- * widths from the edge of the frame.
+ * Set the frame of the subtexture
  *
  */
 void
@@ -541,12 +540,12 @@ nbtk_subtexture_set_frame (NbtkSubtexture *frame,
 /**
  * nbtk_subtexture_get_frame:
  * @frame: A #NbtkSubtexture
- * @top: width of the top slice
- * @right: width of the right slice
- * @bottom: width of the bottom slice
- * @left: width of the left slice
+ * @left: left
+ * @top: top
+ * @width: width
+ * @height: height
  *
- * Retrieve the current slice lines from the specified frame.
+ * Retrieve the current frame.
  *
  */
 void

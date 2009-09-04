@@ -48,6 +48,7 @@ typedef struct _NbtkItemFactoryIface NbtkItemFactoryIface;
  */
 struct _NbtkItemFactoryIface
 {
+  /*< private >*/
     GTypeInterface g_iface;
 
     /*< public >*/
