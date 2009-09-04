@@ -142,12 +142,12 @@ NbtkBinPrivate
 
 <SECTION>
 <FILE>nbtk-scrollable</FILE>
-NBTK_SCROLLABLE_GET_INTERFACE
 NbtkScrollable
 NbtkScrollableInterface
 nbtk_scrollable_set_adjustments
 nbtk_scrollable_get_adjustments
 <SUBSECTION Standard>
+NBTK_SCROLLABLE_GET_INTERFACE
 NBTK_SCROLLABLE
 NBTK_IS_SCROLLABLE
 NBTK_TYPE_SCROLLABLE
@@ -724,8 +724,6 @@ NbtkProgressBarPrivate
 
 <SECTION>
 <FILE>nbtk-stylable</FILE>
-NBTK_STYLABLE_IFACE
-NBTK_IS_STYLABLE_IFACE
 NbtkStylableIface
 nbtk_stylable_iface_install_property
 nbtk_stylable_freeze_notify
@@ -748,6 +746,8 @@ nbtk_stylable_get_attribute
 nbtk_stylable_get_viewport
 nbtk_stylable_changed
 <SUBSECTION Standard>
+NBTK_STYLABLE_IFACE
+NBTK_IS_STYLABLE_IFACE
 NBTK_STYLABLE
 NBTK_IS_STYLABLE
 NBTK_TYPE_STYLABLE
@@ -829,22 +829,25 @@ NbtkEntryPrivate
 
 <SECTION>
 <FILE>nbtk</FILE>
+<SUBSECTION Private>
 NBTK_H_INSIDE
 </SECTION>
 
 <SECTION>
 <FILE>nbtk-types</FILE>
-NBTK_TYPE_BORDER_IMAGE
-NBTK_TYPE_PADDING
 NbtkPadding
-nbtk_border_image_get_type
-nbtk_padding_get_type
 NbtkAlignment
 NbtkAlign
+<SUBSECTION Standard>
+nbtk_border_image_get_type
+nbtk_padding_get_type
+NBTK_TYPE_BORDER_IMAGE
+NBTK_TYPE_PADDING
 </SECTION>
 
 <SECTION>
 <FILE>nbtk-gtk</FILE>
+<SUBSECTION Private>
 NBTK_H_INSIDE
 </SECTION>
 
