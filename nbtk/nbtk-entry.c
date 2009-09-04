@@ -560,6 +560,10 @@ nbtk_entry_key_press_event (ClutterActor    *actor,
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
 
+  /* This is expected to handle events that were emitted for the inner
+     ClutterText. They only reach this function if the ClutterText
+     didn't handle them */
+
   /* paste */
   if ((event->modifier_state & CLUTTER_CONTROL_MASK)
       && event->keyval == CLUTTER_v)
@@ -613,16 +617,17 @@ nbtk_entry_key_press_event (ClutterActor    *actor,
       return TRUE;
     }
 
-  return clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
+  return FALSE;
 }
 
-static gboolean
-nbtk_entry_key_release_event (ClutterActor    *actor,
-                              ClutterKeyEvent *event)
+static void
+nbtk_entry_key_focus_in (ClutterActor *actor)
 {
   NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
 
-  return clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
+  /* We never want key focus. The ClutterText should be given first
+     pass for all key events */
+  clutter_actor_grab_key_focus (priv->entry);
 }
 
 static gboolean
@@ -675,7 +680,7 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
   actor_class->unmap = nbtk_entry_unmap;
 
   actor_class->key_press_event = nbtk_entry_key_press_event;
-  actor_class->key_release_event = nbtk_entry_key_release_event;
+  actor_class->key_focus_in = nbtk_entry_key_focus_in;
 
   actor_class->button_press_event = nbtk_entry_button_press_event;
   actor_class->button_release_event = nbtk_entry_button_release_event;
