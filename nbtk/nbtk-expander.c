@@ -40,7 +40,8 @@ static ClutterContainerIface *container_parent_class = NULL;
 enum {
   PROP_0,
 
-  PROP_EXPANDED
+  PROP_EXPANDED,
+  PROP_LABEL
 };
 
 enum
@@ -76,6 +77,9 @@ nbtk_expander_get_property (GObject *object,
     case PROP_EXPANDED:
       g_value_set_boolean (value, priv->expanded);
       break;
+    case PROP_LABEL:
+      g_value_set_string (value, clutter_text_get_text (CLUTTER_TEXT (priv->label)));
+      break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
   }
@@ -91,6 +95,10 @@ nbtk_expander_set_property (GObject *object,
     case PROP_EXPANDED:
       nbtk_expander_set_expanded ((NbtkExpander *) object,
                                   g_value_get_boolean (value));
+      break;
+    case PROP_LABEL:
+      nbtk_expander_set_label ((NbtkExpander *) object,
+                               g_value_get_string (value));
       break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -614,6 +622,14 @@ nbtk_expander_class_init (NbtkExpanderClass *klass)
                                 NBTK_PARAM_READWRITE);
   g_object_class_install_property (object_class,
                                    PROP_EXPANDED,
+                                   pspec);
+
+  pspec = g_param_spec_string ("label",
+                               "Label",
+                               "Expander title label.",
+                               NULL, G_PARAM_READWRITE);
+  g_object_class_install_property (object_class,
+                                   PROP_LABEL,
                                    pspec);
 
   /**
