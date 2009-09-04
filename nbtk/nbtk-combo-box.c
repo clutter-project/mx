@@ -429,7 +429,6 @@ nbtk_combo_box_init (NbtkComboBox *self)
 
 /**
  * nbtk_combo_box_new:
- * @void: A #nbtk_combo_box_new
  *
  * Create a new NbtkComboBox
  *
