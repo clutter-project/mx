@@ -427,12 +427,29 @@ nbtk_combo_box_init (NbtkComboBox *self)
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
 }
 
+/**
+ * nbtk_combo_box_new:
+ * @void: A #nbtk_combo_box_new
+ *
+ * Create a new NbtkComboBox
+ *
+ * Returns: a newly allocated NbtkComboBox
+ */
 NbtkComboBox *
 nbtk_combo_box_new (void)
 {
   return g_object_new (NBTK_TYPE_COMBO_BOX, NULL);
 }
 
+/**
+ * nbtk_combo_box_insert_text:
+ * @box: A #NbtkComboBox
+ * @position: zero indexed position to insert the item at
+ * @text: name of the item
+ *
+ * Insert an item into the combo box list.
+ *
+ */
 void
 nbtk_combo_box_insert_text (NbtkComboBox *box,
                             gint          position,
@@ -445,6 +462,14 @@ nbtk_combo_box_insert_text (NbtkComboBox *box,
   nbtk_combo_box_update_popup (box);
 }
 
+/**
+ * nbtk_combo_box_append_text:
+ * @box: A #NbtkComboBox
+ * @text: name of the item
+ *
+ * Append an item to the combo box list
+ *
+ */
 void
 nbtk_combo_box_append_text (NbtkComboBox *box,
                             const gchar  *text)
@@ -455,6 +480,14 @@ nbtk_combo_box_append_text (NbtkComboBox *box,
   nbtk_combo_box_update_popup (box);
 }
 
+/**
+ * nbtk_combo_box_prepend_text:
+ * @box: A #NbtkComboBox
+ * @text: name of the item
+ *
+ * Prepend an item to the combo box list
+ *
+ */
 void
 nbtk_combo_box_prepend_text (NbtkComboBox *box,
                              const gchar  *text)
@@ -466,6 +499,14 @@ nbtk_combo_box_prepend_text (NbtkComboBox *box,
   nbtk_combo_box_update_popup (box);
 }
 
+/**
+ * nbtk_combo_box_remove_text:
+ * @box: A #NbtkComboBox
+ * @position: position of the item to remove
+ *
+ * Remove the item at @position
+ *
+ */
 void
 nbtk_combo_box_remove_text (NbtkComboBox *box,
                             gint          position)
@@ -481,6 +522,14 @@ nbtk_combo_box_remove_text (NbtkComboBox *box,
   nbtk_combo_box_update_popup (box);
 }
 
+/**
+ * nbtk_combo_box_set_title:
+ * @box: A #NbtkComboBox
+ * @title: text to display
+ *
+ * Set the text displayed in the combo box
+ *
+ */
 void
 nbtk_combo_box_set_title (NbtkComboBox *box,
                           const gchar  *title)
@@ -494,6 +543,14 @@ nbtk_combo_box_set_title (NbtkComboBox *box,
   g_object_notify (G_OBJECT (box), "title");
 }
 
+/**
+ * nbtk_combo_box_get_title:
+ * @box: A #NbtkComboBox
+ *
+ * Get the text displayed in the combo box
+ *
+ * Returns: the text string, owned by the combo box
+ */
 const gchar*
 nbtk_combo_box_get_title (NbtkComboBox *box)
 {
@@ -502,6 +559,14 @@ nbtk_combo_box_get_title (NbtkComboBox *box)
   return clutter_text_get_text ((ClutterText*) box->priv->label);
 }
 
+/**
+ * nbtk_combo_box_set_index:
+ * @box: A #NbtkComboBox
+ * @index: the index of the list item to set
+ *
+ * Set the currenet combo box text from the item at @index in the list.
+ *
+ */
 void
 nbtk_combo_box_set_index (NbtkComboBox *box,
                           gint          index)
@@ -526,6 +591,14 @@ nbtk_combo_box_set_index (NbtkComboBox *box,
   g_object_notify (G_OBJECT (box), "title");
 }
 
+/**
+ * nbtk_combo_box_get_index:
+ * @box: A #NbtkComboBox
+ *
+ * Get the index of the last item selected
+ *
+ * Returns: const gint
+ */
 const gint
 nbtk_combo_box_get_index (NbtkComboBox *box)
 {
