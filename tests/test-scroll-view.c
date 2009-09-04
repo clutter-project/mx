@@ -61,5 +61,5 @@ main (int argc, char *argv[])
   clutter_actor_show (stage);
   clutter_main ();
 
-  return EXIT_SUCCESS;
+  return 0;
 }

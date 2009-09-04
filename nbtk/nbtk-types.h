@@ -24,7 +24,6 @@
 #define __NBTK_TYPES_H__
 
 #include <glib-object.h>
-#include <ccss/ccss.h>
 #include <clutter/clutter.h>
 
 G_BEGIN_DECLS
@@ -32,7 +31,6 @@ G_BEGIN_DECLS
 #define NBTK_TYPE_BORDER_IMAGE          (nbtk_border_image_get_type ())
 #define NBTK_TYPE_PADDING               (nbtk_padding_get_type ())
 
-typedef ccss_border_image_t             NbtkBorderImage;
 typedef struct _NbtkPadding             NbtkPadding;
 
 GType nbtk_border_image_get_type (void) G_GNUC_CONST;

@@ -31,6 +31,7 @@
 #include <string.h>
 
 #include <clutter/clutter.h>
+#include <ccss/ccss.h>
 
 #include "nbtk-widget.h"
 
@@ -40,6 +41,8 @@
 #include "nbtk-texture-cache.h"
 #include "nbtk-texture-frame.h"
 #include "nbtk-tooltip.h"
+
+typedef ccss_border_image_t             NbtkBorderImage;
 
 /*
  * Forward declaration for sake of NbtkWidgetChild

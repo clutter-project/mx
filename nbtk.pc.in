@@ -8,4 +8,4 @@ Description: An experimental toolkit for moblin-netbook implementation
 Version: @VERSION@
 Libs: -L${libdir} -lnbtk-@NBTK_API_VERSION@
 Cflags: -I${includedir}/nbtk-@NBTK_API_VERSION@
-Requires: clutter-1.0 libccss-1 = 0.3.1
+Requires: clutter-1.0

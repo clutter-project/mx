@@ -88,5 +88,5 @@ main (int argc, char *argv[])
 
   clutter_main ();
 
-  return EXIT_SUCCESS;
+  return 0;
 }
