@@ -571,14 +571,11 @@ NBTK_ENTRY_GET_CLASS
 
 <SECTION>
 <FILE>nbtk-types</FILE>
-NbtkBorderImage
 NbtkPadding
 NbtkAlignment
 NbtkAlign
 <SUBSECTION Standard>
-NBTK_TYPE_BORDER_IMAGE
 NBTK_TYPE_PADDING
-nbtk_border_image_get_type
 nbtk_padding_get_type
 </SECTION>
 
