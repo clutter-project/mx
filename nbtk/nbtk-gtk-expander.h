@@ -56,8 +56,15 @@ typedef struct _NbtkGtkExpander NbtkGtkExpander;
 typedef struct _NbtkGtkExpanderClass NbtkGtkExpanderClass;
 typedef struct _NbtkGtkExpanderPrivate NbtkGtkExpanderPrivate;
 
+/**
+ * NbtkGtkExpander:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _NbtkGtkExpander
 {
+  /*< private >*/
   GtkBin parent;
 
   NbtkGtkExpanderPrivate *priv;

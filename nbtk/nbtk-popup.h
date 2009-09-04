@@ -53,8 +53,15 @@ typedef struct _NbtkPopup NbtkPopup;
 typedef struct _NbtkPopupClass NbtkPopupClass;
 typedef struct _NbtkPopupPrivate NbtkPopupPrivate;
 
+/**
+ * NbtkPopup:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _NbtkPopup
 {
+  /*< private >*/
   NbtkWidget parent;
 
   NbtkPopupPrivate *priv;

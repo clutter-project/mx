@@ -54,8 +54,15 @@ typedef struct _NbtkBoxLayoutChild NbtkBoxLayoutChild;
 typedef struct _NbtkBoxLayoutChildClass NbtkBoxLayoutChildClass;
 typedef struct _NbtkBoxLayoutChildPrivate NbtkBoxLayoutChildPrivate;
 
+/**
+ * NbtkBoxLayoutChild:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _NbtkBoxLayoutChild
 {
+  /*< private >*/
   ClutterChildMeta parent;
 
   gboolean expand;

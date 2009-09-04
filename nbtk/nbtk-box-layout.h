@@ -54,8 +54,15 @@ typedef struct _NbtkBoxLayout NbtkBoxLayout;
 typedef struct _NbtkBoxLayoutClass NbtkBoxLayoutClass;
 typedef struct _NbtkBoxLayoutPrivate NbtkBoxLayoutPrivate;
 
+/**
+ * NbtkBoxLayout:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _NbtkBoxLayout
 {
+  /*< private >*/
   NbtkWidget parent;
 
   NbtkBoxLayoutPrivate *priv;

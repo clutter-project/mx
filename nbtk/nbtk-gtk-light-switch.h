@@ -40,7 +40,14 @@ G_BEGIN_DECLS
 #define NBTK_GTK_LIGHT_SWITCH_GET_CLASS(obj) \
   (G_TYPE_INSTANCE_GET_CLASS ((obj), NBTK_GTK_TYPE_LIGHT_SWITCH, NbtkGtkLightSwitchClass))
 
+/**
+ * NbtkGtkLightSwitch:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 typedef struct {
+  /*< private >*/
   GtkDrawingArea parent;
 } NbtkGtkLightSwitch;
 

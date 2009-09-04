@@ -34,8 +34,15 @@ typedef struct _NbtkComboBox NbtkComboBox;
 typedef struct _NbtkComboBoxClass NbtkComboBoxClass;
 typedef struct _NbtkComboBoxPrivate NbtkComboBoxPrivate;
 
+/**
+ * NbtkComboBox:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _NbtkComboBox
 {
+  /*< private >*/
   NbtkWidget parent;
 
   NbtkComboBoxPrivate *priv;

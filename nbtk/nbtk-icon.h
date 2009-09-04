@@ -49,7 +49,14 @@ G_BEGIN_DECLS
 #define NBTK_ICON_GET_CLASS(obj) \
   (G_TYPE_INSTANCE_GET_CLASS ((obj), NBTK_TYPE_ICON, NbtkIconClass))
 
+/**
+ * NbtkIcon:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 typedef struct {
+  /*< private >*/
   NbtkWidget parent;
 } NbtkIcon;
 

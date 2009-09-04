@@ -52,8 +52,15 @@ typedef struct _NbtkAction NbtkAction;
 typedef struct _NbtkActionClass NbtkActionClass;
 typedef struct _NbtkActionPrivate NbtkActionPrivate;
 
+/**
+ * NbtkAction:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _NbtkAction
 {
+  /*< private >*/
   GInitiallyUnowned parent;
 
   NbtkActionPrivate *priv;

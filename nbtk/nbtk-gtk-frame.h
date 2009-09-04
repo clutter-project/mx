@@ -41,7 +41,14 @@ G_BEGIN_DECLS
 #define NBTK_GTK_FRAME_GET_CLASS(obj) \
   (G_TYPE_INSTANCE_GET_CLASS ((obj), NBTK_GTK_TYPE_FRAME, NbtkGtkFrameClass))
 
+/**
+ * NbtkGtkFrame:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 typedef struct {
+  /*< private >*/
   GtkFrame parent;
   GdkColor border_color;
 } NbtkGtkFrame;
