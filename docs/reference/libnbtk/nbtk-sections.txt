@@ -1,6 +1,50 @@
 <SECTION>
+<FILE>nbtk-popup</FILE>
+<TITLE>NbtkPopup</TITLE>
+NbtkPopup
+nbtk_popup_new
+nbtk_popup_add_action
+nbtk_popup_remove_action
+nbtk_popup_clear
+<SUBSECTION Standard>
+NBTK_POPUP
+NBTK_IS_POPUP
+NBTK_TYPE_POPUP
+nbtk_popup_get_type
+NBTK_POPUP_CLASS
+NBTK_IS_POPUP_CLASS
+NBTK_POPUP_GET_CLASS
+<SUBSECTION Private>
+NbtkPopupPrivate
+</SECTION>
+
+<SECTION>
+<FILE>nbtk-combo-box</FILE>
+<TITLE>NbtkComboBox</TITLE>
+NbtkComboBox
+nbtk_combo_box_new
+nbtk_combo_box_insert_text
+nbtk_combo_box_append_text
+nbtk_combo_box_prepend_text
+nbtk_combo_box_remove_text
+nbtk_combo_box_set_title
+nbtk_combo_box_get_title
+nbtk_combo_box_set_index
+nbtk_combo_box_get_index
+<SUBSECTION Standard>
+NBTK_COMBO_BOX
+NBTK_IS_COMBO_BOX
+NBTK_TYPE_COMBO_BOX
+nbtk_combo_box_get_type
+NBTK_COMBO_BOX_CLASS
+NBTK_IS_COMBO_BOX_CLASS
+NBTK_COMBO_BOX_GET_CLASS
+<SUBSECTION Private>
+NbtkComboBoxPrivate
+</SECTION>
+
+<SECTION>
 <FILE>nbtk-clipboard</FILE>
-NbtkClipboardPrivate
 <TITLE>NbtkClipboard</TITLE>
 NbtkClipboard
 NbtkClipboardCallbackFunc
@@ -15,47 +59,8 @@ nbtk_clipboard_get_type
 NBTK_CLIPBOARD_CLASS
 NBTK_IS_CLIPBOARD_CLASS
 NBTK_CLIPBOARD_GET_CLASS
-</SECTION>
-
-<SECTION>
-<FILE>nbtk-droppable</FILE>
-NbtkDroppable
-NbtkDroppableIface
-nbtk_droppable_enable
-nbtk_droppable_disable
-nbtk_droppable_is_enabled
-nbtk_droppable_accept_drop
-<SUBSECTION Standard>
-NBTK_DROPPABLE
-NBTK_IS_DROPPABLE
-NBTK_TYPE_DROPPABLE
-nbtk_droppable_get_type
-NBTK_DROPPABLE_GET_IFACE
-</SECTION>
-
-<SECTION>
-<FILE>nbtk-draggable</FILE>
-NbtkDraggable
-NbtkDraggableIface
-NbtkDragAxis
-NbtkDragContainment
-nbtk_draggable_set_axis
-nbtk_draggable_get_axis
-nbtk_draggable_set_drag_threshold
-nbtk_draggable_get_drag_threshold
-nbtk_draggable_set_containment_type
-nbtk_draggable_get_containment_type
-nbtk_draggable_set_containment_area
-nbtk_draggable_get_containment_area
-nbtk_draggable_disable
-nbtk_draggable_enable
-nbtk_draggable_is_enabled
-<SUBSECTION Standard>
-NBTK_DRAGGABLE
-NBTK_IS_DRAGGABLE
-NBTK_TYPE_DRAGGABLE
-nbtk_draggable_get_type
-NBTK_DRAGGABLE_GET_IFACE
+<SUBSECTION Private>
+NbtkClipboardPrivate
 </SECTION>
 
 <SECTION>
@@ -66,27 +71,50 @@ nbtk_widget_set_style_pseudo_class
 nbtk_widget_get_style_pseudo_class
 nbtk_widget_set_style_class_name
 nbtk_widget_get_style_class_name
+nbtk_widget_set_has_tooltip
+nbtk_widget_get_has_tooltip
+nbtk_widget_set_tooltip_text
+nbtk_widget_get_tooltip_text
+nbtk_widget_show_tooltip
+nbtk_widget_hide_tooltip
+nbtk_widget_ensure_style
 nbtk_widget_get_background_image
 nbtk_widget_get_border_image
 nbtk_widget_get_padding
-nbtk_widget_ensure_style
-nbtk_widget_get_has_tooltip
-nbtk_widget_get_tooltip_text
-nbtk_widget_hide_tooltip
-nbtk_widget_set_has_tooltip
-nbtk_widget_set_tooltip_text
-nbtk_widget_show_tooltip
 nbtk_widget_draw_background
 <SUBSECTION Standard>
-nbtk_widget_get_type
-NBTK_TYPE_WIDGET
 NBTK_WIDGET
 NBTK_IS_WIDGET
+NBTK_TYPE_WIDGET
+nbtk_widget_get_type
 NBTK_WIDGET_CLASS
 NBTK_IS_WIDGET_CLASS
 NBTK_WIDGET_GET_CLASS
 <SUBSECTION Private>
 NbtkWidgetPrivate
+</SECTION>
+
+<SECTION>
+<FILE>nbtk-box-layout</FILE>
+<TITLE>NbtkBoxLayout</TITLE>
+NbtkBoxLayout
+nbtk_box_layout_new
+nbtk_box_layout_set_vertical
+nbtk_box_layout_get_vertical
+nbtk_box_layout_set_pack_start
+nbtk_box_layout_get_pack_start
+nbtk_box_layout_set_spacing
+nbtk_box_layout_get_spacing
+<SUBSECTION Standard>
+NBTK_BOX_LAYOUT
+NBTK_IS_BOX_LAYOUT
+NBTK_TYPE_BOX_LAYOUT
+nbtk_box_layout_get_type
+NBTK_BOX_LAYOUT_CLASS
+NBTK_IS_BOX_LAYOUT_CLASS
+NBTK_BOX_LAYOUT_GET_CLASS
+<SUBSECTION Private>
+NbtkBoxLayoutPrivate
 </SECTION>
 
 <SECTION>
@@ -124,6 +152,7 @@ NBTK_SCROLLABLE
 NBTK_IS_SCROLLABLE
 NBTK_TYPE_SCROLLABLE
 nbtk_scrollable_get_type
+<SUBSECTION Private>
 </SECTION>
 
 <SECTION>
@@ -200,6 +229,22 @@ NbtkFadeButtonPrivate
 </SECTION>
 
 <SECTION>
+<FILE>nbtk-gtk-frame</FILE>
+<TITLE>NbtkGtkFrame</TITLE>
+NbtkGtkFrame
+nbtk_gtk_frame_new
+<SUBSECTION Standard>
+NBTK_GTK_FRAME
+NBTK_GTK_IS_FRAME
+NBTK_GTK_TYPE_FRAME
+nbtk_gtk_frame_get_type
+NBTK_GTK_FRAME_CLASS
+NBTK_GTK_IS_FRAME_CLASS
+NBTK_GTK_FRAME_GET_CLASS
+<SUBSECTION Private>
+</SECTION>
+
+<SECTION>
 <FILE>nbtk-adjustment</FILE>
 <TITLE>NbtkAdjustment</TITLE>
 NbtkAdjustment
@@ -231,7 +276,9 @@ NbtkAdjustmentPrivate
 NbtkTextureCache
 nbtk_texture_cache_get_default
 nbtk_texture_cache_get_texture
+nbtk_texture_cache_get_actor
 nbtk_texture_cache_get_size
+nbtk_texture_cache_load_cache
 <SUBSECTION Standard>
 NBTK_TEXTURE_CACHE
 NBTK_IS_TEXTURE_CACHE
@@ -240,6 +287,42 @@ nbtk_texture_cache_get_type
 NBTK_TEXTURE_CACHE_CLASS
 NBTK_IS_TEXTURE_CACHE_CLASS
 NBTK_TEXTURE_CACHE_GET_CLASS
+<SUBSECTION Private>
+</SECTION>
+
+<SECTION>
+<FILE>nbtk-gtk-light-switch</FILE>
+<TITLE>NbtkGtkLightSwitch</TITLE>
+NbtkGtkLightSwitch
+nbtk_gtk_light_switch_set_active
+nbtk_gtk_light_switch_get_active
+nbtk_gtk_light_switch_new
+<SUBSECTION Standard>
+NBTK_GTK_LIGHT_SWITCH
+NBTK_GTK_IS_LIGHT_SWITCH
+NBTK_GTK_TYPE_LIGHT_SWITCH
+nbtk_gtk_light_switch_get_type
+NBTK_GTK_LIGHT_SWITCH_CLASS
+NBTK_GTK_IS_LIGHT_SWITCH_CLASS
+NBTK_GTK_LIGHT_SWITCH_GET_CLASS
+<SUBSECTION Private>
+</SECTION>
+
+<SECTION>
+<FILE>nbtk-box-layout-child</FILE>
+<TITLE>NbtkBoxLayoutChild</TITLE>
+NbtkBoxLayoutChild
+nbtk_box_layout_child_new
+<SUBSECTION Standard>
+NBTK_BOX_LAYOUT_CHILD
+NBTK_IS_BOX_LAYOUT_CHILD
+NBTK_TYPE_BOX_LAYOUT_CHILD
+nbtk_box_layout_child_get_type
+NBTK_BOX_LAYOUT_CHILD_CLASS
+NBTK_IS_BOX_LAYOUT_CHILD_CLASS
+NBTK_BOX_LAYOUT_CHILD_GET_CLASS
+<SUBSECTION Private>
+NbtkBoxLayoutChildPrivate
 </SECTION>
 
 <SECTION>
@@ -264,6 +347,29 @@ NbtkViewportPrivate
 </SECTION>
 
 <SECTION>
+<FILE>nbtk-gtk-expander</FILE>
+<TITLE>NbtkGtkExpander</TITLE>
+NbtkGtkExpander
+nbtk_gtk_expander_new
+nbtk_gtk_expander_set_expanded
+nbtk_gtk_expander_get_expanded
+nbtk_gtk_expander_set_label_widget
+nbtk_gtk_expander_get_label_widget
+nbtk_gtk_expander_set_has_indicator
+nbtk_gtk_expander_get_has_indicator
+<SUBSECTION Standard>
+NBTK_GTK_EXPANDER
+NBTK_IS_GTK_EXPANDER
+NBTK_TYPE_GTK_EXPANDER
+nbtk_gtk_expander_get_type
+NBTK_GTK_EXPANDER_CLASS
+NBTK_IS_GTK_EXPANDER_CLASS
+NBTK_GTK_EXPANDER_GET_CLASS
+<SUBSECTION Private>
+NbtkGtkExpanderPrivate
+</SECTION>
+
+<SECTION>
 <FILE>nbtk-icon</FILE>
 <TITLE>NbtkIcon</TITLE>
 NbtkIcon
@@ -276,6 +382,7 @@ nbtk_icon_get_type
 NBTK_ICON_CLASS
 NBTK_IS_ICON_CLASS
 NBTK_ICON_GET_CLASS
+<SUBSECTION Private>
 </SECTION>
 
 <SECTION>
@@ -286,7 +393,6 @@ nbtk_scroll_bar_new
 nbtk_scroll_bar_set_adjustment
 nbtk_scroll_bar_get_adjustment
 <SUBSECTION Standard>
-NbtkScrollBarPrivate
 NBTK_SCROLL_BAR
 NBTK_IS_SCROLL_BAR
 NBTK_TYPE_SCROLL_BAR
@@ -294,6 +400,8 @@ nbtk_scroll_bar_get_type
 NBTK_SCROLL_BAR_CLASS
 NBTK_IS_SCROLL_BAR_CLASS
 NBTK_SCROLL_BAR_GET_CLASS
+<SUBSECTION Private>
+NbtkScrollBarPrivate
 </SECTION>
 
 <SECTION>
@@ -308,6 +416,8 @@ nbtk_scroll_view_get_column_size
 nbtk_scroll_view_set_column_size
 nbtk_scroll_view_get_row_size
 nbtk_scroll_view_set_row_size
+nbtk_scroll_view_set_mouse_scrolling
+nbtk_scroll_view_get_mouse_scrolling
 <SUBSECTION Standard>
 NBTK_SCROLL_VIEW
 NBTK_IS_SCROLL_VIEW
@@ -365,6 +475,28 @@ NbtkExpanderPrivate
 </SECTION>
 
 <SECTION>
+<FILE>nbtk-action</FILE>
+<TITLE>NbtkAction</TITLE>
+NbtkAction
+nbtk_action_new
+nbtk_action_new_full
+nbtk_action_get_name
+nbtk_action_set_name
+nbtk_action_get_active
+nbtk_action_set_active
+<SUBSECTION Standard>
+NBTK_ACTION
+NBTK_IS_ACTION
+NBTK_TYPE_ACTION
+nbtk_action_get_type
+NBTK_ACTION_CLASS
+NBTK_IS_ACTION_CLASS
+NBTK_ACTION_GET_CLASS
+<SUBSECTION Private>
+NbtkActionPrivate
+</SECTION>
+
+<SECTION>
 <FILE>nbtk-texture-frame</FILE>
 <TITLE>NbtkTextureFrame</TITLE>
 NbtkTextureFrame
@@ -405,8 +537,8 @@ nbtk_table_child_get_x_align
 nbtk_table_child_set_x_align
 nbtk_table_child_get_y_align
 nbtk_table_child_set_y_align
-nbtk_table_child_get_allocate_hidden
 nbtk_table_child_set_allocate_hidden
+nbtk_table_child_get_allocate_hidden
 <SUBSECTION Standard>
 NBTK_TABLE_CHILD
 NBTK_IS_TABLE_CHILD
@@ -415,10 +547,39 @@ nbtk_table_child_get_type
 NBTK_TABLE_CHILD_CLASS
 NBTK_IS_TABLE_CHILD_CLASS
 NBTK_TABLE_CHILD_GET_CLASS
+<SUBSECTION Private>
+</SECTION>
+
+<SECTION>
+<FILE>nbtk-draggable</FILE>
+NbtkDraggable
+NbtkDraggableIface
+NbtkDragAxis
+NbtkDragContainment
+nbtk_draggable_set_axis
+nbtk_draggable_get_axis
+nbtk_draggable_set_drag_threshold
+nbtk_draggable_get_drag_threshold
+nbtk_draggable_set_containment_type
+nbtk_draggable_get_containment_type
+nbtk_draggable_set_containment_area
+nbtk_draggable_get_containment_area
+nbtk_draggable_disable
+nbtk_draggable_enable
+nbtk_draggable_is_enabled
+<SUBSECTION Standard>
+NBTK_DRAGGABLE
+NBTK_IS_DRAGGABLE
+NBTK_TYPE_DRAGGABLE
+nbtk_draggable_get_type
+NBTK_DRAGGABLE_GET_IFACE
+<SUBSECTION Private>
 </SECTION>
 
 <SECTION>
 <FILE>nbtk-style</FILE>
+NbtkStylable
+NbtkStylableIface
 NbtkStyleError
 <TITLE>NbtkStyle</TITLE>
 NbtkStyle
@@ -441,42 +602,70 @@ NbtkStylePrivate
 </SECTION>
 
 <SECTION>
-<FILE>nbtk-icon-view</FILE>
-<TITLE>NbtkItemView</TITLE>
-NbtkItemView
-nbtk_item_view_new
-nbtk_item_view_set_model
-nbtk_item_view_get_model
-nbtk_item_view_get_item_type
-nbtk_item_view_set_item_type
-nbtk_item_view_add_attribute
-nbtk_item_view_freeze
-nbtk_item_view_thaw
+<FILE>nbtk-droppable</FILE>
+NbtkDroppable
+NbtkDroppableIface
+nbtk_droppable_enable
+nbtk_droppable_disable
+nbtk_droppable_is_enabled
+nbtk_droppable_accept_drop
 <SUBSECTION Standard>
-NbtkItemViewPrivate
-NBTK_ITEM_VIEW
-NBTK_IS_ITEM_VIEW
-NBTK_TYPE_ITEM_VIEW
-nbtk_item_view_get_type
-NBTK_ITEM_VIEW_CLASS
-NBTK_IS_ITEM_VIEW_CLASS
-NBTK_ITEM_VIEW_GET_CLASS
+NBTK_DROPPABLE
+NBTK_IS_DROPPABLE
+NBTK_TYPE_DROPPABLE
+nbtk_droppable_get_type
+NBTK_DROPPABLE_GET_IFACE
+<SUBSECTION Private>
+</SECTION>
+
+<SECTION>
+<FILE>nbtk-subtexture</FILE>
+<TITLE>NbtkSubtexture</TITLE>
+NbtkSubtexture
+nbtk_subtexture_new
+nbtk_subtexture_set_parent_texture
+nbtk_subtexture_get_parent_texture
+nbtk_subtexture_set_frame
+nbtk_subtexture_get_frame
+<SUBSECTION Standard>
+NBTK_SUBTEXTURE
+NBTK_IS_SUBTEXTURE
+NBTK_TYPE_SUBTEXTURE
+nbtk_subtexture_get_type
+NBTK_SUBTEXTURE_CLASS
+NBTK_IS_SUBTEXTURE_CLASS
+NBTK_SUBTEXTURE_GET_CLASS
+<SUBSECTION Private>
+NbtkSubtexturePrivate
+</SECTION>
+
+<SECTION>
+<FILE>nbtk-item-factory</FILE>
+NbtkItemFactory
+NbtkItemFactoryIface
+nbtk_item_factory_create
+<SUBSECTION Standard>
+NBTK_ITEM_FACTORY
+NBTK_IS_ITEM_FACTORY
+NBTK_TYPE_ITEM_FACTORY
+nbtk_item_factory_get_type
+NBTK_ITEM_FACTORY_GET_IFACE
+<SUBSECTION Private>
 </SECTION>
 
 <SECTION>
 <FILE>nbtk-table</FILE>
-<TITLE>NbtkTable</TITLE>
-NbtkTable
 NbtkTableChildOptions
+NbtkTable
 nbtk_table_new
 nbtk_table_set_col_spacing
 nbtk_table_set_row_spacing
 nbtk_table_get_col_spacing
 nbtk_table_get_row_spacing
-nbtk_table_get_column_count
-nbtk_table_get_row_count
 nbtk_table_add_actor
 nbtk_table_add_actor_with_properties
+nbtk_table_get_row_count
+nbtk_table_get_column_count
 <SUBSECTION Standard>
 NBTK_TABLE
 NBTK_IS_TABLE
@@ -490,8 +679,53 @@ NbtkTablePrivate
 </SECTION>
 
 <SECTION>
+<FILE>nbtk-item-view</FILE>
+<TITLE>NbtkItemView</TITLE>
+NbtkItemView
+nbtk_item_view_new
+nbtk_item_view_set_model
+nbtk_item_view_get_model
+nbtk_item_view_set_item_type
+nbtk_item_view_get_item_type
+nbtk_item_view_add_attribute
+nbtk_item_view_freeze
+nbtk_item_view_thaw
+nbtk_item_view_set_factory
+<SUBSECTION Standard>
+NBTK_ITEM_VIEW
+NBTK_IS_ITEM_VIEW
+NBTK_TYPE_ITEM_VIEW
+nbtk_item_view_get_type
+NBTK_ITEM_VIEW_CLASS
+NBTK_IS_ITEM_VIEW_CLASS
+NBTK_ITEM_VIEW_GET_CLASS
+<SUBSECTION Private>
+NbtkItemViewPrivate
+</SECTION>
+
+<SECTION>
+<FILE>nbtk-progress-bar</FILE>
+<TITLE>NbtkProgressBar</TITLE>
+NbtkProgressBar
+nbtk_progress_bar_new
+nbtk_progress_bar_set_progress
+nbtk_progress_bar_get_progress
+<SUBSECTION Standard>
+NBTK_PROGRESS_BAR
+NBTK_IS_PROGRESS_BAR
+NBTK_TYPE_PROGRESS_BAR
+nbtk_progress_bar_get_type
+NBTK_PROGRESS_BAR_CLASS
+NBTK_IS_PROGRESS_BAR_CLASS
+NBTK_PROGRESS_BAR_GET_CLASS
+<SUBSECTION Private>
+NbtkProgressBarPrivate
+</SECTION>
+
+<SECTION>
 <FILE>nbtk-stylable</FILE>
-NbtkStylable
+NBTK_STYLABLE_IFACE
+NBTK_IS_STYLABLE_IFACE
 NbtkStylableIface
 nbtk_stylable_iface_install_property
 nbtk_stylable_freeze_notify
@@ -514,14 +748,37 @@ nbtk_stylable_get_attribute
 nbtk_stylable_get_viewport
 nbtk_stylable_changed
 <SUBSECTION Standard>
-NBTK_STYLABLE_IFACE
-NBTK_IS_STYLABLE_IFACE
 NBTK_STYLABLE
 NBTK_IS_STYLABLE
 NBTK_TYPE_STYLABLE
 nbtk_stylable_get_type
 NBTK_STYLABLE_GET_IFACE
 <SUBSECTION Private>
+</SECTION>
+
+<SECTION>
+<FILE>nbtk-list-view</FILE>
+<TITLE>NbtkListView</TITLE>
+NbtkListView
+nbtk_list_view_new
+nbtk_list_view_set_model
+nbtk_list_view_get_model
+nbtk_list_view_set_item_type
+nbtk_list_view_get_item_type
+nbtk_list_view_add_attribute
+nbtk_list_view_freeze
+nbtk_list_view_thaw
+nbtk_list_view_set_factory
+<SUBSECTION Standard>
+NBTK_LIST_VIEW
+NBTK_IS_LIST_VIEW
+NBTK_TYPE_LIST_VIEW
+nbtk_list_view_get_type
+NBTK_LIST_VIEW_CLASS
+NBTK_IS_LIST_VIEW_CLASS
+NBTK_LIST_VIEW_GET_CLASS
+<SUBSECTION Private>
+NbtkListViewPrivate
 </SECTION>
 
 <SECTION>
@@ -559,7 +816,6 @@ nbtk_entry_get_hint_text
 nbtk_entry_set_primary_icon_from_file
 nbtk_entry_set_secondary_icon_from_file
 <SUBSECTION Standard>
-NbtkEntryPrivate
 NBTK_ENTRY
 NBTK_IS_ENTRY
 NBTK_TYPE_ENTRY
@@ -567,36 +823,29 @@ nbtk_entry_get_type
 NBTK_ENTRY_CLASS
 NBTK_IS_ENTRY_CLASS
 NBTK_ENTRY_GET_CLASS
+<SUBSECTION Private>
+NbtkEntryPrivate
+</SECTION>
+
+<SECTION>
+<FILE>nbtk</FILE>
+NBTK_H_INSIDE
 </SECTION>
 
 <SECTION>
 <FILE>nbtk-types</FILE>
+NBTK_TYPE_BORDER_IMAGE
+NBTK_TYPE_PADDING
 NbtkPadding
+nbtk_border_image_get_type
+nbtk_padding_get_type
 NbtkAlignment
 NbtkAlign
-<SUBSECTION Standard>
-NBTK_TYPE_PADDING
-nbtk_padding_get_type
 </SECTION>
 
-
 <SECTION>
-<FILE>nbtk-progress-bar</FILE>
-<TITLE>NbtkProgressBar</TITLE>
-NbtkProgressBar
-nbtk_progress_bar_new
-nbtk_progress_bar_set_progress
-nbtk_progress_bar_get_progress
-<SUBSECTION Standard>
-NBTK_PROGRESS_BAR
-NBTK_IS_PROGRESS_BAR
-NBTK_TYPE_PROGRESS_BAR
-nbtk_progress_bar_get_type
-NBTK_PROGRESS_BAR_CLASS
-NBTK_IS_PROGRESS_BAR_CLASS
-NBTK_PROGRESS_BAR_GET_CLASS
-<SUBSECTION Private>
-NbtkProgressBarPrivate
+<FILE>nbtk-gtk</FILE>
+NBTK_H_INSIDE
 </SECTION>
 
 <SECTION>
@@ -608,3 +857,4 @@ NBTK_VERSION_S
 NBTK_VERSION_HEX
 NBTK_CHECK_VERSION
 </SECTION>
+
