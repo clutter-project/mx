@@ -53,6 +53,7 @@
 #include <nbtk/nbtk-texture-frame.h>
 #include <nbtk/nbtk-tooltip.h>
 #include <nbtk/nbtk-types.h>
+#include <nbtk/nbtk-utils.h>
 #include <nbtk/nbtk-viewport.h>
 #include <nbtk/nbtk-widget.h>
 

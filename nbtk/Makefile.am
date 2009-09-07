@@ -47,6 +47,7 @@ source_h = \
 	$(top_srcdir)/nbtk/nbtk-texture-frame.h 	\
 	$(top_srcdir)/nbtk/nbtk-tooltip.h		\
 	$(top_srcdir)/nbtk/nbtk-types.h 		\
+	$(top_srcdir)/nbtk/nbtk-utils.h                 \
 	$(top_srcdir)/nbtk/nbtk-viewport.h		\
 	$(top_srcdir)/nbtk/nbtk-widget.h		\
 	$(NULL)
@@ -93,6 +94,7 @@ source_c = \
 	$(top_srcdir)/nbtk/nbtk-texture-cache.c 	\
 	$(top_srcdir)/nbtk/nbtk-texture-frame.c 	\
 	$(top_srcdir)/nbtk/nbtk-tooltip.c 		\
+	$(top_srcdir)/nbtk/nbtk-utils.c                 \
 	$(top_srcdir)/nbtk/nbtk-viewport.c 		\
 	$(top_srcdir)/nbtk/nbtk-widget.c		\
 	$(NULL)

@@ -21,8 +21,10 @@
 
 #include <glib/gi18n-lib.h>
 
-/* We use the special gcc constructor attribute so we can avoid requiring an
- * init function to get translations to work! */
+/* We use the special gcc constructor attribute so we can avoid
+ * requiring an init function to get translations to work! This
+ * function is also in nbtk-utils but we also need it here
+ * because that is a separate library */
 static void __attribute__ ((constructor))
 _start (void)
 {
