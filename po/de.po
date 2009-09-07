@@ -27,3 +27,61 @@ msgstr "Ein"
 msgid "Off"
 msgstr "Aus"
 
+
+#: nbtk/nbtk-utils.c:92
+msgid "Less than a minute ago"
+msgstr "Vor weniger als einer Minute"
+
+#: nbtk/nbtk-utils.c:96
+msgid "A few minutes ago"
+msgstr "Vor einigen Minuten"
+
+#: nbtk/nbtk-utils.c:100
+msgid "A couple of hours ago"
+msgstr "Vor ein paar Stunden"
+
+#: nbtk/nbtk-utils.c:107
+msgid "Earlier today"
+msgstr "Heute schon früher"
+
+#: nbtk/nbtk-utils.c:110
+msgid "Yesterday"
+msgstr "Gestern"
+
+#: nbtk/nbtk-utils.c:118
+#, c-format
+msgid "On %A"
+msgstr "Am %A"
+
+#: nbtk/nbtk-utils.c:124
+msgid "Unknown"
+msgstr "Unbekannt"
+
+#: nbtk/nbtk-utils.c:131
+msgid "Last week"
+msgstr "Letzte Woche"
+
+#: nbtk/nbtk-utils.c:134
+msgid "A couple of weeks ago"
+msgstr "Vor einigen Wochen"
+
+#: nbtk/nbtk-utils.c:140
+msgid "This month"
+msgstr "Diesen Monat"
+
+#. Now Jan., last used in Dec.
+#: nbtk/nbtk-utils.c:144
+msgid "Last month"
+msgstr "Letzten Monat"
+
+#: nbtk/nbtk-utils.c:147
+msgid "This year"
+msgstr "Dieses Jahr"
+
+#: nbtk/nbtk-utils.c:150
+msgid "Last year"
+msgstr "Letztes Jahr"
+
+#: nbtk/nbtk-utils.c:152
+msgid "Ages ago"
+msgstr "Vor einer Ewigkeit"

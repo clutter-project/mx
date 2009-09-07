@@ -27,3 +27,62 @@ msgstr "On"
 #: ../nbtk/nbtk-gtk-light-switch.c:187 ../nbtk/nbtk-gtk-light-switch.c:240
 msgid "Off"
 msgstr "Off"
+
+#: nbtk/nbtk-utils.c:92
+msgid "Less than a minute ago"
+msgstr "Meno di un minuto fa"
+
+#: nbtk/nbtk-utils.c:96
+msgid "A few minutes ago"
+msgstr "Alcuni minuti fa"
+
+#: nbtk/nbtk-utils.c:100
+msgid "A couple of hours ago"
+msgstr "Un paio d'ore fa"
+
+#: nbtk/nbtk-utils.c:107
+msgid "Earlier today"
+msgstr "Oggi"
+
+#: nbtk/nbtk-utils.c:110
+msgid "Yesterday"
+msgstr "Ieri"
+
+# (ndt) giorno della settimana
+#: nbtk/nbtk-utils.c:118
+#, c-format
+msgid "On %A"
+msgstr "%A"
+
+#: nbtk/nbtk-utils.c:124
+msgid "Unknown"
+msgstr "Sconosciuto"
+
+#: nbtk/nbtk-utils.c:131
+msgid "Last week"
+msgstr "La scorsa settimana"
+
+#: nbtk/nbtk-utils.c:134
+msgid "A couple of weeks ago"
+msgstr "Un paio di settimane fa"
+
+#: nbtk/nbtk-utils.c:140
+msgid "This month"
+msgstr "Questo mese"
+
+#. Now Jan., last used in Dec.
+#: nbtk/nbtk-utils.c:144
+msgid "Last month"
+msgstr "Lo scorso mese"
+
+#: nbtk/nbtk-utils.c:147
+msgid "This year"
+msgstr "Quest'anno"
+
+#: nbtk/nbtk-utils.c:150
+msgid "Last year"
+msgstr "Lo scorso anno"
+
+#: nbtk/nbtk-utils.c:152
+msgid "Ages ago"
+msgstr "Anni fa"

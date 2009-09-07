@@ -36,3 +36,62 @@ msgstr "Tak"
 #: ../nbtk/nbtk-gtk-light-switch.c:201 ../nbtk/nbtk-gtk-light-switch.c:254
 msgid "Off"
 msgstr "Nie"
+
+#: nbtk/nbtk-utils.c:92
+msgid "Less than a minute ago"
+msgstr "Mniej niż minutę temu"
+
+#: nbtk/nbtk-utils.c:96
+msgid "A few minutes ago"
+msgstr "Parę minut temu"
+
+#: nbtk/nbtk-utils.c:100
+msgid "A couple of hours ago"
+msgstr "Kilka godzin temu"
+
+# No good way to say "earlier today"
+#: nbtk/nbtk-utils.c:107
+msgid "Earlier today"
+msgstr "Kilkanaście godzin temu"
+
+#: nbtk/nbtk-utils.c:110
+msgid "Yesterday"
+msgstr "Wczoraj"
+
+#: nbtk/nbtk-utils.c:118
+#, c-format
+msgid "On %A"
+msgstr "Dnia %A"
+
+#: nbtk/nbtk-utils.c:124
+msgid "Unknown"
+msgstr "Nie sprecyzowano"
+
+#: nbtk/nbtk-utils.c:131
+msgid "Last week"
+msgstr "Zeszły tydzień"
+
+#: nbtk/nbtk-utils.c:134
+msgid "A couple of weeks ago"
+msgstr "Parę tygodni temu"
+
+#: nbtk/nbtk-utils.c:140
+msgid "This month"
+msgstr "W tym miesiącu"
+
+#. Now Jan., last used in Dec.
+#: nbtk/nbtk-utils.c:144
+msgid "Last month"
+msgstr "W zeszłym miesiącu"
+
+#: nbtk/nbtk-utils.c:147
+msgid "This year"
+msgstr "W tym roku"
+
+#: nbtk/nbtk-utils.c:150
+msgid "Last year"
+msgstr "W zeszłym roku"
+
+#: nbtk/nbtk-utils.c:152
+msgid "Ages ago"
+msgstr "Wieki temu"

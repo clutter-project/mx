@@ -28,3 +28,61 @@ msgstr "På"
 msgid "Off"
 msgstr "Av"
 
+
+#: nbtk/nbtk-utils.c:92
+msgid "Less than a minute ago"
+msgstr "Mindre än för en minut sedan"
+
+#: nbtk/nbtk-utils.c:96
+msgid "A few minutes ago"
+msgstr "Ett par minuter sedan"
+
+#: nbtk/nbtk-utils.c:100
+msgid "A couple of hours ago"
+msgstr "Ett par timmar sedan"
+
+#: nbtk/nbtk-utils.c:107
+msgid "Earlier today"
+msgstr "Tidigare idag"
+
+#: nbtk/nbtk-utils.c:110
+msgid "Yesterday"
+msgstr "Igår"
+
+#: nbtk/nbtk-utils.c:118
+#, c-format
+msgid "On %A"
+msgstr "På %A"
+
+#: nbtk/nbtk-utils.c:124
+msgid "Unknown"
+msgstr "Okänd enhet"
+
+#: nbtk/nbtk-utils.c:131
+msgid "Last week"
+msgstr "Förra veckan"
+
+#: nbtk/nbtk-utils.c:134
+msgid "A couple of weeks ago"
+msgstr "Ett par veckor sedan"
+
+#: nbtk/nbtk-utils.c:140
+msgid "This month"
+msgstr "Denna månad"
+
+#. Now Jan., last used in Dec.
+#: nbtk/nbtk-utils.c:144
+msgid "Last month"
+msgstr "Förra månaden"
+
+#: nbtk/nbtk-utils.c:147
+msgid "This year"
+msgstr "Innevarande år"
+
+#: nbtk/nbtk-utils.c:150
+msgid "Last year"
+msgstr "Föregående år"
+
+#: nbtk/nbtk-utils.c:152
+msgid "Ages ago"
+msgstr "För länge sedan"

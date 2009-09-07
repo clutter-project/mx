@@ -28,3 +28,61 @@ msgstr "껴기"
 msgid "Off"
 msgstr "끄기"
 
+
+#: nbtk/nbtk-utils.c:92
+msgid "Less than a minute ago"
+msgstr "일분도 채 되기전에"
+
+#: nbtk/nbtk-utils.c:96
+msgid "A few minutes ago"
+msgstr "몇분 전에"
+
+#: nbtk/nbtk-utils.c:100
+msgid "A couple of hours ago"
+msgstr "한두시간 전에"
+
+#: nbtk/nbtk-utils.c:107
+msgid "Earlier today"
+msgstr "조금전 오늘"
+
+#: nbtk/nbtk-utils.c:110
+msgid "Yesterday"
+msgstr "어제"
+
+#: nbtk/nbtk-utils.c:118
+#, c-format
+msgid "On %A"
+msgstr " %A에"
+
+#: nbtk/nbtk-utils.c:124
+msgid "Unknown"
+msgstr "알수 없음"
+
+#: nbtk/nbtk-utils.c:131
+msgid "Last week"
+msgstr "지난 주"
+
+#: nbtk/nbtk-utils.c:134
+msgid "A couple of weeks ago"
+msgstr "한두 주 전"
+
+#: nbtk/nbtk-utils.c:140
+msgid "This month"
+msgstr "이번 달"
+
+#. Now Jan., last used in Dec.
+#: nbtk/nbtk-utils.c:144
+msgid "Last month"
+msgstr "지난 달"
+
+#: nbtk/nbtk-utils.c:147
+msgid "This year"
+msgstr "올 해"
+
+#: nbtk/nbtk-utils.c:150
+msgid "Last year"
+msgstr "지난 해"
+
+#: nbtk/nbtk-utils.c:152
+msgid "Ages ago"
+msgstr "오래전"

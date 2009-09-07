@@ -29,3 +29,61 @@ msgstr "ON"
 msgid "Off"
 msgstr "OFF"
 
+
+#: nbtk/nbtk-utils.c:92
+msgid "Less than a minute ago"
+msgstr "1分以内"
+
+#: nbtk/nbtk-utils.c:96
+msgid "A few minutes ago"
+msgstr "数分前"
+
+#: nbtk/nbtk-utils.c:100
+msgid "A couple of hours ago"
+msgstr "数時間前"
+
+#: nbtk/nbtk-utils.c:107
+msgid "Earlier today"
+msgstr "今日"
+
+#: nbtk/nbtk-utils.c:110
+msgid "Yesterday"
+msgstr "昨日"
+
+#: nbtk/nbtk-utils.c:118
+#, c-format
+msgid "On %A"
+msgstr "%A"
+
+#: nbtk/nbtk-utils.c:124
+msgid "Unknown"
+msgstr "不明"
+
+#: nbtk/nbtk-utils.c:131
+msgid "Last week"
+msgstr "先週"
+
+#: nbtk/nbtk-utils.c:134
+msgid "A couple of weeks ago"
+msgstr "数週間前"
+
+#: nbtk/nbtk-utils.c:140
+msgid "This month"
+msgstr "今月"
+
+#. Now Jan., last used in Dec.
+#: nbtk/nbtk-utils.c:144
+msgid "Last month"
+msgstr "先月"
+
+#: nbtk/nbtk-utils.c:147
+msgid "This year"
+msgstr "今年"
+
+#: nbtk/nbtk-utils.c:150
+msgid "Last year"
+msgstr "去年"
+
+#: nbtk/nbtk-utils.c:152
+msgid "Ages ago"
+msgstr "ずいぶんと前"

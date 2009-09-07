@@ -24,3 +24,61 @@ msgstr "啟動"
 #: ../nbtk/nbtk-gtk-light-switch.c:187 ../nbtk/nbtk-gtk-light-switch.c:240
 msgid "Off"
 msgstr "關閉"
+
+#: nbtk/nbtk-utils.c:92
+msgid "Less than a minute ago"
+msgstr "少於一分鐘時"
+
+#: nbtk/nbtk-utils.c:96
+msgid "A few minutes ago"
+msgstr "幾分鐘前"
+
+#: nbtk/nbtk-utils.c:100
+msgid "A couple of hours ago"
+msgstr "兩小時前"
+
+#: nbtk/nbtk-utils.c:107
+msgid "Earlier today"
+msgstr "更早時候"
+
+#: nbtk/nbtk-utils.c:110
+msgid "Yesterday"
+msgstr "昨天"
+
+#: nbtk/nbtk-utils.c:118
+#, c-format
+msgid "On %A"
+msgstr "在%A"
+
+#: nbtk/nbtk-utils.c:124
+msgid "Unknown"
+msgstr "未知"
+
+#: nbtk/nbtk-utils.c:131
+msgid "Last week"
+msgstr "上禮拜"
+
+#: nbtk/nbtk-utils.c:134
+msgid "A couple of weeks ago"
+msgstr "兩週以前"
+
+#: nbtk/nbtk-utils.c:140
+msgid "This month"
+msgstr "這個月"
+
+#. Now Jan., last used in Dec.
+#: nbtk/nbtk-utils.c:144
+msgid "Last month"
+msgstr "上個月"
+
+#: nbtk/nbtk-utils.c:147
+msgid "This year"
+msgstr "今年"
+
+#: nbtk/nbtk-utils.c:150
+msgid "Last year"
+msgstr "去年"
+
+#: nbtk/nbtk-utils.c:152
+msgid "Ages ago"
+msgstr "好幾年前"

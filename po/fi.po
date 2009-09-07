@@ -28,3 +28,61 @@ msgstr "Päällä"
 msgid "Off"
 msgstr "Pois päältä"
 
+
+#: nbtk/nbtk-utils.c:92
+msgid "Less than a minute ago"
+msgstr "Alle minuutti sitten"
+
+#: nbtk/nbtk-utils.c:96
+msgid "A few minutes ago"
+msgstr "Muutama minuutti sitten"
+
+#: nbtk/nbtk-utils.c:100
+msgid "A couple of hours ago"
+msgstr "Muutama tunti sitten"
+
+#: nbtk/nbtk-utils.c:107
+msgid "Earlier today"
+msgstr "Tänään aikaisemmin"
+
+#: nbtk/nbtk-utils.c:110
+msgid "Yesterday"
+msgstr "Eilen"
+
+#: nbtk/nbtk-utils.c:118
+#, c-format
+msgid "On %A"
+msgstr "Päivämääränä %A"
+
+#: nbtk/nbtk-utils.c:124
+msgid "Unknown"
+msgstr "Tuntematon"
+
+#: nbtk/nbtk-utils.c:131
+msgid "Last week"
+msgstr "Viime viikolla"
+
+#: nbtk/nbtk-utils.c:134
+msgid "A couple of weeks ago"
+msgstr "Pari viikkoa sitten"
+
+#: nbtk/nbtk-utils.c:140
+msgid "This month"
+msgstr "Tässä kuussa"
+
+#. Now Jan., last used in Dec.
+#: nbtk/nbtk-utils.c:144
+msgid "Last month"
+msgstr "Viime kuussa"
+
+#: nbtk/nbtk-utils.c:147
+msgid "This year"
+msgstr "Tänä vuonna"
+
+#: nbtk/nbtk-utils.c:150
+msgid "Last year"
+msgstr "Viime vuonna"
+
+#: nbtk/nbtk-utils.c:152
+msgid "Ages ago"
+msgstr "Aataminaikoina"

@@ -33,3 +33,61 @@ msgstr "Açık"
 #: ../nbtk/nbtk-gtk-light-switch.c:201 ../nbtk/nbtk-gtk-light-switch.c:254
 msgid "Off"
 msgstr "Kapalı"
+
+#: nbtk/nbtk-utils.c:92
+msgid "Less than a minute ago"
+msgstr "Bir dakikadan önce"
+
+#: nbtk/nbtk-utils.c:96
+msgid "A few minutes ago"
+msgstr "Bir kaç dakika önce"
+
+#: nbtk/nbtk-utils.c:100
+msgid "A couple of hours ago"
+msgstr "Bir kaç saat önce"
+
+#: nbtk/nbtk-utils.c:107
+msgid "Earlier today"
+msgstr "Bugün erken saatlerde"
+
+#: nbtk/nbtk-utils.c:110
+msgid "Yesterday"
+msgstr "Dün"
+
+#: nbtk/nbtk-utils.c:118
+#, c-format
+msgid "On %A"
+msgstr "%A da"
+
+#: nbtk/nbtk-utils.c:124
+msgid "Unknown"
+msgstr "Bilinmiyor"
+
+#: nbtk/nbtk-utils.c:131
+msgid "Last week"
+msgstr "Geçen hafta"
+
+#: nbtk/nbtk-utils.c:134
+msgid "A couple of weeks ago"
+msgstr "Bir kaç hafta önce"
+
+#: nbtk/nbtk-utils.c:140
+msgid "This month"
+msgstr "Bu ay"
+
+#. Now Jan., last used in Dec.
+#: nbtk/nbtk-utils.c:144
+msgid "Last month"
+msgstr "Geçen ay"
+
+#: nbtk/nbtk-utils.c:147
+msgid "This year"
+msgstr "Bu yıl"
+
+#: nbtk/nbtk-utils.c:150
+msgid "Last year"
+msgstr "Geçen yıl"
+
+#: nbtk/nbtk-utils.c:152
+msgid "Ages ago"
+msgstr "Asırlar önce"

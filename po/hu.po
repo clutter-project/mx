@@ -30,3 +30,61 @@ msgstr "Be"
 msgid "Off"
 msgstr "Ki"
 
+
+#: nbtk/nbtk-utils.c:92
+msgid "Less than a minute ago"
+msgstr ""
+
+#: nbtk/nbtk-utils.c:96
+msgid "A few minutes ago"
+msgstr ""
+
+#: nbtk/nbtk-utils.c:100
+msgid "A couple of hours ago"
+msgstr ""
+
+#: nbtk/nbtk-utils.c:107
+msgid "Earlier today"
+msgstr ""
+
+#: nbtk/nbtk-utils.c:110
+msgid "Yesterday"
+msgstr ""
+
+#: nbtk/nbtk-utils.c:118
+#, c-format
+msgid "On %A"
+msgstr ""
+
+#: nbtk/nbtk-utils.c:124
+msgid "Unknown"
+msgstr ""
+
+#: nbtk/nbtk-utils.c:131
+msgid "Last week"
+msgstr ""
+
+#: nbtk/nbtk-utils.c:134
+msgid "A couple of weeks ago"
+msgstr ""
+
+#: nbtk/nbtk-utils.c:140
+msgid "This month"
+msgstr ""
+
+#. Now Jan., last used in Dec.
+#: nbtk/nbtk-utils.c:144
+msgid "Last month"
+msgstr ""
+
+#: nbtk/nbtk-utils.c:147
+msgid "This year"
+msgstr ""
+
+#: nbtk/nbtk-utils.c:150
+msgid "Last year"
+msgstr ""
+
+#: nbtk/nbtk-utils.c:152
+msgid "Ages ago"
+msgstr ""

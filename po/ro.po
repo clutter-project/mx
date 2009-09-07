@@ -38,3 +38,61 @@ msgstr "Deschis"
 msgid "Off"
 msgstr "Închis"
 
+
+#: nbtk/nbtk-utils.c:92
+msgid "Less than a minute ago"
+msgstr "Mai puțin de un minut"
+
+#: nbtk/nbtk-utils.c:96
+msgid "A few minutes ago"
+msgstr "Acum câteva minute"
+
+#: nbtk/nbtk-utils.c:100
+msgid "A couple of hours ago"
+msgstr "Acum câteva ore"
+
+#: nbtk/nbtk-utils.c:107
+msgid "Earlier today"
+msgstr "Mai devreme"
+
+#: nbtk/nbtk-utils.c:110
+msgid "Yesterday"
+msgstr "Ieri"
+
+#: nbtk/nbtk-utils.c:118
+#, c-format
+msgid "On %A"
+msgstr "Pe %A"
+
+#: nbtk/nbtk-utils.c:124
+msgid "Unknown"
+msgstr "Necunoscut"
+
+#: nbtk/nbtk-utils.c:131
+msgid "Last week"
+msgstr "Săptămâna trecută"
+
+#: nbtk/nbtk-utils.c:134
+msgid "A couple of weeks ago"
+msgstr "Acum câteva săptămâni"
+
+#: nbtk/nbtk-utils.c:140
+msgid "This month"
+msgstr "Luna aceasta"
+
+#. Now Jan., last used in Dec.
+#: nbtk/nbtk-utils.c:144
+msgid "Last month"
+msgstr "Luna trecută"
+
+#: nbtk/nbtk-utils.c:147
+msgid "This year"
+msgstr "Anul acesta"
+
+#: nbtk/nbtk-utils.c:150
+msgid "Last year"
+msgstr "Anul trecut"
+
+#: nbtk/nbtk-utils.c:152
+msgid "Ages ago"
+msgstr "Mai demult"

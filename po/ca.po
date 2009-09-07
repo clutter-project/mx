@@ -32,3 +32,61 @@ msgstr "Actiu"
 #: ../nbtk/nbtk-gtk-light-switch.c:201 ../nbtk/nbtk-gtk-light-switch.c:254
 msgid "Off"
 msgstr "Apagat"
+
+#: nbtk/nbtk-utils.c:92
+msgid "Less than a minute ago"
+msgstr "Fa menys d'un minut"
+
+#: nbtk/nbtk-utils.c:96
+msgid "A few minutes ago"
+msgstr "Fa uns minuts"
+
+#: nbtk/nbtk-utils.c:100
+msgid "A couple of hours ago"
+msgstr "Fa unes hores"
+
+#: nbtk/nbtk-utils.c:107
+msgid "Earlier today"
+msgstr "Avui"
+
+#: nbtk/nbtk-utils.c:110
+msgid "Yesterday"
+msgstr "Ahir"
+
+#: nbtk/nbtk-utils.c:118
+#, c-format
+msgid "On %A"
+msgstr "El %A"
+
+#: nbtk/nbtk-utils.c:124
+msgid "Unknown"
+msgstr "Desconegut"
+
+#: nbtk/nbtk-utils.c:131
+msgid "Last week"
+msgstr "La setmana passada"
+
+#: nbtk/nbtk-utils.c:134
+msgid "A couple of weeks ago"
+msgstr "Fa un parell de setmanes"
+
+#: nbtk/nbtk-utils.c:140
+msgid "This month"
+msgstr "Aquest mes"
+
+#. Now Jan., last used in Dec.
+#: nbtk/nbtk-utils.c:144
+msgid "Last month"
+msgstr "El mes passat"
+
+#: nbtk/nbtk-utils.c:147
+msgid "This year"
+msgstr "Aquest any"
+
+#: nbtk/nbtk-utils.c:150
+msgid "Last year"
+msgstr "L'any passat"
+
+#: nbtk/nbtk-utils.c:152
+msgid "Ages ago"
+msgstr "Fa milers d'anys"

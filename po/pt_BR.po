@@ -28,3 +28,61 @@ msgstr "Lig."
 msgid "Off"
 msgstr "Desl."
 
+
+#: nbtk/nbtk-utils.c:92
+msgid "Less than a minute ago"
+msgstr "Há menos de um minuto atrás"
+
+#: nbtk/nbtk-utils.c:96
+msgid "A few minutes ago"
+msgstr "Alguns minutos atrás"
+
+#: nbtk/nbtk-utils.c:100
+msgid "A couple of hours ago"
+msgstr "Algumas horas atrás"
+
+#: nbtk/nbtk-utils.c:107
+msgid "Earlier today"
+msgstr "Hoje cedo"
+
+#: nbtk/nbtk-utils.c:110
+msgid "Yesterday"
+msgstr "Ontem"
+
+#: nbtk/nbtk-utils.c:118
+#, c-format
+msgid "On %A"
+msgstr "Em: %A"
+
+#: nbtk/nbtk-utils.c:124
+msgid "Unknown"
+msgstr "Desconhecido"
+
+#: nbtk/nbtk-utils.c:131
+msgid "Last week"
+msgstr "Semana passada"
+
+#: nbtk/nbtk-utils.c:134
+msgid "A couple of weeks ago"
+msgstr "Algumas semanas atrás"
+
+#: nbtk/nbtk-utils.c:140
+msgid "This month"
+msgstr "Este mês"
+
+#. Now Jan., last used in Dec.
+#: nbtk/nbtk-utils.c:144
+msgid "Last month"
+msgstr "Mês passado"
+
+#: nbtk/nbtk-utils.c:147
+msgid "This year"
+msgstr "Este ano"
+
+#: nbtk/nbtk-utils.c:150
+msgid "Last year"
+msgstr "Ano passado"
+
+#: nbtk/nbtk-utils.c:152
+msgid "Ages ago"
+msgstr "Há muito tempo"

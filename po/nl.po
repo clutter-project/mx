@@ -35,3 +35,61 @@ msgstr "Aan"
 msgid "Off"
 msgstr "Uit"
 
+
+#: nbtk/nbtk-utils.c:92
+msgid "Less than a minute ago"
+msgstr "Minder dan een minuut geleden"
+
+#: nbtk/nbtk-utils.c:96
+msgid "A few minutes ago"
+msgstr "Een paar minuten geleden"
+
+#: nbtk/nbtk-utils.c:100
+msgid "A couple of hours ago"
+msgstr "Een paar uur geleden"
+
+#: nbtk/nbtk-utils.c:107
+msgid "Earlier today"
+msgstr "Eerder vandaag"
+
+#: nbtk/nbtk-utils.c:110
+msgid "Yesterday"
+msgstr "Gisteren"
+
+#: nbtk/nbtk-utils.c:118
+#, c-format
+msgid "On %A"
+msgstr "Op %A"
+
+#: nbtk/nbtk-utils.c:124
+msgid "Unknown"
+msgstr "Onbekend"
+
+#: nbtk/nbtk-utils.c:131
+msgid "Last week"
+msgstr "Vorige week"
+
+#: nbtk/nbtk-utils.c:134
+msgid "A couple of weeks ago"
+msgstr "Een paar weken geleden"
+
+#: nbtk/nbtk-utils.c:140
+msgid "This month"
+msgstr "Deze maand"
+
+#. Now Jan., last used in Dec.
+#: nbtk/nbtk-utils.c:144
+msgid "Last month"
+msgstr "Vorige maand"
+
+#: nbtk/nbtk-utils.c:147
+msgid "This year"
+msgstr "Dit jaar"
+
+#: nbtk/nbtk-utils.c:150
+msgid "Last year"
+msgstr "Vorig jaar"
+
+#: nbtk/nbtk-utils.c:152
+msgid "Ages ago"
+msgstr "Lang lang geleden"

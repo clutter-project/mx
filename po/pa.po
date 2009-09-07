@@ -29,3 +29,61 @@ msgstr "ਚਾਲੂ"
 msgid "Off"
 msgstr "ਬੰਦ"
 
+
+#: nbtk/nbtk-utils.c:92
+msgid "Less than a minute ago"
+msgstr "ਇੱਕ ਮਿੰਟ ਤੋਂ ਘੱਟ ਪਹਿਲਾਂ"
+
+#: nbtk/nbtk-utils.c:96
+msgid "A few minutes ago"
+msgstr "ਕੁਝ ਕੁ ਮਿੰਟ ਪਹਿਲਾਂ"
+
+#: nbtk/nbtk-utils.c:100
+msgid "A couple of hours ago"
+msgstr "ਕੁਝ ਘੰਟੇ ਪਹਿਲਾਂ"
+
+#: nbtk/nbtk-utils.c:107
+msgid "Earlier today"
+msgstr "ਅੱਜ ਤੜਕੇ"
+
+#: nbtk/nbtk-utils.c:110
+msgid "Yesterday"
+msgstr "ਕੱਲ੍ਹ"
+
+#: nbtk/nbtk-utils.c:118
+#, c-format
+msgid "On %A"
+msgstr "%A ਉੱਤੇ"
+
+#: nbtk/nbtk-utils.c:124
+msgid "Unknown"
+msgstr "ਅਣਜਾਣ"
+
+#: nbtk/nbtk-utils.c:131
+msgid "Last week"
+msgstr "ਪਿਛਲੇ ਹਫ਼ਤੇ"
+
+#: nbtk/nbtk-utils.c:134
+msgid "A couple of weeks ago"
+msgstr "ਕੁਝ ਹਫ਼ਤੇ ਪਹਿਲਾਂ"
+
+#: nbtk/nbtk-utils.c:140
+msgid "This month"
+msgstr "ਇਹ ਮਹੀਨੇ"
+
+#. Now Jan., last used in Dec.
+#: nbtk/nbtk-utils.c:144
+msgid "Last month"
+msgstr "ਪਿਛਲੇ ਮਹੀਨੇ"
+
+#: nbtk/nbtk-utils.c:147
+msgid "This year"
+msgstr "ਇਹ ਸਾਲ"
+
+#: nbtk/nbtk-utils.c:150
+msgid "Last year"
+msgstr "ਪਿਛਲੇ ਸਾਲ"
+
+#: nbtk/nbtk-utils.c:152
+msgid "Ages ago"
+msgstr "ਕਈ ਸਾਲ ਪਹਿਲਾਂ"

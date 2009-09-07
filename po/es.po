@@ -24,3 +24,63 @@ msgstr "Activado"
 #: ../nbtk/nbtk-gtk-light-switch.c:187 ../nbtk/nbtk-gtk-light-switch.c:240
 msgid "Off"
 msgstr "Desactivado"
+
+#: nbtk/nbtk-utils.c:92
+msgid "Less than a minute ago"
+msgstr "Hace menos de un minuto"
+
+#: nbtk/nbtk-utils.c:96
+msgid "A few minutes ago"
+msgstr "Hace unos minutos"
+
+#: nbtk/nbtk-utils.c:100
+msgid "A couple of hours ago"
+msgstr "Hace un par de horas"
+
+#: nbtk/nbtk-utils.c:107
+msgid "Earlier today"
+msgstr "Hoy, pero antes"
+
+#: nbtk/nbtk-utils.c:110
+msgid "Yesterday"
+msgstr "Ayer"
+
+# <on + date, like "On July 4">
+#: nbtk/nbtk-utils.c:118
+#, c-format
+msgid "On %A"
+msgstr "El %A"
+
+#: nbtk/nbtk-utils.c:124
+msgid "Unknown"
+msgstr "Desconocido"
+
+#: nbtk/nbtk-utils.c:131
+msgid "Last week"
+msgstr "La semana pasada"
+
+#: nbtk/nbtk-utils.c:134
+msgid "A couple of weeks ago"
+msgstr "Hace un par de semanas"
+
+#: nbtk/nbtk-utils.c:140
+msgid "This month"
+msgstr "Este mes"
+
+#. Now Jan., last used in Dec.
+#: nbtk/nbtk-utils.c:144
+msgid "Last month"
+msgstr "El mes pasado"
+
+#: nbtk/nbtk-utils.c:147
+msgid "This year"
+msgstr "Este año"
+
+#: nbtk/nbtk-utils.c:150
+msgid "Last year"
+msgstr "El año pasado"
+
+# Long time ago
+#: nbtk/nbtk-utils.c:152
+msgid "Ages ago"
+msgstr "Hace mucho tiempo"
