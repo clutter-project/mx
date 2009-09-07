@@ -630,33 +630,6 @@ nbtk_entry_key_focus_in (ClutterActor *actor)
   clutter_actor_grab_key_focus (priv->entry);
 }
 
-static gboolean
-nbtk_entry_button_press_event (ClutterActor       *actor,
-                               ClutterButtonEvent *event)
-{
-  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
-
-  return clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
-}
-
-static gboolean
-nbtk_entry_button_release_event (ClutterActor       *actor,
-                                 ClutterButtonEvent *event)
-{
-  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
-
-  return clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
-}
-
-static gboolean
-nbtk_entry_motion_event (ClutterActor       *actor,
-                         ClutterMotionEvent *event)
-{
-  NbtkEntryPrivate *priv = NBTK_ENTRY_PRIV (actor);
-
-  return clutter_actor_event (priv->entry, (ClutterEvent *) event, FALSE);
-}
-
 static void
 nbtk_entry_class_init (NbtkEntryClass *klass)
 {
@@ -681,10 +654,6 @@ nbtk_entry_class_init (NbtkEntryClass *klass)
 
   actor_class->key_press_event = nbtk_entry_key_press_event;
   actor_class->key_focus_in = nbtk_entry_key_focus_in;
-
-  actor_class->button_press_event = nbtk_entry_button_press_event;
-  actor_class->button_release_event = nbtk_entry_button_release_event;
-  actor_class->motion_event = nbtk_entry_motion_event;
 
   pspec = g_param_spec_string ("text",
                                "Text",
