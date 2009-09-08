@@ -324,6 +324,13 @@ nbtk_gtk_frame_init (NbtkGtkFrame *self)
                     G_CALLBACK (label_changed_cb), NULL);
 }
 
+/**
+ * nbtk_gtk_frame_new:
+ *
+ * Create a new specially styled frame.
+ *
+ * Returns: a newly allocated #NbtkGtkFrame
+ */
 GtkWidget*
 nbtk_gtk_frame_new (void)
 {

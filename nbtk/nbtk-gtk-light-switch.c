@@ -333,6 +333,14 @@ nbtk_gtk_light_switch_motion_notify (GtkWidget      *lightswitch,
   return TRUE;
 }
 
+/**
+ * nbtk_gtk_light_switch_get_active:
+ * @lightswitch: A #NbtkGtkLightSwitch
+ *
+ * Get the value of the "active" property
+ *
+ * Returns: #TRUE if the switch is "on"
+ */
 gboolean
 nbtk_gtk_light_switch_get_active (NbtkGtkLightSwitch *lightswitch)
 {
@@ -341,6 +349,14 @@ nbtk_gtk_light_switch_get_active (NbtkGtkLightSwitch *lightswitch)
   return priv->active;
 }
 
+/**
+ * nbtk_gtk_light_switch_set_active:
+ * @lightswitch: A #NbtkGtkLightSwitch
+ * @active: #TRUE to set the switch to its ON state
+ *
+ * Set the value of the "active" property
+ *
+ */
 void
 nbtk_gtk_light_switch_set_active (NbtkGtkLightSwitch *lightswitch,
                                   gboolean active)
@@ -426,6 +442,13 @@ nbtk_gtk_light_switch_button_release (GtkWidget *lightswitch,
   return FALSE;
 }
 
+/**
+ * nbtk_gtk_light_switch_new:
+ *
+ * Create a #NbtkGtkLightSwitch
+ *
+ * Returns: a newly allocated #NbtkGtkLightSwitch
+ */
 GtkWidget*
 nbtk_gtk_light_switch_new (void)
 {

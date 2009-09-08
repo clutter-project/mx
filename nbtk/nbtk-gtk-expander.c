@@ -523,12 +523,27 @@ nbtk_gtk_expander_init (NbtkGtkExpander *self)
   priv->has_indicator = TRUE;
 }
 
+/**
+ * nbtk_gtk_expander_new:
+ *
+ * Create a new #NbtkGtkExpander.
+ *
+ * Returns: a newly allocated #NbtkGtkExpander
+ */
 GtkWidget*
 nbtk_gtk_expander_new (void)
 {
   return g_object_new (NBTK_TYPE_GTK_EXPANDER, NULL);
 }
 
+/**
+ * nbtk_gtk_expander_set_expanded:
+ * @expander: A #NbtkGtkExpander
+ * @expanded: #TRUE to open the expander
+ *
+ * Set the value of the "expanded" property
+ *
+ */
 void
 nbtk_gtk_expander_set_expanded (NbtkGtkExpander *expander,
                                 gboolean         expanded)
@@ -553,6 +568,14 @@ nbtk_gtk_expander_set_expanded (NbtkGtkExpander *expander,
     }
 }
 
+/**
+ * nbtk_gtk_expander_get_expanded:
+ * @expander: A #NbtkGtkExpander
+ *
+ * Get the value of the "expanded" property
+ *
+ * Returns: #TRUE if the expander is "open"
+ */
 gboolean
 nbtk_gtk_expander_get_expanded (NbtkGtkExpander *expander)
 {
@@ -561,6 +584,14 @@ nbtk_gtk_expander_get_expanded (NbtkGtkExpander *expander)
   return expander->priv->is_open;
 }
 
+/**
+ * nbtk_gtk_expander_set_label_widget:
+ * @expander: A #NbtkGtkExpander
+ * @label: A #GtkWidget
+ *
+ * Set the widget to use as the label of the expander.
+ *
+ */
 void
 nbtk_gtk_expander_set_label_widget (NbtkGtkExpander *expander,
                                     GtkWidget       *label)
@@ -580,6 +611,14 @@ nbtk_gtk_expander_set_label_widget (NbtkGtkExpander *expander,
     expander->priv->label = NULL;
 }
 
+/**
+ * nbtk_gtk_expander_get_label_widget:
+ * @expander: A #NbtkGtkExpander
+ *
+ * Get the widget used as the label of the expander.
+ *
+ * Returns: a #GtkWidget
+ */
 GtkWidget*
 nbtk_gtk_expander_get_label_widget (NbtkGtkExpander *expander)
 {
@@ -588,6 +627,14 @@ nbtk_gtk_expander_get_label_widget (NbtkGtkExpander *expander)
   return expander->priv->label;
 }
 
+/**
+ * nbtk_gtk_expander_set_has_indicator:
+ * @expander: A #NbtkGtkExpander
+ * @has_indicator: value to set
+ *
+ * Set the value of the has-indicator property
+ *
+ */
 void
 nbtk_gtk_expander_set_has_indicator (NbtkGtkExpander *expander,
                                      gboolean         has_indicator)
@@ -599,6 +646,14 @@ nbtk_gtk_expander_set_has_indicator (NbtkGtkExpander *expander,
   gtk_widget_queue_resize ((GtkWidget*) expander);
 }
 
+/**
+ * nbtk_gtk_expander_get_has_indicator:
+ * @expander: A #NbtkGtkExpander
+ *
+ * Get the value of the has-indicator property
+ *
+ * Returns: the value the has-indicator property
+ */
 gboolean
 nbtk_gtk_expander_get_has_indicator (NbtkGtkExpander *expander)
 {
