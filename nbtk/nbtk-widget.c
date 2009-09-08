@@ -178,7 +178,7 @@ nbtk_widget_get_property (GObject    *gobject,
       break;
 
     case PROP_TOOLTIP_TEXT:
-      g_value_set_string (value, nbtk_tooltip_get_label (priv->tooltip));
+      g_value_set_string (value, nbtk_widget_get_tooltip_text (actor));
       break;
 
     default:
@@ -1270,7 +1270,13 @@ nbtk_widget_set_tooltip_text (NbtkWidget  *widget,
 const gchar*
 nbtk_widget_get_tooltip_text (NbtkWidget *widget)
 {
+  NbtkWidgetPrivate *priv;
+
   g_return_val_if_fail (NBTK_IS_WIDGET (widget), NULL);
+  priv = widget->priv;
+
+  if (!priv->has_tooltip)
+    return NULL;
 
   return nbtk_tooltip_get_label (widget->priv->tooltip);
 }
