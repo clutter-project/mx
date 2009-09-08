@@ -79,8 +79,6 @@ struct _NbtkBoxLayoutChildClass
 
 GType nbtk_box_layout_child_get_type (void);
 
-NbtkBoxLayoutChild *nbtk_box_layout_child_new (void);
-
 G_END_DECLS
 
 #endif /* _NBTK_BOX_LAYOUT_CHILD_H */

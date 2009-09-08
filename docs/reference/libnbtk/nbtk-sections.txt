@@ -312,7 +312,6 @@ NBTK_GTK_LIGHT_SWITCH_GET_CLASS
 <FILE>nbtk-box-layout-child</FILE>
 <TITLE>NbtkBoxLayoutChild</TITLE>
 NbtkBoxLayoutChild
-nbtk_box_layout_child_new
 <SUBSECTION Standard>
 NBTK_BOX_LAYOUT_CHILD
 NBTK_IS_BOX_LAYOUT_CHILD

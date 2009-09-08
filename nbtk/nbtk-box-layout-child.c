@@ -175,10 +175,3 @@ nbtk_box_layout_child_init (NbtkBoxLayoutChild *self)
   self->y_align = NBTK_ALIGN_CENTER;
 }
 
-NbtkBoxLayoutChild *
-nbtk_box_layout_child_new (void)
-{
-  return g_object_new (NBTK_TYPE_BOX_LAYOUT_CHILD, NULL);
-}
-
-
