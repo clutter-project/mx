@@ -859,12 +859,27 @@ nbtk_box_layout_init (NbtkBoxLayout *self)
   self->priv = BOX_LAYOUT_PRIVATE (self);
 }
 
+/**
+ * nbtk_box_layout_new:
+ *
+ * Create a new #NbtkBoxLayout.
+ *
+ * Returns: a newly allocated #NbtkBoxLayout
+ */
 NbtkWidget *
 nbtk_box_layout_new (void)
 {
   return g_object_new (NBTK_TYPE_BOX_LAYOUT, NULL);
 }
 
+/**
+ * nbtk_box_layout_set_vertical:
+ * @box: A #NbtkBoxLayout
+ * @vertical: #TRUE if the layout should be vertical
+ *
+ * Set the value of the #NbtkBoxLayout::vertical property
+ *
+ */
 void
 nbtk_box_layout_set_vertical (NbtkBoxLayout *box,
                               gboolean       vertical)
@@ -880,6 +895,14 @@ nbtk_box_layout_set_vertical (NbtkBoxLayout *box,
     }
 }
 
+/**
+ * nbtk_box_layout_get_vertical:
+ * @box: A #NbtkBoxLayout
+ *
+ * Get the value of the #NbtkBoxLayout::vertical property.
+ *
+ * Returns: #TRUE if the layout is vertical
+ */
 gboolean
 nbtk_box_layout_get_vertical (NbtkBoxLayout *box)
 {
@@ -888,6 +911,14 @@ nbtk_box_layout_get_vertical (NbtkBoxLayout *box)
   return box->priv->is_vertical;
 }
 
+/**
+ * nbtk_box_layout_set_pack_start:
+ * @box: A #NbtkBoxLayout
+ * @pack_start: #TRUE if the layout should use pack-start
+ *
+ * Set the value of the #NbtkBoxLayout::pack-start property.
+ *
+ */
 void
 nbtk_box_layout_set_pack_start (NbtkBoxLayout *box,
                                 gboolean       pack_start)
@@ -903,6 +934,14 @@ nbtk_box_layout_set_pack_start (NbtkBoxLayout *box,
     }
 }
 
+/**
+ * nbtk_box_layout_get_pack_start:
+ * @box: A #NbtkBoxLayout
+ *
+ * Get the value of the #NbtkBoxLayout::pack-start property.
+ *
+ * Returns: #TRUE if pack-start is enabled
+ */
 gboolean
 nbtk_box_layout_get_pack_start (NbtkBoxLayout *box)
 {

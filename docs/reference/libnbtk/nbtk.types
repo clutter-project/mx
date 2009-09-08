@@ -2,6 +2,7 @@
 
 nbtk_adjustment_get_type
 nbtk_bin_get_type
+nbtk_box_layout_get_type
 nbtk_button_get_type
 nbtk_clipboard_get_type
 nbtk_draggable_get_type
