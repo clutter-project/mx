@@ -369,6 +369,13 @@ nbtk_popup_init (NbtkPopup *self)
                 NULL);
 }
 
+/**
+ * nbtk_popup_new:
+ *
+ * Create a new #NbtkPopup
+ *
+ * Returns: a newly allocated #NbtkPopup
+ */
 NbtkWidget *
 nbtk_popup_new (void)
 {
@@ -392,6 +399,14 @@ nbtk_popup_button_release_cb (NbtkButton   *button,
 
 }
 
+/**
+ * nbtk_popup_add_action:
+ * @popup: A #NbtkPopup
+ * @action: A #NbtkAction
+ *
+ * Append @action to @popup.
+ *
+ */
 void
 nbtk_popup_add_action (NbtkPopup  *popup,
                        NbtkAction *action)
@@ -420,6 +435,14 @@ nbtk_popup_add_action (NbtkPopup  *popup,
   clutter_actor_queue_relayout (CLUTTER_ACTOR (popup));
 }
 
+/**
+ * nbtk_popup_remove_action:
+ * @popup: A #NbtkPopup
+ * @action: A #NbtkAction
+ *
+ * Remove @action from @popup.
+ *
+ */
 void
 nbtk_popup_remove_action (NbtkPopup  *popup,
                           NbtkAction *action)
@@ -441,6 +464,13 @@ nbtk_popup_remove_action (NbtkPopup  *popup,
     }
 }
 
+/**
+ * nbtk_popup_clear:
+ * @popup: A #NbtkPopup
+ *
+ * Remove all the actions from @popup.
+ *
+ */
 void
 nbtk_popup_clear (NbtkPopup *popup)
 {

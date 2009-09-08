@@ -95,6 +95,13 @@ nbtk_icon_init (NbtkIcon *self)
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), FALSE);
 }
 
+/**
+ * nbtk_icon_new:
+ *
+ * Create a newly allocated #NbtkIcon
+ *
+ * Returns: A newly allocated #NbtkIcon
+ */
 NbtkIcon*
 nbtk_icon_new (void)
 {
