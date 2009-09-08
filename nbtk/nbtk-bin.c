@@ -442,6 +442,14 @@ nbtk_bin_get_property (GObject    *gobject,
       g_value_set_boolean (value, priv->y_fill);
       break;
 
+    case PROP_X_ALIGN:
+      g_value_set_enum (value, priv->x_align);
+      break;
+
+    case PROP_Y_ALIGN:
+      g_value_set_enum (value, priv->y_align);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
     }
