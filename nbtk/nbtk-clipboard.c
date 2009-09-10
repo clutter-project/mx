@@ -20,6 +20,15 @@
  *
  */
 
+/**
+ * SECTION:nbtk-clipboard
+ * @short_description: a simple representation of the X clipboard
+ *
+ * #NbtkCliboard is a very simple object representation of the clipboard
+ * available to applications. Text is always assumed to be UTF-8 and non-text
+ * items are not handled.
+ */
+
 
 #include "nbtk-clipboard.h"
 #include <X11/Xlib.h>

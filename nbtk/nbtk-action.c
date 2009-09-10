@@ -19,6 +19,14 @@
  *
  */
 
+/**
+ * SECTION: nbtk-action
+ * @short_description: Represents a user action
+ *
+ * Actions represent operations that the user can perform, such as items in a
+ * menu or toolbar.
+ */
+
 #include "nbtk-action.h"
 
 G_DEFINE_TYPE (NbtkAction, nbtk_action, G_TYPE_INITIALLY_UNOWNED)

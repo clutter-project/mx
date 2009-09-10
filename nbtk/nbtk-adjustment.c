@@ -22,6 +22,14 @@
  *
  */
 
+/**
+ * SECTION:nbtk-adjustment
+ * @short_description: A GObject representing an adjustable bounded value
+ *
+ * The #NbtkAdjustment object represents a range of values bounded between a
+ * minimum and maximum, together with step and page increments and a page size.
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

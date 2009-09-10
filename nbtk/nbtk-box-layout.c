@@ -20,6 +20,18 @@
  *
  */
 
+/**
+ * SECTION:nbtk-box-layout
+ * @short_description: a layout container arranging children in a single line
+ *
+ * The #NbtkBoxLayout arranges its children along a single line, where each
+ * child can be allocated either its preferred size or larger if the expand
+ * option is set. If the fill option is set, the actor will be allocated more
+ * than its requested size. If the fill option is not set, but the expand option
+ * is enabled, then the position of the actor within the available space can
+ * be determined by the alignment child property.
+ *
+ */
 
 #include "nbtk-box-layout.h"
 
