@@ -69,25 +69,15 @@ GType nbtk_viewport_get_type (void) G_GNUC_CONST;
 
 NbtkWidget *   nbtk_viewport_new         (void);
 
-void           nbtk_viewport_set_originu (NbtkViewport *viewport,
+void           nbtk_viewport_set_origin  (NbtkViewport *viewport,
                                           gfloat        x,
                                           gfloat        y,
                                           gfloat        z);
 
-void           nbtk_viewport_set_origin  (NbtkViewport *viewport,
-                                          gint          x,
-                                          gint          y,
-                                          gint          z);
-
-void           nbtk_viewport_get_originu (NbtkViewport *viewport,
+void           nbtk_viewport_get_origin  (NbtkViewport *viewport,
                                           gfloat       *x,
                                           gfloat       *y,
                                           gfloat       *z);
-
-void           nbtk_viewport_get_origin  (NbtkViewport *viewport,
-                                          gint         *x,
-                                          gint         *y,
-                                          gint         *z);
 
 G_END_DECLS
 

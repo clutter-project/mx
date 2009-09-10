@@ -329,9 +329,7 @@ NbtkBoxLayoutChildPrivate
 <TITLE>NbtkViewport</TITLE>
 NbtkViewport
 nbtk_viewport_new
-nbtk_viewport_set_originu
 nbtk_viewport_set_origin
-nbtk_viewport_get_originu
 nbtk_viewport_get_origin
 <SUBSECTION Standard>
 NBTK_VIEWPORT

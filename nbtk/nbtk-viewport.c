@@ -91,15 +91,15 @@ nbtk_viewport_get_property (GObject    *object,
   switch (prop_id)
     {
     case PROP_X_ORIGIN:
-      g_value_set_int (value, (int) priv->x);
+      g_value_set_float (value, priv->x);
       break;
 
     case PROP_Y_ORIGIN:
-      g_value_set_int (value, (int) priv->y);
+      g_value_set_float (value, priv->y);
       break;
 
     case PROP_Z_ORIGIN:
-      g_value_set_int (value, (int) priv->z);
+      g_value_set_float (value, priv->z);
       break;
 
     case PROP_HADJUST :
@@ -134,24 +134,24 @@ nbtk_viewport_set_property (GObject      *object,
   switch (prop_id)
     {
     case PROP_X_ORIGIN:
-      nbtk_viewport_set_originu (viewport,
-                                 g_value_get_int (value),
-                                 priv->y,
-                                 priv->z);
+      nbtk_viewport_set_origin (viewport,
+                                g_value_get_float (value),
+                                priv->y,
+                                priv->z);
       break;
 
     case PROP_Y_ORIGIN:
-      nbtk_viewport_set_originu (viewport,
-                                 priv->x,
-                                 g_value_get_int (value),
-                                 priv->z);
+      nbtk_viewport_set_origin (viewport,
+                                priv->x,
+                                g_value_get_float (value),
+                                priv->z);
       break;
 
     case PROP_Z_ORIGIN:
-      nbtk_viewport_set_originu (viewport,
-                                 priv->x,
-                                 priv->y,
-                                 g_value_get_int (value));
+      nbtk_viewport_set_origin (viewport,
+                                priv->x,
+                                priv->y,
+                                g_value_get_float (value));
       break;
 
     case PROP_HADJUST :
@@ -325,6 +325,7 @@ nbtk_viewport_allocate (ClutterActor          *self,
 static void
 nbtk_viewport_class_init (NbtkViewportClass *klass)
 {
+  GParamSpec *pspec;
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
 
@@ -338,52 +339,39 @@ nbtk_viewport_class_init (NbtkViewportClass *klass)
   actor_class->pick = nbtk_viewport_pick;
   actor_class->allocate = nbtk_viewport_allocate;
 
-  g_object_class_install_property (gobject_class,
-                                   PROP_X_ORIGIN,
-                                   g_param_spec_int ("x-origin",
-                                                     "X Origin",
-                                                     "Origin's X coordinate in pixels",
-                                                     -G_MAXINT, G_MAXINT,
-                                                     0,
-                                                     G_PARAM_READWRITE));
 
-  g_object_class_install_property (gobject_class,
-                                   PROP_Y_ORIGIN,
-                                   g_param_spec_int ("y-origin",
-                                                     "Y Origin",
-                                                     "Origin's Y coordinate in pixels",
-                                                     -G_MAXINT, G_MAXINT,
-                                                     0,
-                                                     G_PARAM_READWRITE));
+  pspec = g_param_spec_float ("x-origin",
+                              "X Origin",
+                              "Origin's X coordinate in pixels",
+                              -G_MAXFLOAT, G_MAXFLOAT, 0,
+                              NBTK_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_X_ORIGIN, pspec);
 
-  g_object_class_install_property (gobject_class,
-                                   PROP_Z_ORIGIN,
-                                   g_param_spec_int ("z-origin",
-                                                     "Z Origin",
-                                                     "Origin's Z coordinate in pixels",
-                                                     -G_MAXINT, G_MAXINT,
-                                                     0,
-                                                     G_PARAM_READWRITE));
+  pspec = g_param_spec_float ("y-origin",
+                              "Y Origin",
+                              "Origin's Y coordinate in pixels",
+                              -G_MAXFLOAT, G_MAXFLOAT, 0,
+                              NBTK_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_Y_ORIGIN, pspec);
 
-  g_object_class_install_property (gobject_class,
-                                   PROP_SYNC_ADJUST,
-                                   g_param_spec_boolean ("sync-adjustments",
-                                                         "Synchronise "
-                                                         "adjustments",
-                                                         "Whether to "
-                                                         "synchronise "
-                                                         "adjustments with "
-                                                         "viewport size",
-                                                         TRUE,
-                                                         G_PARAM_READWRITE));
+  pspec = g_param_spec_float ("z-origin",
+                              "Z Origin",
+                              "Origin's Z coordinate in pixels",
+                              -G_MAXFLOAT, G_MAXFLOAT, 0,
+                              NBTK_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_Z_ORIGIN, pspec);
 
-  g_object_class_override_property (gobject_class,
-                                    PROP_HADJUST,
-                                    "hadjustment");
+  pspec = g_param_spec_boolean ("sync-adjustments",
+                                "Synchronise adjustments",
+                                "Whether to synchronise adjustments with "
+                                "viewport size",
+                                TRUE,
+                                NBTK_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_SYNC_ADJUST, pspec);
 
-  g_object_class_override_property (gobject_class,
-                                    PROP_VADJUST,
-                                    "vadjustment");
+  g_object_class_override_property (gobject_class, PROP_HADJUST, "hadjustment");
+
+  g_object_class_override_property (gobject_class, PROP_VADJUST, "vadjustment");
 }
 
 static void
@@ -396,10 +384,10 @@ hadjustment_value_notify_cb (NbtkAdjustment *adjustment,
 
   value = nbtk_adjustment_get_value (adjustment);
 
-  nbtk_viewport_set_originu (viewport,
-                             (float) (value),
-                             priv->y,
-                             priv->z);
+  nbtk_viewport_set_origin (viewport,
+                            (float) (value),
+                            priv->y,
+                            priv->z);
 }
 
 static void
@@ -411,10 +399,10 @@ vadjustment_value_notify_cb (NbtkAdjustment *adjustment, GParamSpec *arg1,
 
   value = nbtk_adjustment_get_value (adjustment);
 
-  nbtk_viewport_set_originu (viewport,
-                             priv->x,
-                             (float) (value),
-                             priv->z);
+  nbtk_viewport_set_origin (viewport,
+                            priv->x,
+                            (float) (value),
+                            priv->z);
 }
 
 static void
@@ -565,10 +553,10 @@ nbtk_viewport_new (void)
 }
 
 void
-nbtk_viewport_set_originu (NbtkViewport *viewport,
-                           gfloat   x,
-                           gfloat   y,
-                           gfloat   z)
+nbtk_viewport_set_origin (NbtkViewport *viewport,
+                          gfloat        x,
+                          gfloat        y,
+                          gfloat        z)
 {
   NbtkViewportPrivate *priv;
 
@@ -610,24 +598,10 @@ nbtk_viewport_set_originu (NbtkViewport *viewport,
 }
 
 void
-nbtk_viewport_set_origin (NbtkViewport *viewport,
-                          gint          x,
-                          gint          y,
-                          gint          z)
-{
-  g_return_if_fail (NBTK_IS_VIEWPORT (viewport));
-
-  nbtk_viewport_set_originu (viewport,
-                             (float) (x),
-                             (float) (y),
-                             (float) (z));
-}
-
-void
-nbtk_viewport_get_originu (NbtkViewport *viewport,
-                           gfloat  *x,
-                           gfloat  *y,
-                           gfloat  *z)
+nbtk_viewport_get_origin (NbtkViewport *viewport,
+                          gfloat       *x,
+                          gfloat       *y,
+                          gfloat       *z)
 {
   NbtkViewportPrivate *priv;
 
@@ -645,24 +619,3 @@ nbtk_viewport_get_originu (NbtkViewport *viewport,
     *z = priv->z;
 }
 
-void
-nbtk_viewport_get_origin (NbtkViewport *viewport,
-                          gint         *x,
-                          gint         *y,
-                          gint         *z)
-{
-  NbtkViewportPrivate *priv;
-
-  g_return_if_fail (NBTK_IS_VIEWPORT (viewport));
-
-  priv = viewport->priv;
-
-  if (x)
-    *x = (int) priv->x;
-
-  if (y)
-    *y = (int) priv->y;
-
-  if (z)
-    *z = (int) priv->z;
-}
