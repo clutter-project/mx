@@ -124,6 +124,12 @@ nbtk_expander_dispose (GObject *object)
       priv->label = NULL;
     }
 
+  if (priv->arrow)
+    {
+      clutter_actor_unparent (priv->arrow);
+      priv->arrow = NULL;
+    }
+
   if (priv->timeline)
     {
       g_object_unref (priv->timeline);
