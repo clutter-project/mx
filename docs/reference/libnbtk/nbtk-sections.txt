@@ -576,7 +576,6 @@ NBTK_DRAGGABLE_GET_IFACE
 <SECTION>
 <FILE>nbtk-style</FILE>
 NbtkStylable
-NbtkStylableIface
 NbtkStyleError
 <TITLE>NbtkStyle</TITLE>
 NbtkStyle
