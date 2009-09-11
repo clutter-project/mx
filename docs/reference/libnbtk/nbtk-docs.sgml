@@ -18,45 +18,68 @@
   </bookinfo>
 
   <chapter>
-    <title>libnbtk</title>
-    <xi:include href="xml/nbtk-action.xml"/>
-    <xi:include href="xml/nbtk-adjustment.xml"/>
-    <xi:include href="xml/nbtk-bin.xml"/>
-    <xi:include href="xml/nbtk-box-layout-child.xml"/>
-    <xi:include href="xml/nbtk-box-layout.xml"/>
-    <xi:include href="xml/nbtk-button.xml"/>
-    <xi:include href="xml/nbtk-clipboard.xml"/>
-    <xi:include href="xml/nbtk-combo-box.xml"/>
-    <xi:include href="xml/nbtk-draggable.xml"/>
-    <xi:include href="xml/nbtk-droppable.xml"/>
-    <xi:include href="xml/nbtk-entry.xml"/>
-    <xi:include href="xml/nbtk-expander.xml"/>
-    <xi:include href="xml/nbtk-fade-button.xml"/>
-    <xi:include href="xml/nbtk-grid.xml"/>
+    <title>ClutterActors</title>
+    <chapter>
+      <title>Widgets</title>
+      <xi:include href="xml/nbtk-widget.xml"/>
+      <xi:include href="xml/nbtk-button.xml"/>
+      <xi:include href="xml/nbtk-combo-box.xml"/>
+      <xi:include href="xml/nbtk-entry.xml"/>
+      <xi:include href="xml/nbtk-fade-button.xml"/>
+      <xi:include href="xml/nbtk-icon.xml"/>
+      <xi:include href="xml/nbtk-label.xml"/>
+      <xi:include href="xml/nbtk-popup.xml"/>
+      <xi:include href="xml/nbtk-progress-bar.xml"/>
+      <xi:include href="xml/nbtk-scroll-bar.xml"/>
+      <xi:include href="xml/nbtk-texture-frame.xml"/>
+      <xi:include href="xml/nbtk-tooltip.xml"/>
+    </chapter>
+    <chapter>
+      <title>Containers</title>
+      <xi:include href="xml/nbtk-bin.xml"/>
+      <xi:include href="xml/nbtk-box-layout-child.xml"/>
+      <xi:include href="xml/nbtk-box-layout.xml"/>
+      <xi:include href="xml/nbtk-expander.xml"/>
+      <xi:include href="xml/nbtk-grid.xml"/>
+      <xi:include href="xml/nbtk-scroll-view.xml"/>
+      <xi:include href="xml/nbtk-table-child.xml"/>
+      <xi:include href="xml/nbtk-table.xml"/>
+      <xi:include href="xml/nbtk-viewport.xml"/>
+    </chapter>
+    <chapter>
+      <title>Data Views</title>
+      <xi:include href="xml/nbtk-item-view.xml"/>
+      <xi:include href="xml/nbtk-list-view.xml"/>
+    </chapter>
+    <chapter>
+      <title>Interfaces</title>
+      <xi:include href="xml/nbtk-draggable.xml"/>
+      <xi:include href="xml/nbtk-droppable.xml"/>
+      <xi:include href="xml/nbtk-item-factory.xml"/>
+      <xi:include href="xml/nbtk-scrollable.xml"/>
+      <xi:include href="xml/nbtk-stylable.xml"/>
+    </chapter>
+    <chapter>
+      <title>Types and Utilities</title>
+      <xi:include href="xml/nbtk-action.xml"/>
+      <xi:include href="xml/nbtk-adjustment.xml"/>
+      <xi:include href="xml/nbtk-clipboard.xml"/>
+      <xi:include href="xml/nbtk-style.xml"/>
+      <xi:include href="xml/nbtk-subtexture.xml"/>
+      <xi:include href="xml/nbtk-texture-cache.xml"/>
+      <xi:include href="xml/nbtk-types.xml"/>
+      <xi:include href="xml/nbtk-utils.xml"/>
+    </chapter>
+  </chapter>
+  <chapter>
+    <title>GTK+ Widgets</title>
     <xi:include href="xml/nbtk-gtk-expander.xml"/>
     <xi:include href="xml/nbtk-gtk-frame.xml"/>
     <xi:include href="xml/nbtk-gtk-light-switch.xml"/>
-    <xi:include href="xml/nbtk-icon.xml"/>
-    <xi:include href="xml/nbtk-item-factory.xml"/>
-    <xi:include href="xml/nbtk-item-view.xml"/>
-    <xi:include href="xml/nbtk-label.xml"/>
-    <xi:include href="xml/nbtk-list-view.xml"/>
-    <xi:include href="xml/nbtk-popup.xml"/>
-    <xi:include href="xml/nbtk-progress-bar.xml"/>
-    <xi:include href="xml/nbtk-scrollable.xml"/>
-    <xi:include href="xml/nbtk-scroll-bar.xml"/>
-    <xi:include href="xml/nbtk-scroll-view.xml"/>
-    <xi:include href="xml/nbtk-stylable.xml"/>
-    <xi:include href="xml/nbtk-style.xml"/>
-    <xi:include href="xml/nbtk-subtexture.xml"/>
-    <xi:include href="xml/nbtk-table-child.xml"/>
-    <xi:include href="xml/nbtk-table.xml"/>
-    <xi:include href="xml/nbtk-texture-cache.xml"/>
-    <xi:include href="xml/nbtk-texture-frame.xml"/>
-    <xi:include href="xml/nbtk-tooltip.xml"/>
-    <xi:include href="xml/nbtk-types.xml"/>
-    <xi:include href="xml/nbtk-utils.xml"/>
-    <xi:include href="xml/nbtk-viewport.xml"/>
-    <xi:include href="xml/nbtk-widget.xml"/>
   </chapter>
+
+  <index>
+    <title>Index of all symbols</title>
+    <xi:include href="xml/api-index-full.xml"><xi:fallback/></xi:include>
+  </index>
 </book>
