@@ -18,6 +18,13 @@
  *
  */
 
+/**
+ * SECTION:nbtk-fade-button
+ * @short_description: obsolete - do not use
+ *
+ * obsolete - do not use
+ */
+
 #include "nbtk-fade-button.h"
 
 G_DEFINE_TYPE (NbtkFadeButton, nbtk_fade_button, NBTK_TYPE_BUTTON)

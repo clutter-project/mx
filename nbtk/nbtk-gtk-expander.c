@@ -21,6 +21,14 @@
  *
  */
 
+/**
+ * SECTION:nbtk-gtk-expander
+ * @short_description: a gtk expander widget with extra styling properties
+ *
+ * A GTK+ expander widget with extra styling properties. May well be removed
+ * in future versions.
+ */
+
 
 #include "nbtk-gtk-expander.h"
 

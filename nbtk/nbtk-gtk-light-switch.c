@@ -16,6 +16,14 @@
  * Boston, MA 02111-1307, USA.
  *
  */
+
+/**
+ * SECTION:nbtk-gtk-light-switch
+ * @short_description: a toggle switch between two states
+ *
+ * A visual representation of a toggle switch that can move between two states.
+ */
+
 #include <config.h>
 #include "nbtk-gtk-light-switch.h"
 

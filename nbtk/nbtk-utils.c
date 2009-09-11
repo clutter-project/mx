@@ -24,6 +24,8 @@
 /**
  * SECTION:nbtk-utils
  * @short_description: General utility functions useful for GUIs
+ *
+ * Utilities useful for creating user interfaces.
  */
 
 #ifdef HAVE_CONFIG_H

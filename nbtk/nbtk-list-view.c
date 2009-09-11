@@ -21,6 +21,17 @@
  *
  */
 
+/**
+ * SECTION:nbtk-list-view
+ * @short_description: a box layout driven by a model.
+ *
+ * #NbtkListView is a box layout container driven by a #ClutterModel. Children
+ * are created for each row in the model, either by creating actors from the
+ * supplied #ClutterActor derived type, or from a #NbtkItemFactor.
+ *
+ * Data is set on the children by mapping columns in the model to object
+ * properties on the children.
+ */
 
 #include "nbtk-list-view.h"
 #include "nbtk-box-layout.h"

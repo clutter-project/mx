@@ -17,6 +17,14 @@
  * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+/**
+ * SECTION:nbtk-popup
+ * @short_description: a popup actor representing a list of user actions
+ *
+ * #NbtkPopup displays a list of user actions, defined by a list of
+ * #NbtkAction<!-- -->s. The popup list will appear above all other actors.
+ */
+
 #include "nbtk-popup.h"
 
 G_DEFINE_TYPE (NbtkPopup, nbtk_popup, NBTK_TYPE_WIDGET)

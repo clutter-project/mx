@@ -16,6 +16,15 @@
  * Boston, MA 02111-1307, USA.
  *
  */
+
+/**
+ * SECTION:nbtk-gtk-frame
+ * @short_description: a specially styled frame for GTK+
+ *
+ * A specially styled frame for use in GTK+ applications.
+ */
+
+
 #include "nbtk-gtk-frame.h"
 #include <math.h>
 

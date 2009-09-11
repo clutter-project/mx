@@ -20,6 +20,14 @@
  *
  */
 
+/**
+ * SECTION:nbtk-expander
+ * @short_description: a container which the user can show or hide its child
+ *
+ * #NbtkExpander is a single child container that allows the user to show or
+ * hide its child.
+ */
+
 #include "nbtk-marshal.h"
 #include "nbtk-expander.h"
 #include "nbtk-private.h"

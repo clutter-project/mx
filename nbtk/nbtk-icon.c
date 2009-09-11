@@ -20,6 +20,13 @@
  *
  */
 
+/**
+ * SECTION:nbtk-icon
+ * @short_description: a simple styled icon actor
+ *
+ * #NbtkIcon is a simple styled texture actor that displays an image from
+ * a stylesheet.
+ */
 
 #include "nbtk-icon.h"
 

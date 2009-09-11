@@ -16,6 +16,14 @@
  *
  */
 
+/**
+ * SECTION:nbtk-types
+ * @short_description: type definitions used throughout Nbtk
+ *
+ * Common types for NbtkWidgets.
+ */
+
+
 #if !defined(NBTK_H_INSIDE) && !defined(NBTK_COMPILATION)
 #error "Only <nbtk/nbtk.h> can be included directly.h"
 #endif

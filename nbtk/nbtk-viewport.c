@@ -23,6 +23,18 @@
  *
  */
 
+/**
+ * SECTION:nbtk-viewport
+ * @short_description: single child scrollable container
+ *
+ * #NbtkViewport allows non-scrollable children to be scrollable by implementing
+ * the #NbtkScrollable and #ClutterContainer interface.
+ *
+ * Do not use #NbtkViewport if you need good performance as it does can not
+ * be selective about the area of its child that is painted/picked. Therefore
+ * if the child is very large or contains a lot of children, you will experience
+ * poor performance.
+ */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

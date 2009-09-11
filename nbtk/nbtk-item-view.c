@@ -21,6 +21,17 @@
  *
  */
 
+/**
+ * SECTION:nbtk-item-view
+ * @short_description: a flow layout driven by a model.
+ *
+ * #NbtkItemView is a flow layout container driven by a #ClutterModel. Children
+ * are created for each row in the model, either by creating actors from the
+ * supplied #ClutterActor derived type, or from a #NbtkItemFactory.
+ *
+ * Data is set on the children by mapping columns in the model to object
+ * properties on the children.
+ */
 
 #include "nbtk-item-view.h"
 #include "nbtk-private.h"

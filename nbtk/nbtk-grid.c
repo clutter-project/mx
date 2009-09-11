@@ -29,6 +29,14 @@
  * - More comments / overall concept on how the layouting is done.
  * - Allow more layout directions than just row major / column major.
  */
+/**
+ * SECTION:nbtk-grid
+ * @short_description: a flow layout container
+ *
+ * #NbtkGrid is a layout container that arranges its children by placing them
+ * in a single line and wrapping round to a new line when the edge of the
+ * container is reached.
+ */
 
 #include <string.h>
 

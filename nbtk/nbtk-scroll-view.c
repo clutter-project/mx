@@ -22,6 +22,15 @@
  *
  */
 
+/**
+ * SECTION:nbtk-scroll-view
+ * @short_description: a container for scrollable children
+ *
+ * #NbtkScrollView is a single child container for actors that implement
+ * #NbtkScrollable. It provides scrollbars around the edge of the child to
+ * allow the user to move around the scrollable area.
+ */
+
 #include "nbtk-scroll-view.h"
 #include "nbtk-marshal.h"
 #include "nbtk-scroll-bar.h"

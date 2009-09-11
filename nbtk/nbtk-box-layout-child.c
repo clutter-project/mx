@@ -19,6 +19,14 @@
  * Written by: Thomas Wood <thomas.wood@intel.com>
  */
 
+/**
+ * SECTION:nbtk-box-layout-child
+ * @short_description: meta data associated with a #NbtkBoxLayout child.
+ *
+ * #NbtkBoxLayoutChild is a #ClutterChildMeta implementation that stores the
+ * child properties for children inside a #NbtkBoxLayout.
+ */
+
 #include "nbtk-box-layout-child.h"
 #include "nbtk-private.h"
 

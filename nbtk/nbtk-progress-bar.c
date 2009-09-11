@@ -20,6 +20,15 @@
  *
  */
 
+/**
+ * SECTION:nbtk-progress-bar
+ * @short_description: visual representation of progress
+ *
+ * #NbtkProgressBar visually represents the progress of an action or a value in
+ * a range.
+ *
+ */
+
 #include "nbtk-progress-bar.h"
 #include "nbtk-texture-frame.h"
 
