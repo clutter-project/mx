@@ -55,6 +55,8 @@ CFILE_GLOB=$(top_srcdir)/nbtk/*.c
 # Header files to ignore when scanning.
 # e.g. IGNORE_HFILES=gtkdebug.h gtkintl.h
 IGNORE_HFILES= \
+	nbtk.h \
+	nbtk-gtk.h \
 	nbtk-enum-types.c \
 	nbtk-enum-types.h \
 	nbtk-marshal.c \

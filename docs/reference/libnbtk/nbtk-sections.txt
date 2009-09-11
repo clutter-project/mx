@@ -824,12 +824,6 @@ NbtkEntryPrivate
 </SECTION>
 
 <SECTION>
-<FILE>nbtk</FILE>
-<SUBSECTION Private>
-NBTK_H_INSIDE
-</SECTION>
-
-<SECTION>
 <FILE>nbtk-types</FILE>
 NbtkPadding
 NbtkAlignment
@@ -844,12 +838,6 @@ NBTK_TYPE_PADDING
 <SECTION>
 <FILE>nbtk-utils</FILE>
 nbtk_utils_format_time
-</SECTION>
-
-<SECTION>
-<FILE>nbtk-gtk</FILE>
-<SUBSECTION Private>
-NBTK_H_INSIDE
 </SECTION>
 
 <SECTION>
