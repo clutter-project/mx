@@ -142,6 +142,7 @@ NbtkBinPrivate
 
 <SECTION>
 <FILE>nbtk-scrollable</FILE>
+<TITLE>NbtkScrollable</TITLE>
 NbtkScrollable
 NbtkScrollableInterface
 nbtk_scrollable_set_adjustments
@@ -549,6 +550,7 @@ NBTK_TABLE_CHILD_GET_CLASS
 
 <SECTION>
 <FILE>nbtk-draggable</FILE>
+<TITLE>NbtkDraggable</TITLE>
 NbtkDraggable
 NbtkDraggableIface
 NbtkDragAxis
@@ -575,7 +577,6 @@ NBTK_DRAGGABLE_GET_IFACE
 
 <SECTION>
 <FILE>nbtk-style</FILE>
-NbtkStylable
 NbtkStyleError
 <TITLE>NbtkStyle</TITLE>
 NbtkStyle
@@ -599,6 +600,7 @@ NbtkStylePrivate
 
 <SECTION>
 <FILE>nbtk-droppable</FILE>
+<TITLE>NbtkDroppable</TITLE>
 NbtkDroppable
 NbtkDroppableIface
 nbtk_droppable_enable
@@ -637,6 +639,7 @@ NbtkSubtexturePrivate
 
 <SECTION>
 <FILE>nbtk-item-factory</FILE>
+<TITLE>NbtkItemFactory</TITLE>
 NbtkItemFactory
 NbtkItemFactoryIface
 nbtk_item_factory_create
@@ -651,6 +654,7 @@ NBTK_ITEM_FACTORY_GET_IFACE
 
 <SECTION>
 <FILE>nbtk-table</FILE>
+<TITLE>NbtkTable</TITLE>
 NbtkTableChildOptions
 NbtkTable
 nbtk_table_new
@@ -720,6 +724,7 @@ NbtkProgressBarPrivate
 
 <SECTION>
 <FILE>nbtk-stylable</FILE>
+<TITLE>NbtkStylable</TITLE>
 NbtkStylableIface
 nbtk_stylable_iface_install_property
 nbtk_stylable_freeze_notify
