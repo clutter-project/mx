@@ -17,8 +17,8 @@
     </copyright>
   </bookinfo>
 
-  <chapter>
-    <title>ClutterActors</title>
+  <part>
+    <title>Clutter Actors and Utilities</title>
     <chapter>
       <title>Widgets</title>
       <xi:include href="xml/nbtk-widget.xml"/>
@@ -70,13 +70,16 @@
       <xi:include href="xml/nbtk-types.xml"/>
       <xi:include href="xml/nbtk-utils.xml"/>
     </chapter>
-  </chapter>
-  <chapter>
-    <title>GTK+ Widgets</title>
-    <xi:include href="xml/nbtk-gtk-expander.xml"/>
-    <xi:include href="xml/nbtk-gtk-frame.xml"/>
-    <xi:include href="xml/nbtk-gtk-light-switch.xml"/>
-  </chapter>
+  </part>
+  <part>
+    <title>Nbtk for GTK+</title>
+    <chapter>
+      <title>Widgets</title>
+      <xi:include href="xml/nbtk-gtk-expander.xml"/>
+      <xi:include href="xml/nbtk-gtk-frame.xml"/>
+      <xi:include href="xml/nbtk-gtk-light-switch.xml"/>
+    </chapter>
+  </part>
 
   <index>
     <title>Index of all symbols</title>
