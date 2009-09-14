@@ -224,13 +224,13 @@ nbtk_bin_allocate (ClutterActor          *self,
 
       if (priv->x_fill)
         {
-          allocation.x1 = (int) padding.top;
+          allocation.x1 = (int) padding.left;
           allocation.x2 = (int) (allocation.x1 + available_width);
         }
 
       if (priv->y_fill)
         {
-          allocation.y1 = (int) padding.right;
+          allocation.y1 = (int) padding.top;
           allocation.y2 = (int) (allocation.y1 + available_height);
         }
 
