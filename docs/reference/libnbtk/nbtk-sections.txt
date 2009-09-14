@@ -831,7 +831,6 @@ NbtkEntryPrivate
 <SECTION>
 <FILE>nbtk-types</FILE>
 NbtkPadding
-NbtkAlignment
 NbtkAlign
 <SUBSECTION Standard>
 nbtk_border_image_get_type

@@ -179,7 +179,7 @@ nbtk_box_layout_child_init (NbtkBoxLayoutChild *self)
   self->x_fill = TRUE;
   self->y_fill = TRUE;
 
-  self->x_align = NBTK_ALIGN_CENTER;
-  self->y_align = NBTK_ALIGN_CENTER;
+  self->x_align = NBTK_ALIGN_MIDDLE;
+  self->y_align = NBTK_ALIGN_MIDDLE;
 }
 

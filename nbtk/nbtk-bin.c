@@ -47,8 +47,8 @@ struct _NbtkBinPrivate
 {
   ClutterActor *child;
 
-  NbtkAlignment x_align;
-  NbtkAlignment y_align;
+  NbtkAlign x_align;
+  NbtkAlign y_align;
 
   guint x_fill : 1;
   guint y_fill : 1;
@@ -81,15 +81,15 @@ _nbtk_bin_get_align_factors (NbtkBin *bin,
 
   switch (priv->x_align)
     {
-    case NBTK_ALIGN_LEFT:
+    case NBTK_ALIGN_START:
       factor = 0.0;
       break;
 
-    case NBTK_ALIGN_CENTER:
+    case NBTK_ALIGN_MIDDLE:
       factor = 0.5;
       break;
 
-    case NBTK_ALIGN_RIGHT:
+    case NBTK_ALIGN_END:
       factor = 1.0;
       break;
 
@@ -103,15 +103,15 @@ _nbtk_bin_get_align_factors (NbtkBin *bin,
 
   switch (priv->y_align)
     {
-    case NBTK_ALIGN_TOP:
+    case NBTK_ALIGN_START:
       factor = 0.0;
       break;
 
-    case NBTK_ALIGN_CENTER:
+    case NBTK_ALIGN_MIDDLE:
       factor = 0.5;
       break;
 
-    case NBTK_ALIGN_BOTTOM:
+    case NBTK_ALIGN_END:
       factor = 1.0;
       break;
 
@@ -494,8 +494,8 @@ nbtk_bin_class_init (NbtkBinClass *klass)
   pspec = g_param_spec_enum ("x-align",
                              "X Align",
                              "The horizontal alignment",
-                             NBTK_TYPE_ALIGNMENT,
-                             NBTK_ALIGN_CENTER,
+                             NBTK_TYPE_ALIGN,
+                             NBTK_ALIGN_MIDDLE,
                              NBTK_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_X_ALIGN, pspec);
 
@@ -507,8 +507,8 @@ nbtk_bin_class_init (NbtkBinClass *klass)
   pspec = g_param_spec_enum ("y-align",
                              "Y Align",
                              "The vertical alignment",
-                             NBTK_TYPE_ALIGNMENT,
-                             NBTK_ALIGN_CENTER,
+                             NBTK_TYPE_ALIGN,
+                             NBTK_ALIGN_MIDDLE,
                              NBTK_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_Y_ALIGN, pspec);
 
@@ -544,8 +544,8 @@ nbtk_bin_init (NbtkBin *bin)
 {
   bin->priv = NBTK_BIN_GET_PRIVATE (bin);
 
-  bin->priv->x_align = NBTK_ALIGN_CENTER;
-  bin->priv->y_align = NBTK_ALIGN_CENTER;
+  bin->priv->x_align = NBTK_ALIGN_MIDDLE;
+  bin->priv->y_align = NBTK_ALIGN_MIDDLE;
 }
 
 /**
@@ -638,8 +638,8 @@ nbtk_bin_get_child (NbtkBin *bin)
  */
 void
 nbtk_bin_set_alignment (NbtkBin       *bin,
-                        NbtkAlignment  x_align,
-                        NbtkAlignment  y_align)
+                        NbtkAlign  x_align,
+                        NbtkAlign  y_align)
 {
   NbtkBinPrivate *priv;
   gboolean changed = FALSE;
@@ -681,8 +681,8 @@ nbtk_bin_set_alignment (NbtkBin       *bin,
  */
 void
 nbtk_bin_get_alignment (NbtkBin       *bin,
-                        NbtkAlignment *x_align,
-                        NbtkAlignment *y_align)
+                        NbtkAlign *x_align,
+                        NbtkAlign *y_align)
 {
   NbtkBinPrivate *priv;
 

@@ -71,21 +71,21 @@ struct _NbtkBinClass
 GType nbtk_bin_get_type (void) G_GNUC_CONST;
 
 NbtkWidget   *nbtk_bin_new           (void);
-void          nbtk_bin_set_child     (NbtkBin           *bin,
-                                      ClutterActor      *child);
-ClutterActor *nbtk_bin_get_child     (NbtkBin           *bin);
-void          nbtk_bin_set_alignment (NbtkBin           *bin,
-                                      NbtkAlignment      x_align,
-                                      NbtkAlignment      y_align);
-void          nbtk_bin_get_alignment (NbtkBin           *bin,
-                                      NbtkAlignment     *x_align,
-                                      NbtkAlignment     *y_align);
-void          nbtk_bin_set_fill      (NbtkBin           *bin,
-                                      gboolean           x_fill,
-                                      gboolean           y_fill);
-void          nbtk_bin_get_fill      (NbtkBin           *bin,
-                                      gboolean          *x_fill,
-                                      gboolean          *y_fill);
+void          nbtk_bin_set_child     (NbtkBin      *bin,
+                                      ClutterActor *child);
+ClutterActor *nbtk_bin_get_child     (NbtkBin      *bin);
+void          nbtk_bin_set_alignment (NbtkBin      *bin,
+                                      NbtkAlign     x_align,
+                                      NbtkAlign     y_align);
+void          nbtk_bin_get_alignment (NbtkBin      *bin,
+                                      NbtkAlign    *x_align,
+                                      NbtkAlign    *y_align);
+void          nbtk_bin_set_fill      (NbtkBin      *bin,
+                                      gboolean      x_fill,
+                                      gboolean      y_fill);
+void          nbtk_bin_get_fill      (NbtkBin      *bin,
+                                      gboolean     *x_fill,
+                                      gboolean     *y_fill);
 
 G_END_DECLS
 

@@ -431,8 +431,8 @@ nbtk_popup_add_action (NbtkPopup  *popup,
                                NULL);
 
   nbtk_bin_set_alignment (NBTK_BIN (child.button),
-                          NBTK_ALIGN_LEFT,
-                          NBTK_ALIGN_CENTER);
+                          NBTK_ALIGN_START,
+                          NBTK_ALIGN_MIDDLE);
   g_signal_connect (child.button, "button-release-event",
                     G_CALLBACK (nbtk_popup_button_release_cb), action);
   clutter_actor_set_parent (CLUTTER_ACTOR (child.button),
