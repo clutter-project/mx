@@ -237,7 +237,6 @@ add_texture_to_cache (NbtkTextureCache     *self,
  * nbtk_texture_cache_get_texture:
  * @self: A #NbtkTextureCache
  * @path: A path to a image file
- * @want_clone: ignored
  *
  * Create a new ClutterTexture with the specified image. Adds the image to the
  * cache if the image had not been previously loaded. Subsequent calls with
@@ -248,8 +247,7 @@ add_texture_to_cache (NbtkTextureCache     *self,
  */
 ClutterTexture*
 nbtk_texture_cache_get_texture (NbtkTextureCache *self,
-                                const gchar      *path,
-                                gboolean          want_clone)
+                                const gchar      *path)
 {
   ClutterActor *texture;
   CoglHandle *handle;
@@ -261,10 +259,6 @@ nbtk_texture_cache_get_texture (NbtkTextureCache *self,
 
 
   priv = TEXTURE_CACHE_PRIVATE (self);
-
-  if (want_clone)
-    g_warning ("The want_clone parameter of %s is now ignored. This function "
-               "always returns a new ClutterTexture", __FUNCTION__);
 
   item = g_hash_table_lookup (priv->cache, path);
 

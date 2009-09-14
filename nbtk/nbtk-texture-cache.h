@@ -80,8 +80,7 @@ GType nbtk_texture_cache_get_type (void);
 
 NbtkTextureCache* nbtk_texture_cache_get_default (void);
 ClutterTexture*   nbtk_texture_cache_get_texture (NbtkTextureCache *self,
-                                                  const gchar *path,
-                                                  gboolean want_clone);
+                                                  const gchar *path);
 ClutterActor*     nbtk_texture_cache_get_actor (NbtkTextureCache *self,
                                                   const gchar *path);
 

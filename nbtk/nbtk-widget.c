@@ -535,8 +535,7 @@ nbtk_widget_style_changed (NbtkStylable *self)
        * Firefox lets the background-image shine thru when border-image has
        * alpha an channel, maybe that would be an option for the future. */
       texture = nbtk_texture_cache_get_texture (texture_cache,
-                                                border_image->uri,
-                                                FALSE);
+                                                border_image->uri);
 
       clutter_texture_get_base_size (CLUTTER_TEXTURE (texture),
                                      &width, &height);
@@ -561,9 +560,7 @@ nbtk_widget_style_changed (NbtkStylable *self)
   if (bg_file != NULL &&
       strcmp (bg_file, "none"))
     {
-      texture = nbtk_texture_cache_get_texture (texture_cache,
-                                                bg_file,
-                                                FALSE);
+      texture = nbtk_texture_cache_get_texture (texture_cache, bg_file);
       priv->background_image = (ClutterActor*) texture;
 
       if (priv->background_image != NULL)
