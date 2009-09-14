@@ -42,7 +42,6 @@ enum {
   CHILD_PROP_0,
 
   CHILD_PROP_COL,
-  CHILD_PROP_COL_OLD,
   CHILD_PROP_ROW,
   CHILD_PROP_COL_SPAN,
   CHILD_PROP_ROW_SPAN,
@@ -68,9 +67,6 @@ table_child_set_property (GObject      *gobject,
 
   switch (prop_id)
     {
-    case CHILD_PROP_COL_OLD:
-      g_warning ("The \"column\" property of NbtkTableChild is deprecated."
-                 " Please use \"col\" instead.");
     case CHILD_PROP_COL:
       child->col = g_value_get_int (value);
       _nbtk_table_update_row_col (table, -1, child->col);
@@ -134,12 +130,6 @@ table_child_get_property (GObject    *gobject,
 
   switch (prop_id)
     {
-    case CHILD_PROP_COL_OLD:
-      g_warning ("The \"column\" property of NbtkTableChild is deprecated."
-                 " Please use \"col\" instead.");
-    case CHILD_PROP_COL:
-      g_value_set_int (value, child->col);
-      break;
     case CHILD_PROP_ROW:
       g_value_set_int (value, child->row);
       break;
@@ -185,15 +175,6 @@ nbtk_table_child_class_init (NbtkTableChildClass *klass)
 
   gobject_class->set_property = table_child_set_property;
   gobject_class->get_property = table_child_get_property;
-
-  pspec = g_param_spec_int ("column",
-                            "Column Number",
-                            "The column the widget resides in",
-                            0, G_MAXINT,
-                            0,
-                            NBTK_PARAM_READWRITE);
-
-  g_object_class_install_property (gobject_class, CHILD_PROP_COL_OLD, pspec);
 
   pspec = g_param_spec_int ("col",
                             "Column Number",
@@ -530,17 +511,17 @@ nbtk_table_child_set_y_fill (NbtkTable    *table,
 }
 
 /**
- * nbtk_table_child_get_col_expand:
+ * nbtk_table_child_get_x_expand:
  * @table: A #NbtkTable
  * @child: A #ClutterActor
  *
- * Get the column expand property of the child
+ * Get the x-expand property of the child
  *
- * Returns: #TRUE if the child is set to column expand
+ * Returns: #TRUE if the child is set to x-expand
  */
 gboolean
-nbtk_table_child_get_col_expand (NbtkTable    *table,
-                                 ClutterActor *child)
+nbtk_table_child_get_x_expand (NbtkTable    *table,
+                               ClutterActor *child)
 {
   NbtkTableChild *meta;
 
@@ -553,48 +534,20 @@ nbtk_table_child_get_col_expand (NbtkTable    *table,
 }
 
 /**
- * nbtk_table_child_set_row_expand:
+ * nbtk_table_child_set_x_expand:
  * @table: A #NbtkTable
  * @child: A #ClutterActor
- * @expand: the new value of the row expand child property
+ * @expand: the new value of the x expand child property
  *
- * Set row expand on the child. This causes the row which the child
+ * Set x-expand on the child. This causes the column which the child
  * resides in to be allocated any extra space if the allocation of the table is
  * larger than the preferred size.
  *
  */
 void
-nbtk_table_child_set_row_expand (NbtkTable    *table,
-                                 ClutterActor *child,
-                                 gboolean      expand)
-{
-  NbtkTableChild *meta;
-
-  g_return_if_fail (NBTK_IS_TABLE (table));
-  g_return_if_fail (CLUTTER_IS_ACTOR (child));
-
-  meta = get_child_meta (table, child);
-
-  meta->y_expand = expand;
-
-  clutter_actor_queue_relayout (child);
-}
-
-/**
- * nbtk_table_child_set_col_expand:
- * @table: A #NbtkTable
- * @child: A #ClutterActor
- * @expand: the new value of the column expand child property
- *
- * Set column expand on the child. This causes the column which the child
- * resides in to be allocated any extra space if the allocation of the table is
- * larger than the preferred size.
- *
- */
-void
-nbtk_table_child_set_col_expand (NbtkTable    *table,
-                                 ClutterActor *child,
-                                 gboolean      expand)
+nbtk_table_child_set_x_expand (NbtkTable    *table,
+                               ClutterActor *child,
+                               gboolean      expand)
 {
   NbtkTableChild *meta;
 
@@ -609,16 +562,44 @@ nbtk_table_child_set_col_expand (NbtkTable    *table,
 }
 
 /**
- * nbtk_table_child_get_row_expand:
+ * nbtk_table_child_set_y_expand:
+ * @table: A #NbtkTable
+ * @child: A #ClutterActor
+ * @expand: the new value of the y-expand child property
+ *
+ * Set y-expand on the child. This causes the row which the child
+ * resides in to be allocated any extra space if the allocation of the table is
+ * larger than the preferred size.
+ *
+ */
+void
+nbtk_table_child_set_y_expand (NbtkTable    *table,
+                               ClutterActor *child,
+                               gboolean      expand)
+{
+  NbtkTableChild *meta;
+
+  g_return_if_fail (NBTK_IS_TABLE (table));
+  g_return_if_fail (CLUTTER_IS_ACTOR (child));
+
+  meta = get_child_meta (table, child);
+
+  meta->y_expand = expand;
+
+  clutter_actor_queue_relayout (child);
+}
+
+/**
+ * nbtk_table_child_get_y_expand:
  * @table: A #NbtkTable
  * @child: A #ClutterActor
  *
- * Get the row expand property of the child.
+ * Get the y-expand property of the child.
  *
- * Returns: #TRUE if the child is set to row expand
+ * Returns: #TRUE if the child is set to y-expand
  */
 gboolean
-nbtk_table_child_get_row_expand (NbtkTable    *table,
+nbtk_table_child_get_y_expand (NbtkTable    *table,
                                  ClutterActor *child)
 {
   NbtkTableChild *meta;
@@ -628,12 +609,7 @@ nbtk_table_child_get_row_expand (NbtkTable    *table,
 
   meta = get_child_meta (table, child);
 
-  if (meta->x_align == 0.0)
-      return NBTK_ALIGN_START;
-  else if (meta->x_align == 1.0)
-      return NBTK_ALIGN_END;
-  else
-      return NBTK_ALIGN_MIDDLE;
+  return meta->y_expand;
 }
 
 /**

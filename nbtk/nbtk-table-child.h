@@ -89,11 +89,11 @@ void nbtk_table_child_set_x_fill (NbtkTable *table, ClutterActor *child, gboolea
 gboolean nbtk_table_child_get_y_fill (NbtkTable *table, ClutterActor *child);
 void nbtk_table_child_set_y_fill (NbtkTable *table, ClutterActor *child, gboolean fill);
 
-gboolean nbtk_table_child_get_col_expand (NbtkTable *table, ClutterActor *child);
-void nbtk_table_child_set_col_expand (NbtkTable *table, ClutterActor *child, gboolean expand);
+gboolean nbtk_table_child_get_x_expand (NbtkTable *table, ClutterActor *child);
+void nbtk_table_child_set_x_expand (NbtkTable *table, ClutterActor *child, gboolean expand);
 
-gboolean nbtk_table_child_get_row_expand (NbtkTable *table, ClutterActor *child);
-void nbtk_table_child_set_row_expand (NbtkTable *table, ClutterActor *child, gboolean expand);
+gboolean nbtk_table_child_get_y_expand (NbtkTable *table, ClutterActor *child);
+void nbtk_table_child_set_y_expand (NbtkTable *table, ClutterActor *child, gboolean expand);
 
 NbtkAlign nbtk_table_child_get_x_align (NbtkTable *table, ClutterActor *child);
 void nbtk_table_child_set_x_align (NbtkTable *table, ClutterActor *child, NbtkAlign align);
