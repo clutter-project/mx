@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nbtk\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-24 09:28+0000\n"
-"PO-Revision-Date: 2009-09-14 14:22+0200\n"
+"POT-Creation-Date: 2009-09-15 09:08+0000\n"
+"PO-Revision-Date: 2009-09-15 15:05+0200\n"
 "Last-Translator: Cosmin Bordeianu <elloxar@gmail.com>\n"
 "Language-Team: Moblin Romania <live@moblin.ro>\n"
 "MIME-Version: 1.0\n"
@@ -18,23 +18,82 @@ msgstr ""
 "X-Poedit-Country: ROMANIA\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: ../nbtk/nbtk-gtk-light-switch.c:163
+#: ../nbtk/nbtk-gtk-light-switch.c:175
 msgid "Unavailable"
 msgstr "Indisponibil"
 
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the MEDIUM VERTICAL BAR unicode character
 #. * instead
-#: ../nbtk/nbtk-gtk-light-switch.c:183
-#: ../nbtk/nbtk-gtk-light-switch.c:256
+#: ../nbtk/nbtk-gtk-light-switch.c:195
+#: ../nbtk/nbtk-gtk-light-switch.c:269
 msgid "On"
 msgstr "On"
 
 #. Draw the second label; "Off"
 #. TRANSLATORS: If this string takes more than four or five characters in
-#. * your language, please use the ROUND CIRCLE unicode character instead
-#: ../nbtk/nbtk-gtk-light-switch.c:201
-#: ../nbtk/nbtk-gtk-light-switch.c:254
+#. * your language, please use the WHITE CIRCLE U+25CB unicode character
+#. * instead
+#: ../nbtk/nbtk-gtk-light-switch.c:214
+#: ../nbtk/nbtk-gtk-light-switch.c:267
 msgid "Off"
 msgstr "Off"
+
+#: ../nbtk/nbtk-utils.c:94
+msgid "Less than a minute ago"
+msgstr "Mai puțin de un minut în urmă"
+
+#: ../nbtk/nbtk-utils.c:98
+msgid "A few minutes ago"
+msgstr "Acum câteva minute"
+
+#: ../nbtk/nbtk-utils.c:102
+msgid "A couple of hours ago"
+msgstr "Acum câteva ore"
+
+#: ../nbtk/nbtk-utils.c:109
+msgid "Earlier today"
+msgstr "Mai devreme"
+
+#: ../nbtk/nbtk-utils.c:112
+msgid "Yesterday"
+msgstr "Ieri"
+
+#: ../nbtk/nbtk-utils.c:120
+#, c-format
+msgid "On %A"
+msgstr "Pe %A"
+
+#: ../nbtk/nbtk-utils.c:126
+msgid "Unknown"
+msgstr "Necunoscut"
+
+#: ../nbtk/nbtk-utils.c:133
+msgid "Last week"
+msgstr "Săptămâna trecută"
+
+#: ../nbtk/nbtk-utils.c:136
+msgid "A couple of weeks ago"
+msgstr "Acum câteva săptămâni"
+
+#: ../nbtk/nbtk-utils.c:142
+msgid "This month"
+msgstr "Luna aceasta"
+
+#. Now Jan., last used in Dec.
+#: ../nbtk/nbtk-utils.c:146
+msgid "Last month"
+msgstr "Luna trecută"
+
+#: ../nbtk/nbtk-utils.c:149
+msgid "This year"
+msgstr "Anul acesta"
+
+#: ../nbtk/nbtk-utils.c:152
+msgid "Last year"
+msgstr "Anul trecut"
+
+#: ../nbtk/nbtk-utils.c:154
+msgid "Ages ago"
+msgstr "Foarte demult"
 
