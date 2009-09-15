@@ -270,7 +270,7 @@ on_draggable_press (ClutterActor       *actor,
                 "axis", &context->axis,
                 "containment-type", &context->containment,
                 "containment-area", &context->containment_area,
-                "actor", &context->actor,
+                "drag-actor", &context->actor,
                 NULL);
 
   if (context->threshold == 0)
@@ -461,8 +461,8 @@ nbtk_draggable_base_init (gpointer g_iface)
                                  NBTK_PARAM_READWRITE);
       g_object_interface_install_property (g_iface, pspec);
 
-      pspec = g_param_spec_object ("actor",
-                                   "Actor",
+      pspec = g_param_spec_object ("drag-actor",
+                                   "Drag Actor",
                                    "An actor to use in place of the "
                                    "draggable while dragging.",
                                    CLUTTER_TYPE_ACTOR,
@@ -646,22 +646,22 @@ nbtk_draggable_get_containment_area (NbtkDraggable *draggable,
 }
 
 void
-nbtk_draggable_set_actor (NbtkDraggable *draggable,
-                          ClutterActor  *actor)
+nbtk_draggable_set_drag_actor (NbtkDraggable *draggable,
+                               ClutterActor  *actor)
 {
   g_return_if_fail (NBTK_IS_DRAGGABLE (draggable));
 
-  g_object_set (G_OBJECT (draggable), "actor", actor, NULL);
+  g_object_set (G_OBJECT (draggable), "drag-actor", actor, NULL);
 }
 
 ClutterActor *
-nbtk_draggable_get_actor (NbtkDraggable *draggable)
+nbtk_draggable_get_drag_actor (NbtkDraggable *draggable)
 {
   ClutterActor *actor = NULL;
 
   g_return_val_if_fail (NBTK_IS_DRAGGABLE (draggable), NULL);
 
-  g_object_get (G_OBJECT (draggable), "actor", &actor, NULL);
+  g_object_get (G_OBJECT (draggable), "drag-actor", &actor, NULL);
 
   return actor;
 }

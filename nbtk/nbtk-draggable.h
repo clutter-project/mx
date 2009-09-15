@@ -114,9 +114,9 @@ void                nbtk_draggable_get_containment_area (NbtkDraggable       *dr
                                                          gfloat              *x_2,
                                                          gfloat              *y_2);
 
-void                nbtk_draggable_set_actor            (NbtkDraggable       *draggable,
+void                nbtk_draggable_set_drag_actor       (NbtkDraggable       *draggable,
                                                          ClutterActor        *actor);
-ClutterActor *      nbtk_draggable_get_actor            (NbtkDraggable       *draggable);
+ClutterActor *      nbtk_draggable_get_drag_actor       (NbtkDraggable       *draggable);
 
 void                nbtk_draggable_disable              (NbtkDraggable       *draggable);
 void                nbtk_draggable_enable               (NbtkDraggable       *draggable);

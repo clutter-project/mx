@@ -64,7 +64,7 @@ draggable_rectangle_drag_begin (NbtkDraggable       *draggable,
 {
   gfloat x, y;
   ClutterActor *self = CLUTTER_ACTOR (draggable);
-  ClutterActor *actor = nbtk_draggable_get_actor (draggable);
+  ClutterActor *actor = nbtk_draggable_get_drag_actor (draggable);
   ClutterActor *stage = clutter_actor_get_stage (self);
 
   g_debug ("%s: drag of '%s' begin at %.2f, %.2f",
@@ -91,7 +91,7 @@ draggable_rectangle_drag_motion (NbtkDraggable *draggable,
                                  gfloat         delta_x,
                                  gfloat         delta_y)
 {
-  ClutterActor *actor = nbtk_draggable_get_actor (draggable);
+  ClutterActor *actor = nbtk_draggable_get_drag_actor (draggable);
 
   g_debug ("%s: drag motion of '%s' (dx: %.2f, dy: %.2f)",
            G_STRLOC,
@@ -109,7 +109,7 @@ draggable_rectangle_drag_end (NbtkDraggable *draggable,
 {
   gfloat x, y;
   ClutterActor *self = CLUTTER_ACTOR (draggable);
-  ClutterActor *actor = nbtk_draggable_get_actor (draggable);
+  ClutterActor *actor = nbtk_draggable_get_drag_actor (draggable);
   ClutterActor *stage = clutter_actor_get_stage (self);
 
   g_debug ("%s: drag of '%s' end at %.2f, %.2f",
@@ -299,7 +299,7 @@ draggable_rectangle_class_init (DraggableRectangleClass *klass)
                                     "enabled");
   g_object_class_override_property (gobject_class,
                                     PROP_ACTOR,
-                                    "actor");
+                                    "drag-actor");
 }
 
 static void
