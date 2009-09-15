@@ -20,6 +20,10 @@
  *
  */
 
+#if !defined(NBTK_H_INSIDE) && !defined(NBTK_COMPILATION)
+#error "Only <nbtk/nbtk.h> can be included directly.h"
+#endif
+
 #ifndef _NBTK_CLIPBOARD_H
 #define _NBTK_CLIPBOARD_H
 
