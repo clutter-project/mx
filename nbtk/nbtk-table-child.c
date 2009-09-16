@@ -130,6 +130,9 @@ table_child_get_property (GObject    *gobject,
 
   switch (prop_id)
     {
+    case CHILD_PROP_COL:
+      g_value_set_int (value, child->col);
+      break;
     case CHILD_PROP_ROW:
       g_value_set_int (value, child->row);
       break;
