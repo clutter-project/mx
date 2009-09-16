@@ -25,8 +25,11 @@ struct _DraggableRectangle
 
   NbtkDragContainment containment;
   ClutterActorBox area;
+  ClutterActor *actor;
 
   guint is_enabled : 1;
+
+  gboolean drag_clone;
 };
 
 struct _DraggableRectangleClass
@@ -61,7 +64,10 @@ draggable_rectangle_drag_begin (NbtkDraggable       *draggable,
                                 gint                 event_button,
                                 ClutterModifierType  modifiers)
 {
+  gfloat x, y;
   ClutterActor *self = CLUTTER_ACTOR (draggable);
+  ClutterActor *actor = nbtk_draggable_get_drag_actor (draggable);
+  ClutterActor *stage = clutter_actor_get_stage (self);
 
   g_debug ("%s: drag of '%s' begin at %.2f, %.2f",
            G_STRLOC,
@@ -69,12 +75,22 @@ draggable_rectangle_drag_begin (NbtkDraggable       *draggable,
            event_x,
            event_y);
 
-  clutter_actor_set_opacity (self, 224);
-  clutter_actor_set_rotation (self, CLUTTER_Y_AXIS,
+  if (actor)
+    {
+      clutter_actor_get_position (self, &x, &y);
+      clutter_actor_set_position (actor, x, y);
+
+      clutter_container_add_actor (CLUTTER_CONTAINER (stage), actor);
+    }
+  else
+    actor = self;
+
+  clutter_actor_set_opacity (actor, 224);
+  clutter_actor_set_rotation (actor, CLUTTER_Y_AXIS,
                               30.0,
-                              clutter_actor_get_width (self) / 2.0,
+                              clutter_actor_get_width (actor) / 2.0,
                               0,
-                              clutter_actor_get_height (self) / 2.0);
+                              clutter_actor_get_height (actor) / 2.0);
 }
 
 static void
@@ -82,13 +98,18 @@ draggable_rectangle_drag_motion (NbtkDraggable *draggable,
                                  gfloat         delta_x,
                                  gfloat         delta_y)
 {
+  ClutterActor *actor = nbtk_draggable_get_drag_actor (draggable);
+
   g_debug ("%s: drag motion of '%s' (dx: %.2f, dy: %.2f)",
            G_STRLOC,
            clutter_actor_get_name (CLUTTER_ACTOR (draggable)),
            delta_x,
            delta_y);
 
-  clutter_actor_move_by (CLUTTER_ACTOR (draggable), delta_x, delta_y);
+  if (!actor)
+    actor = CLUTTER_ACTOR (draggable);
+
+  clutter_actor_move_by (actor, delta_x, delta_y);
 }
 
 static void
@@ -96,7 +117,10 @@ draggable_rectangle_drag_end (NbtkDraggable *draggable,
                               gfloat         event_x,
                               gfloat         event_y)
 {
+  gfloat x, y;
   ClutterActor *self = CLUTTER_ACTOR (draggable);
+  ClutterActor *actor = nbtk_draggable_get_drag_actor (draggable);
+  ClutterActor *stage = clutter_actor_get_stage (self);
 
   g_debug ("%s: drag of '%s' end at %.2f, %.2f",
            G_STRLOC,
@@ -104,8 +128,21 @@ draggable_rectangle_drag_end (NbtkDraggable *draggable,
            event_x,
            event_y);
 
-  clutter_actor_set_opacity (self, 255);
-  clutter_actor_set_rotation (self, CLUTTER_Y_AXIS, 0.0, 0.0, 0.0, 0.0);
+  if (!actor)
+    {
+      clutter_actor_set_rotation (self, CLUTTER_Y_AXIS,
+                                  0.0, 0, 0, 0);
+      clutter_actor_set_opacity (self, 255);
+      return;
+    }
+
+  clutter_actor_get_position (actor, &x, &y);
+  clutter_actor_animate (self, CLUTTER_EASE_OUT_QUAD, 150,
+                         "x", x,
+                         "y", y,
+                         NULL);
+
+  clutter_container_remove_actor (CLUTTER_CONTAINER (stage), actor);
 }
 
 static void
@@ -197,6 +234,8 @@ draggable_rectangle_get_property (GObject    *gobject,
       break;
 
     case PROP_ACTOR:
+      if (rect->drag_clone)
+        g_value_set_object (value, rect->actor);
       break;
 
     default:
@@ -237,6 +276,20 @@ draggable_rectangle_paint (ClutterActor *actor)
 }
 
 static void
+draggable_rectangle_dispose (GObject *object)
+{
+  DraggableRectangle *rect = DRAGGABLE_RECTANGLE (object);
+
+  if (rect->actor)
+    {
+      g_object_unref (rect->actor);
+      rect->actor = NULL;
+    }
+
+  G_OBJECT_CLASS (draggable_rectangle_parent_class)->dispose (object);
+}
+
+static void
 draggable_rectangle_class_init (DraggableRectangleClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -244,6 +297,7 @@ draggable_rectangle_class_init (DraggableRectangleClass *klass)
 
   gobject_class->set_property = draggable_rectangle_set_property;
   gobject_class->get_property = draggable_rectangle_get_property;
+  gobject_class->dispose = draggable_rectangle_dispose;
 
   actor_class->paint = draggable_rectangle_paint;
 
@@ -264,7 +318,7 @@ draggable_rectangle_class_init (DraggableRectangleClass *klass)
                                     "enabled");
   g_object_class_override_property (gobject_class,
                                     PROP_ACTOR,
-                                    "actor");
+                                    "drag-actor");
 }
 
 static void
@@ -274,6 +328,7 @@ draggable_rectangle_init (DraggableRectangle *self)
   self->axis = 0;
   self->containment = NBTK_DISABLE_CONTAINMENT;
   self->is_enabled = FALSE;
+  self->actor = g_object_ref_sink (clutter_clone_new (CLUTTER_ACTOR (self)));
 }
 
 int
@@ -290,6 +345,7 @@ main (int argc, char *argv[])
   clutter_actor_set_size (stage, 800, 600);
 
   draggable = g_object_new (DRAGGABLE_TYPE_RECTANGLE, NULL);
+  ((DraggableRectangle*)draggable)->drag_clone = TRUE;
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), draggable);
   clutter_rectangle_set_color (CLUTTER_RECTANGLE (draggable), &rect_color);
   clutter_actor_set_size (draggable, 100, 100);
