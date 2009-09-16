@@ -19,7 +19,6 @@ noinst_PROGRAMS = 		\
 	test-expander 		\
 	test-grid \
 	test-gtk		\
-	test-script  		\
 	test-styles  		\
 	test-table   		\
 	test-table-2            \
@@ -35,7 +34,6 @@ noinst_PROGRAMS = 		\
 
 test_buttons_SOURCES = test-buttons.c
 test_combo_box_SOURCES = test-combo-box.c
-test_script_SOURCES = test-script.c
 test_styles_SOURCES = test-styles.c
 test_table_SOURCES = test-table.c
 test_table_2_SOURCES = test-table-2.c
