@@ -421,6 +421,9 @@ nbtk_popup_add_action (NbtkPopup  *popup,
 {
   NbtkPopupChild child;
 
+  g_return_if_fail (NBTK_IS_POPUP (popup));
+  g_return_if_fail (NBTK_IS_ACTION (action));
+
   NbtkPopupPrivate *priv = popup->priv;
 
   child.action = g_object_ref_sink (action);
@@ -457,6 +460,9 @@ nbtk_popup_remove_action (NbtkPopup  *popup,
 {
   gint i;
 
+  g_return_if_fail (NBTK_IS_POPUP (popup));
+  g_return_if_fail (NBTK_IS_ACTION (action));
+
   NbtkPopupPrivate *priv = popup->priv;
 
   for (i = 0; i < priv->children->len; i++)
@@ -483,6 +489,8 @@ void
 nbtk_popup_clear (NbtkPopup *popup)
 {
   gint i;
+
+  g_return_if_fail (NBTK_IS_POPUP (popup));
 
   NbtkPopupPrivate *priv = popup->priv;
 

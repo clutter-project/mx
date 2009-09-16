@@ -214,6 +214,8 @@ nbtk_action_new_full (const gchar *name,
 const gchar *
 nbtk_action_get_name (NbtkAction *action)
 {
+  g_return_if_fail (NBTK_IS_ACTION (action));
+
   return action->priv->name;
 }
 
@@ -229,10 +231,20 @@ void
 nbtk_action_set_name (NbtkAction  *action,
                       const gchar *name)
 {
-  NbtkActionPrivate *priv = action->priv;
-  g_free (priv->name);
-  priv->name = g_strdup (name);
-  g_object_notify (G_OBJECT (action), "name");
+  NbtkActionPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_ACTION (action));
+
+  priv = action->priv;
+
+  if (!g_strcmp0 (priv->name, name))
+    {
+      g_free (priv->name);
+      priv->name = g_strdup (name);
+
+      g_object_notify (G_OBJECT (action), "name");
+    }
+
 }
 
 /**
@@ -246,6 +258,8 @@ nbtk_action_set_name (NbtkAction  *action,
 gboolean
 nbtk_action_get_active (NbtkAction *action)
 {
+  g_return_if_fail (NBTK_IS_ACTION (action));
+
   return action->priv->active;
 }
 
@@ -261,7 +275,11 @@ void
 nbtk_action_set_active (NbtkAction *action,
                         gboolean    active)
 {
-  NbtkActionPrivate *priv = action->priv;
+  NbtkActionPrivate *priv;
+
+  g_return_if_fail (NBTK_IS_ACTION (action));
+
+  priv = action->priv;
 
   if (priv->active != active)
     {
