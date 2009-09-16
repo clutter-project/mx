@@ -112,6 +112,23 @@ main (int argc, char *argv[])
   ClutterModel *model;
   ClutterColor color = { 0x00, 0xff, 0xff, 0xff };
   gint i;
+  gboolean list;
+
+  if (argc != 2)
+    {
+      printf ("Usage: test-view [list | icon]\n");
+      return 1;
+    }
+
+  if (!g_strcmp0 ("list", argv[1]))
+    list = TRUE;
+  else if (!g_strcmp0 ("icon", argv[1]))
+    list = FALSE;
+  else
+    {
+      printf ("Unknown option: %s\n", argv[1]);
+      return 1;
+    }
 
   clutter_init (&argc, &argv);
 
@@ -124,7 +141,10 @@ main (int argc, char *argv[])
                                CLUTTER_ACTOR (scroll));
 
 
-  view = nbtk_list_view_new ();
+  if (list)
+    view = nbtk_list_view_new ();
+  else
+    view = nbtk_item_view_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (scroll),
                                CLUTTER_ACTOR (view));
 
@@ -132,18 +152,29 @@ main (int argc, char *argv[])
   model = clutter_list_model_new (2, CLUTTER_TYPE_COLOR, "color",
                                   G_TYPE_FLOAT, "size");
 
-  for (i = 0; i < 180; i++)
+  for (i = 0; i < 360; i++)
     {
       clutter_color_from_hls (&color,
                               g_random_double_range (0.0, 360.0), 0.6, 0.6);
-      clutter_model_append (model, 0, &color, 1, 10.0, -1);
+      clutter_model_append (model, 0, &color, 1, 32.0, -1);
     }
 
-  nbtk_list_view_set_model (NBTK_LIST_VIEW (view), model);
-  nbtk_list_view_set_item_type (NBTK_LIST_VIEW (view), CLUTTER_TYPE_RECTANGLE);
-  nbtk_list_view_add_attribute (NBTK_LIST_VIEW (view), "color", 0);
-  nbtk_list_view_add_attribute (NBTK_LIST_VIEW (view), "width", 1);
-  nbtk_list_view_add_attribute (NBTK_LIST_VIEW (view), "height", 1);
+  if (list)
+    {
+      nbtk_list_view_set_model (NBTK_LIST_VIEW (view), model);
+      nbtk_list_view_set_item_type (NBTK_LIST_VIEW (view), CLUTTER_TYPE_RECTANGLE);
+      nbtk_list_view_add_attribute (NBTK_LIST_VIEW (view), "color", 0);
+      nbtk_list_view_add_attribute (NBTK_LIST_VIEW (view), "width", 1);
+      nbtk_list_view_add_attribute (NBTK_LIST_VIEW (view), "height", 1);
+    }
+  else
+    {
+      nbtk_item_view_set_model (NBTK_ITEM_VIEW (view), model);
+      nbtk_item_view_set_item_type (NBTK_ITEM_VIEW (view), CLUTTER_TYPE_RECTANGLE);
+      nbtk_item_view_add_attribute (NBTK_ITEM_VIEW (view), "color", 0);
+      nbtk_item_view_add_attribute (NBTK_ITEM_VIEW (view), "width", 1);
+      nbtk_item_view_add_attribute (NBTK_ITEM_VIEW (view), "height", 1);
+    }
 
 
   g_signal_connect (stage, "key-release-event", G_CALLBACK (key_release_cb), model);
