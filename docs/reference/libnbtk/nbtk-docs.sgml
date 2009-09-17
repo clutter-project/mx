@@ -25,7 +25,6 @@
       <xi:include href="xml/nbtk-button.xml"/>
       <xi:include href="xml/nbtk-combo-box.xml"/>
       <xi:include href="xml/nbtk-entry.xml"/>
-      <xi:include href="xml/nbtk-fade-button.xml"/>
       <xi:include href="xml/nbtk-icon.xml"/>
       <xi:include href="xml/nbtk-label.xml"/>
       <xi:include href="xml/nbtk-popup.xml"/>
