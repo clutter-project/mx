@@ -237,7 +237,7 @@ nbtk_action_set_name (NbtkAction  *action,
 
   priv = action->priv;
 
-  if (!g_strcmp0 (priv->name, name))
+  if (g_strcmp0 (priv->name, name))
     {
       g_free (priv->name);
       priv->name = g_strdup (name);
