@@ -24,6 +24,7 @@
 
 #define NBTK_H_INSIDE
 
+#include <nbtk/nbtk-action.h>
 #include <nbtk/nbtk-adjustment.h>
 #include <nbtk/nbtk-bin.h>
 #include <nbtk/nbtk-box-layout.h>
@@ -41,6 +42,7 @@
 #include <nbtk/nbtk-item-view.h>
 #include <nbtk/nbtk-list-view.h>
 #include <nbtk/nbtk-label.h>
+#include <nbtk/nbtk-popup.h>
 #include <nbtk/nbtk-progress-bar.h>
 #include <nbtk/nbtk-scroll-bar.h>
 #include <nbtk/nbtk-scroll-view.h>
