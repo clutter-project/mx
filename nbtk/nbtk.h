@@ -36,7 +36,6 @@
 #include <nbtk/nbtk-entry.h>
 #include <nbtk/nbtk-enum-types.h>
 #include <nbtk/nbtk-expander.h>
-#include <nbtk/nbtk-fade-button.h>
 #include <nbtk/nbtk-grid.h>
 #include <nbtk/nbtk-icon.h>
 #include <nbtk/nbtk-item-view.h>
