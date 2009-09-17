@@ -212,24 +212,6 @@ NbtkGridPrivate
 </SECTION>
 
 <SECTION>
-<FILE>nbtk-fade-button</FILE>
-<TITLE>NbtkFadeButton</TITLE>
-NbtkFadeButton
-nbtk_fade_button_new
-nbtk_fade_button_new_with_label
-<SUBSECTION Standard>
-NBTK_FADE_BUTTON
-NBTK_IS_FADE_BUTTON
-NBTK_TYPE_FADE_BUTTON
-nbtk_fade_button_get_type
-NBTK_FADE_BUTTON_CLASS
-NBTK_IS_FADE_BUTTON_CLASS
-NBTK_FADE_BUTTON_GET_CLASS
-<SUBSECTION Private>
-NbtkFadeButtonPrivate
-</SECTION>
-
-<SECTION>
 <FILE>nbtk-gtk-frame</FILE>
 <TITLE>NbtkGtkFrame</TITLE>
 NbtkGtkFrame
