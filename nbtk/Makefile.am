@@ -26,7 +26,6 @@ source_h = \
 	$(top_srcdir)/nbtk/nbtk-clipboard.h		\
 	$(top_srcdir)/nbtk/nbtk-entry.h 		\
 	$(top_srcdir)/nbtk/nbtk-expander.h 		\
-	$(top_srcdir)/nbtk/nbtk-fade-button.h 		\
 	$(top_srcdir)/nbtk/nbtk-grid.h 			\
 	$(top_srcdir)/nbtk/nbtk-item-factory.h		\
 	$(top_srcdir)/nbtk/nbtk-item-view.h 		\
@@ -74,7 +73,6 @@ source_c = \
 	$(top_srcdir)/nbtk/nbtk-clipboard.c 		\
 	$(top_srcdir)/nbtk/nbtk-entry.c 		\
 	$(top_srcdir)/nbtk/nbtk-expander.c 		\
-	$(top_srcdir)/nbtk/nbtk-fade-button.c		\
 	$(top_srcdir)/nbtk/nbtk-grid.c 			\
 	$(top_srcdir)/nbtk/nbtk-icon.c 			\
 	$(top_srcdir)/nbtk/nbtk-item-factory.c 		\
