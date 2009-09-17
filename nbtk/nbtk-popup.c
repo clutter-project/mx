@@ -42,6 +42,8 @@ struct _NbtkPopupPrivate
 {
   GArray   *children;
   gboolean  transition_out;
+
+  gulong captured_event_cb;
 };
 
 enum
@@ -322,14 +324,71 @@ nbtk_popup_event (ClutterActor *actor,
     }
 }
 
+static gboolean
+nbtk_popup_captured_event_cb (ClutterActor *actor,
+                              ClutterEvent *event,
+                              ClutterActor *popup)
+{
+  int i;
+  ClutterActor *source;
+  NbtkPopupPrivate *priv = NBTK_POPUP (popup)->priv;
+
+  /* allow the event to continue if it is applied to the popup or any of its
+   * children
+   */
+  source = clutter_event_get_source (event);
+  if (source == popup)
+    return FALSE;
+  for (i = 0; i < priv->children->len; i++)
+    {
+      NbtkPopupChild *child;
+
+      child = &g_array_index (priv->children, NbtkPopupChild, i);
+
+      if (source == (ClutterActor*) child->button)
+        return FALSE;
+    }
+
+  /* hide the menu if the user clicks outside the menu */
+  if (event->type == CLUTTER_BUTTON_PRESS)
+    clutter_actor_hide (popup);
+
+  return TRUE;
+}
+
 static void
 nbtk_popup_show (ClutterActor *actor)
 {
+  NbtkPopupPrivate *priv = NBTK_POPUP (actor)->priv;
+
   CLUTTER_ACTOR_CLASS (nbtk_popup_parent_class)->show (actor);
 
   /* set reactive, since this may have been unset by a previous activation
    * (see: nbtk_popup_button_release_cb) */
   clutter_actor_set_reactive (actor, TRUE);
+
+
+  /* set up a capture so we can close the menu if the user clicks outside it */
+  if (priv->captured_event_cb == 0)
+    priv->captured_event_cb =
+      g_signal_connect (clutter_actor_get_stage (actor), "captured-event",
+                        G_CALLBACK (nbtk_popup_captured_event_cb), actor);
+}
+
+static void
+nbtk_popup_hide (ClutterActor *actor)
+{
+  NbtkPopupPrivate *priv = NBTK_POPUP (actor)->priv;
+
+  CLUTTER_ACTOR_CLASS (nbtk_popup_parent_class)->hide (actor);
+
+  if (priv->captured_event_cb != 0)
+    {
+      /* we assume the actor hasn't moved to a new stage since it was shown */
+      g_signal_handler_disconnect (clutter_actor_get_stage (actor),
+                                   priv->captured_event_cb);
+      priv->captured_event_cb = 0;
+    }
 }
 
 static void
@@ -346,6 +405,7 @@ nbtk_popup_class_init (NbtkPopupClass *klass)
   object_class->finalize = nbtk_popup_finalize;
 
   actor_class->show = nbtk_popup_show;
+  actor_class->hide = nbtk_popup_hide;
   actor_class->get_preferred_width = nbtk_popup_get_preferred_width;
   actor_class->get_preferred_height = nbtk_popup_get_preferred_height;
   actor_class->allocate = nbtk_popup_allocate;
