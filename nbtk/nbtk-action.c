@@ -214,7 +214,7 @@ nbtk_action_new_full (const gchar *name,
 const gchar *
 nbtk_action_get_name (NbtkAction *action)
 {
-  g_return_if_fail (NBTK_IS_ACTION (action));
+  g_return_val_if_fail (NBTK_IS_ACTION (action), NULL);
 
   return action->priv->name;
 }
@@ -258,7 +258,7 @@ nbtk_action_set_name (NbtkAction  *action,
 gboolean
 nbtk_action_get_active (NbtkAction *action)
 {
-  g_return_if_fail (NBTK_IS_ACTION (action));
+  g_return_val_if_fail (NBTK_IS_ACTION (action), FALSE);
 
   return action->priv->active;
 }
