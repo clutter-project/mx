@@ -20,23 +20,23 @@
 #include <stdlib.h>
 
 #include <clutter/clutter.h>
-#include <nbtk/nbtk.h>
+#include <mx/mx.h>
 
 int
 main (int argc, char *argv[])
 {
-  NbtkWidget *label;
+  MxWidget *label;
   ClutterActor *stage;
 
   clutter_init (&argc, &argv);
 
-  nbtk_style_load_from_file (nbtk_style_get_default (),
+  mx_style_load_from_file (mx_style_get_default (),
                              "style/default.css", NULL);
 
   stage = clutter_stage_get_default ();
   clutter_actor_set_size (stage, 400, 200);
 
-  label = nbtk_label_new ("Hello World!");
+  label = mx_label_new ("Hello World!");
   clutter_actor_set_position (CLUTTER_ACTOR (label), 50, 50);
 
   clutter_container_add (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (label), NULL);

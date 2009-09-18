@@ -20,7 +20,7 @@
 #include <stdlib.h>
 
 #include <clutter/clutter.h>
-#include <nbtk/nbtk.h>
+#include <mx/mx.h>
 
 int
 main (int argc, char *argv[])
@@ -41,7 +41,7 @@ main (int argc, char *argv[])
       return 1;
     }
 
-  frame = nbtk_texture_frame_new (CLUTTER_TEXTURE (texture), 25, 25, 25, 25);
+  frame = mx_texture_frame_new (CLUTTER_TEXTURE (texture), 25, 25, 25, 25);
   clutter_actor_set_position (frame, 50, 50);
   clutter_actor_set_size (frame, 400, 200);
 

@@ -20,13 +20,13 @@
 #include <stdlib.h>
 
 #include <clutter/clutter.h>
-#include <nbtk/nbtk.h>
+#include <mx/mx.h>
 
 int
 main (int argc, char *argv[])
 {
   ClutterActor *stage;
-  NbtkWidget *progress_bar;
+  MxWidget *progress_bar;
   ClutterAnimation *animation;
   ClutterColor stage_color =  { 0xff, 0xff, 0xff, 0xff };
 
@@ -35,7 +35,7 @@ main (int argc, char *argv[])
   stage = clutter_stage_get_default ();
   clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
 
-  progress_bar = nbtk_progress_bar_new ();
+  progress_bar = mx_progress_bar_new ();
   animation = clutter_actor_animate (CLUTTER_ACTOR (progress_bar),
                                      CLUTTER_LINEAR,
                                      5000,

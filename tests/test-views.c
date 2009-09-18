@@ -20,7 +20,7 @@
 #include <stdlib.h>
 
 #include <clutter/clutter.h>
-#include <nbtk/nbtk.h>
+#include <mx/mx.h>
 
 static gint
 sort_func (ClutterModel *model,
@@ -107,7 +107,7 @@ allocation_notify_cb (ClutterActor *stage,
 int
 main (int argc, char *argv[])
 {
-  NbtkWidget *view, *scroll;
+  MxWidget *view, *scroll;
   ClutterActor *stage;
   ClutterModel *model;
   ClutterColor color = { 0x00, 0xff, 0xff, 0xff };
@@ -135,16 +135,16 @@ main (int argc, char *argv[])
   stage = clutter_stage_get_default ();
   clutter_stage_set_user_resizable ((ClutterStage*) stage, TRUE);
 
-  scroll = nbtk_scroll_view_new ();
+  scroll = mx_scroll_view_new ();
   clutter_actor_set_position ((ClutterActor*) scroll, 50, 50);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (scroll));
 
 
   if (list)
-    view = nbtk_list_view_new ();
+    view = mx_list_view_new ();
   else
-    view = nbtk_item_view_new ();
+    view = mx_item_view_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (scroll),
                                CLUTTER_ACTOR (view));
 
@@ -161,19 +161,19 @@ main (int argc, char *argv[])
 
   if (list)
     {
-      nbtk_list_view_set_model (NBTK_LIST_VIEW (view), model);
-      nbtk_list_view_set_item_type (NBTK_LIST_VIEW (view), CLUTTER_TYPE_RECTANGLE);
-      nbtk_list_view_add_attribute (NBTK_LIST_VIEW (view), "color", 0);
-      nbtk_list_view_add_attribute (NBTK_LIST_VIEW (view), "width", 1);
-      nbtk_list_view_add_attribute (NBTK_LIST_VIEW (view), "height", 1);
+      mx_list_view_set_model (MX_LIST_VIEW (view), model);
+      mx_list_view_set_item_type (MX_LIST_VIEW (view), CLUTTER_TYPE_RECTANGLE);
+      mx_list_view_add_attribute (MX_LIST_VIEW (view), "color", 0);
+      mx_list_view_add_attribute (MX_LIST_VIEW (view), "width", 1);
+      mx_list_view_add_attribute (MX_LIST_VIEW (view), "height", 1);
     }
   else
     {
-      nbtk_item_view_set_model (NBTK_ITEM_VIEW (view), model);
-      nbtk_item_view_set_item_type (NBTK_ITEM_VIEW (view), CLUTTER_TYPE_RECTANGLE);
-      nbtk_item_view_add_attribute (NBTK_ITEM_VIEW (view), "color", 0);
-      nbtk_item_view_add_attribute (NBTK_ITEM_VIEW (view), "width", 1);
-      nbtk_item_view_add_attribute (NBTK_ITEM_VIEW (view), "height", 1);
+      mx_item_view_set_model (MX_ITEM_VIEW (view), model);
+      mx_item_view_set_item_type (MX_ITEM_VIEW (view), CLUTTER_TYPE_RECTANGLE);
+      mx_item_view_add_attribute (MX_ITEM_VIEW (view), "color", 0);
+      mx_item_view_add_attribute (MX_ITEM_VIEW (view), "width", 1);
+      mx_item_view_add_attribute (MX_ITEM_VIEW (view), "height", 1);
     }
 
 

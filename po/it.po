@@ -1,11 +1,11 @@
-# Italian translation of nbtk.
-# Copyright (C) 2009 the nbtk copyright holder
-# This file is distributed under the same license as the nbtk package.
+# Italian translation of mx.
+# Copyright (C) 2009 the mx copyright holder
+# This file is distributed under the same license as the mx package.
 # Milo Casagrande <milo@ubuntu.com>, 2009.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: nbtk\n"
+"Project-Id-Version: mx\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-07-22 16:49+0000\n"
 "PO-Revision-Date: 2009-07-22 22:05+0200\n"
@@ -15,74 +15,74 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../nbtk/nbtk-gtk-light-switch.c:154
+#: ../mx/mx-gtk-light-switch.c:154
 msgid "Unavailable"
 msgstr "Non disponibile"
 
-#: ../nbtk/nbtk-gtk-light-switch.c:171 ../nbtk/nbtk-gtk-light-switch.c:242
+#: ../mx/mx-gtk-light-switch.c:171 ../mx/mx-gtk-light-switch.c:242
 msgid "On"
 msgstr "On"
 
 #. Draw the second label; "Off"
-#: ../nbtk/nbtk-gtk-light-switch.c:187 ../nbtk/nbtk-gtk-light-switch.c:240
+#: ../mx/mx-gtk-light-switch.c:187 ../mx/mx-gtk-light-switch.c:240
 msgid "Off"
 msgstr "Off"
 
-#: nbtk/nbtk-utils.c:92
+#: mx/mx-utils.c:92
 msgid "Less than a minute ago"
 msgstr "Meno di un minuto fa"
 
-#: nbtk/nbtk-utils.c:96
+#: mx/mx-utils.c:96
 msgid "A few minutes ago"
 msgstr "Alcuni minuti fa"
 
-#: nbtk/nbtk-utils.c:100
+#: mx/mx-utils.c:100
 msgid "A couple of hours ago"
 msgstr "Un paio d'ore fa"
 
-#: nbtk/nbtk-utils.c:107
+#: mx/mx-utils.c:107
 msgid "Earlier today"
 msgstr "Oggi"
 
-#: nbtk/nbtk-utils.c:110
+#: mx/mx-utils.c:110
 msgid "Yesterday"
 msgstr "Ieri"
 
 # (ndt) giorno della settimana
-#: nbtk/nbtk-utils.c:118
+#: mx/mx-utils.c:118
 #, c-format
 msgid "On %A"
 msgstr "%A"
 
-#: nbtk/nbtk-utils.c:124
+#: mx/mx-utils.c:124
 msgid "Unknown"
 msgstr "Sconosciuto"
 
-#: nbtk/nbtk-utils.c:131
+#: mx/mx-utils.c:131
 msgid "Last week"
 msgstr "La scorsa settimana"
 
-#: nbtk/nbtk-utils.c:134
+#: mx/mx-utils.c:134
 msgid "A couple of weeks ago"
 msgstr "Un paio di settimane fa"
 
-#: nbtk/nbtk-utils.c:140
+#: mx/mx-utils.c:140
 msgid "This month"
 msgstr "Questo mese"
 
 #. Now Jan., last used in Dec.
-#: nbtk/nbtk-utils.c:144
+#: mx/mx-utils.c:144
 msgid "Last month"
 msgstr "Lo scorso mese"
 
-#: nbtk/nbtk-utils.c:147
+#: mx/mx-utils.c:147
 msgid "This year"
 msgstr "Quest'anno"
 
-#: nbtk/nbtk-utils.c:150
+#: mx/mx-utils.c:150
 msgid "Last year"
 msgstr "Lo scorso anno"
 
-#: nbtk/nbtk-utils.c:152
+#: mx/mx-utils.c:152
 msgid "Ages ago"
 msgstr "Anni fa"

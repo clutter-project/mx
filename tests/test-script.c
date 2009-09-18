@@ -22,7 +22,7 @@
 #include <glib.h>
 
 #include <clutter/clutter.h>
-#include <nbtk/nbtk.h>
+#include <mx/mx.h>
 
 static ClutterScript *script = NULL;
 
@@ -36,7 +36,7 @@ main (int argc, char *argv[])
   clutter_init (&argc, &argv);
 
   /* load the style sheet */
-  nbtk_style_load_from_file (nbtk_style_get_default (),
+  mx_style_load_from_file (mx_style_get_default (),
                              "style/default.css", NULL);
 
   script = clutter_script_new ();

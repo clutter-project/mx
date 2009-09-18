@@ -1,16 +1,16 @@
-m4_define([nbtk_major], [1])
-m4_define([nbtk_minor], [1])
-m4_define([nbtk_micro], [4])
+m4_define([mx_major], [1])
+m4_define([mx_minor], [1])
+m4_define([mx_micro], [4])
 
-m4_define([nbtk_version], [nbtk_major.nbtk_minor.nbtk_micro])
-m4_define([nbtk_api_version], [1.2])
+m4_define([mx_version], [mx_major.mx_minor.mx_micro])
+m4_define([mx_api_version], [1.2])
 
 # increase the interface age of 2 for each release
 # set to 0 if the API changes
-m4_define([nbtk_interface_age], [0])
-m4_define([nbtk_binary_age], [m4_eval(100 * nbtk_minor + nbtk_micro)])
+m4_define([mx_interface_age], [0])
+m4_define([mx_binary_age], [m4_eval(100 * mx_minor + mx_micro)])
 
-AC_INIT([nbtk], [nbtk_version])
+AC_INIT([mx], [mx_version])
 AC_CONFIG_MACRO_DIR([build/autotools])
 
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
@@ -25,28 +25,28 @@ AM_PROG_CC_C_O
 AM_PATH_GLIB_2_0
 AC_CHECK_FUNCS([localtime_r])
 
-NBTK_MAJOR_VERSION=nbtk_major
-NBTK_MINOR_VERSION=nbtk_minor
-NBTK_MICRO_VERSION=nbtk_micro
-NBTK_VERSION=nbtk_version
-NBTK_API_VERSION=nbtk_api_version
-AC_SUBST(NBTK_MAJOR_VERSION)
-AC_SUBST(NBTK_MINOR_VERSION)
-AC_SUBST(NBTK_MICRO_VERSION)
-AC_SUBST(NBTK_VERSION)
-AC_SUBST(NBTK_API_VERSION)
+MX_MAJOR_VERSION=mx_major
+MX_MINOR_VERSION=mx_minor
+MX_MICRO_VERSION=mx_micro
+MX_VERSION=mx_version
+MX_API_VERSION=mx_api_version
+AC_SUBST(MX_MAJOR_VERSION)
+AC_SUBST(MX_MINOR_VERSION)
+AC_SUBST(MX_MICRO_VERSION)
+AC_SUBST(MX_VERSION)
+AC_SUBST(MX_API_VERSION)
 
-m4_define([lt_current], [m4_eval(100 * nbtk_minor + nbtk_micro - nbtk_interface_age)])
-m4_define([lt_revision], [nbtk_interface_age])
-m4_define([lt_age], [m4_eval(nbtk_binary_age - nbtk_interface_age)])
-NBTK_LT_CURRENT=lt_current
-NBTK_LT_REV=lt_revision
-NBTK_LT_AGE=lt_age
-NBTK_LT_VERSION="$NBTK_LT_CURRENT:$NBTK_LT_REV:$NBTK_LT_AGE"
-NBTK_LT_LDFLAGS="-version-info $NBTK_LT_VERSION"
+m4_define([lt_current], [m4_eval(100 * mx_minor + mx_micro - mx_interface_age)])
+m4_define([lt_revision], [mx_interface_age])
+m4_define([lt_age], [m4_eval(mx_binary_age - mx_interface_age)])
+MX_LT_CURRENT=lt_current
+MX_LT_REV=lt_revision
+MX_LT_AGE=lt_age
+MX_LT_VERSION="$MX_LT_CURRENT:$MX_LT_REV:$MX_LT_AGE"
+MX_LT_LDFLAGS="-version-info $MX_LT_VERSION"
 
-AC_SUBST(NBTK_LT_VERSION)
-AC_SUBST(NBTK_LT_LDFLAGS)
+AC_SUBST(MX_LT_VERSION)
+AC_SUBST(MX_LT_LDFLAGS)
 
 dnl programs
 dnl AM_PATH_GLIB_2_0 will find these for us
@@ -56,7 +56,7 @@ dnl AM_PATH_GLIB_2_0 will find these for us
 dnl = Enable debug level ===================================================
 
 m4_define([debug_default],
-          [m4_if(m4_eval(nbtk_minor % 2), [1], [yes], [minimum])])
+          [m4_if(m4_eval(mx_minor % 2), [1], [yes], [minimum])])
 
 AC_ARG_ENABLE([debug],
               [AC_HELP_STRING([--enable-debug=@<:@no/minimum/yes@:>@],
@@ -68,23 +68,23 @@ AS_CASE([$enable_debug],
         [yes],
         [
           test "$cflags_set" = set || CFLAGS="$CFLAGS -g"
-          NBTK_DEBUG_CFLAGS="-DNBTK_ENABLE_DEBUG"
+          MX_DEBUG_CFLAGS="-DMX_ENABLE_DEBUG"
         ],
 
         [no],
         [
-          NBTK_DEBUG_CFLAGS="-DG_DISABLE_ASSERT -DG_DISABLE_CHECKS -DG_DISABLE_CAST_CHECKS"
+          MX_DEBUG_CFLAGS="-DG_DISABLE_ASSERT -DG_DISABLE_CHECKS -DG_DISABLE_CAST_CHECKS"
         ],
 
         [minimum],
         [
-          NBTK_DEBUG_CFLAGS="-DNBTK_ENABLE_DEBUG -DG_DISABLE_CAST_CHECKS"
+          MX_DEBUG_CFLAGS="-DMX_ENABLE_DEBUG -DG_DISABLE_CAST_CHECKS"
         ],
 
         [AC_MSG_ERROR([Invalid value for --enable-debug])]
 )
 
-AC_SUBST(NBTK_DEBUG_CFLAGS)
+AC_SUBST(MX_DEBUG_CFLAGS)
 
 dnl = Enable strict compiler flags =========================================
 AC_ARG_ENABLE([maintainer-flags],
@@ -95,23 +95,23 @@ AC_ARG_ENABLE([maintainer-flags],
 
 AS_IF([test "x$enable_maintainer_flags" = "xyes"],
       [
-        AS_COMPILER_FLAGS([NBTK_MAINTAINER_CFLAGS],
+        AS_COMPILER_FLAGS([MX_MAINTAINER_CFLAGS],
                           ["-Werror -Wall -Wshadow -Wcast-align
                             -Wno-uninitialized -Wempty-body -Wformat-security
                             -Winit-self -Wmissing-declarations
                             -Wredundant-decls"])
       ],
       [
-        AS_COMPILER_FLAGS([NBTK_MAINTAINER_CFLAGS], ["-Wall"])
+        AS_COMPILER_FLAGS([MX_MAINTAINER_CFLAGS], ["-Wall"])
       ]
 )
 
-AC_SUBST(NBTK_MAINTAINER_CFLAGS)
+AC_SUBST(MX_MAINTAINER_CFLAGS)
 
 dnl ***************************************************************************
 dnl Internationalization
 dnl ***************************************************************************
-GETTEXT_PACKAGE="nbtk-$NBTK_API_VERSION"
+GETTEXT_PACKAGE="mx-$MX_API_VERSION"
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [GETTEXT package name])
 ALL_LINGUAS="`grep -v '^#' "$srcdir/po/LINGUAS" | tr '\n' ' '`"
@@ -121,8 +121,8 @@ GLIB_DEFINE_LOCALEDIR(LOCALEDIR)
 
 AM_PROG_LIBTOOL
 
-NBTK_REQUIRES="clutter-1.0 clutter-imcontext-0.1 libccss-1 = 0.3.1"
-PKG_CHECK_MODULES(NBTK, [$NBTK_REQUIRES])
+MX_REQUIRES="clutter-1.0 clutter-imcontext-0.1 libccss-1 = 0.3.1"
+PKG_CHECK_MODULES(MX, [$MX_REQUIRES])
 PKG_CHECK_MODULES(GTK, [gtk+-2.0])
 
 # check for gtk-doc
@@ -134,8 +134,8 @@ SHAVE_INIT([build/autotools], [enable])
 
 AC_CONFIG_FILES([
         Makefile
-        nbtk.pc
-        nbtk-gtk.pc
+        mx.pc
+        mx-gtk.pc
         build/Makefile
         build/autotools/Makefile
         build/autotools/shave
@@ -144,11 +144,11 @@ AC_CONFIG_FILES([
         data/style/Makefile
         docs/Makefile
         docs/reference/Makefile
-        docs/reference/libnbtk/Makefile
-        docs/reference/libnbtk/version.xml
+        docs/reference/libmx/Makefile
+        docs/reference/libmx/version.xml
         examples/Makefile
-        nbtk/Makefile
-        nbtk/nbtk-version.h
+        mx/Makefile
+        mx/mx-version.h
         po/Makefile.in
         tests/Makefile
 ])

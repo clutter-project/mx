@@ -1,11 +1,11 @@
-# Esperanto translations for nbtk package.
-# Copyright (C) 2009 THE nbtk'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the nbtk package.
+# Esperanto translations for mx package.
+# Copyright (C) 2009 THE mx'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the mx package.
 # Neil Roberts <neil@linux.intel.com>, 2009.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: nbtk 1.1.2\n"
+"Project-Id-Version: mx 1.1.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-09-10 09:58+0100\n"
 "PO-Revision-Date: 2009-09-10 10:11+0100\n"
@@ -16,14 +16,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: nbtk/nbtk-gtk-light-switch.c:167
+#: mx/mx-gtk-light-switch.c:167
 msgid "Unavailable"
 msgstr "Nedisponebla"
 
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the MEDIUM VERTICAL BAR unicode character
 #. * instead
-#: nbtk/nbtk-gtk-light-switch.c:187 nbtk/nbtk-gtk-light-switch.c:261
+#: mx/mx-gtk-light-switch.c:187 mx/mx-gtk-light-switch.c:261
 msgid "On"
 msgstr "Ŝalta"
 
@@ -31,64 +31,64 @@ msgstr "Ŝalta"
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the WHITE CIRCLE U+25CB unicode character
 #. * instead
-#: nbtk/nbtk-gtk-light-switch.c:206 nbtk/nbtk-gtk-light-switch.c:259
+#: mx/mx-gtk-light-switch.c:206 mx/mx-gtk-light-switch.c:259
 msgid "Off"
 msgstr "Mal"
 
-#: nbtk/nbtk-utils.c:92
+#: mx/mx-utils.c:92
 msgid "Less than a minute ago"
 msgstr "Antaŭ malpli ol minuto"
 
-#: nbtk/nbtk-utils.c:96
+#: mx/mx-utils.c:96
 msgid "A few minutes ago"
 msgstr "Antaŭ kelkaj minutoj"
 
-#: nbtk/nbtk-utils.c:100
+#: mx/mx-utils.c:100
 msgid "A couple of hours ago"
 msgstr "Antaŭ kelkaj horoj"
 
-#: nbtk/nbtk-utils.c:107
+#: mx/mx-utils.c:107
 msgid "Earlier today"
 msgstr "Hodiaŭ antaŭe"
 
-#: nbtk/nbtk-utils.c:110
+#: mx/mx-utils.c:110
 msgid "Yesterday"
 msgstr "Hieraŭ"
 
-#: nbtk/nbtk-utils.c:118
+#: mx/mx-utils.c:118
 #, c-format
 msgid "On %A"
 msgstr "Je %A"
 
-#: nbtk/nbtk-utils.c:124
+#: mx/mx-utils.c:124
 msgid "Unknown"
 msgstr "Nesciata"
 
-#: nbtk/nbtk-utils.c:131
+#: mx/mx-utils.c:131
 msgid "Last week"
 msgstr "La pasintan semajnon"
 
-#: nbtk/nbtk-utils.c:134
+#: mx/mx-utils.c:134
 msgid "A couple of weeks ago"
 msgstr "Antaŭ kelkaj semajnoj"
 
-#: nbtk/nbtk-utils.c:140
+#: mx/mx-utils.c:140
 msgid "This month"
 msgstr "Ĉi-monaton"
 
 #. Now Jan., last used in Dec.
-#: nbtk/nbtk-utils.c:144
+#: mx/mx-utils.c:144
 msgid "Last month"
 msgstr "La pasintan monaton"
 
-#: nbtk/nbtk-utils.c:147
+#: mx/mx-utils.c:147
 msgid "This year"
 msgstr "Ĉi-jaron"
 
-#: nbtk/nbtk-utils.c:150
+#: mx/mx-utils.c:150
 msgid "Last year"
 msgstr "La pasintan jaron"
 
-#: nbtk/nbtk-utils.c:152
+#: mx/mx-utils.c:152
 msgid "Ages ago"
 msgstr "Pratempe"

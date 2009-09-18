@@ -21,33 +21,33 @@
 
 #include <clutter/clutter.h>
 #include <clutter-imcontext/clutter-imtext.h>
-#include <nbtk/nbtk.h>
+#include <mx/mx.h>
 
 static void
-btn_clicked_cb (ClutterActor *button, NbtkEntry *entry)
+btn_clicked_cb (ClutterActor *button, MxEntry *entry)
 {
-  nbtk_entry_set_text (entry, "Here is some text");
+  mx_entry_set_text (entry, "Here is some text");
 }
 
 static void
-clear_btn_clicked_cb (ClutterActor *button, NbtkEntry *entry)
+clear_btn_clicked_cb (ClutterActor *button, MxEntry *entry)
 {
-  nbtk_entry_set_text (entry, "");
+  mx_entry_set_text (entry, "");
 }
 
 int
 main (int argc, char *argv[])
 {
-  NbtkWidget *entry;
+  MxWidget *entry;
   ClutterActor *stage;
-  NbtkWidget *button, *clear_button;
+  MxWidget *button, *clear_button;
 
   clutter_init (&argc, &argv);
 
   stage = clutter_stage_get_default ();
   clutter_actor_set_size (stage, 400, 300);
 
-  entry = nbtk_entry_new ("Hello World!");
+  entry = mx_entry_new ("Hello World!");
   clutter_actor_set_position (CLUTTER_ACTOR (entry), 20, 20);
   clutter_actor_set_width (CLUTTER_ACTOR (entry), 150);
 
@@ -55,22 +55,22 @@ main (int argc, char *argv[])
                          CLUTTER_ACTOR (entry), NULL);
 
   clutter_stage_set_key_focus (CLUTTER_STAGE (stage),
-                               CLUTTER_ACTOR (nbtk_entry_get_clutter_text (NBTK_ENTRY (entry))));
+                               CLUTTER_ACTOR (mx_entry_get_clutter_text (MX_ENTRY (entry))));
 
-  entry = nbtk_entry_new ("");
+  entry = mx_entry_new ("");
   clutter_actor_set_position (CLUTTER_ACTOR (entry), 20, 70);
 
   clutter_container_add (CLUTTER_CONTAINER (stage),
                          CLUTTER_ACTOR (entry), NULL);
-  nbtk_entry_set_hint_text (NBTK_ENTRY (entry), "hint hint...");
+  mx_entry_set_hint_text (MX_ENTRY (entry), "hint hint...");
 
-  clutter_imtext_set_autoshow_im (CLUTTER_IMTEXT (nbtk_entry_get_clutter_text (NBTK_ENTRY (entry))), TRUE);
+  clutter_imtext_set_autoshow_im (CLUTTER_IMTEXT (mx_entry_get_clutter_text (MX_ENTRY (entry))), TRUE);
 
-  button = nbtk_button_new_with_label ("Set");
+  button = mx_button_new_with_label ("Set");
   clutter_actor_set_position (CLUTTER_ACTOR (button), 20, 120);
   g_signal_connect (button, "clicked", G_CALLBACK (btn_clicked_cb), entry);
 
-  clear_button = nbtk_button_new_with_label ("clear");
+  clear_button = mx_button_new_with_label ("clear");
   clutter_actor_set_position (CLUTTER_ACTOR (clear_button), 70, 120);
   g_signal_connect (clear_button, "clicked",
                     G_CALLBACK (clear_btn_clicked_cb), entry);
@@ -81,15 +81,15 @@ main (int argc, char *argv[])
                          NULL);
 
 
-  entry = nbtk_entry_new ("");
+  entry = mx_entry_new ("");
   clutter_actor_set_position (CLUTTER_ACTOR (entry), 20, 170);
 
   clutter_container_add (CLUTTER_CONTAINER (stage),
                          CLUTTER_ACTOR (entry), NULL);
-  nbtk_entry_set_hint_text (NBTK_ENTRY (entry), "Search...");
-  nbtk_entry_set_primary_icon_from_file (NBTK_ENTRY (entry),
+  mx_entry_set_hint_text (MX_ENTRY (entry), "Search...");
+  mx_entry_set_primary_icon_from_file (MX_ENTRY (entry),
                                          "edit-find.png");
-  nbtk_entry_set_secondary_icon_from_file (NBTK_ENTRY (entry),
+  mx_entry_set_secondary_icon_from_file (MX_ENTRY (entry),
                                            "edit-clear.png");
   g_signal_connect_swapped (entry, "primary-icon-clicked",
                             G_CALLBACK (g_print), "primary icon clicked\n");

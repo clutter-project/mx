@@ -1,23 +1,23 @@
-SUBDIRS = nbtk data examples tests docs build po
+SUBDIRS = mx data examples tests docs build po
 
 GITIGNOREFILES= $(top_srcdir)/build/autotools\
-		$(top_srcdir)/docs/reference/libnbtk/tmpl
+		$(top_srcdir)/docs/reference/libmx/tmpl
 
 ACLOCAL_AMFLAGS = -I build/autotools
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
 
-pcfiles = nbtk-$(NBTK_API_VERSION).pc nbtk-gtk-$(NBTK_API_VERSION).pc
+pcfiles = mx-$(MX_API_VERSION).pc mx-gtk-$(MX_API_VERSION).pc
 
-nbtk-$(NBTK_API_VERSION).pc: nbtk.pc
+mx-$(MX_API_VERSION).pc: mx.pc
 	@cp -f $< $@
 
-nbtk-gtk-$(NBTK_API_VERSION).pc: nbtk-gtk.pc
+mx-gtk-$(MX_API_VERSION).pc: mx-gtk.pc
 	@cp -f $< $@
 
 pkgconfig_DATA = $(pcfiles)
 pkgconfigdir = $(libdir)/pkgconfig
 
-EXTRA_DIST = $(nbtkdoc_DATA) nbtk.pc.in nbtk-gtk.pc.in
+EXTRA_DIST = $(mxdoc_DATA) mx.pc.in mx-gtk.pc.in
 
 CLEANFILES = $(pcfiles)
 

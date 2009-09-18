@@ -12,75 +12,75 @@ msgstr ""
 "X-Poedit-Language: Spanish\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: ../nbtk/nbtk-gtk-light-switch.c:154
+#: ../mx/mx-gtk-light-switch.c:154
 msgid "Unavailable"
 msgstr "No disponible"
 
-#: ../nbtk/nbtk-gtk-light-switch.c:171 ../nbtk/nbtk-gtk-light-switch.c:242
+#: ../mx/mx-gtk-light-switch.c:171 ../mx/mx-gtk-light-switch.c:242
 msgid "On"
 msgstr "Activado"
 
 #. Draw the second label; "Off"
-#: ../nbtk/nbtk-gtk-light-switch.c:187 ../nbtk/nbtk-gtk-light-switch.c:240
+#: ../mx/mx-gtk-light-switch.c:187 ../mx/mx-gtk-light-switch.c:240
 msgid "Off"
 msgstr "Desactivado"
 
-#: nbtk/nbtk-utils.c:92
+#: mx/mx-utils.c:92
 msgid "Less than a minute ago"
 msgstr "Hace menos de un minuto"
 
-#: nbtk/nbtk-utils.c:96
+#: mx/mx-utils.c:96
 msgid "A few minutes ago"
 msgstr "Hace unos minutos"
 
-#: nbtk/nbtk-utils.c:100
+#: mx/mx-utils.c:100
 msgid "A couple of hours ago"
 msgstr "Hace un par de horas"
 
-#: nbtk/nbtk-utils.c:107
+#: mx/mx-utils.c:107
 msgid "Earlier today"
 msgstr "Hoy, pero antes"
 
-#: nbtk/nbtk-utils.c:110
+#: mx/mx-utils.c:110
 msgid "Yesterday"
 msgstr "Ayer"
 
 # <on + date, like "On July 4">
-#: nbtk/nbtk-utils.c:118
+#: mx/mx-utils.c:118
 #, c-format
 msgid "On %A"
 msgstr "El %A"
 
-#: nbtk/nbtk-utils.c:124
+#: mx/mx-utils.c:124
 msgid "Unknown"
 msgstr "Desconocido"
 
-#: nbtk/nbtk-utils.c:131
+#: mx/mx-utils.c:131
 msgid "Last week"
 msgstr "La semana pasada"
 
-#: nbtk/nbtk-utils.c:134
+#: mx/mx-utils.c:134
 msgid "A couple of weeks ago"
 msgstr "Hace un par de semanas"
 
-#: nbtk/nbtk-utils.c:140
+#: mx/mx-utils.c:140
 msgid "This month"
 msgstr "Este mes"
 
 #. Now Jan., last used in Dec.
-#: nbtk/nbtk-utils.c:144
+#: mx/mx-utils.c:144
 msgid "Last month"
 msgstr "El mes pasado"
 
-#: nbtk/nbtk-utils.c:147
+#: mx/mx-utils.c:147
 msgid "This year"
 msgstr "Este año"
 
-#: nbtk/nbtk-utils.c:150
+#: mx/mx-utils.c:150
 msgid "Last year"
 msgstr "El año pasado"
 
 # Long time ago
-#: nbtk/nbtk-utils.c:152
+#: mx/mx-utils.c:152
 msgid "Ages ago"
 msgstr "Hace mucho tiempo"

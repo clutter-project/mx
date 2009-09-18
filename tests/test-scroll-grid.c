@@ -20,7 +20,7 @@
 #include <stdlib.h>
 
 #include <clutter/clutter.h>
-#include <nbtk/nbtk.h>
+#include <mx/mx.h>
 
 static void
 stage_size_notify_cb (ClutterActor *stage,
@@ -35,25 +35,25 @@ stage_size_notify_cb (ClutterActor *stage,
 
 static void
 swap_orientation (ClutterActor *button,
-                  NbtkGrid     *grid)
+                  MxGrid     *grid)
 {
-  nbtk_grid_set_column_major (grid,
-                              !nbtk_grid_get_column_major (grid));
+  mx_grid_set_column_major (grid,
+                              !mx_grid_get_column_major (grid));
 }
 
 static void
 set_max_stride (ClutterActor    *actor,
                 ClutterKeyEvent *event,
-                NbtkGrid        *grid)
+                MxGrid        *grid)
 {
-  nbtk_grid_set_max_stride (grid, event->keyval - 48);
+  mx_grid_set_max_stride (grid, event->keyval - 48);
   printf ("Max Stride: %d\n", event->keyval - 48);
 }
 
 int
 main (int argc, char *argv[])
 {
-  NbtkWidget *scroll, *grid;
+  MxWidget *scroll, *grid;
   ClutterActor *stage;
   int i;
 
@@ -62,26 +62,26 @@ main (int argc, char *argv[])
   stage = clutter_stage_get_default ();
   clutter_stage_set_user_resizable (CLUTTER_STAGE (stage), TRUE);
 
-  scroll = (NbtkWidget *) nbtk_scroll_view_new ();
+  scroll = (MxWidget *) mx_scroll_view_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (scroll));
   clutter_actor_set_position (CLUTTER_ACTOR (scroll), 50, 50);
 
-  grid = nbtk_grid_new ();
+  grid = mx_grid_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (scroll),
                                CLUTTER_ACTOR (grid));
 
   for (i = 1; i <= 200; i++)
     {
-      NbtkWidget *button;
+      MxWidget *button;
       gchar *label;
 
       label = g_strdup_printf ("Button %d", i);
 
-      button = nbtk_button_new_with_label (label);
+      button = mx_button_new_with_label (label);
       clutter_container_add_actor (CLUTTER_CONTAINER (grid),
                                    CLUTTER_ACTOR (button));
-      nbtk_widget_set_tooltip_text (NBTK_WIDGET (button), "test");
+      mx_widget_set_tooltip_text (MX_WIDGET (button), "test");
       if (i == 1)
         g_signal_connect (button,
                           "clicked",

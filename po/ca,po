@@ -1,11 +1,11 @@
-# nbtk Catalan translation.
+# mx Catalan translation.
 # Copyright (C) 2009 Free Software Foundation, Inc.
-# This file is distributed under the same license as the nbtk package.
+# This file is distributed under the same license as the mx package.
 # Gil Forcada <gilforcada@guifi.net>, 2009.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: nbtk 2.x\n"
+"Project-Id-Version: mx 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-08-15 09:25+0000\n"
 "PO-Revision-Date: 2009-08-16 18:28+0200\n"
@@ -15,21 +15,21 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../nbtk/nbtk-gtk-light-switch.c:163
+#: ../mx/mx-gtk-light-switch.c:163
 msgid "Unavailable"
 msgstr "No disponible"
 
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the MEDIUM VERTICAL BAR unicode character
 #. * instead
-#: ../nbtk/nbtk-gtk-light-switch.c:183 ../nbtk/nbtk-gtk-light-switch.c:256
+#: ../mx/mx-gtk-light-switch.c:183 ../mx/mx-gtk-light-switch.c:256
 msgid "On"
 msgstr "Actiu"
 
 #. Draw the second label; "Off"
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the ROUND CIRCLE unicode character instead
-#: ../nbtk/nbtk-gtk-light-switch.c:201 ../nbtk/nbtk-gtk-light-switch.c:254
+#: ../mx/mx-gtk-light-switch.c:201 ../mx/mx-gtk-light-switch.c:254
 msgid "Off"
 msgstr "Apagat"
 

@@ -1,0 +1,11 @@
+prefix=@prefix@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${exec_prefix}/include
+
+Name: Mx
+Description: An experimental toolkit for moblin-netbook implementation
+Version: @VERSION@
+Libs: -L${libdir} -lmx-@MX_API_VERSION@
+Cflags: -I${includedir}/mx-@MX_API_VERSION@
+Requires: clutter-1.0

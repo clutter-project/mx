@@ -1,8 +1,8 @@
 NULL =
 
-AM_CFLAGS = $(NBTK_CFLAGS) $(GTK_CFLAGS)  $(NBTK_MAINTAINER_CFLAGS)
-LDADD = $(top_builddir)/nbtk/libnbtk-$(NBTK_API_VERSION).la \
-        $(top_builddir)/nbtk/libnbtk-gtk-$(NBTK_API_VERSION).la
+AM_CFLAGS = $(MX_CFLAGS) $(GTK_CFLAGS)  $(MX_MAINTAINER_CFLAGS)
+LDADD = $(top_builddir)/mx/libmx-$(MX_API_VERSION).la \
+        $(top_builddir)/mx/libmx-gtk-$(MX_API_VERSION).la
 
 
 INCLUDES = \

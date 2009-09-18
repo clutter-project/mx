@@ -8,12 +8,12 @@
     "children" : [
       {
         "id" : "left-button",
-        "type" : "NbtkButton",
+        "type" : "MxButton",
         "x" : 50, "y" : 50, "width" : 100, "height" : 100,
       },
       {
         "id" : "right-button",
-        "type" : "NbtkButton",
+        "type" : "MxButton",
         "x" : 200,
         "y" : 50,
         "width" : 100,
@@ -22,7 +22,7 @@
       {
         "id" : "red-button",
         "name" : "red-button",
-        "type" : "NbtkButton",
+        "type" : "MxButton",
         "x" : 125,
         "y" : 150,
         "width" : 100,

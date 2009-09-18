@@ -1,5 +1,5 @@
-AM_CFLAGS = $(NBTK_CFLAGS) $(NBTK_MAINTAINER_CFLAGS)
-LDADD = $(top_builddir)/nbtk/libnbtk-$(NBTK_API_VERSION).la
+AM_CFLAGS = $(MX_CFLAGS) $(MX_MAINTAINER_CFLAGS)
+LDADD = $(top_builddir)/mx/libmx-$(MX_API_VERSION).la
 INCLUDES = -I$(top_srcdir)
 
 noinst_PROGRAMS = moblin-sample-app

@@ -20,7 +20,7 @@
 #include <stdlib.h>
 
 #include <clutter/clutter.h>
-#include <nbtk/nbtk.h>
+#include <mx/mx.h>
 
 static ClutterActor *hover_actor;
 
@@ -117,19 +117,19 @@ add_actor (ClutterContainer *container)
 static gboolean
 key_release_cb (ClutterActor    *actor,
                 ClutterKeyEvent *event,
-                NbtkBoxLayout   *box)
+                MxBoxLayout   *box)
 {
 
   if (event->keyval == 'v')
     {
-      nbtk_box_layout_set_vertical (box,
-                                    !nbtk_box_layout_get_vertical (box));
+      mx_box_layout_set_vertical (box,
+                                    !mx_box_layout_get_vertical (box));
     }
 
   if (event->keyval == 'p')
     {
-      nbtk_box_layout_set_pack_start (box,
-                                      !nbtk_box_layout_get_pack_start (box));
+      mx_box_layout_set_pack_start (box,
+                                      !mx_box_layout_get_pack_start (box));
     }
 
   if (event->keyval == '=')
@@ -159,14 +159,14 @@ key_release_cb (ClutterActor    *actor,
     {
       guint spacing;
 
-      spacing = nbtk_box_layout_get_spacing (box);
+      spacing = mx_box_layout_get_spacing (box);
 
       if (spacing > 6)
         spacing = 0;
       else
         spacing++;
 
-      nbtk_box_layout_set_spacing (box, spacing);
+      mx_box_layout_set_spacing (box, spacing);
     }
 
   if (event->keyval == 'e')
@@ -196,23 +196,23 @@ stage_size_changed_cb (ClutterActor *stage, GParamSpec *pspec, ClutterActor *scr
 int
 main (int argc, char *argv[])
 {
-  NbtkWidget *box;
+  MxWidget *box;
   ClutterActor *stage;
-  NbtkWidget *scrollview;
+  MxWidget *scrollview;
 
   clutter_init (&argc, &argv);
 
   stage = clutter_stage_get_default ();
   clutter_stage_set_user_resizable ((ClutterStage *) stage, TRUE);
 
-  scrollview = nbtk_scroll_view_new ();
+  scrollview = mx_scroll_view_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                (ClutterActor*) scrollview);
 
   clutter_actor_set_position ((ClutterActor*) scrollview, 50, 50);
   clutter_actor_set_size ((ClutterActor*) scrollview, 200, 200);
 
-  box = nbtk_box_layout_new ();
+  box = mx_box_layout_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (scrollview), (ClutterActor*) box);
 
   add_actor ((ClutterContainer*) box);

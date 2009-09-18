@@ -20,15 +20,15 @@
 #include <stdlib.h>
 
 #include <clutter/clutter.h>
-#include <nbtk/nbtk.h>
+#include <mx/mx.h>
 
 static void
-expand_complete_cb (NbtkExpander  *expander,
+expand_complete_cb (MxExpander  *expander,
                     gpointer       user_data)
 {
   gboolean expanded;
 
-  expanded = nbtk_expander_get_expanded (expander);
+  expanded = mx_expander_get_expanded (expander);
   printf ("expand complete (%s)\n",
           (expanded) ? "open": "closed");
 }
@@ -36,16 +36,16 @@ expand_complete_cb (NbtkExpander  *expander,
 static void
 set_expanded (ClutterActor    *actor,
               ClutterKeyEvent *event,
-              NbtkExpander    *expander)
+              MxExpander    *expander)
 {
   gboolean expand;
 
   if (event->keyval != 32)
     return;
 
-  expand = nbtk_expander_get_expanded (expander);
+  expand = mx_expander_get_expanded (expander);
 
-  nbtk_expander_set_expanded (expander, !expand);
+  mx_expander_set_expanded (expander, !expand);
 }
 
 static void
@@ -61,7 +61,7 @@ stage_size_notify_cb (ClutterActor *stage,
 int
 main (int argc, char *argv[])
 {
-  NbtkWidget *expander, *scroll, *grid;
+  MxWidget *expander, *scroll, *grid;
   ClutterActor *stage;
   int i;
 
@@ -71,8 +71,8 @@ main (int argc, char *argv[])
   clutter_actor_set_size (stage, 640, 480);
   clutter_stage_set_user_resizable (CLUTTER_STAGE (stage), TRUE);
 
-  expander = nbtk_expander_new ();
-  nbtk_expander_set_label (NBTK_EXPANDER (expander), "Expander");
+  expander = mx_expander_new ();
+  mx_expander_set_label (MX_EXPANDER (expander), "Expander");
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (expander));
   clutter_actor_set_position (CLUTTER_ACTOR (expander), 10, 10);
@@ -80,23 +80,23 @@ main (int argc, char *argv[])
   g_signal_connect (expander, "expand-complete",
                     G_CALLBACK (expand_complete_cb), NULL);
 
-  scroll = (NbtkWidget *) nbtk_scroll_view_new ();
+  scroll = (MxWidget *) mx_scroll_view_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (expander),
                                CLUTTER_ACTOR (scroll));
   clutter_actor_set_size (CLUTTER_ACTOR (scroll), 320, 240);
 
-  grid = nbtk_grid_new ();
+  grid = mx_grid_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (scroll),
                                CLUTTER_ACTOR (grid));
 
   for (i = 1; i <= 50; i++)
     {
-      NbtkWidget *button;
+      MxWidget *button;
       gchar *label;
 
       label = g_strdup_printf ("Button %d", i);
 
-      button = nbtk_button_new_with_label (label);
+      button = mx_button_new_with_label (label);
       clutter_container_add_actor (CLUTTER_CONTAINER (grid),
                                    CLUTTER_ACTOR (button));
 

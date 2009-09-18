@@ -5,7 +5,7 @@
 #include <cogl/cogl.h>
 #include <cogl/cogl-pango.h>
 #include <clutter/clutter.h>
-#include <nbtk/nbtk.h>
+#include <mx/mx.h>
 
 #define DRAGGABLE_TYPE_RECTANGLE        (draggable_rectangle_get_type ())
 #define DRAGGABLE_RECTANGLE(obj)        (G_TYPE_CHECK_INSTANCE_CAST ((obj), DRAGGABLE_TYPE_RECTANGLE, DraggableRectangle))
@@ -21,9 +21,9 @@ struct _DraggableRectangle
   /* Draggable properties */
   guint threshold;
 
-  NbtkDragAxis axis;
+  MxDragAxis axis;
 
-  NbtkDragContainment containment;
+  MxDragContainment containment;
   ClutterActorBox area;
   ClutterActor *actor;
 
@@ -49,16 +49,16 @@ enum
   PROP_ACTOR,
 };
 
-static void nbtk_draggable_iface_init (NbtkDraggableIface *iface);
+static void mx_draggable_iface_init (MxDraggableIface *iface);
 static GType draggable_rectangle_get_type ();
 G_DEFINE_TYPE_WITH_CODE (DraggableRectangle,
                          draggable_rectangle,
                          CLUTTER_TYPE_RECTANGLE,
-                         G_IMPLEMENT_INTERFACE (NBTK_TYPE_DRAGGABLE,
-                                                nbtk_draggable_iface_init));
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_DRAGGABLE,
+                                                mx_draggable_iface_init));
 
 static void
-draggable_rectangle_drag_begin (NbtkDraggable       *draggable,
+draggable_rectangle_drag_begin (MxDraggable       *draggable,
                                 gfloat               event_x,
                                 gfloat               event_y,
                                 gint                 event_button,
@@ -66,7 +66,7 @@ draggable_rectangle_drag_begin (NbtkDraggable       *draggable,
 {
   gfloat x, y;
   ClutterActor *self = CLUTTER_ACTOR (draggable);
-  ClutterActor *actor = nbtk_draggable_get_drag_actor (draggable);
+  ClutterActor *actor = mx_draggable_get_drag_actor (draggable);
   ClutterActor *stage = clutter_actor_get_stage (self);
 
   g_debug ("%s: drag of '%s' begin at %.2f, %.2f",
@@ -94,11 +94,11 @@ draggable_rectangle_drag_begin (NbtkDraggable       *draggable,
 }
 
 static void
-draggable_rectangle_drag_motion (NbtkDraggable *draggable,
+draggable_rectangle_drag_motion (MxDraggable *draggable,
                                  gfloat         delta_x,
                                  gfloat         delta_y)
 {
-  ClutterActor *actor = nbtk_draggable_get_drag_actor (draggable);
+  ClutterActor *actor = mx_draggable_get_drag_actor (draggable);
 
   g_debug ("%s: drag motion of '%s' (dx: %.2f, dy: %.2f)",
            G_STRLOC,
@@ -113,13 +113,13 @@ draggable_rectangle_drag_motion (NbtkDraggable *draggable,
 }
 
 static void
-draggable_rectangle_drag_end (NbtkDraggable *draggable,
+draggable_rectangle_drag_end (MxDraggable *draggable,
                               gfloat         event_x,
                               gfloat         event_y)
 {
   gfloat x, y;
   ClutterActor *self = CLUTTER_ACTOR (draggable);
-  ClutterActor *actor = nbtk_draggable_get_drag_actor (draggable);
+  ClutterActor *actor = mx_draggable_get_drag_actor (draggable);
   ClutterActor *stage = clutter_actor_get_stage (self);
 
   g_debug ("%s: drag of '%s' end at %.2f, %.2f",
@@ -146,7 +146,7 @@ draggable_rectangle_drag_end (NbtkDraggable *draggable,
 }
 
 static void
-nbtk_draggable_iface_init (NbtkDraggableIface *iface)
+mx_draggable_iface_init (MxDraggableIface *iface)
 {
   iface->drag_begin = draggable_rectangle_drag_begin;
   iface->drag_motion = draggable_rectangle_drag_motion;
@@ -189,9 +189,9 @@ draggable_rectangle_set_property (GObject      *gobject,
     case PROP_ENABLED:
       rect->is_enabled = g_value_get_boolean (value);
       if (rect->is_enabled)
-        nbtk_draggable_enable (NBTK_DRAGGABLE (gobject));
+        mx_draggable_enable (MX_DRAGGABLE (gobject));
       else
-        nbtk_draggable_disable (NBTK_DRAGGABLE (gobject));
+        mx_draggable_disable (MX_DRAGGABLE (gobject));
       break;
 
     case PROP_ACTOR:
@@ -326,7 +326,7 @@ draggable_rectangle_init (DraggableRectangle *self)
 {
   self->threshold = 0;
   self->axis = 0;
-  self->containment = NBTK_DISABLE_CONTAINMENT;
+  self->containment = MX_DISABLE_CONTAINMENT;
   self->is_enabled = FALSE;
   self->actor = g_object_ref_sink (clutter_clone_new (CLUTTER_ACTOR (self)));
 }
@@ -352,8 +352,8 @@ main (int argc, char *argv[])
   clutter_actor_set_position (draggable, 350, 100);
   clutter_actor_set_reactive (draggable, TRUE);
   clutter_actor_set_name (draggable, "h-handle");
-  nbtk_draggable_set_axis (NBTK_DRAGGABLE (draggable), NBTK_X_AXIS);
-  nbtk_draggable_enable (NBTK_DRAGGABLE (draggable));
+  mx_draggable_set_axis (MX_DRAGGABLE (draggable), MX_X_AXIS);
+  mx_draggable_enable (MX_DRAGGABLE (draggable));
 
   draggable = g_object_new (DRAGGABLE_TYPE_RECTANGLE, NULL);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), draggable);
@@ -362,8 +362,8 @@ main (int argc, char *argv[])
   clutter_actor_set_position (draggable, 350, 300);
   clutter_actor_set_reactive (draggable, TRUE);
   clutter_actor_set_name (draggable, "v-handle");
-  nbtk_draggable_set_axis (NBTK_DRAGGABLE (draggable), NBTK_Y_AXIS);
-  nbtk_draggable_enable (NBTK_DRAGGABLE (draggable));
+  mx_draggable_set_axis (MX_DRAGGABLE (draggable), MX_Y_AXIS);
+  mx_draggable_enable (MX_DRAGGABLE (draggable));
 
   clutter_actor_show_all (stage);
 

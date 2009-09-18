@@ -1,7 +1,7 @@
 Coding Style
 ============
 
-The coding style of Nbtk mostly follows the GNU coding standards. See
+The coding style of Mx mostly follows the GNU coding standards. See
 http://www.gnu.org/prep/standards/ for more information.
 
 One important exception is that formal parameters to functions are always
@@ -20,7 +20,7 @@ foo_bar_set_int (FooBar *type,
 Committing
 ==========
 
-Nbtk is currently managed in a git repository. Git has a special format for
+Mx is currently managed in a git repository. Git has a special format for
 commit messages; the first line of the message is a brief (less than 72
 characters) explanation of the commit. Where appropriate, the short commit
 message should be preceded by a "tag" enclosed in square brackets. This should

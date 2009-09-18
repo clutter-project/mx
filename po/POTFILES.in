@@ -1,4 +1,4 @@
 # List of source files containing translatable strings.
 
-nbtk/nbtk-gtk-light-switch.c
-nbtk/nbtk-utils.c
+mx/mx-gtk-light-switch.c
+mx/mx-utils.c

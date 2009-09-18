@@ -1,4 +1,4 @@
-styledir = ${datadir}/nbtk/style
+styledir = ${datadir}/mx/style
 dist_style_DATA = \
 		button-active.png \
 		button-hover.png \

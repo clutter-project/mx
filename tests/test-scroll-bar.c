@@ -17,24 +17,24 @@
  *
  */
 
-#include <nbtk/nbtk.h>
+#include <mx/mx.h>
 #include <clutter/clutter.h>
 
 static void
-changed_cb (NbtkAdjustment *adjustment,
+changed_cb (MxAdjustment *adjustment,
             gpointer        data)
 {
   printf ("%s() %.2f\n", __FUNCTION__,
-                         nbtk_adjustment_get_value (adjustment));
+                         mx_adjustment_get_value (adjustment));
 }
 
 static gboolean
 key_press_event (ClutterActor    *actor,
                  ClutterKeyEvent *event,
-                 NbtkAdjustment  *adjustment)
+                 MxAdjustment  *adjustment)
 {
   gdouble value, lower, upper, step_increment, page_increment, page_size;
-  nbtk_adjustment_get_values (adjustment,
+  mx_adjustment_get_values (adjustment,
                               &value,
                               &lower,
                               &upper,
@@ -50,7 +50,7 @@ key_press_event (ClutterActor    *actor,
       page_size -= 5;
     }
 
-  nbtk_adjustment_set_values (adjustment, value, lower, upper,
+  mx_adjustment_set_values (adjustment, value, lower, upper,
                               step_increment, page_increment, page_size);
 
   printf ("value: %f, lower: %f, upper: %f, step-inc: %f, page-inc: %f, "
@@ -64,19 +64,19 @@ int
 main (int argc, char *argv[])
 {
   ClutterActor    *stage;
-  NbtkWidget      *scroll;
-  NbtkAdjustment  *adjustment;
+  MxWidget      *scroll;
+  MxAdjustment  *adjustment;
 
   clutter_init (&argc, &argv);
 
   stage = clutter_stage_get_default ();
   clutter_actor_set_size (stage, 400, 200);
 
-  adjustment = nbtk_adjustment_new (50., 0., 100., 1., 10., 10.);
+  adjustment = mx_adjustment_new (50., 0., 100., 1., 10., 10.);
   g_signal_connect (adjustment, "notify::value", 
                     G_CALLBACK (changed_cb), NULL);  
 
-  scroll = nbtk_scroll_bar_new (adjustment);
+  scroll = mx_scroll_bar_new (adjustment);
   clutter_actor_set_position (CLUTTER_ACTOR (scroll), 50, 100);
   clutter_actor_set_size (CLUTTER_ACTOR (scroll), 200, 30);
   clutter_container_add (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (scroll), NULL);

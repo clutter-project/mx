@@ -1,7 +1,7 @@
-NBTK
+MX
 ====
 
-'NBTK' is a currently experiemental toolkit for the moblin-netbook
+'MX' is a currently experiemental toolkit for the moblin-netbook
 implementation.
 
 It depends on libccss of which can be obtained from:

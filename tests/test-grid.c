@@ -24,7 +24,7 @@
  */
 
 #include <clutter/clutter.h>
-#include <nbtk/nbtk.h>
+#include <mx/mx.h>
 
 #define CHILD_COUNT 11
 #define CORNER_SIZE 10
@@ -202,7 +202,7 @@ main (int argc, char **argv)
   data.rect = clutter_rectangle_new_with_color (&(ClutterColor)
 						{ 0xd0, 0xd0, 0xff, 0xff});
 
-  data.layout =g_object_new (NBTK_TYPE_GRID,
+  data.layout =g_object_new (MX_TYPE_GRID,
                              "valign", 0.5,
                              "halign", 0.5,
                              "row-gap", 5.0f,
@@ -211,7 +211,7 @@ main (int argc, char **argv)
 
 
   { /* add controls */
-    ClutterActor *vbox = g_object_new (NBTK_TYPE_GRID,
+    ClutterActor *vbox = g_object_new (MX_TYPE_GRID,
                              "row-gap", 5.0f,
                              "column-major", TRUE,
                              "x", 60.0f,
@@ -220,7 +220,7 @@ main (int argc, char **argv)
     clutter_container_add (CLUTTER_CONTAINER (data.stage), CLUTTER_ACTOR (vbox), NULL);
 
     clutter_container_add (CLUTTER_CONTAINER (vbox),
-      clutter_text_new_with_text ("Sans 20px", "NbtkGrid properties:"),
+      clutter_text_new_with_text ("Sans 20px", "MxGrid properties:"),
       boolean_toggle    (G_OBJECT(data.layout), "end-align",          "end-align"),
       boolean_toggle    (G_OBJECT(data.layout), "column-major",       "columns"),
       boolean_toggle    (G_OBJECT(data.layout), "homogenous-columns", "homogenous columns"),
@@ -281,7 +281,7 @@ main (int argc, char **argv)
 
 
   {
-    ClutterActor *layout = g_object_new (NBTK_TYPE_GRID,
+    ClutterActor *layout = g_object_new (MX_TYPE_GRID,
                                          "x", 5.0f,
                                          "y", 5.0f,
                                          "max-stride", 1,
@@ -292,7 +292,7 @@ main (int argc, char **argv)
 
 
   {
-    ClutterActor *layout = g_object_new (NBTK_TYPE_GRID,
+    ClutterActor *layout = g_object_new (MX_TYPE_GRID,
                                          "x", 500.0f,
                                          "y", 5.0f,
                                          "max-stride", 1,
@@ -306,7 +306,7 @@ main (int argc, char **argv)
 
 
   {
-    ClutterActor *layout = g_object_new (NBTK_TYPE_GRID,
+    ClutterActor *layout = g_object_new (MX_TYPE_GRID,
                                          "x",      60.0f,
                                          "y",      5.0f,
                                          "max-stride", 1,
@@ -317,7 +317,7 @@ main (int argc, char **argv)
   }
 
   {
-    ClutterActor *layout = g_object_new (NBTK_TYPE_GRID,
+    ClutterActor *layout = g_object_new (MX_TYPE_GRID,
                                          "x",       60.0f,
                                          "y",       420.0f,
                                          "valign",  1.0,

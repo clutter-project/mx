@@ -16,7 +16,7 @@
  * Boston, MA 02111-1307, USA.
  *
  */
-#include <nbtk/nbtk.h>
+#include <mx/mx.h>
 
 static void
 allocation_notify_cb (ClutterActor *stage,
@@ -42,11 +42,11 @@ main (int argc, char *argv[])
   stage = clutter_stage_get_default ();
   clutter_stage_set_user_resizable (CLUTTER_STAGE (stage), TRUE);
 
-  scroll = (ClutterActor *) nbtk_scroll_view_new ();
+  scroll = (ClutterActor *) mx_scroll_view_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), scroll);
   clutter_actor_set_position (scroll, 50, 50);
 
-  view = (ClutterActor *) nbtk_viewport_new ();
+  view = (ClutterActor *) mx_viewport_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (scroll), view);
 
 

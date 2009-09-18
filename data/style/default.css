@@ -1,4 +1,4 @@
-NbtkButton
+MxButton
 {
   padding: 10;
   border-image: url("file://button.png") 10;
@@ -6,18 +6,18 @@ NbtkButton
   font-size: 13;
 }
 
-NbtkButton:hover
+MxButton:hover
 {
   border-image: url("file://button-hover.png") 10;
 }
 
-NbtkButton:active, NbtkButton:checked
+MxButton:active, MxButton:checked
 {
   padding: 11 9 9 11;
   border-image: url("file://button-active.png") 10;
 }
 
-NbtkEntry
+MxEntry
 {
   padding: 5 6 6 5;
   border-image: url("file://entry.png") 5;
@@ -25,89 +25,89 @@ NbtkEntry
   font-size: 13;
 }
 
-NbtkEntry:focus
+MxEntry:focus
 {
   border-image: url("file://entry-active.png") 5;
 }
 
-NbtkEntry:indeterminate
+MxEntry:indeterminate
 {
   color: #8e8e8e;
 }
 
 
-NbtkScrollBar
+MxScrollBar
 {
   background-color: #dee2e5;
   padding: 0px;
 }
 
-NbtkScrollView
+MxScrollView
 {
   scrollbar-width: 28;
   scrollbar-height: 28;
 }
 
-NbtkButton#backward-stepper
+MxButton#backward-stepper
 {
   border-image: url("file://scroll-button-left.png") 5;
 }
 
-NbtkButton#backward-stepper:hover,
-NbtkButton#backward-stepper:active
+MxButton#backward-stepper:hover,
+MxButton#backward-stepper:active
 {
   border-image: url("file://scroll-button-left-hover.png") 5;
 }
 
-NbtkButton#forward-stepper
+MxButton#forward-stepper
 {
   border-image: url("file://scroll-button-right.png") 5;
 }
 
-NbtkButton#forward-stepper:hover,
-NbtkButton#forward-stepper:active
+MxButton#forward-stepper:hover,
+MxButton#forward-stepper:active
 {
   border-image: url("file://scroll-button-right-hover.png") 5;
 }
 
-NbtkButton#up-stepper
+MxButton#up-stepper
 {
   border-image: url("file://scroll-button-up.png") 5;
 }
 
-NbtkButton#up-stepper:hover,
-NbtkButton#up-stepper:active
+MxButton#up-stepper:hover,
+MxButton#up-stepper:active
 {
   border-image: url("file://scroll-button-up-hover.png") 5;
 }
 
-NbtkButton#down-stepper
+MxButton#down-stepper
 {
   border-image: url("file://scroll-button-down.png") 5;
 }
 
-NbtkButton#down-stepper:hover,
-NbtkButton#down-stepper:active
+MxButton#down-stepper:hover,
+MxButton#down-stepper:active
 {
   border-image: url("file://scroll-button-down-hover.png") 5;
 }
 
-NbtkScrollBar NbtkButton#vhandle
+MxScrollBar MxButton#vhandle
 {
   border-image: url("file://scroll-vhandle.png") 5;
 }
 
-NbtkScrollBar NbtkButton#vhandle:hover
+MxScrollBar MxButton#vhandle:hover
 {
   border-image: url("file://scroll-vhandle-hover.png") 5;
 }
 
-NbtkScrollBar NbtkButton#hhandle
+MxScrollBar MxButton#hhandle
 {
   border-image: url("file://scroll-hhandle.png") 5;
 }
 
-NbtkScrollBar NbtkButton#hhandle:hover
+MxScrollBar MxButton#hhandle:hover
 {
   border-image: url("file://scroll-hhandle-hover.png") 5;
 }
@@ -117,39 +117,39 @@ NbtkScrollBar NbtkButton#hhandle:hover
  * Expander
  */
 
-NbtkExpander {
+MxExpander {
   color: blank;
   font-size: 15;
   border-image: url('file://expander-closed.png') 6;
   padding: 6 12;
 }
 
-NbtkExpander:hover {
+MxExpander:hover {
   border-image: url('file://expander-hover.png') 6;
 }
 
-NbtkExpander:active {
+MxExpander:active {
   border-image: url('file://expander-open.png') 36 6 6 6;
 }
 
-NbtkExpander > *#nbtk-expander-arrow-closed {
+MxExpander > *#mx-expander-arrow-closed {
     padding: 0;
     background-image: url('file://expander-arrow-up.png');
 }
 
-NbtkExpander > *#nbtk-expander-arrow-closed:hover {
+MxExpander > *#mx-expander-arrow-closed:hover {
     background-image: url('file://expander-arrow-up-hover.png');
 }
 
-NbtkExpander > *#nbtk-expander-arrow-open {
+MxExpander > *#mx-expander-arrow-open {
     background-image: url('file://expander-arrow-down.png');
 }
 
-NbtkExpander > *#nbtk-expander-arrow-open:hover {
+MxExpander > *#mx-expander-arrow-open:hover {
     background-image: url('file://expander-arrow-down-hover.png');
 }
 
-NbtkTooltip {
+MxTooltip {
   color: white;
   padding: 4 10 12 10;
   border-image: url('file://tooltip-background.png') 4 11 12 11;
@@ -157,33 +157,33 @@ NbtkTooltip {
 }
 
 
-NbtkProgressBar {
+MxProgressBar {
   padding: 3;
   border-image: url('file://progress-bar-background.png') 2 stretch stretch;
 }
 
-NbtkProgressBar NbtkProgressBarFill {
+MxProgressBar MxProgressBarFill {
   border-image: url('file://progress-bar-bar.png') 2 stretch stretch;
 }
 
-NbtkComboBox {
+MxComboBox {
   padding: 5 38 5 5;
   border-image: url('file://combobox.png') 4 32 4 4;
   font-family: "Liberation Sans";
   font-size: 13;
 }
 
-NbtkPopup {
+MxPopup {
   padding: 3;
   border-image: url('file://menu.png') 2;
 }
 
-NbtkPopup > NbtkButton {
+MxPopup > MxButton {
   padding: 3;
   border-image: none;
 }
 
-NbtkPopup > NbtkButton:hover, NbtkPopup > NbtkButton:active {
+MxPopup > MxButton:hover, MxPopup > MxButton:active {
   color: white;
   border-image: url('file://menu-item.png') 2;
 }

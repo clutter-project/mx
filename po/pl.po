@@ -1,6 +1,6 @@
 # pl locale
 # Copyright (C) 2009 Intel Corporation
-# This file is distributed under the same license as the NBTK package.
+# This file is distributed under the same license as the MX package.
 # Andrzej Zaborowski <andrew.zaborowski@intel.com>, 2009.
 #
 msgid ""
@@ -19,79 +19,79 @@ msgstr ""
 "X-Poedit-Language: Polish\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: ../nbtk/nbtk-gtk-light-switch.c:163
+#: ../mx/mx-gtk-light-switch.c:163
 msgid "Unavailable"
 msgstr "Niedostępne"
 
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the MEDIUM VERTICAL BAR unicode character
 #. * instead
-#: ../nbtk/nbtk-gtk-light-switch.c:183 ../nbtk/nbtk-gtk-light-switch.c:256
+#: ../mx/mx-gtk-light-switch.c:183 ../mx/mx-gtk-light-switch.c:256
 msgid "On"
 msgstr "Tak"
 
 #. Draw the second label; "Off"
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the ROUND CIRCLE unicode character instead
-#: ../nbtk/nbtk-gtk-light-switch.c:201 ../nbtk/nbtk-gtk-light-switch.c:254
+#: ../mx/mx-gtk-light-switch.c:201 ../mx/mx-gtk-light-switch.c:254
 msgid "Off"
 msgstr "Nie"
 
-#: nbtk/nbtk-utils.c:92
+#: mx/mx-utils.c:92
 msgid "Less than a minute ago"
 msgstr "Mniej niż minutę temu"
 
-#: nbtk/nbtk-utils.c:96
+#: mx/mx-utils.c:96
 msgid "A few minutes ago"
 msgstr "Parę minut temu"
 
-#: nbtk/nbtk-utils.c:100
+#: mx/mx-utils.c:100
 msgid "A couple of hours ago"
 msgstr "Kilka godzin temu"
 
 # No good way to say "earlier today"
-#: nbtk/nbtk-utils.c:107
+#: mx/mx-utils.c:107
 msgid "Earlier today"
 msgstr "Kilkanaście godzin temu"
 
-#: nbtk/nbtk-utils.c:110
+#: mx/mx-utils.c:110
 msgid "Yesterday"
 msgstr "Wczoraj"
 
-#: nbtk/nbtk-utils.c:118
+#: mx/mx-utils.c:118
 #, c-format
 msgid "On %A"
 msgstr "Dnia %A"
 
-#: nbtk/nbtk-utils.c:124
+#: mx/mx-utils.c:124
 msgid "Unknown"
 msgstr "Nie sprecyzowano"
 
-#: nbtk/nbtk-utils.c:131
+#: mx/mx-utils.c:131
 msgid "Last week"
 msgstr "Zeszły tydzień"
 
-#: nbtk/nbtk-utils.c:134
+#: mx/mx-utils.c:134
 msgid "A couple of weeks ago"
 msgstr "Parę tygodni temu"
 
-#: nbtk/nbtk-utils.c:140
+#: mx/mx-utils.c:140
 msgid "This month"
 msgstr "W tym miesiącu"
 
 #. Now Jan., last used in Dec.
-#: nbtk/nbtk-utils.c:144
+#: mx/mx-utils.c:144
 msgid "Last month"
 msgstr "W zeszłym miesiącu"
 
-#: nbtk/nbtk-utils.c:147
+#: mx/mx-utils.c:147
 msgid "This year"
 msgstr "W tym roku"
 
-#: nbtk/nbtk-utils.c:150
+#: mx/mx-utils.c:150
 msgid "Last year"
 msgstr "W zeszłym roku"
 
-#: nbtk/nbtk-utils.c:152
+#: mx/mx-utils.c:152
 msgid "Ages ago"
 msgstr "Wieki temu"

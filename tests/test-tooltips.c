@@ -20,10 +20,10 @@
 #include <stdlib.h>
 
 #include <clutter/clutter.h>
-#include <nbtk/nbtk.h>
+#include <mx/mx.h>
 
 static void
-button_hide (NbtkButton *button)
+button_hide (MxButton *button)
 {
   clutter_actor_hide (CLUTTER_ACTOR (button));
 }
@@ -31,7 +31,7 @@ button_hide (NbtkButton *button)
 int
 main (int argc, char *argv[])
 {
-  NbtkWidget *button, *bin;
+  MxWidget *button, *bin;
   ClutterColor stage_color =  { 0xff, 0xff, 0xff, 0xff };
   ClutterActor *stage;
 
@@ -40,43 +40,43 @@ main (int argc, char *argv[])
   stage = clutter_stage_get_default ();
   clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
 
-  button = nbtk_button_new_with_label ("Hide Me");
+  button = mx_button_new_with_label ("Hide Me");
   g_signal_connect (button, "clicked",
                     G_CALLBACK (button_hide),
                     "hello");
-  nbtk_widget_set_tooltip_text (button, "Disappear");
+  mx_widget_set_tooltip_text (button, "Disappear");
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 50, 100);
 
-  bin = nbtk_bin_new ();
+  bin = mx_bin_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (bin));
   clutter_actor_set_position (CLUTTER_ACTOR (bin), 50, 200);
 
-  button = nbtk_button_new_with_label ("Testing 123");
-  nbtk_widget_set_tooltip_text (button, "Testing tooltips in a container...");
+  button = mx_button_new_with_label ("Testing 123");
+  mx_widget_set_tooltip_text (button, "Testing tooltips in a container...");
   clutter_container_add_actor (CLUTTER_CONTAINER (bin),
                                CLUTTER_ACTOR (button));
 
-  button = nbtk_button_new_with_label ("Testing Long Text");
-  nbtk_widget_set_tooltip_text (button,
+  button = mx_button_new_with_label ("Testing Long Text");
+  mx_widget_set_tooltip_text (button,
                            "Here is some really"
-                           " long text to test the handling in NbtkTooltip");
+                           " long text to test the handling in MxTooltip");
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 50, 300);
 
-  button = nbtk_button_new_with_label ("Testing Long Text");
-  nbtk_widget_set_tooltip_text (button,
+  button = mx_button_new_with_label ("Testing Long Text");
+  mx_widget_set_tooltip_text (button,
                            "Here is some really"
-                           " long text to test the handling in NbtkTooltip");
+                           " long text to test the handling in MxTooltip");
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 500, 300);
 
-  button = nbtk_button_new_with_label ("Crazy");
-  nbtk_widget_set_tooltip_text (button,
+  button = mx_button_new_with_label ("Crazy");
+  mx_widget_set_tooltip_text (button,
                            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                            " aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                            " aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -85,8 +85,8 @@ main (int argc, char *argv[])
                                CLUTTER_ACTOR (button));
   clutter_actor_set_position (CLUTTER_ACTOR (button), 250, 5);
 
-  button = nbtk_button_new_with_label ("Bottom");
-  nbtk_widget_set_tooltip_text (button,
+  button = mx_button_new_with_label ("Bottom");
+  mx_widget_set_tooltip_text (button,
                            "Hello Hello Hello");
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (button));

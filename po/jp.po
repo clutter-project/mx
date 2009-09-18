@@ -13,73 +13,73 @@ msgstr ""
 "X-Poedit-SourceCharset: utf-8\n"
 
 # keep it in English to look cool
-#: ../nbtk/nbtk-gtk-light-switch.c:151
-#: ../nbtk/nbtk-gtk-light-switch.c:222
+#: ../mx/mx-gtk-light-switch.c:151
+#: ../mx/mx-gtk-light-switch.c:222
 msgid "On"
 msgstr "ON"
 
 # keep it in English to look cool
 #. Draw the second label; "Off"
-#: ../nbtk/nbtk-gtk-light-switch.c:167
-#: ../nbtk/nbtk-gtk-light-switch.c:220
+#: ../mx/mx-gtk-light-switch.c:167
+#: ../mx/mx-gtk-light-switch.c:220
 msgid "Off"
 msgstr "OFF"
 
 
-#: nbtk/nbtk-utils.c:92
+#: mx/mx-utils.c:92
 msgid "Less than a minute ago"
 msgstr ""
 
-#: nbtk/nbtk-utils.c:96
+#: mx/mx-utils.c:96
 msgid "A few minutes ago"
 msgstr ""
 
-#: nbtk/nbtk-utils.c:100
+#: mx/mx-utils.c:100
 msgid "A couple of hours ago"
 msgstr ""
 
-#: nbtk/nbtk-utils.c:107
+#: mx/mx-utils.c:107
 msgid "Earlier today"
 msgstr ""
 
-#: nbtk/nbtk-utils.c:110
+#: mx/mx-utils.c:110
 msgid "Yesterday"
 msgstr ""
 
-#: nbtk/nbtk-utils.c:118
+#: mx/mx-utils.c:118
 #, c-format
 msgid "On %A"
 msgstr ""
 
-#: nbtk/nbtk-utils.c:124
+#: mx/mx-utils.c:124
 msgid "Unknown"
 msgstr ""
 
-#: nbtk/nbtk-utils.c:131
+#: mx/mx-utils.c:131
 msgid "Last week"
 msgstr ""
 
-#: nbtk/nbtk-utils.c:134
+#: mx/mx-utils.c:134
 msgid "A couple of weeks ago"
 msgstr ""
 
-#: nbtk/nbtk-utils.c:140
+#: mx/mx-utils.c:140
 msgid "This month"
 msgstr ""
 
 #. Now Jan., last used in Dec.
-#: nbtk/nbtk-utils.c:144
+#: mx/mx-utils.c:144
 msgid "Last month"
 msgstr ""
 
-#: nbtk/nbtk-utils.c:147
+#: mx/mx-utils.c:147
 msgid "This year"
 msgstr ""
 
-#: nbtk/nbtk-utils.c:150
+#: mx/mx-utils.c:150
 msgid "Last year"
 msgstr ""
 
-#: nbtk/nbtk-utils.c:152
+#: mx/mx-utils.c:152
 msgid "Ages ago"
 msgstr ""

@@ -13,76 +13,76 @@ msgstr ""
 "X-Poedit-SourceCharset: utf-8\n"
 "Plural-Forms: nplurals=2; plural=n!=1;\n"
 
-#: ../nbtk/nbtk-gtk-light-switch.c:154
+#: ../mx/mx-gtk-light-switch.c:154
 msgid "Unavailable"
 msgstr "Ei käytettävissä"
 
-#: ../nbtk/nbtk-gtk-light-switch.c:171
-#: ../nbtk/nbtk-gtk-light-switch.c:242
+#: ../mx/mx-gtk-light-switch.c:171
+#: ../mx/mx-gtk-light-switch.c:242
 msgid "On"
 msgstr "Päällä"
 
 #. Draw the second label; "Off"
-#: ../nbtk/nbtk-gtk-light-switch.c:187
-#: ../nbtk/nbtk-gtk-light-switch.c:240
+#: ../mx/mx-gtk-light-switch.c:187
+#: ../mx/mx-gtk-light-switch.c:240
 msgid "Off"
 msgstr "Pois päältä"
 
 
-#: nbtk/nbtk-utils.c:92
+#: mx/mx-utils.c:92
 msgid "Less than a minute ago"
 msgstr "Alle minuutti sitten"
 
-#: nbtk/nbtk-utils.c:96
+#: mx/mx-utils.c:96
 msgid "A few minutes ago"
 msgstr "Muutama minuutti sitten"
 
-#: nbtk/nbtk-utils.c:100
+#: mx/mx-utils.c:100
 msgid "A couple of hours ago"
 msgstr "Muutama tunti sitten"
 
-#: nbtk/nbtk-utils.c:107
+#: mx/mx-utils.c:107
 msgid "Earlier today"
 msgstr "Tänään aikaisemmin"
 
-#: nbtk/nbtk-utils.c:110
+#: mx/mx-utils.c:110
 msgid "Yesterday"
 msgstr "Eilen"
 
-#: nbtk/nbtk-utils.c:118
+#: mx/mx-utils.c:118
 #, c-format
 msgid "On %A"
 msgstr "Päivämääränä %A"
 
-#: nbtk/nbtk-utils.c:124
+#: mx/mx-utils.c:124
 msgid "Unknown"
 msgstr "Tuntematon"
 
-#: nbtk/nbtk-utils.c:131
+#: mx/mx-utils.c:131
 msgid "Last week"
 msgstr "Viime viikolla"
 
-#: nbtk/nbtk-utils.c:134
+#: mx/mx-utils.c:134
 msgid "A couple of weeks ago"
 msgstr "Pari viikkoa sitten"
 
-#: nbtk/nbtk-utils.c:140
+#: mx/mx-utils.c:140
 msgid "This month"
 msgstr "Tässä kuussa"
 
 #. Now Jan., last used in Dec.
-#: nbtk/nbtk-utils.c:144
+#: mx/mx-utils.c:144
 msgid "Last month"
 msgstr "Viime kuussa"
 
-#: nbtk/nbtk-utils.c:147
+#: mx/mx-utils.c:147
 msgid "This year"
 msgstr "Tänä vuonna"
 
-#: nbtk/nbtk-utils.c:150
+#: mx/mx-utils.c:150
 msgid "Last year"
 msgstr "Viime vuonna"
 
-#: nbtk/nbtk-utils.c:152
+#: mx/mx-utils.c:152
 msgid "Ages ago"
 msgstr "Aataminaikoina"

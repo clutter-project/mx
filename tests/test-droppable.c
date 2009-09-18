@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include <clutter/clutter.h>
-#include <nbtk/nbtk.h>
+#include <mx/mx.h>
 
 /* Droppable */
 
@@ -37,12 +37,12 @@ enum
 
 static const ClutterColor default_background_color = { 204, 204, 0, 255 };
 
-static void nbtk_droppable_iface_init (NbtkDroppableIface *iface);
+static void mx_droppable_iface_init (MxDroppableIface *iface);
 static GType droppable_group_get_type ();
 
 G_DEFINE_TYPE_WITH_CODE (DroppableGroup, droppable_group, CLUTTER_TYPE_GROUP,
-                         G_IMPLEMENT_INTERFACE (NBTK_TYPE_DROPPABLE,
-                                                nbtk_droppable_iface_init));
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_DROPPABLE,
+                                                mx_droppable_iface_init));
 
 static void
 droppable_group_dispose (GObject *gobject)
@@ -59,8 +59,8 @@ droppable_group_dispose (GObject *gobject)
 }
 
 static void
-droppable_group_over_in (NbtkDroppable *droppable,
-                         NbtkDraggable *draggable)
+droppable_group_over_in (MxDroppable *droppable,
+                         MxDraggable *draggable)
 {
   g_debug (G_STRLOC ": over-in");
   clutter_actor_animate (CLUTTER_ACTOR (droppable),
@@ -71,8 +71,8 @@ droppable_group_over_in (NbtkDroppable *droppable,
 }
 
 static void
-droppable_group_over_out (NbtkDroppable *droppable,
-                          NbtkDraggable *draggable)
+droppable_group_over_out (MxDroppable *droppable,
+                          MxDraggable *draggable)
 {
   g_debug (G_STRLOC ": over-out");
   clutter_actor_animate (CLUTTER_ACTOR (droppable),
@@ -83,8 +83,8 @@ droppable_group_over_out (NbtkDroppable *droppable,
 }
 
 static void
-droppable_group_drop (NbtkDroppable       *droppable,
-                      NbtkDraggable       *draggable,
+droppable_group_drop (MxDroppable       *droppable,
+                      MxDraggable       *draggable,
                       gfloat               event_x,
                       gfloat               event_y,
                       gint                 button,
@@ -111,7 +111,7 @@ droppable_group_drop (NbtkDroppable       *droppable,
 }
 
 static void
-nbtk_droppable_iface_init (NbtkDroppableIface *iface)
+mx_droppable_iface_init (MxDroppableIface *iface)
 {
   iface->over_in = droppable_group_over_in;
   iface->over_out = droppable_group_over_out;
@@ -138,9 +138,9 @@ droppable_group_set_property (GObject      *gobject,
     case DROP_PROP_ENABLED:
       group->is_enabled = g_value_get_boolean (value);
       if (group->is_enabled)
-        nbtk_droppable_enable (NBTK_DROPPABLE (gobject));
+        mx_droppable_enable (MX_DROPPABLE (gobject));
       else
-        nbtk_droppable_disable (NBTK_DROPPABLE (gobject));
+        mx_droppable_disable (MX_DROPPABLE (gobject));
       break;
 
     default:
@@ -217,9 +217,9 @@ struct _DraggableRectangle
   /* Draggable properties */
   guint threshold;
 
-  NbtkDragAxis axis;
+  MxDragAxis axis;
 
-  NbtkDragContainment containment;
+  MxDragContainment containment;
   ClutterActorBox area;
 
   guint is_enabled : 1;
@@ -242,17 +242,17 @@ enum
   DRAG_PROP_ACTOR,
 };
 
-static void nbtk_draggable_iface_init (NbtkDraggableIface *iface);
+static void mx_draggable_iface_init (MxDraggableIface *iface);
 static GType draggable_rectangle_get_type ();
 
 G_DEFINE_TYPE_WITH_CODE (DraggableRectangle,
                          draggable_rectangle,
                          CLUTTER_TYPE_RECTANGLE,
-                         G_IMPLEMENT_INTERFACE (NBTK_TYPE_DRAGGABLE,
-                                                nbtk_draggable_iface_init));
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_DRAGGABLE,
+                                                mx_draggable_iface_init));
 
 static void
-draggable_rectangle_drag_begin (NbtkDraggable       *draggable,
+draggable_rectangle_drag_begin (MxDraggable       *draggable,
                                 gfloat               event_x,
                                 gfloat               event_y,
                                 gint                 event_button,
@@ -276,7 +276,7 @@ draggable_rectangle_drag_begin (NbtkDraggable       *draggable,
 }
 
 static void
-draggable_rectangle_drag_motion (NbtkDraggable *draggable,
+draggable_rectangle_drag_motion (MxDraggable *draggable,
                                  gfloat         delta_x,
                                  gfloat         delta_y)
 {
@@ -284,7 +284,7 @@ draggable_rectangle_drag_motion (NbtkDraggable *draggable,
 }
 
 static void
-draggable_rectangle_drag_end (NbtkDraggable *draggable,
+draggable_rectangle_drag_end (MxDraggable *draggable,
                               gfloat         event_x,
                               gfloat         event_y)
 {
@@ -296,7 +296,7 @@ draggable_rectangle_drag_end (NbtkDraggable *draggable,
 }
 
 static void
-nbtk_draggable_iface_init (NbtkDraggableIface *iface)
+mx_draggable_iface_init (MxDraggableIface *iface)
 {
   iface->drag_begin = draggable_rectangle_drag_begin;
   iface->drag_motion = draggable_rectangle_drag_motion;
@@ -352,9 +352,9 @@ draggable_rectangle_set_property (GObject      *gobject,
     case DRAG_PROP_ENABLED:
       rect->is_enabled = g_value_get_boolean (value);
       if (rect->is_enabled)
-        nbtk_draggable_enable (NBTK_DRAGGABLE (gobject));
+        mx_draggable_enable (MX_DRAGGABLE (gobject));
       else
-        nbtk_draggable_disable (NBTK_DRAGGABLE (gobject));
+        mx_draggable_disable (MX_DRAGGABLE (gobject));
       break;
 
     case DRAG_PROP_ACTOR:
@@ -441,7 +441,7 @@ draggable_rectangle_init (DraggableRectangle *self)
 {
   self->threshold = 0;
   self->axis = 0;
-  self->containment = NBTK_DISABLE_CONTAINMENT;
+  self->containment = MX_DISABLE_CONTAINMENT;
   self->is_enabled = FALSE;
 }
 
@@ -468,14 +468,14 @@ main (int argc, char *argv[])
   clutter_actor_set_position (droppable, 500, 50);
   clutter_actor_set_reactive (droppable, TRUE);
   clutter_actor_set_name (droppable, "Drop Target 1");
-  nbtk_droppable_enable (NBTK_DROPPABLE (droppable));
+  mx_droppable_enable (MX_DROPPABLE (droppable));
 
   droppable = g_object_new (DROPPABLE_TYPE_GROUP, NULL);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), droppable);
   clutter_actor_set_position (droppable, 500, 350);
   clutter_actor_set_reactive (droppable, TRUE);
   clutter_actor_set_name (droppable, "Drop Target 2");
-  nbtk_droppable_enable (NBTK_DROPPABLE (droppable));
+  mx_droppable_enable (MX_DROPPABLE (droppable));
 
   draggable = g_object_new (DRAGGABLE_TYPE_RECTANGLE,
                             "color", &rect_color1,
@@ -484,7 +484,7 @@ main (int argc, char *argv[])
   clutter_actor_set_size (draggable, 50, 50);
   clutter_actor_set_position (draggable, 75, 250);
   clutter_actor_set_reactive (draggable, TRUE);
-  nbtk_draggable_enable (NBTK_DRAGGABLE (draggable));
+  mx_draggable_enable (MX_DRAGGABLE (draggable));
 
   draggable = g_object_new (DRAGGABLE_TYPE_RECTANGLE,
                             "color", &rect_color2,
@@ -493,7 +493,7 @@ main (int argc, char *argv[])
   clutter_actor_set_size (draggable, 50, 50);
   clutter_actor_set_position (draggable, 125, 250);
   clutter_actor_set_reactive (draggable, TRUE);
-  nbtk_draggable_enable (NBTK_DRAGGABLE (draggable));
+  mx_draggable_enable (MX_DRAGGABLE (draggable));
 
   draggable = g_object_new (DRAGGABLE_TYPE_RECTANGLE,
                             "color", &rect_color3,
@@ -502,7 +502,7 @@ main (int argc, char *argv[])
   clutter_actor_set_size (draggable, 50, 50);
   clutter_actor_set_position (draggable, 75, 300);
   clutter_actor_set_reactive (draggable, TRUE);
-  nbtk_draggable_enable (NBTK_DRAGGABLE (draggable));
+  mx_draggable_enable (MX_DRAGGABLE (draggable));
 
   draggable = g_object_new (DRAGGABLE_TYPE_RECTANGLE,
                             "color", &rect_color4,
@@ -511,7 +511,7 @@ main (int argc, char *argv[])
   clutter_actor_set_size (draggable, 50, 50);
   clutter_actor_set_position (draggable, 125, 300);
   clutter_actor_set_reactive (draggable, TRUE);
-  nbtk_draggable_enable (NBTK_DRAGGABLE (draggable));
+  mx_draggable_enable (MX_DRAGGABLE (draggable));
 
 
 

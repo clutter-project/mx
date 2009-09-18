@@ -4,9 +4,9 @@
 
 #include <gmodule.h>
 #include <clutter/clutter.h>
-#include <nbtk/nbtk.h>
+#include <mx/mx.h>
 
-#define NBTK_SO "../nbtk/.libs/libnbtk-1.0.so"
+#define MX_SO "../mx/.libs/libmx-1.0.so"
 
 typedef struct
 {
@@ -38,7 +38,7 @@ read_types (const gchar *filename)
   types = NULL;
   while (-1 < getline (&line, &len, fp))
     {
-      if (g_str_has_prefix (line, "nbtk_"))
+      if (g_str_has_prefix (line, "mx_"))
         {
           types = g_list_prepend (types, g_strstrip (line));
         }
@@ -52,7 +52,7 @@ read_types (const gchar *filename)
 
 static void
 stage_test_actor (ClutterActor *stage,
-                  NbtkWidget   *actor,
+                  MxWidget   *actor,
                   guint         n_iterations)
 {
   guint style_changed_id;
@@ -63,11 +63,11 @@ stage_test_actor (ClutterActor *stage,
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
                                CLUTTER_ACTOR (actor));
 
-  style_changed_id = g_signal_lookup ("style-changed", NBTK_TYPE_WIDGET);
+  style_changed_id = g_signal_lookup ("style-changed", MX_TYPE_WIDGET);
   for (i = 0; i < n_iterations; i++)
     {
       /* g_signal_emit (actor, style_changed_id, 0); */
-      NBTK_WIDGET_GET_CLASS (actor)->style_changed (actor);
+      MX_WIDGET_GET_CLASS (actor)->style_changed (actor);
     }
 
   clutter_container_remove_actor (CLUTTER_CONTAINER (stage),
@@ -84,17 +84,17 @@ test_idle_cb (test_benchmark_t *test)
 
   symbol_name = (const gchar *) test->types->data;
   if (g_module_symbol (test->module, symbol_name, (gpointer *) &get_type) &&
-      g_type_is_a (get_type (), NBTK_TYPE_WIDGET) &&
-      get_type () != NBTK_TYPE_WIDGET)
+      g_type_is_a (get_type (), MX_TYPE_WIDGET) &&
+      get_type () != MX_TYPE_WIDGET)
     {
-      NbtkWidget *actor = (NbtkWidget *) g_object_new (get_type (), NULL);
+      MxWidget *actor = (MxWidget *) g_object_new (get_type (), NULL);
       g_object_ref_sink (actor);
       stage_test_actor (test->stage, actor, test->n_iterations);
       g_object_unref (actor);
     }
   else if (!get_type)
     {
-      g_warning (G_STRLOC " failed to resolve symbol '%s' or not an NbtkWidget", symbol_name);
+      g_warning (G_STRLOC " failed to resolve symbol '%s' or not an MxWidget", symbol_name);
     }
 
   free (test->types->data);
@@ -123,17 +123,17 @@ main (int argc, char *argv[])
   else
     test.n_iterations = 50;
 
-  nbtk_style_load_from_file (nbtk_style_get_default (),
+  mx_style_load_from_file (mx_style_get_default (),
                              "style/default.css", NULL);
 
-  test.module = g_module_open (NBTK_SO, G_MODULE_BIND_LAZY);
+  test.module = g_module_open (MX_SO, G_MODULE_BIND_LAZY);
   if (!test.module)
     {
-      g_warning (G_STRLOC " Could not dlopen '%s'", NBTK_SO);
+      g_warning (G_STRLOC " Could not dlopen '%s'", MX_SO);
       return EXIT_FAILURE;
     }
 
-  test.types = read_types ("../docs/reference/libnbtk/nbtk.types");
+  test.types = read_types ("../docs/reference/libmx/mx.types");
   if (test.types)
     g_idle_add ((GSourceFunc) test_idle_cb, &test);
 

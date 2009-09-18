@@ -22,10 +22,10 @@
 #include <glib.h>
 
 #include <clutter/clutter.h>
-#include <nbtk/nbtk.h>
+#include <mx/mx.h>
 
 static void
-toggle_expand (NbtkButton *button, ClutterContainer *table)
+toggle_expand (MxButton *button, ClutterContainer *table)
 {
   gboolean x_expand;
   gchar *label;
@@ -43,13 +43,13 @@ toggle_expand (NbtkButton *button, ClutterContainer *table)
                                NULL);
 
   label = g_strdup_printf ("Expand = %d", x_expand);
-  nbtk_button_set_label (button, label);
+  mx_button_set_label (button, label);
 
   g_free (label);
 }
 
 static void
-randomise_align (NbtkButton *button, ClutterContainer *table)
+randomise_align (MxButton *button, ClutterContainer *table)
 {
   gdouble x_align, y_align;
   gchar *label;
@@ -63,7 +63,7 @@ randomise_align (NbtkButton *button, ClutterContainer *table)
                                NULL);
 
   label = g_strdup_printf ("Align (%.2lf, %.2lf)", x_align, y_align);
-  nbtk_button_set_label (button, label);
+  mx_button_set_label (button, label);
   g_free (label);
 }
 
@@ -79,7 +79,7 @@ stage_size_notify_cb (ClutterActor *stage,
 }
 
 static void
-toggle_visible (NbtkButton *button)
+toggle_visible (MxButton *button)
 {
   clutter_actor_hide (CLUTTER_ACTOR (button));
 }
@@ -88,23 +88,23 @@ int
 main (int argc, char *argv[])
 {
   ClutterActor *stage, *button2;
-  NbtkWidget *table;
-  NbtkWidget *button1, *button3, *button4, *button5,
+  MxWidget *table;
+  MxWidget *button1, *button3, *button4, *button5,
              *button6, *button7, *button8, *button9,
              *button10;
 
   clutter_init (&argc, &argv);
 
   /* load the style sheet */
-  nbtk_style_load_from_file (nbtk_style_get_default (),
+  mx_style_load_from_file (mx_style_get_default (),
                              "style/default.css", NULL);
 
   stage = clutter_stage_get_default ();
   clutter_stage_set_user_resizable (CLUTTER_STAGE (stage), TRUE);
 
-  table = nbtk_table_new ();
-  nbtk_table_set_col_spacing (NBTK_TABLE (table), 10);
-  nbtk_table_set_row_spacing (NBTK_TABLE (table), 10);
+  table = mx_table_new ();
+  mx_table_set_col_spacing (MX_TABLE (table), 10);
+  mx_table_set_row_spacing (MX_TABLE (table), 10);
 
 
   g_signal_connect (stage, "notify::width",
@@ -112,30 +112,30 @@ main (int argc, char *argv[])
   g_signal_connect (stage, "notify::height",
                     G_CALLBACK (stage_size_notify_cb), table);
 
-  button1 = nbtk_button_new_with_label ("button1");
+  button1 = mx_button_new_with_label ("button1");
   button2 = clutter_texture_new_from_file ("redhand.png", NULL);
-  button3 = nbtk_button_new_with_label ("button3");
-  button4 = nbtk_button_new_with_label ("Expand = 1");
-  button5 = nbtk_button_new_with_label ("button5");
-  button6 = nbtk_button_new_with_label ("button6");
-  button7 = nbtk_button_new_with_label ("Align (0.50, 0.50)");
-  button8 = nbtk_button_new_with_label ("button8");
-  button9 = nbtk_button_new_with_label ("button9");
-  button10 = nbtk_button_new_with_label ("button10");
+  button3 = mx_button_new_with_label ("button3");
+  button4 = mx_button_new_with_label ("Expand = 1");
+  button5 = mx_button_new_with_label ("button5");
+  button6 = mx_button_new_with_label ("button6");
+  button7 = mx_button_new_with_label ("Align (0.50, 0.50)");
+  button8 = mx_button_new_with_label ("button8");
+  button9 = mx_button_new_with_label ("button9");
+  button10 = mx_button_new_with_label ("button10");
 
-  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button1), 0, 0);
-  nbtk_table_add_actor (NBTK_TABLE (table), button2, 0, 1);
-  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button3), 1, 1);
-  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button4), 2, 0);
-  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button5), 3, 0);
-  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button6), 3, 1);
-  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button7), 4, 1);
-  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button8), 4, 0);
-  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button9), 5, 0);
-  nbtk_table_add_actor (NBTK_TABLE (table), CLUTTER_ACTOR (button10), -1, 0);
-  nbtk_table_child_set_row_span (NBTK_TABLE (table), CLUTTER_ACTOR (button1), 2);
-  nbtk_table_child_set_row_span (NBTK_TABLE (table), CLUTTER_ACTOR (button7), 2);
-  nbtk_table_child_set_col_span (NBTK_TABLE (table), CLUTTER_ACTOR (button4), 2);
+  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (button1), 0, 0);
+  mx_table_add_actor (MX_TABLE (table), button2, 0, 1);
+  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (button3), 1, 1);
+  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (button4), 2, 0);
+  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (button5), 3, 0);
+  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (button6), 3, 1);
+  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (button7), 4, 1);
+  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (button8), 4, 0);
+  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (button9), 5, 0);
+  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (button10), -1, 0);
+  mx_table_child_set_row_span (MX_TABLE (table), CLUTTER_ACTOR (button1), 2);
+  mx_table_child_set_row_span (MX_TABLE (table), CLUTTER_ACTOR (button7), 2);
+  mx_table_child_set_col_span (MX_TABLE (table), CLUTTER_ACTOR (button4), 2);
 
 
   clutter_actor_set_size (CLUTTER_ACTOR (button1), 100, 100);
@@ -185,9 +185,9 @@ main (int argc, char *argv[])
   clutter_actor_show (stage);
 
   g_debug ("table row count = %d",
-           nbtk_table_get_row_count (NBTK_TABLE (table)));
+           mx_table_get_row_count (MX_TABLE (table)));
   g_debug ("table column count = %d",
-           nbtk_table_get_column_count (NBTK_TABLE (table)));
+           mx_table_get_column_count (MX_TABLE (table)));
 
   clutter_main ();
 

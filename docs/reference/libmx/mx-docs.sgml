@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+<!ENTITY version SYSTEM "version.xml">
+]>
+
+<book id="index" xmlns:xi="http://www.w3.org/2003/XInclude">
+  <bookinfo>
+    <title>Netbook Toolkit Reference Manual</title>
+    <releaseinfo>
+      for mx &version;
+    </releaseinfo>
+
+    <copyright>
+      <year>2009</year>
+      <holder>Intel Corporation</holder>
+    </copyright>
+  </bookinfo>
+
+  <part>
+    <title>Clutter Actors and Utilities</title>
+    <chapter>
+      <title>Widgets</title>
+      <xi:include href="xml/mx-widget.xml"/>
+      <xi:include href="xml/mx-button.xml"/>
+      <xi:include href="xml/mx-combo-box.xml"/>
+      <xi:include href="xml/mx-entry.xml"/>
+      <xi:include href="xml/mx-icon.xml"/>
+      <xi:include href="xml/mx-label.xml"/>
+      <xi:include href="xml/mx-popup.xml"/>
+      <xi:include href="xml/mx-progress-bar.xml"/>
+      <xi:include href="xml/mx-scroll-bar.xml"/>
+      <xi:include href="xml/mx-texture-frame.xml"/>
+      <xi:include href="xml/mx-tooltip.xml"/>
+    </chapter>
+    <chapter>
+      <title>Containers</title>
+      <xi:include href="xml/mx-bin.xml"/>
+      <xi:include href="xml/mx-box-layout-child.xml"/>
+      <xi:include href="xml/mx-box-layout.xml"/>
+      <xi:include href="xml/mx-expander.xml"/>
+      <xi:include href="xml/mx-grid.xml"/>
+      <xi:include href="xml/mx-scroll-view.xml"/>
+      <xi:include href="xml/mx-table-child.xml"/>
+      <xi:include href="xml/mx-table.xml"/>
+      <xi:include href="xml/mx-viewport.xml"/>
+    </chapter>
+    <chapter>
+      <title>Data Views</title>
+      <xi:include href="xml/mx-item-view.xml"/>
+      <xi:include href="xml/mx-list-view.xml"/>
+    </chapter>
+    <chapter>
+      <title>Interfaces</title>
+      <xi:include href="xml/mx-draggable.xml"/>
+      <xi:include href="xml/mx-droppable.xml"/>
+      <xi:include href="xml/mx-item-factory.xml"/>
+      <xi:include href="xml/mx-scrollable.xml"/>
+      <xi:include href="xml/mx-stylable.xml"/>
+    </chapter>
+    <chapter>
+      <title>Types and Utilities</title>
+      <xi:include href="xml/mx-action.xml"/>
+      <xi:include href="xml/mx-adjustment.xml"/>
+      <xi:include href="xml/mx-clipboard.xml"/>
+      <xi:include href="xml/mx-style.xml"/>
+      <xi:include href="xml/mx-subtexture.xml"/>
+      <xi:include href="xml/mx-texture-cache.xml"/>
+      <xi:include href="xml/mx-types.xml"/>
+      <xi:include href="xml/mx-utils.xml"/>
+    </chapter>
+  </part>
+  <part>
+    <title>Mx for GTK+</title>
+    <chapter>
+      <title>Widgets</title>
+      <xi:include href="xml/mx-gtk-expander.xml"/>
+      <xi:include href="xml/mx-gtk-frame.xml"/>
+      <xi:include href="xml/mx-gtk-light-switch.xml"/>
+    </chapter>
+  </part>
+
+  <index>
+    <title>Index of all symbols</title>
+    <xi:include href="xml/api-index-full.xml"><xi:fallback/></xi:include>
+  </index>
+</book>

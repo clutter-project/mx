@@ -1,44 +1,44 @@
 
-NbtkLabel {
+MxLabel {
   color: red;
   background-color: yellow;
   font-size: 30;
   font-family: "Times";
 }
 
-NbtkLabel#padded-label {
+MxLabel#padded-label {
   padding-left: 50;
   padding: 10;
 }
 
-NbtkButton, NbtkFadeButton, NbtkScrollButton {
+MxButton, MxFadeButton, MxScrollButton {
   color: blue;
   padding: 12;
   border-image: url('file://border-image.png') 12 stretch stretch;
 }
 
-NbtkButton:hover, NbtkFadeButton:hover, NbtkScrollButton:hover {
+MxButton:hover, MxFadeButton:hover, MxScrollButton:hover {
   border-image: url('file://border-image-light.png') 12 stretch stretch;
 }
 
-NbtkButton:active, NbtkFadeButton:active, NbtkScrollButton:active {
+MxButton:active, MxFadeButton:active, MxScrollButton:active {
   border-image: url('file://border-image-dark.png') 12 stretch stretch;
 }
 
-NbtkButton#test-border-image {
+MxButton#test-border-image {
   color: black;
   border-image: url('file://border-image.png') 12 stretch stretch;
 }
 
-NbtkButton NbtkBin#button-icon {
+MxButton MxBin#button-icon {
   background-color: green;
 }
 
-NbtkButton NbtkBin#button-icon:hover {
+MxButton MxBin#button-icon:hover {
   background-color: yellow;
 }
 
-NbtkLabel#test-border-image {
+MxLabel#test-border-image {
   color: black;
   border-image: url('file://border-image.png') 12 stretch stretch;
   border-width: 12;
@@ -64,7 +64,7 @@ NbtkLabel#test-border-image {
   border-image: url('file://red-button.png') 0;
 }
 
-NbtkTable {
+MxTable {
   color: #aee;
   background-color: #ddd;
   border-image: url('file://rounded-corner.png') 30;
