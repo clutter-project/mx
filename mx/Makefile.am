@@ -32,6 +32,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-list-view.h 		\
 	$(top_srcdir)/mx/mx-icon.h 			\
 	$(top_srcdir)/mx/mx-label.h 		\
+	$(top_srcdir)/mx/mx-notebook.h 		\
 	$(top_srcdir)/mx/mx-progress-bar.h		\
 	$(top_srcdir)/mx/mx-popup.h 		\
 	$(top_srcdir)/mx/mx-scroll-bar.h 		\
@@ -79,6 +80,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-item-view.c 		\
 	$(top_srcdir)/mx/mx-list-view.c 		\
 	$(top_srcdir)/mx/mx-label.c 		\
+	$(top_srcdir)/mx/mx-notebook.c 		\
 	$(top_srcdir)/mx/mx-progress-bar.c		\
 	$(top_srcdir)/mx/mx-popup.c			\
 	$(top_srcdir)/mx/mx-scroll-bar.c 		\
