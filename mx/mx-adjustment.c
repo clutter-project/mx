@@ -51,17 +51,17 @@ struct _MxAdjustmentPrivate
    * not all properties may be set yet. */
   gboolean is_constructing : 1;
 
-  gdouble lower;
-  gdouble upper;
-  gdouble value;
-  gdouble step_increment;
-  gdouble page_increment;
-  gdouble page_size;
+  gdouble  lower;
+  gdouble  upper;
+  gdouble  value;
+  gdouble  step_increment;
+  gdouble  page_increment;
+  gdouble  page_size;
 
   /* For interpolation */
   ClutterTimeline *interpolation;
-  gdouble old_position;
-  gdouble new_position;
+  gdouble          old_position;
+  gdouble          new_position;
 
   /* For elasticity */
   gboolean      elastic;
@@ -93,15 +93,15 @@ enum
 static guint signals[LAST_SIGNAL] = { 0, };
 
 static gboolean mx_adjustment_set_lower          (MxAdjustment *adjustment,
-                                                    gdouble         lower);
+                                                  gdouble       lower);
 static gboolean mx_adjustment_set_upper          (MxAdjustment *adjustment,
-                                                    gdouble         upper);
+                                                  gdouble       upper);
 static gboolean mx_adjustment_set_step_increment (MxAdjustment *adjustment,
-                                                    gdouble         step);
+                                                  gdouble       step);
 static gboolean mx_adjustment_set_page_increment (MxAdjustment *adjustment,
-                                                    gdouble         page);
+                                                  gdouble       page);
 static gboolean mx_adjustment_set_page_size      (MxAdjustment *adjustment,
-                                                    gdouble         size);
+                                                  gdouble       size);
 
 static void
 mx_adjustment_constructed (GObject *object)
@@ -124,9 +124,9 @@ mx_adjustment_constructed (GObject *object)
 
 static void
 mx_adjustment_get_property (GObject    *gobject,
-                              guint       prop_id,
-                              GValue     *value,
-                              GParamSpec *pspec)
+                            guint       prop_id,
+                            GValue     *value,
+                            GParamSpec *pspec)
 {
   MxAdjustmentPrivate *priv = MX_ADJUSTMENT (gobject)->priv;
 
@@ -168,9 +168,9 @@ mx_adjustment_get_property (GObject    *gobject,
 
 static void
 mx_adjustment_set_property (GObject      *gobject,
-                              guint         prop_id,
-                              const GValue *value,
-                              GParamSpec   *pspec)
+                            guint         prop_id,
+                            const GValue *value,
+                            GParamSpec   *pspec)
 {
   MxAdjustment *adj = MX_ADJUSTMENT (gobject);
 
@@ -324,8 +324,8 @@ mx_adjustment_class_init (MxAdjustmentClass *klass)
                                                          "'elastic' way and "
                                                          "stop clamping value.",
                                                          FALSE,
-                                                        MX_PARAM_READWRITE |
-                                                        G_PARAM_CONSTRUCT));
+                                                         MX_PARAM_READWRITE |
+                                                         G_PARAM_CONSTRUCT));
 
   /**
    * MxAdjustment::changed:
@@ -352,11 +352,11 @@ mx_adjustment_init (MxAdjustment *self)
 
 MxAdjustment *
 mx_adjustment_new (gdouble value,
-                     gdouble lower,
-                     gdouble upper,
-                     gdouble step_increment,
-                     gdouble page_increment,
-                     gdouble page_size)
+                   gdouble lower,
+                   gdouble upper,
+                   gdouble step_increment,
+                   gdouble page_increment,
+                   gdouble page_size)
 {
   return g_object_new (MX_TYPE_ADJUSTMENT,
                        "value", value,
@@ -389,7 +389,7 @@ mx_adjustment_get_value (MxAdjustment *adjustment)
 
 void
 mx_adjustment_set_value (MxAdjustment *adjustment,
-                           gdouble         value)
+                         gdouble       value)
 {
   MxAdjustmentPrivate *priv;
 
@@ -418,8 +418,8 @@ mx_adjustment_set_value (MxAdjustment *adjustment,
 
 void
 mx_adjustment_clamp_page (MxAdjustment *adjustment,
-                            gdouble         lower,
-                            gdouble         upper)
+                          gdouble       lower,
+                          gdouble       upper)
 {
   MxAdjustmentPrivate *priv;
   gboolean changed;
@@ -453,7 +453,7 @@ mx_adjustment_clamp_page (MxAdjustment *adjustment,
 
 static gboolean
 mx_adjustment_set_lower (MxAdjustment *adjustment,
-                           gdouble         lower)
+                         gdouble       lower)
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
 
@@ -477,7 +477,7 @@ mx_adjustment_set_lower (MxAdjustment *adjustment,
 
 static gboolean
 mx_adjustment_set_upper (MxAdjustment *adjustment,
-                           gdouble         upper)
+                         gdouble       upper)
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
 
@@ -501,7 +501,7 @@ mx_adjustment_set_upper (MxAdjustment *adjustment,
 
 static gboolean
 mx_adjustment_set_step_increment (MxAdjustment *adjustment,
-                                    gdouble         step)
+                                  gdouble       step)
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
 
@@ -521,7 +521,7 @@ mx_adjustment_set_step_increment (MxAdjustment *adjustment,
 
 static gboolean
 mx_adjustment_set_page_increment (MxAdjustment *adjustment,
-                                    gdouble         page)
+                                  gdouble       page)
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
 
@@ -541,7 +541,7 @@ mx_adjustment_set_page_increment (MxAdjustment *adjustment,
 
 static gboolean
 mx_adjustment_set_page_size (MxAdjustment *adjustment,
-                               gdouble         size)
+                             gdouble       size)
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
 
@@ -565,12 +565,12 @@ mx_adjustment_set_page_size (MxAdjustment *adjustment,
 
 void
 mx_adjustment_set_values (MxAdjustment *adjustment,
-                            gdouble         value,
-                            gdouble         lower,
-                            gdouble         upper,
-                            gdouble         step_increment,
-                            gdouble         page_increment,
-                            gdouble         page_size)
+                          gdouble       value,
+                          gdouble       lower,
+                          gdouble       upper,
+                          gdouble       step_increment,
+                          gdouble       page_increment,
+                          gdouble       page_size)
 {
   MxAdjustmentPrivate *priv;
   gboolean emit_changed = FALSE;
@@ -608,12 +608,12 @@ mx_adjustment_set_values (MxAdjustment *adjustment,
 
 void
 mx_adjustment_get_values (MxAdjustment *adjustment,
-                            gdouble        *value,
-                            gdouble        *lower,
-                            gdouble        *upper,
-                            gdouble        *step_increment,
-                            gdouble        *page_increment,
-                            gdouble        *page_size)
+                          gdouble      *value,
+                          gdouble      *lower,
+                          gdouble      *upper,
+                          gdouble      *step_increment,
+                          gdouble      *page_increment,
+                          gdouble      *page_size)
 {
   MxAdjustmentPrivate *priv;
 
@@ -643,7 +643,7 @@ mx_adjustment_get_values (MxAdjustment *adjustment,
 static void
 interpolation_new_frame_cb (ClutterTimeline *timeline,
                             guint            msecs,
-                            MxAdjustment  *adjustment)
+                            MxAdjustment    *adjustment)
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
 
@@ -653,23 +653,23 @@ interpolation_new_frame_cb (ClutterTimeline *timeline,
     {
       gdouble progress = clutter_alpha_get_alpha (priv->bounce_alpha) / 1.0;
       gdouble dx = priv->old_position
-                 + (priv->new_position - priv->old_position)
-                 * progress;
+                   + (priv->new_position - priv->old_position)
+                   * progress;
 
       mx_adjustment_set_value (adjustment, dx);
     }
   else
     mx_adjustment_set_value (adjustment,
-                               priv->old_position +
-                               (priv->new_position - priv->old_position) *
-                               clutter_timeline_get_progress (timeline));
+                             priv->old_position +
+                             (priv->new_position - priv->old_position) *
+                             clutter_timeline_get_progress (timeline));
 
   priv->interpolation = timeline;
 }
 
 static void
 interpolation_completed_cb (ClutterTimeline *timeline,
-                            MxAdjustment  *adjustment)
+                            MxAdjustment    *adjustment)
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
 
@@ -684,25 +684,25 @@ interpolation_completed_cb (ClutterTimeline *timeline,
  * better. Leaving code here in case this is revisited.
  */
 /*
-static guint32
-bounce_alpha_func (ClutterAlpha *alpha,
+   static guint32
+   bounce_alpha_func (ClutterAlpha *alpha,
                    gpointer      user_data)
-{
-  ClutterFixed progress, angle;
-  ClutterTimeline *timeline = clutter_alpha_get_timeline (alpha);
+   {
+   ClutterFixed progress, angle;
+   ClutterTimeline *timeline = clutter_alpha_get_timeline (alpha);
 
-  progress = clutter_timeline_get_progressx (timeline);
-  angle = clutter_qmulx (CFX_PI_2 + CFX_PI_4/2, progress);
+   progress = clutter_timeline_get_progressx (timeline);
+   angle = clutter_qmulx (CFX_PI_2 + CFX_PI_4/2, progress);
 
-  return clutter_sinx (angle) +
+   return clutter_sinx (angle) +
     (CFX_ONE - clutter_sinx (CFX_PI_2 + CFX_PI_4/2));
-}
-*/
+   }
+ */
 
 void
 mx_adjustment_interpolate (MxAdjustment *adjustment,
-                             gdouble         value,
-                             guint           duration)
+                           gdouble       value,
+                           guint         duration)
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
 
@@ -743,15 +743,15 @@ mx_adjustment_get_elastic (MxAdjustment *adjustment)
 
 void
 mx_adjustment_set_elastic (MxAdjustment *adjustment,
-                             gboolean        elastic)
+                           gboolean      elastic)
 {
   adjustment->priv->elastic = elastic;
 }
 
 gboolean
 mx_adjustment_clamp (MxAdjustment *adjustment,
-                       gboolean        interpolate,
-                       guint           duration)
+                     gboolean      interpolate,
+                     guint         duration)
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
   gdouble dest = priv->value;

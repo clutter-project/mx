@@ -27,7 +27,7 @@
  * #MxLabel is a simple widget for displaying text. It derives from
  * #MxWidget to add extra style and placement functionality over
  * #ClutterText. The internal #ClutterText is publicly accessibly to allow
- * applications to set further properties. 
+ * applications to set further properties.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -64,9 +64,9 @@ G_DEFINE_TYPE (MxLabel, mx_label, MX_TYPE_WIDGET);
 
 static void
 mx_label_set_property (GObject      *gobject,
-                           guint         prop_id,
-                           const GValue *value,
-                           GParamSpec   *pspec)
+                       guint         prop_id,
+                       const GValue *value,
+                       GParamSpec   *pspec)
 {
   MxLabel *label = MX_LABEL (gobject);
 
@@ -84,9 +84,9 @@ mx_label_set_property (GObject      *gobject,
 
 static void
 mx_label_get_property (GObject    *gobject,
-                           guint       prop_id,
-                           GValue     *value,
-                           GParamSpec *pspec)
+                       guint       prop_id,
+                       GValue     *value,
+                       GParamSpec *pspec)
 {
   MxLabelPrivate *priv = MX_LABEL (gobject)->priv;
 
@@ -112,10 +112,10 @@ mx_label_style_changed (MxWidget *self)
   gint font_size;
 
   mx_stylable_get (MX_STYLABLE (self),
-                     "color", &color,
-                     "font-family", &font_name,
-                     "font-size", &font_size,
-                     NULL);
+                   "color", &color,
+                   "font-family", &font_name,
+                   "font-size", &font_size,
+                   NULL);
 
   if (color)
     {
@@ -146,9 +146,9 @@ mx_label_style_changed (MxWidget *self)
 
 static void
 mx_label_get_preferred_width (ClutterActor *actor,
-                                gfloat        for_height,
-                                gfloat       *min_width_p,
-                                gfloat       *natural_width_p)
+                              gfloat        for_height,
+                              gfloat       *min_width_p,
+                              gfloat       *natural_width_p)
 {
   MxLabelPrivate *priv = MX_LABEL (actor)->priv;
   MxPadding padding = { 0, };
@@ -168,9 +168,9 @@ mx_label_get_preferred_width (ClutterActor *actor,
 
 static void
 mx_label_get_preferred_height (ClutterActor *actor,
-                                 gfloat        for_width,
-                                 gfloat       *min_height_p,
-                                 gfloat       *natural_height_p)
+                               gfloat        for_width,
+                               gfloat       *min_height_p,
+                               gfloat       *natural_height_p)
 {
   MxLabelPrivate *priv = MX_LABEL (actor)->priv;
   MxPadding padding = { 0, };
@@ -190,8 +190,8 @@ mx_label_get_preferred_height (ClutterActor *actor,
 
 static void
 mx_label_allocate (ClutterActor          *actor,
-                     const ClutterActorBox *box,
-                     ClutterAllocationFlags flags)
+                   const ClutterActorBox *box,
+                   ClutterAllocationFlags flags)
 {
   MxLabelPrivate *priv = MX_LABEL (actor)->priv;
   ClutterActorClass *parent_class;
@@ -330,8 +330,8 @@ mx_label_get_text (MxLabel *label)
  * Sets the text displayed on the label
  */
 void
-mx_label_set_text (MxLabel *label,
-                     const gchar *text)
+mx_label_set_text (MxLabel     *label,
+                   const gchar *text)
 {
   MxLabelPrivate *priv;
 

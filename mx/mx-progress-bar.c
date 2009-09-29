@@ -36,23 +36,23 @@
 
 #define MX_PROGRESS_BAR_FILL(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-  MX_TYPE_PROGRESS_BAR_FILL, MxProgressBarFill))
+                               MX_TYPE_PROGRESS_BAR_FILL, MxProgressBarFill))
 
 #define MX_PROGRESS_BAR_FILL_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_CAST ((klass), \
-  MX_TYPE_PROGRESS_BAR_FILL, MxProgressBarFillClass))
+                            MX_TYPE_PROGRESS_BAR_FILL, MxProgressBarFillClass))
 
 #define MX_IS_PROGRESS_BAR_FILL(obj) \
   (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
-  MX_TYPE_PROGRESS_BAR_FILL))
+                               MX_TYPE_PROGRESS_BAR_FILL))
 
 #define MX_IS_PROGRESS_BAR_FILL_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_TYPE ((klass), \
-  MX_TYPE_PROGRESS_BAR_FILL))
+                            MX_TYPE_PROGRESS_BAR_FILL))
 
 #define MX_PROGRESS_BAR_FILL_GET_CLASS(obj) \
   (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-  MX_TYPE_PROGRESS_BAR_FILL, MxProgressBarFillClass))
+                              MX_TYPE_PROGRESS_BAR_FILL, MxProgressBarFillClass))
 
 typedef struct
 {
@@ -86,8 +86,10 @@ enum
 };
 
 static void
-mx_progress_bar_get_property (GObject *object, guint property_id,
-                                GValue *value, GParamSpec *pspec)
+mx_progress_bar_get_property (GObject    *object,
+                              guint       property_id,
+                              GValue     *value,
+                              GParamSpec *pspec)
 {
   MxProgressBar *self = MX_PROGRESS_BAR (object);
 
@@ -103,8 +105,10 @@ mx_progress_bar_get_property (GObject *object, guint property_id,
 }
 
 static void
-mx_progress_bar_set_property (GObject *object, guint property_id,
-                                const GValue *value, GParamSpec *pspec)
+mx_progress_bar_set_property (GObject      *object,
+                              guint         property_id,
+                              const GValue *value,
+                              GParamSpec   *pspec)
 {
   MxProgressBar *self = MX_PROGRESS_BAR (object);
 
@@ -151,9 +155,9 @@ mx_progress_bar_paint (ClutterActor *actor)
 }
 
 static void
-mx_progress_bar_allocate_fill (MxProgressBar        *self,
-                                 const ClutterActorBox  *box,
-                                 ClutterAllocationFlags  flags)
+mx_progress_bar_allocate_fill (MxProgressBar         *self,
+                               const ClutterActorBox *box,
+                               ClutterAllocationFlags flags)
 {
   ClutterActorBox box_data;
   MxProgressBarPrivate *priv = self->priv;
@@ -182,14 +186,14 @@ mx_progress_bar_allocate_fill (MxProgressBar        *self,
 }
 
 static void
-mx_progress_bar_allocate (ClutterActor           *actor,
-                            const ClutterActorBox  *box,
-                            ClutterAllocationFlags  flags)
+mx_progress_bar_allocate (ClutterActor          *actor,
+                          const ClutterActorBox *box,
+                          ClutterAllocationFlags flags)
 {
   MxProgressBar *self = MX_PROGRESS_BAR (actor);
 
   CLUTTER_ACTOR_CLASS (mx_progress_bar_parent_class)->
-    allocate (actor, box, flags);
+  allocate (actor, box, flags);
 
   mx_progress_bar_allocate_fill (self, box, flags);
 }
@@ -270,7 +274,7 @@ mx_progress_bar_new (void)
  */
 void
 mx_progress_bar_set_progress (MxProgressBar *bar,
-                                gdouble          progress)
+                              gdouble        progress)
 {
   MxProgressBarPrivate *priv = bar->priv;
 

@@ -57,26 +57,26 @@ enum
 
 struct _MxItemViewPrivate
 {
-  ClutterModel *model;
-  GSList       *attributes;
-  GType         item_type;
+  ClutterModel  *model;
+  GSList        *attributes;
+  GType          item_type;
 
   MxItemFactory *factory;
 
-  gulong filter_changed;
-  gulong row_added;
-  gulong row_changed;
-  gulong row_removed;
-  gulong sort_changed;
+  gulong         filter_changed;
+  gulong         row_added;
+  gulong         row_changed;
+  gulong         row_removed;
+  gulong         sort_changed;
 };
 
 /* gobject implementations */
 
 static void
 mx_item_view_get_property (GObject    *object,
-                             guint       property_id,
-                             GValue     *value,
-                             GParamSpec *pspec)
+                           guint       property_id,
+                           GValue     *value,
+                           GParamSpec *pspec)
 {
   MxItemViewPrivate *priv = MX_ITEM_VIEW (object)->priv;
   switch (property_id)
@@ -94,18 +94,18 @@ mx_item_view_get_property (GObject    *object,
 
 static void
 mx_item_view_set_property (GObject      *object,
-                             guint         property_id,
-                             const GValue *value,
-                             GParamSpec   *pspec)
+                           guint         property_id,
+                           const GValue *value,
+                           GParamSpec   *pspec)
 {
   switch (property_id)
     {
     case PROP_MODEL:
       mx_item_view_set_model ((MxItemView*) object,
-                                (ClutterModel*) g_value_get_object (value));
+                              (ClutterModel*) g_value_get_object (value));
     case PROP_ITEM_TYPE:
       mx_item_view_set_item_type ((MxItemView*) object,
-                                    g_value_get_gtype (value));
+                                  g_value_get_gtype (value));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -176,7 +176,7 @@ mx_item_view_init (MxItemView *item_view)
 /* model monitors */
 static void
 model_changed_cb (ClutterModel *model,
-                  MxItemView *item_view)
+                  MxItemView   *item_view)
 {
   GSList *p;
   GList *l, *children;
@@ -279,7 +279,7 @@ model_changed_cb (ClutterModel *model,
 static void
 row_changed_cb (ClutterModel     *model,
                 ClutterModelIter *iter,
-                MxItemView     *item_view)
+                MxItemView       *item_view)
 {
   model_changed_cb (model, item_view);
 }
@@ -287,7 +287,7 @@ row_changed_cb (ClutterModel     *model,
 static void
 row_removed_cb (ClutterModel     *model,
                 ClutterModelIter *iter,
-                MxItemView     *item_view)
+                MxItemView       *item_view)
 {
   GList *children;
   GList *l;
@@ -295,7 +295,7 @@ row_removed_cb (ClutterModel     *model,
 
   children = clutter_container_get_children (CLUTTER_CONTAINER (item_view));
   l = g_list_nth (children, clutter_model_iter_get_row (iter));
-  child = (ClutterActor *)l->data;
+  child = (ClutterActor *) l->data;
   clutter_container_remove_actor (CLUTTER_CONTAINER (item_view), child);
   g_list_free (children);
 }
@@ -342,7 +342,7 @@ mx_item_view_get_item_type (MxItemView *item_view)
  */
 void
 mx_item_view_set_item_type (MxItemView *item_view,
-                              GType         item_type)
+                            GType       item_type)
 {
   g_return_if_fail (MX_IS_ITEM_VIEW (item_view));
   g_return_if_fail (g_type_is_a (item_type, CLUTTER_TYPE_ACTOR));
@@ -377,8 +377,8 @@ mx_item_view_get_model (MxItemView *item_view)
  * Set the model used by the #MxItemView
  */
 void
-mx_item_view_set_model (MxItemView *item_view,
-                          ClutterModel *model)
+mx_item_view_set_model (MxItemView   *item_view,
+                        ClutterModel *model)
 {
   MxItemViewPrivate *priv;
 
@@ -390,13 +390,13 @@ mx_item_view_set_model (MxItemView *item_view,
   if (priv->model)
     {
       g_signal_handlers_disconnect_by_func (priv->model,
-                                            (GCallback)model_changed_cb,
+                                            (GCallback) model_changed_cb,
                                             item_view);
       g_signal_handlers_disconnect_by_func (priv->model,
-                                            (GCallback)row_changed_cb,
+                                            (GCallback) row_changed_cb,
                                             item_view);
       g_signal_handlers_disconnect_by_func (priv->model,
-                                            (GCallback)row_removed_cb,
+                                            (GCallback) row_removed_cb,
                                             item_view);
       g_object_unref (priv->model);
     }
@@ -441,7 +441,7 @@ mx_item_view_set_model (MxItemView *item_view,
        * the effect of preserving the view; just disconnect the handlers
        */
       model_changed_cb (priv->model, item_view);
-  }
+    }
 }
 
 /**
@@ -455,9 +455,9 @@ mx_item_view_set_model (MxItemView *item_view,
  *
  */
 void
-mx_item_view_add_attribute (MxItemView *item_view,
-                              const gchar  *_attribute,
-                              gint          column)
+mx_item_view_add_attribute (MxItemView  *item_view,
+                            const gchar *_attribute,
+                            gint         column)
 {
   MxItemViewPrivate *priv;
   AttributeData *prop;
@@ -546,7 +546,7 @@ mx_item_view_thaw (MxItemView *item_view)
  */
 void
 mx_item_view_set_factory (MxItemView    *item_view,
-                            MxItemFactory *factory)
+                          MxItemFactory *factory)
 {
   MxItemViewPrivate *priv;
 

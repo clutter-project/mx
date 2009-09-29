@@ -64,18 +64,18 @@ G_DEFINE_TYPE_WITH_CODE (MxViewport, mx_viewport, MX_TYPE_BIN,
 
 #define VIEWPORT_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_VIEWPORT, \
-  MxViewportPrivate))
+                                MxViewportPrivate))
 
 struct _MxViewportPrivate
 {
-  gfloat x;
-  gfloat y;
-  gfloat z;
+  gfloat        x;
+  gfloat        y;
+  gfloat        z;
 
   MxAdjustment *hadjustment;
   MxAdjustment *vadjustment;
 
-  gboolean sync_adjustments;
+  gboolean      sync_adjustments;
 };
 
 enum
@@ -92,9 +92,9 @@ enum
 
 static void
 mx_viewport_get_property (GObject    *object,
-                            guint       prop_id,
-                            GValue     *value,
-                            GParamSpec *pspec)
+                          guint       prop_id,
+                          GValue     *value,
+                          GParamSpec *pspec)
 {
   MxAdjustment *adjustment;
 
@@ -114,17 +114,17 @@ mx_viewport_get_property (GObject    *object,
       g_value_set_float (value, priv->z);
       break;
 
-    case PROP_HADJUST :
+    case PROP_HADJUST:
       scrollable_get_adjustments (MX_SCROLLABLE (object), &adjustment, NULL);
       g_value_set_object (value, adjustment);
       break;
 
-    case PROP_VADJUST :
+    case PROP_VADJUST:
       scrollable_get_adjustments (MX_SCROLLABLE (object), NULL, &adjustment);
       g_value_set_object (value, adjustment);
       break;
 
-    case PROP_SYNC_ADJUST :
+    case PROP_SYNC_ADJUST:
       g_value_set_boolean (value, priv->sync_adjustments);
       break;
 
@@ -136,9 +136,9 @@ mx_viewport_get_property (GObject    *object,
 
 static void
 mx_viewport_set_property (GObject      *object,
-                            guint         prop_id,
-                            const GValue *value,
-                            GParamSpec   *pspec)
+                          guint         prop_id,
+                          const GValue *value,
+                          GParamSpec   *pspec)
 {
   MxViewport *viewport = MX_VIEWPORT (object);
   MxViewportPrivate *priv = viewport->priv;
@@ -147,38 +147,38 @@ mx_viewport_set_property (GObject      *object,
     {
     case PROP_X_ORIGIN:
       mx_viewport_set_origin (viewport,
-                                g_value_get_float (value),
-                                priv->y,
-                                priv->z);
+                              g_value_get_float (value),
+                              priv->y,
+                              priv->z);
       break;
 
     case PROP_Y_ORIGIN:
       mx_viewport_set_origin (viewport,
-                                priv->x,
-                                g_value_get_float (value),
-                                priv->z);
+                              priv->x,
+                              g_value_get_float (value),
+                              priv->z);
       break;
 
     case PROP_Z_ORIGIN:
       mx_viewport_set_origin (viewport,
-                                priv->x,
-                                priv->y,
-                                g_value_get_float (value));
+                              priv->x,
+                              priv->y,
+                              g_value_get_float (value));
       break;
 
-    case PROP_HADJUST :
+    case PROP_HADJUST:
       scrollable_set_adjustments (MX_SCROLLABLE (object),
                                   g_value_get_object (value),
                                   priv->vadjustment);
       break;
 
-    case PROP_VADJUST :
+    case PROP_VADJUST:
       scrollable_set_adjustments (MX_SCROLLABLE (object),
                                   priv->hadjustment,
                                   g_value_get_object (value));
       break;
 
-    case PROP_SYNC_ADJUST :
+    case PROP_SYNC_ADJUST:
       priv->sync_adjustments = g_value_get_boolean (value);
       break;
 
@@ -209,14 +209,14 @@ mx_viewport_dispose (GObject *gobject)
 }
 
 static ClutterActor *
-get_child_and_natural_size (MxViewport  *self,
-                            gfloat   *natural_width,
-                            gfloat   *natural_height)
+get_child_and_natural_size (MxViewport *self,
+                            gfloat     *natural_width,
+                            gfloat     *natural_height)
 {
   /* MxBin is a single-child container,
-    * let it grow as big as it wants. */
-  ClutterActor        *child;
-  ClutterRequestMode   mode;
+   * let it grow as big as it wants. */
+  ClutterActor *child;
+  ClutterRequestMode mode;
 
   child = mx_bin_get_child (MX_BIN (self));
   if (child)
@@ -241,7 +241,7 @@ get_child_and_natural_size (MxViewport  *self,
       return child;
     }
 
-    return NULL;
+  return NULL;
 }
 
 static void
@@ -262,25 +262,25 @@ mx_viewport_paint (ClutterActor *self)
 
 static void
 mx_viewport_pick (ClutterActor       *self,
-                    const ClutterColor *color)
+                  const ClutterColor *color)
 {
   mx_viewport_paint (self);
 }
 
 static void
 mx_viewport_allocate (ClutterActor          *self,
-                        const ClutterActorBox *box,
-                        ClutterAllocationFlags flags)
+                      const ClutterActorBox *box,
+                      ClutterAllocationFlags flags)
 {
-  MxViewportPrivate   *priv = MX_VIEWPORT (self)->priv;
-  ClutterActor          *child;
+  MxViewportPrivate *priv = MX_VIEWPORT (self)->priv;
+  ClutterActor *child;
   ClutterActorBox natural_box;
-  gfloat     natural_width, natural_height;
-  gfloat     available_width, available_height;
+  gfloat natural_width, natural_height;
+  gfloat available_width, available_height;
 
   /* Chain up. */
   CLUTTER_ACTOR_CLASS (mx_viewport_parent_class)->
-    allocate (self, box, flags);
+  allocate (self, box, flags);
 
   available_width = box->x2 - box->x1;
   available_height = box->y2 - box->y1;
@@ -310,10 +310,10 @@ mx_viewport_allocate (ClutterActor          *self,
       if (priv->hadjustment)
         {
           g_object_set (G_OBJECT (priv->hadjustment),
-                       "lower", 0.0,
-                       "page-size", available_width,
-                       "upper", natural_width,
-                       NULL);
+                        "lower", 0.0,
+                        "page-size", available_width,
+                        "upper", natural_width,
+                        NULL);
 
           /* Make sure value is clamped */
           prev_value = mx_adjustment_get_value (priv->hadjustment);
@@ -323,10 +323,10 @@ mx_viewport_allocate (ClutterActor          *self,
       if (priv->vadjustment)
         {
           g_object_set (G_OBJECT (priv->vadjustment),
-                       "lower", 0.0,
-                       "page-size", available_height,
-                       "upper", natural_height,
-                       NULL);
+                        "lower", 0.0,
+                        "page-size", available_height,
+                        "upper", natural_height,
+                        NULL);
 
           prev_value = mx_adjustment_get_value (priv->vadjustment);
           mx_adjustment_set_value (priv->vadjustment, prev_value);
@@ -388,7 +388,7 @@ mx_viewport_class_init (MxViewportClass *klass)
 
 static void
 hadjustment_value_notify_cb (MxAdjustment *adjustment,
-                             GParamSpec     *pspec,
+                             GParamSpec   *pspec,
                              MxViewport   *viewport)
 {
   MxViewportPrivate *priv = viewport->priv;
@@ -397,14 +397,15 @@ hadjustment_value_notify_cb (MxAdjustment *adjustment,
   value = mx_adjustment_get_value (adjustment);
 
   mx_viewport_set_origin (viewport,
-                            (float) (value),
-                            priv->y,
-                            priv->z);
+                          (float)(value),
+                          priv->y,
+                          priv->z);
 }
 
 static void
-vadjustment_value_notify_cb (MxAdjustment *adjustment, GParamSpec *arg1,
-                             MxViewport *viewport)
+vadjustment_value_notify_cb (MxAdjustment *adjustment,
+                             GParamSpec   *arg1,
+                             MxViewport   *viewport)
 {
   MxViewportPrivate *priv = viewport->priv;
   gdouble value;
@@ -412,9 +413,9 @@ vadjustment_value_notify_cb (MxAdjustment *adjustment, GParamSpec *arg1,
   value = mx_adjustment_get_value (adjustment);
 
   mx_viewport_set_origin (viewport,
-                            priv->x,
-                            (float) (value),
-                            priv->z);
+                          priv->x,
+                          (float)(value),
+                          priv->z);
 }
 
 static void
@@ -468,7 +469,7 @@ scrollable_set_adjustments (MxScrollable *scrollable,
 }
 
 static void
-scrollable_get_adjustments (MxScrollable *scrollable,
+scrollable_get_adjustments (MxScrollable  *scrollable,
                             MxAdjustment **hadjustment,
                             MxAdjustment **vadjustment)
 {
@@ -498,11 +499,11 @@ scrollable_get_adjustments (MxScrollable *scrollable,
           increment = MAX (1.0, MIN (stage_width, width));
 
           adjustment = mx_adjustment_new (priv->x,
-                                            0,
-                                            width,
-                                            1.0,
-                                            increment,
-                                            increment);
+                                          0,
+                                          width,
+                                          1.0,
+                                          increment,
+                                          increment);
 
           scrollable_set_adjustments (scrollable,
                                       adjustment,
@@ -526,11 +527,11 @@ scrollable_get_adjustments (MxScrollable *scrollable,
           increment = MAX (1.0, MIN (stage_height, height));
 
           adjustment = mx_adjustment_new (priv->y,
-                                            0,
-                                            height,
-                                            1.0,
-                                            increment,
-                                            increment);
+                                          0,
+                                          height,
+                                          1.0,
+                                          increment,
+                                          increment);
 
           scrollable_set_adjustments (scrollable,
                                       priv->hadjustment,
@@ -566,9 +567,9 @@ mx_viewport_new (void)
 
 void
 mx_viewport_set_origin (MxViewport *viewport,
-                          gfloat        x,
-                          gfloat        y,
-                          gfloat        z)
+                        gfloat      x,
+                        gfloat      y,
+                        gfloat      z)
 {
   MxViewportPrivate *priv;
 
@@ -585,7 +586,7 @@ mx_viewport_set_origin (MxViewport *viewport,
 
       if (priv->hadjustment)
         mx_adjustment_set_value (priv->hadjustment,
-                                   (float) (x));
+                                 (float)(x));
     }
 
   if (y != priv->y)
@@ -595,7 +596,7 @@ mx_viewport_set_origin (MxViewport *viewport,
 
       if (priv->vadjustment)
         mx_adjustment_set_value (priv->vadjustment,
-                                   (float) (y));
+                                 (float)(y));
     }
 
   if (z != priv->z)
@@ -611,9 +612,9 @@ mx_viewport_set_origin (MxViewport *viewport,
 
 void
 mx_viewport_get_origin (MxViewport *viewport,
-                          gfloat       *x,
-                          gfloat       *y,
-                          gfloat       *z)
+                        gfloat     *x,
+                        gfloat     *y,
+                        gfloat     *z)
 {
   MxViewportPrivate *priv;
 

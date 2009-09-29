@@ -95,7 +95,7 @@ struct _MxEntryPrivate
   ClutterActor *primary_icon;
   ClutterActor *secondary_icon;
 
-  gfloat   spacing;
+  gfloat        spacing;
 };
 
 static guint entry_signals[LAST_SIGNAL] = { 0, };
@@ -108,9 +108,9 @@ G_DEFINE_TYPE_WITH_CODE (MxEntry, mx_entry, MX_TYPE_WIDGET,
 
 static void
 mx_entry_set_property (GObject      *gobject,
-                         guint         prop_id,
-                         const GValue *value,
-                         GParamSpec   *pspec)
+                       guint         prop_id,
+                       const GValue *value,
+                       GParamSpec   *pspec)
 {
   MxEntry *entry = MX_ENTRY (gobject);
 
@@ -132,9 +132,9 @@ mx_entry_set_property (GObject      *gobject,
 
 static void
 mx_entry_get_property (GObject    *gobject,
-                         guint       prop_id,
-                         GValue     *value,
-                         GParamSpec *pspec)
+                       guint       prop_id,
+                       GValue     *value,
+                       GParamSpec *pspec)
 {
   MxEntryPrivate *priv = MX_ENTRY_PRIV (gobject);
 
@@ -215,12 +215,12 @@ mx_entry_style_changed (MxWidget *self)
   gint font_size;
 
   mx_stylable_get (MX_STYLABLE (self),
-                     "color", &color,
-                     "caret-color", &caret_color,
-                     "selection-background-color", &selection_background_color,
-                     "font-family", &font_name,
-                     "font-size", &font_size,
-                     NULL);
+                   "color", &color,
+                   "caret-color", &caret_color,
+                   "selection-background-color", &selection_background_color,
+                   "font-family", &font_name,
+                   "font-size", &font_size,
+                   NULL);
 
   if (color)
     {
@@ -263,9 +263,9 @@ mx_entry_style_changed (MxWidget *self)
 
 static void
 mx_entry_get_preferred_width (ClutterActor *actor,
-                                gfloat   for_height,
-                                gfloat  *min_width_p,
-                                gfloat  *natural_width_p)
+                              gfloat        for_height,
+                              gfloat       *min_width_p,
+                              gfloat       *natural_width_p)
 {
   MxEntryPrivate *priv = MX_ENTRY_PRIV (actor);
   MxPadding padding;
@@ -311,9 +311,9 @@ mx_entry_get_preferred_width (ClutterActor *actor,
 
 static void
 mx_entry_get_preferred_height (ClutterActor *actor,
-                                 gfloat   for_width,
-                                 gfloat  *min_height_p,
-                                 gfloat  *natural_height_p)
+                               gfloat        for_width,
+                               gfloat       *min_height_p,
+                               gfloat       *natural_height_p)
 {
   MxEntryPrivate *priv = MX_ENTRY_PRIV (actor);
   MxPadding padding;
@@ -360,8 +360,8 @@ mx_entry_get_preferred_height (ClutterActor *actor,
 
 static void
 mx_entry_allocate (ClutterActor          *actor,
-                     const ClutterActorBox *box,
-                     ClutterAllocationFlags flags)
+                   const ClutterActorBox *box,
+                   ClutterAllocationFlags flags)
 {
   MxEntryPrivate *priv = MX_ENTRY_PRIV (actor);
   ClutterActorClass *parent_class;
@@ -390,7 +390,7 @@ mx_entry_allocate (ClutterActor          *actor,
       icon_box.x1 = padding.left;
       icon_box.x2 = icon_box.x1 + icon_w;
 
-      icon_box.y1 = (int) (padding.top + avail_h / 2 - icon_h / 2);
+      icon_box.y1 = (int)(padding.top + avail_h / 2 - icon_h / 2);
       icon_box.y2 = icon_box.y1 + icon_h;
 
       clutter_actor_allocate (priv->primary_icon,
@@ -411,7 +411,7 @@ mx_entry_allocate (ClutterActor          *actor,
       icon_box.x2 = (box->x2 - box->x1) - padding.right;
       icon_box.x1 = icon_box.x2 - icon_w;
 
-      icon_box.y1 = (int) (padding.top + avail_h / 2 - icon_h / 2);
+      icon_box.y1 = (int)(padding.top + avail_h / 2 - icon_h / 2);
       icon_box.y2 = icon_box.y1 + icon_h;
 
       clutter_actor_allocate (priv->secondary_icon,
@@ -427,14 +427,14 @@ mx_entry_allocate (ClutterActor          *actor,
 
   entry_h = CLAMP (pref_h, min_h, avail_h);
 
-  child_box.y1 = (int) (padding.top + avail_h / 2 - entry_h / 2);
+  child_box.y1 = (int)(padding.top + avail_h / 2 - entry_h / 2);
   child_box.y2 = child_box.y1 + entry_h;
 
   clutter_actor_allocate (priv->entry, &child_box, flags);
 }
 
 static void
-clutter_text_focus_in_cb (ClutterText *text,
+clutter_text_focus_in_cb (ClutterText  *text,
                           ClutterActor *actor)
 {
   MxEntryPrivate *priv = MX_ENTRY_PRIV (actor);
@@ -487,8 +487,8 @@ mx_entry_paint (ClutterActor *actor)
 }
 
 static void
-mx_entry_pick (ClutterActor *actor,
-                 const ClutterColor *c)
+mx_entry_pick (ClutterActor       *actor,
+               const ClutterColor *c)
 {
   MxEntryPrivate *priv = MX_ENTRY_PRIV (actor);
 
@@ -537,10 +537,10 @@ mx_entry_unmap (ClutterActor *actor)
 
 static void
 mx_entry_clipboard_callback (MxClipboard *clipboard,
-                               const gchar   *text,
-                               gpointer       data)
+                             const gchar *text,
+                             gpointer     data)
 {
-  ClutterText *ctext = (ClutterText*) ((MxEntry *) data)->priv->entry;
+  ClutterText *ctext = (ClutterText*)((MxEntry *) data)->priv->entry;
   gint cursor_pos;
 
   if (!text)
@@ -556,7 +556,7 @@ mx_entry_clipboard_callback (MxClipboard *clipboard,
 
 static gboolean
 mx_entry_key_press_event (ClutterActor    *actor,
-                            ClutterKeyEvent *event)
+                          ClutterKeyEvent *event)
 {
   MxEntryPrivate *priv = MX_ENTRY_PRIV (actor);
 
@@ -774,8 +774,8 @@ mx_entry_get_text (MxEntry *entry)
  * Sets the text displayed on the entry
  */
 void
-mx_entry_set_text (MxEntry *entry,
-                     const gchar *text)
+mx_entry_set_text (MxEntry     *entry,
+                   const gchar *text)
 {
   MxEntryPrivate *priv;
 
@@ -831,8 +831,8 @@ mx_entry_get_clutter_text (MxEntry *entry)
  * A value of NULL unsets the hint.
  */
 void
-mx_entry_set_hint_text (MxEntry *entry,
-                          const gchar *text)
+mx_entry_set_hint_text (MxEntry     *entry,
+                        const gchar *text)
 {
   MxEntryPrivate *priv;
 
@@ -871,8 +871,8 @@ mx_entry_get_hint_text (MxEntry *entry)
 
 static gboolean
 _mx_entry_icon_press_cb (ClutterActor       *actor,
-                           ClutterButtonEvent *event,
-                           MxEntry          *entry)
+                         ClutterButtonEvent *event,
+                         MxEntry            *entry)
 {
   MxEntryPrivate *priv = entry->priv;
 
@@ -885,9 +885,9 @@ _mx_entry_icon_press_cb (ClutterActor       *actor,
 }
 
 static void
-_mx_entry_set_icon_from_file (MxEntry     *entry,
-                                ClutterActor **icon,
-                                const gchar   *filename)
+_mx_entry_set_icon_from_file (MxEntry       *entry,
+                              ClutterActor **icon,
+                              const gchar   *filename)
 {
   if (*icon)
     {
@@ -925,8 +925,8 @@ _mx_entry_set_icon_from_file (MxEntry     *entry,
  * Set the primary icon of the entry to the given filename
  */
 void
-mx_entry_set_primary_icon_from_file (MxEntry   *entry,
-                                       const gchar *filename)
+mx_entry_set_primary_icon_from_file (MxEntry     *entry,
+                                     const gchar *filename)
 {
   MxEntryPrivate *priv;
 
@@ -946,8 +946,8 @@ mx_entry_set_primary_icon_from_file (MxEntry   *entry,
  * Set the primary icon of the entry to the given filename
  */
 void
-mx_entry_set_secondary_icon_from_file (MxEntry   *entry,
-                                         const gchar *filename)
+mx_entry_set_secondary_icon_from_file (MxEntry     *entry,
+                                       const gchar *filename)
 {
   MxEntryPrivate *priv;
 

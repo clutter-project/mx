@@ -51,19 +51,19 @@ struct _MxSubtexturePrivate
 {
   ClutterTexture *parent_texture;
 
-  int left;
-  int top;
-  int width;
-  int height;
+  int             left;
+  int             top;
+  int             width;
+  int             height;
 
-  CoglHandle material;
+  CoglHandle      material;
 };
 
 static void
 mx_subtexture_get_preferred_width (ClutterActor *self,
-                                        gfloat   for_height,
-                                        gfloat  *min_width_p,
-                                        gfloat  *natural_width_p)
+                                   gfloat        for_height,
+                                   gfloat       *min_width_p,
+                                   gfloat       *natural_width_p)
 {
   MxSubtexturePrivate *priv = MX_SUBTEXTURE (self)->priv;
 
@@ -77,18 +77,18 @@ mx_subtexture_get_preferred_width (ClutterActor *self,
     }
   else
     {
-	if (min_width_p)
-		*min_width_p = priv->width;
-	if (natural_width_p)
-		*natural_width_p = priv->width;
+      if (min_width_p)
+        *min_width_p = priv->width;
+      if (natural_width_p)
+        *natural_width_p = priv->width;
     }
 }
 
 static void
 mx_subtexture_get_preferred_height (ClutterActor *self,
-                                         gfloat   for_width,
-                                         gfloat  *min_height_p,
-                                         gfloat  *natural_height_p)
+                                    gfloat        for_width,
+                                    gfloat       *min_height_p,
+                                    gfloat       *natural_height_p)
 {
   MxSubtexturePrivate *priv = MX_SUBTEXTURE (self)->priv;
 
@@ -102,10 +102,10 @@ mx_subtexture_get_preferred_height (ClutterActor *self,
     }
   else
     {
-	if (min_height_p)
-		*min_height_p = priv->height;
-	if (natural_height_p)
-		*natural_height_p = priv->height;
+      if (min_height_p)
+        *min_height_p = priv->height;
+      if (natural_height_p)
+        *natural_height_p = priv->height;
     }
 }
 
@@ -183,16 +183,16 @@ mx_subtexture_paint (ClutterActor *self)
   cogl_material_set_layer (priv->material, 0, cogl_texture);
   cogl_set_source (priv->material);
 
-  cogl_rectangle_with_texture_coords (0,0, (float)width, (float)height,
-		tx1, ty1, tx2, ty2);
+  cogl_rectangle_with_texture_coords (0,0, (float) width, (float) height,
+                                      tx1, ty1, tx2, ty2);
 }
 
 static inline void
 mx_subtexture_set_frame_internal (MxSubtexture *frame,
-                                       int            left,
-                                       int            top,
-                                       int            width,
-                                       int            height)
+                                  int           left,
+                                  int           top,
+                                  int           width,
+                                  int           height)
 {
   MxSubtexturePrivate *priv = frame->priv;
   GObject *gobject = G_OBJECT (frame);
@@ -236,9 +236,9 @@ mx_subtexture_set_frame_internal (MxSubtexture *frame,
 
 static void
 mx_subtexture_set_property (GObject      *gobject,
-                                 guint         prop_id,
-                                 const GValue *value,
-                                 GParamSpec   *pspec)
+                            guint         prop_id,
+                            const GValue *value,
+                            GParamSpec   *pspec)
 {
   MxSubtexture *frame = MX_SUBTEXTURE (gobject);
   MxSubtexturePrivate *priv = frame->priv;
@@ -247,39 +247,39 @@ mx_subtexture_set_property (GObject      *gobject,
     {
     case PROP_PARENT_TEXTURE:
       mx_subtexture_set_parent_texture (frame,
-                                             g_value_get_object (value));
+                                        g_value_get_object (value));
       break;
 
     case PROP_TOP:
       mx_subtexture_set_frame_internal (frame,
-                                             priv->left,
-                                             g_value_get_int (value),
-                                             priv->width,
-                                             priv->height);
+                                        priv->left,
+                                        g_value_get_int (value),
+                                        priv->width,
+                                        priv->height);
       break;
 
     case PROP_LEFT:
       mx_subtexture_set_frame_internal (frame,
-                                             g_value_get_int (value),
-                                             priv->top,
-                                             priv->width,
-                                             priv->height);
+                                        g_value_get_int (value),
+                                        priv->top,
+                                        priv->width,
+                                        priv->height);
       break;
 
     case PROP_WIDTH:
       mx_subtexture_set_frame_internal (frame,
-                                             priv->left,
-                                             priv->top,
-                                             g_value_get_int (value),
-                                             priv->height);
+                                        priv->left,
+                                        priv->top,
+                                        g_value_get_int (value),
+                                        priv->height);
       break;
 
     case PROP_HEIGHT:
       mx_subtexture_set_frame_internal (frame,
-                                             priv->left,
-                                             priv->top,
-                                             priv->width,
-                                             g_value_get_int (value));
+                                        priv->left,
+                                        priv->top,
+                                        priv->width,
+                                        g_value_get_int (value));
       break;
 
     default:
@@ -290,9 +290,9 @@ mx_subtexture_set_property (GObject      *gobject,
 
 static void
 mx_subtexture_get_property (GObject    *gobject,
-                                 guint       prop_id,
-                                 GValue     *value,
-                                 GParamSpec *pspec)
+                            guint       prop_id,
+                            GValue     *value,
+                            GParamSpec *pspec)
 {
   MxSubtexturePrivate *priv = MX_SUBTEXTURE (gobject)->priv;
 
@@ -374,35 +374,35 @@ mx_subtexture_class_init (MxSubtextureClass *klass)
   g_object_class_install_property (gobject_class, PROP_PARENT_TEXTURE, pspec);
 
   pspec = g_param_spec_int ("left",
-                              "Left",
-                              "Left offset",
-			      0, G_MAXINT,
-                              0,
-                              G_PARAM_READWRITE);
+                            "Left",
+                            "Left offset",
+                            0, G_MAXINT,
+                            0,
+                            G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_LEFT, pspec);
 
   pspec = g_param_spec_int ("top",
-                              "Top",
-                              "Top offset",
-                              0, G_MAXINT,
-                              0,
-                              G_PARAM_READWRITE);
+                            "Top",
+                            "Top offset",
+                            0, G_MAXINT,
+                            0,
+                            G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_TOP, pspec);
 
   pspec = g_param_spec_int ("width",
-                              "Width",
-                              "Width",
-                              0, G_MAXINT,
-                              0,
-                              G_PARAM_READWRITE);
+                            "Width",
+                            "Width",
+                            0, G_MAXINT,
+                            0,
+                            G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_WIDTH, pspec);
 
   pspec = g_param_spec_int ("height",
-                              "Height",
-                              "Height",
-                              0, G_MAXINT,
-                              0,
-                              G_PARAM_READWRITE);
+                            "Height",
+                            "Height",
+                            0, G_MAXINT,
+                            0,
+                            G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_HEIGHT, pspec);
 }
 
@@ -434,21 +434,21 @@ mx_subtexture_init (MxSubtexture *self)
  * Return value: the newly created #MxSubtexture
  */
 ClutterActor*
-mx_subtexture_new (ClutterTexture *texture, 
-			gint          left,
-			gint          top,
-			gint          width,
-			gint          height)
+mx_subtexture_new (ClutterTexture *texture,
+                   gint            left,
+                   gint            top,
+                   gint            width,
+                   gint            height)
 {
   g_return_val_if_fail (texture == NULL || CLUTTER_IS_TEXTURE (texture), NULL);
 
   return g_object_new (MX_TYPE_SUBTEXTURE,
- 		       "parent-texture", texture,
-		       "top", top,
-		       "left", left,
-		       "width", width,
-		       "height", height,
-		       NULL);
+                       "parent-texture", texture,
+                       "top", top,
+                       "left", left,
+                       "width", width,
+                       "height", height,
+                       NULL);
 }
 
 /**
@@ -476,8 +476,8 @@ mx_subtexture_get_parent_texture (MxSubtexture *frame)
  *
  */
 void
-mx_subtexture_set_parent_texture (MxSubtexture *frame,
-                                       ClutterTexture   *texture)
+mx_subtexture_set_parent_texture (MxSubtexture   *frame,
+                                  ClutterTexture *texture)
 {
   MxSubtexturePrivate *priv;
   gboolean was_visible;
@@ -527,10 +527,10 @@ mx_subtexture_set_parent_texture (MxSubtexture *frame,
  */
 void
 mx_subtexture_set_frame (MxSubtexture *frame,
-                              gint            left,
-                              gint            top,
-                              gint            width,
-                              gint            height)
+                         gint          left,
+                         gint          top,
+                         gint          width,
+                         gint          height)
 {
   g_return_if_fail (MX_IS_SUBTEXTURE (frame));
 
@@ -550,10 +550,10 @@ mx_subtexture_set_frame (MxSubtexture *frame,
  */
 void
 mx_subtexture_get_frame (MxSubtexture *frame,
-                              gint           *left,
-                              gint           *top,
-                              gint           *width,
-                              gint           *height)
+                         gint         *left,
+                         gint         *top,
+                         gint         *width,
+                         gint         *height)
 {
   MxSubtexturePrivate *priv;
 

@@ -34,9 +34,9 @@ G_DEFINE_TYPE (MxIcon, mx_icon, MX_TYPE_WIDGET)
 
 static void
 mx_icon_get_preferred_height (ClutterActor *actor,
-                                gfloat        for_width,
-                                gfloat       *min_height,
-                                gfloat       *pref_height)
+                              gfloat        for_width,
+                              gfloat       *min_height,
+                              gfloat       *pref_height)
 {
   ClutterActor *background;
   gfloat height;
@@ -61,9 +61,9 @@ mx_icon_get_preferred_height (ClutterActor *actor,
 
 static void
 mx_icon_get_preferred_width (ClutterActor *actor,
-                               gfloat        for_height,
-                               gfloat       *min_width,
-                               gfloat       *pref_width)
+                             gfloat        for_height,
+                             gfloat       *min_width,
+                             gfloat       *pref_width)
 {
   ClutterActor *background;
   gfloat width;

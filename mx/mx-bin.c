@@ -47,11 +47,11 @@ struct _MxBinPrivate
 {
   ClutterActor *child;
 
-  MxAlign x_align;
-  MxAlign y_align;
+  MxAlign       x_align;
+  MxAlign       y_align;
 
-  guint x_fill : 1;
-  guint y_fill : 1;
+  guint         x_fill : 1;
+  guint         y_fill : 1;
 };
 
 enum
@@ -72,9 +72,9 @@ G_DEFINE_TYPE_WITH_CODE (MxBin, mx_bin, MX_TYPE_WIDGET,
                                                 clutter_container_iface_init));
 
 void
-_mx_bin_get_align_factors (MxBin *bin,
-                             gdouble *x_align,
-                             gdouble *y_align)
+_mx_bin_get_align_factors (MxBin   *bin,
+                           gdouble *x_align,
+                           gdouble *y_align)
 {
   MxBinPrivate *priv = bin->priv;
   gdouble factor;
@@ -126,14 +126,14 @@ _mx_bin_get_align_factors (MxBin *bin,
 
 static void
 mx_bin_add (ClutterContainer *container,
-              ClutterActor     *actor)
+            ClutterActor     *actor)
 {
   mx_bin_set_child (MX_BIN (container), actor);
 }
 
 static void
 mx_bin_remove (ClutterContainer *container,
-                 ClutterActor     *actor)
+               ClutterActor     *actor)
 {
   MxBinPrivate *priv = MX_BIN (container)->priv;
 
@@ -143,8 +143,8 @@ mx_bin_remove (ClutterContainer *container,
 
 static void
 mx_bin_foreach (ClutterContainer *container,
-                  ClutterCallback   callback,
-                  gpointer          user_data)
+                ClutterCallback   callback,
+                gpointer          user_data)
 {
   MxBinPrivate *priv = MX_BIN (container)->priv;
 
@@ -175,7 +175,7 @@ mx_bin_paint (ClutterActor *self)
 
 static void
 mx_bin_pick (ClutterActor       *self,
-               const ClutterColor *pick_color)
+             const ClutterColor *pick_color)
 {
   MxBinPrivate *priv = MX_BIN (self)->priv;
 
@@ -188,13 +188,13 @@ mx_bin_pick (ClutterActor       *self,
 
 static void
 mx_bin_allocate (ClutterActor          *self,
-                   const ClutterActorBox *box,
-                   ClutterAllocationFlags flags)
+                 const ClutterActorBox *box,
+                 ClutterAllocationFlags flags)
 {
   MxBinPrivate *priv = MX_BIN (self)->priv;
 
   CLUTTER_ACTOR_CLASS (mx_bin_parent_class)->allocate (self, box,
-                                                         flags);
+                                                       flags);
 
   if (priv->child)
     {
@@ -212,9 +212,9 @@ mx_bin_allocate (ClutterActor          *self,
       mx_widget_get_padding (MX_WIDGET (self), &padding);
 
       available_width  = box->x2 - box->x1
-                       - padding.left - padding.right;
+                         - padding.left - padding.right;
       available_height = box->y2 - box->y1
-                       - padding.top - padding.bottom;
+                         - padding.top - padding.bottom;
 
       if (available_width < 0)
         available_width = 0;
@@ -225,13 +225,13 @@ mx_bin_allocate (ClutterActor          *self,
       if (priv->x_fill)
         {
           allocation.x1 = (int) padding.left;
-          allocation.x2 = (int) (allocation.x1 + available_width);
+          allocation.x2 = (int)(allocation.x1 + available_width);
         }
 
       if (priv->y_fill)
         {
           allocation.y1 = (int) padding.top;
-          allocation.y2 = (int) (allocation.y1 + available_height);
+          allocation.y2 = (int)(allocation.y1 + available_height);
         }
 
       /* if we are filling horizontally and vertically then we're done */
@@ -275,15 +275,15 @@ mx_bin_allocate (ClutterActor          *self,
 
       if (!priv->x_fill)
         {
-          allocation.x1 = (int) ((available_width - child_width) * x_align
-                        + padding.left);
+          allocation.x1 = (int)((available_width - child_width) * x_align
+                                + padding.left);
           allocation.x2 = allocation.x1 + child_width;
         }
 
       if (!priv->y_fill)
         {
-          allocation.y1 = (int) ((available_height - child_height) * y_align
-                        + padding.top);
+          allocation.y1 = (int)((available_height - child_height) * y_align
+                                + padding.top);
           allocation.y2 = allocation.y1 + child_height;
         }
 
@@ -293,9 +293,9 @@ mx_bin_allocate (ClutterActor          *self,
 
 static void
 mx_bin_get_preferred_width (ClutterActor *self,
-                              gfloat   for_height,
-                              gfloat  *min_width_p,
-                              gfloat  *natural_width_p)
+                            gfloat        for_height,
+                            gfloat       *min_width_p,
+                            gfloat       *natural_width_p)
 {
   MxBinPrivate *priv = MX_BIN (self)->priv;
   gfloat min_width, natural_width;
@@ -329,9 +329,9 @@ mx_bin_get_preferred_width (ClutterActor *self,
 
 static void
 mx_bin_get_preferred_height (ClutterActor *self,
-                               gfloat   for_width,
-                               gfloat  *min_height_p,
-                               gfloat  *natural_height_p)
+                             gfloat        for_width,
+                             gfloat       *min_height_p,
+                             gfloat       *natural_height_p)
 {
   MxBinPrivate *priv = MX_BIN (self)->priv;
   gfloat min_height, natural_height;
@@ -379,9 +379,9 @@ mx_bin_dispose (GObject *gobject)
 
 static void
 mx_bin_set_property (GObject      *gobject,
-                       guint         prop_id,
-                       const GValue *value,
-                       GParamSpec   *pspec)
+                     guint         prop_id,
+                     const GValue *value,
+                     GParamSpec   *pspec)
 {
   MxBin *bin = MX_BIN (gobject);
 
@@ -393,26 +393,26 @@ mx_bin_set_property (GObject      *gobject,
 
     case PROP_X_ALIGN:
       mx_bin_set_alignment (bin,
-                              g_value_get_enum (value),
-                              bin->priv->y_align);
+                            g_value_get_enum (value),
+                            bin->priv->y_align);
       break;
 
     case PROP_Y_ALIGN:
       mx_bin_set_alignment (bin,
-                              bin->priv->x_align,
-                              g_value_get_enum (value));
+                            bin->priv->x_align,
+                            g_value_get_enum (value));
       break;
 
     case PROP_X_FILL:
       mx_bin_set_fill (bin,
-                         g_value_get_boolean (value),
-                         bin->priv->y_fill);
+                       g_value_get_boolean (value),
+                       bin->priv->y_fill);
       break;
 
     case PROP_Y_FILL:
       mx_bin_set_fill (bin,
-                         bin->priv->y_fill,
-                         g_value_get_boolean (value));
+                       bin->priv->y_fill,
+                       g_value_get_boolean (value));
       break;
 
     default:
@@ -422,9 +422,9 @@ mx_bin_set_property (GObject      *gobject,
 
 static void
 mx_bin_get_property (GObject    *gobject,
-                       guint       prop_id,
-                       GValue     *value,
-                       GParamSpec *pspec)
+                     guint       prop_id,
+                     GValue     *value,
+                     GParamSpec *pspec)
 {
   MxBinPrivate *priv = MX_BIN (gobject)->priv;
 
@@ -571,8 +571,8 @@ mx_bin_new (void)
  * If @bin already has a child, the previous child is removed.
  */
 void
-mx_bin_set_child (MxBin *bin,
-                    ClutterActor *child)
+mx_bin_set_child (MxBin        *bin,
+                  ClutterActor *child)
 {
   MxBinPrivate *priv;
 
@@ -637,9 +637,9 @@ mx_bin_get_child (MxBin *bin)
  * inside a #MxBin.
  */
 void
-mx_bin_set_alignment (MxBin       *bin,
-                        MxAlign  x_align,
-                        MxAlign  y_align)
+mx_bin_set_alignment (MxBin  *bin,
+                      MxAlign x_align,
+                      MxAlign y_align)
 {
   MxBinPrivate *priv;
   gboolean changed = FALSE;
@@ -680,9 +680,9 @@ mx_bin_set_alignment (MxBin       *bin,
  * inside a #MxBin, as set by mx_bin_set_alignment().
  */
 void
-mx_bin_get_alignment (MxBin       *bin,
-                        MxAlign *x_align,
-                        MxAlign *y_align)
+mx_bin_get_alignment (MxBin   *bin,
+                      MxAlign *x_align,
+                      MxAlign *y_align)
 {
   MxBinPrivate *priv;
 
@@ -707,9 +707,9 @@ mx_bin_get_alignment (MxBin       *bin,
  * and/or vertical allocation of the parent
  */
 void
-mx_bin_set_fill (MxBin  *bin,
-                   gboolean  x_fill,
-                   gboolean  y_fill)
+mx_bin_set_fill (MxBin   *bin,
+                 gboolean x_fill,
+                 gboolean y_fill)
 {
   MxBinPrivate *priv;
   gboolean changed = FALSE;
@@ -751,9 +751,9 @@ mx_bin_set_fill (MxBin  *bin,
  * Retrieves the horizontal and vertical fill settings
  */
 void
-mx_bin_get_fill (MxBin  *bin,
-                   gboolean *x_fill,
-                   gboolean *y_fill)
+mx_bin_get_fill (MxBin    *bin,
+                 gboolean *x_fill,
+                 gboolean *y_fill)
 {
   g_return_if_fail (MX_IS_BIN (bin));
 

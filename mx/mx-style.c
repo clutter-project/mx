@@ -53,12 +53,12 @@ enum
 };
 
 #define MX_STYLE_GET_PRIVATE(obj) \
-        (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_STYLE, MxStylePrivate))
+  (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_STYLE, MxStylePrivate))
 
 #define MX_STYLE_ERROR g_style_error_quark ()
 
 typedef struct {
-  GType value_type;
+  GType  value_type;
   gchar *value_name;
   GValue value;
 } StyleProperty;
@@ -66,15 +66,15 @@ typedef struct {
 struct _MxStylePrivate
 {
   ccss_stylesheet_t *stylesheet;
-  GList *image_paths;
+  GList             *image_paths;
 
-  GHashTable *style_hash;
-  GHashTable *node_hash;
+  GHashTable        *style_hash;
+  GHashTable        *node_hash;
 };
 
 typedef struct {
-  ccss_node_t parent;
-  MxStylable *stylable;
+  ccss_node_t      parent;
+  MxStylable      *stylable;
   MxStylableIface *iface;
 } mx_style_node_t;
 
@@ -95,10 +95,10 @@ g_style_error_quark (void)
 }
 
 static gboolean
-mx_style_real_load_from_file (MxStyle    *style,
-                                const gchar  *filename,
-                                GError      **error,
-                                gint          priority)
+mx_style_real_load_from_file (MxStyle     *style,
+                              const gchar *filename,
+                              GError     **error,
+                              gint         priority)
 {
   MxStylePrivate *priv;
   ccss_grammar_t *grammar;
@@ -130,7 +130,7 @@ mx_style_real_load_from_file (MxStyle    *style,
 
   for (l = priv->image_paths; l; l = l->next)
     {
-      if (g_str_equal ((gchar *)l->data, path))
+      if (g_str_equal ((gchar *) l->data, path))
         {
           /* we have this path already */
           g_free (path);
@@ -174,12 +174,12 @@ mx_style_real_load_from_file (MxStyle    *style,
  * FALSE on error.
  */
 gboolean
-mx_style_load_from_file (MxStyle    *style,
-                           const gchar  *filename,
-                           GError      **error)
+mx_style_load_from_file (MxStyle     *style,
+                         const gchar *filename,
+                         GError     **error)
 {
   return mx_style_real_load_from_file (style, filename, error,
-                                         CCSS_STYLESHEET_AUTHOR);
+                                       CCSS_STYLESHEET_AUTHOR);
 }
 
 static void
@@ -220,13 +220,13 @@ mx_style_load (MxStyle *style)
 static void
 mx_style_finalize (GObject *gobject)
 {
-  MxStylePrivate *priv = ((MxStyle *)gobject)->priv;
+  MxStylePrivate *priv = ((MxStyle *) gobject)->priv;
   GList *l;
 
   for (l = priv->image_paths; l; l = g_list_delete_link (l, l))
-  {
-    g_free (l->data);
-  }
+    {
+      g_free (l->data);
+    }
 
   G_OBJECT_CLASS (mx_style_parent_class)->finalize (gobject);
 }
@@ -259,8 +259,8 @@ mx_style_class_init (MxStyleClass *klass)
 
 /* url loader for libccss */
 static char *
-ccss_url (GSList const  *args,
-          void          *user_data)
+ccss_url (GSList const *args,
+          void         *user_data)
 {
   const gchar *given_path, *filename;
   gchar *test_path;
@@ -376,7 +376,7 @@ static mx_style_node_t *
 get_container (mx_style_node_t *node)
 {
   mx_style_node_t *container;
-  ClutterActor      *parent;
+  ClutterActor *parent;
 
   g_return_val_if_fail (node, NULL);
   g_return_val_if_fail (node->iface, NULL);
@@ -422,7 +422,8 @@ get_pseudo_class (mx_style_node_t *node)
 }
 
 static const gchar*
-get_attribute (mx_style_node_t *node, const char *name)
+get_attribute (mx_style_node_t *node,
+               const char      *name)
 {
   return mx_stylable_get_attribute (node->stylable, name);
 }
@@ -445,7 +446,7 @@ peek_node_class (void)
     .get_type         = (ccss_node_get_type_f) get_style_type,
     .get_class        = (ccss_node_get_class_f) get_style_class,
     .get_pseudo_class = (ccss_node_get_pseudo_class_f) get_pseudo_class,
-    .get_viewport     = NULL,// (ccss_node_get_viewport_f) get_viewport,
+    .get_viewport     = NULL, // (ccss_node_get_viewport_f) get_viewport,
     .get_attribute    = (ccss_node_get_attribute_f) get_attribute,
     .release          = (ccss_node_release_f) release
   };
@@ -454,9 +455,9 @@ peek_node_class (void)
 }
 
 static void
-mx_style_fetch_ccss_property (ccss_style_t  *ccss_style,
-                                GParamSpec    *pspec,
-                                GValue        *value)
+mx_style_fetch_ccss_property (ccss_style_t *ccss_style,
+                              GParamSpec   *pspec,
+                              GValue       *value)
 {
   gboolean value_set = FALSE;
 
@@ -485,11 +486,11 @@ mx_style_fetch_ccss_property (ccss_style_t  *ccss_style,
       else if (G_PARAM_SPEC_VALUE_TYPE (pspec) == MX_TYPE_BORDER_IMAGE &&
                !g_strcmp0 ("border-image", pspec->name))
         {
-              ccss_border_image_t const *border_image;
+          ccss_border_image_t const *border_image;
 
           if (ccss_style_get_property (ccss_style,
-                                        "border-image",
-                                        (ccss_property_base_t const **) &border_image))
+                                       "border-image",
+                                       (ccss_property_base_t const **) &border_image))
             {
               if (border_image &&
                   border_image->base.state == CCSS_PROPERTY_STATE_SET)
@@ -500,7 +501,7 @@ mx_style_fetch_ccss_property (ccss_style_t  *ccss_style,
             }
         }
       else if (MX_TYPE_PADDING == G_PARAM_SPEC_VALUE_TYPE (pspec) &&
-                0 == g_strcmp0 ("padding", pspec->name))
+               0 == g_strcmp0 ("padding", pspec->name))
         {
           MxPadding padding = { 0, };
           gboolean padding_set = 0;
@@ -553,11 +554,11 @@ mx_style_fetch_ccss_property (ccss_style_t  *ccss_style,
                   value_set = TRUE;
                 }
               else
-                if (G_IS_PARAM_SPEC_STRING (pspec))
-                  {
-                    g_value_set_string (value, string);
-                    value_set = TRUE;
-                  }
+              if (G_IS_PARAM_SPEC_STRING (pspec))
+                {
+                  g_value_set_string (value, string);
+                  value_set = TRUE;
+                }
               g_free (string);
             }
         }
@@ -569,8 +570,8 @@ mx_style_fetch_ccss_property (ccss_style_t  *ccss_style,
 }
 
 static ccss_style_t*
-mx_style_get_ccss_query (MxStyle         *style,
-                           MxStylable      *stylable)
+mx_style_get_ccss_query (MxStyle    *style,
+                         MxStylable *stylable)
 {
   MxStylableIface *iface = MX_STYLABLE_GET_IFACE (stylable);
   ccss_style_t *ccss_style;
@@ -592,7 +593,7 @@ mx_style_get_ccss_query (MxStyle         *style,
 
 
       g_object_weak_ref ((GObject*) stylable,
-                        (GWeakNotify) g_hash_table_remove, style->priv->node_hash);
+                         (GWeakNotify) g_hash_table_remove, style->priv->node_hash);
     }
 
 
@@ -631,9 +632,9 @@ mx_style_get_ccss_query (MxStyle         *style,
 
 void
 mx_style_get_property (MxStyle    *style,
-                         MxStylable *stylable,
-                         GParamSpec   *pspec,
-                         GValue       *value)
+                       MxStylable *stylable,
+                       GParamSpec *pspec,
+                       GValue     *value)
 {
   MxStylePrivate *priv;
   gboolean value_set = FALSE;
@@ -680,9 +681,9 @@ mx_style_get_property (MxStyle    *style,
  */
 void
 mx_style_get_valist (MxStyle     *style,
-                       MxStylable  *stylable,
-                       const gchar   *first_property_name,
-                       va_list        va_args)
+                     MxStylable  *stylable,
+                     const gchar *first_property_name,
+                     va_list      va_args)
 {
   MxStylePrivate *priv;
   const gchar *name = first_property_name;
@@ -763,9 +764,9 @@ mx_style_get_valist (MxStyle     *style,
  */
 void
 mx_style_get (MxStyle     *style,
-                MxStylable  *stylable,
-                const gchar   *first_property_name,
-                ...)
+              MxStylable  *stylable,
+              const gchar *first_property_name,
+              ...)
 {
   va_list va_args;
 

@@ -30,7 +30,7 @@
 #include "mx-marshal.h"
 #include "mx-private.h"
 
-typedef struct _DropContext     DropContext;
+typedef struct _DropContext DropContext;
 
 enum
 {
@@ -48,11 +48,11 @@ struct _DropContext
 {
   ClutterActor *stage;
 
-  GSList *targets;
+  GSList       *targets;
 
-  MxDroppable *last_target;
+  MxDroppable  *last_target;
 
-  guint is_over : 1;
+  guint         is_over : 1;
 };
 
 static gboolean
@@ -182,15 +182,15 @@ drop_context_destroy (gpointer data)
 }
 
 static void
-drop_context_update (DropContext   *context,
+drop_context_update (DropContext *context,
                      MxDroppable *droppable)
 {
   context->targets = g_slist_prepend (context->targets, droppable);
 }
 
 static DropContext *
-drop_context_create (ClutterActor  *stage,
-                     MxDroppable *droppable)
+drop_context_create (ClutterActor *stage,
+                     MxDroppable  *droppable)
 {
   DropContext *retval;
 
@@ -261,7 +261,7 @@ mx_droppable_real_disable (MxDroppable *droppable)
 
 static gboolean
 mx_droppable_real_accept_drop (MxDroppable *droppable,
-                                 MxDraggable *draggable)
+                               MxDraggable *draggable)
 {
   /* we always accept by default */
   return TRUE;
@@ -383,11 +383,11 @@ mx_droppable_is_enabled (MxDroppable *droppable)
 
 gboolean
 mx_droppable_accept_drop (MxDroppable *droppable,
-                            MxDraggable *draggable)
+                          MxDraggable *draggable)
 {
   g_return_val_if_fail (MX_IS_DROPPABLE (droppable), FALSE);
   g_return_val_if_fail (MX_IS_DRAGGABLE (draggable), FALSE);
 
   return MX_DROPPABLE_GET_IFACE (droppable)->accept_drop (droppable,
-                                                            draggable);
+                                                          draggable);
 }

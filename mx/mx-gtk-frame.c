@@ -32,9 +32,9 @@ static GdkColor mx_gtk_frame_default_border_color = { 0, 0xdddd, 0xe2e2, 0xe5e5 
 
 static void mx_gtk_frame_buildable_init (GtkBuildableIface *iface);
 static void mx_gtk_frame_buildable_add_child (GtkBuildable *buildable,
-                                                GtkBuilder   *builder,
-                                                GObject      *child,
-                                                const gchar  *type);
+                                              GtkBuilder   *builder,
+                                              GObject      *child,
+                                              const gchar  *type);
 
 G_DEFINE_TYPE_WITH_CODE (MxGtkFrame, mx_gtk_frame, GTK_TYPE_FRAME,
                          G_IMPLEMENT_INTERFACE (GTK_TYPE_BUILDABLE, mx_gtk_frame_buildable_init))
@@ -111,8 +111,11 @@ label_changed_cb (MxGtkFrame *frame)
 }
 static void
 rounded_rectangle (cairo_t * cr,
-                   double x, double y, double w, double h,
-                   guint radius)
+                   double    x,
+                   double    y,
+                   double    w,
+                   double    h,
+                   guint     radius)
 {
   if (radius > w / 2)
     radius = w / 2;
@@ -127,7 +130,8 @@ rounded_rectangle (cairo_t * cr,
 }
 
 static void
-mx_gtk_frame_paint (GtkWidget *widget, GdkRectangle *area)
+mx_gtk_frame_paint (GtkWidget    *widget,
+                    GdkRectangle *area)
 {
   MxGtkFrame *frame = MX_GTK_FRAME (widget);
   cairo_t *cairo;
@@ -172,8 +176,8 @@ mx_gtk_frame_paint (GtkWidget *widget, GdkRectangle *area)
 }
 
 static gboolean
-mx_gtk_frame_expose (GtkWidget *widget,
-                       GdkEventExpose *event)
+mx_gtk_frame_expose (GtkWidget      *widget,
+                     GdkEventExpose *event)
 {
   GtkWidgetClass *grand_parent;
 
@@ -188,8 +192,8 @@ mx_gtk_frame_expose (GtkWidget *widget,
 }
 
 static void
-mx_gtk_frame_size_request (GtkWidget *widget,
-                             GtkRequisition *requisition)
+mx_gtk_frame_size_request (GtkWidget      *widget,
+                           GtkRequisition *requisition)
 {
   GtkFrame *frame = GTK_FRAME (widget);
   GtkBin *bin = GTK_BIN (widget);
@@ -217,8 +221,8 @@ mx_gtk_frame_size_request (GtkWidget *widget,
 
 
 static void
-mx_gtk_frame_size_allocate (GtkWidget *widget,
-                              GtkAllocation *allocation)
+mx_gtk_frame_size_allocate (GtkWidget     *widget,
+                            GtkAllocation *allocation)
 {
   GtkBin *bin = GTK_BIN (widget);
   GtkFrame *frame = GTK_FRAME (widget);
@@ -270,7 +274,7 @@ mx_gtk_frame_size_allocate (GtkWidget *widget,
 }
 
 static void mx_gtk_frame_style_set (GtkWidget *widget,
-                                      GtkStyle *previous)
+                                    GtkStyle  *previous)
 {
   MxGtkFrame *frame = MX_GTK_FRAME (widget);
 
@@ -310,9 +314,9 @@ mx_gtk_frame_class_init (MxGtkFrameClass *klass)
 
 static void
 mx_gtk_frame_buildable_add_child (GtkBuildable *buildable,
-                                    GtkBuilder *builder,
-                                    GObject *child,
-                                    const gchar *type)
+                                  GtkBuilder   *builder,
+                                  GObject      *child,
+                                  const gchar  *type)
 {
   if (!type)
     gtk_container_add (GTK_CONTAINER (buildable), GTK_WIDGET (child));

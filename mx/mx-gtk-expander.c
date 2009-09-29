@@ -34,12 +34,12 @@
 
 struct _MxGtkExpanderPrivate
 {
-  gboolean is_open : 1;
-  gboolean has_indicator : 1;
+  gboolean   is_open : 1;
+  gboolean   has_indicator : 1;
 
-  gint indicator_size;
-  gint indicator_padding; /* padding between indicator and label */
-  gint child_padding; /* padding between label and child */
+  gint       indicator_size;
+  gint       indicator_padding; /* padding between indicator and label */
+  gint       child_padding; /* padding between label and child */
 
   GtkWidget *label;
   //GdkWindow *event_window;
@@ -60,7 +60,7 @@ G_DEFINE_TYPE (MxGtkExpander, mx_gtk_expander, GTK_TYPE_BIN)
 
 static gboolean
 mx_gtk_expander_expose_event (GtkWidget      *widget,
-                                GdkEventExpose *event)
+                              GdkEventExpose *event)
 {
   if (GTK_WIDGET_DRAWABLE (widget))
     {
@@ -107,8 +107,8 @@ mx_gtk_expander_expose_event (GtkWidget      *widget,
 
           shadow_x = rect.x + widget->style->xthickness;
           shadow_y = rect.y + widget->style->ythickness
-                         + priv->child_padding
-                         + MAX (label_h, priv->indicator_size);
+                     + priv->child_padding
+                     + MAX (label_h, priv->indicator_size);
 
           gtk_paint_box (widget->style,
                          widget->window,
@@ -151,22 +151,22 @@ mx_gtk_expander_expose_event (GtkWidget      *widget,
         gtk_container_propagate_expose (container, priv->label, event);
 
       /*
-      if (GTK_WIDGET_HAS_FOCUS (expander))
-        gtk_expander_paint_focus (expander, &event->area);
-      */
+         if (GTK_WIDGET_HAS_FOCUS (expander))
+         gtk_expander_paint_focus (expander, &event->area);
+       */
 
     }
 
   /* chain up to get child painted */
   GTK_WIDGET_CLASS (mx_gtk_expander_parent_class)->expose_event (widget,
-                                                                   event);
+                                                                 event);
 
   return FALSE;
 }
 
 static void
 mx_gtk_expander_size_allocate (GtkWidget     *widget,
-                                 GtkAllocation *allocation)
+                               GtkAllocation *allocation)
 {
   MxGtkExpanderPrivate *priv = ((MxGtkExpander*) widget)->priv;
   GtkWidget *child, *label;
@@ -175,7 +175,7 @@ mx_gtk_expander_size_allocate (GtkWidget     *widget,
   gint label_h;
 
   GTK_WIDGET_CLASS (mx_gtk_expander_parent_class)->size_allocate (widget,
-                                                                    allocation);
+                                                                  allocation);
 
   child = gtk_bin_get_child ((GtkBin*) widget);
   label = ((MxGtkExpander *) widget)->priv->label;
@@ -208,7 +208,7 @@ mx_gtk_expander_size_allocate (GtkWidget     *widget,
 
       child_alloc.x = allocation->x + 2 * widget->style->xthickness;
       child_alloc.y = allocation->y + widget->style->ythickness + label_h
-        + priv->child_padding;
+                      + priv->child_padding;
       child_alloc.width = allocation->width - 4 * widget->style->xthickness;
       child_alloc.height = child_req.height;
 
@@ -217,7 +217,7 @@ mx_gtk_expander_size_allocate (GtkWidget     *widget,
 
 
   /*if (priv->event_window)
-    {
+     {
       gdk_window_move_resize (priv->event_window, allocation->x, allocation->y,
                               allocation->width, allocation->height);
                               }*/
@@ -226,7 +226,7 @@ mx_gtk_expander_size_allocate (GtkWidget     *widget,
 
 static void
 mx_gtk_expander_size_request (GtkWidget      *widget,
-                                GtkRequisition *requisition)
+                              GtkRequisition *requisition)
 {
   MxGtkExpanderPrivate *priv = ((MxGtkExpander*) widget)->priv;
   GtkWidget *child, *label;
@@ -263,19 +263,19 @@ mx_gtk_expander_size_request (GtkWidget      *widget,
 
 static void
 mx_gtk_expander_forall (GtkContainer *container,
-                          gboolean      include_internals,
-                          GtkCallback   callback,
-                          gpointer      callback_data)
+                        gboolean      include_internals,
+                        GtkCallback   callback,
+                        gpointer      callback_data)
 {
   MxGtkExpanderPrivate *priv = ((MxGtkExpander*) container)->priv;
 
   GTK_CONTAINER_CLASS (mx_gtk_expander_parent_class)->forall (container,
-                                                                include_internals,
-                                                                callback,
-                                                                callback_data);
+                                                              include_internals,
+                                                              callback,
+                                                              callback_data);
 
   if (priv->label)
-    (* callback) (priv->label, callback_data);
+    (* callback)(priv->label, callback_data);
 }
 
 static void
@@ -284,10 +284,10 @@ mx_gtk_expander_map (GtkWidget *widget)
   MxGtkExpanderPrivate *priv = ((MxGtkExpander*) widget)->priv;
 
   if (priv->label)
-      gtk_widget_map (priv->label);
+    gtk_widget_map (priv->label);
 
   /*if (priv->event_window)
-    gdk_window_show (priv->event_window);*/
+     gdk_window_show (priv->event_window);*/
 
   GTK_WIDGET_CLASS (mx_gtk_expander_parent_class)->map (widget);
 }
@@ -301,14 +301,14 @@ mx_gtk_expander_unmap (GtkWidget *widget)
     gtk_widget_unmap (priv->label);
 
   /*if (priv->event_window)
-    gdk_window_hide (priv->event_window);*/
+     gdk_window_hide (priv->event_window);*/
 
   GTK_WIDGET_CLASS (mx_gtk_expander_parent_class)->unmap (widget);
 }
 
 static void
 mx_gtk_expander_add (GtkContainer *container,
-                       GtkWidget    *widget)
+                     GtkWidget    *widget)
 {
   GTK_CONTAINER_CLASS (mx_gtk_expander_parent_class)->add (container, widget);
 
@@ -318,7 +318,7 @@ mx_gtk_expander_add (GtkContainer *container,
 
 static void
 mx_gtk_expander_remove (GtkContainer *container,
-                          GtkWidget    *widget)
+                        GtkWidget    *widget)
 {
   MxGtkExpander *expander = MX_GTK_EXPANDER (container);
 
@@ -326,12 +326,12 @@ mx_gtk_expander_remove (GtkContainer *container,
     mx_gtk_expander_set_label_widget (expander, NULL);
   else
     GTK_CONTAINER_CLASS (mx_gtk_expander_parent_class)->remove (container,
-                                                                  widget);
+                                                                widget);
 }
 
 static gboolean
 mx_gtk_expander_button_release (GtkWidget      *widget,
-                                  GdkEventButton *event)
+                                GdkEventButton *event)
 {
   MxGtkExpanderPrivate *priv = ((MxGtkExpander*) widget)->priv;
 
@@ -344,41 +344,41 @@ static void
 mx_gtk_expander_realize (GtkWidget *widget)
 {
   /*
-  MxGtkExpanderPrivate *priv = ((MxGtkExpander*) widget)->priv;
-  GdkWindowAttr attributes;
-  */
+     MxGtkExpanderPrivate *priv = ((MxGtkExpander*) widget)->priv;
+     GdkWindowAttr attributes;
+   */
 
   GTK_WIDGET_CLASS (mx_gtk_expander_parent_class)->realize (widget);
 
   /*
-  attributes.window_type = GDK_WINDOW_CHILD;
-  attributes.wclass = GDK_INPUT_ONLY;
-  attributes.event_mask = gtk_widget_get_events (widget) |
+     attributes.window_type = GDK_WINDOW_CHILD;
+     attributes.wclass = GDK_INPUT_ONLY;
+     attributes.event_mask = gtk_widget_get_events (widget) |
                             GDK_BUTTON_PRESS_MASK        |
                             GDK_BUTTON_RELEASE_MASK      |
                             GDK_ENTER_NOTIFY_MASK        |
                             GDK_LEAVE_NOTIFY_MASK;
 
-  priv->event_window = gdk_window_new (gtk_widget_get_parent_window (widget),
+     priv->event_window = gdk_window_new (gtk_widget_get_parent_window (widget),
                                        &attributes, GDK_WA_X | GDK_WA_Y);
-  gdk_window_set_user_data (priv->event_window, widget);
+     gdk_window_set_user_data (priv->event_window, widget);
 
-  gdk_window_move_resize (priv->event_window,
+     gdk_window_move_resize (priv->event_window,
                           widget->allocation.x,
                           widget->allocation.y,
                           widget->allocation.width,
                           widget->allocation.height);
-  */
+   */
 }
 
 static void
 mx_gtk_expander_unrealize (GtkWidget *widget)
 {
   /*
-  MxGtkExpanderPrivate *priv = ((MxGtkExpander*) widget)->priv;
+     MxGtkExpanderPrivate *priv = ((MxGtkExpander*) widget)->priv;
 
-  if (priv->event_window)
-    {
+     if (priv->event_window)
+     {
       gdk_window_destroy (priv->event_window);
       priv->event_window = NULL;
       }
@@ -389,7 +389,7 @@ mx_gtk_expander_unrealize (GtkWidget *widget)
 
 static void
 mx_gtk_expander_style_set (GtkWidget *widget,
-                             GtkStyle  *previous)
+                           GtkStyle  *previous)
 {
   MxGtkExpanderPrivate *priv = ((MxGtkExpander*) widget)->priv;
 
@@ -401,9 +401,9 @@ mx_gtk_expander_style_set (GtkWidget *widget,
 
 static void
 mx_gtk_expander_set_property (GObject      *object,
-                                guint         property_id,
-                                const GValue *value,
-                                GParamSpec   *pspec)
+                              guint         property_id,
+                              const GValue *value,
+                              GParamSpec   *pspec)
 {
   MxGtkExpander *expander = (MxGtkExpander *) object;
 
@@ -419,7 +419,7 @@ mx_gtk_expander_set_property (GObject      *object,
 
     case PROP_HAS_INDICATOR:
       mx_gtk_expander_set_has_indicator (expander,
-                                           g_value_get_boolean (value));
+                                         g_value_get_boolean (value));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -428,9 +428,9 @@ mx_gtk_expander_set_property (GObject      *object,
 
 static void
 mx_gtk_expander_get_property (GObject    *object,
-                                guint       property_id,
-                                GValue     *value,
-                                GParamSpec *pspec)
+                              guint       property_id,
+                              GValue     *value,
+                              GParamSpec *pspec)
 {
   MxGtkExpanderPrivate *priv = ((MxGtkExpander*) object)->priv;
 
@@ -554,7 +554,7 @@ mx_gtk_expander_new (void)
  */
 void
 mx_gtk_expander_set_expanded (MxGtkExpander *expander,
-                                gboolean         expanded)
+                              gboolean       expanded)
 {
   MxGtkExpanderPrivate *priv;
   g_return_if_fail (MX_IS_GTK_EXPANDER (expander));
@@ -602,7 +602,7 @@ mx_gtk_expander_get_expanded (MxGtkExpander *expander)
  */
 void
 mx_gtk_expander_set_label_widget (MxGtkExpander *expander,
-                                    GtkWidget       *label)
+                                  GtkWidget     *label)
 {
   g_return_if_fail (MX_IS_GTK_EXPANDER (expander));
   g_return_if_fail (label == NULL || GTK_IS_WIDGET (label));
@@ -645,7 +645,7 @@ mx_gtk_expander_get_label_widget (MxGtkExpander *expander)
  */
 void
 mx_gtk_expander_set_has_indicator (MxGtkExpander *expander,
-                                     gboolean         has_indicator)
+                                   gboolean       has_indicator)
 {
   g_return_if_fail (MX_IS_GTK_EXPANDER (expander));
 

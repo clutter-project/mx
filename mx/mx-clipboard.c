@@ -46,16 +46,16 @@ struct _MxClipboardPrivate
   Window clipboard_window;
   gchar *clipboard_text;
 
-  Atom *supported_targets;
-  gint n_targets;
+  Atom  *supported_targets;
+  gint   n_targets;
 };
 
 typedef struct _EventFilterData EventFilterData;
 struct _EventFilterData
 {
-  MxClipboard *clipboard;
+  MxClipboard            *clipboard;
   MxClipboardCallbackFunc callback;
-  gpointer user_data;
+  gpointer                user_data;
 };
 
 static Atom __atom_clip = None;
@@ -63,8 +63,10 @@ static Atom __utf8_string = None;
 static Atom __atom_targets = None;
 
 static void
-mx_clipboard_get_property (GObject *object, guint property_id,
-                              GValue *value, GParamSpec *pspec)
+mx_clipboard_get_property (GObject    *object,
+                           guint       property_id,
+                           GValue     *value,
+                           GParamSpec *pspec)
 {
   switch (property_id)
     {
@@ -74,8 +76,10 @@ mx_clipboard_get_property (GObject *object, guint property_id,
 }
 
 static void
-mx_clipboard_set_property (GObject *object, guint property_id,
-                              const GValue *value, GParamSpec *pspec)
+mx_clipboard_set_property (GObject      *object,
+                           guint         property_id,
+                           const GValue *value,
+                           GParamSpec   *pspec)
 {
   switch (property_id)
     {
@@ -106,9 +110,9 @@ mx_clipboard_finalize (GObject *object)
 }
 
 static ClutterX11FilterReturn
-mx_clipboard_provider (XEvent        *xev,
-                         ClutterEvent  *cev,
-                         MxClipboard *clipboard)
+mx_clipboard_provider (XEvent       *xev,
+                       ClutterEvent *cev,
+                       MxClipboard  *clipboard)
 {
   XSelectionEvent notify_event;
   XSelectionRequestEvent *req_event;
@@ -217,8 +221,8 @@ mx_clipboard_init (MxClipboard *self)
 
 static ClutterX11FilterReturn
 mx_clipboard_x11_event_filter (XEvent          *xev,
-                                 ClutterEvent    *cev,
-                                 EventFilterData *filter_data)
+                               ClutterEvent    *cev,
+                               EventFilterData *filter_data)
 {
   Atom actual_type;
   int actual_format, result;
@@ -265,8 +269,8 @@ mx_clipboard_x11_event_filter (XEvent          *xev,
                          filter_data->user_data);
 
   clutter_x11_remove_filter
-                    ((ClutterX11FilterFunc) mx_clipboard_x11_event_filter,
-                     filter_data);
+                          ((ClutterX11FilterFunc) mx_clipboard_x11_event_filter,
+                          filter_data);
 
   g_free (filter_data);
 
@@ -308,9 +312,9 @@ mx_clipboard_get_default ()
  *
  */
 void
-mx_clipboard_get_text (MxClipboard             *clipboard,
-                         MxClipboardCallbackFunc  callback,
-                         gpointer                   user_data)
+mx_clipboard_get_text (MxClipboard            *clipboard,
+                       MxClipboardCallbackFunc callback,
+                       gpointer                user_data)
 {
   EventFilterData *data;
 
@@ -324,7 +328,7 @@ mx_clipboard_get_text (MxClipboard             *clipboard,
   data->callback = callback;
   data->user_data = user_data;
 
-  clutter_x11_add_filter ((ClutterX11FilterFunc)mx_clipboard_x11_event_filter,
+  clutter_x11_add_filter ((ClutterX11FilterFunc) mx_clipboard_x11_event_filter,
                           data);
 
   dpy = clutter_x11_get_default_display ();
@@ -350,7 +354,7 @@ mx_clipboard_get_text (MxClipboard             *clipboard,
  */
 void
 mx_clipboard_set_text (MxClipboard *clipboard,
-                         const gchar   *text)
+                       const gchar *text)
 {
   MxClipboardPrivate *priv;
   Display *dpy;

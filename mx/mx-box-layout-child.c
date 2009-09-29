@@ -48,8 +48,10 @@ enum
 };
 
 static void
-mx_box_layout_child_get_property (GObject *object, guint property_id,
-                                    GValue *value, GParamSpec *pspec)
+mx_box_layout_child_get_property (GObject    *object,
+                                  guint       property_id,
+                                  GValue     *value,
+                                  GParamSpec *pspec)
 {
   MxBoxLayoutChild *child = MX_BOX_LAYOUT_CHILD (object);
 
@@ -77,8 +79,10 @@ mx_box_layout_child_get_property (GObject *object, guint property_id,
 }
 
 static void
-mx_box_layout_child_set_property (GObject *object, guint property_id,
-                                    const GValue *value, GParamSpec *pspec)
+mx_box_layout_child_set_property (GObject      *object,
+                                  guint         property_id,
+                                  const GValue *value,
+                                  GParamSpec   *pspec)
 {
   MxBoxLayoutChild *child = MX_BOX_LAYOUT_CHILD (object);
   MxBoxLayout *box = MX_BOX_LAYOUT (CLUTTER_CHILD_META (object)->container);

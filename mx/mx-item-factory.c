@@ -47,11 +47,11 @@ mx_item_factory_get_type (void)
   if (!type)
     {
       const GTypeInfo info =
-        {
-          sizeof (MxItemFactoryIface),
-          mx_item_factory_base_init,
-          NULL,
-        };
+      {
+        sizeof (MxItemFactoryIface),
+        mx_item_factory_base_init,
+        NULL,
+      };
 
       type = g_type_register_static (G_TYPE_INTERFACE,
                                      "MxItemFactory", &info, 0);

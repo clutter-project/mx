@@ -50,8 +50,8 @@ G_DEFINE_TYPE_WITH_CODE (MxScrollView, mx_scroll_view, MX_TYPE_BIN,
                                                 mx_stylable_iface_init))
 
 #define SCROLL_VIEW_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), \
-                                MX_TYPE_SCROLL_VIEW, \
-                                MxScrollViewPrivate))
+                                                             MX_TYPE_SCROLL_VIEW, \
+                                                             MxScrollViewPrivate))
 
 struct _MxScrollViewPrivate
 {
@@ -59,17 +59,17 @@ struct _MxScrollViewPrivate
    * inside MxBin:child, but we keep it to avoid
    * calling mx_bin_get_child() every time we need it
    */
-  ClutterActor   *child;
+  ClutterActor *child;
 
-  ClutterActor   *hscroll;
-  ClutterActor   *vscroll;
+  ClutterActor *hscroll;
+  ClutterActor *vscroll;
 
-  gfloat          row_size;
-  gfloat          column_size;
+  gfloat        row_size;
+  gfloat        column_size;
 
-  gboolean        row_size_set : 1;
-  gboolean        column_size_set : 1;
-  guint           mouse_scroll : 1;
+  gboolean      row_size_set : 1;
+  gboolean      column_size_set : 1;
+  guint         mouse_scroll : 1;
 };
 
 enum {
@@ -81,17 +81,19 @@ enum {
 };
 
 static void
-mx_scroll_view_get_property (GObject *object, guint property_id,
-                                 GValue *value, GParamSpec *pspec)
+mx_scroll_view_get_property (GObject    *object,
+                             guint       property_id,
+                             GValue     *value,
+                             GParamSpec *pspec)
 {
-  MxScrollViewPrivate *priv = ((MxScrollView *)object)->priv;
+  MxScrollViewPrivate *priv = ((MxScrollView *) object)->priv;
 
   switch (property_id)
     {
-    case PROP_HSCROLL :
+    case PROP_HSCROLL:
       g_value_set_object (value, priv->hscroll);
       break;
-    case PROP_VSCROLL :
+    case PROP_VSCROLL:
       g_value_set_object (value, priv->vscroll);
       break;
     case PROP_MOUSE_SCROLL:
@@ -103,14 +105,16 @@ mx_scroll_view_get_property (GObject *object, guint property_id,
 }
 
 static void
-mx_scroll_view_set_property (GObject *object, guint property_id,
-                                 const GValue *value, GParamSpec *pspec)
+mx_scroll_view_set_property (GObject      *object,
+                             guint         property_id,
+                             const GValue *value,
+                             GParamSpec   *pspec)
 {
   switch (property_id)
     {
     case PROP_MOUSE_SCROLL:
       mx_scroll_view_set_mouse_scrolling ((MxScrollView *) object,
-                                         g_value_get_boolean (value));
+                                          g_value_get_boolean (value));
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -160,7 +164,8 @@ mx_scroll_view_paint (ClutterActor *actor)
 }
 
 static void
-mx_scroll_view_pick (ClutterActor *actor, const ClutterColor *color)
+mx_scroll_view_pick (ClutterActor       *actor,
+                     const ClutterColor *color)
 {
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (actor)->priv;
 
@@ -176,9 +181,9 @@ mx_scroll_view_pick (ClutterActor *actor, const ClutterColor *color)
 
 static void
 mx_scroll_view_get_preferred_width (ClutterActor *actor,
-                                      gfloat        for_height,
-                                      gfloat       *min_width_p,
-                                      gfloat       *natural_width_p)
+                                    gfloat        for_height,
+                                    gfloat       *min_width_p,
+                                    gfloat       *natural_width_p)
 {
   MxPadding padding;
   guint xthickness;
@@ -190,8 +195,8 @@ mx_scroll_view_get_preferred_width (ClutterActor *actor,
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
   mx_stylable_get (MX_STYLABLE (actor),
-                     "scrollbar-width", &xthickness,
-                     NULL);
+                   "scrollbar-width", &xthickness,
+                   NULL);
 
   /* Our natural width is the natural width of the child */
   clutter_actor_get_preferred_width (priv->child,
@@ -221,9 +226,9 @@ mx_scroll_view_get_preferred_width (ClutterActor *actor,
 
 static void
 mx_scroll_view_get_preferred_height (ClutterActor *actor,
-                                       gfloat        for_width,
-                                       gfloat       *min_height_p,
-                                       gfloat       *natural_height_p)
+                                     gfloat        for_width,
+                                     gfloat       *min_height_p,
+                                     gfloat       *natural_height_p)
 {
   MxPadding padding;
   guint ythickness;
@@ -235,8 +240,8 @@ mx_scroll_view_get_preferred_height (ClutterActor *actor,
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
   mx_stylable_get (MX_STYLABLE (actor),
-                     "scrollbar-height", &ythickness,
-                     NULL);
+                   "scrollbar-height", &ythickness,
+                   NULL);
 
   /* Our natural height is the natural height of the child */
   clutter_actor_get_preferred_height (priv->child,
@@ -266,8 +271,8 @@ mx_scroll_view_get_preferred_height (ClutterActor *actor,
 
 static void
 mx_scroll_view_allocate (ClutterActor          *actor,
-                           const ClutterActorBox *box,
-                           ClutterAllocationFlags flags)
+                         const ClutterActorBox *box,
+                         ClutterAllocationFlags flags)
 {
   MxPadding padding;
   ClutterActorBox child_box;
@@ -286,7 +291,7 @@ mx_scroll_view_allocate (ClutterActor          *actor,
     = g_type_class_peek_parent (mx_scroll_view_parent_class);
 
   CLUTTER_ACTOR_CLASS (parent_parent_class)->
-    allocate (actor, box, flags);
+  allocate (actor, box, flags);
 
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
@@ -295,9 +300,9 @@ mx_scroll_view_allocate (ClutterActor          *actor,
   avail_height = (box->y2 - box->y1) - padding.top - padding.bottom;
 
   mx_stylable_get (MX_STYLABLE (actor),
-                     "scrollbar-width", &sb_width,
-                     "scrollbar-height", &sb_height,
-                     NULL);
+                   "scrollbar-width", &sb_width,
+                   "scrollbar-height", &sb_height,
+                   NULL);
   sb_width = 28;
   sb_height = 28;
 
@@ -337,7 +342,7 @@ mx_scroll_view_allocate (ClutterActor          *actor,
   child_box.y2 = avail_height - sb_height;
 
   if (priv->child)
-      clutter_actor_allocate (priv->child, &child_box, flags);
+    clutter_actor_allocate (priv->child, &child_box, flags);
 }
 
 static void
@@ -350,8 +355,8 @@ mx_scroll_view_style_changed (MxWidget *widget)
 }
 
 static gboolean
-mx_scroll_view_scroll_event (ClutterActor        *self,
-                               ClutterScrollEvent  *event)
+mx_scroll_view_scroll_event (ClutterActor       *self,
+                             ClutterScrollEvent *event)
 {
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (self)->priv;
   gdouble lower, value, upper, step;
@@ -366,58 +371,58 @@ mx_scroll_view_scroll_event (ClutterActor        *self,
 
   switch (event->direction)
     {
-      case CLUTTER_SCROLL_UP:
-      case CLUTTER_SCROLL_DOWN:
-        if (vadjustment)
-          g_object_get (vadjustment,
-                        "lower", &lower,
-                        "step-increment", &step,
-                        "value", &value,
-                        "upper", &upper,
-                        NULL);
-        else
-          return FALSE;
-        break;
-      case CLUTTER_SCROLL_LEFT:
-      case CLUTTER_SCROLL_RIGHT:
-        if (vadjustment)
-          g_object_get (hadjustment,
-                        "lower", &lower,
-                        "step-increment", &step,
-                        "value", &value,
-                        "upper", &upper,
-                        NULL);
-          else
-            return FALSE;
-        break;
+    case CLUTTER_SCROLL_UP:
+    case CLUTTER_SCROLL_DOWN:
+      if (vadjustment)
+        g_object_get (vadjustment,
+                      "lower", &lower,
+                      "step-increment", &step,
+                      "value", &value,
+                      "upper", &upper,
+                      NULL);
+      else
+        return FALSE;
+      break;
+    case CLUTTER_SCROLL_LEFT:
+    case CLUTTER_SCROLL_RIGHT:
+      if (vadjustment)
+        g_object_get (hadjustment,
+                      "lower", &lower,
+                      "step-increment", &step,
+                      "value", &value,
+                      "upper", &upper,
+                      NULL);
+      else
+        return FALSE;
+      break;
     }
 
   switch (event->direction)
     {
-      case CLUTTER_SCROLL_UP:
-        if (value == lower)
-          return FALSE;
-        else
-          mx_adjustment_set_value (vadjustment, value - step);
-        break;
-      case CLUTTER_SCROLL_DOWN:
-        if (value == upper)
-          return FALSE;
-        else
-          mx_adjustment_set_value (vadjustment, value + step);
-        break;
-      case CLUTTER_SCROLL_LEFT:
-        if (value == lower)
-          return FALSE;
-        else
-          mx_adjustment_set_value (hadjustment, value - step);
-        break;
-      case CLUTTER_SCROLL_RIGHT:
-        if (value == upper)
-          return FALSE;
-        else
-          mx_adjustment_set_value (hadjustment, value + step);
-        break;
+    case CLUTTER_SCROLL_UP:
+      if (value == lower)
+        return FALSE;
+      else
+        mx_adjustment_set_value (vadjustment, value - step);
+      break;
+    case CLUTTER_SCROLL_DOWN:
+      if (value == upper)
+        return FALSE;
+      else
+        mx_adjustment_set_value (vadjustment, value + step);
+      break;
+    case CLUTTER_SCROLL_LEFT:
+      if (value == lower)
+        return FALSE;
+      else
+        mx_adjustment_set_value (hadjustment, value - step);
+      break;
+    case CLUTTER_SCROLL_RIGHT:
+      if (value == upper)
+        return FALSE;
+      else
+        mx_adjustment_set_value (hadjustment, value + step);
+      break;
     }
 
   return TRUE;
@@ -455,10 +460,10 @@ mx_scroll_view_class_init (MxScrollViewClass *klass)
   g_object_class_install_property (object_class,
                                    PROP_VSCROLL,
                                    g_param_spec_object ("vscroll",
-                                                       "MxScrollBar",
-                                                       "Vertical scroll indicator",
-                                                       MX_TYPE_SCROLL_BAR,
-                                                       G_PARAM_READABLE));
+                                                        "MxScrollBar",
+                                                        "Vertical scroll indicator",
+                                                        MX_TYPE_SCROLL_BAR,
+                                                        G_PARAM_READABLE));
 
   pspec = g_param_spec_boolean ("enable-mouse-scrolling",
                                 "Enable Mouse Scrolling",
@@ -483,24 +488,24 @@ mx_stylable_iface_init (MxStylableIface *iface)
       is_initialized = TRUE;
 
       pspec = g_param_spec_uint ("scrollbar-width",
-                                  "Vertical scroll-bar thickness",
-                                  "Thickness of vertical scrollbar, in px",
-                                  0, G_MAXUINT, 24,
-                                  G_PARAM_READWRITE);
+                                 "Vertical scroll-bar thickness",
+                                 "Thickness of vertical scrollbar, in px",
+                                 0, G_MAXUINT, 24,
+                                 G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_SCROLL_VIEW, pspec);
 
       pspec = g_param_spec_uint ("scrollbar-height",
-                                  "Horizontal scroll-bar thickness",
-                                  "Thickness of horizontal scrollbar, in px",
-                                  0, G_MAXUINT, 24,
-                                  G_PARAM_READWRITE);
+                                 "Horizontal scroll-bar thickness",
+                                 "Thickness of horizontal scrollbar, in px",
+                                 0, G_MAXUINT, 24,
+                                 G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_SCROLL_VIEW, pspec);
     }
 }
 
 static void
 child_adjustment_changed_cb (MxAdjustment *adjustment,
-                             ClutterActor   *bar)
+                             ClutterActor *bar)
 {
   MxScrollView *scroll;
   gdouble lower, upper, page_size;
@@ -509,9 +514,9 @@ child_adjustment_changed_cb (MxAdjustment *adjustment,
 
   /* Determine if this scroll-bar should be visible */
   mx_adjustment_get_values (adjustment, NULL,
-                              &lower, &upper,
-                              NULL, NULL,
-                              &page_size);
+                            &lower, &upper,
+                            NULL, NULL,
+                            &page_size);
 
   if ((upper - lower) > page_size)
     clutter_actor_show (bar);
@@ -523,9 +528,9 @@ child_adjustment_changed_cb (MxAdjustment *adjustment,
 }
 
 static void
-child_hadjustment_notify_cb (GObject *gobject,
+child_hadjustment_notify_cb (GObject    *gobject,
                              GParamSpec *arg1,
-                             gpointer user_data)
+                             gpointer    user_data)
 {
   MxAdjustment *hadjust;
 
@@ -551,15 +556,15 @@ child_hadjustment_notify_cb (GObject *gobject,
 
       mx_scroll_bar_set_adjustment (MX_SCROLL_BAR(priv->hscroll), hadjust);
       g_signal_connect (hadjust, "changed", G_CALLBACK (
-                        child_adjustment_changed_cb), priv->hscroll);
+                          child_adjustment_changed_cb), priv->hscroll);
       child_adjustment_changed_cb (hadjust, priv->hscroll);
     }
 }
 
 static void
-child_vadjustment_notify_cb (GObject *gobject,
+child_vadjustment_notify_cb (GObject    *gobject,
                              GParamSpec *arg1,
-                             gpointer user_data)
+                             gpointer    user_data)
 {
   MxAdjustment *vadjust;
 
@@ -585,7 +590,7 @@ child_vadjustment_notify_cb (GObject *gobject,
 
       mx_scroll_bar_set_adjustment (MX_SCROLL_BAR(priv->vscroll), vadjust);
       g_signal_connect (vadjust, "changed", G_CALLBACK (
-                        child_adjustment_changed_cb), priv->vscroll);
+                          child_adjustment_changed_cb), priv->vscroll);
       child_adjustment_changed_cb (vadjust, priv->vscroll);
     }
 }
@@ -612,7 +617,7 @@ mx_scroll_view_init (MxScrollView *self)
 
 static void
 mx_scroll_view_add (ClutterContainer *container,
-                      ClutterActor     *actor)
+                    ClutterActor     *actor)
 {
   MxScrollView *self = MX_SCROLL_VIEW (container);
   MxScrollViewPrivate *priv = self->priv;
@@ -645,7 +650,7 @@ mx_scroll_view_add (ClutterContainer *container,
 
 static void
 mx_scroll_view_remove (ClutterContainer *container,
-                         ClutterActor     *actor)
+                       ClutterActor     *actor)
 {
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (container)->priv;
 
@@ -671,8 +676,8 @@ mx_scroll_view_remove (ClutterContainer *container,
 
 static void
 mx_scroll_view_foreach_with_internals (ClutterContainer *container,
-                                         ClutterCallback   callback,
-                                         gpointer          user_data)
+                                       ClutterCallback   callback,
+                                       gpointer          user_data)
 {
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (container)->priv;
 
@@ -725,13 +730,13 @@ mx_scroll_view_get_vscroll_bar (MxScrollView *scroll)
 gfloat
 mx_scroll_view_get_column_size (MxScrollView *scroll)
 {
-  MxAdjustment  *adjustment;
-  gdouble          column_size;
+  MxAdjustment *adjustment;
+  gdouble column_size;
 
   g_return_val_if_fail (scroll, 0);
 
   adjustment = mx_scroll_bar_get_adjustment (
-                MX_SCROLL_BAR (scroll->priv->hscroll));
+    MX_SCROLL_BAR (scroll->priv->hscroll));
   g_object_get (adjustment,
                 "step-increment", &column_size,
                 NULL);
@@ -741,9 +746,9 @@ mx_scroll_view_get_column_size (MxScrollView *scroll)
 
 void
 mx_scroll_view_set_column_size (MxScrollView *scroll,
-                                  gfloat          column_size)
+                                gfloat        column_size)
 {
-  MxAdjustment  *adjustment;
+  MxAdjustment *adjustment;
 
   g_return_if_fail (scroll);
 
@@ -758,25 +763,25 @@ mx_scroll_view_set_column_size (MxScrollView *scroll,
       scroll->priv->column_size = column_size;
 
       adjustment = mx_scroll_bar_get_adjustment (
-                    MX_SCROLL_BAR (scroll->priv->hscroll));
+        MX_SCROLL_BAR (scroll->priv->hscroll));
 
       if (adjustment)
         g_object_set (adjustment,
                       "step-increment", (gdouble) scroll->priv->column_size,
                       NULL);
-     }
+    }
 }
 
 gfloat
 mx_scroll_view_get_row_size (MxScrollView *scroll)
 {
-  MxAdjustment  *adjustment;
+  MxAdjustment *adjustment;
   gdouble row_size;
 
   g_return_val_if_fail (scroll, 0);
 
   adjustment = mx_scroll_bar_get_adjustment (
-                MX_SCROLL_BAR (scroll->priv->vscroll));
+    MX_SCROLL_BAR (scroll->priv->vscroll));
   g_object_get (adjustment,
                 "step-increment", &row_size,
                 NULL);
@@ -786,9 +791,9 @@ mx_scroll_view_get_row_size (MxScrollView *scroll)
 
 void
 mx_scroll_view_set_row_size (MxScrollView *scroll,
-                               gfloat          row_size)
+                             gfloat        row_size)
 {
-  MxAdjustment  *adjustment;
+  MxAdjustment *adjustment;
 
   g_return_if_fail (scroll);
 
@@ -803,7 +808,7 @@ mx_scroll_view_set_row_size (MxScrollView *scroll,
       scroll->priv->row_size = row_size;
 
       adjustment = mx_scroll_bar_get_adjustment (
-                    MX_SCROLL_BAR (scroll->priv->vscroll));
+        MX_SCROLL_BAR (scroll->priv->vscroll));
 
       if (adjustment)
         g_object_set (adjustment,
@@ -814,7 +819,7 @@ mx_scroll_view_set_row_size (MxScrollView *scroll,
 
 void
 mx_scroll_view_set_mouse_scrolling (MxScrollView *scroll,
-                                      gboolean        enabled)
+                                    gboolean      enabled)
 {
   MxScrollViewPrivate *priv;
 

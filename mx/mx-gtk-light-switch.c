@@ -46,20 +46,20 @@ G_DEFINE_TYPE (MxGtkLightSwitch, mx_gtk_light_switch, GTK_TYPE_DRAWING_AREA)
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_GTK_TYPE_LIGHT_SWITCH, MxGtkLightSwitchPrivate))
 
 static gboolean mx_gtk_light_switch_configure (GtkWidget         *lightswitch,
-                                                 GdkEventConfigure *event);
+                                               GdkEventConfigure *event);
 static gboolean mx_gtk_light_switch_expose (GtkWidget      *lightswitch,
-                                              GdkEventExpose *event);
+                                            GdkEventExpose *event);
 static gboolean mx_gtk_light_switch_button_release (GtkWidget      *lightswitch,
-                                                      GdkEventButton *event);
-static gboolean mx_gtk_light_switch_button_press (GtkWidget      *lightswitch,
                                                     GdkEventButton *event);
+static gboolean mx_gtk_light_switch_button_press (GtkWidget      *lightswitch,
+                                                  GdkEventButton *event);
 static gboolean mx_gtk_light_switch_motion_notify (GtkWidget      *lightswitch,
-                                                     GdkEventMotion *event);
+                                                   GdkEventMotion *event);
 static void mx_gtk_light_switch_size_request (GtkWidget      *lightswitch,
-                                                GtkRequisition *req);
+                                              GtkRequisition *req);
 
 static void mx_gtk_light_switch_style_set (GtkWidget *lightswitch,
-                                             GtkStyle *previous_style);
+                                           GtkStyle  *previous_style);
 
 enum {
   SWITCH_FLIPPED,
@@ -73,19 +73,19 @@ typedef struct _MxGtkLightSwitchPrivate MxGtkLightSwitchPrivate;
 struct _MxGtkLightSwitchPrivate {
   gboolean active; /* boolean state of switch */
   gboolean dragging; /* true if dragging switch */
-  gint x;     /* the x position of the switch */
-  gint drag_start; /* position dragging started at */
-  gint drag_threshold;
-  gint switch_width;
-  gint switch_height;
-  gint trough_width;
-  gint offset; /* offset of the mouse to slider when dragging */
+  gint     x; /* the x position of the switch */
+  gint     drag_start; /* position dragging started at */
+  gint     drag_threshold;
+  gint     switch_width;
+  gint     switch_height;
+  gint     trough_width;
+  gint     offset; /* offset of the mouse to slider when dragging */
 };
 
 static void
 mx_gtk_light_switch_class_init (MxGtkLightSwitchClass *klass)
 {
-  GObjectClass   *object_class;
+  GObjectClass *object_class;
   GtkWidgetClass *widget_class;
 
   object_class = G_OBJECT_CLASS (klass);
@@ -140,8 +140,8 @@ draw (GtkWidget *lightswitch,
   gint off_label_x;
   gint label_width;
   gint label_height;
-  GtkStyle     *style;
-  PangoLayout  *layout;
+  GtkStyle *style;
+  PangoLayout *layout;
   PangoContext *context;
   GtkStateType state_type;
 
@@ -245,7 +245,7 @@ draw (GtkWidget *lightswitch,
 
 static void
 mx_gtk_light_switch_size_request (GtkWidget      *lightswitch,
-                                    GtkRequisition *req)
+                                  GtkRequisition *req)
 {
   MxGtkLightSwitchPrivate *priv = MX_GTK_LIGHT_SWITCH_GET_PRIVATE (lightswitch);
 
@@ -255,7 +255,7 @@ mx_gtk_light_switch_size_request (GtkWidget      *lightswitch,
 
 static void
 mx_gtk_light_switch_style_set (GtkWidget *lightswitch,
-                                 GtkStyle   *previous_style)
+                               GtkStyle  *previous_style)
 {
   MxGtkLightSwitchPrivate *priv = MX_GTK_LIGHT_SWITCH_GET_PRIVATE (lightswitch);
   PangoLayout *layout;
@@ -280,7 +280,7 @@ mx_gtk_light_switch_style_set (GtkWidget *lightswitch,
 
 static gboolean
 mx_gtk_light_switch_configure (GtkWidget         *lightswitch,
-                                 GdkEventConfigure *event)
+                               GdkEventConfigure *event)
 {
   MxGtkLightSwitchPrivate *priv = MX_GTK_LIGHT_SWITCH_GET_PRIVATE (lightswitch);
 
@@ -294,7 +294,7 @@ mx_gtk_light_switch_configure (GtkWidget         *lightswitch,
 
 static gboolean
 mx_gtk_light_switch_expose (GtkWidget      *lightswitch,
-                              GdkEventExpose *event)
+                            GdkEventExpose *event)
 {
   cairo_t *cr;
   cr = gdk_cairo_create (lightswitch->window);
@@ -316,7 +316,7 @@ mx_gtk_light_switch_expose (GtkWidget      *lightswitch,
 
 static gboolean
 mx_gtk_light_switch_motion_notify (GtkWidget      *lightswitch,
-                                     GdkEventMotion *event)
+                                   GdkEventMotion *event)
 {
   MxGtkLightSwitchPrivate *priv;
 
@@ -369,7 +369,7 @@ mx_gtk_light_switch_get_active (MxGtkLightSwitch *lightswitch)
  */
 void
 mx_gtk_light_switch_set_active (MxGtkLightSwitch *lightswitch,
-                                  gboolean active)
+                                gboolean          active)
 {
   MxGtkLightSwitchPrivate *priv = MX_GTK_LIGHT_SWITCH_GET_PRIVATE (lightswitch);
 
@@ -400,7 +400,7 @@ mx_gtk_light_switch_set_active (MxGtkLightSwitch *lightswitch,
 
 static gboolean
 mx_gtk_light_switch_button_press (GtkWidget      *lightswitch,
-                                    GdkEventButton *event)
+                                  GdkEventButton *event)
 {
   MxGtkLightSwitchPrivate *priv = MX_GTK_LIGHT_SWITCH_GET_PRIVATE (lightswitch);
 
@@ -419,8 +419,8 @@ mx_gtk_light_switch_button_press (GtkWidget      *lightswitch,
 }
 
 static gboolean
-mx_gtk_light_switch_button_release (GtkWidget *lightswitch,
-                                      GdkEventButton *event)
+mx_gtk_light_switch_button_release (GtkWidget      *lightswitch,
+                                    GdkEventButton *event)
 {
   MxGtkLightSwitchPrivate *priv;
 

@@ -5,12 +5,12 @@
  * allocation space.
  */
 void
-_mx_allocate_fill (ClutterActor *child,
-                     ClutterActorBox *childbox,
-                     MxAlign x_alignment,
-                     MxAlign y_alignment,
-                     gboolean x_fill,
-                     gboolean y_fill)
+_mx_allocate_fill (ClutterActor    *child,
+                   ClutterActorBox *childbox,
+                   MxAlign          x_alignment,
+                   MxAlign          y_alignment,
+                   gboolean         x_fill,
+                   gboolean         y_fill)
 {
   gfloat natural_width, natural_height;
   gfloat min_width, min_height;
@@ -46,13 +46,13 @@ _mx_allocate_fill (ClutterActor *child,
   if (x_fill)
     {
       allocation.x1 = childbox->x1;
-      allocation.x2 = (int) (allocation.x1 + available_width);
+      allocation.x2 = (int)(allocation.x1 + available_width);
     }
 
   if (y_fill)
     {
       allocation.y1 = childbox->y1;
-      allocation.y2 = (int) (allocation.y1 + available_height);
+      allocation.y2 = (int)(allocation.y1 + available_height);
     }
 
   /* if we are filling horizontally and vertically then we're done */
@@ -96,13 +96,13 @@ _mx_allocate_fill (ClutterActor *child,
 
   if (!x_fill)
     {
-      allocation.x1 = childbox->x1 + (int) ((available_width - child_width) * x_align);
+      allocation.x1 = childbox->x1 + (int)((available_width - child_width) * x_align);
       allocation.x2 = allocation.x1 + (int) child_width;
     }
 
   if (!y_fill)
     {
-      allocation.y1 = childbox->y1 + (int) ((available_height - child_height) * y_align);
+      allocation.y1 = childbox->y1 + (int)((available_height - child_height) * y_align);
       allocation.y2 = allocation.y1 + (int) child_height;
     }
 

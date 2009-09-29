@@ -57,17 +57,17 @@ struct _MxTextureFramePrivate
 {
   ClutterTexture *parent_texture;
 
-  gfloat top;
-  gfloat right;
-  gfloat bottom;
-  gfloat left;
+  gfloat          top;
+  gfloat          right;
+  gfloat          bottom;
+  gfloat          left;
 };
 
 static void
 mx_texture_frame_get_preferred_width (ClutterActor *self,
-                                        gfloat        for_height,
-                                        gfloat       *min_width_p,
-                                        gfloat       *natural_width_p)
+                                      gfloat        for_height,
+                                      gfloat       *min_width_p,
+                                      gfloat       *natural_width_p)
 {
   MxTextureFramePrivate *priv = MX_TEXTURE_FRAME (self)->priv;
 
@@ -98,9 +98,9 @@ mx_texture_frame_get_preferred_width (ClutterActor *self,
 
 static void
 mx_texture_frame_get_preferred_height (ClutterActor *self,
-                                         gfloat        for_width,
-                                         gfloat       *min_height_p,
-                                         gfloat       *natural_height_p)
+                                       gfloat        for_width,
+                                       gfloat       *min_height_p,
+                                       gfloat       *natural_height_p)
 {
   MxTextureFramePrivate *priv = MX_TEXTURE_FRAME (self)->priv;
 
@@ -173,11 +173,11 @@ mx_texture_frame_paint (ClutterActor *self)
 
   ex = width - priv->right;
   if (ex < 0)
-    ex = priv->right; 		/* FIXME ? */
+    ex = priv->right;           /* FIXME ? */
 
   ey = height - priv->bottom;
   if (ey < 0)
-    ey = priv->bottom; 		/* FIXME ? */
+    ey = priv->bottom;          /* FIXME ? */
 
   opacity = clutter_actor_get_paint_opacity (self);
 
@@ -190,52 +190,52 @@ mx_texture_frame_paint (ClutterActor *self)
 
   {
     GLfloat rectangles[] =
-      {
-        /* top left corner */
-        0, 0, priv->left, priv->top,
-        0.0, 0.0,
-        tx1, ty1,
+    {
+      /* top left corner */
+      0, 0, priv->left, priv->top,
+      0.0, 0.0,
+      tx1, ty1,
 
-        /* top middle */
-        priv->left, 0, ex, priv->top,
-        tx1, 0.0,
-        tx2, ty1,
+      /* top middle */
+      priv->left, 0, ex, priv->top,
+      tx1, 0.0,
+      tx2, ty1,
 
-        /* top right */
-        ex, 0, width, priv->top,
-        tx2, 0.0,
-        1.0, ty1,
+      /* top right */
+      ex, 0, width, priv->top,
+      tx2, 0.0,
+      1.0, ty1,
 
-        /* mid left */
-        0, priv->top, priv->left, ey,
-        0.0, ty1,
-        tx1, ty2,
+      /* mid left */
+      0, priv->top, priv->left, ey,
+      0.0, ty1,
+      tx1, ty2,
 
-        /* center */
-        priv->left, priv->top, ex, ey,
-        tx1, ty1,
-        tx2, ty2,
+      /* center */
+      priv->left, priv->top, ex, ey,
+      tx1, ty1,
+      tx2, ty2,
 
-        /* mid right */
-        ex, priv->top, width, ey,
-        tx2, ty1,
-        1.0, ty2,
+      /* mid right */
+      ex, priv->top, width, ey,
+      tx2, ty1,
+      1.0, ty2,
 
-        /* bottom left */
-        0, ey, priv->left, height,
-        0.0, ty2,
-        tx1, 1.0,
+      /* bottom left */
+      0, ey, priv->left, height,
+      0.0, ty2,
+      tx1, 1.0,
 
-        /* bottom center */
-        priv->left, ey, ex, height,
-        tx1, ty2,
-        tx2, 1.0,
+      /* bottom center */
+      priv->left, ey, ex, height,
+      tx1, ty2,
+      tx2, 1.0,
 
-        /* bottom right */
-        ex, ey, width, height,
-        tx2, ty2,
-        1.0, 1.0
-      };
+      /* bottom right */
+      ex, ey, width, height,
+      tx2, ty2,
+      1.0, 1.0
+    };
 
     cogl_rectangles_with_texture_coords (rectangles, 9);
   }
@@ -243,10 +243,10 @@ mx_texture_frame_paint (ClutterActor *self)
 
 static inline void
 mx_texture_frame_set_frame_internal (MxTextureFrame *frame,
-                                       gfloat            top,
-                                       gfloat            right,
-                                       gfloat            bottom,
-                                       gfloat            left)
+                                     gfloat          top,
+                                     gfloat          right,
+                                     gfloat          bottom,
+                                     gfloat          left)
 {
   MxTextureFramePrivate *priv = frame->priv;
   GObject *gobject = G_OBJECT (frame);
@@ -290,9 +290,9 @@ mx_texture_frame_set_frame_internal (MxTextureFrame *frame,
 
 static void
 mx_texture_frame_set_property (GObject      *gobject,
-                                 guint         prop_id,
-                                 const GValue *value,
-                                 GParamSpec   *pspec)
+                               guint         prop_id,
+                               const GValue *value,
+                               GParamSpec   *pspec)
 {
   MxTextureFrame *frame = MX_TEXTURE_FRAME (gobject);
   MxTextureFramePrivate *priv = frame->priv;
@@ -301,39 +301,39 @@ mx_texture_frame_set_property (GObject      *gobject,
     {
     case PROP_PARENT_TEXTURE:
       mx_texture_frame_set_parent_texture (frame,
-                                             g_value_get_object (value));
+                                           g_value_get_object (value));
       break;
 
     case PROP_TOP:
       mx_texture_frame_set_frame_internal (frame,
-                                             g_value_get_float (value),
-                                             priv->right,
-                                             priv->bottom,
-                                             priv->left);
+                                           g_value_get_float (value),
+                                           priv->right,
+                                           priv->bottom,
+                                           priv->left);
       break;
 
     case PROP_RIGHT:
       mx_texture_frame_set_frame_internal (frame,
-                                             priv->top,
-                                             g_value_get_float (value),
-                                             priv->bottom,
-                                             priv->left);
+                                           priv->top,
+                                           g_value_get_float (value),
+                                           priv->bottom,
+                                           priv->left);
       break;
 
     case PROP_BOTTOM:
       mx_texture_frame_set_frame_internal (frame,
-                                             priv->top,
-                                             priv->right,
-                                             g_value_get_float (value),
-                                             priv->left);
+                                           priv->top,
+                                           priv->right,
+                                           g_value_get_float (value),
+                                           priv->left);
       break;
 
     case PROP_LEFT:
       mx_texture_frame_set_frame_internal (frame,
-                                             priv->top,
-                                             priv->right,
-                                             priv->bottom,
-                                             g_value_get_float (value));
+                                           priv->top,
+                                           priv->right,
+                                           priv->bottom,
+                                           g_value_get_float (value));
       break;
 
     default:
@@ -344,9 +344,9 @@ mx_texture_frame_set_property (GObject      *gobject,
 
 static void
 mx_texture_frame_get_property (GObject    *gobject,
-                                 guint       prop_id,
-                                 GValue     *value,
-                                 GParamSpec *pspec)
+                               guint       prop_id,
+                               GValue     *value,
+                               GParamSpec *pspec)
 {
   MxTextureFramePrivate *priv = MX_TEXTURE_FRAME (gobject)->priv;
 
@@ -422,7 +422,7 @@ mx_texture_frame_class_init (MxTextureFrameClass *klass)
   pspec = g_param_spec_float ("left",
                               "Left",
                               "Left offset",
-			      0, G_MAXFLOAT,
+                              0, G_MAXFLOAT,
                               0,
                               MX_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_LEFT, pspec);
@@ -478,21 +478,21 @@ mx_texture_frame_init (MxTextureFrame *self)
  * Return value: the newly created #MxTextureFrame
  */
 ClutterActor*
-mx_texture_frame_new (ClutterTexture *texture, 
-			gfloat          top,
-			gfloat          right,
-			gfloat          bottom,
-			gfloat          left)
+mx_texture_frame_new (ClutterTexture *texture,
+                      gfloat          top,
+                      gfloat          right,
+                      gfloat          bottom,
+                      gfloat          left)
 {
   g_return_val_if_fail (texture == NULL || CLUTTER_IS_TEXTURE (texture), NULL);
 
   return g_object_new (MX_TYPE_TEXTURE_FRAME,
- 		       "parent-texture", texture,
-		       "top", top,
-		       "right", right,
-		       "bottom", bottom,
-		       "left", left,
-		       NULL);
+                       "parent-texture", texture,
+                       "top", top,
+                       "right", right,
+                       "bottom", bottom,
+                       "left", left,
+                       NULL);
 }
 
 /**
@@ -521,7 +521,7 @@ mx_texture_frame_get_parent_texture (MxTextureFrame *frame)
  */
 void
 mx_texture_frame_set_parent_texture (MxTextureFrame *frame,
-                                       ClutterTexture   *texture)
+                                     ClutterTexture *texture)
 {
   MxTextureFramePrivate *priv;
   gboolean was_visible;
@@ -572,10 +572,10 @@ mx_texture_frame_set_parent_texture (MxTextureFrame *frame,
  */
 void
 mx_texture_frame_set_frame (MxTextureFrame *frame,
-                              gfloat            top,
-                              gfloat            right,
-                              gfloat            bottom,
-                              gfloat            left)
+                            gfloat          top,
+                            gfloat          right,
+                            gfloat          bottom,
+                            gfloat          left)
 {
   g_return_if_fail (MX_IS_TEXTURE_FRAME (frame));
 
@@ -595,10 +595,10 @@ mx_texture_frame_set_frame (MxTextureFrame *frame,
  */
 void
 mx_texture_frame_get_frame (MxTextureFrame *frame,
-                              gfloat           *top,
-                              gfloat           *right,
-                              gfloat           *bottom,
-                              gfloat           *left)
+                            gfloat         *top,
+                            gfloat         *right,
+                            gfloat         *bottom,
+                            gfloat         *left)
 {
   MxTextureFramePrivate *priv;
 

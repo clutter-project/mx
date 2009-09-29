@@ -57,31 +57,31 @@ G_DEFINE_TYPE_WITH_CODE (MxScrollBar, mx_scroll_bar, MX_TYPE_BIN,
 
 struct _MxScrollBarPrivate
 {
-  MxAdjustment    *adjustment;
+  MxAdjustment *adjustment;
 
-  gulong             capture_handler;
-  gfloat             x_origin;
-  gfloat             y_origin;
+  gulong        capture_handler;
+  gfloat        x_origin;
+  gfloat        y_origin;
 
-  ClutterActor      *bw_stepper;
-  ClutterActor      *fw_stepper;
-  ClutterActor      *trough;
-  ClutterActor      *handle;
+  ClutterActor *bw_stepper;
+  ClutterActor *fw_stepper;
+  ClutterActor *trough;
+  ClutterActor *handle;
 
-  gfloat             move_x;
-  gfloat             move_y;
+  gfloat        move_x;
+  gfloat        move_y;
 
   /* Trough-click handling. */
   enum { NONE, UP, DOWN }  paging_direction;
-  guint              paging_source_id;
-  guint              paging_event_no;
+  guint             paging_source_id;
+  guint             paging_event_no;
 
-  gboolean           stepper_forward;
-  guint              stepper_source_id;
+  gboolean          stepper_forward;
+  guint             stepper_source_id;
 
-  ClutterAnimation  *paging_animation;
+  ClutterAnimation *paging_animation;
 
-  gboolean           vertical;
+  gboolean          vertical;
 };
 
 enum
@@ -105,13 +105,13 @@ static guint signals[LAST_SIGNAL] = { 0, };
 static gboolean
 handle_button_press_event_cb (ClutterActor       *actor,
                               ClutterButtonEvent *event,
-                              MxScrollBar      *bar);
+                              MxScrollBar        *bar);
 
 static void
 mx_scroll_bar_get_property (GObject    *gobject,
-                              guint       prop_id,
-                              GValue     *value,
-                              GParamSpec *pspec)
+                            guint       prop_id,
+                            GValue     *value,
+                            GParamSpec *pspec)
 {
   MxScrollBarPrivate *priv = MX_SCROLL_BAR (gobject)->priv;
 
@@ -133,9 +133,9 @@ mx_scroll_bar_get_property (GObject    *gobject,
 
 static void
 mx_scroll_bar_set_property (GObject      *gobject,
-                              guint         prop_id,
-                              const GValue *value,
-                              GParamSpec   *pspec)
+                            guint         prop_id,
+                            const GValue *value,
+                            GParamSpec   *pspec)
 {
   MxScrollBar *bar = MX_SCROLL_BAR (gobject);
 
@@ -223,7 +223,7 @@ mx_scroll_bar_paint (ClutterActor *actor)
 
 static void
 mx_scroll_bar_pick (ClutterActor       *actor,
-                      const ClutterColor *pick_color)
+                    const ClutterColor *pick_color)
 {
   MxScrollBarPrivate *priv = MX_SCROLL_BAR (actor)->priv;
 
@@ -269,8 +269,8 @@ mx_scroll_bar_unmap (ClutterActor *actor)
 
 static void
 mx_scroll_bar_allocate (ClutterActor          *actor,
-                          const ClutterActorBox *box,
-                          ClutterAllocationFlags flags)
+                        const ClutterActorBox *box,
+                        ClutterAllocationFlags flags)
 {
   MxScrollBarPrivate *priv = MX_SCROLL_BAR (actor)->priv;
   MxPadding padding;
@@ -279,7 +279,7 @@ mx_scroll_bar_allocate (ClutterActor          *actor,
 
   /* Chain up */
   CLUTTER_ACTOR_CLASS (mx_scroll_bar_parent_class)->
-    allocate (actor, box, flags);
+  allocate (actor, box, flags);
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
@@ -350,12 +350,12 @@ mx_scroll_bar_allocate (ClutterActor          *actor,
       guint min_size, max_size;
 
       mx_adjustment_get_values (priv->adjustment,
-                                  &value,
-                                  &lower,
-                                  &upper,
-                                  NULL,
-                                  NULL,
-                                  &page_size);
+                                &value,
+                                &lower,
+                                &upper,
+                                NULL,
+                                NULL,
+                                &page_size);
 
       if ((upper == lower)
           || (page_size >= (upper - lower)))
@@ -364,9 +364,9 @@ mx_scroll_bar_allocate (ClutterActor          *actor,
         increment = page_size / (upper - lower);
 
       mx_stylable_get (MX_STYLABLE (actor),
-                         "min-size", &min_size,
-                         "max-size", &max_size,
-                         NULL);
+                       "min-size", &min_size,
+                       "max-size", &max_size,
+                       NULL);
 
       if (upper - lower - page_size <= 0)
         position = 0;
@@ -423,9 +423,9 @@ mx_scroll_bar_style_changed (MxWidget *widget)
 }
 
 static void
-bar_reactive_notify_cb (GObject *gobject,
+bar_reactive_notify_cb (GObject    *gobject,
                         GParamSpec *arg1,
-                        gpointer user_data)
+                        gpointer    user_data)
 {
   MxScrollBar *bar = MX_SCROLL_BAR (gobject);
 
@@ -435,12 +435,12 @@ bar_reactive_notify_cb (GObject *gobject,
 
 static GObject*
 mx_scroll_bar_constructor (GType                  type,
-                             guint                  n_properties,
-                             GObjectConstructParam *properties)
+                           guint                  n_properties,
+                           GObjectConstructParam *properties)
 {
-  GObjectClass         *gobject_class;
-  GObject              *obj;
-  MxScrollBar        *bar;
+  GObjectClass *gobject_class;
+  GObject *obj;
+  MxScrollBar *bar;
   MxScrollBarPrivate *priv;
 
   gobject_class = G_OBJECT_CLASS (mx_scroll_bar_parent_class);
@@ -456,8 +456,8 @@ mx_scroll_bar_constructor (GType                  type,
 }
 
 static gboolean
-mx_scroll_bar_scroll_event (ClutterActor         *actor,
-                              ClutterScrollEvent   *event)
+mx_scroll_bar_scroll_event (ClutterActor       *actor,
+                            ClutterScrollEvent *event)
 {
   MxScrollBarPrivate *priv = MX_SCROLL_BAR (actor)->priv;
   gdouble lower, step, upper, value;
@@ -478,20 +478,20 @@ mx_scroll_bar_scroll_event (ClutterActor         *actor,
 
   switch (event->direction)
     {
-      case CLUTTER_SCROLL_UP:
-      case CLUTTER_SCROLL_LEFT:
-        if (value == lower)
-          return FALSE;
-        else
-          mx_adjustment_set_value (priv->adjustment, value - step);
-        break;
-      case CLUTTER_SCROLL_DOWN:
-      case CLUTTER_SCROLL_RIGHT:
-        if (value == upper)
-          return FALSE;
-        else
-          mx_adjustment_set_value (priv->adjustment, value + step);
-        break;
+    case CLUTTER_SCROLL_UP:
+    case CLUTTER_SCROLL_LEFT:
+      if (value == lower)
+        return FALSE;
+      else
+        mx_adjustment_set_value (priv->adjustment, value - step);
+      break;
+    case CLUTTER_SCROLL_DOWN:
+    case CLUTTER_SCROLL_RIGHT:
+      if (value == upper)
+        return FALSE;
+      else
+        mx_adjustment_set_value (priv->adjustment, value + step);
+      break;
     }
 
   return TRUE;
@@ -519,13 +519,13 @@ mx_scroll_bar_class_init (MxScrollBarClass *klass)
   actor_class->unmap          = mx_scroll_bar_unmap;
 
   g_object_class_install_property
-           (object_class,
-            PROP_ADJUSTMENT,
-            g_param_spec_object ("adjustment",
-                                 "Adjustment",
-                                 "The adjustment",
-                                 MX_TYPE_ADJUSTMENT,
-                                 MX_PARAM_READWRITE));
+                 (object_class,
+                 PROP_ADJUSTMENT,
+                 g_param_spec_object ("adjustment",
+                                      "Adjustment",
+                                      "The adjustment",
+                                      MX_TYPE_ADJUSTMENT,
+                                      MX_PARAM_READWRITE));
 
   pspec = g_param_spec_boolean ("vertical",
                                 "Vertical Orientation",
@@ -570,7 +570,7 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                  0, G_MAXUINT, 32,
                                  G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface,
-                                            MX_TYPE_SCROLL_BAR, pspec);
+                                          MX_TYPE_SCROLL_BAR, pspec);
 
       pspec = g_param_spec_uint ("max-size",
                                  "Maximum grabber size",
@@ -578,12 +578,14 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                  0, G_MAXINT16, G_MAXINT16,
                                  G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface,
-                                            MX_TYPE_SCROLL_BAR, pspec);
+                                          MX_TYPE_SCROLL_BAR, pspec);
     }
 }
 
 static void
-move_slider (MxScrollBar *bar, gfloat x, gfloat y)
+move_slider (MxScrollBar *bar,
+             gfloat       x,
+             gfloat       y)
 {
   MxScrollBarPrivate *priv = bar->priv;
   gdouble position, lower, upper, page_size;
@@ -596,11 +598,11 @@ move_slider (MxScrollBar *bar, gfloat x, gfloat y)
     return;
 
   if (priv->vertical)
-      size = clutter_actor_get_height (priv->trough)
-        - clutter_actor_get_height (priv->handle);
+    size = clutter_actor_get_height (priv->trough)
+           - clutter_actor_get_height (priv->handle);
   else
-      size = clutter_actor_get_width (priv->trough)
-        - clutter_actor_get_width (priv->handle);
+    size = clutter_actor_get_width (priv->trough)
+           - clutter_actor_get_width (priv->handle);
 
   if (size == 0)
     return;
@@ -612,43 +614,43 @@ move_slider (MxScrollBar *bar, gfloat x, gfloat y)
   pos = CLAMP (pos, 0, size);
 
   mx_adjustment_get_values (priv->adjustment,
-                              NULL,
-                              &lower,
-                              &upper,
-                              NULL,
-                              NULL,
-                              &page_size);
+                            NULL,
+                            &lower,
+                            &upper,
+                            NULL,
+                            NULL,
+                            &page_size);
 
   position = ((pos / size)
-           * (upper - lower - page_size))
-           + lower;
+              * (upper - lower - page_size))
+             + lower;
 
   mx_adjustment_set_value (priv->adjustment, position);
 }
 
 static gboolean
-handle_capture_event_cb (ClutterActor       *trough,
-			 ClutterEvent       *event,
-			 MxScrollBar      *bar)
+handle_capture_event_cb (ClutterActor *trough,
+                         ClutterEvent *event,
+                         MxScrollBar  *bar)
 {
   if (clutter_event_type (event) == CLUTTER_MOTION)
     {
       move_slider (bar,
-                   ((ClutterMotionEvent*)event)->x,
-                   ((ClutterMotionEvent*)event)->y);
+                   ((ClutterMotionEvent*) event)->x,
+                   ((ClutterMotionEvent*) event)->y);
     }
   else if (clutter_event_type (event) == CLUTTER_BUTTON_RELEASE
-	   && ((ClutterButtonEvent*)event)->button == 1)
+           && ((ClutterButtonEvent*) event)->button == 1)
     {
       ClutterActor *stage, *target;
 
       stage = clutter_actor_get_stage(bar->priv->trough);
 
       if (bar->priv->capture_handler)
-	{
-	  g_signal_handler_disconnect (stage, bar->priv->capture_handler);
-	  bar->priv->capture_handler = 0;
-	}
+        {
+          g_signal_handler_disconnect (stage, bar->priv->capture_handler);
+          bar->priv->capture_handler = 0;
+        }
 
       clutter_set_motion_events_enabled (TRUE);
       g_signal_emit (bar, signals[SCROLL_STOP], 0);
@@ -673,7 +675,7 @@ handle_capture_event_cb (ClutterActor       *trough,
 static gboolean
 handle_button_press_event_cb (ClutterActor       *actor,
                               ClutterButtonEvent *event,
-                              MxScrollBar      *bar)
+                              MxScrollBar        *bar)
 {
   MxScrollBarPrivate *priv = bar->priv;
 
@@ -692,20 +694,20 @@ handle_button_press_event_cb (ClutterActor       *actor,
   priv->y_origin += clutter_actor_get_y (priv->trough);
 
   /* Turn off picking for motion events */
-  clutter_set_motion_events_enabled (FALSE); 
+  clutter_set_motion_events_enabled (FALSE);
 
   priv->capture_handler = g_signal_connect_after (
-				  clutter_actor_get_stage (priv->trough),
-				  "captured-event",
-				  G_CALLBACK (handle_capture_event_cb),
-				  bar);
+    clutter_actor_get_stage (priv->trough),
+    "captured-event",
+    G_CALLBACK (handle_capture_event_cb),
+    bar);
   g_signal_emit (bar, signals[SCROLL_START], 0);
 
   return TRUE;
 }
 
 static void
-animation_completed_cb (ClutterAnimation     *animation,
+animation_completed_cb (ClutterAnimation   *animation,
                         MxScrollBarPrivate *priv)
 {
   g_object_unref (priv->paging_animation);
@@ -732,9 +734,9 @@ trough_paging_cb (MxScrollBar *self)
       ret = FALSE;
       self->priv->paging_event_no = 1;
       self->priv->paging_source_id = g_timeout_add (
-                                      PAGING_INITIAL_REPEAT_TIMEOUT,
-                                      (GSourceFunc) trough_paging_cb,
-                                      self);
+        PAGING_INITIAL_REPEAT_TIMEOUT,
+        (GSourceFunc) trough_paging_cb,
+        self);
     }
   else if (self->priv->paging_event_no == 1)
     {
@@ -743,9 +745,9 @@ trough_paging_cb (MxScrollBar *self)
       mode = CLUTTER_EASE_IN_CUBIC;
       self->priv->paging_event_no = 2;
       self->priv->paging_source_id = g_timeout_add (
-                                      PAGING_SUBSEQUENT_REPEAT_TIMEOUT,
-                                      (GSourceFunc) trough_paging_cb,
-                                      self);
+        PAGING_SUBSEQUENT_REPEAT_TIMEOUT,
+        (GSourceFunc) trough_paging_cb,
+        self);
     }
   else
     {
@@ -757,8 +759,8 @@ trough_paging_cb (MxScrollBar *self)
 
   /* Do the scrolling */
   mx_adjustment_get_values (self->priv->adjustment,
-                              &value, NULL, NULL,
-                              NULL, &page_increment, NULL);
+                            &value, NULL, NULL,
+                            NULL, &page_increment, NULL);
 
   if (self->priv->vertical)
     handle_pos = clutter_actor_get_y (self->priv->handle);
@@ -810,7 +812,7 @@ trough_paging_cb (MxScrollBar *self)
     }
 
   /* FIXME: Creating a new animation for each scroll is probably not the best
-   * idea, but it's a lot less involved than extenind the current animation */
+  * idea, but it's a lot less involved than extenind the current animation */
   a = self->priv->paging_animation = g_object_new (CLUTTER_TYPE_ANIMATION,
                                                    "object", self->priv->adjustment,
                                                    "duration", PAGING_SUBSEQUENT_REPEAT_TIMEOUT,
@@ -830,7 +832,7 @@ trough_paging_cb (MxScrollBar *self)
 static gboolean
 trough_button_press_event_cb (ClutterActor       *actor,
                               ClutterButtonEvent *event,
-                              MxScrollBar      *self)
+                              MxScrollBar        *self)
 {
   g_return_val_if_fail (self, FALSE);
 
@@ -852,7 +854,7 @@ trough_button_press_event_cb (ClutterActor       *actor,
 static gboolean
 trough_button_release_event_cb (ClutterActor       *actor,
                                 ClutterButtonEvent *event,
-                                MxScrollBar      *self)
+                                MxScrollBar        *self)
 {
   if (event->button != 1)
     return FALSE;
@@ -867,8 +869,8 @@ trough_button_release_event_cb (ClutterActor       *actor,
 }
 
 static gboolean
-trough_leave_event_cb (ClutterActor   *actor,
-                       ClutterEvent   *event,
+trough_leave_event_cb (ClutterActor *actor,
+                       ClutterEvent *event,
                        MxScrollBar  *self)
 {
   if (self->priv->paging_source_id)
@@ -890,7 +892,7 @@ stepper_animation_completed_cb (ClutterAnimation *a,
 
 static void
 stepper_move_on (MxScrollBarPrivate *priv,
-                 gint                  mode)
+                 gint                mode)
 {
   ClutterAnimation *a;
   ClutterTimeline *t;
@@ -949,7 +951,7 @@ stepper_button_repeat_timeout (MxScrollBarPrivate *priv)
 static gboolean
 stepper_button_press_event_cb (ClutterActor       *actor,
                                ClutterButtonEvent *event,
-                               MxScrollBar      *bar)
+                               MxScrollBar        *bar)
 {
   MxScrollBarPrivate *priv = bar->priv;
 
@@ -972,9 +974,9 @@ stepper_button_press_event_cb (ClutterActor       *actor,
 }
 
 static gboolean
-stepper_button_release_cb (ClutterActor        *actor,
-                           ClutterButtonEvent  *event,
-                           MxScrollBar       *self)
+stepper_button_release_cb (ClutterActor       *actor,
+                           ClutterButtonEvent *event,
+                           MxScrollBar        *self)
 {
   if (event->button != 1)
     return FALSE;
@@ -1058,8 +1060,8 @@ mx_scroll_bar_new (MxAdjustment *adjustment)
 }
 
 void
-mx_scroll_bar_set_adjustment (MxScrollBar *bar,
-                                MxAdjustment *adjustment)
+mx_scroll_bar_set_adjustment (MxScrollBar  *bar,
+                              MxAdjustment *adjustment)
 {
   MxScrollBarPrivate *priv;
 
@@ -1086,8 +1088,8 @@ mx_scroll_bar_set_adjustment (MxScrollBar *bar,
                                 G_CALLBACK (clutter_actor_queue_relayout),
                                 bar);
       g_signal_connect_swapped (priv->adjustment, "changed",
-				G_CALLBACK (clutter_actor_queue_relayout),
-				bar);
+                                G_CALLBACK (clutter_actor_queue_relayout),
+                                bar);
 
       clutter_actor_queue_relayout (CLUTTER_ACTOR (bar));
     }

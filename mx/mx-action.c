@@ -36,8 +36,8 @@ G_DEFINE_TYPE (MxAction, mx_action, G_TYPE_INITIALLY_UNOWNED)
 
 struct _MxActionPrivate
 {
-  gchar    *name;
-  gboolean  active;
+  gchar   *name;
+  gboolean active;
 };
 
 enum
@@ -59,9 +59,9 @@ static guint signals[LAST_SIGNAL] = { 0, };
 
 static void
 mx_action_get_property (GObject    *object,
-                          guint       property_id,
-                          GValue     *value,
-                          GParamSpec *pspec)
+                        guint       property_id,
+                        GValue     *value,
+                        GParamSpec *pspec)
 {
   MxAction *action = MX_ACTION (object);
 
@@ -82,9 +82,9 @@ mx_action_get_property (GObject    *object,
 
 static void
 mx_action_set_property (GObject      *object,
-                          guint         property_id,
-                          const GValue *value,
-                          GParamSpec   *pspec)
+                        guint         property_id,
+                        const GValue *value,
+                        GParamSpec   *pspec)
 {
   MxAction *action = MX_ACTION (object);
 
@@ -192,8 +192,8 @@ mx_action_new (void)
  */
 MxAction *
 mx_action_new_full (const gchar *name,
-                      GCallback    activated_cb,
-                      gpointer     user_data)
+                    GCallback    activated_cb,
+                    gpointer     user_data)
 {
   MxAction *action = g_object_new (MX_TYPE_ACTION, "name", name, NULL);
 
@@ -228,8 +228,8 @@ mx_action_get_name (MxAction *action)
  *
  */
 void
-mx_action_set_name (MxAction  *action,
-                      const gchar *name)
+mx_action_set_name (MxAction    *action,
+                    const gchar *name)
 {
   MxActionPrivate *priv;
 
@@ -273,7 +273,7 @@ mx_action_get_active (MxAction *action)
  */
 void
 mx_action_set_active (MxAction *action,
-                        gboolean    active)
+                      gboolean  active)
 {
   MxActionPrivate *priv;
 

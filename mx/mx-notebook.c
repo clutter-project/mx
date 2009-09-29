@@ -34,7 +34,7 @@ G_DEFINE_TYPE_WITH_CODE (MxNotebook, mx_notebook, MX_TYPE_WIDGET,
 
 struct _MxNotebookPrivate
 {
-  gint current_page;
+  gint    current_page;
 
   GSList *children;
 };
@@ -207,7 +207,7 @@ mx_notebook_get_preferred_height (ClutterActor *actor,
       gfloat child_min, child_nat;
 
       clutter_actor_get_preferred_height (CLUTTER_ACTOR (l->data), for_width,
-                                         &child_min, &child_nat);
+                                          &child_min, &child_nat);
 
       if (*min_height_p)
         *min_height_p = MAX (*min_height_p, child_min);
@@ -347,19 +347,19 @@ mx_notebook_set_page (MxNotebook *book,
 
       if (i == page)
         {
-            {
-              clutter_actor_set_opacity (child, 0);
-              clutter_actor_show (child);
-              clutter_actor_animate (child, CLUTTER_LINEAR, 250,
-                                     "opacity", 255, NULL);
-            }
+          {
+            clutter_actor_set_opacity (child, 0);
+            clutter_actor_show (child);
+            clutter_actor_animate (child, CLUTTER_LINEAR, 250,
+                                   "opacity", 255, NULL);
+          }
         }
       else
-        if (CLUTTER_ACTOR_IS_VISIBLE (child))
-          {
-            clutter_actor_animate (child, CLUTTER_LINEAR, 250,
-                                   "opacity", 0, NULL);
-          }
+      if (CLUTTER_ACTOR_IS_VISIBLE (child))
+        {
+          clutter_actor_animate (child, CLUTTER_LINEAR, 250,
+                                 "opacity", 0, NULL);
+        }
 
       i++;
     }

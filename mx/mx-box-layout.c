@@ -66,12 +66,12 @@ enum {
 
 struct _MxBoxLayoutPrivate
 {
-  GList *children;
+  GList        *children;
 
-  guint spacing;
+  guint         spacing;
 
-  guint is_vertical : 1;
-  guint is_pack_start : 1;
+  guint         is_vertical : 1;
+  guint         is_pack_start : 1;
 
   MxAdjustment *hadjustment;
   MxAdjustment *vadjustment;
@@ -82,7 +82,7 @@ struct _MxBoxLayoutPrivate
  */
 static void
 adjustment_value_notify_cb (MxAdjustment *adjustment,
-                            GParamSpec     *pspec,
+                            GParamSpec   *pspec,
                             MxBoxLayout  *box)
 {
   clutter_actor_queue_redraw (CLUTTER_ACTOR (box));
@@ -139,7 +139,7 @@ scrollable_set_adjustments (MxScrollable *scrollable,
 }
 
 static void
-scrollable_get_adjustments (MxScrollable *scrollable,
+scrollable_get_adjustments (MxScrollable  *scrollable,
                             MxAdjustment **hadjustment,
                             MxAdjustment **vadjustment)
 {
@@ -167,11 +167,11 @@ scrollable_get_adjustments (MxScrollable *scrollable,
           increment = MAX (1.0, MIN (stage_width, width));
 
           adjustment = mx_adjustment_new (0,
-                                            0,
-                                            width,
-                                            1.0,
-                                            increment,
-                                            increment);
+                                          0,
+                                          width,
+                                          1.0,
+                                          increment,
+                                          increment);
 
           scrollable_set_adjustments (scrollable,
                                       adjustment,
@@ -195,11 +195,11 @@ scrollable_get_adjustments (MxScrollable *scrollable,
           increment = MAX (1.0, MIN (stage_height, height));
 
           adjustment = mx_adjustment_new (0,
-                                            0,
-                                            height,
-                                            1.0,
-                                            increment,
-                                            increment);
+                                          0,
+                                          height,
+                                          1.0,
+                                          increment,
+                                          increment);
 
           scrollable_set_adjustments (scrollable,
                                       priv->hadjustment,
@@ -224,7 +224,7 @@ mx_box_scrollable_interface_init (MxScrollableInterface *iface)
  */
 static void
 mx_box_container_add_actor (ClutterContainer *container,
-                              ClutterActor     *actor)
+                            ClutterActor     *actor)
 {
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (container)->priv;
 
@@ -237,7 +237,7 @@ mx_box_container_add_actor (ClutterContainer *container,
 
 static void
 mx_box_container_remove_actor (ClutterContainer *container,
-                                 ClutterActor     *actor)
+                               ClutterActor     *actor)
 {
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (container)->priv;
 
@@ -267,8 +267,8 @@ mx_box_container_remove_actor (ClutterContainer *container,
 
 static void
 mx_box_container_foreach (ClutterContainer *container,
-                            ClutterCallback   callback,
-                            gpointer          callback_data)
+                          ClutterCallback   callback,
+                          gpointer          callback_data)
 {
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (container)->priv;
 
@@ -277,8 +277,8 @@ mx_box_container_foreach (ClutterContainer *container,
 
 static void
 mx_box_container_lower (ClutterContainer *container,
-                          ClutterActor     *actor,
-                          ClutterActor     *sibling)
+                        ClutterActor     *actor,
+                        ClutterActor     *sibling)
 {
   /* XXX: not yet implemented */
   g_warning ("%s() not yet implemented", __FUNCTION__);
@@ -286,8 +286,8 @@ mx_box_container_lower (ClutterContainer *container,
 
 static void
 mx_box_container_raise (ClutterContainer *container,
-                  ClutterActor     *actor,
-                  ClutterActor     *sibling)
+                        ClutterActor     *actor,
+                        ClutterActor     *sibling)
 {
   /* XXX: not yet implemented */
   g_warning ("%s() not yet implemented", __FUNCTION__);
@@ -316,9 +316,9 @@ mx_box_container_iface_init (ClutterContainerIface *iface)
 
 static void
 mx_box_layout_get_property (GObject    *object,
-                              guint       property_id,
-                              GValue     *value,
-                              GParamSpec *pspec)
+                            guint       property_id,
+                            GValue     *value,
+                            GParamSpec *pspec)
 {
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (object)->priv;
   MxAdjustment *adjustment;
@@ -337,12 +337,12 @@ mx_box_layout_get_property (GObject    *object,
       g_value_set_uint (value, priv->spacing);
       break;
 
-    case PROP_HADJUST :
+    case PROP_HADJUST:
       scrollable_get_adjustments (MX_SCROLLABLE (object), &adjustment, NULL);
       g_value_set_object (value, adjustment);
       break;
 
-    case PROP_VADJUST :
+    case PROP_VADJUST:
       scrollable_get_adjustments (MX_SCROLLABLE (object), NULL, &adjustment);
       g_value_set_object (value, adjustment);
       break;
@@ -353,8 +353,10 @@ mx_box_layout_get_property (GObject    *object,
 }
 
 static void
-mx_box_layout_set_property (GObject *object, guint property_id,
-                              const GValue *value, GParamSpec *pspec)
+mx_box_layout_set_property (GObject      *object,
+                            guint         property_id,
+                            const GValue *value,
+                            GParamSpec   *pspec)
 {
   MxBoxLayout *box = MX_BOX_LAYOUT (object);
 
@@ -372,13 +374,13 @@ mx_box_layout_set_property (GObject *object, guint property_id,
       mx_box_layout_set_spacing (box, g_value_get_uint (value));
       break;
 
-    case PROP_HADJUST :
+    case PROP_HADJUST:
       scrollable_set_adjustments (MX_SCROLLABLE (object),
                                   g_value_get_object (value),
                                   box->priv->vadjustment);
       break;
 
-    case PROP_VADJUST :
+    case PROP_VADJUST:
       scrollable_set_adjustments (MX_SCROLLABLE (object),
                                   box->priv->hadjustment,
                                   g_value_get_object (value));
@@ -418,9 +420,9 @@ mx_box_layout_dispose (GObject *object)
 
 static void
 mx_box_layout_get_preferred_width (ClutterActor *actor,
-                                     gfloat        for_height,
-                                     gfloat       *min_width_p,
-                                     gfloat       *natural_width_p)
+                                   gfloat        for_height,
+                                   gfloat       *min_width_p,
+                                   gfloat       *natural_width_p)
 {
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (actor)->priv;
   MxPadding padding = { 0, };
@@ -484,9 +486,9 @@ mx_box_layout_get_preferred_width (ClutterActor *actor,
 
 static void
 mx_box_layout_get_preferred_height (ClutterActor *actor,
-                                      gfloat        for_width,
-                                      gfloat       *min_height_p,
-                                      gfloat       *natural_height_p)
+                                    gfloat        for_width,
+                                    gfloat       *min_height_p,
+                                    gfloat       *natural_height_p)
 {
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (actor)->priv;
   MxPadding padding = { 0, };
@@ -548,8 +550,8 @@ mx_box_layout_get_preferred_height (ClutterActor *actor,
 
 static void
 mx_box_layout_allocate (ClutterActor          *actor,
-                          const ClutterActorBox *box,
-                          ClutterAllocationFlags flags)
+                        const ClutterActorBox *box,
+                        ClutterAllocationFlags flags)
 {
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (actor)->priv;
   gfloat avail_width, avail_height, pref_width, pref_height;
@@ -559,23 +561,23 @@ mx_box_layout_allocate (ClutterActor          *actor,
   gint n_expand_children, extra_space;
 
   CLUTTER_ACTOR_CLASS (mx_box_layout_parent_class)->allocate (actor, box,
-                                                                flags);
+                                                              flags);
 
   if (priv->children == NULL)
     return;
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
   avail_width  = box->x2 - box->x1
-               - padding.left
-               - padding.right;
+                 - padding.left
+                 - padding.right;
   avail_height = box->y2 - box->y1
-               - padding.top
-               - padding.bottom;
+                 - padding.top
+                 - padding.bottom;
 
   mx_box_layout_get_preferred_height (actor, avail_width, NULL,
-                                        &pref_height);
+                                      &pref_height);
   mx_box_layout_get_preferred_width (actor, avail_height, NULL,
-                                       &pref_width);
+                                     &pref_width);
 
   /* update adjustments for scrolling */
   if (priv->vadjustment)
@@ -583,12 +585,12 @@ mx_box_layout_allocate (ClutterActor          *actor,
       gdouble prev_value;
 
       g_object_set (G_OBJECT (priv->vadjustment),
-                   "lower", 0.0,
-                   "upper", pref_height,
-                   "page-size", avail_height,
-                   "step-increment", avail_height / 6,
-                   "page-increment", avail_height,
-                   NULL);
+                    "lower", 0.0,
+                    "upper", pref_height,
+                    "page-size", avail_height,
+                    "step-increment", avail_height / 6,
+                    "page-increment", avail_height,
+                    NULL);
 
       prev_value = mx_adjustment_get_value (priv->vadjustment);
       mx_adjustment_set_value (priv->vadjustment, prev_value);
@@ -599,12 +601,12 @@ mx_box_layout_allocate (ClutterActor          *actor,
       gdouble prev_value;
 
       g_object_set (G_OBJECT (priv->hadjustment),
-                   "lower", 0.0,
-                   "upper", pref_width,
-                   "page-size", avail_width,
-                   "step-increment", avail_width / 6,
-                   "page-increment", avail_width,
-                   NULL);
+                    "lower", 0.0,
+                    "upper", pref_width,
+                    "page-size", avail_width,
+                    "step-increment", avail_width / 6,
+                    "page-increment", avail_width,
+                    NULL);
 
       prev_value = mx_adjustment_get_value (priv->hadjustment);
       mx_adjustment_set_value (priv->hadjustment, prev_value);
@@ -620,7 +622,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
                                    "expand", &expand,
                                    NULL);
       if (expand)
-          n_expand_children++;
+        n_expand_children++;
     }
 
   if (n_expand_children == 0)
@@ -719,7 +721,8 @@ mx_box_layout_allocate (ClutterActor          *actor,
 }
 
 static void
-mx_box_layout_apply_transform (ClutterActor *a, CoglMatrix *m)
+mx_box_layout_apply_transform (ClutterActor *a,
+                               CoglMatrix   *m)
 {
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (a)->priv;
   gdouble x, y;
@@ -790,8 +793,8 @@ mx_box_layout_paint (ClutterActor *actor)
 }
 
 static void
-mx_box_layout_pick (ClutterActor *actor,
-                      const ClutterColor *color)
+mx_box_layout_pick (ClutterActor       *actor,
+                    const ClutterColor *color)
 {
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (actor)->priv;
   GList *l;
@@ -922,7 +925,7 @@ mx_box_layout_new (void)
  */
 void
 mx_box_layout_set_vertical (MxBoxLayout *box,
-                              gboolean       vertical)
+                            gboolean     vertical)
 {
   g_return_if_fail (MX_IS_BOX_LAYOUT (box));
 
@@ -961,7 +964,7 @@ mx_box_layout_get_vertical (MxBoxLayout *box)
  */
 void
 mx_box_layout_set_pack_start (MxBoxLayout *box,
-                                gboolean       pack_start)
+                              gboolean     pack_start)
 {
   g_return_if_fail (MX_IS_BOX_LAYOUT (box));
 
@@ -1000,7 +1003,7 @@ mx_box_layout_get_pack_start (MxBoxLayout *box)
  */
 void
 mx_box_layout_set_spacing (MxBoxLayout *box,
-                             guint          spacing)
+                           guint        spacing)
 {
   MxBoxLayoutPrivate *priv;
 

@@ -64,15 +64,15 @@ static GObjectNotifyContext property_notify_context = { 0, };
 
 static GParamSpecPool *style_property_spec_pool = NULL;
 
-static GQuark          quark_real_owner         = 0;
-static GQuark          quark_style              = 0;
+static GQuark quark_real_owner         = 0;
+static GQuark quark_style              = 0;
 
 static guint stylable_signals[LAST_SIGNAL] = { 0, };
 
 static void
 mx_stylable_notify_dispatcher (GObject     *gobject,
-                                 guint        n_pspecs,
-                                 GParamSpec **pspecs)
+                               guint        n_pspecs,
+                               GParamSpec **pspecs)
 {
   guint i;
 
@@ -149,21 +149,21 @@ mx_stylable_base_init (gpointer g_iface)
                       _mx_marshal_VOID__VOID,
                       G_TYPE_NONE, 0);
 
-  /**
-   * MxStylable::stylable-changed:
-   * @actor: the actor that received the signal
-   *
-   * The ::changed signal is emitted each time any of the properties of the
-   * stylable has changed.
-   */
-  stylable_signals[CHANGED] =
-    g_signal_new (I_("stylable-changed"),
-                  iface_type,
-                  G_SIGNAL_RUN_LAST,
-                  G_STRUCT_OFFSET (MxStylableIface, stylable_changed),
-                  NULL, NULL,
-                  _mx_marshal_VOID__VOID,
-                  G_TYPE_NONE, 0);
+      /**
+       * MxStylable::stylable-changed:
+       * @actor: the actor that received the signal
+       *
+       * The ::changed signal is emitted each time any of the properties of the
+       * stylable has changed.
+       */
+      stylable_signals[CHANGED] =
+        g_signal_new (I_("stylable-changed"),
+                      iface_type,
+                      G_SIGNAL_RUN_LAST,
+                      G_STRUCT_OFFSET (MxStylableIface, stylable_changed),
+                      NULL, NULL,
+                      _mx_marshal_VOID__VOID,
+                      G_TYPE_NONE, 0);
 
       stylable_signals[STYLE_NOTIFY] =
         g_signal_new (I_("style-notify"),
@@ -212,9 +212,9 @@ void
 mx_stylable_thaw_notify (MxStylable *stylable)
 {
   GObjectNotifyQueue *nqueue;
-  
+
   g_return_if_fail (MX_IS_STYLABLE (stylable));
-  
+
   g_object_ref (stylable);
 
   nqueue = g_object_notify_queue_from_object (G_OBJECT (stylable),
@@ -230,11 +230,11 @@ mx_stylable_thaw_notify (MxStylable *stylable)
 }
 
 void
-mx_stylable_notify (MxStylable *stylable,
-                      const gchar  *property_name)
+mx_stylable_notify (MxStylable  *stylable,
+                    const gchar *property_name)
 {
   GParamSpec *pspec;
-    
+
   g_return_if_fail (MX_IS_STYLABLE (stylable));
   g_return_if_fail (property_name != NULL);
 
@@ -253,9 +253,9 @@ mx_stylable_notify (MxStylable *stylable,
   else
     {
       GObjectNotifyQueue *nqueue;
-      
+
       nqueue = g_object_notify_queue_freeze (G_OBJECT (stylable),
-                                              &property_notify_context);
+                                             &property_notify_context);
       g_object_notify_queue_add (G_OBJECT (stylable), nqueue, pspec);
       g_object_notify_queue_thaw (G_OBJECT (stylable), nqueue);
     }
@@ -303,15 +303,15 @@ mx_stylable_notify (MxStylable *stylable,
  */
 void
 mx_stylable_iface_install_property (MxStylableIface *iface,
-                                      GType              owner_type,
-                                      GParamSpec        *pspec)
+                                    GType            owner_type,
+                                    GParamSpec      *pspec)
 {
   g_return_if_fail (MX_IS_STYLABLE_IFACE (iface));
   g_return_if_fail (owner_type != G_TYPE_INVALID);
   g_return_if_fail (G_IS_PARAM_SPEC (pspec));
   g_return_if_fail (pspec->flags & G_PARAM_READABLE);
   g_return_if_fail (!(pspec->flags & (G_PARAM_CONSTRUCT_ONLY | G_PARAM_CONSTRUCT
-)));
+                                      )));
 
   if (g_param_spec_pool_lookup (style_property_spec_pool, pspec->name,
                                 owner_type,
@@ -346,7 +346,7 @@ mx_stylable_iface_install_property (MxStylableIface *iface,
  */
 GParamSpec **
 mx_stylable_list_properties (MxStylable *stylable,
-                               guint        *n_props)
+                             guint      *n_props)
 {
   GParamSpec **pspecs = NULL;
   guint n;
@@ -374,8 +374,8 @@ mx_stylable_list_properties (MxStylable *stylable,
  *   no property with that name was found
  */
 GParamSpec *
-mx_stylable_find_property (MxStylable *stylable,
-                             const gchar  *property_name)
+mx_stylable_find_property (MxStylable  *stylable,
+                           const gchar *property_name)
 {
   g_return_val_if_fail (MX_IS_STYLABLE (stylable), NULL);
   g_return_val_if_fail (property_name != NULL, NULL);
@@ -388,8 +388,8 @@ mx_stylable_find_property (MxStylable *stylable,
 
 static inline void
 mx_stylable_get_property_internal (MxStylable *stylable,
-                                     GParamSpec   *pspec,
-                                     GValue       *value)
+                                   GParamSpec *pspec,
+                                   GValue     *value)
 {
   MxStyle *style;
   GValue real_value = { 0, };
@@ -419,9 +419,9 @@ mx_stylable_get_property_internal (MxStylable *stylable,
  * into @value.
  */
 void
-mx_stylable_get_property (MxStylable *stylable,
-                            const gchar  *property_name,
-                            GValue       *value)
+mx_stylable_get_property (MxStylable  *stylable,
+                          const gchar *property_name,
+                          GValue      *value)
 {
   GParamSpec *pspec;
 
@@ -493,9 +493,9 @@ mx_stylable_get_property (MxStylable *stylable,
  * </example>
  */
 void
-mx_stylable_get (MxStylable *stylable,
-                   const gchar  *first_property_name,
-                                 ...)
+mx_stylable_get (MxStylable  *stylable,
+                 const gchar *first_property_name,
+                 ...)
 {
   MxStyle *style;
   va_list args;
@@ -524,8 +524,8 @@ mx_stylable_get (MxStylable *stylable,
  */
 gboolean
 mx_stylable_get_default_value (MxStylable  *stylable,
-                                 const gchar   *property_name,
-                                 GValue        *value_out)
+                               const gchar *property_name,
+                               GValue      *value_out)
 {
   GParamSpec *pspec;
 
@@ -533,17 +533,17 @@ mx_stylable_get_default_value (MxStylable  *stylable,
   if (!pspec)
     {
       g_warning ("%s: no style property named `%s' found for class `%s'",
-                  G_STRLOC,
-                  property_name,
-                  g_type_name (G_OBJECT_TYPE (stylable)));
+                 G_STRLOC,
+                 property_name,
+                 g_type_name (G_OBJECT_TYPE (stylable)));
       return FALSE;
     }
 
   if (!(pspec->flags & G_PARAM_READABLE))
     {
       g_warning ("Style property `%s' of class `%s' is not readable",
-                  pspec->name,
-                  g_type_name (G_OBJECT_TYPE (stylable)));
+                 pspec->name,
+                 g_type_name (G_OBJECT_TYPE (stylable)));
       return FALSE;
     }
 
@@ -589,7 +589,7 @@ mx_stylable_get_style (MxStylable *stylable)
  */
 void
 mx_stylable_set_style (MxStylable *stylable,
-                         MxStyle    *style)
+                       MxStyle    *style)
 {
   MxStylableIface *iface;
   MxStyle *old_style;
@@ -767,8 +767,8 @@ mx_stylable_get_pseudo_class (MxStylable *stylable)
  * Return value: the value of the attribute
  */
 gchar*
-mx_stylable_get_attribute (MxStylable *stylable,
-                             const gchar  *name)
+mx_stylable_get_attribute (MxStylable  *stylable,
+                           const gchar *name)
 {
   MxStylableIface *iface;
   GValue value = { 0, };
@@ -789,15 +789,15 @@ mx_stylable_get_attribute (MxStylable *stylable,
   /* if no such property exists, return NULL */
   if (pspec == NULL)
     return NULL;
-  
+
   g_value_init (&value, G_PARAM_SPEC_VALUE_TYPE (pspec));
   g_object_get_property (G_OBJECT (stylable), name, &value);
-  
+
   g_value_init (&string_value, G_TYPE_STRING);
   if (g_value_transform (&value, &string_value))
     ret = g_strdup (g_value_get_string (&string_value));
   else
-      ret = NULL;
+    ret = NULL;
 
   g_value_unset (&value);
   g_value_unset (&string_value);
@@ -819,10 +819,10 @@ mx_stylable_get_attribute (MxStylable *stylable,
  */
 gboolean
 mx_stylable_get_viewport (MxStylable *stylable,
-                            gint         *x,
-                            gint         *y,
-                            gint         *width,
-                            gint         *height)
+                          gint       *x,
+                          gint       *y,
+                          gint       *width,
+                          gint       *height)
 {
   MxStylableIface *iface;
 

@@ -60,24 +60,24 @@ enum
 };
 
 struct _MxExpanderPrivate {
-  ClutterActor *label;
-  ClutterActor *arrow;
-  gfloat   spacing;
+  ClutterActor    *label;
+  ClutterActor    *arrow;
+  gfloat           spacing;
 
   ClutterTimeline *timeline;
   ClutterAlpha    *alpha;
-  gdouble progress;
+  gdouble          progress;
 
-  gboolean expanded : 1;
+  gboolean         expanded : 1;
 };
 
 static guint expander_signals[LAST_SIGNAL] = { 0, };
 
 static void
-mx_expander_get_property (GObject *object,
-                            guint property_id,
-                            GValue *value,
-                            GParamSpec *pspec)
+mx_expander_get_property (GObject    *object,
+                          guint       property_id,
+                          GValue     *value,
+                          GParamSpec *pspec)
 {
   MxExpanderPrivate *priv = MX_EXPANDER (object)->priv;
 
@@ -88,29 +88,29 @@ mx_expander_get_property (GObject *object,
     case PROP_LABEL:
       g_value_set_string (value, clutter_text_get_text (CLUTTER_TEXT (priv->label)));
       break;
-  default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-  }
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+    }
 }
 
 static void
-mx_expander_set_property (GObject *object,
-                            guint property_id,
-                            const GValue *value,
-                            GParamSpec *pspec)
+mx_expander_set_property (GObject      *object,
+                          guint         property_id,
+                          const GValue *value,
+                          GParamSpec   *pspec)
 {
   switch (property_id) {
     case PROP_EXPANDED:
       mx_expander_set_expanded ((MxExpander *) object,
-                                  g_value_get_boolean (value));
+                                g_value_get_boolean (value));
       break;
     case PROP_LABEL:
       mx_expander_set_label ((MxExpander *) object,
-                               g_value_get_string (value));
+                             g_value_get_string (value));
       break;
-  default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-  }
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+    }
 }
 
 static void
@@ -246,7 +246,7 @@ mx_expander_toggle_expanded (MxExpander *expander)
 
 static gboolean
 mx_expander_button_release (ClutterActor       *actor,
-                              ClutterButtonEvent *event)
+                            ClutterButtonEvent *event)
 {
   mx_expander_toggle_expanded (MX_EXPANDER (actor));
 
@@ -255,9 +255,9 @@ mx_expander_button_release (ClutterActor       *actor,
 
 static void
 mx_expander_get_preferred_width (ClutterActor *actor,
-                                   gfloat   for_height,
-                                   gfloat  *min_width,
-                                   gfloat  *pref_width)
+                                 gfloat        for_height,
+                                 gfloat       *min_width,
+                                 gfloat       *pref_width)
 {
   MxExpanderPrivate *priv = MX_EXPANDER (actor)->priv;
   ClutterActor *child;
@@ -302,9 +302,9 @@ mx_expander_get_preferred_width (ClutterActor *actor,
 
 static void
 mx_expander_get_preferred_height (ClutterActor *actor,
-                                    gfloat   for_width,
-                                    gfloat  *min_height,
-                                    gfloat  *pref_height)
+                                  gfloat        for_width,
+                                  gfloat       *min_height,
+                                  gfloat       *pref_height)
 {
   MxExpanderPrivate *priv = MX_EXPANDER (actor)->priv;
   ClutterActor *child;
@@ -361,8 +361,8 @@ mx_expander_get_preferred_height (ClutterActor *actor,
 
 static void
 mx_expander_allocate (ClutterActor          *actor,
-                        const ClutterActorBox *box,
-                        ClutterAllocationFlags flags)
+                      const ClutterActorBox *box,
+                      ClutterAllocationFlags flags)
 {
   ClutterActor *child;
   MxExpanderPrivate *priv = MX_EXPANDER (actor)->priv;
@@ -507,14 +507,14 @@ mx_expander_style_changed (MxWidget *widget)
   pseudo_class = mx_widget_get_style_pseudo_class (widget);
 
   mx_widget_set_style_pseudo_class (MX_WIDGET (expander->priv->arrow),
-                                      pseudo_class);
+                                    pseudo_class);
 
 
   mx_stylable_get (MX_STYLABLE (widget),
-                     "color", &color,
-                     "font-family", &font_name,
-                     "font-size", &font_size,
-                     NULL);
+                   "color", &color,
+                   "font-family", &font_name,
+                   "font-size", &font_size,
+                   NULL);
 
   if (color)
     {
@@ -545,7 +545,7 @@ mx_expander_style_changed (MxWidget *widget)
 
 static gboolean
 mx_expander_enter (ClutterActor         *actor,
-                     ClutterCrossingEvent *event)
+                   ClutterCrossingEvent *event)
 {
   if (!MX_EXPANDER (actor)->priv->expanded)
     mx_widget_set_style_pseudo_class (MX_WIDGET (actor), "hover");
@@ -555,7 +555,7 @@ mx_expander_enter (ClutterActor         *actor,
 
 static gboolean
 mx_expander_leave (ClutterActor         *actor,
-                     ClutterCrossingEvent *event)
+                   ClutterCrossingEvent *event)
 {
   if (!MX_EXPANDER (actor)->priv->expanded)
     mx_widget_set_style_pseudo_class (MX_WIDGET (actor), NULL);
@@ -565,8 +565,8 @@ mx_expander_leave (ClutterActor         *actor,
 
 static void
 mx_expander_foreach (ClutterContainer *container,
-                       ClutterCallback   callback,
-                       gpointer          user_data)
+                     ClutterCallback   callback,
+                     gpointer          user_data)
 {
   MxExpanderPrivate *priv = MX_EXPANDER (container)->priv;
 
@@ -577,7 +577,7 @@ mx_expander_foreach (ClutterContainer *container,
 
 static void
 mx_expander_add (ClutterContainer *container,
-                   ClutterActor *actor)
+                 ClutterActor     *actor)
 {
   MxExpander *expander = MX_EXPANDER (container);
   MxExpanderPrivate *priv = expander->priv;
@@ -713,8 +713,8 @@ mx_expander_new (void)
  * Sets the text displayed as the title of the expander
  */
 void
-mx_expander_set_label (MxExpander *expander,
-                         const gchar *label)
+mx_expander_set_label (MxExpander  *expander,
+                       const gchar *label)
 {
   g_return_if_fail (MX_IS_EXPANDER (expander));
   g_return_if_fail (label != NULL);
@@ -732,7 +732,7 @@ mx_expander_set_label (MxExpander *expander,
  */
 void
 mx_expander_set_expanded (MxExpander *expander,
-                            gboolean      expanded)
+                          gboolean    expanded)
 {
   g_return_if_fail (MX_IS_EXPANDER (expander));
 

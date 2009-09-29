@@ -32,18 +32,18 @@ mx_scrollable_base_init (gpointer g_iface)
   if (!initialized)
     {
       g_object_interface_install_property (g_iface,
-                                   g_param_spec_object ("hadjustment",
-                                                        "MxAdjustment",
-                                                        "Horizontal adjustment",
-                                                        MX_TYPE_ADJUSTMENT,
-                                                        G_PARAM_READWRITE));
+                                           g_param_spec_object ("hadjustment",
+                                                                "MxAdjustment",
+                                                                "Horizontal adjustment",
+                                                                MX_TYPE_ADJUSTMENT,
+                                                                G_PARAM_READWRITE));
 
       g_object_interface_install_property (g_iface,
-                                   g_param_spec_object ("vadjustment",
-                                                        "MxAdjustment",
-                                                        "Vertical adjustment",
-                                                        MX_TYPE_ADJUSTMENT,
-                                                        G_PARAM_READWRITE));
+                                           g_param_spec_object ("vadjustment",
+                                                                "MxAdjustment",
+                                                                "Vertical adjustment",
+                                                                MX_TYPE_ADJUSTMENT,
+                                                                G_PARAM_READWRITE));
 
       initialized = TRUE;
     }
@@ -56,11 +56,11 @@ mx_scrollable_get_type (void)
   if (type == 0)
     {
       static const GTypeInfo info =
-        {
-          sizeof (MxScrollableInterface),
-          mx_scrollable_base_init,        /* base_init */
-          NULL,
-        };
+      {
+        sizeof (MxScrollableInterface),
+        mx_scrollable_base_init,          /* base_init */
+        NULL,
+      };
       type = g_type_register_static (G_TYPE_INTERFACE,
                                      "MxScrollable", &info, 0);
     }
@@ -69,20 +69,20 @@ mx_scrollable_get_type (void)
 
 void
 mx_scrollable_set_adjustments (MxScrollable *scrollable,
-                                 MxAdjustment *hadjustment,
-                                 MxAdjustment *vadjustment)
+                               MxAdjustment *hadjustment,
+                               MxAdjustment *vadjustment)
 {
   MX_SCROLLABLE_GET_INTERFACE (scrollable)->set_adjustments (scrollable,
-                                                               hadjustment,
-                                                               vadjustment);
+                                                             hadjustment,
+                                                             vadjustment);
 }
 
 void
-mx_scrollable_get_adjustments (MxScrollable *scrollable,
-                                 MxAdjustment **hadjustment,
-                                 MxAdjustment **vadjustment)
+mx_scrollable_get_adjustments (MxScrollable  *scrollable,
+                               MxAdjustment **hadjustment,
+                               MxAdjustment **vadjustment)
 {
   MX_SCROLLABLE_GET_INTERFACE (scrollable)->get_adjustments (scrollable,
-                                                               hadjustment,
-                                                               vadjustment);
+                                                             hadjustment,
+                                                             vadjustment);
 }

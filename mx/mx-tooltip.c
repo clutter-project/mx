@@ -56,14 +56,14 @@ enum
 };
 
 #define MX_TOOLTIP_GET_PRIVATE(obj)    \
-        (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_TOOLTIP, MxTooltipPrivate))
+  (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_TOOLTIP, MxTooltipPrivate))
 
 struct _MxTooltipPrivate
 {
-  ClutterActor *label;
+  ClutterActor    *label;
 
-  gfloat        arrow_offset;
-  gboolean      actor_below;
+  gfloat           arrow_offset;
+  gboolean         actor_below;
 
   ClutterGeometry *tip_area;
 };
@@ -72,9 +72,9 @@ G_DEFINE_TYPE (MxTooltip, mx_tooltip, MX_TYPE_WIDGET);
 
 static void
 mx_tooltip_set_property (GObject      *gobject,
-                           guint         prop_id,
-                           const GValue *value,
-                           GParamSpec   *pspec)
+                         guint         prop_id,
+                         const GValue *value,
+                         GParamSpec   *pspec)
 {
   MxTooltip *tooltip = MX_TOOLTIP (gobject);
 
@@ -95,9 +95,9 @@ mx_tooltip_set_property (GObject      *gobject,
 
 static void
 mx_tooltip_get_property (GObject    *gobject,
-                           guint       prop_id,
-                           GValue     *value,
-                           GParamSpec *pspec)
+                         guint       prop_id,
+                         GValue     *value,
+                         GParamSpec *pspec)
 {
   MxTooltipPrivate *priv = MX_TOOLTIP (gobject)->priv;
 
@@ -129,10 +129,10 @@ mx_tooltip_style_changed (MxWidget *self)
   priv = MX_TOOLTIP (self)->priv;
 
   mx_stylable_get (MX_STYLABLE (self),
-                     "color", &color,
-                     "font-family", &font_name,
-                     "font-size", &font_size,
-                     NULL);
+                   "color", &color,
+                   "font-family", &font_name,
+                   "font-size", &font_size,
+                   NULL);
 
   if (color)
     {
@@ -148,10 +148,10 @@ mx_tooltip_style_changed (MxWidget *self)
           g_free (font_name);
         }
       else
-        if (font_size)
-          font_string = g_strdup_printf ("%dpx", font_size);
-        else
-          font_string = font_name;
+      if (font_size)
+        font_string = g_strdup_printf ("%dpx", font_size);
+      else
+        font_string = font_name;
 
       clutter_text_set_font_name (CLUTTER_TEXT (priv->label), font_string);
 
@@ -162,9 +162,9 @@ mx_tooltip_style_changed (MxWidget *self)
 
 static void
 mx_tooltip_get_preferred_width (ClutterActor *self,
-                                  gfloat       for_height,
-                                  gfloat      *min_width_p,
-                                  gfloat      *natural_width_p)
+                                gfloat        for_height,
+                                gfloat       *min_width_p,
+                                gfloat       *natural_width_p)
 {
   MxTooltipPrivate *priv = MX_TOOLTIP (self)->priv;
   gfloat min_label_w, natural_label_w;
@@ -223,9 +223,9 @@ mx_tooltip_get_preferred_width (ClutterActor *self,
 
 static void
 mx_tooltip_get_preferred_height (ClutterActor *self,
-                                   gfloat        for_width,
-                                   gfloat       *min_height_p,
-                                   gfloat       *natural_height_p)
+                                 gfloat        for_width,
+                                 gfloat       *min_height_p,
+                                 gfloat       *natural_height_p)
 {
   MxTooltipPrivate *priv = MX_TOOLTIP (self)->priv;
   gfloat arrow_height;
@@ -286,8 +286,8 @@ mx_tooltip_get_preferred_height (ClutterActor *self,
 
 static void
 mx_tooltip_allocate (ClutterActor          *self,
-                       const ClutterActorBox *box,
-                       ClutterAllocationFlags flags)
+                     const ClutterActorBox *box,
+                     ClutterAllocationFlags flags)
 {
   MxTooltipPrivate *priv = MX_TOOLTIP (self)->priv;
   ClutterActorBox child_box, arrow_box;
@@ -296,8 +296,8 @@ mx_tooltip_allocate (ClutterActor          *self,
   MxPadding padding;
 
   CLUTTER_ACTOR_CLASS (mx_tooltip_parent_class)->allocate (self,
-                                                             box,
-                                                             flags);
+                                                           box,
+                                                           flags);
 
   mx_widget_get_padding (MX_WIDGET (self), &padding);
 
@@ -308,7 +308,7 @@ mx_tooltip_allocate (ClutterActor          *self,
       clutter_actor_get_preferred_height (arrow_image, -1, NULL, &arrow_height);
       clutter_actor_get_preferred_width (arrow_image, -1, NULL, &arrow_width);
 
-      arrow_box.x1 = (float) (priv->arrow_offset) - (int) (arrow_width / 2);
+      arrow_box.x1 = (float)(priv->arrow_offset) - (int)(arrow_width / 2);
       arrow_box.y1 = 0;
       arrow_box.x2 = arrow_box.x1 + arrow_width;
       arrow_box.y2 = arrow_box.y1 + arrow_height;
@@ -484,8 +484,8 @@ mx_tooltip_update_position (MxTooltip *tooltip)
   clutter_actor_get_size ((ClutterActor*) tooltip, &tooltip_w, &tooltip_h);
 
   /* attempt to place the tooltip */
-  tooltip_x = (int) (tip_area->x + (tip_area->width / 2) - (tooltip_w / 2));
-  tooltip_y = (int) (tip_area->y + tip_area->height);
+  tooltip_x = (int)(tip_area->x + (tip_area->width / 2) - (tooltip_w / 2));
+  tooltip_y = (int)(tip_area->y + tip_area->height);
 
   stage = clutter_actor_get_stage ((ClutterActor *) tooltip);
   if (!stage)
@@ -506,7 +506,7 @@ mx_tooltip_update_position (MxTooltip *tooltip)
     }
   else if (tooltip_x + tooltip_w > stage_w)
     {
-      tooltip_x = (int) (stage_w) - tooltip_w;
+      tooltip_x = (int)(stage_w) - tooltip_w;
     }
 
   /* make sure the tooltip is not off screen horizontally */
@@ -554,8 +554,8 @@ mx_tooltip_get_label (MxTooltip *tooltip)
  * Sets the text displayed on the tooltip
  */
 void
-mx_tooltip_set_label (MxTooltip *tooltip,
-                        const gchar *text)
+mx_tooltip_set_label (MxTooltip   *tooltip,
+                      const gchar *text)
 {
   MxTooltipPrivate *priv;
 
@@ -633,7 +633,7 @@ mx_tooltip_show (MxTooltip *tooltip)
 
 static void
 mx_tooltip_hide_complete (ClutterAnimation *animation,
-                            ClutterActor     *actor)
+                          ClutterActor     *actor)
 {
   CLUTTER_ACTOR_CLASS (mx_tooltip_parent_class)->hide (actor);
   g_signal_handlers_disconnect_by_func (actor,
@@ -680,8 +680,8 @@ mx_tooltip_hide (MxTooltip *tooltip)
  * Set the area on the stage that the tooltip applies to.
  */
 void
-mx_tooltip_set_tip_area (MxTooltip           *tooltip,
-                           const ClutterGeometry *area)
+mx_tooltip_set_tip_area (MxTooltip             *tooltip,
+                         const ClutterGeometry *area)
 {
   g_return_if_fail (MX_IS_TOOLTIP (tooltip));
 

@@ -302,8 +302,8 @@ mx_table_child_init (MxTableChild *self)
 }
 
 static MxTableChild*
-get_child_meta (MxTable    *table,
-                 ClutterActor *child)
+get_child_meta (MxTable      *table,
+                ClutterActor *child)
 {
   MxTableChild *meta;
 
@@ -322,8 +322,8 @@ get_child_meta (MxTable    *table,
  * Returns: the column span of the child
  */
 gint
-mx_table_child_get_col_span (MxTable    *table,
-                               ClutterActor *child)
+mx_table_child_get_col_span (MxTable      *table,
+                             ClutterActor *child)
 {
   MxTableChild *meta;
 
@@ -345,9 +345,9 @@ mx_table_child_get_col_span (MxTable    *table,
  *
  */
 void
-mx_table_child_set_col_span (MxTable    *table,
-                               ClutterActor *child,
-                               gint          span)
+mx_table_child_set_col_span (MxTable      *table,
+                             ClutterActor *child,
+                             gint          span)
 {
   MxTableChild *meta;
 
@@ -372,8 +372,8 @@ mx_table_child_set_col_span (MxTable    *table,
  * Returns: the row span of the child
  */
 gint
-mx_table_child_get_row_span (MxTable    *table,
-                               ClutterActor *child)
+mx_table_child_get_row_span (MxTable      *table,
+                             ClutterActor *child)
 {
   MxTableChild *meta;
 
@@ -395,9 +395,9 @@ mx_table_child_get_row_span (MxTable    *table,
  *
  */
 void
-mx_table_child_set_row_span (MxTable    *table,
-                               ClutterActor *child,
-                               gint          span)
+mx_table_child_set_row_span (MxTable      *table,
+                             ClutterActor *child,
+                             gint          span)
 {
   MxTableChild *meta;
 
@@ -422,8 +422,8 @@ mx_table_child_set_row_span (MxTable    *table,
  * Returns: #TRUE if the child is set to x-fill
  */
 gboolean
-mx_table_child_get_x_fill (MxTable    *table,
-                             ClutterActor *child)
+mx_table_child_get_x_fill (MxTable      *table,
+                           ClutterActor *child)
 {
   MxTableChild *meta;
 
@@ -446,9 +446,9 @@ mx_table_child_get_x_fill (MxTable    *table,
  *
  */
 void
-mx_table_child_set_x_fill (MxTable    *table,
-                             ClutterActor *child,
-                             gboolean      fill)
+mx_table_child_set_x_fill (MxTable      *table,
+                           ClutterActor *child,
+                           gboolean      fill)
 {
   MxTableChild *meta;
 
@@ -473,8 +473,8 @@ mx_table_child_set_x_fill (MxTable    *table,
  * Returns: #TRUE if the child is set to y-fill
  */
 gboolean
-mx_table_child_get_y_fill (MxTable    *table,
-                             ClutterActor *child)
+mx_table_child_get_y_fill (MxTable      *table,
+                           ClutterActor *child)
 {
   MxTableChild *meta;
 
@@ -497,9 +497,9 @@ mx_table_child_get_y_fill (MxTable    *table,
  *
  */
 void
-mx_table_child_set_y_fill (MxTable    *table,
-                             ClutterActor *child,
-                             gboolean      fill)
+mx_table_child_set_y_fill (MxTable      *table,
+                           ClutterActor *child,
+                           gboolean      fill)
 {
   MxTableChild *meta;
 
@@ -523,8 +523,8 @@ mx_table_child_set_y_fill (MxTable    *table,
  * Returns: #TRUE if the child is set to x-expand
  */
 gboolean
-mx_table_child_get_x_expand (MxTable    *table,
-                               ClutterActor *child)
+mx_table_child_get_x_expand (MxTable      *table,
+                             ClutterActor *child)
 {
   MxTableChild *meta;
 
@@ -548,9 +548,9 @@ mx_table_child_get_x_expand (MxTable    *table,
  *
  */
 void
-mx_table_child_set_x_expand (MxTable    *table,
-                               ClutterActor *child,
-                               gboolean      expand)
+mx_table_child_set_x_expand (MxTable      *table,
+                             ClutterActor *child,
+                             gboolean      expand)
 {
   MxTableChild *meta;
 
@@ -576,9 +576,9 @@ mx_table_child_set_x_expand (MxTable    *table,
  *
  */
 void
-mx_table_child_set_y_expand (MxTable    *table,
-                               ClutterActor *child,
-                               gboolean      expand)
+mx_table_child_set_y_expand (MxTable      *table,
+                             ClutterActor *child,
+                             gboolean      expand)
 {
   MxTableChild *meta;
 
@@ -602,8 +602,8 @@ mx_table_child_set_y_expand (MxTable    *table,
  * Returns: #TRUE if the child is set to y-expand
  */
 gboolean
-mx_table_child_get_y_expand (MxTable    *table,
-                                 ClutterActor *child)
+mx_table_child_get_y_expand (MxTable      *table,
+                             ClutterActor *child)
 {
   MxTableChild *meta;
 
@@ -625,8 +625,8 @@ mx_table_child_get_y_expand (MxTable    *table,
  * Returns: An #MxAlign value
  */
 MxAlign
-mx_table_child_get_x_align (MxTable    *table,
-                              ClutterActor *child)
+mx_table_child_get_x_align (MxTable      *table,
+                            ClutterActor *child)
 {
   MxTableChild *meta;
 
@@ -655,9 +655,9 @@ mx_table_child_get_x_align (MxTable    *table,
  *
  */
 void
-mx_table_child_set_x_align (MxTable    *table,
-                              ClutterActor *child,
-                              MxAlign     align)
+mx_table_child_set_x_align (MxTable      *table,
+                            ClutterActor *child,
+                            MxAlign       align)
 {
   MxTableChild *meta;
 
@@ -692,8 +692,8 @@ mx_table_child_set_x_align (MxTable    *table,
  * Returns: An #MxAlign value
  */
 MxAlign
-mx_table_child_get_y_align (MxTable    *table,
-                              ClutterActor *child)
+mx_table_child_get_y_align (MxTable      *table,
+                            ClutterActor *child)
 {
   MxTableChild *meta;
 
@@ -722,9 +722,9 @@ mx_table_child_get_y_align (MxTable    *table,
  *
  */
 void
-mx_table_child_set_y_align (MxTable    *table,
-                              ClutterActor *child,
-                              MxAlign     align)
+mx_table_child_set_y_align (MxTable      *table,
+                            ClutterActor *child,
+                            MxAlign       align)
 {
   MxTableChild *meta;
 
@@ -758,9 +758,9 @@ mx_table_child_set_y_align (MxTable    *table,
  * Set whether the child should be allocate even if it is hidden
  */
 void
-mx_table_child_set_allocate_hidden (MxTable    *table,
-                                      ClutterActor *child,
-                                      gboolean      value)
+mx_table_child_set_allocate_hidden (MxTable      *table,
+                                    ClutterActor *child,
+                                    gboolean      value)
 {
   MxTableChild *meta;
 
@@ -789,8 +789,8 @@ mx_table_child_set_allocate_hidden (MxTable    *table,
  * Returns: #TRUE if the actor is allocated when hidden
  */
 gboolean
-mx_table_child_get_allocate_hidden (MxTable    *table,
-                                      ClutterActor *child)
+mx_table_child_get_allocate_hidden (MxTable      *table,
+                                    ClutterActor *child)
 {
   MxTableChild *meta;
 

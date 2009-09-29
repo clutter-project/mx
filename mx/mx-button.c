@@ -68,27 +68,27 @@ enum
 };
 
 #define MX_BUTTON_GET_PRIVATE(obj)    \
-        (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_BUTTON, MxButtonPrivate))
+  (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_BUTTON, MxButtonPrivate))
 
 struct _MxButtonPrivate
 {
-  gchar *text;
+  gchar            *text;
 
-  ClutterActor *old_bg;
-  gboolean old_bg_parented; /* TRUE if we have adopted old_bg */
+  ClutterActor     *old_bg;
+  gboolean          old_bg_parented; /* TRUE if we have adopted old_bg */
 
-  guint8 old_opacity;
+  guint8            old_opacity;
 
-  guint is_pressed : 1;
-  guint is_hover : 1;
-  guint is_checked : 1;
-  guint is_toggle : 1;
+  guint             is_pressed : 1;
+  guint             is_hover : 1;
+  guint             is_checked : 1;
+  guint             is_toggle : 1;
 
-  gint transition_duration;
+  gint              transition_duration;
 
   ClutterAnimation *animation;
 
-  gint spacing;
+  gint              spacing;
 };
 
 static guint button_signals[LAST_SIGNAL] = { 0, };
@@ -146,10 +146,10 @@ mx_button_update_label_style (MxButton *button)
     return;
 
   mx_stylable_get (MX_STYLABLE (button),
-                     "color", &real_color,
-                     "font-family", &font_name,
-                     "font-size", &font_size,
-                     NULL);
+                   "color", &real_color,
+                   "font-family", &font_name,
+                   "font-size", &font_size,
+                   NULL);
 
   if (font_name || font_size)
     {
@@ -209,8 +209,8 @@ mx_button_stylable_changed (MxStylable *stylable)
 }
 
 static void
-mx_animation_completed (ClutterAnimation  *animation,
-                          MxButton        *button)
+mx_animation_completed (ClutterAnimation *animation,
+                        MxButton         *button)
 {
   mx_button_dispose_old_bg (button);
 }
@@ -224,8 +224,8 @@ mx_button_style_changed (MxWidget *widget)
 
   /* get the spacing value */
   mx_stylable_get (MX_STYLABLE (widget),
-                     "border-spacing", &priv->spacing,
-                     NULL);
+                   "border-spacing", &priv->spacing,
+                   NULL);
 
   /* update the label styling */
   mx_button_update_label_style (button);
@@ -287,7 +287,7 @@ mx_button_real_released (MxButton *button)
 
 static gboolean
 mx_button_button_press (ClutterActor       *actor,
-                          ClutterButtonEvent *event)
+                        ClutterButtonEvent *event)
 {
   mx_widget_hide_tooltip (MX_WIDGET (actor));
 
@@ -311,7 +311,7 @@ mx_button_button_press (ClutterActor       *actor,
 
 static gboolean
 mx_button_button_release (ClutterActor       *actor,
-                            ClutterButtonEvent *event)
+                          ClutterButtonEvent *event)
 {
   if (event->button == 1)
     {
@@ -343,7 +343,7 @@ mx_button_button_release (ClutterActor       *actor,
 
 static gboolean
 mx_button_enter (ClutterActor         *actor,
-                   ClutterCrossingEvent *event)
+                 ClutterCrossingEvent *event)
 {
   MxButton *button = MX_BUTTON (actor);
 
@@ -357,7 +357,7 @@ mx_button_enter (ClutterActor         *actor,
 
 static gboolean
 mx_button_leave (ClutterActor         *actor,
-                   ClutterCrossingEvent *event)
+                 ClutterCrossingEvent *event)
 {
   MxButton *button = MX_BUTTON (actor);
 
@@ -385,9 +385,9 @@ mx_button_leave (ClutterActor         *actor,
 
 static void
 mx_button_set_property (GObject      *gobject,
-                          guint         prop_id,
-                          const GValue *value,
-                          GParamSpec   *pspec)
+                        guint         prop_id,
+                        const GValue *value,
+                        GParamSpec   *pspec)
 {
   MxButton *button = MX_BUTTON (gobject);
   MxButtonPrivate *priv = MX_BUTTON (gobject)->priv;
@@ -416,9 +416,9 @@ mx_button_set_property (GObject      *gobject,
 
 static void
 mx_button_get_property (GObject    *gobject,
-                          guint       prop_id,
-                          GValue     *value,
-                          GParamSpec *pspec)
+                        guint       prop_id,
+                        GValue     *value,
+                        GParamSpec *pspec)
 {
   MxButtonPrivate *priv = MX_BUTTON (gobject)->priv;
 
@@ -485,9 +485,9 @@ mx_button_unmap (ClutterActor *self)
 }
 
 static void
-mx_button_draw_background (MxWidget         *widget,
-                             ClutterActor       *background,
-                             const ClutterColor *color)
+mx_button_draw_background (MxWidget           *widget,
+                           ClutterActor       *background,
+                           const ClutterColor *color)
 {
   MxButtonPrivate *priv;
 
@@ -496,7 +496,7 @@ mx_button_draw_background (MxWidget         *widget,
   priv = MX_BUTTON (widget)->priv;
 
   if (priv->old_bg && priv->old_bg_parented)
-      clutter_actor_paint (priv->old_bg);
+    clutter_actor_paint (priv->old_bg);
 }
 
 static void
@@ -638,8 +638,8 @@ mx_button_get_label (MxButton *button)
  * Sets the text displayed on the button
  */
 void
-mx_button_set_label (MxButton  *button,
-                       const gchar *text)
+mx_button_set_label (MxButton    *button,
+                     const gchar *text)
 {
   MxButtonPrivate *priv;
   ClutterActor *label;
@@ -702,8 +702,8 @@ mx_button_get_toggle_mode (MxButton *button)
  * state will be "toggled" when the user clicks the button.
  */
 void
-mx_button_set_toggle_mode (MxButton  *button,
-                             gboolean     toggle)
+mx_button_set_toggle_mode (MxButton *button,
+                           gboolean  toggle)
 {
   g_return_if_fail (MX_IS_BUTTON (button));
 
@@ -737,8 +737,8 @@ mx_button_get_checked (MxButton *button)
  * button has #toggle-mode mode set to #TRUE.
  */
 void
-mx_button_set_checked (MxButton  *button,
-                         gboolean     checked)
+mx_button_set_checked (MxButton *button,
+                       gboolean  checked)
 {
   g_return_if_fail (MX_IS_BUTTON (button));
 
@@ -749,10 +749,10 @@ mx_button_set_checked (MxButton  *button,
       if (checked)
         mx_widget_set_style_pseudo_class ((MxWidget*) button, "checked");
       else
-        if (button->priv->is_hover)
-          mx_widget_set_style_pseudo_class ((MxWidget*) button, "hover");
-        else
-          mx_widget_set_style_pseudo_class ((MxWidget*) button, NULL);
+      if (button->priv->is_hover)
+        mx_widget_set_style_pseudo_class ((MxWidget*) button, "hover");
+      else
+        mx_widget_set_style_pseudo_class ((MxWidget*) button, NULL);
     }
 
   g_object_notify (G_OBJECT (button), "checked");

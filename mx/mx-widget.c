@@ -42,29 +42,29 @@
 #include "mx-texture-frame.h"
 #include "mx-tooltip.h"
 
-typedef ccss_border_image_t             MxBorderImage;
+typedef ccss_border_image_t MxBorderImage;
 
 /*
  * Forward declaration for sake of MxWidgetChild
  */
 struct _MxWidgetPrivate
 {
-  MxPadding border;
-  MxPadding padding;
+  MxPadding     border;
+  MxPadding     padding;
 
-  MxStyle *style;
-  gchar *pseudo_class;
-  gchar *style_class;
+  MxStyle      *style;
+  gchar        *pseudo_class;
+  gchar        *style_class;
 
   ClutterActor *border_image;
   ClutterActor *background_image;
   ClutterColor *bg_color;
 
-  gboolean is_stylable : 1;
-  gboolean has_tooltip : 1;
-  gboolean is_style_dirty : 1;
+  gboolean      is_stylable : 1;
+  gboolean      has_tooltip : 1;
+  gboolean      is_style_dirty : 1;
 
-  MxTooltip *tooltip;
+  MxTooltip    *tooltip;
 };
 
 /**
@@ -103,9 +103,9 @@ G_DEFINE_ABSTRACT_TYPE_WITH_CODE (MxWidget, mx_widget, CLUTTER_TYPE_ACTOR,
 
 static void
 mx_widget_set_property (GObject      *gobject,
-                          guint         prop_id,
-                          const GValue *value,
-                          GParamSpec   *pspec)
+                        guint         prop_id,
+                        const GValue *value,
+                        GParamSpec   *pspec)
 {
   MxWidget *actor = MX_WIDGET (gobject);
 
@@ -113,7 +113,7 @@ mx_widget_set_property (GObject      *gobject,
     {
     case PROP_STYLE:
       mx_stylable_set_style (MX_STYLABLE (actor),
-                               g_value_get_object (value));
+                             g_value_get_object (value));
       break;
 
     case PROP_PSEUDO_CLASS:
@@ -128,7 +128,7 @@ mx_widget_set_property (GObject      *gobject,
       if (actor->priv->is_stylable != g_value_get_boolean (value))
         {
           actor->priv->is_stylable = g_value_get_boolean (value);
-          clutter_actor_queue_relayout ((ClutterActor *)gobject);
+          clutter_actor_queue_relayout ((ClutterActor *) gobject);
         }
       break;
 
@@ -148,9 +148,9 @@ mx_widget_set_property (GObject      *gobject,
 
 static void
 mx_widget_get_property (GObject    *gobject,
-                          guint       prop_id,
-                          GValue     *value,
-                          GParamSpec *pspec)
+                        guint       prop_id,
+                        GValue     *value,
+                        GParamSpec *pspec)
 {
   MxWidget *actor = MX_WIDGET (gobject);
   MxWidgetPrivate *priv = actor->priv;
@@ -242,8 +242,8 @@ mx_widget_finalize (GObject *gobject)
 
 static void
 mx_widget_allocate (ClutterActor          *actor,
-                      const ClutterActorBox *box,
-                      ClutterAllocationFlags flags)
+                    const ClutterActorBox *box,
+                    ClutterAllocationFlags flags)
 {
   MxWidgetPrivate *priv = MX_WIDGET (actor)->priv;
   ClutterActorClass *klass;
@@ -289,7 +289,7 @@ mx_widget_allocate (ClutterActor          *actor,
   if (priv->background_image)
     {
       ClutterActorBox frame_box = {
-          0, 0, box->x2 - box->x1, box->y2 - box->y1
+        0, 0, box->x2 - box->x1, box->y2 - box->y1
       };
       gfloat w, h;
 
@@ -305,8 +305,8 @@ mx_widget_allocate (ClutterActor          *actor,
           box_h = (int) frame_box.y2;
 
           /* scale to fit */
-          new_h = (int) ((h / w) * ((gfloat) box_w));
-          new_w = (int) ((w / h) * ((gfloat) box_h));
+          new_h = (int)((h / w) * ((gfloat) box_w));
+          new_w = (int)((w / h) * ((gfloat) box_h));
 
           if (new_h > box_h)
             {
@@ -331,8 +331,8 @@ mx_widget_allocate (ClutterActor          *actor,
       else
         {
           /* center the background on the widget */
-          frame_box.x1 = (int) (((box->x2 - box->x1) / 2) - (w / 2));
-          frame_box.y1 = (int) (((box->y2 - box->y1) / 2) - (h / 2));
+          frame_box.x1 = (int)(((box->x2 - box->x1) / 2) - (w / 2));
+          frame_box.y1 = (int)(((box->y2 - box->y1) / 2) - (h / 2));
           frame_box.x2 = frame_box.x1 + w;
           frame_box.y2 = frame_box.y1 + h;
         }
@@ -344,9 +344,9 @@ mx_widget_allocate (ClutterActor          *actor,
 }
 
 static void
-mx_widget_real_draw_background (MxWidget         *self,
-                                  ClutterActor       *background,
-                                  const ClutterColor *color)
+mx_widget_real_draw_background (MxWidget           *self,
+                                ClutterActor       *background,
+                                const ClutterColor *color)
 {
   /* Default implementation just draws the background
    * colour and the image on top
@@ -359,8 +359,8 @@ mx_widget_real_draw_background (MxWidget         *self,
       gfloat w, h;
 
       bg_color.alpha = clutter_actor_get_paint_opacity (actor)
-                     * bg_color.alpha
-                     / 255;
+                       * bg_color.alpha
+                       / 255;
 
       clutter_actor_get_allocation_box (actor, &allocation);
 
@@ -394,7 +394,7 @@ mx_widget_paint (ClutterActor *self)
 
 static void
 mx_widget_parent_set (ClutterActor *widget,
-                        ClutterActor *old_parent)
+                      ClutterActor *old_parent)
 {
   ClutterActorClass *parent_class;
   ClutterActor *new_parent;
@@ -465,11 +465,11 @@ mx_widget_style_changed (MxStylable *self)
 
   /* cache these values for use in the paint function */
   mx_stylable_get (self,
-                    "background-color", &color,
-                    "background-image", &bg_file,
-                    "border-image", &border_image,
-                    "padding", &padding,
-                    NULL);
+                   "background-color", &color,
+                   "background-image", &bg_file,
+                   "border-image", &border_image,
+                   "padding", &padding,
+                   NULL);
 
   if (color)
     {
@@ -486,12 +486,12 @@ mx_widget_style_changed (MxStylable *self)
         }
     }
   else
-    if (priv->bg_color)
-      {
-        clutter_color_free (priv->bg_color);
-        priv->bg_color = NULL;
-        has_changed = TRUE;
-      }
+  if (priv->bg_color)
+    {
+      clutter_color_free (priv->bg_color);
+      priv->bg_color = NULL;
+      has_changed = TRUE;
+    }
 
 
 
@@ -501,11 +501,11 @@ mx_widget_style_changed (MxStylable *self)
           priv->padding.left != padding->left ||
           priv->padding.right != padding->right ||
           priv->padding.bottom != padding->bottom)
-      {
-        /* Padding changed. Need to relayout. */
-        has_changed = TRUE;
-        relayout_needed = TRUE;
-      }
+        {
+          /* Padding changed. Need to relayout. */
+          has_changed = TRUE;
+          relayout_needed = TRUE;
+        }
 
       priv->padding = *padding;
       g_boxed_free (MX_TYPE_PADDING, padding);
@@ -513,8 +513,8 @@ mx_widget_style_changed (MxStylable *self)
 
   if (priv->border_image)
     {
-       clutter_actor_unparent (priv->border_image);
-       priv->border_image = NULL;
+      clutter_actor_unparent (priv->border_image);
+      priv->border_image = NULL;
     }
 
   if (priv->background_image)
@@ -535,7 +535,7 @@ mx_widget_style_changed (MxStylable *self)
        * Firefox lets the background-image shine thru when border-image has
        * alpha an channel, maybe that would be an option for the future. */
       texture = mx_texture_cache_get_texture (texture_cache,
-                                                border_image->uri);
+                                              border_image->uri);
 
       clutter_texture_get_base_size (CLUTTER_TEXTURE (texture),
                                      &width, &height);
@@ -546,10 +546,10 @@ mx_widget_style_changed (MxStylable *self)
       border_bottom = ccss_position_get_size (&border_image->bottom, height);
 
       priv->border_image = mx_texture_frame_new (texture,
-                                                   border_top,
-                                                   border_right,
-                                                   border_bottom,
-                                                   border_left);
+                                                 border_top,
+                                                 border_right,
+                                                 border_bottom,
+                                                 border_left);
       clutter_actor_set_parent (priv->border_image, CLUTTER_ACTOR (self));
       g_boxed_free (MX_TYPE_BORDER_IMAGE, border_image);
 
@@ -574,7 +574,7 @@ mx_widget_style_changed (MxStylable *self)
       has_changed = TRUE;
       relayout_needed = TRUE;
     }
-    g_free (bg_file);
+  g_free (bg_file);
 
   /* If there are any properties above that need to cause a relayout thay
    * should set this flag.
@@ -592,7 +592,7 @@ mx_widget_style_changed (MxStylable *self)
 
 static void
 mx_widget_stylable_child_notify (ClutterActor *actor,
-                                   gpointer      user_data)
+                                 gpointer      user_data)
 {
   if (MX_IS_STYLABLE (actor))
     mx_stylable_changed ((MxStylable*) actor);
@@ -622,13 +622,13 @@ mx_widget_stylable_changed (MxStylable *stylable)
 
 static gboolean
 mx_widget_enter (ClutterActor         *actor,
-                   ClutterCrossingEvent *event)
+                 ClutterCrossingEvent *event)
 {
   MxWidgetPrivate *priv = MX_WIDGET (actor)->priv;
 
 
   if (priv->has_tooltip)
-      mx_widget_show_tooltip ((MxWidget*) actor);
+    mx_widget_show_tooltip ((MxWidget*) actor);
 
   if (CLUTTER_ACTOR_CLASS (mx_widget_parent_class)->enter_event)
     return CLUTTER_ACTOR_CLASS (mx_widget_parent_class)->enter_event (actor, event);
@@ -638,12 +638,12 @@ mx_widget_enter (ClutterActor         *actor,
 
 static gboolean
 mx_widget_leave (ClutterActor         *actor,
-                   ClutterCrossingEvent *event)
+                 ClutterCrossingEvent *event)
 {
   MxWidgetPrivate *priv = MX_WIDGET (actor)->priv;
 
   if (priv->has_tooltip)
-      mx_tooltip_hide (priv->tooltip);
+    mx_tooltip_hide (priv->tooltip);
 
   if (CLUTTER_ACTOR_CLASS (mx_widget_parent_class)->leave_event)
     return CLUTTER_ACTOR_CLASS (mx_widget_parent_class)->leave_event (actor, event);
@@ -773,7 +773,7 @@ mx_widget_get_style (MxStylable *stylable)
 
 static void
 mx_style_changed_cb (MxStyle    *style,
-                       MxStylable *stylable)
+                     MxStylable *stylable)
 {
   mx_stylable_changed (stylable);
 }
@@ -781,7 +781,7 @@ mx_style_changed_cb (MxStyle    *style,
 
 static void
 mx_widget_set_style (MxStylable *stylable,
-                       MxStyle    *style)
+                     MxStyle    *style)
 {
   MxWidgetPrivate *priv = MX_WIDGET (stylable)->priv;
 
@@ -849,10 +849,10 @@ mx_widget_get_pseudo_class (MxStylable *stylable)
 
 static gboolean
 mx_widget_get_viewport (MxStylable *stylable,
-                          gint *x,
-                          gint *y,
-                          gint *width,
-                          gint *height)
+                        gint       *x,
+                        gint       *y,
+                        gint       *width,
+                        gint       *height)
 {
   g_return_val_if_fail (MX_IS_WIDGET (stylable), FALSE);
 
@@ -873,8 +873,8 @@ mx_widget_get_viewport (MxStylable *stylable,
  * Set the style class name
  */
 void
-mx_widget_set_style_class_name (MxWidget  *actor,
-                                  const gchar *style_class)
+mx_widget_set_style_class_name (MxWidget    *actor,
+                                const gchar *style_class)
 {
   MxWidgetPrivate *priv = actor->priv;
 
@@ -936,8 +936,8 @@ mx_widget_get_style_pseudo_class (MxWidget *actor)
  * Set the style pseudo class
  */
 void
-mx_widget_set_style_pseudo_class (MxWidget  *actor,
-                                    const gchar *pseudo_class)
+mx_widget_set_style_pseudo_class (MxWidget    *actor,
+                                  const gchar *pseudo_class)
 {
   MxWidgetPrivate *priv;
 
@@ -971,17 +971,17 @@ mx_stylable_iface_init (MxStylableIface *iface)
       is_initialized = TRUE;
 
       pspec = clutter_param_spec_color ("background-color",
-                                  "Background Color",
-                                  "The background color of an actor",
-                                  &bg_color,
-                                  G_PARAM_READWRITE);
+                                        "Background Color",
+                                        "The background color of an actor",
+                                        &bg_color,
+                                        G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
 
       pspec = clutter_param_spec_color ("color",
-                                  "Text Color",
-                                  "The color of the text of an actor",
-                                  &color,
-                                  G_PARAM_READWRITE);
+                                        "Text Color",
+                                        "The color of the text of an actor",
+                                        &color,
+                                        G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
 
       pspec = g_param_spec_string ("background-image",
@@ -1038,9 +1038,9 @@ mx_stylable_iface_init (MxStylableIface *iface)
 
 
 static void
-mx_widget_name_notify (MxWidget *widget,
-                         GParamSpec *pspec,
-                         gpointer data)
+mx_widget_name_notify (MxWidget   *widget,
+                       GParamSpec *pspec,
+                       gpointer    data)
 {
   mx_stylable_changed ((MxStylable*) widget);
 }
@@ -1158,8 +1158,8 @@ mx_widget_get_background_image (MxWidget *actor)
  *
  */
 void
-mx_widget_get_padding (MxWidget *widget,
-                         MxPadding *padding)
+mx_widget_get_padding (MxWidget  *widget,
+                       MxPadding *padding)
 {
   g_return_if_fail (MX_IS_WIDGET (widget));
   g_return_if_fail (padding != NULL);
@@ -1181,7 +1181,7 @@ mx_widget_get_padding (MxWidget *widget,
  */
 void
 mx_widget_set_has_tooltip (MxWidget *widget,
-                             gboolean    has_tooltip)
+                           gboolean  has_tooltip)
 {
   MxWidgetPrivate *priv;
 
@@ -1239,8 +1239,8 @@ mx_widget_get_has_tooltip (MxWidget *widget)
  *
  */
 void
-mx_widget_set_tooltip_text (MxWidget  *widget,
-                              const gchar *text)
+mx_widget_set_tooltip_text (MxWidget    *widget,
+                            const gchar *text)
 {
   MxWidgetPrivate *priv;
 

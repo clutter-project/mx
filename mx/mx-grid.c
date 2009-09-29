@@ -50,29 +50,29 @@ static void mx_grid_dispose             (GObject *object);
 static void mx_grid_finalize            (GObject *object);
 
 static void mx_grid_set_property        (GObject      *object,
-                                           guint         prop_id,
-                                           const GValue *value,
-                                           GParamSpec   *pspec);
-static void mx_grid_get_property        (GObject      *object,
-                                           guint         prop_id,
-                                           GValue       *value,
-                                           GParamSpec   *pspec);
+                                         guint         prop_id,
+                                         const GValue *value,
+                                         GParamSpec   *pspec);
+static void mx_grid_get_property        (GObject    *object,
+                                         guint       prop_id,
+                                         GValue     *value,
+                                         GParamSpec *pspec);
 
 static void clutter_container_iface_init  (ClutterContainerIface *iface);
 
 static void mx_grid_real_add            (ClutterContainer *container,
-                                           ClutterActor     *actor);
+                                         ClutterActor     *actor);
 static void mx_grid_real_remove         (ClutterContainer *container,
-                                           ClutterActor     *actor);
+                                         ClutterActor     *actor);
 static void mx_grid_real_foreach        (ClutterContainer *container,
-                                           ClutterCallback   callback,
-                                           gpointer          user_data);
+                                         ClutterCallback   callback,
+                                         gpointer          user_data);
 static void mx_grid_real_raise          (ClutterContainer *container,
-                                           ClutterActor     *actor,
-                                           ClutterActor     *sibling);
+                                         ClutterActor     *actor,
+                                         ClutterActor     *sibling);
 static void mx_grid_real_lower          (ClutterContainer *container,
-                                           ClutterActor     *actor,
-                                           ClutterActor     *sibling);
+                                         ClutterActor     *actor,
+                                         ClutterActor     *sibling);
 static void
 mx_grid_real_sort_depth_order (ClutterContainer *container);
 
@@ -81,32 +81,32 @@ mx_grid_free_actor_data (gpointer data);
 
 static void mx_grid_paint (ClutterActor *actor);
 
-static void mx_grid_pick (ClutterActor *actor,
-                            const ClutterColor *color);
+static void mx_grid_pick (ClutterActor       *actor,
+                          const ClutterColor *color);
 
 static void
 mx_grid_get_preferred_width (ClutterActor *self,
-                               gfloat for_height,
-                               gfloat *min_width_p,
-                               gfloat *natural_width_p);
+                             gfloat        for_height,
+                             gfloat       *min_width_p,
+                             gfloat       *natural_width_p);
 
 static void
 mx_grid_get_preferred_height (ClutterActor *self,
-                                gfloat for_width,
-                                gfloat *min_height_p,
-                                gfloat *natural_height_p);
+                              gfloat        for_width,
+                              gfloat       *min_height_p,
+                              gfloat       *natural_height_p);
 
-static void mx_grid_allocate (ClutterActor *self,
-                                const ClutterActorBox *box,
-                                ClutterAllocationFlags flags);
+static void mx_grid_allocate (ClutterActor          *self,
+                              const ClutterActorBox *box,
+                              ClutterAllocationFlags flags);
 
 static void
-mx_grid_do_allocate (ClutterActor *self,
-                       const ClutterActorBox *box,
-                       ClutterAllocationFlags flags,
-                       gboolean calculate_extents_only,
-                       gfloat *actual_width,
-                       gfloat *actual_height);
+mx_grid_do_allocate (ClutterActor          *self,
+                     const ClutterActorBox *box,
+                     ClutterAllocationFlags flags,
+                     gboolean               calculate_extents_only,
+                     gfloat                *actual_width,
+                     gfloat                *actual_height);
 
 static void scrollable_interface_init (MxScrollableInterface *iface);
 
@@ -123,28 +123,28 @@ G_DEFINE_TYPE_WITH_CODE (MxGrid, mx_grid,
 
 struct _MxGridPrivate
 {
-  GHashTable *hash_table;
-  GList      *list;
+  GHashTable   *hash_table;
+  GList        *list;
 
-  gboolean    homogenous_rows;
-  gboolean    homogenous_columns;
-  gboolean    end_align;
-  gfloat column_gap, row_gap;
-  gdouble     valign, halign;
+  gboolean      homogenous_rows;
+  gboolean      homogenous_columns;
+  gboolean      end_align;
+  gfloat        column_gap, row_gap;
+  gdouble       valign, halign;
 
-  gboolean    column_major;
+  gboolean      column_major;
 
-  gboolean    first_of_batch;
-  gfloat a_current_sum, a_wrap;
-  gfloat max_extent_a;
-  gfloat max_extent_b;
+  gboolean      first_of_batch;
+  gfloat        a_current_sum, a_wrap;
+  gfloat        max_extent_a;
+  gfloat        max_extent_b;
 
-  gint        max_stride;
+  gint          max_stride;
 
   MxAdjustment *hadjustment;
   MxAdjustment *vadjustment;
 
-  gboolean allocate_hidden;
+  gboolean      allocate_hidden;
 };
 
 enum
@@ -166,9 +166,9 @@ enum
 
 struct _MxGridActorData
 {
-  gboolean    xpos_set,   ypos_set;
-  gfloat xpos,       ypos;
-  gfloat pref_width, pref_height;
+  gboolean xpos_set,   ypos_set;
+  gfloat   xpos,       ypos;
+  gfloat   pref_width, pref_height;
 };
 
 static void
@@ -189,7 +189,7 @@ ensure_children_are_visible (MxGrid *grid)
   else
     y = 0;
 
-  clutter_actor_get_allocation_box ((ClutterActor *)grid, &grid_b);
+  clutter_actor_get_allocation_box ((ClutterActor *) grid, &grid_b);
   grid_b.x2 = (grid_b.x2 - grid_b.x1) + x;
   grid_b.x1 = 0;
   grid_b.y2 = (grid_b.y2 - grid_b.y1) + y;
@@ -222,7 +222,7 @@ ensure_children_are_visible (MxGrid *grid)
 /* scrollable interface */
 static void
 adjustment_value_notify_cb (MxAdjustment *adjustment,
-                            GParamSpec     *pspec,
+                            GParamSpec   *pspec,
                             MxGrid       *grid)
 {
   MxGridPrivate *priv = grid->priv;
@@ -285,7 +285,7 @@ scrollable_set_adjustments (MxScrollable *scrollable,
 }
 
 static void
-scrollable_get_adjustments (MxScrollable *scrollable,
+scrollable_get_adjustments (MxScrollable  *scrollable,
                             MxAdjustment **hadjustment,
                             MxAdjustment **vadjustment)
 {
@@ -315,11 +315,11 @@ scrollable_get_adjustments (MxScrollable *scrollable,
           increment = MAX (1.0, MIN (stage_width, width));
 
           adjustment = mx_adjustment_new (0,
-                                            0,
-                                            width,
-                                            1.0,
-                                            increment,
-                                            increment);
+                                          0,
+                                          width,
+                                          1.0,
+                                          increment,
+                                          increment);
 
           scrollable_set_adjustments (scrollable,
                                       adjustment,
@@ -343,11 +343,11 @@ scrollable_get_adjustments (MxScrollable *scrollable,
           increment = MAX (1.0, MIN (stage_height, height));
 
           adjustment = mx_adjustment_new (0,
-                                            0,
-                                            height,
-                                            1.0,
-                                            increment,
-                                            increment);
+                                          0,
+                                          height,
+                                          1.0,
+                                          increment,
+                                          increment);
 
           scrollable_set_adjustments (scrollable,
                                       priv->hadjustment,
@@ -366,7 +366,8 @@ scrollable_interface_init (MxScrollableInterface *iface)
 }
 
 static void
-mx_grid_apply_transform (ClutterActor *a, CoglMatrix *m)
+mx_grid_apply_transform (ClutterActor *a,
+                         CoglMatrix   *m)
 {
   MxGridPrivate *priv = MX_GRID (a)->priv;
   gdouble x, y;
@@ -462,23 +463,23 @@ mx_grid_class_init (MxGridClass *klass)
   pspec = g_param_spec_double ("valign",
                                "Vertical align",
                                "Vertical alignment of items within cells",
-                                0.0, 1.0, 0.0,
-                                G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
+                               0.0, 1.0, 0.0,
+                               G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
   g_object_class_install_property (gobject_class,PROP_VALIGN, pspec);
 
   pspec = g_param_spec_double ("halign",
                                "Horizontal align",
                                "Horizontal alignment of items within cells",
-                                0.0, 1.0, 0.0,
-                                G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
+                               0.0, 1.0, 0.0,
+                               G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
   g_object_class_install_property (gobject_class, PROP_HALIGN, pspec);
 
   pspec = g_param_spec_int ("max-stride",
                             "Maximum stride",
                             "Maximum number of rows or columns, depending"
                             " on orientation",
-                             0, G_MAXINT, 0,
-                             G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
+                            0, G_MAXINT, 0,
+                            G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
   g_object_class_install_property (gobject_class, PROP_MAX_STRIDE, pspec);
 
   g_object_class_override_property (gobject_class,
@@ -563,8 +564,8 @@ mx_grid_finalize (GObject *object)
 
 
 void
-mx_grid_set_end_align (MxGrid *self,
-                         gboolean  value)
+mx_grid_set_end_align (MxGrid  *self,
+                       gboolean value)
 {
   MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
   priv->end_align = value;
@@ -579,8 +580,8 @@ mx_grid_get_end_align (MxGrid *self)
 }
 
 void
-mx_grid_set_homogenous_rows (MxGrid *self,
-                               gboolean  value)
+mx_grid_set_homogenous_rows (MxGrid  *self,
+                             gboolean value)
 {
   MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
   priv->homogenous_rows = value;
@@ -596,8 +597,8 @@ mx_grid_get_homogenous_rows (MxGrid *self)
 
 
 void
-mx_grid_set_homogenous_columns (MxGrid *self,
-                                  gboolean  value)
+mx_grid_set_homogenous_columns (MxGrid  *self,
+                                gboolean value)
 {
   MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
   priv->homogenous_columns = value;
@@ -614,8 +615,8 @@ mx_grid_get_homogenous_columns (MxGrid *self)
 
 
 void
-mx_grid_set_column_major (MxGrid *self,
-                            gboolean  value)
+mx_grid_set_column_major (MxGrid  *self,
+                          gboolean value)
 {
   MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
   priv->column_major = value;
@@ -630,8 +631,8 @@ mx_grid_get_column_major (MxGrid *self)
 }
 
 void
-mx_grid_set_column_gap (MxGrid    *self,
-                          gfloat  value)
+mx_grid_set_column_gap (MxGrid *self,
+                        gfloat  value)
 {
   MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
   priv->column_gap = value;
@@ -648,8 +649,8 @@ mx_grid_get_column_gap (MxGrid *self)
 
 
 void
-mx_grid_set_row_gap (MxGrid    *self,
-                       gfloat  value)
+mx_grid_set_row_gap (MxGrid *self,
+                     gfloat  value)
 {
   MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
   priv->row_gap = value;
@@ -666,7 +667,7 @@ mx_grid_get_row_gap (MxGrid *self)
 
 void
 mx_grid_set_valign (MxGrid *self,
-                      gdouble   value)
+                    gdouble value)
 {
   MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
   priv->valign = value;
@@ -684,7 +685,7 @@ mx_grid_get_valign (MxGrid *self)
 
 void
 mx_grid_set_halign (MxGrid *self,
-                      gdouble   value)
+                    gdouble value)
 
 {
   MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
@@ -701,7 +702,7 @@ mx_grid_get_halign (MxGrid *self)
 
 void
 mx_grid_set_max_stride (MxGrid *self,
-                          gint      value)
+                        gint    value)
 {
   g_return_if_fail (MX_IS_GRID (self));
 
@@ -719,9 +720,9 @@ mx_grid_get_max_stride (MxGrid *self)
 
 static void
 mx_grid_set_property (GObject      *object,
-                        guint         prop_id,
-                        const GValue *value,
-                        GParamSpec   *pspec)
+                      guint         prop_id,
+                      const GValue *value,
+                      GParamSpec   *pspec)
 {
   MxGrid *grid = MX_GRID (object);
 
@@ -755,12 +756,12 @@ mx_grid_set_property (GObject      *object,
     case PROP_HALIGN:
       mx_grid_set_halign (grid, g_value_get_double (value));
       break;
-    case PROP_HADJUST :
+    case PROP_HADJUST:
       scrollable_set_adjustments (MX_SCROLLABLE (object),
                                   g_value_get_object (value),
                                   priv->vadjustment);
       break;
-    case PROP_VADJUST :
+    case PROP_VADJUST:
       scrollable_set_adjustments (MX_SCROLLABLE (object),
                                   priv->hadjustment,
                                   g_value_get_object (value));
@@ -770,7 +771,7 @@ mx_grid_set_property (GObject      *object,
       break;
     case PROP_ALLOCATE_HIDDEN:
       priv->allocate_hidden = g_value_get_boolean (value);
-      clutter_actor_queue_relayout ((ClutterActor *)object);
+      clutter_actor_queue_relayout ((ClutterActor *) object);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -780,9 +781,9 @@ mx_grid_set_property (GObject      *object,
 
 static void
 mx_grid_get_property (GObject    *object,
-                        guint       prop_id,
-                        GValue     *value,
-                        GParamSpec *pspec)
+                      guint       prop_id,
+                      GValue     *value,
+                      GParamSpec *pspec)
 {
   MxAdjustment *adjustment;
   MxGrid *grid = MX_GRID (object);
@@ -817,11 +818,11 @@ mx_grid_get_property (GObject    *object,
     case PROP_HALIGN:
       g_value_set_double (value, mx_grid_get_halign (grid));
       break;
-    case PROP_HADJUST :
+    case PROP_HADJUST:
       scrollable_get_adjustments (MX_SCROLLABLE (grid), &adjustment, NULL);
       g_value_set_object (value, adjustment);
       break;
-    case PROP_VADJUST :
+    case PROP_VADJUST:
       scrollable_get_adjustments (MX_SCROLLABLE (grid), NULL, &adjustment);
       g_value_set_object (value, adjustment);
       break;
@@ -854,7 +855,7 @@ mx_grid_new (void)
 
 static void
 mx_grid_real_add (ClutterContainer *container,
-                    ClutterActor     *actor)
+                  ClutterActor     *actor)
 {
   MxGridPrivate *priv;
   MxGridActorData *data;
@@ -881,7 +882,7 @@ mx_grid_real_add (ClutterContainer *container,
 
 static void
 mx_grid_real_remove (ClutterContainer *container,
-                       ClutterActor     *actor)
+                     ClutterActor     *actor)
 {
   MxGrid *layout = MX_GRID (container);
   MxGridPrivate *priv = layout->priv;
@@ -906,8 +907,8 @@ mx_grid_real_remove (ClutterContainer *container,
 
 static void
 mx_grid_real_foreach (ClutterContainer *container,
-                        ClutterCallback callback,
-                        gpointer user_data)
+                      ClutterCallback   callback,
+                      gpointer          user_data)
 {
   MxGrid *layout = MX_GRID (container);
   MxGridPrivate *priv = layout->priv;
@@ -917,16 +918,16 @@ mx_grid_real_foreach (ClutterContainer *container,
 
 static void
 mx_grid_real_raise (ClutterContainer *container,
-                      ClutterActor *actor,
-                      ClutterActor *sibling)
+                    ClutterActor     *actor,
+                    ClutterActor     *sibling)
 {
   /* STUB */
 }
 
 static void
 mx_grid_real_lower (ClutterContainer *container,
-                      ClutterActor *actor,
-                      ClutterActor *sibling)
+                    ClutterActor     *actor,
+                    ClutterActor     *sibling)
 {
   /* STUB */
 }
@@ -988,8 +989,8 @@ mx_grid_paint (ClutterActor *actor)
 }
 
 static void
-mx_grid_pick (ClutterActor *actor,
-                const ClutterColor *color)
+mx_grid_pick (ClutterActor       *actor,
+              const ClutterColor *color)
 {
   MxGrid *layout = (MxGrid *) actor;
   MxGridPrivate *priv = layout->priv;
@@ -1042,9 +1043,9 @@ mx_grid_pick (ClutterActor *actor,
 
 static void
 mx_grid_get_preferred_width (ClutterActor *self,
-                               gfloat for_height,
-                               gfloat *min_width_p,
-                               gfloat *natural_width_p)
+                             gfloat        for_height,
+                             gfloat       *min_width_p,
+                             gfloat       *natural_width_p)
 {
   gfloat actual_width, actual_height;
   ClutterActorBox box;
@@ -1055,7 +1056,7 @@ mx_grid_get_preferred_width (ClutterActor *self,
   box.y2 = for_height;
 
   mx_grid_do_allocate (self, &box, FALSE,
-                         TRUE, &actual_width, &actual_height);
+                       TRUE, &actual_width, &actual_height);
 
   if (min_width_p)
     *min_width_p = actual_width;
@@ -1065,9 +1066,9 @@ mx_grid_get_preferred_width (ClutterActor *self,
 
 static void
 mx_grid_get_preferred_height (ClutterActor *self,
-                                gfloat   for_width,
-                                gfloat  *min_height_p,
-                                gfloat  *natural_height_p)
+                              gfloat        for_width,
+                              gfloat       *min_height_p,
+                              gfloat       *natural_height_p)
 {
   gfloat actual_width, actual_height;
   ClutterActorBox box;
@@ -1078,7 +1079,7 @@ mx_grid_get_preferred_height (ClutterActor *self,
   box.y2 = G_MAXFLOAT;
 
   mx_grid_do_allocate (self, &box, FALSE,
-                         TRUE, &actual_width, &actual_height);
+                       TRUE, &actual_width, &actual_height);
 
   if (min_height_p)
     *min_height_p = actual_height;
@@ -1087,9 +1088,9 @@ mx_grid_get_preferred_height (ClutterActor *self,
 }
 
 static gfloat
-compute_row_height (GList           *siblings,
-                    gfloat           best_yet,
-                    gfloat           current_a,
+compute_row_height (GList         *siblings,
+                    gfloat         best_yet,
+                    gfloat         current_a,
                     MxGridPrivate *priv)
 {
   GList *l;
@@ -1150,8 +1151,8 @@ compute_row_height (GList           *siblings,
 
 
 static gfloat
-compute_row_start (GList           *siblings,
-                   gfloat           start_x,
+compute_row_start (GList         *siblings,
+                   gfloat         start_x,
                    MxGridPrivate *priv)
 {
   gfloat current_a = start_x;
@@ -1206,11 +1207,11 @@ compute_row_start (GList           *siblings,
 
 static void
 mx_grid_do_allocate (ClutterActor          *self,
-                       const ClutterActorBox *box,
-                       ClutterAllocationFlags flags,
-                       gboolean               calculate_extents_only,
-                       gfloat                *actual_width,
-                       gfloat                *actual_height)
+                     const ClutterActorBox *box,
+                     ClutterAllocationFlags flags,
+                     gboolean               calculate_extents_only,
+                     gfloat                *actual_width,
+                     gfloat                *actual_height)
 {
   MxGrid *layout = (MxGrid *) self;
   MxGridPrivate *priv = layout->priv;
@@ -1224,9 +1225,9 @@ mx_grid_do_allocate (ClutterActor          *self,
 
   gboolean homogenous_a;
   gboolean homogenous_b;
-  gdouble  aalign;
-  gdouble  balign;
-  int      current_stride;
+  gdouble aalign;
+  gdouble balign;
+  int current_stride;
 
   mx_widget_get_padding (MX_WIDGET (self), &padding);
 
@@ -1340,84 +1341,84 @@ mx_grid_do_allocate (ClutterActor          *self,
         }
 
       if (next_b-current_b < natural_b)
-          next_b = current_b + natural_b;
+        next_b = current_b + natural_b;
 
-        {
-          gfloat          row_height;
-          ClutterActorBox child_box;
+      {
+        gfloat row_height;
+        ClutterActorBox child_box;
 
-          if (homogenous_b)
-            {
-              row_height = priv->max_extent_b;
-            }
-          else
-            {
-              row_height = compute_row_height (iter, next_b-current_b,
-                                               current_a, priv);
-            }
+        if (homogenous_b)
+          {
+            row_height = priv->max_extent_b;
+          }
+        else
+          {
+            row_height = compute_row_height (iter, next_b-current_b,
+                                             current_a, priv);
+          }
 
-          if (homogenous_a)
-            {
-              child_box.x1 = current_a + (priv->max_extent_a-natural_a) * aalign;
-              child_box.x2 = child_box.x1 + natural_a;
+        if (homogenous_a)
+          {
+            child_box.x1 = current_a + (priv->max_extent_a-natural_a) * aalign;
+            child_box.x2 = child_box.x1 + natural_a;
 
-            }
-          else
-            {
-              child_box.x1 = current_a;
-              child_box.x2 = child_box.x1 + natural_a;
-            }
+          }
+        else
+          {
+            child_box.x1 = current_a;
+            child_box.x2 = child_box.x1 + natural_a;
+          }
 
-          child_box.y1 = current_b + (row_height-natural_b) * balign;
-          child_box.y2 = child_box.y1 + natural_b;
+        child_box.y1 = current_b + (row_height-natural_b) * balign;
+        child_box.y2 = child_box.y1 + natural_b;
 
 
-          if (priv->column_major)
-            {
-              gfloat temp = child_box.x1;
-              child_box.x1 = child_box.y1;
-              child_box.y1 = temp;
+        if (priv->column_major)
+          {
+            gfloat temp = child_box.x1;
+            child_box.x1 = child_box.y1;
+            child_box.y1 = temp;
 
-              temp = child_box.x2;
-              child_box.x2 = child_box.y2;
-              child_box.y2 = temp;
-            }
+            temp = child_box.x2;
+            child_box.x2 = child_box.y2;
+            child_box.y2 = temp;
+          }
 
-          /* account for padding and pixel-align */
-          child_box.x1 = (int) (child_box.x1 + padding.left);
-          child_box.y1 = (int) (child_box.y1 + padding.top);
-          child_box.x2 = (int) (child_box.x2 + padding.left);
-          child_box.y2 = (int) (child_box.y2 + padding.top);
+        /* account for padding and pixel-align */
+        child_box.x1 = (int)(child_box.x1 + padding.left);
+        child_box.y1 = (int)(child_box.y1 + padding.top);
+        child_box.x2 = (int)(child_box.x2 + padding.left);
+        child_box.y2 = (int)(child_box.y2 + padding.top);
 
-          /* update the allocation */
-          if (!calculate_extents_only)
-            clutter_actor_allocate (CLUTTER_ACTOR (child),
-                                    &child_box,
-                                    flags);
+        /* update the allocation */
+        if (!calculate_extents_only)
+          clutter_actor_allocate (CLUTTER_ACTOR (child),
+                                  &child_box,
+                                  flags);
 
-          /* update extents */
-          if (actual_width && (child_box.x2 + padding.right) > *actual_width)
-            *actual_width = child_box.x2 + padding.right;
+        /* update extents */
+        if (actual_width && (child_box.x2 + padding.right) > *actual_width)
+          *actual_width = child_box.x2 + padding.right;
 
-          if (actual_height && (child_box.y2 + padding.bottom) > *actual_height)
-            *actual_height = child_box.y2 + padding.bottom;
+        if (actual_height && (child_box.y2 + padding.bottom) > *actual_height)
+          *actual_height = child_box.y2 + padding.bottom;
 
-          if (homogenous_a)
-            {
-              current_a += priv->max_extent_a + agap;
-            }
-          else
-            {
-              current_a += natural_a + agap;
-            }
-        }
+        if (homogenous_a)
+          {
+            current_a += priv->max_extent_a + agap;
+          }
+        else
+          {
+            current_a += natural_a + agap;
+          }
+      }
     }
 }
 
 static void
 mx_grid_allocate (ClutterActor          *self,
-                    const ClutterActorBox *box,
-                    ClutterAllocationFlags flags)
+                  const ClutterActorBox *box,
+                  ClutterAllocationFlags flags)
 {
   MxGridPrivate *priv = MX_GRID (self)->priv;
   ClutterActorBox alloc_box = *box;
@@ -1429,7 +1430,7 @@ mx_grid_allocate (ClutterActor          *self,
    *  hadjustment is set)
    */
   CLUTTER_ACTOR_CLASS (mx_grid_parent_class)
-    ->allocate (self, box, flags);
+  ->allocate (self, box, flags);
 
 
   /* only update vadjustment - we don't really want horizontal scrolling */
@@ -1440,23 +1441,23 @@ mx_grid_allocate (ClutterActor          *self,
 
       /* get preferred height for this width */
       mx_grid_do_allocate (self,
-                             box,
-                             flags,
-                             TRUE,
-                             NULL,
-                             &height);
+                           box,
+                           flags,
+                           TRUE,
+                           NULL,
+                           &height);
       /* set our allocated height to be the preferred height, since we will be
        * scrolling
        */
       alloc_box.y2 = alloc_box.y1 + height;
 
       g_object_set (G_OBJECT (priv->vadjustment),
-                   "lower", 0.0,
-                   "upper", height,
-                   "page-size", box->y2 - box->y1,
-                   "step-increment", (box->y2 - box->y1) / 6,
-                   "page-increment", box->y2 - box->y1,
-                   NULL);
+                    "lower", 0.0,
+                    "upper", height,
+                    "page-size", box->y2 - box->y1,
+                    "step-increment", (box->y2 - box->y1) / 6,
+                    "page-increment", box->y2 - box->y1,
+                    NULL);
 
       if (priv->hadjustment)
         {
@@ -1476,23 +1477,23 @@ mx_grid_allocate (ClutterActor          *self,
 
       /* get preferred width for this height */
       mx_grid_do_allocate (self,
-                             box,
-                             flags,
-                             TRUE,
-                             &width,
-                             NULL);
+                           box,
+                           flags,
+                           TRUE,
+                           &width,
+                           NULL);
       /* set our allocated height to be the preferred height, since we will be
        * scrolling
        */
       alloc_box.x2 = alloc_box.x1 + width;
 
       g_object_set (G_OBJECT (priv->hadjustment),
-                   "lower", 0.0,
-                   "upper", width,
-                   "page-size", box->x2 - box->x1,
-                   "step-increment", (box->x2 - box->x1) / 6,
-                   "page-increment", box->x2 - box->x1,
-                   NULL);
+                    "lower", 0.0,
+                    "upper", width,
+                    "page-size", box->x2 - box->x1,
+                    "step-increment", (box->x2 - box->x1) / 6,
+                    "page-increment", box->x2 - box->x1,
+                    NULL);
 
       if (priv->vadjustment)
         {
@@ -1508,16 +1509,16 @@ mx_grid_allocate (ClutterActor          *self,
 
 
   mx_grid_do_allocate (self,
-                         &alloc_box,
-                         flags,
-                         FALSE,
-                         NULL,
-                         NULL);
+                       &alloc_box,
+                       flags,
+                       FALSE,
+                       NULL,
+                       NULL);
 
   if (priv->allocate_hidden)
-  {
-    ensure_children_are_visible ((MxGrid *)self);
-  }
+    {
+      ensure_children_are_visible ((MxGrid *) self);
+    }
 }
 
 

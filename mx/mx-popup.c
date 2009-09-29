@@ -40,10 +40,10 @@ typedef struct
 
 struct _MxPopupPrivate
 {
-  GArray   *children;
-  gboolean  transition_out;
+  GArray  *children;
+  gboolean transition_out;
 
-  gulong captured_event_cb;
+  gulong   captured_event_cb;
 };
 
 enum
@@ -57,9 +57,9 @@ static guint signals[LAST_SIGNAL] = { 0, };
 
 static void
 mx_popup_get_property (GObject    *object,
-                         guint       property_id,
-                         GValue     *value,
-                         GParamSpec *pspec)
+                       guint       property_id,
+                       GValue     *value,
+                       GParamSpec *pspec)
 {
   switch (property_id)
     {
@@ -70,9 +70,9 @@ mx_popup_get_property (GObject    *object,
 
 static void
 mx_popup_set_property (GObject      *object,
-                         guint         property_id,
-                         const GValue *value,
-                         GParamSpec   *pspec)
+                       guint         property_id,
+                       const GValue *value,
+                       GParamSpec   *pspec)
 {
   switch (property_id)
     {
@@ -83,12 +83,12 @@ mx_popup_set_property (GObject      *object,
 
 static void
 mx_popup_free_action_at (MxPopup *popup,
-                           gint       index,
-                           gboolean   remove_action)
+                         gint     index,
+                         gboolean remove_action)
 {
   MxPopupPrivate *priv = popup->priv;
   MxPopupChild *child = &g_array_index (priv->children, MxPopupChild,
-                                          index);
+                                        index);
 
   clutter_actor_unparent (CLUTTER_ACTOR (child->button));
   g_object_unref (child->action);
@@ -123,9 +123,9 @@ mx_popup_finalize (GObject *object)
 
 static void
 mx_popup_get_preferred_width (ClutterActor *actor,
-                                gfloat        for_height,
-                                gfloat       *min_width_p,
-                                gfloat       *natural_width_p)
+                              gfloat        for_height,
+                              gfloat       *min_width_p,
+                              gfloat       *natural_width_p)
 {
   gint i;
   MxPadding padding;
@@ -162,9 +162,9 @@ mx_popup_get_preferred_width (ClutterActor *actor,
 
 static void
 mx_popup_get_preferred_height (ClutterActor *actor,
-                                 gfloat        for_width,
-                                 gfloat       *min_height_p,
-                                 gfloat       *natural_height_p)
+                               gfloat        for_width,
+                               gfloat       *min_height_p,
+                               gfloat       *natural_height_p)
 {
   gint i;
   MxPadding padding;
@@ -180,7 +180,7 @@ mx_popup_get_preferred_height (ClutterActor *actor,
       gfloat child_min_height, child_nat_height;
 
       MxPopupChild *child = &g_array_index (priv->children, MxPopupChild,
-                                              i);
+                                            i);
 
       clutter_actor_get_preferred_height (CLUTTER_ACTOR (child->button),
                                           for_width,
@@ -199,8 +199,8 @@ mx_popup_get_preferred_height (ClutterActor *actor,
 
 static void
 mx_popup_allocate (ClutterActor          *actor,
-                     const ClutterActorBox *box,
-                     ClutterAllocationFlags flags)
+                   const ClutterActorBox *box,
+                   ClutterAllocationFlags flags)
 {
   gint i;
   MxPadding padding;
@@ -217,7 +217,7 @@ mx_popup_allocate (ClutterActor          *actor,
       gfloat natural_height;
 
       MxPopupChild *child = &g_array_index (priv->children, MxPopupChild,
-                                              i);
+                                            i);
 
       clutter_actor_get_preferred_height (CLUTTER_ACTOR (child->button),
                                           child_box.x2 - child_box.x1,
@@ -247,14 +247,14 @@ mx_popup_paint (ClutterActor *actor)
   for (i = 0; i < priv->children->len; i++)
     {
       MxPopupChild *child = &g_array_index (priv->children, MxPopupChild,
-                                              i);
+                                            i);
       clutter_actor_paint (CLUTTER_ACTOR (child->button));
     }
 }
 
 static void
 mx_popup_pick (ClutterActor       *actor,
-                 const ClutterColor *color)
+               const ClutterColor *color)
 {
   gint i;
   MxPopupPrivate *priv = MX_POPUP (actor)->priv;
@@ -265,7 +265,7 @@ mx_popup_pick (ClutterActor       *actor,
   for (i = 0; i < priv->children->len; i++)
     {
       MxPopupChild *child = &g_array_index (priv->children, MxPopupChild,
-                                              i);
+                                            i);
       if (clutter_actor_should_pick_paint (CLUTTER_ACTOR (actor)))
         {
           clutter_actor_paint ((ClutterActor*) child->button);
@@ -284,7 +284,7 @@ mx_popup_map (ClutterActor *actor)
   for (i = 0; i < priv->children->len; i++)
     {
       MxPopupChild *child = &g_array_index (priv->children, MxPopupChild,
-                                              i);
+                                            i);
       clutter_actor_map (CLUTTER_ACTOR (child->button));
     }
 }
@@ -300,14 +300,14 @@ mx_popup_unmap (ClutterActor *actor)
   for (i = 0; i < priv->children->len; i++)
     {
       MxPopupChild *child = &g_array_index (priv->children, MxPopupChild,
-                                              i);
+                                            i);
       clutter_actor_unmap (CLUTTER_ACTOR (child->button));
     }
 }
 
 static gboolean
 mx_popup_event (ClutterActor *actor,
-                  ClutterEvent *event)
+                ClutterEvent *event)
 {
   /* We swallow mouse events so that they don't fall through to whatever's
    * beneath us.
@@ -326,8 +326,8 @@ mx_popup_event (ClutterActor *actor,
 
 static gboolean
 mx_popup_captured_event_cb (ClutterActor *actor,
-                              ClutterEvent *event,
-                              ClutterActor *popup)
+                            ClutterEvent *event,
+                            ClutterActor *popup)
 {
   int i;
   ClutterActor *source;
@@ -451,9 +451,9 @@ mx_popup_new (void)
 }
 
 static void
-mx_popup_button_release_cb (MxButton   *button,
-                              ClutterEvent *event,
-                              MxAction   *action)
+mx_popup_button_release_cb (MxButton     *button,
+                            ClutterEvent *event,
+                            MxAction     *action)
 {
   MxPopup *popup;
 
@@ -477,7 +477,7 @@ mx_popup_button_release_cb (MxButton   *button,
  */
 void
 mx_popup_add_action (MxPopup  *popup,
-                       MxAction *action)
+                     MxAction *action)
 {
   MxPopupChild child;
 
@@ -494,8 +494,8 @@ mx_popup_add_action (MxPopup  *popup,
                                NULL);
 
   mx_bin_set_alignment (MX_BIN (child.button),
-                          MX_ALIGN_START,
-                          MX_ALIGN_MIDDLE);
+                        MX_ALIGN_START,
+                        MX_ALIGN_MIDDLE);
   g_signal_connect (child.button, "button-release-event",
                     G_CALLBACK (mx_popup_button_release_cb), action);
   clutter_actor_set_parent (CLUTTER_ACTOR (child.button),
@@ -516,7 +516,7 @@ mx_popup_add_action (MxPopup  *popup,
  */
 void
 mx_popup_remove_action (MxPopup  *popup,
-                          MxAction *action)
+                        MxAction *action)
 {
   gint i;
 
@@ -528,7 +528,7 @@ mx_popup_remove_action (MxPopup  *popup,
   for (i = 0; i < priv->children->len; i++)
     {
       MxPopupChild *child = &g_array_index (priv->children, MxPopupChild,
-                                              i);
+                                            i);
 
       if (child->action == action)
         {

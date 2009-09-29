@@ -30,31 +30,31 @@
 #include "mx-marshal.h"
 #include "mx-private.h"
 
-typedef struct _DragContext     DragContext;
+typedef struct _DragContext DragContext;
 
 struct _DragContext
 {
-  MxDraggable *draggable;
-  ClutterActor  *stage;
-  ClutterActor  *actor;
+  MxDraggable        *draggable;
+  ClutterActor       *stage;
+  ClutterActor       *actor;
 
-  guint threshold;
+  guint               threshold;
 
-  MxDragAxis axis;
+  MxDragAxis          axis;
 
-  MxDragContainment containment;
-  ClutterActorBox *containment_area;
+  MxDragContainment   containment;
+  ClutterActorBox    *containment_area;
 
-  gfloat press_x;
-  gfloat press_y;
-  guint press_button;
+  gfloat              press_x;
+  gfloat              press_y;
+  guint               press_button;
   ClutterModifierType press_modifiers;
 
-  gfloat last_x;
-  gfloat last_y;
+  gfloat              last_x;
+  gfloat              last_y;
 
-  guint emit_delayed_press : 1;
-  guint in_drag            : 1;
+  guint               emit_delayed_press : 1;
+  guint               in_drag            : 1;
 };
 
 enum
@@ -209,7 +209,7 @@ on_stage_capture (ClutterActor *stage,
     case CLUTTER_MOTION:
       if (context->in_drag)
         {
-          ClutterMotionEvent *mevent = (ClutterMotionEvent *)event;
+          ClutterMotionEvent *mevent = (ClutterMotionEvent *) event;
 
           /* We can miss release events in the case of grabs, so check that
            * the button is still down here.
@@ -534,7 +534,7 @@ mx_draggable_get_type (void)
 
 void
 mx_draggable_set_axis (MxDraggable *draggable,
-                         MxDragAxis   axis)
+                       MxDragAxis   axis)
 {
   g_return_if_fail (MX_IS_DRAGGABLE (draggable));
 
@@ -555,7 +555,7 @@ mx_draggable_get_axis (MxDraggable *draggable)
 
 void
 mx_draggable_set_drag_threshold (MxDraggable *draggable,
-                                   guint          threshold)
+                                 guint        threshold)
 {
   g_return_if_fail (MX_IS_DRAGGABLE (draggable));
 
@@ -575,8 +575,8 @@ mx_draggable_get_drag_threshold (MxDraggable *draggable)
 }
 
 void
-mx_draggable_set_containment_type (MxDraggable       *draggable,
-                                     MxDragContainment  containment)
+mx_draggable_set_containment_type (MxDraggable      *draggable,
+                                   MxDragContainment containment)
 {
   g_return_if_fail (MX_IS_DRAGGABLE (draggable));
 
@@ -597,10 +597,10 @@ mx_draggable_get_containment_type (MxDraggable *draggable)
 
 void
 mx_draggable_set_containment_area (MxDraggable *draggable,
-                                     gfloat         x_1,
-                                     gfloat         y_1,
-                                     gfloat         x_2,
-                                     gfloat         y_2)
+                                   gfloat       x_1,
+                                   gfloat       y_1,
+                                   gfloat       x_2,
+                                   gfloat       y_2)
 {
   ClutterActorBox box;
 
@@ -616,10 +616,10 @@ mx_draggable_set_containment_area (MxDraggable *draggable,
 
 void
 mx_draggable_get_containment_area (MxDraggable *draggable,
-                                     gfloat        *x_1,
-                                     gfloat        *y_1,
-                                     gfloat        *x_2,
-                                     gfloat        *y_2)
+                                   gfloat      *x_1,
+                                   gfloat      *y_1,
+                                   gfloat      *x_2,
+                                   gfloat      *y_2)
 {
   ClutterActorBox *box = NULL;
 
@@ -646,8 +646,8 @@ mx_draggable_get_containment_area (MxDraggable *draggable,
 }
 
 void
-mx_draggable_set_drag_actor (MxDraggable *draggable,
-                               ClutterActor  *actor)
+mx_draggable_set_drag_actor (MxDraggable  *draggable,
+                             ClutterActor *actor)
 {
   g_return_if_fail (MX_IS_DRAGGABLE (draggable));
 

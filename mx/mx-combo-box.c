@@ -58,9 +58,9 @@ enum
 
 static void
 mx_combo_box_get_property (GObject    *object,
-                             guint       property_id,
-                             GValue     *value,
-                             GParamSpec *pspec)
+                           guint       property_id,
+                           GValue     *value,
+                           GParamSpec *pspec)
 {
   MxComboBoxPrivate *priv = MX_COMBO_BOX (object)->priv;
 
@@ -82,9 +82,9 @@ mx_combo_box_get_property (GObject    *object,
 
 static void
 mx_combo_box_set_property (GObject      *object,
-                             guint         property_id,
-                             const GValue *value,
-                             GParamSpec   *pspec)
+                           guint         property_id,
+                           const GValue *value,
+                           GParamSpec   *pspec)
 {
   MxComboBox *combo = (MxComboBox*) object;
 
@@ -171,9 +171,9 @@ mx_combo_box_paint (ClutterActor *actor)
 
 static void
 mx_combo_box_get_preferred_width (ClutterActor *actor,
-                                    gfloat        for_height,
-                                    gfloat       *min_width_p,
-                                    gfloat       *natural_height_p)
+                                  gfloat        for_height,
+                                  gfloat       *min_width_p,
+                                  gfloat       *natural_height_p)
 {
   MxComboBoxPrivate *priv = MX_COMBO_BOX (actor)->priv;
   gfloat height;
@@ -215,9 +215,9 @@ mx_combo_box_get_preferred_width (ClutterActor *actor,
 
 static void
 mx_combo_box_get_preferred_height (ClutterActor *actor,
-                                     gfloat        for_width,
-                                     gfloat       *min_height_p,
-                                     gfloat       *natural_height_p)
+                                   gfloat        for_width,
+                                   gfloat       *min_height_p,
+                                   gfloat       *natural_height_p)
 {
   MxComboBoxPrivate *priv = MX_COMBO_BOX (actor)->priv;
   gfloat width;
@@ -241,9 +241,9 @@ mx_combo_box_get_preferred_height (ClutterActor *actor,
 }
 
 static void
-mx_combo_box_allocate (ClutterActor            *actor,
-                         const ClutterActorBox   *box,
-                         ClutterAllocationFlags   flags)
+mx_combo_box_allocate (ClutterActor          *actor,
+                       const ClutterActorBox *box,
+                       ClutterAllocationFlags flags)
 {
   MxComboBoxPrivate *priv = MX_COMBO_BOX (actor)->priv;
   MxPadding padding;
@@ -252,7 +252,7 @@ mx_combo_box_allocate (ClutterActor            *actor,
   ClutterActorBox childbox;
 
   CLUTTER_ACTOR_CLASS (mx_combo_box_parent_class)->allocate (actor, box,
-                                                               flags);
+                                                             flags);
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
@@ -266,17 +266,17 @@ mx_combo_box_allocate (ClutterActor            *actor,
                                       &nat_label_h);
   label_h = CLAMP (nat_label_h, min_label_h, height);
 
-  childbox.x1 = (int) (x);
-  childbox.y1 = (int) (y + (height / 2 - label_h / 2));
-  childbox.x2 = (int) (x + width);
-  childbox.y2 = (int) (childbox.y1 + label_h);
+  childbox.x1 = (int)(x);
+  childbox.y1 = (int)(y + (height / 2 - label_h / 2));
+  childbox.x2 = (int)(x + width);
+  childbox.y2 = (int)(childbox.y1 + label_h);
   clutter_actor_allocate (priv->label, &childbox, flags);
 }
 
 static void
 mx_combo_box_action_activated_cb (ClutterActor *popup,
-                                    MxAction   *action,
-                                    MxComboBox *box)
+                                  MxAction     *action,
+                                  MxComboBox   *box)
 {
   gint index;
 
@@ -296,7 +296,7 @@ mx_combo_box_action_activated_cb (ClutterActor *popup,
 }
 
 static void
-paint_cb (ClutterActor        *actor,
+paint_cb (ClutterActor      *actor,
           MxComboBoxPrivate *priv)
 {
   ClutterActorBox box;
@@ -365,7 +365,7 @@ popout_completed_cb (ClutterAnimation *animation,
 
 static gboolean
 mx_combo_box_button_press_event (ClutterActor       *actor,
-                                   ClutterButtonEvent *event)
+                                 ClutterButtonEvent *event)
 {
   MxComboBoxPrivate *priv = MX_COMBO_BOX (actor)->priv;
   ClutterContainer *stage;
@@ -397,8 +397,8 @@ mx_combo_box_button_press_event (ClutterActor       *actor,
 
   clutter_actor_animate (priv->popup, CLUTTER_EASE_OUT_CUBIC, 250,
                          "y", y + height,
-                        "signal::completed", popout_completed_cb, priv->popup,
-                        NULL);
+                         "signal::completed", popout_completed_cb, priv->popup,
+                         NULL);
 
   return FALSE;
 }
@@ -478,9 +478,9 @@ mx_combo_box_new (void)
  *
  */
 void
-mx_combo_box_insert_text (MxComboBox *box,
-                            gint          position,
-                            const gchar  *text)
+mx_combo_box_insert_text (MxComboBox  *box,
+                          gint         position,
+                          const gchar *text)
 {
   g_return_if_fail (MX_IS_COMBO_BOX (box));
 
@@ -498,8 +498,8 @@ mx_combo_box_insert_text (MxComboBox *box,
  *
  */
 void
-mx_combo_box_append_text (MxComboBox *box,
-                            const gchar  *text)
+mx_combo_box_append_text (MxComboBox  *box,
+                          const gchar *text)
 {
   g_return_if_fail (MX_IS_COMBO_BOX (box));
 
@@ -516,8 +516,8 @@ mx_combo_box_append_text (MxComboBox *box,
  *
  */
 void
-mx_combo_box_prepend_text (MxComboBox *box,
-                             const gchar  *text)
+mx_combo_box_prepend_text (MxComboBox  *box,
+                           const gchar *text)
 {
   g_return_if_fail (MX_IS_COMBO_BOX (box));
 
@@ -536,7 +536,7 @@ mx_combo_box_prepend_text (MxComboBox *box,
  */
 void
 mx_combo_box_remove_text (MxComboBox *box,
-                            gint          position)
+                          gint        position)
 {
   GSList *item;
 
@@ -558,8 +558,8 @@ mx_combo_box_remove_text (MxComboBox *box,
  *
  */
 void
-mx_combo_box_set_title (MxComboBox *box,
-                          const gchar  *title)
+mx_combo_box_set_title (MxComboBox  *box,
+                        const gchar *title)
 {
   g_return_if_fail (MX_IS_COMBO_BOX (box));
 
@@ -596,7 +596,7 @@ mx_combo_box_get_title (MxComboBox *box)
  */
 void
 mx_combo_box_set_index (MxComboBox *box,
-                          gint          index)
+                        gint        index)
 {
   GSList *item;
 

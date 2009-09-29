@@ -50,13 +50,13 @@ typedef struct _MxTextureCachePrivate MxTextureCachePrivate;
 
 struct _MxTextureCachePrivate
 {
-  GHashTable  *cache;
+  GHashTable *cache;
 };
 
 typedef struct FinalizedClosure
 {
-  gchar             *path;
-  MxTextureCache  *cache;
+  gchar          *path;
+  MxTextureCache *cache;
 } FinalizedClosure;
 
 enum
@@ -67,12 +67,12 @@ enum
 static MxTextureCache* __cache_singleton = NULL;
 
 /*
- * Convention: posX with a value of -1 indicates whole texture 
+ * Convention: posX with a value of -1 indicates whole texture
  */
 typedef struct MxTextureCacheItem {
-  char filename[256];
-  int  width, height;
-  int  posX, posY;
+  char          filename[256];
+  int           width, height;
+  int           posX, posY;
   ClutterActor *ptr;
 } MxTextureCacheItem;
 
@@ -90,9 +90,9 @@ mx_texture_cache_item_free (MxTextureCacheItem *item)
 
 static void
 mx_texture_cache_set_property (GObject      *object,
-                                 guint         prop_id,
-                                 const GValue *value,
-                                 GParamSpec   *pspec)
+                               guint         prop_id,
+                               const GValue *value,
+                               GParamSpec   *pspec)
 {
   switch (prop_id)
     {
@@ -104,9 +104,9 @@ mx_texture_cache_set_property (GObject      *object,
 
 static void
 mx_texture_cache_get_property (GObject    *object,
-                                 guint       prop_id,
-                                 GValue     *value,
-                                 GParamSpec *pspec)
+                               guint       prop_id,
+                               GValue     *value,
+                               GParamSpec *pspec)
 {
   switch (prop_id)
     {
@@ -177,15 +177,15 @@ mx_texture_cache_get_default (void)
   if (G_UNLIKELY (__cache_singleton == NULL))
     __cache_singleton = g_object_new (MX_TYPE_TEXTURE_CACHE, NULL);
 
-  return  __cache_singleton;
+  return __cache_singleton;
 }
 
 #if 0
 static void
 on_texure_finalized (gpointer data,
-		     GObject *where_the_object_was)
+                     GObject *where_the_object_was)
 {
-  FinalizedClosure *closure = (FinalizedClosure *)data;
+  FinalizedClosure *closure = (FinalizedClosure *) data;
   MxTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE(closure->cache);
 
   g_hash_table_remove (priv->cache, closure->path);
@@ -213,7 +213,7 @@ mx_texture_cache_get_size (MxTextureCache *self)
 
 static void
 add_texture_to_cache (MxTextureCache     *self,
-                      const gchar          *path,
+                      const gchar        *path,
                       MxTextureCacheItem *item)
 {
   /*  FinalizedClosure        *closure; */
@@ -247,7 +247,7 @@ add_texture_to_cache (MxTextureCache     *self,
  */
 ClutterTexture*
 mx_texture_cache_get_texture (MxTextureCache *self,
-                                const gchar      *path)
+                              const gchar    *path)
 {
   ClutterActor *texture;
   CoglHandle *handle;
@@ -321,7 +321,7 @@ mx_texture_cache_get_texture (MxTextureCache *self,
  */
 ClutterActor*
 mx_texture_cache_get_actor (MxTextureCache *self,
-                              const gchar      *path)
+                            const gchar    *path)
 {
   MxTextureCachePrivate *priv;
   MxTextureCacheItem *item;
@@ -340,11 +340,11 @@ mx_texture_cache_get_actor (MxTextureCache *self,
       int posX = item->posX;
       int posY = item->posY;
       if (posX == -1)
-          posX = 0;
+        posX = 0;
       if (posY == -1)
-          posY = 0;
+        posY = 0;
       return mx_subtexture_new (CLUTTER_TEXTURE (item->ptr), posX, posY,
-                                  item->width, item->height);
+                                item->width, item->height);
     }
 
   item = mx_texture_cache_item_new ();
@@ -368,83 +368,83 @@ mx_texture_cache_get_actor (MxTextureCache *self,
   add_texture_to_cache (self, path, item);
 
   return mx_subtexture_new (CLUTTER_TEXTURE (item->ptr), 0, 0, item->width,
-                              item->height);
+                            item->height);
 }
 
 void
 mx_texture_cache_load_cache (MxTextureCache *self,
-                               const gchar      *filename)
+                             const gchar    *filename)
 {
-   FILE *file;
-   MxTextureCacheItem *element, head;
-   int ret;
-   ClutterActor *actor;
-   GError *error = NULL;
-   MxTextureCachePrivate *priv;
+  FILE *file;
+  MxTextureCacheItem *element, head;
+  int ret;
+  ClutterActor *actor;
+  GError *error = NULL;
+  MxTextureCachePrivate *priv;
 
-   g_return_if_fail (MX_IS_TEXTURE_CACHE (self));
-   g_return_if_fail (filename != NULL);
+  g_return_if_fail (MX_IS_TEXTURE_CACHE (self));
+  g_return_if_fail (filename != NULL);
 
-   priv = TEXTURE_CACHE_PRIVATE (self);
+  priv = TEXTURE_CACHE_PRIVATE (self);
 
-   file = fopen(filename, "rm");
-   if (!file)
+  file = fopen(filename, "rm");
+  if (!file)
+    return;
+
+  ret = fread (&head, sizeof(MxTextureCacheItem), 1, file);
+  if (ret < 0)
+    {
+      fclose (file);
       return;
+    }
 
-   ret = fread (&head, sizeof(MxTextureCacheItem), 1, file);
-   if (ret < 0)
-     {
-        fclose (file);
-        return;
-     }
+  /* check if we already if this texture in the cache */
+  if (g_hash_table_lookup (priv->cache, head.filename))
+    {
+      /* skip it, we're done */
+      fclose (file);
+      return;
+    }
 
-   /* check if we already if this texture in the cache */
-   if (g_hash_table_lookup (priv->cache, head.filename))
-     {
-        /* skip it, we're done */
-        fclose (file);
-        return;
-     }
+  actor = clutter_texture_new_from_file (head.filename, &error);
 
-   actor = clutter_texture_new_from_file (head.filename, &error);
+  if (error)
+    {
+      g_critical (G_STRLOC ": Error opening cache image file: %s",
+                  error->message);
+      g_clear_error (&error);
+      fclose (file);
+      return;
+    }
 
-   if (error)
-   {
-     g_critical (G_STRLOC ": Error opening cache image file: %s",
-                 error->message);
-     g_clear_error (&error);
-     fclose (file);
-     return;
-   }
+  element = mx_texture_cache_item_new ();
+  element->posX = -1;
+  element->posY = -1;
+  element->ptr = actor;
+  strncpy (element->filename, head.filename, 256);
+  clutter_texture_get_base_size (CLUTTER_TEXTURE (element->ptr),
+                                 &element->width, &element->height);
+  g_hash_table_insert (priv->cache, element->filename, element);
 
-   element = mx_texture_cache_item_new ();
-   element->posX = -1;
-   element->posY = -1;
-   element->ptr = actor;
-   strncpy (element->filename, head.filename, 256);
-   clutter_texture_get_base_size (CLUTTER_TEXTURE (element->ptr),
-                                  &element->width, &element->height);
-   g_hash_table_insert (priv->cache, element->filename, element);
+  while (!feof (file))
+    {
+      element = mx_texture_cache_item_new ();
+      ret = fread (element, sizeof (MxTextureCacheItem), 1, file);
+      if (ret < 1)
+        {
+          /* end of file */
+          mx_texture_cache_item_free (element);
+          break;
+        }
 
-   while (!feof (file))
-     {
-        element = mx_texture_cache_item_new ();
-        ret = fread (element, sizeof (MxTextureCacheItem), 1, file);
-        if (ret < 1)
-          {
-             /* end of file */
-             mx_texture_cache_item_free (element);
-             break;
-          }
+      element->ptr = actor;
 
-        element->ptr = actor;
-
-        if (g_hash_table_lookup (priv->cache, element->filename)) 
-          {
-            /* file is already in the cache.... */
-            mx_texture_cache_item_free (element);
-          } else {
-            g_hash_table_insert (priv->cache, element->filename, element);
-          }
-     }
+      if (g_hash_table_lookup (priv->cache, element->filename))
+        {
+          /* file is already in the cache.... */
+          mx_texture_cache_item_free (element);
+        } else {
+          g_hash_table_insert (priv->cache, element->filename, element);
+        }
+    }
 }
