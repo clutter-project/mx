@@ -68,26 +68,26 @@ struct _MxStyleClass
   void (* changed) (MxStyle *style);
 };
 
-GType            mx_style_get_type     (void) G_GNUC_CONST;
+GType mx_style_get_type (void) G_GNUC_CONST;
 
-MxStyle *      mx_style_get_default  (void);
-MxStyle *      mx_style_new          (void);
+MxStyle *mx_style_get_default (void);
+MxStyle *mx_style_new         (void);
 
-gboolean         mx_style_load_from_file (MxStyle     *style,
-                                            const gchar   *filename,
-                                            GError       **error);
-void             mx_style_get_property   (MxStyle     *style,
-                                            MxStylable  *stylable,
-                                            GParamSpec    *pspec,
-                                            GValue        *value);
-void             mx_style_get            (MxStyle     *style,
-                                            MxStylable  *stylable,
-                                            const gchar   *first_property_name,
-                                            ...) G_GNUC_NULL_TERMINATED;
-void             mx_style_get_valist     (MxStyle     *style,
-                                            MxStylable  *stylable,
-                                            const gchar   *first_property_name,
-                                            va_list        va_args);
+gboolean mx_style_load_from_file (MxStyle      *style,
+                                  const gchar  *filename,
+                                  GError      **error);
+void     mx_style_get_property   (MxStyle      *style,
+                                  MxStylable   *stylable,
+                                  GParamSpec   *pspec,
+                                  GValue       *value);
+void     mx_style_get            (MxStyle      *style,
+                                  MxStylable   *stylable,
+                                  const gchar  *first_property_name,
+                                  ...) G_GNUC_NULL_TERMINATED;
+void     mx_style_get_valist     (MxStyle      *style,
+                                  MxStylable   *stylable,
+                                  const gchar  *first_property_name,
+                                  va_list       va_args);
 
 G_END_DECLS
 

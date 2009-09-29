@@ -64,11 +64,11 @@ struct _MxLabelClass
 
 GType mx_label_get_type (void) G_GNUC_CONST;
 
-MxWidget *          mx_label_new              (const gchar *text);
-G_CONST_RETURN gchar *mx_label_get_text         (MxLabel   *label);
-void                  mx_label_set_text         (MxLabel   *label,
-                                                   const gchar *text);
-ClutterActor *        mx_label_get_clutter_text (MxLabel   *label);
+MxWidget *            mx_label_new              (const gchar *text);
+G_CONST_RETURN gchar *mx_label_get_text         (MxLabel     *label);
+void                  mx_label_set_text         (MxLabel     *label,
+                                                 const gchar *text);
+ClutterActor *        mx_label_get_clutter_text (MxLabel     *label);
 
 G_END_DECLS
 

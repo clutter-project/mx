@@ -77,31 +77,51 @@ struct _MxTableChildClass
 
 GType mx_table_child_get_type (void) G_GNUC_CONST;
 
-gint mx_table_child_get_col_span (MxTable *table, ClutterActor *child);
-void mx_table_child_set_col_span (MxTable *table, ClutterActor *child, gint span);
-
-gint mx_table_child_get_row_span (MxTable *table, ClutterActor *child);
-void mx_table_child_set_row_span (MxTable *table, ClutterActor *child, gint span);
-
-gboolean mx_table_child_get_x_fill (MxTable *table, ClutterActor *child);
-void mx_table_child_set_x_fill (MxTable *table, ClutterActor *child, gboolean fill);
-
-gboolean mx_table_child_get_y_fill (MxTable *table, ClutterActor *child);
-void mx_table_child_set_y_fill (MxTable *table, ClutterActor *child, gboolean fill);
-
-gboolean mx_table_child_get_x_expand (MxTable *table, ClutterActor *child);
-void mx_table_child_set_x_expand (MxTable *table, ClutterActor *child, gboolean expand);
-
-gboolean mx_table_child_get_y_expand (MxTable *table, ClutterActor *child);
-void mx_table_child_set_y_expand (MxTable *table, ClutterActor *child, gboolean expand);
-
-MxAlign mx_table_child_get_x_align (MxTable *table, ClutterActor *child);
-void mx_table_child_set_x_align (MxTable *table, ClutterActor *child, MxAlign align);
-
-MxAlign mx_table_child_get_y_align (MxTable *table, ClutterActor *child);
-void mx_table_child_set_y_align (MxTable *table, ClutterActor *child, MxAlign align);
-void mx_table_child_set_allocate_hidden (MxTable *table, ClutterActor *child, gboolean value);
-gboolean mx_table_child_get_allocate_hidden (MxTable *table, ClutterActor *child);
+gint     mx_table_child_get_col_span        (MxTable      *table,
+                                             ClutterActor *child);
+void     mx_table_child_set_col_span        (MxTable      *table,
+                                             ClutterActor *child,
+                                             gint          span);
+gint     mx_table_child_get_row_span        (MxTable      *table,
+                                             ClutterActor *child);
+void     mx_table_child_set_row_span        (MxTable      *table,
+                                             ClutterActor *child,
+                                             gint          span);
+gboolean mx_table_child_get_x_fill          (MxTable      *table,
+                                             ClutterActor *child);
+void     mx_table_child_set_x_fill          (MxTable      *table,
+                                             ClutterActor *child,
+                                             gboolean      fill);
+gboolean mx_table_child_get_y_fill          (MxTable      *table,
+                                             ClutterActor *child);
+void     mx_table_child_set_y_fill          (MxTable      *table,
+                                             ClutterActor *child,
+                                             gboolean      fill);
+gboolean mx_table_child_get_x_expand        (MxTable      *table,
+                                             ClutterActor *child);
+void     mx_table_child_set_x_expand        (MxTable      *table,
+                                             ClutterActor *child,
+                                             gboolean      expand);
+gboolean mx_table_child_get_y_expand        (MxTable      *table,
+                                             ClutterActor *child);
+void     mx_table_child_set_y_expand        (MxTable      *table,
+                                             ClutterActor *child,
+                                             gboolean      expand);
+MxAlign  mx_table_child_get_x_align         (MxTable      *table,
+                                             ClutterActor *child);
+void     mx_table_child_set_x_align         (MxTable      *table,
+                                             ClutterActor *child,
+                                             MxAlign       align);
+MxAlign  mx_table_child_get_y_align         (MxTable      *table,
+                                             ClutterActor *child);
+void     mx_table_child_set_y_align         (MxTable      *table,
+                                             ClutterActor *child,
+                                             MxAlign       align);
+void     mx_table_child_set_allocate_hidden (MxTable      *table,
+                                             ClutterActor *child,
+                                             gboolean      value);
+gboolean mx_table_child_get_allocate_hidden (MxTable      *table,
+                                             ClutterActor *child);
 
 G_END_DECLS
 

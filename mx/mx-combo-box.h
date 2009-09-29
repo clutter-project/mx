@@ -82,15 +82,22 @@ GType mx_combo_box_get_type (void);
 MxComboBox *mx_combo_box_new (void);
 
 
-void mx_combo_box_insert_text (MxComboBox *box, gint position, const gchar *text);
-void mx_combo_box_append_text (MxComboBox *box, const gchar *text);
-void mx_combo_box_prepend_text (MxComboBox *box, const gchar *text);
-void mx_combo_box_remove_text (MxComboBox *box, gint position);
+void mx_combo_box_insert_text  (MxComboBox  *box,
+                                gint         position,
+                                const gchar *text);
+void mx_combo_box_append_text  (MxComboBox  *box,
+                                const gchar *text);
+void mx_combo_box_prepend_text (MxComboBox  *box,
+                                const gchar *text);
+void mx_combo_box_remove_text  (MxComboBox  *box,
+                                gint         position);
 
-void mx_combo_box_set_title (MxComboBox *box, const gchar *title);
-const gchar* mx_combo_box_get_title (MxComboBox *box);
+void         mx_combo_box_set_title (MxComboBox  *box,
+                                     const gchar *title);
+const gchar* mx_combo_box_get_title (MxComboBox  *box);
 
-void mx_combo_box_set_index (MxComboBox *box, gint index);
+void       mx_combo_box_set_index (MxComboBox *box,
+                                   gint        index);
 const gint mx_combo_box_get_index (MxComboBox *box);
 
 G_END_DECLS

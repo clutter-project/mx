@@ -75,20 +75,19 @@ struct _MxPopupClass
 {
   MxWidgetClass parent_class;
 
-  void (*action_activated) (MxPopup *popup, MxAction *action);
+  void (*action_activated) (MxPopup  *popup,
+                            MxAction *action);
 };
 
 GType mx_popup_get_type (void);
 
 MxWidget *mx_popup_new (void);
 
-void mx_popup_add_action (MxPopup  *popup,
-                           MxAction *action);
-
+void mx_popup_add_action    (MxPopup  *popup,
+                             MxAction *action);
 void mx_popup_remove_action (MxPopup  *popup,
-                              MxAction *action);
-
-void mx_popup_clear (MxPopup *popup);
+                             MxAction *action);
+void mx_popup_clear         (MxPopup  *popup);
 
 G_END_DECLS
 

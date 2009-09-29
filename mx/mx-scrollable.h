@@ -58,11 +58,11 @@ struct _MxScrollableInterface
 GType mx_scrollable_get_type (void) G_GNUC_CONST;
 
 void mx_scrollable_set_adjustments (MxScrollable  *scrollable,
-                                      MxAdjustment  *hadjustment,
-                                      MxAdjustment  *vadjustment);
+                                    MxAdjustment  *hadjustment,
+                                    MxAdjustment  *vadjustment);
 void mx_scrollable_get_adjustments (MxScrollable  *scrollable,
-                                      MxAdjustment **hadjustment,
-                                      MxAdjustment **vadjustment);
+                                    MxAdjustment **hadjustment,
+                                    MxAdjustment **vadjustment);
 
 G_END_DECLS
 

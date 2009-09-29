@@ -62,26 +62,26 @@ struct _MxEntryClass
   MxWidgetClass parent_class;
 
   /* signals */
-  void (*primary_icon_clicked) (MxEntry *entry);
+  void (*primary_icon_clicked)   (MxEntry *entry);
   void (*secondary_icon_clicked) (MxEntry *entry);
 };
 
 GType mx_entry_get_type (void) G_GNUC_CONST;
 
-MxWidget *          mx_entry_new              (const gchar *text);
-G_CONST_RETURN gchar *mx_entry_get_text         (MxEntry   *entry);
-void                  mx_entry_set_text         (MxEntry   *entry,
-                                                   const gchar *text);
-ClutterActor*         mx_entry_get_clutter_text (MxEntry   *entry);
+MxWidget *            mx_entry_new              (const gchar *text);
+G_CONST_RETURN gchar *mx_entry_get_text         (MxEntry     *entry);
+void                  mx_entry_set_text         (MxEntry     *entry,
+                                                 const gchar *text);
+ClutterActor*         mx_entry_get_clutter_text (MxEntry     *entry);
 
-void                  mx_entry_set_hint_text (MxEntry *entry,
-                                                const gchar *text);
-G_CONST_RETURN gchar *mx_entry_get_hint_text (MxEntry *entry);
+void                  mx_entry_set_hint_text    (MxEntry     *entry,
+                                                 const gchar *text);
+G_CONST_RETURN gchar *mx_entry_get_hint_text    (MxEntry     *entry);
 
-void mx_entry_set_primary_icon_from_file (MxEntry   *entry,
+void mx_entry_set_primary_icon_from_file   (MxEntry     *entry,
                                             const gchar *filename);
-void mx_entry_set_secondary_icon_from_file (MxEntry   *entry,
-                                              const gchar *filename);
+void mx_entry_set_secondary_icon_from_file (MxEntry     *entry,
+                                            const gchar *filename);
 
 G_END_DECLS
 

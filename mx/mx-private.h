@@ -43,11 +43,21 @@ G_BEGIN_DECLS
 G_END_DECLS
 
 ClutterActor *_mx_widget_get_dnd_clone (MxWidget *widget);
-void _mx_bin_get_align_factors (MxBin *bin, gdouble *x_align, gdouble *y_align);
+
+void _mx_bin_get_align_factors (MxBin   *bin,
+                                gdouble *x_align,
+                                gdouble *y_align);
 
 /* used by MxTableChild to update row/column count */
-void _mx_table_update_row_col (MxTable *table, gint row, gint col);
+void _mx_table_update_row_col (MxTable *table,
+                               gint     row,
+                               gint     col);
 
-void _mx_allocate_fill (ClutterActor *child, ClutterActorBox *childbox, MxAlign x_align, MxAlign y_align, gboolean x_fill, gboolean y_fill);
+void _mx_allocate_fill (ClutterActor    *child,
+                        ClutterActorBox *childbox,
+                        MxAlign          x_align,
+                        MxAlign          y_align,
+                        gboolean         x_fill,
+                        gboolean         y_fill);
 
 #endif /* __MX_PRIVATE_H__ */

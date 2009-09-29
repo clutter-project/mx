@@ -67,17 +67,16 @@ struct _MxViewportClass
 
 GType mx_viewport_get_type (void) G_GNUC_CONST;
 
-MxWidget *   mx_viewport_new         (void);
+MxWidget *mx_viewport_new (void);
 
-void           mx_viewport_set_origin  (MxViewport *viewport,
-                                          gfloat        x,
-                                          gfloat        y,
-                                          gfloat        z);
-
-void           mx_viewport_get_origin  (MxViewport *viewport,
-                                          gfloat       *x,
-                                          gfloat       *y,
-                                          gfloat       *z);
+void mx_viewport_set_origin (MxViewport *viewport,
+                             gfloat      x,
+                             gfloat      y,
+                             gfloat      z);
+void mx_viewport_get_origin (MxViewport *viewport,
+                             gfloat     *x,
+                             gfloat     *y,
+                             gfloat     *z);
 
 G_END_DECLS
 

@@ -67,25 +67,26 @@ struct _MxTextureFrameClass
   void (*_clutter_box_4) (void);
 }; 
 
-GType           mx_texture_frame_get_type           (void) G_GNUC_CONST;
-ClutterActor *  mx_texture_frame_new                (ClutterTexture   *texture,
-                                                       gfloat            top,
-                                                       gfloat            right,
-                                                       gfloat            bottom,
-                                                       gfloat            left);
+GType mx_texture_frame_get_type (void) G_GNUC_CONST;
+
+ClutterActor *  mx_texture_frame_new                (ClutterTexture *texture,
+                                                     gfloat          top,
+                                                     gfloat          right,
+                                                     gfloat          bottom,
+                                                     gfloat          left);
 void            mx_texture_frame_set_parent_texture (MxTextureFrame *frame,
-                                                       ClutterTexture   *texture);
+                                                     ClutterTexture *texture);
 ClutterTexture *mx_texture_frame_get_parent_texture (MxTextureFrame *frame);
 void            mx_texture_frame_set_frame          (MxTextureFrame *frame,
-                                                       gfloat            top,
-                                                       gfloat            right,
-                                                       gfloat            bottom,
-                                                       gfloat            left);
+                                                     gfloat          top,
+                                                     gfloat          right,
+                                                     gfloat          bottom,
+                                                     gfloat          left);
 void            mx_texture_frame_get_frame          (MxTextureFrame *frame,
-                                                       gfloat           *top,
-                                                       gfloat           *right,
-                                                       gfloat           *bottom,
-                                                       gfloat           *left);
+                                                     gfloat         *top,
+                                                     gfloat         *right,
+                                                     gfloat         *bottom,
+                                                     gfloat         *left);
 
 G_END_DECLS
 

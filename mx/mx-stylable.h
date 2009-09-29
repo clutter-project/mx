@@ -48,76 +48,77 @@ struct _MxStylableIface
   GTypeInterface g_iface;
 
   /* virtual functions */
-  MxStyle *(* get_style) (MxStylable *stylable);
+  MxStyle *  (* get_style) (MxStylable *stylable);
   void       (* set_style) (MxStylable *stylable,
                             MxStyle    *style);
 
   /* context virtual functions */
-  MxStylable *(*get_container)    (MxStylable *stylable);
-  MxStylable *(*get_base_style)   (MxStylable *stylable);
-  const gchar  *(*get_style_id)     (MxStylable *stylable);
-  const gchar  *(*get_style_type)   (MxStylable *stylable);
-  const gchar  *(*get_style_class)  (MxStylable *stylable);
-  const gchar  *(*get_pseudo_class) (MxStylable *stylable);
-  gchar        *(*get_attribute)    (MxStylable *stylable,
-                                     const gchar  *name);
+  MxStylable   *(*get_container)    (MxStylable  *stylable);
+  MxStylable   *(*get_base_style)   (MxStylable  *stylable);
+  const gchar  *(*get_style_id)     (MxStylable  *stylable);
+  const gchar  *(*get_style_type)   (MxStylable  *stylable);
+  const gchar  *(*get_style_class)  (MxStylable  *stylable);
+  const gchar  *(*get_pseudo_class) (MxStylable  *stylable);
+  gchar        *(*get_attribute)    (MxStylable  *stylable,
+                                     const gchar *name);
   gboolean      (*get_viewport)     (MxStylable *stylable,
-                                     gint         *x,
-                                     gint         *y,
-                                     gint         *width,
-                                     gint         *height);
+                                     gint        *x,
+                                     gint        *y,
+                                     gint        *width,
+                                     gint        *height);
 
   /* signals, not vfuncs */
   void (* style_notify)     (MxStylable *stylable,
-                             GParamSpec   *pspec);
+                             GParamSpec *pspec);
   void (* style_changed)    (MxStylable *stylable);
 
   void (* stylable_changed) (MxStylable *stylable);
 };
 
-GType        mx_stylable_get_type               (void) G_GNUC_CONST;
+GType mx_stylable_get_type (void) G_GNUC_CONST;
 
-void         mx_stylable_iface_install_property (MxStylableIface *iface,
-                                                   GType              owner_type,
-                                                   GParamSpec        *pspec);
+void mx_stylable_iface_install_property (MxStylableIface *iface,
+                                         GType            owner_type,
+                                         GParamSpec      *pspec);
 
-void         mx_stylable_freeze_notify          (MxStylable      *stylable);
-void         mx_stylable_notify                 (MxStylable      *stylable,
-                                                   const gchar       *property_name);
-void         mx_stylable_thaw_notify            (MxStylable      *stylable);
-GParamSpec **mx_stylable_list_properties        (MxStylable      *stylable,
-                                                   guint             *n_props);
-GParamSpec * mx_stylable_find_property          (MxStylable      *stylable,
-                                                   const gchar       *property_name);
-void         mx_stylable_set_style              (MxStylable      *stylable,
-                                                   MxStyle         *style);
-MxStyle *  mx_stylable_get_style              (MxStylable      *stylable);
+void         mx_stylable_freeze_notify     (MxStylable  *stylable);
+void         mx_stylable_notify            (MxStylable  *stylable,
+                                            const gchar *property_name);
+void         mx_stylable_thaw_notify       (MxStylable  *stylable);
+GParamSpec **mx_stylable_list_properties   (MxStylable  *stylable,
+                                            guint       *n_props);
+GParamSpec * mx_stylable_find_property     (MxStylable  *stylable,
+                                            const gchar *property_name);
+void         mx_stylable_set_style         (MxStylable  *stylable,
+                                            MxStyle     *style);
+MxStyle *    mx_stylable_get_style         (MxStylable  *stylable);
 
-void         mx_stylable_get                    (MxStylable      *stylable,
-                                                   const gchar       *first_property_name,
-                                                   ...) G_GNUC_NULL_TERMINATED;
-void         mx_stylable_get_property           (MxStylable      *stylable,
-                                                   const gchar       *property_name,
-                                                   GValue            *value);
-gboolean     mx_stylable_get_default_value      (MxStylable      *stylable,
-                                                   const gchar       *property_name,
-                                                   GValue            *value_out);
+void         mx_stylable_get               (MxStylable  *stylable,
+                                            const gchar *first_property_name,
+                                            ...) G_GNUC_NULL_TERMINATED;
+void         mx_stylable_get_property      (MxStylable  *stylable,
+                                            const gchar *property_name,
+                                            GValue      *value);
+gboolean     mx_stylable_get_default_value (MxStylable  *stylable,
+                                            const gchar *property_name,
+                                            GValue      *value_out);
 
-MxStylable* mx_stylable_get_container     (MxStylable *stylable);
-MxStylable* mx_stylable_get_base_style    (MxStylable *stylable);
-const gchar*  mx_stylable_get_style_id      (MxStylable *stylable);
-const gchar*  mx_stylable_get_style_type    (MxStylable *stylable);
-const gchar*  mx_stylable_get_style_class   (MxStylable *stylable);
-const gchar*  mx_stylable_get_pseudo_class  (MxStylable *stylable);
-gchar*        mx_stylable_get_attribute     (MxStylable *stylable,
-                                               const gchar  *name);
-gboolean      mx_stylable_get_viewport      (MxStylable *stylable,
-                                               gint         *x,
-                                               gint         *y,
-                                               gint         *width,
-                                               gint         *height);
+MxStylable*  mx_stylable_get_container     (MxStylable  *stylable);
+MxStylable*  mx_stylable_get_base_style    (MxStylable  *stylable);
+const gchar* mx_stylable_get_style_id      (MxStylable  *stylable);
+const gchar* mx_stylable_get_style_type    (MxStylable  *stylable);
+const gchar* mx_stylable_get_style_class   (MxStylable  *stylable);
+const gchar* mx_stylable_get_pseudo_class  (MxStylable  *stylable);
+gchar*       mx_stylable_get_attribute     (MxStylable  *stylable,
+                                            const gchar *name);
+gboolean     mx_stylable_get_viewport      (MxStylable  *stylable,
+                                            gint        *x,
+                                            gint        *y,
+                                            gint        *width,
+                                            gint        *height);
 
 void mx_stylable_changed (MxStylable *stylable);
+
 G_END_DECLS
 
 #endif /* __MX_STYLABLE_H__ */

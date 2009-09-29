@@ -79,24 +79,22 @@ GType mx_list_view_get_type (void);
 
 MxWidget* mx_list_view_new (void);
 
-void         mx_list_view_set_model (MxListView *list_view,
-                                       ClutterModel *model);
-ClutterModel* mx_list_view_get_model (MxListView *list_view);
+void          mx_list_view_set_model     (MxListView    *list_view,
+                                          ClutterModel  *model);
+ClutterModel* mx_list_view_get_model     (MxListView    *list_view);
 
-void          mx_list_view_set_item_type (MxListView *list_view,
-                                            GType         item_type);
-GType         mx_list_view_get_item_type (MxListView *list_view);
+void          mx_list_view_set_item_type (MxListView    *list_view,
+                                          GType          item_type);
+GType         mx_list_view_get_item_type (MxListView    *list_view);
 
-void
-mx_list_view_add_attribute (MxListView *list_view,
-                              const gchar *attribute,
-                              gint column);
+void          mx_list_view_add_attribute (MxListView    *list_view,
+                                          const gchar   *attribute,
+                                          gint           column);
 
-void mx_list_view_freeze (MxListView *list_view);
-void mx_list_view_thaw (MxListView *list_view);
-void mx_list_view_set_factory (MxListView    *list_view,
-                                 MxItemFactory *factory);
-
+void          mx_list_view_freeze        (MxListView    *list_view);
+void          mx_list_view_thaw          (MxListView    *list_view);
+void          mx_list_view_set_factory   (MxListView    *list_view,
+                                          MxItemFactory *factory);
 
 G_END_DECLS
 

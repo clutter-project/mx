@@ -80,14 +80,17 @@ GType mx_box_layout_get_type (void);
 
 MxWidget *mx_box_layout_new (void);
 
-void mx_box_layout_set_vertical (MxBoxLayout *box, gboolean vertical);
-gboolean mx_box_layout_get_vertical (MxBoxLayout *box);
+void     mx_box_layout_set_vertical   (MxBoxLayout *box,
+                                       gboolean     vertical);
+gboolean mx_box_layout_get_vertical   (MxBoxLayout *box);
 
-void mx_box_layout_set_pack_start (MxBoxLayout *box, gboolean pack_start);
+void     mx_box_layout_set_pack_start (MxBoxLayout *box,
+                                       gboolean     pack_start);
 gboolean mx_box_layout_get_pack_start (MxBoxLayout *box);
 
-void mx_box_layout_set_spacing (MxBoxLayout *box, guint spacing);
-guint mx_box_layout_get_spacing (MxBoxLayout *box);
+void     mx_box_layout_set_spacing    (MxBoxLayout *box,
+                                       guint        spacing);
+guint    mx_box_layout_get_spacing    (MxBoxLayout *box);
 
 G_END_DECLS
 

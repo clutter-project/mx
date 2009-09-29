@@ -65,14 +65,15 @@ struct _MxTooltipClass
 
 GType mx_tooltip_get_type (void) G_GNUC_CONST;
 
-G_CONST_RETURN gchar *mx_tooltip_get_label (MxTooltip *tooltip);
-void                  mx_tooltip_set_label (MxTooltip *tooltip,
-                                              const gchar *text);
-void                  mx_tooltip_show      (MxTooltip *tooltip);
-void                  mx_tooltip_hide      (MxTooltip *tooltip);
+G_CONST_RETURN gchar *mx_tooltip_get_label (MxTooltip   *tooltip);
+void                  mx_tooltip_set_label (MxTooltip   *tooltip,
+                                            const gchar *text);
+void                  mx_tooltip_show      (MxTooltip   *tooltip);
+void                  mx_tooltip_hide      (MxTooltip   *tooltip);
 
-void                  mx_tooltip_set_tip_area (MxTooltip *tooltip, const ClutterGeometry *area);
-G_CONST_RETURN ClutterGeometry* mx_tooltip_get_tip_area (MxTooltip *tooltip);
+void                            mx_tooltip_set_tip_area (MxTooltip             *tooltip,
+                                                         const ClutterGeometry *area);
+G_CONST_RETURN ClutterGeometry* mx_tooltip_get_tip_area (MxTooltip             *tooltip);
 
 G_END_DECLS
 

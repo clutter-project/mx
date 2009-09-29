@@ -77,50 +77,50 @@ struct _MxDraggableIface
   void (* disable) (MxDraggable *draggable);
 
   /* signals */
-  void (* drag_begin)  (MxDraggable       *draggable,
+  void (* drag_begin)  (MxDraggable         *draggable,
                         gfloat               event_x,
                         gfloat               event_y,
                         gint                 event_button,
                         ClutterModifierType  modifiers);
-  void (* drag_motion) (MxDraggable       *draggable,
+  void (* drag_motion) (MxDraggable         *draggable,
                         gfloat               delta_x,
                         gfloat               delta_y);
-  void (* drag_end)    (MxDraggable       *draggable,
+  void (* drag_end)    (MxDraggable         *draggable,
                         gfloat               event_x,
                         gfloat               event_y);
 };
 
 GType mx_draggable_get_type (void) G_GNUC_CONST;
 
-void                mx_draggable_set_axis             (MxDraggable       *draggable,
-                                                         MxDragAxis         axis);
+void              mx_draggable_set_axis             (MxDraggable       *draggable,
+                                                     MxDragAxis         axis);
 MxDragAxis        mx_draggable_get_axis             (MxDraggable       *draggable);
 
-void                mx_draggable_set_drag_threshold   (MxDraggable       *draggable,
-                                                         guint                threshold);
-guint               mx_draggable_get_drag_threshold   (MxDraggable       *draggable);
+void              mx_draggable_set_drag_threshold   (MxDraggable       *draggable,
+                                                     guint              threshold);
+guint             mx_draggable_get_drag_threshold   (MxDraggable       *draggable);
 
-void                mx_draggable_set_containment_type (MxDraggable       *draggable,
-                                                         MxDragContainment  containment);
+void              mx_draggable_set_containment_type (MxDraggable       *draggable,
+                                                     MxDragContainment  containment);
 MxDragContainment mx_draggable_get_containment_type (MxDraggable       *draggable);
-void                mx_draggable_set_containment_area (MxDraggable       *draggable,
-                                                         gfloat               x_1,
-                                                         gfloat               y_1,
-                                                         gfloat               x_2,
-                                                         gfloat               y_2);
-void                mx_draggable_get_containment_area (MxDraggable       *draggable,
-                                                         gfloat              *x_1,
-                                                         gfloat              *y_1,
-                                                         gfloat              *x_2,
-                                                         gfloat              *y_2);
+void              mx_draggable_set_containment_area (MxDraggable       *draggable,
+                                                     gfloat             x_1,
+                                                     gfloat             y_1,
+                                                     gfloat             x_2,
+                                                     gfloat             y_2);
+void              mx_draggable_get_containment_area (MxDraggable       *draggable,
+                                                     gfloat            *x_1,
+                                                     gfloat            *y_1,
+                                                     gfloat            *x_2,
+                                                     gfloat            *y_2);
 
-void                mx_draggable_set_drag_actor       (MxDraggable       *draggable,
-                                                         ClutterActor        *actor);
-ClutterActor *      mx_draggable_get_drag_actor       (MxDraggable       *draggable);
+void              mx_draggable_set_drag_actor       (MxDraggable       *draggable,
+                                                     ClutterActor      *actor);
+ClutterActor *    mx_draggable_get_drag_actor       (MxDraggable       *draggable);
 
-void                mx_draggable_disable              (MxDraggable       *draggable);
-void                mx_draggable_enable               (MxDraggable       *draggable);
-gboolean            mx_draggable_is_enabled           (MxDraggable       *draggable);
+void              mx_draggable_disable              (MxDraggable       *draggable);
+void              mx_draggable_enable               (MxDraggable       *draggable);
+gboolean          mx_draggable_is_enabled           (MxDraggable       *draggable);
 
 G_END_DECLS
 

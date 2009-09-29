@@ -70,25 +70,26 @@ struct _MxSubtextureClass
   void (*_mx_box_4) (void);
 }; 
 
-GType           mx_subtexture_get_type           (void) G_GNUC_CONST;
-ClutterActor *  mx_subtexture_new                (ClutterTexture   *texture,
-                                                       gint            top,
-                                                       gint            left,
-                                                       gint            width,
-                                                       gint            height);
-void            mx_subtexture_set_parent_texture (MxSubtexture *frame,
-                                                       ClutterTexture   *texture);
-ClutterTexture *mx_subtexture_get_parent_texture (MxSubtexture *frame);
-void            mx_subtexture_set_frame          (MxSubtexture *frame,
-                                                       gint            top,
-                                                       gint            left,
-                                                       gint            width,
-                                                       gint            height);
-void            mx_subtexture_get_frame          (MxSubtexture *frame,
-                                                       gint           *top,
-                                                       gint           *left,
-                                                       gint           *width,
-                                                       gint           *height);
+GType mx_subtexture_get_type (void) G_GNUC_CONST;
+
+ClutterActor *  mx_subtexture_new                (ClutterTexture *texture,
+                                                  gint            top,
+                                                  gint            left,
+                                                  gint            width,
+                                                  gint            height);
+void            mx_subtexture_set_parent_texture (MxSubtexture   *frame,
+                                                  ClutterTexture *texture);
+ClutterTexture *mx_subtexture_get_parent_texture (MxSubtexture   *frame);
+void            mx_subtexture_set_frame          (MxSubtexture   *frame,
+                                                  gint            top,
+                                                  gint            left,
+                                                  gint            width,
+                                                  gint            height);
+void            mx_subtexture_get_frame          (MxSubtexture   *frame,
+                                                  gint           *top,
+                                                  gint           *left,
+                                                  gint           *width,
+                                                  gint           *height);
 
 G_END_DECLS
 

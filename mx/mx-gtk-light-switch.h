@@ -59,7 +59,8 @@ typedef struct {
 
 GType mx_gtk_light_switch_get_type (void);
 
-void mx_gtk_light_switch_set_active (MxGtkLightSwitch *lightswitch, gboolean active);
+void     mx_gtk_light_switch_set_active (MxGtkLightSwitch *lightswitch,
+                                         gboolean          active);
 gboolean mx_gtk_light_switch_get_active (MxGtkLightSwitch *lightswitch);
 
 GtkWidget* mx_gtk_light_switch_new (void);

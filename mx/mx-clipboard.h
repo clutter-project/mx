@@ -84,14 +84,18 @@ struct _MxClipboardClass
  * Callback function called when text is retrieved from the clipboard.
  */
 typedef void (*MxClipboardCallbackFunc) (MxClipboard *clipboard,
-                                           const gchar   *text,
-                                           gpointer       user_data);
+                                         const gchar *text,
+                                         gpointer     user_data);
 
 GType mx_clipboard_get_type (void);
 
 MxClipboard* mx_clipboard_get_default ();
-void mx_clipboard_get_text (MxClipboard *clipboard, MxClipboardCallbackFunc callback, gpointer user_data);
-void mx_clipboard_set_text (MxClipboard *clipboard, const gchar *text);
+
+void mx_clipboard_get_text (MxClipboard             *clipboard,
+                            MxClipboardCallbackFunc  callback,
+                            gpointer                 user_data);
+void mx_clipboard_set_text (MxClipboard             *clipboard,
+                            const gchar             *text);
 
 G_END_DECLS
 

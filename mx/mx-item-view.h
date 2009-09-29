@@ -80,23 +80,22 @@ GType mx_item_view_get_type (void);
 
 MxWidget* mx_item_view_new (void);
 
-void         mx_item_view_set_model (MxItemView *item_view,
-                                       ClutterModel *model);
-ClutterModel* mx_item_view_get_model (MxItemView *item_view);
+void          mx_item_view_set_model     (MxItemView    *item_view,
+                                          ClutterModel  *model);
+ClutterModel* mx_item_view_get_model     (MxItemView    *item_view);
 
-void          mx_item_view_set_item_type (MxItemView *item_view,
-                                            GType         item_type);
-GType         mx_item_view_get_item_type (MxItemView *item_view);
+void          mx_item_view_set_item_type (MxItemView    *item_view,
+                                          GType          item_type);
+GType         mx_item_view_get_item_type (MxItemView    *item_view);
 
-void
-mx_item_view_add_attribute (MxItemView *item_view,
-                              const gchar *attribute,
-                              gint column);
+void          mx_item_view_add_attribute (MxItemView    *item_view,
+                                          const gchar   *attribute,
+                                          gint           column);
 
-void mx_item_view_freeze (MxItemView *item_view);
-void mx_item_view_thaw (MxItemView *item_view);
-void mx_item_view_set_factory (MxItemView    *item_view,
-                                 MxItemFactory *factory);
+void          mx_item_view_freeze        (MxItemView    *item_view);
+void          mx_item_view_thaw          (MxItemView    *item_view);
+void          mx_item_view_set_factory   (MxItemView    *item_view,
+                                          MxItemFactory *factory);
 
 G_END_DECLS
 

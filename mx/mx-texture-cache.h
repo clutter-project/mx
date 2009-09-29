@@ -79,14 +79,16 @@ typedef struct {
 GType mx_texture_cache_get_type (void);
 
 MxTextureCache* mx_texture_cache_get_default (void);
-ClutterTexture*   mx_texture_cache_get_texture (MxTextureCache *self,
-                                                  const gchar *path);
-ClutterActor*     mx_texture_cache_get_actor (MxTextureCache *self,
-                                                  const gchar *path);
 
-gint              mx_texture_cache_get_size    (MxTextureCache *self);
+ClutterTexture* mx_texture_cache_get_texture (MxTextureCache *self,
+                                              const gchar    *path);
+ClutterActor*   mx_texture_cache_get_actor   (MxTextureCache *self,
+                                              const gchar    *path);
 
-void mx_texture_cache_load_cache(MxTextureCache *self, const char *filename);
+gint            mx_texture_cache_get_size    (MxTextureCache *self);
+
+void mx_texture_cache_load_cache (MxTextureCache *self,
+                                  const char     *filename);
 
 G_END_DECLS
 

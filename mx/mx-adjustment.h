@@ -77,44 +77,44 @@ struct _MxAdjustmentClass
 
 GType mx_adjustment_get_type (void) G_GNUC_CONST;
 
-MxAdjustment *mx_adjustment_new          (gdouble         value,
-                                              gdouble         lower,
-                                              gdouble         upper,
-                                              gdouble         step_increment,
-                                              gdouble         page_increment,
-                                              gdouble         page_size);
-gdouble         mx_adjustment_get_value    (MxAdjustment *adjustment);
-void            mx_adjustment_set_value    (MxAdjustment *adjustment,
-                                              gdouble         value);
-void            mx_adjustment_clamp_page   (MxAdjustment *adjustment,
-                                              gdouble         lower,
-                                              gdouble         upper);
-void            mx_adjustment_set_values   (MxAdjustment *adjustment,
-                                              gdouble         value,
-                                              gdouble         lower,
-                                              gdouble         upper,
-                                              gdouble         step_increment,
-                                              gdouble         page_increment,
-                                              gdouble         page_size);
-void            mx_adjustment_get_values   (MxAdjustment *adjustment,
-                                              gdouble        *value,
-                                              gdouble        *lower,
-                                              gdouble        *upper,
-                                              gdouble        *step_increment,
-                                              gdouble        *page_increment,
-                                              gdouble        *page_size);
+MxAdjustment *mx_adjustment_new         (gdouble       value,
+                                         gdouble       lower,
+                                         gdouble       upper,
+                                         gdouble       step_increment,
+                                         gdouble       page_increment,
+                                         gdouble       page_size);
+gdouble       mx_adjustment_get_value   (MxAdjustment *adjustment);
+void          mx_adjustment_set_value   (MxAdjustment *adjustment,
+                                         gdouble       value);
+void          mx_adjustment_clamp_page  (MxAdjustment *adjustment,
+                                         gdouble       lower,
+                                         gdouble       upper);
+void          mx_adjustment_set_values  (MxAdjustment *adjustment,
+                                         gdouble       value,
+                                         gdouble       lower,
+                                         gdouble       upper,
+                                         gdouble       step_increment,
+                                         gdouble       page_increment,
+                                         gdouble       page_size);
+void          mx_adjustment_get_values  (MxAdjustment *adjustment,
+                                         gdouble      *value,
+                                         gdouble      *lower,
+                                         gdouble      *upper,
+                                         gdouble      *step_increment,
+                                         gdouble      *page_increment,
+                                         gdouble      *page_size);
 
-void            mx_adjustment_interpolate  (MxAdjustment *adjustment,
-                                              gdouble         value,
-                                              guint           duration);
+void          mx_adjustment_interpolate (MxAdjustment *adjustment,
+                                         gdouble       value,
+                                         guint         duration);
 
-gboolean        mx_adjustment_get_elastic  (MxAdjustment *adjustment);
-void            mx_adjustment_set_elastic  (MxAdjustment *adjustment,
-                                              gboolean        elastic);
+gboolean      mx_adjustment_get_elastic (MxAdjustment *adjustment);
+void          mx_adjustment_set_elastic (MxAdjustment *adjustment,
+                                         gboolean      elastic);
 
-gboolean        mx_adjustment_clamp        (MxAdjustment *adjustment,
-                                              gboolean        interpolate,
-                                              guint           duration);
+gboolean      mx_adjustment_clamp       (MxAdjustment *adjustment,
+                                         gboolean      interpolate,
+                                         guint         duration);
 
 G_END_DECLS
 

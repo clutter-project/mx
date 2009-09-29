@@ -68,8 +68,10 @@ struct _MxNotebookClass
 GType mx_notebook_get_type (void) G_GNUC_CONST;
 
 MxNotebook *mx_notebook_new (void);
-void        mx_notebook_set_page (MxNotebook *notebook, gint page);
-gint        mx_notebook_get_page (MxNotebook *notebook);
+
+void mx_notebook_set_page (MxNotebook *notebook,
+                           gint        page);
+gint mx_notebook_get_page (MxNotebook *notebook);
 
 G_END_DECLS
 

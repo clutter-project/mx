@@ -79,14 +79,18 @@ GType mx_gtk_expander_get_type (void);
 
 GtkWidget* mx_gtk_expander_new (void);
 
-void mx_gtk_expander_set_expanded (MxGtkExpander *expander, gboolean expanded);
-gboolean mx_gtk_expander_get_expanded (MxGtkExpander *expander);
+void       mx_gtk_expander_set_expanded      (MxGtkExpander *expander,
+                                              gboolean       expanded);
+gboolean   mx_gtk_expander_get_expanded      (MxGtkExpander *expander);
 
-void mx_gtk_expander_set_label_widget (MxGtkExpander *expander, GtkWidget *label);
-GtkWidget* mx_gtk_expander_get_label_widget (MxGtkExpander *expander);
+void       mx_gtk_expander_set_label_widget  (MxGtkExpander *expander,
+                                              GtkWidget     *label);
+GtkWidget* mx_gtk_expander_get_label_widget  (MxGtkExpander *expander);
 
-void mx_gtk_expander_set_has_indicator (MxGtkExpander *expander, gboolean has_indicator);
-gboolean mx_gtk_expander_get_has_indicator (MxGtkExpander *expander);
+void       mx_gtk_expander_set_has_indicator (MxGtkExpander *expander,
+                                              gboolean       has_indicator);
+gboolean   mx_gtk_expander_get_has_indicator (MxGtkExpander *expander);
+
 G_END_DECLS
 
 #endif /* _MX_GTK_EXPANDER_H */

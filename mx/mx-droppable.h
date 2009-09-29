@@ -54,12 +54,12 @@ struct _MxDroppableIface
                             MxDraggable *draggable);
 
   /* signals */
-  void (* over_in)  (MxDroppable       *droppable,
-                     MxDraggable       *draggable);
-  void (* over_out) (MxDroppable       *droppable,
-                     MxDraggable       *draggable);
-  void (* drop)     (MxDroppable       *droppable,
-                     MxDraggable       *draggable,
+  void (* over_in)  (MxDroppable         *droppable,
+                     MxDraggable         *draggable);
+  void (* over_out) (MxDroppable         *droppable,
+                     MxDraggable         *draggable);
+  void (* drop)     (MxDroppable         *droppable,
+                     MxDraggable         *draggable,
                      gfloat               event_x,
                      gfloat               event_y,
                      gint                 button,
@@ -73,7 +73,7 @@ void     mx_droppable_disable     (MxDroppable *droppable);
 gboolean mx_droppable_is_enabled  (MxDroppable *droppable);
 
 gboolean mx_droppable_accept_drop (MxDroppable *droppable,
-                                     MxDraggable *draggable);
+                                   MxDraggable *draggable);
 
 G_END_DECLS
 

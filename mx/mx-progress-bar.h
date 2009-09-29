@@ -82,7 +82,7 @@ GType mx_progress_bar_get_type (void);
 MxWidget *mx_progress_bar_new (void);
 
 void    mx_progress_bar_set_progress (MxProgressBar *bar,
-                                        gdouble          progress);
+                                      gdouble        progress);
 gdouble mx_progress_bar_get_progress (MxProgressBar *bar);
 
 G_END_DECLS

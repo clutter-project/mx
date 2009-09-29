@@ -69,25 +69,26 @@ struct _MxWidgetClass
   ClutterActorClass parent_class;
 
   /* vfuncs */
-  void (* draw_background) (MxWidget         *self,
+  void (* draw_background) (MxWidget           *self,
                             ClutterActor       *background,
                             const ClutterColor *color);
 };
 
 GType mx_widget_get_type (void) G_GNUC_CONST;
 
-void                  mx_widget_set_style_pseudo_class (MxWidget   *actor,
-                                                          const gchar  *pseudo_class);
-G_CONST_RETURN gchar *mx_widget_get_style_pseudo_class (MxWidget   *actor);
-void                  mx_widget_set_style_class_name   (MxWidget   *actor,
-                                                          const gchar  *style_class);
-G_CONST_RETURN gchar *mx_widget_get_style_class_name   (MxWidget   *actor);
+void                  mx_widget_set_style_pseudo_class (MxWidget    *actor,
+                                                        const gchar *pseudo_class);
+G_CONST_RETURN gchar *mx_widget_get_style_pseudo_class (MxWidget    *actor);
+void                  mx_widget_set_style_class_name   (MxWidget    *actor,
+                                                        const gchar *style_class);
+G_CONST_RETURN gchar *mx_widget_get_style_class_name   (MxWidget    *actor);
 
-
-void     mx_widget_set_has_tooltip (MxWidget *widget, gboolean has_tooltip);
-gboolean mx_widget_get_has_tooltip (MxWidget *widget);
-void     mx_widget_set_tooltip_text (MxWidget *widget, const gchar *text);
-const gchar* mx_widget_get_tooltip_text (MxWidget *widget);
+void         mx_widget_set_has_tooltip  (MxWidget    *widget,
+                                         gboolean     has_tooltip);
+gboolean     mx_widget_get_has_tooltip  (MxWidget    *widget);
+void         mx_widget_set_tooltip_text (MxWidget    *widget,
+                                         const gchar *text);
+const gchar* mx_widget_get_tooltip_text (MxWidget    *widget);
 
 void mx_widget_show_tooltip (MxWidget *widget);
 void mx_widget_hide_tooltip (MxWidget *widget);
@@ -99,7 +100,7 @@ void mx_widget_ensure_style (MxWidget *widget);
 ClutterActor *mx_widget_get_background_image (MxWidget  *actor);
 ClutterActor *mx_widget_get_border_image     (MxWidget  *actor);
 void          mx_widget_get_padding          (MxWidget  *widget,
-                                                MxPadding *padding);
+                                              MxPadding *padding);
 void          mx_widget_draw_background      (MxWidget  *widget);
 
 G_END_DECLS

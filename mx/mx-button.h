@@ -65,9 +65,10 @@ struct _MxButtonClass
   MxBinClass parent_class;
 
   /* vfuncs, not signals */
-  void (* pressed)  (MxButton *button);
-  void (* released) (MxButton *button);
-  void (* transition) (MxButton *button, ClutterActor *old_bg);
+  void (* pressed)    (MxButton     *button);
+  void (* released)   (MxButton     *button);
+  void (* transition) (MxButton     *button,
+                       ClutterActor *old_bg);
 
   /* signals */
   void (* clicked) (MxButton *button);
@@ -75,15 +76,17 @@ struct _MxButtonClass
 
 GType mx_button_get_type (void) G_GNUC_CONST;
 
-MxWidget *          mx_button_new            (void);
-MxWidget *          mx_button_new_with_label (const gchar  *text);
-G_CONST_RETURN gchar *mx_button_get_label      (MxButton   *button);
-void                  mx_button_set_label      (MxButton   *button,
-                                                  const gchar  *text);
-void                  mx_button_set_toggle_mode    (MxButton *button, gboolean toggle);
-gboolean              mx_button_get_toggle_mode    (MxButton *button);
-void                  mx_button_set_checked        (MxButton *button, gboolean checked);
-gboolean              mx_button_get_checked        (MxButton *button);
+MxWidget *            mx_button_new             (void);
+MxWidget *            mx_button_new_with_label  (const gchar *text);
+G_CONST_RETURN gchar *mx_button_get_label       (MxButton    *button);
+void                  mx_button_set_label       (MxButton    *button,
+                                                 const gchar *text);
+void                  mx_button_set_toggle_mode (MxButton    *button,
+                                                 gboolean     toggle);
+gboolean              mx_button_get_toggle_mode (MxButton    *button);
+void                  mx_button_set_checked     (MxButton    *button,
+                                                 gboolean     checked);
+gboolean              mx_button_get_checked     (MxButton    *button);
 
 G_END_DECLS
 

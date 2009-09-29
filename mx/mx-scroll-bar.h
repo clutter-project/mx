@@ -71,9 +71,10 @@ struct _MxScrollBarClass
 
 GType mx_scroll_bar_get_type (void) G_GNUC_CONST;
 
-MxWidget *    mx_scroll_bar_new            (MxAdjustment *adjustment);
-void            mx_scroll_bar_set_adjustment (MxScrollBar  *bar,
-                                                MxAdjustment *adjustment);
+MxWidget *mx_scroll_bar_new (MxAdjustment *adjustment);
+
+void          mx_scroll_bar_set_adjustment (MxScrollBar  *bar,
+                                            MxAdjustment *adjustment);
 MxAdjustment *mx_scroll_bar_get_adjustment (MxScrollBar  *bar);
 
 G_END_DECLS

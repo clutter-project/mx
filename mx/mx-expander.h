@@ -69,7 +69,7 @@ typedef struct {
   MxBinClass parent_class;
 
   /* signals */
-  void (* expand_complete) (MxExpander *expander);
+  void (* expand_complete)   (MxExpander *expander);
   void (* contract_complete) (MxExpander *expander);
 
 } MxExpanderClass;
@@ -77,12 +77,14 @@ typedef struct {
 GType mx_expander_get_type (void);
 
 MxWidget* mx_expander_new (void);
-void mx_expander_set_label (MxExpander *expander,
-                              const gchar *label);
 
-gboolean mx_expander_get_expanded (MxExpander *expander);
-void mx_expander_set_expanded (MxExpander *expander,
-                                 gboolean      expanded);
+void      mx_expander_set_label    (MxExpander  *expander,
+                                    const gchar *label);
+
+gboolean  mx_expander_get_expanded (MxExpander  *expander);
+void      mx_expander_set_expanded (MxExpander  *expander,
+                                    gboolean     expanded);
+
 G_END_DECLS
 
 #endif /* _MX_EXPANDER */

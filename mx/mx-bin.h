@@ -70,22 +70,22 @@ struct _MxBinClass
 
 GType mx_bin_get_type (void) G_GNUC_CONST;
 
-MxWidget   *mx_bin_new           (void);
-void          mx_bin_set_child     (MxBin      *bin,
-                                      ClutterActor *child);
-ClutterActor *mx_bin_get_child     (MxBin      *bin);
-void          mx_bin_set_alignment (MxBin      *bin,
-                                      MxAlign     x_align,
-                                      MxAlign     y_align);
-void          mx_bin_get_alignment (MxBin      *bin,
-                                      MxAlign    *x_align,
-                                      MxAlign    *y_align);
-void          mx_bin_set_fill      (MxBin      *bin,
-                                      gboolean      x_fill,
-                                      gboolean      y_fill);
-void          mx_bin_get_fill      (MxBin      *bin,
-                                      gboolean     *x_fill,
-                                      gboolean     *y_fill);
+MxWidget   *  mx_bin_new           (void);
+void          mx_bin_set_child     (MxBin        *bin,
+                                    ClutterActor *child);
+ClutterActor *mx_bin_get_child     (MxBin        *bin);
+void          mx_bin_set_alignment (MxBin        *bin,
+                                    MxAlign       x_align,
+                                    MxAlign       y_align);
+void          mx_bin_get_alignment (MxBin        *bin,
+                                    MxAlign      *x_align,
+                                    MxAlign      *y_align);
+void          mx_bin_set_fill      (MxBin        *bin,
+                                    gboolean      x_fill,
+                                    gboolean      y_fill);
+void          mx_bin_get_fill      (MxBin        *bin,
+                                    gboolean     *x_fill,
+                                    gboolean     *y_fill);
 
 G_END_DECLS
 
