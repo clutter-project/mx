@@ -66,6 +66,17 @@ enum
 #define MX_TABLE_GET_PRIVATE(obj)    \
   (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_TABLE, MxTablePrivate))
 
+typedef struct
+{
+  guint expand : 1;
+  guint shrink : 1;
+
+  gfloat min_size;
+  gfloat pref_size;
+  gfloat final_size;
+
+} DimensionData;
+
 struct _MxTablePrivate
 {
   GSList *children;
@@ -79,16 +90,8 @@ struct _MxTablePrivate
   gint    active_row;
   gint    active_col;
 
-  GArray *min_widths;
-  GArray *pref_widths;
-  GArray *min_heights;
-  GArray *pref_heights;
-
-  GArray *is_expand_col;
-  GArray *is_expand_row;
-
-  GArray *col_widths;
-  GArray *row_heights;
+  GArray *columns;
+  GArray *rows;
 
   guint   homogeneous : 1;
 };
@@ -272,17 +275,8 @@ mx_table_finalize (GObject *gobject)
 {
   MxTablePrivate *priv = MX_TABLE (gobject)->priv;
 
-  g_array_free (priv->min_widths, TRUE);
-  g_array_free (priv->pref_widths, TRUE);
-
-  g_array_free (priv->min_heights, TRUE);
-  g_array_free (priv->pref_heights, TRUE);
-
-  g_array_free (priv->is_expand_col, TRUE);
-  g_array_free (priv->is_expand_row, TRUE);
-
-  g_array_free (priv->col_widths, TRUE);
-  g_array_free (priv->row_heights, TRUE);
+  g_array_free (priv->columns, TRUE);
+  g_array_free (priv->rows, TRUE);
 
   G_OBJECT_CLASS (mx_table_parent_class)->finalize (gobject);
 }
@@ -466,29 +460,20 @@ mx_table_homogeneous_allocate (ClutterActor          *self,
 }
 
 
-static gint *
+static void
 mx_table_calculate_col_widths (MxTable *table,
                                gint     for_width)
 {
   gint total_min_width, i;
   MxTablePrivate *priv = table->priv;
-  gboolean *is_expand_col;
   gint extra_col_width, n_expanded_cols = 0, expanded_cols = 0;
-  gint *pref_widths, *min_widths;
+  DimensionData *columns;
   GSList *list;
   MxPadding padding;
 
-  g_array_set_size (priv->is_expand_col, 0);
-  g_array_set_size (priv->is_expand_col, priv->n_cols);
-  is_expand_col = (gboolean *) priv->is_expand_col->data;
-
-  g_array_set_size (priv->pref_widths, 0);
-  g_array_set_size (priv->pref_widths, priv->n_cols);
-  pref_widths = (gint *) priv->pref_widths->data;
-
-  g_array_set_size (priv->min_widths, 0);
-  g_array_set_size (priv->min_widths, priv->n_cols);
-  min_widths = (gint *) priv->min_widths->data;
+  g_array_set_size (priv->columns, 0);
+  g_array_set_size (priv->columns, priv->n_cols);
+  columns = (DimensionData *) priv->columns->data;
 
 
   /* take off the padding values to calculate the allocatable width */
@@ -520,30 +505,30 @@ mx_table_calculate_col_widths (MxTable *table,
       row_span = meta->row_span;
 
       if (x_expand)
-        is_expand_col[col] = TRUE;
+        columns[col].expand = TRUE;
 
       clutter_actor_get_preferred_width (child, -1, &w_min, &w_pref);
-      if (col_span == 1 && w_pref > pref_widths[col])
+      if (col_span == 1 && w_pref > columns[col].pref_size)
         {
-          pref_widths[col] = w_pref;
+          columns[col].pref_size = w_pref;
         }
-      if (col_span == 1 && w_min > min_widths[col])
+      if (col_span == 1 && w_min > columns[col].min_size)
         {
-          min_widths[col] = w_min;
+          columns[col].min_size = w_min;
         }
 
     }
 
   total_min_width = priv->col_spacing * (priv->n_cols - 1);
   for (i = 0; i < priv->n_cols; i++)
-    total_min_width += pref_widths[i];
+    total_min_width += columns[i].pref_size;
 
   /* calculate the remaining space and distribute it evenly onto all rows/cols
    * with the x/y expand property set. */
   for (i = 0; i < priv->n_cols; i++)
-    if (is_expand_col[i])
+    if (columns[i].expand)
       {
-        expanded_cols += pref_widths[i];
+        expanded_cols += columns[i].pref_size;
         n_expanded_cols++;
       }
 
@@ -551,44 +536,48 @@ mx_table_calculate_col_widths (MxTable *table,
   extra_col_width = for_width - total_min_width;
   if (extra_col_width)
     for (i = 0; i < priv->n_cols; i++)
-      if (is_expand_col[i])
+      if (columns[i].expand)
         {
           if (extra_col_width < 0)
             {
-              pref_widths[i] =
-                MAX (min_widths[i],
-                     pref_widths[i]
-                     + (extra_col_width * (pref_widths[i] / (float) expanded_cols)));
+              columns[i].pref_size =
+                MAX (columns[i].min_size,
+                     columns[i].pref_size
+                     + (extra_col_width * (columns[i].pref_size / (float) expanded_cols)));
 
               /* if we reached the minimum width for this column, we need to
                * stop counting it as expanded */
-              if (pref_widths[i] == min_widths[i])
+              if (columns[i].pref_size == columns[i].min_size)
                 {
                   /* restart calculations :-( */
-                  expanded_cols -= pref_widths[i];
-                  is_expand_col[i] = 0;
+                  expanded_cols -= columns[i].pref_size;
+                  columns[i].expand = 0;
                   n_expanded_cols--;
                   i = -1;
                 }
             }
           else
-            pref_widths[i] += extra_col_width / n_expanded_cols;
+            columns[i].pref_size += extra_col_width / n_expanded_cols;
         }
 
-  return pref_widths;
+
+  for (i = 0; i < priv->n_cols; i++)
+    {
+      columns[i].final_size = columns[i].pref_size;
+    }
 }
 
-static gint *
+static void
 mx_table_calculate_row_heights (MxTable *table,
-                                gint     for_height,
-                                gint   * col_widths)
+                                gint     for_height)
 {
   MxTablePrivate *priv = MX_TABLE (table)->priv;
   GSList *list;
-  gint *is_expand_row, *min_heights, *pref_heights, *row_heights, extra_row_height;
+  gint extra_row_height;
   gint i, total_min_height;
   gint expanded_rows = 0;
   gint n_expanded_rows = 0;
+  DimensionData *rows, *columns;
   MxPadding padding;
 
   mx_widget_get_padding (MX_WIDGET (table), &padding);
@@ -596,21 +585,12 @@ mx_table_calculate_row_heights (MxTable *table,
   /* take padding off available height */
   for_height -= (int)(padding.top + padding.bottom);
 
-  g_array_set_size (priv->row_heights, 0);
-  g_array_set_size (priv->row_heights, priv->n_rows);
-  row_heights = (gboolean *) priv->row_heights->data;
+  g_array_set_size (priv->rows, 0);
+  g_array_set_size (priv->rows, priv->n_rows);
+  rows = (DimensionData*) priv->rows->data;
 
-  g_array_set_size (priv->is_expand_row, 0);
-  g_array_set_size (priv->is_expand_row, priv->n_rows);
-  is_expand_row = (gboolean *) priv->is_expand_row->data;
+  columns = (DimensionData*) priv->columns->data;
 
-  g_array_set_size (priv->min_heights, 0);
-  g_array_set_size (priv->min_heights, priv->n_rows);
-  min_heights = (gboolean *) priv->min_heights->data;
-
-  g_array_set_size (priv->pref_heights, 0);
-  g_array_set_size (priv->pref_heights, priv->n_rows);
-  pref_heights = (gboolean *) priv->pref_heights->data;
 
   /* calculate minimum row widths and column heights */
   for (list = priv->children; list; list = g_slist_next (list))
@@ -638,12 +618,12 @@ mx_table_calculate_row_heights (MxTable *table,
       row_span = meta->row_span;
 
       if (y_expand)
-        is_expand_row[row] = TRUE;
+        rows[row].expand = TRUE;
 
       /* calculate the cell width by including any spanned columns */
       cell_width = 0;
       for (i = 0; i < col_span && col + i < priv->n_cols; i++)
-        cell_width += (float)(col_widths[col + i]);
+        cell_width += (float)(columns[col + i].final_size);
 
       if (!meta->x_fill)
         {
@@ -654,26 +634,26 @@ mx_table_calculate_row_heights (MxTable *table,
 
       clutter_actor_get_preferred_height (child, cell_width, &h_min, &h_pref);
 
-      if (row_span == 1 && h_pref > pref_heights[row])
+      if (row_span == 1 && h_pref > rows[row].pref_size)
         {
-          pref_heights[row] = (int)(h_pref);
+          rows[row].pref_size = (int)(h_pref);
         }
-      if (row_span == 1 && h_min > min_heights[row])
+      if (row_span == 1 && h_min > rows[row].min_size)
         {
-          min_heights[row] = (int)(h_min);
+          rows[row].min_size = (int)(h_min);
         }
     }
 
   total_min_height = 0; // priv->row_spacing * (priv->n_rows - 1);
   for (i = 0; i < priv->n_rows; i++)
-    total_min_height += pref_heights[i];
+    total_min_height += rows[i].pref_size;
 
   /* calculate the remaining space and distribute it evenly onto all rows/cols
    * with the x/y expand property set. */
   for (i = 0; i < priv->n_rows; i++)
-    if (is_expand_row[i])
+    if (rows[i].expand)
       {
-        expanded_rows += pref_heights[i];
+        expanded_rows += rows[i].pref_size;
         n_expanded_rows++;
       }
 
@@ -712,22 +692,22 @@ mx_table_calculate_row_heights (MxTable *table,
                * height and taking away the extra row height proportional to
                * the preferred row height over the rows that are being shrunk
                */
-              tmp = pref_heights[i]
-                    + (extra_row_height * (pref_heights[i] / (float) total_shrink_height));
+              tmp = rows[i].pref_size
+                    + (extra_row_height * (rows[i].pref_size / (float) total_shrink_height));
 
-              if (tmp < min_heights[i])
+              if (tmp < rows[i].min_size)
                 {
                   /* This was a row we *were* set to shrink, but we now find it would have
                    * been shrunk too much. We remove it from the list of rows to shrink and
                    * adjust extra_row_height and total_shrink_height appropriately */
                   skip[i] = TRUE;
-                  row_heights[i] = min_heights[i];
+                  rows[i].final_size = rows[i].min_size;
 
                   /* Reduce extra_row_height by the amount we have reduced this
                    * actor by */
-                  extra_row_height += (pref_heights[i] - min_heights[i]);
+                  extra_row_height += (rows[i].pref_size - rows[i].min_size);
                   /* now take off the row from the total shrink height */
-                  total_shrink_height -= pref_heights[i];
+                  total_shrink_height -= rows[i].pref_size;
 
                   /* restart the loop */
                   i = -1;
@@ -735,7 +715,7 @@ mx_table_calculate_row_heights (MxTable *table,
               else
                 {
                   skip[i] = FALSE;
-                  row_heights[i] = tmp;
+                  rows[i].final_size = tmp;
                 }
             }
 
@@ -747,15 +727,13 @@ mx_table_calculate_row_heights (MxTable *table,
     {
       for (i = 0; i < priv->n_rows; i++)
         {
-          if (is_expand_row[i])
-            row_heights[i] = pref_heights[i] + (extra_row_height / n_expanded_rows);
+          if (rows[i].expand)
+            rows[i].final_size = rows[i].pref_size + (extra_row_height / n_expanded_rows);
           else
-            row_heights[i] = pref_heights[i];
+            rows[i].final_size = rows[i].pref_size;
         }
     }
 
-
-  return row_heights;
 }
 
 static void
@@ -766,10 +744,10 @@ mx_table_preferred_allocate (ClutterActor          *self,
   GSList *list;
   gint row_spacing, col_spacing;
   gint i, table_width, table_height;
-  gint *col_widths, *row_heights;
   MxTable *table;
   MxTablePrivate *priv;
   MxPadding padding;
+  DimensionData *rows, *columns;
 
   table = MX_TABLE (self);
   priv = MX_TABLE (self)->priv;
@@ -787,14 +765,14 @@ mx_table_preferred_allocate (ClutterActor          *self,
                       - padding.right
                       - padding.left);
 
-  col_widths =
-    mx_table_calculate_col_widths (table,
-                                   (int)(box->x2 - box->x1));
+  mx_table_calculate_col_widths (table,
+                                 (int)(box->x2 - box->x1));
 
-  row_heights =
-    mx_table_calculate_row_heights (table,
-                                    (int)(box->y2 - box->y1),
-                                    col_widths);
+  mx_table_calculate_row_heights (table,
+                                  (int)(box->y2 - box->y1));
+
+  rows = (DimensionData *) priv->rows->data;
+  columns = (DimensionData *) priv->columns->data;
 
 
   for (list = priv->children; list; list = g_slist_next (list))
@@ -827,8 +805,8 @@ mx_table_preferred_allocate (ClutterActor          *self,
 
 
       /* initialise the width and height */
-      col_width = col_widths[col];
-      row_height = row_heights[row];
+      col_width = columns[col].final_size;
+      row_height = rows[row].final_size;
 
       /* Add the widths of the spanned columns:
        *
@@ -847,7 +825,7 @@ mx_table_preferred_allocate (ClutterActor          *self,
         {
           for (i = col + 1; i < col + col_span && i < priv->n_cols; i++)
             {
-              col_width += col_widths[i];
+              col_width += columns[i].final_size;
               col_width += col_spacing;
             }
         }
@@ -857,7 +835,7 @@ mx_table_preferred_allocate (ClutterActor          *self,
         {
           for (i = row + 1; i < row + row_span && i < priv->n_rows; i++)
             {
-              row_height += row_heights[i];
+              row_height += rows[i].final_size;
               row_height += row_spacing;
             }
         }
@@ -866,13 +844,13 @@ mx_table_preferred_allocate (ClutterActor          *self,
       child_x = (int) padding.left
                 + col_spacing * col;
       for (i = 0; i < col; i++)
-        child_x += col_widths[i];
+        child_x += columns[i].final_size;
 
       /* calculate child y */
       child_y = (int) padding.top
                 + row_spacing * row;
       for (i = 0; i < row; i++)
-        child_y += row_heights[i];
+        child_y += rows[i].final_size;
 
       /* set up childbox */
       childbox.x1 = (float) child_x;
@@ -914,12 +892,11 @@ mx_table_get_preferred_width (ClutterActor *self,
                               gfloat       *min_width_p,
                               gfloat       *natural_width_p)
 {
-  gint *min_widths, *pref_widths;
   gfloat total_min_width, total_pref_width;
   MxTablePrivate *priv = MX_TABLE (self)->priv;
-  GSList *list;
   gint i;
   MxPadding padding;
+  DimensionData *columns;
 
   mx_widget_get_padding (MX_WIDGET (self), &padding);
 
@@ -930,54 +907,17 @@ mx_table_get_preferred_width (ClutterActor *self,
       return;
     }
 
-  /* Setting size to zero and then what we want it to be causes a clear if
-   * clear flag is set (which it should be.)
-   */
-  g_array_set_size (priv->min_widths, 0);
-  g_array_set_size (priv->pref_widths, 0);
-  g_array_set_size (priv->min_widths, priv->n_cols);
-  g_array_set_size (priv->pref_widths, priv->n_cols);
+  mx_table_calculate_col_widths (MX_TABLE (self), for_height);
+  columns = (DimensionData*) priv->columns->data;
 
-  min_widths = (gint *) priv->min_widths->data;
-  pref_widths = (gint *) priv->pref_widths->data;
-
-  /* calculate minimum row widths */
-  for (list = priv->children; list; list = g_slist_next (list))
-    {
-      gint col, col_span;
-      gfloat w_min, w_pref;
-      MxTableChild *meta;
-      ClutterActor *child;
-
-      child = CLUTTER_ACTOR (list->data);
-
-      meta = (MxTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
-
-      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
-        continue;
-
-      /* get child properties */
-      col = meta->col;
-      col_span = meta->col_span;
-
-      clutter_actor_get_preferred_width (child, -1, &w_min, &w_pref);
-
-      if (col_span == 1 && w_min > min_widths[col])
-        min_widths[col] = w_min;
-      if (col_span == 1 && w_pref > pref_widths[col])
-        pref_widths[col] = w_pref;
-    }
-
-  total_min_width = padding.left
-                    + padding.right
-                    + (priv->n_cols - 1)
-                    * (float) priv->col_spacing;
+  total_min_width = padding.left + padding.right
+                    + (priv->n_cols - 1) * (float) priv->col_spacing;
   total_pref_width = total_min_width;
 
   for (i = 0; i < priv->n_cols; i++)
     {
-      total_min_width += min_widths[i];
-      total_pref_width += pref_widths[i];
+      total_min_width += columns[i].min_size;
+      total_pref_width += columns[i].pref_size;
     }
 
   if (min_width_p)
@@ -992,13 +932,10 @@ mx_table_get_preferred_height (ClutterActor *self,
                                gfloat       *min_height_p,
                                gfloat       *natural_height_p)
 {
-  gint *min_heights, *pref_heights;
-  gfloat total_min_height, total_pref_height;
   MxTablePrivate *priv = MX_TABLE (self)->priv;
-  GSList *list;
-  gint i;
-  gint *min_widths;
+  gint i, total_min_height, total_pref_height;
   MxPadding padding;
+  DimensionData *rows;
 
   if (priv->n_rows < 1)
     {
@@ -1007,53 +944,13 @@ mx_table_get_preferred_height (ClutterActor *self,
       return;
     }
 
-  /* Setting size to zero and then what we want it to be causes a clear if
-   * clear flag is set (which it should be.)
-   */
-  g_array_set_size (priv->min_heights, 0);
-  g_array_set_size (priv->pref_heights, 0);
-  g_array_set_size (priv->min_heights, priv->n_rows);
-  g_array_set_size (priv->pref_heights, priv->n_rows);
-
   /* use min_widths to help allocation of height-for-width widgets */
-  min_widths = mx_table_calculate_col_widths (MX_TABLE (self), for_width);
+  /* XXX: for_width is wrong, but function does not accept -1? */
+  mx_table_calculate_col_widths (MX_TABLE (self), for_width);
 
-  min_heights = (gint *) priv->min_heights->data;
-  pref_heights = (gint *) priv->pref_heights->data;
+  mx_table_calculate_row_heights (MX_TABLE (self), for_width);
 
-  /* calculate minimum row heights */
-  for (list = priv->children; list; list = g_slist_next (list))
-    {
-      gint row, col, col_span, cell_width, row_span;
-      gfloat min, pref;
-      MxTableChild *meta;
-      ClutterActor *child;
-
-      child = CLUTTER_ACTOR (list->data);
-
-      meta = (MxTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
-
-      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
-        continue;
-
-      /* get child properties */
-      row = meta->row;
-      col = meta->col;
-      col_span = meta->col_span;
-      row_span = meta->row_span;
-
-      cell_width = 0;
-      for (i = 0; i < col_span && col + i < priv->n_cols; i++)
-        cell_width += min_widths[col + i];
-
-      clutter_actor_get_preferred_height (child,
-                                          (float) cell_width, &min, &pref);
-
-      if (row_span == 1 && min > min_heights[row])
-        min_heights[row] = min;
-      if (row_span == 1 && pref > pref_heights[row])
-        pref_heights[row] = pref;
-    }
+  rows = (DimensionData*) priv->rows->data;
 
   mx_widget_get_padding (MX_WIDGET (self), &padding);
 
@@ -1065,8 +962,8 @@ mx_table_get_preferred_height (ClutterActor *self,
 
   for (i = 0; i < priv->n_rows; i++)
     {
-      total_min_height += min_heights[i];
-      total_pref_height += pref_heights[i];
+      total_min_height += rows[i].min_size;
+      total_pref_height += rows[i].pref_size;
     }
 
   if (min_height_p)
@@ -1211,32 +1108,8 @@ mx_table_init (MxTable *table)
   table->priv->n_cols = 0;
   table->priv->n_rows = 0;
 
-  table->priv->min_widths = g_array_new (FALSE,
-                                         TRUE,
-                                         sizeof (gint));
-  table->priv->pref_widths = g_array_new (FALSE,
-                                          TRUE,
-                                          sizeof (gint));
-  table->priv->min_heights = g_array_new (FALSE,
-                                          TRUE,
-                                          sizeof (gint));
-  table->priv->pref_heights = g_array_new (FALSE,
-                                           TRUE,
-                                           sizeof (gint));
-
-  table->priv->is_expand_col = g_array_new (FALSE,
-                                            TRUE,
-                                            sizeof (gboolean));
-  table->priv->is_expand_row = g_array_new (FALSE,
-                                            TRUE,
-                                            sizeof (gboolean));
-
-  table->priv->col_widths = g_array_new (FALSE,
-                                         TRUE,
-                                         sizeof (gint));
-  table->priv->row_heights = g_array_new (FALSE,
-                                          TRUE,
-                                          sizeof (gint));
+  table->priv->columns = g_array_new (FALSE, TRUE, sizeof (DimensionData));
+  table->priv->rows = g_array_new (FALSE, TRUE, sizeof (DimensionData));
 }
 
 /* used by MxTableChild to update row/column count */
