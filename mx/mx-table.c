@@ -57,8 +57,6 @@ enum
   PROP_COL_SPACING,
   PROP_ROW_SPACING,
 
-  PROP_HOMOGENEOUS,
-
   PROP_ROW_COUNT,
   PROP_COL_COUNT,
 };
@@ -92,8 +90,6 @@ struct _MxTablePrivate
 
   GArray *columns;
   GArray *rows;
-
-  guint   homogeneous : 1;
 };
 
 static void mx_container_iface_init (ClutterContainerIface *iface);
@@ -220,14 +216,6 @@ mx_table_set_property (GObject      *gobject,
       mx_table_set_row_spacing (table, g_value_get_int (value));
       break;
 
-    case PROP_HOMOGENEOUS:
-      if (table->priv->homogeneous != g_value_get_boolean (value))
-        {
-          table->priv->homogeneous = g_value_get_boolean (value);
-          clutter_actor_queue_relayout ((ClutterActor *) gobject);
-        }
-      break;
-
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -250,10 +238,6 @@ mx_table_get_property (GObject    *gobject,
 
     case PROP_ROW_SPACING:
       g_value_set_int (value, priv->row_spacing);
-      break;
-
-    case PROP_HOMOGENEOUS:
-      g_value_set_boolean (value, priv->homogeneous);
       break;
 
     case PROP_COL_COUNT:
@@ -394,71 +378,6 @@ mx_table_allocate_fill (ClutterActor    *child,
   *childbox = allocation;
 
 }
-
-static void
-mx_table_homogeneous_allocate (ClutterActor          *self,
-                               const ClutterActorBox *box,
-                               gboolean               flags)
-{
-  GSList *list;
-  gfloat col_width, row_height;
-  gint row_spacing, col_spacing;
-  MxTablePrivate *priv = MX_TABLE (self)->priv;
-  MxPadding padding;
-
-  mx_widget_get_padding (MX_WIDGET (self), &padding);
-
-  col_spacing = priv->col_spacing;
-  row_spacing = priv->row_spacing;
-
-  col_width = (box->x2 - box->x1
-               - padding.left - padding.right
-               - (col_spacing * (priv->n_cols - 1)))
-              / priv->n_cols;
-  row_height = (box->y2 - box->y1
-                - padding.top - padding.bottom
-                - (row_spacing * (priv->n_rows - 1)))
-               / priv->n_rows;
-
-  for (list = priv->children; list; list = g_slist_next (list))
-    {
-      gint row, col, row_span, col_span;
-      MxTableChild *meta;
-      ClutterActor *child;
-      ClutterActorBox childbox;
-      gdouble x_align, y_align;
-      gboolean x_fill, y_fill;
-
-      child = CLUTTER_ACTOR (list->data);
-
-      meta = (MxTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
-
-      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
-        continue;
-
-      /* get child properties */
-      col = meta->col;
-      row = meta->row;
-      row_span = meta->row_span;
-      col_span = meta->col_span;
-      x_align = meta->x_align;
-      y_align = meta->y_align;
-      x_fill = meta->x_fill;
-      y_fill = meta->y_fill;
-
-      childbox.x1 = padding.left + (col_width + col_spacing) * col;
-      childbox.x2 = childbox.x1 + (col_width * col_span) + (col_spacing * (col_span - 1));
-
-      childbox.y1 = padding.top + (row_height + row_spacing) * row;
-      childbox.y2 = childbox.y1 + (row_height * row_span) + (row_spacing * (row_span - 1));
-
-      mx_table_allocate_fill (child, &childbox, x_align, y_align, x_fill, y_fill);
-
-      clutter_actor_allocate (child, &childbox, flags);
-    }
-
-}
-
 
 static void
 mx_table_calculate_col_widths (MxTable *table,
@@ -880,10 +799,7 @@ mx_table_allocate (ClutterActor          *self,
       return;
     };
 
-  if (priv->homogeneous)
-    mx_table_homogeneous_allocate (self, box, flags);
-  else
-    mx_table_preferred_allocate (self, box, flags);
+  mx_table_preferred_allocate (self, box, flags);
 }
 
 static void
@@ -1053,15 +969,6 @@ mx_table_class_init (MxTableClass *klass)
   actor_class->get_preferred_height = mx_table_get_preferred_height;
   actor_class->show_all = mx_table_show_all;
   actor_class->hide_all = mx_table_hide_all;
-
-  pspec = g_param_spec_boolean ("homogeneous",
-                                "Homogeneous",
-                                "Homogeneous rows and columns",
-                                TRUE,
-                                MX_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class,
-                                   PROP_HOMOGENEOUS,
-                                   pspec);
 
   pspec = g_param_spec_int ("col-spacing",
                             "Column Spacing",
