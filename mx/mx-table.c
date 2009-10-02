@@ -383,11 +383,10 @@ static void
 mx_table_calculate_col_widths (MxTable *table,
                                gint     for_width)
 {
-  gint total_min_width, i;
+  gint i;
   MxTablePrivate *priv = table->priv;
-  gint extra_col_width, n_expanded_cols = 0, expanded_cols = 0;
   DimensionData *columns;
-  GSList *list;
+  GSList *l;
   MxPadding padding;
 
   g_array_set_size (priv->columns, 0);
@@ -400,90 +399,217 @@ mx_table_calculate_col_widths (MxTable *table,
 
   for_width -= (int)(padding.left + padding.right);
 
-  for (list = priv->children; list; list = g_slist_next (list))
+  /* STAGE ONE: calculate column widths for non-spanned children */
+  for (l = priv->children; l; l = g_slist_next (l))
     {
-      gint row, col;
-      gfloat w_min, w_pref;
-      gboolean x_expand;
       MxTableChild *meta;
       ClutterActor *child;
-      gint col_span, row_span;
+      DimensionData *col;
+      gfloat c_min, c_pref;
 
-      child = CLUTTER_ACTOR (list->data);
+      child = CLUTTER_ACTOR (l->data);
 
-      meta = (MxTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (table), child);
+      meta = (MxTableChild *)
+        clutter_container_get_child_meta (CLUTTER_CONTAINER (table), child);
 
-      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+      if (meta->col_span > 1)
         continue;
 
-      /* get child properties */
-      col = meta->col;
-      row = meta->row;
-      x_expand = meta->x_expand;
-      col_span = meta->col_span;
-      row_span = meta->row_span;
+      col = &columns[meta->col];
 
-      if (x_expand)
-        columns[col].expand = TRUE;
+      clutter_actor_get_preferred_width (child, -1, &c_min, &c_pref);
 
-      clutter_actor_get_preferred_width (child, -1, &w_min, &w_pref);
-      if (col_span == 1 && w_pref > columns[col].pref_size)
-        {
-          columns[col].pref_size = w_pref;
-        }
-      if (col_span == 1 && w_min > columns[col].min_size)
-        {
-          columns[col].min_size = w_min;
-        }
-
+      col->min_size = MAX (col->min_size, c_min);
+      col->pref_size = MAX (col->pref_size, c_pref);
+      col->expand = MAX (col->expand, meta->x_expand);
     }
 
-  total_min_width = priv->col_spacing * (priv->n_cols - 1);
-  for (i = 0; i < priv->n_cols; i++)
-    total_min_width += columns[i].pref_size;
+  /* STAGE TWO: take spanning children into account */
+  for (l = priv->children; l; l = g_slist_next (l))
+    {
+      MxTableChild *meta;
+      ClutterActor *child;
+      DimensionData *col;
+      gfloat c_min, c_pref;
+      gfloat min_width, pref_width;
+      gint i, start_col, end_col;
+      gint n_expand;
 
-  /* calculate the remaining space and distribute it evenly onto all rows/cols
-   * with the x/y expand property set. */
-  for (i = 0; i < priv->n_cols; i++)
-    if (columns[i].expand)
-      {
-        expanded_cols += columns[i].pref_size;
-        n_expanded_cols++;
-      }
+      child = CLUTTER_ACTOR (l->data);
 
-  /* for_width - total_min_width */
-  extra_col_width = for_width - total_min_width;
-  if (extra_col_width)
-    for (i = 0; i < priv->n_cols; i++)
-      if (columns[i].expand)
+      meta = (MxTableChild *)
+        clutter_container_get_child_meta (CLUTTER_CONTAINER (table), child);
+
+      if (meta->col_span < 2)
+        continue;
+
+      col = &columns[meta->col];
+      start_col = meta->col;
+      end_col = meta->col + meta->col_span - 1;
+
+      clutter_actor_get_preferred_width (child, -1, &c_min, &c_pref);
+
+
+      /* check there is enough room for this actor */
+      min_width = 0;
+      pref_width = 0;
+      n_expand = 0;
+      for (i = start_col; i <= end_col; i++)
         {
-          if (extra_col_width < 0)
-            {
-              columns[i].pref_size =
-                MAX (columns[i].min_size,
-                     columns[i].pref_size
-                     + (extra_col_width * (columns[i].pref_size / (float) expanded_cols)));
+          min_width += columns[i].min_size;
+          pref_width += columns[i].pref_size;
 
-              /* if we reached the minimum width for this column, we need to
-               * stop counting it as expanded */
-              if (columns[i].pref_size == columns[i].min_size)
+          if (columns[i].expand)
+            {
+              n_expand++;
+            }
+        }
+      min_width += priv->col_spacing * (meta->col_span - 1);
+      pref_width += priv->col_spacing * (meta->col_span - 1);
+
+      /* increase the minimum size */
+      if (min_width < c_min)
+        {
+          gfloat expand_by;
+
+          expand_by = c_min - min_width;
+
+          /* if none of the columns are set to expand, then expand them all
+           * equally. otherwise, expand only columns with expand set. */
+          for (i = start_col; i <= end_col; i++)
+            {
+              if (n_expand)
                 {
-                  /* restart calculations :-( */
-                  expanded_cols -= columns[i].pref_size;
-                  columns[i].expand = 0;
-                  n_expanded_cols--;
-                  i = -1;
+                  if (columns[i].expand)
+                    columns[i].min_size += expand_by / n_expand;
+                }
+              else
+                {
+                  columns[i].min_size += expand_by / meta->col_span;
                 }
             }
-          else
-            columns[i].pref_size += extra_col_width / n_expanded_cols;
         }
 
+      /* increase preferred size */
+      if (pref_width < c_pref)
+        {
+          gfloat expand_by;
 
-  for (i = 0; i < priv->n_cols; i++)
-    {
-      columns[i].final_size = columns[i].pref_size;
+          expand_by = c_pref - pref_width;
+
+          for (i = start_col; i <= end_col; i++)
+            {
+              if (n_expand)
+                {
+                  if (columns[i].expand)
+                    columns[i].pref_size += expand_by / n_expand;
+                }
+              else
+                {
+                  columns[i].pref_size += expand_by / meta->col_span;
+                }
+
+            }
+        }
     }
+
+
+
+
+  /* calculate final widths */
+  if (for_width >= 0)
+    {
+      gfloat min_width, pref_width;
+      gint n_expand;
+
+      min_width = 0;
+      pref_width = 0;
+      n_expand = 0;
+      for (i = 0; i < priv->n_cols; i++)
+        {
+          pref_width += columns[i].pref_size;
+          min_width += columns[i].min_size;
+          if (columns[i].expand)
+            n_expand++;
+        }
+      pref_width += priv->col_spacing * (priv->n_cols - 1);
+      min_width += priv->col_spacing * (priv->n_cols - 1);
+
+      if (for_width <= min_width)
+        {
+          /* erk, we can't shrink this! */
+          for (i = 0; i < priv->n_cols; i++)
+            {
+              columns[i].final_size = columns[i].min_size;
+            }
+          return;
+        }
+
+      if (for_width == pref_width)
+        {
+          /* perfect! */
+          for (i = 0; i < priv->n_cols; i++)
+            {
+              columns[i].final_size = columns[i].pref_size;
+            }
+          return;
+        }
+
+      /* for_width is between min_width and pref_width */
+      if (for_width < pref_width && for_width > min_width)
+        {
+          gfloat width;
+
+          /* shrink columns until they reach min_width */
+
+          /* start with all columns at preferred size */
+          for (i = 0; i < priv->n_cols; i++)
+            {
+              columns[i].final_size = columns[i].pref_size;
+            }
+          width = pref_width;
+
+          while (width > for_width)
+            {
+              for (i = 0; i < priv->n_cols; i++)
+                {
+                  if (columns[i].final_size > columns[i].min_size)
+                    {
+                      columns[i].final_size--;
+                      width--;
+                    }
+                }
+            }
+
+          return;
+        }
+
+      /* expand columns */
+      if (for_width > pref_width)
+        {
+          gfloat extra_width = for_width - pref_width;
+
+          for (i = 0; i < priv->n_cols; i++)
+            {
+              if (columns[i].expand)
+                {
+                  if (n_expand)
+                    {
+                      columns[i].final_size =
+                        columns[i].pref_size + (extra_width / n_expand);
+                    }
+                  else
+                    {
+                      columns[i].final_size =
+                        columns[i].pref_size + (extra_width / priv->n_cols);
+                    }
+                }
+              else
+                columns[i].final_size = columns[i].pref_size;
+            }
+        }
+    }
+
 }
 
 static void
@@ -861,8 +987,7 @@ mx_table_get_preferred_height (ClutterActor *self,
     }
 
   /* use min_widths to help allocation of height-for-width widgets */
-  /* XXX: for_width is wrong, but function does not accept -1? */
-  mx_table_calculate_col_widths (MX_TABLE (self), for_width);
+  mx_table_calculate_col_widths (MX_TABLE (self), -1);
 
   mx_table_calculate_row_heights (MX_TABLE (self), for_width);
 
