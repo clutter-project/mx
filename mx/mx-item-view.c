@@ -263,6 +263,8 @@ model_changed_cb (ClutterModel *model,
           clutter_model_iter_get_value (iter, attr->col, &value);
 
           g_object_set_property (child, attr->name, &value);
+
+          g_value_unset (&value);
         }
       g_object_thaw_notify (child);
 
