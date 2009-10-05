@@ -432,13 +432,10 @@ mx_box_layout_get_preferred_width (ClutterActor *actor,
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
   if (min_width_p)
-    *min_width_p = padding.left + padding.right;
+    *min_width_p = 0;
 
   if (natural_width_p)
-    *natural_width_p = padding.left + padding.right;
-
-  if (priv->children == NULL)
-    return;
+    *natural_width_p = 0;
 
   for (l = priv->children; l; l = g_list_next (l))
     {
@@ -482,6 +479,12 @@ mx_box_layout_get_preferred_width (ClutterActor *actor,
       if (natural_width_p)
         *natural_width_p += priv->spacing * (n_children - 1);
     }
+
+  if (min_width_p)
+    *min_width_p += padding.left + padding.right;
+
+  if (natural_width_p)
+    *natural_width_p += padding.left + padding.right;
 }
 
 static void
@@ -497,14 +500,13 @@ mx_box_layout_get_preferred_height (ClutterActor *actor,
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
+
   if (min_height_p)
-    *min_height_p = padding.top + padding.bottom;
+    *min_height_p = 0;
 
   if (natural_height_p)
-    *natural_height_p = padding.top + padding.bottom;
+    *natural_height_p = 0;
 
-  if (priv->children == NULL)
-    return;
 
   for (l = priv->children; l; l = g_list_next (l))
     {
@@ -546,6 +548,12 @@ mx_box_layout_get_preferred_height (ClutterActor *actor,
       if (natural_height_p)
         *natural_height_p += priv->spacing * (n_children - 1);
     }
+
+  if (min_height_p)
+    *min_height_p += padding.top + padding.bottom;
+
+  if (natural_height_p)
+    *natural_height_p += padding.top + padding.bottom;
 }
 
 static void
@@ -684,7 +692,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
           else
             child_box.y2 = position + child_nat;
           child_box.x1 = padding.left;
-          child_box.x2 = avail_width;
+          child_box.x2 = avail_width + padding.left;
 
           _mx_allocate_fill (child, &child_box, xalign, yalign, xfill, yfill);
           clutter_actor_allocate (child, &child_box, flags);
@@ -708,7 +716,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
             child_box.x2 = position + child_nat;
 
           child_box.y1 = padding.top;
-          child_box.y2 = avail_height;
+          child_box.y2 = avail_height + padding.top;
           _mx_allocate_fill (child, &child_box, xalign, yalign, xfill, yfill);
           clutter_actor_allocate (child, &child_box, flags);
 
