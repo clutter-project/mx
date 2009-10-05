@@ -617,11 +617,8 @@ mx_table_calculate_row_heights (MxTable *table,
                                 gint     for_height)
 {
   MxTablePrivate *priv = MX_TABLE (table)->priv;
-  GSList *list;
-  gint extra_row_height;
-  gint i, total_min_height;
-  gint expanded_rows = 0;
-  gint n_expanded_rows = 0;
+  GSList *l;
+  gint i;
   DimensionData *rows, *columns;
   MxPadding padding;
 
@@ -637,148 +634,228 @@ mx_table_calculate_row_heights (MxTable *table,
   columns = (DimensionData*) priv->columns->data;
 
 
-  /* calculate minimum row widths and column heights */
-  for (list = priv->children; list; list = g_slist_next (list))
+  /* STAGE ONE: calculate row heights for non-spanned children */
+  for (l = priv->children; l; l = g_slist_next (l))
     {
-      gint row, col, cell_width;
-      gfloat h_min, h_pref;
-      gboolean x_expand, y_expand;
       MxTableChild *meta;
       ClutterActor *child;
-      gint col_span, row_span;
+      DimensionData *row;
+      gfloat c_min, c_pref;
 
-      child = CLUTTER_ACTOR (list->data);
+      child = CLUTTER_ACTOR (l->data);
 
-      meta = (MxTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (table), child);
+      meta = (MxTableChild *)
+        clutter_container_get_child_meta (CLUTTER_CONTAINER (table), child);
 
-      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+      if (meta->row_span > 1)
         continue;
 
-      /* get child properties */
-      col = meta->col;
-      row = meta->row;
-      x_expand = meta->x_expand;
-      y_expand = meta->y_expand;
-      col_span = meta->col_span;
-      row_span = meta->row_span;
+      row = &rows[meta->row];
 
-      if (y_expand)
-        rows[row].expand = TRUE;
+      clutter_actor_get_preferred_height (child, -1, &c_min, &c_pref);
 
-      /* calculate the cell width by including any spanned columns */
-      cell_width = 0;
-      for (i = 0; i < col_span && col + i < priv->n_cols; i++)
-        cell_width += (float)(columns[col + i].final_size);
-
-      if (!meta->x_fill)
-        {
-          gfloat width;
-          clutter_actor_get_preferred_width (child, -1, NULL, &width);
-          cell_width = MIN (cell_width, width);
-        }
-
-      clutter_actor_get_preferred_height (child, cell_width, &h_min, &h_pref);
-
-      if (row_span == 1 && h_pref > rows[row].pref_size)
-        {
-          rows[row].pref_size = (int)(h_pref);
-        }
-      if (row_span == 1 && h_min > rows[row].min_size)
-        {
-          rows[row].min_size = (int)(h_min);
-        }
+      row->min_size = MAX (row->min_size, c_min);
+      row->pref_size = MAX (row->pref_size, c_pref);
+      row->expand = MAX (row->expand, meta->x_expand);
     }
 
-  total_min_height = 0; // priv->row_spacing * (priv->n_rows - 1);
-  for (i = 0; i < priv->n_rows; i++)
-    total_min_height += rows[i].pref_size;
-
-  /* calculate the remaining space and distribute it evenly onto all rows/cols
-   * with the x/y expand property set. */
-  for (i = 0; i < priv->n_rows; i++)
-    if (rows[i].expand)
-      {
-        expanded_rows += rows[i].pref_size;
-        n_expanded_rows++;
-      }
-
-  /* extra row height = for height - row spacings - total_min_height */
-  for_height -= (priv->row_spacing * (priv->n_rows - 1));
-  extra_row_height = for_height - total_min_height;
 
 
-  if (extra_row_height < 0)
+  /* STAGE TWO: take spanning children into account */
+  for (l = priv->children; l; l = g_slist_next (l))
     {
-      gint *skip = g_slice_alloc0 (sizeof (gint) * priv->n_rows);
-      gint total_shrink_height;
+      MxTableChild *meta;
+      ClutterActor *child;
+      DimensionData *row;
+      gfloat c_min, c_pref;
+      gfloat min_width, pref_width;
+      gint i, start_row, end_row;
+      gint n_expand;
 
-      /* If we need to shrink rows, we need to do multiple passes.
-       *
-       * We start by assuming all rows can shrink. All rows are sized
-       * proportional to their height in the total table size. If a row would be
-       * sized smaller than its minimum size, we mark it as non-shrinkable, and
-       * reduce extra_row_height by the amount it has been shrunk. The amount
-       * it has been shrunk by is the difference between the preferred and
-       * minimum height, since all rows start at their preferred height. We
-       * also then reduce the total table size (stored in total_shrink_height) by the height
-       * of the row we are going to be skipping.
-       *
-       */
+      child = CLUTTER_ACTOR (l->data);
 
-      /* We start by assuming all rows can shrink */
-      total_shrink_height = total_min_height;
-      for (i = 0; i < priv->n_rows; i++)
+      meta = (MxTableChild *)
+        clutter_container_get_child_meta (CLUTTER_CONTAINER (table), child);
+
+      if (meta->row_span < 2)
+        continue;
+
+      row = &rows[meta->row];
+      start_row = meta->row;
+      end_row = meta->row + meta->row_span - 1;
+
+      clutter_actor_get_preferred_width (child, columns[meta->col].final_size,
+                                         &c_min, &c_pref);
+
+
+      /* check there is enough room for this actor */
+      min_width = 0;
+      pref_width = 0;
+      n_expand = 0;
+      for (i = start_row; i <= end_row; i++)
         {
-          if (!skip[i])
+          min_width += rows[i].min_size;
+          pref_width += rows[i].pref_size;
+
+          if (rows[i].expand)
             {
-              gint tmp;
+              n_expand++;
+            }
+        }
+      min_width += priv->row_spacing * (meta->row_span - 1);
+      pref_width += priv->row_spacing * (meta->row_span - 1);
 
-              /* Calculate the height of the row by starting with the preferred
-               * height and taking away the extra row height proportional to
-               * the preferred row height over the rows that are being shrunk
-               */
-              tmp = rows[i].pref_size
-                    + (extra_row_height * (rows[i].pref_size / (float) total_shrink_height));
+      /* increase the minimum size */
+      if (min_width < c_min)
+        {
+          gfloat expand_by;
 
-              if (tmp < rows[i].min_size)
+          expand_by = c_min - min_width;
+
+          /* if none of the rows are set to expand, then expand them all
+           * equally. otherwise, expand only rows with expand set. */
+          for (i = start_row; i <= end_row; i++)
+            {
+              if (n_expand)
                 {
-                  /* This was a row we *were* set to shrink, but we now find it would have
-                   * been shrunk too much. We remove it from the list of rows to shrink and
-                   * adjust extra_row_height and total_shrink_height appropriately */
-                  skip[i] = TRUE;
-                  rows[i].final_size = rows[i].min_size;
-
-                  /* Reduce extra_row_height by the amount we have reduced this
-                   * actor by */
-                  extra_row_height += (rows[i].pref_size - rows[i].min_size);
-                  /* now take off the row from the total shrink height */
-                  total_shrink_height -= rows[i].pref_size;
-
-                  /* restart the loop */
-                  i = -1;
+                  if (rows[i].expand)
+                    rows[i].min_size += expand_by / n_expand;
                 }
               else
                 {
-                  skip[i] = FALSE;
-                  rows[i].final_size = tmp;
+                  rows[i].min_size += expand_by / meta->col_span;
+                }
+            }
+        }
+
+      /* increase preferred size */
+      if (pref_width < c_pref)
+        {
+          gfloat expand_by;
+
+          expand_by = c_pref - pref_width;
+
+          for (i = start_row; i <= end_row; i++)
+            {
+              if (n_expand)
+                {
+                  if (rows[i].expand)
+                    rows[i].pref_size += expand_by / n_expand;
+                }
+              else
+                {
+                  rows[i].pref_size += expand_by / meta->row_span;
+                }
+
+            }
+        }
+    }
+
+
+
+  /* calculate final heights */
+  if (for_height >= 0)
+    {
+      gfloat min_height, pref_height;
+      gint n_expand;
+
+      min_height = 0;
+      pref_height = 0;
+      n_expand = 0;
+      for (i = 0; i < priv->n_rows; i++)
+        {
+          pref_height += rows[i].pref_size;
+          min_height += rows[i].min_size;
+          if (rows[i].expand)
+            n_expand++;
+        }
+      pref_height += priv->col_spacing * (priv->n_rows - 1);
+      min_height += priv->col_spacing * (priv->n_rows - 1);
+
+      if (for_height <= min_height)
+        {
+          /* erk, we can't shrink this! */
+          for (i = 0; i < priv->n_rows; i++)
+            {
+              rows[i].final_size = rows[i].min_size;
+            }
+          return;
+        }
+
+      if (for_height == pref_height)
+        {
+          /* perfect! */
+          for (i = 0; i < priv->n_rows; i++)
+            {
+              rows[i].final_size = rows[i].pref_size;
+            }
+          return;
+        }
+
+      /* for_height is between min_height and pref_height */
+      if (for_height < pref_height && for_height > min_height)
+        {
+          gfloat height;
+
+          /* shrink rows until they reach min_height */
+
+          /* start with all rows at preferred size */
+          for (i = 0; i < priv->n_rows; i++)
+            {
+              rows[i].final_size = rows[i].pref_size;
+            }
+          height = pref_height;
+
+          while (height > for_height)
+            {
+              for (i = 0; i < priv->n_rows; i++)
+                {
+                  if (rows[i].final_size > rows[i].min_size)
+                    {
+                      rows[i].final_size--;
+                      height--;
+                    }
                 }
             }
 
+          return;
         }
 
-      g_slice_free1 (sizeof (gint) * priv->n_rows, skip);
-    }
-  else
-    {
-      for (i = 0; i < priv->n_rows; i++)
+      /* expand rows */
+      if (for_height > pref_height)
         {
-          if (rows[i].expand)
-            rows[i].final_size = rows[i].pref_size + (extra_row_height / n_expanded_rows);
-          else
-            rows[i].final_size = rows[i].pref_size;
+          gfloat extra_height = for_height - pref_height;
+
+          for (i = 0; i < priv->n_rows; i++)
+            {
+              if (rows[i].expand)
+                {
+                  if (n_expand)
+                    {
+                      rows[i].final_size =
+                        rows[i].pref_size + (extra_height / n_expand);
+                    }
+                  else
+                    {
+                      rows[i].final_size =
+                        rows[i].pref_size + (extra_height / priv->n_rows);
+                    }
+                }
+              else
+                rows[i].final_size = rows[i].pref_size;
+            }
         }
     }
 
+}
+
+static void
+mx_table_calculate_dimensions (MxTable *table,
+                               gfloat for_width,
+                               gfloat for_height)
+{
+  mx_table_calculate_col_widths (table, for_width);
+  mx_table_calculate_row_heights (table, for_height);
 }
 
 static void
@@ -810,11 +887,7 @@ mx_table_preferred_allocate (ClutterActor          *self,
                       - padding.right
                       - padding.left);
 
-  mx_table_calculate_col_widths (table,
-                                 (int)(box->x2 - box->x1));
-
-  mx_table_calculate_row_heights (table,
-                                  (int)(box->y2 - box->y1));
+  mx_table_calculate_dimensions (table, box->x2 - box->x1, box->y2 - box->y1);
 
   rows = (DimensionData *) priv->rows->data;
   columns = (DimensionData *) priv->columns->data;
