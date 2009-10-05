@@ -588,6 +588,12 @@ mx_table_calculate_col_widths (MxTable *table,
       if (for_width > pref_width)
         {
           gfloat extra_width = for_width - pref_width;
+          gint remaining;
+
+          if (n_expand)
+            remaining = (gint) extra_width % n_expand;
+          else
+            remaining = (gint) extra_width % priv->n_cols;
 
           for (i = 0; i < priv->n_cols; i++)
             {
@@ -606,6 +612,15 @@ mx_table_calculate_col_widths (MxTable *table,
                 }
               else
                 columns[i].final_size = columns[i].pref_size;
+            }
+
+          /* distribute the remainder among children */
+          i = 0;
+          while (remaining)
+            {
+              columns[i].final_size++;
+              i++;
+              remaining--;
             }
         }
     }
@@ -825,6 +840,12 @@ mx_table_calculate_row_heights (MxTable *table,
       if (for_height > pref_height)
         {
           gfloat extra_height = for_height - pref_height;
+          gint remaining;
+
+          if (n_expand)
+            remaining = (gint) extra_height % n_expand;
+          else
+            remaining = (gint) extra_height % priv->n_rows;
 
           for (i = 0; i < priv->n_rows; i++)
             {
@@ -843,6 +864,15 @@ mx_table_calculate_row_heights (MxTable *table,
                 }
               else
                 rows[i].final_size = rows[i].pref_size;
+            }
+
+          /* distribute the remainder among children */
+          i = 0;
+          while (remaining)
+            {
+              rows[i].final_size++;
+              i++;
+              remaining--;
             }
         }
     }
