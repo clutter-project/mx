@@ -468,18 +468,7 @@ mx_table_calculate_col_widths (MxTable *table,
       pref_width += priv->col_spacing * (meta->col_span - 1);
 
 
-      /* 1) If the minimum height of the rows spanned is less than the minimum
-       * height of the child that is spanning them, then we must increase the
-       * minimum height of the rows spanned.
-       *
-       * 2) If the preferred height of the spanned rows is more that the minimum
-       * height of the spanning child, then we can start at this size and
-       * decrease each row evenly.
-       *
-       * 3) If the preferred height of the rows is more than the minimum height
-       * of the spanned child, then we can start at the preferred height and
-       * expand.
-       */
+      /* see mx_table_calculate_row_heights() for comments */
       /* (1) */
       if (c_min > min_width)
         {
