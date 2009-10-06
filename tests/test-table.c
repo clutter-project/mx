@@ -84,6 +84,44 @@ toggle_visible (MxButton *button)
   clutter_actor_hide (CLUTTER_ACTOR (button));
 }
 
+gboolean drag = FALSE;
+
+static gboolean
+button_press (ClutterActor *actor, ClutterButtonEvent *event,
+              ClutterActor *table)
+{
+  if (event->button == 1)
+    {
+      drag = TRUE;
+      return TRUE;
+    }
+
+  return FALSE;
+}
+
+static gboolean
+button_release (ClutterActor *actor, ClutterButtonEvent *event,
+                ClutterActor *table)
+{
+  if (event->button == 1)
+    {
+      drag = FALSE;
+      return TRUE;
+    }
+  if (event->button == 3)
+    clutter_actor_set_size (table, -1, -1);
+
+  return FALSE;
+}
+
+static void
+motion_event (ClutterActor *actor, ClutterMotionEvent *event,
+              ClutterActor *table)
+{
+  if (drag)
+    clutter_actor_set_size (table, event->x - 5, event->y - 5);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -139,6 +177,7 @@ main (int argc, char *argv[])
 
 
   clutter_actor_set_size (CLUTTER_ACTOR (button1), 100, 100);
+  clutter_actor_set_width (CLUTTER_ACTOR (button4), 250);
 
   clutter_container_child_set (CLUTTER_CONTAINER (table),
                                CLUTTER_ACTOR (button1),
@@ -181,6 +220,13 @@ main (int argc, char *argv[])
   g_signal_connect (button4, "clicked", G_CALLBACK (toggle_expand), table);
   g_signal_connect (button7, "clicked", G_CALLBACK (randomise_align), table);
   g_signal_connect (button10, "clicked", G_CALLBACK (toggle_visible), NULL);
+
+  g_signal_connect (stage, "button-press-event", G_CALLBACK (button_press),
+                    table);
+  g_signal_connect (stage, "motion-event", G_CALLBACK (motion_event),
+                    table);
+  g_signal_connect (stage, "button-release-event", G_CALLBACK (button_release),
+                    table);
 
   clutter_actor_show (stage);
 
