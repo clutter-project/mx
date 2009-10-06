@@ -467,53 +467,77 @@ mx_table_calculate_col_widths (MxTable *table,
       min_width += priv->col_spacing * (meta->col_span - 1);
       pref_width += priv->col_spacing * (meta->col_span - 1);
 
-      /* increase the minimum size */
-      if (min_width < c_min)
+
+      /* 1) If the minimum height of the rows spanned is less than the minimum
+       * height of the child that is spanning them, then we must increase the
+       * minimum height of the rows spanned.
+       *
+       * 2) If the preferred height of the spanned rows is more that the minimum
+       * height of the spanning child, then we can start at this size and
+       * decrease each row evenly.
+       *
+       * 3) If the preferred height of the rows is more than the minimum height
+       * of the spanned child, then we can start at the preferred height and
+       * expand.
+       */
+      /* (1) */
+      if (c_min > min_width)
         {
-          gfloat expand_by;
 
-          expand_by = c_min - min_width;
-
-          /* if none of the columns are set to expand, then expand them all
-           * equally. otherwise, expand only columns with expand set. */
-          for (i = start_col; i <= end_col; i++)
+          /* (2) */
+          /* we can start from preferred width and decrease */
+          if (pref_width > c_min)
             {
-              if (n_expand)
+              for (i = start_col; i <= end_col; i++)
                 {
-                  if (columns[i].expand)
-                    columns[i].min_size += expand_by / n_expand;
+                  columns[i].final_size = columns[i].pref_size;
                 }
-              else
+
+              while (pref_width > c_min)
                 {
-                  columns[i].min_size += expand_by / meta->col_span;
+                  for (i = start_col; i <= end_col; i++)
+                    {
+                      if (columns[i].final_size > columns[i].min_size)
+                        {
+                          columns[i].final_size--;
+                          pref_width--;
+                        }
+                    }
+                }
+              for (i = start_col; i <= end_col; i++)
+                {
+                  columns[i].min_size = columns[i].final_size;
+                }
+
+            }
+          else
+            {
+              /* (3) */
+              /* we can expand from preferred size */
+              gfloat expand_by;
+
+              expand_by = c_pref - pref_width;
+
+              for (i = start_col; i <= end_col; i++)
+                {
+                  if (n_expand)
+                    {
+                      if (columns[i].expand)
+                        columns[i].min_size =
+                          columns[i].pref_size + expand_by / n_expand;
+                    }
+                  else
+                    {
+                      columns[i].min_size =
+                        columns[i].pref_size + expand_by / meta->col_span;
+                    }
+
                 }
             }
         }
 
-      /* increase preferred size */
-      if (pref_width < c_pref)
-        {
-          gfloat expand_by;
 
-          expand_by = c_pref - pref_width;
-
-          for (i = start_col; i <= end_col; i++)
-            {
-              if (n_expand)
-                {
-                  if (columns[i].expand)
-                    columns[i].pref_size += expand_by / n_expand;
-                }
-              else
-                {
-                  columns[i].pref_size += expand_by / meta->col_span;
-                }
-
-            }
-        }
     }
-
-
 
 
   /* calculate final widths */
@@ -720,52 +744,75 @@ mx_table_calculate_row_heights (MxTable *table,
       min_height += priv->row_spacing * (meta->row_span - 1);
       pref_height += priv->row_spacing * (meta->row_span - 1);
 
-      /* increase the minimum size */
-      if (min_height < c_min)
+      /* 1) If the minimum height of the rows spanned is less than the minimum
+       * height of the child that is spanning them, then we must increase the
+       * minimum height of the rows spanned.
+       *
+       * 2) If the preferred height of the spanned rows is more that the minimum
+       * height of the spanning child, then we can start at this size and
+       * decrease each row evenly.
+       *
+       * 3) If the preferred height of the rows is more than the minimum height
+       * of the spanned child, then we can start at the preferred height and
+       * expand.
+       */
+      /* (1) */
+      if (c_min > min_height)
         {
-          gfloat expand_by;
 
-          expand_by = c_min - min_height;
-
-          /* if none of the rows are set to expand, then expand them all
-           * equally. otherwise, expand only rows with expand set. */
-          for (i = start_row; i <= end_row; i++)
+          /* (2) */
+          /* we can start from preferred height and decrease */
+          if (pref_height > c_min)
             {
-              if (n_expand)
+              for (i = start_row; i <= end_row; i++)
                 {
-                  if (rows[i].expand)
-                    rows[i].min_size += expand_by / n_expand;
+                  rows[i].final_size = rows[i].pref_size;
                 }
-              else
+
+              while (pref_height > c_min)
                 {
-                  rows[i].min_size += expand_by / meta->col_span;
+                  for (i = start_row; i <= end_row; i++)
+                    {
+                      if (rows[i].final_size > rows[i].min_size)
+                        {
+                          rows[i].final_size--;
+                          pref_height--;
+                        }
+                    }
+                }
+              for (i = start_row; i <= end_row; i++)
+                {
+                  rows[i].min_size = rows[i].final_size;
+                }
+
+            }
+          else
+            {
+              /* (3) */
+              /* we can expand from preferred size */
+              gfloat expand_by;
+
+              expand_by = c_pref - pref_height;
+
+              for (i = start_row; i <= end_row; i++)
+                {
+                  if (n_expand)
+                    {
+                      if (rows[i].expand)
+                        rows[i].min_size =
+                          rows[i].pref_size + expand_by / n_expand;
+                    }
+                  else
+                    {
+                      rows[i].min_size =
+                        rows[i].pref_size + expand_by / meta->row_span;
+                    }
+
                 }
             }
         }
 
-      /* increase preferred size */
-      if (pref_height < c_pref)
-        {
-          gfloat expand_by;
-
-          expand_by = c_pref - pref_height;
-
-          for (i = start_row; i <= end_row; i++)
-            {
-              if (n_expand)
-                {
-                  if (rows[i].expand)
-                    rows[i].pref_size += expand_by / n_expand;
-                }
-              else
-                {
-                  rows[i].pref_size += expand_by / meta->row_span;
-                }
-
-            }
-        }
     }
-
 
 
   /* calculate final heights */
