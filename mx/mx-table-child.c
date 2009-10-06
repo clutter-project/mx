@@ -109,10 +109,6 @@ table_child_set_property (GObject      *gobject,
       child->y_fill = g_value_get_boolean (value);
       clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
-    case CHILD_PROP_ALLOCATE_HIDDEN:
-      child->allocate_hidden = g_value_get_boolean (value);
-      clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
-      break;
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -159,9 +155,6 @@ table_child_get_property (GObject    *gobject,
       break;
     case CHILD_PROP_Y_FILL:
       g_value_set_boolean (value, child->y_fill);
-      break;
-    case CHILD_PROP_ALLOCATE_HIDDEN:
-      g_value_set_boolean (value, child->allocate_hidden);
       break;
 
     default:
@@ -298,7 +291,6 @@ mx_table_child_init (MxTableChild *self)
   self->x_fill = TRUE;
   self->y_fill = TRUE;
 
-  self->allocate_hidden = TRUE;
 }
 
 static MxTableChild*
@@ -749,55 +741,3 @@ mx_table_child_set_y_align (MxTable      *table,
   clutter_actor_queue_relayout (child);
 }
 
-/**
- * mx_table_child_set_allocate_hidden:
- * @table: A #MxTable
- * @child: A #ClutterActor
- * @value: #TRUE if the actor should be allocated when hidden
- *
- * Set whether the child should be allocate even if it is hidden
- */
-void
-mx_table_child_set_allocate_hidden (MxTable      *table,
-                                    ClutterActor *child,
-                                    gboolean      value)
-{
-  MxTableChild *meta;
-
-  g_return_if_fail (MX_IS_TABLE (table));
-  g_return_if_fail (CLUTTER_IS_ACTOR (child));
-
-  meta = get_child_meta (table, child);
-
-  if (meta->allocate_hidden != value)
-    {
-      meta->allocate_hidden = value;
-
-      clutter_actor_queue_relayout (child);
-
-      g_object_notify (G_OBJECT (meta), "allocate-hidden");
-    }
-}
-
-/**
- * mx_table_child_get_allocate_hidden:
- * @table: A #MxTable
- * @child: A #ClutterActor
- *
- * Determine if the child is allocated even if it is hidden
- *
- * Returns: #TRUE if the actor is allocated when hidden
- */
-gboolean
-mx_table_child_get_allocate_hidden (MxTable      *table,
-                                    ClutterActor *child)
-{
-  MxTableChild *meta;
-
-  g_return_val_if_fail (MX_IS_TABLE (table), TRUE);
-  g_return_val_if_fail (CLUTTER_IS_ACTOR (child), TRUE);
-
-  meta = get_child_meta (table, child);
-
-  return meta->allocate_hidden;
-}

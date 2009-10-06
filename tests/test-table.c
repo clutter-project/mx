@@ -208,11 +208,6 @@ main (int argc, char *argv[])
                                "x-fill", FALSE,
                                NULL);
 
-  clutter_container_child_set (CLUTTER_CONTAINER (table),
-                               CLUTTER_ACTOR (button10),
-                               "allocate-hidden", FALSE,
-                               NULL);
-
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (table));
 
   clutter_actor_set_position (CLUTTER_ACTOR (table), 5, 5);

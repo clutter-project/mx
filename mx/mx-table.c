@@ -985,7 +985,7 @@ mx_table_preferred_allocate (ClutterActor          *self,
 
       meta = (MxTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
 
-      if (!meta->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
         continue;
 
       /* get child properties */
