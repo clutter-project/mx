@@ -683,7 +683,7 @@ mx_table_calculate_row_heights (MxTable *table,
       ClutterActor *child;
       DimensionData *row;
       gfloat c_min, c_pref;
-      gfloat min_width, pref_width;
+      gfloat min_height, pref_height;
       gint i, start_row, end_row;
       gint n_expand;
 
@@ -699,33 +699,33 @@ mx_table_calculate_row_heights (MxTable *table,
       start_row = meta->row;
       end_row = meta->row + meta->row_span - 1;
 
-      clutter_actor_get_preferred_width (child, columns[meta->col].final_size,
+      clutter_actor_get_preferred_height (child, columns[meta->col].final_size,
                                          &c_min, &c_pref);
 
 
       /* check there is enough room for this actor */
-      min_width = 0;
-      pref_width = 0;
+      min_height = 0;
+      pref_height = 0;
       n_expand = 0;
       for (i = start_row; i <= end_row; i++)
         {
-          min_width += rows[i].min_size;
-          pref_width += rows[i].pref_size;
+          min_height += rows[i].min_size;
+          pref_height += rows[i].pref_size;
 
           if (rows[i].expand)
             {
               n_expand++;
             }
         }
-      min_width += priv->row_spacing * (meta->row_span - 1);
-      pref_width += priv->row_spacing * (meta->row_span - 1);
+      min_height += priv->row_spacing * (meta->row_span - 1);
+      pref_height += priv->row_spacing * (meta->row_span - 1);
 
       /* increase the minimum size */
-      if (min_width < c_min)
+      if (min_height < c_min)
         {
           gfloat expand_by;
 
-          expand_by = c_min - min_width;
+          expand_by = c_min - min_height;
 
           /* if none of the rows are set to expand, then expand them all
            * equally. otherwise, expand only rows with expand set. */
@@ -744,11 +744,11 @@ mx_table_calculate_row_heights (MxTable *table,
         }
 
       /* increase preferred size */
-      if (pref_width < c_pref)
+      if (pref_height < c_pref)
         {
           gfloat expand_by;
 
-          expand_by = c_pref - pref_width;
+          expand_by = c_pref - pref_height;
 
           for (i = start_row; i <= end_row; i++)
             {
