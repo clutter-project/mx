@@ -44,6 +44,7 @@ struct _MxPopupPrivate
   gboolean transition_out;
 
   gulong   captured_event_cb;
+  ClutterActor *stage;
 };
 
 enum
@@ -110,6 +111,14 @@ mx_popup_dispose (GObject *object)
         mx_popup_free_action_at (popup, i, FALSE);
       g_array_free (priv->children, TRUE);
       priv->children = NULL;
+    }
+
+  if (priv->captured_event_cb != 0)
+    {
+      /* we assume the actor hasn't moved to a new stage since it was shown */
+      g_signal_handler_disconnect (priv->stage, priv->captured_event_cb);
+      priv->captured_event_cb = 0;
+      priv->stage = NULL;
     }
 
   G_OBJECT_CLASS (mx_popup_parent_class)->dispose (object);
@@ -370,9 +379,12 @@ mx_popup_show (ClutterActor *actor)
 
   /* set up a capture so we can close the menu if the user clicks outside it */
   if (priv->captured_event_cb == 0)
-    priv->captured_event_cb =
-      g_signal_connect (clutter_actor_get_stage (actor), "captured-event",
-                        G_CALLBACK (mx_popup_captured_event_cb), actor);
+    {
+      priv->stage = clutter_actor_get_stage (actor);
+      priv->captured_event_cb =
+        g_signal_connect (priv->stage, "captured-event",
+                          G_CALLBACK (mx_popup_captured_event_cb), actor);
+    }
 }
 
 static void
@@ -385,9 +397,10 @@ mx_popup_hide (ClutterActor *actor)
   if (priv->captured_event_cb != 0)
     {
       /* we assume the actor hasn't moved to a new stage since it was shown */
-      g_signal_handler_disconnect (clutter_actor_get_stage (actor),
+      g_signal_handler_disconnect (priv->stage,
                                    priv->captured_event_cb);
       priv->captured_event_cb = 0;
+      priv->stage = NULL;
     }
 }
 
@@ -462,8 +475,15 @@ mx_popup_button_release_cb (MxButton     *button,
   /* set the popup unreactive to prevent other items being hilighted */
   clutter_actor_set_reactive ((ClutterActor*) popup, FALSE);
 
+
+  g_object_ref (popup);
+  g_object_ref (action);
+
   g_signal_emit (popup, signals[ACTION_ACTIVATED], 0, action);
   g_signal_emit_by_name (action, "activated");
+
+  g_object_unref (action);
+  g_object_unref (popup);
 
 }
 
