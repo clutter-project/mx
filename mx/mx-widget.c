@@ -60,7 +60,6 @@ struct _MxWidgetPrivate
   ClutterActor *background_image;
   ClutterColor *bg_color;
 
-  gboolean      is_stylable : 1;
   gboolean      has_tooltip : 1;
   gboolean      is_style_dirty : 1;
 
@@ -85,8 +84,6 @@ enum
   PROP_STYLE,
   PROP_PSEUDO_CLASS,
   PROP_STYLE_CLASS,
-
-  PROP_STYLABLE,
 
   PROP_HAS_TOOLTIP,
   PROP_TOOLTIP_TEXT
@@ -124,14 +121,6 @@ mx_widget_set_property (GObject      *gobject,
       mx_widget_set_style_class_name (actor, g_value_get_string (value));
       break;
 
-    case PROP_STYLABLE:
-      if (actor->priv->is_stylable != g_value_get_boolean (value))
-        {
-          actor->priv->is_stylable = g_value_get_boolean (value);
-          clutter_actor_queue_relayout ((ClutterActor *) gobject);
-        }
-      break;
-
     case PROP_HAS_TOOLTIP:
       mx_widget_set_has_tooltip (actor, g_value_get_boolean (value));
       break;
@@ -167,10 +156,6 @@ mx_widget_get_property (GObject    *gobject,
 
     case PROP_STYLE_CLASS:
       g_value_set_string (value, priv->style_class);
-      break;
-
-    case PROP_STYLABLE:
-      g_value_set_boolean (value, priv->is_stylable);
       break;
 
     case PROP_HAS_TOOLTIP:
@@ -459,10 +444,6 @@ mx_widget_style_changed (MxStylable *self)
   gboolean has_changed = FALSE;
   ClutterColor *color;
 
-  /* application has request this widget is not stylable */
-  if (!priv->is_stylable)
-    return;
-
   /* cache these values for use in the paint function */
   mx_stylable_get (self,
                    "background-color", &color,
@@ -718,20 +699,6 @@ mx_widget_class_init (MxWidgetClass *klass)
                                                         MX_PARAM_READWRITE));
 
   g_object_class_override_property (gobject_class, PROP_STYLE, "style");
-
-  /**
-   * MxWidget:stylable:
-   *
-   * Enable or disable styling of the widget
-   */
-  pspec = g_param_spec_boolean ("stylable",
-                                "Stylable",
-                                "Whether the table should be styled",
-                                TRUE,
-                                MX_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class,
-                                   PROP_STYLABLE,
-                                   pspec);
 
   /**
    * MxWidget:has-tooltip:
@@ -1051,7 +1018,6 @@ mx_widget_init (MxWidget *actor)
   MxWidgetPrivate *priv;
 
   actor->priv = priv = MX_WIDGET_GET_PRIVATE (actor);
-  priv->is_stylable = TRUE;
 
   /* connect style changed */
   g_signal_connect (actor, "notify::name", G_CALLBACK (mx_widget_name_notify), NULL);
