@@ -399,6 +399,8 @@ mx_item_view_set_model (MxItemView   *item_view,
                                             (GCallback) row_removed_cb,
                                             item_view);
       g_object_unref (priv->model);
+
+      priv->model = NULL;
     }
 
   if (model)

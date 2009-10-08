@@ -411,6 +411,8 @@ mx_list_view_set_model (MxListView   *list_view,
                                             (GCallback) row_removed_cb,
                                             list_view);
       g_object_unref (priv->model);
+
+      priv->model = NULL;
     }
 
   if (model)
