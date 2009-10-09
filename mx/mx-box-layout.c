@@ -582,10 +582,18 @@ mx_box_layout_allocate (ClutterActor          *actor,
                  - padding.top
                  - padding.bottom;
 
-  mx_box_layout_get_preferred_height (actor, avail_width, NULL,
-                                      &pref_height);
-  mx_box_layout_get_preferred_width (actor, avail_height, NULL,
-                                     &pref_width);
+  if (priv->is_vertical)
+    {
+      mx_box_layout_get_preferred_height (actor, avail_width, NULL,
+                                          &pref_height);
+      pref_width = avail_width;
+    }
+  else
+    {
+      mx_box_layout_get_preferred_width (actor, avail_height, NULL,
+                                         &pref_width);
+      pref_height = avail_height;
+    }
 
   /* update adjustments for scrolling */
   if (priv->vadjustment)
