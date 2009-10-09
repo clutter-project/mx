@@ -360,7 +360,23 @@ mx_popup_captured_event_cb (ClutterActor *actor,
 
   /* hide the menu if the user clicks outside the menu */
   if (event->type == CLUTTER_BUTTON_PRESS)
-    clutter_actor_hide (popup);
+    {
+      if (clutter_actor_get_animation (popup))
+        {
+          clutter_animation_completed (clutter_actor_get_animation (popup));
+
+          return FALSE;
+        }
+
+
+      clutter_actor_set_reactive (popup, FALSE);
+      clutter_actor_animate (popup, CLUTTER_LINEAR, 250,
+                             "opacity", (guchar) 0,
+                             "signal-swapped::completed", clutter_actor_hide,
+                             popup,
+                             NULL);
+    }
+
 
   return TRUE;
 }
@@ -369,12 +385,19 @@ static void
 mx_popup_show (ClutterActor *actor)
 {
   MxPopupPrivate *priv = MX_POPUP (actor)->priv;
+  ClutterAnimation *animation = NULL;
 
-  CLUTTER_ACTOR_CLASS (mx_popup_parent_class)->show (actor);
-
-  /* set reactive, since this may have been unset by a previous activation
-   * (see: mx_popup_button_release_cb) */
+  /* set reactive and opacity, since these may have been set by the fade-out
+   * animation (e.g. from captured_event_cb or button_release_cb) */
+  if ((animation = clutter_actor_get_animation (actor)))
+    {
+      clutter_animation_completed (animation);
+    }
   clutter_actor_set_reactive (actor, TRUE);
+  clutter_actor_set_opacity (actor, 0xff);
+
+  /* chain up to run show after re-setting properties above */
+  CLUTTER_ACTOR_CLASS (mx_popup_parent_class)->show (actor);
 
 
   /* set up a capture so we can close the menu if the user clicks outside it */
@@ -481,6 +504,11 @@ mx_popup_button_release_cb (MxButton     *button,
 
   g_signal_emit (popup, signals[ACTION_ACTIVATED], 0, action);
   g_signal_emit_by_name (action, "activated");
+
+  clutter_actor_animate (CLUTTER_ACTOR (popup), CLUTTER_LINEAR, 250,
+                         "opacity", (guchar) 0,
+                         "signal-swapped::completed", clutter_actor_hide, popup,
+                         NULL);
 
   g_object_unref (action);
   g_object_unref (popup);

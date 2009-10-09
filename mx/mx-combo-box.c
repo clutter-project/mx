@@ -289,10 +289,6 @@ mx_combo_box_action_activated_cb (ClutterActor *popup,
   box->priv->index = index;
   g_object_notify ((GObject*) box, "index");
 
-  clutter_actor_animate (popup, CLUTTER_LINEAR, 250,
-                         "opacity", (guchar) 0,
-                         "signal-swapped::completed", clutter_actor_hide, popup,
-                         NULL);
 }
 
 static void
