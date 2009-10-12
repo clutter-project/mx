@@ -1329,7 +1329,14 @@ mx_table_set_col_spacing (MxTable *table,
 
   priv = MX_TABLE (table)->priv;
 
-  priv->col_spacing = spacing;
+  if (priv->col_spacing != spacing)
+    {
+      priv->col_spacing = spacing;
+
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
+
+      g_object_notify (G_OBJECT (table), "col-spacing");
+    }
 }
 
 /**
@@ -1350,7 +1357,14 @@ mx_table_set_row_spacing (MxTable *table,
 
   priv = MX_TABLE (table)->priv;
 
-  priv->row_spacing = spacing;
+  if (priv->row_spacing != spacing)
+    {
+      priv->row_spacing = spacing;
+
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
+
+      g_object_notify (G_OBJECT (table), "row-spacing");
+    }
 }
 
 /**
