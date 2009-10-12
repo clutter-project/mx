@@ -401,6 +401,30 @@ mx_tooltip_unmap (ClutterActor *self)
 }
 
 static void
+mx_tooltip_dispose (GObject *object)
+{
+  MxTooltip *tooltip = MX_TOOLTIP (object);
+
+  if (tooltip->priv->label)
+    {
+      clutter_actor_destroy (tooltip->priv->label);
+      tooltip->priv->label = NULL;
+    }
+}
+
+static void
+mx_tooltip_finalize (GObject *object)
+{
+  MxTooltip *tooltip = MX_TOOLTIP (object);
+
+  if (tooltip->priv->tip_area)
+    {
+      g_boxed_free (CLUTTER_TYPE_GEOMETRY, tooltip->priv->tip_area);
+      tooltip->priv->tip_area = NULL;
+    }
+}
+
+static void
 mx_tooltip_class_init (MxTooltipClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -411,6 +435,8 @@ mx_tooltip_class_init (MxTooltipClass *klass)
 
   gobject_class->set_property = mx_tooltip_set_property;
   gobject_class->get_property = mx_tooltip_get_property;
+  gobject_class->dispose = mx_tooltip_dispose;
+  gobject_class->finalize = mx_tooltip_finalize;
 
   actor_class->get_preferred_width = mx_tooltip_get_preferred_width;
   actor_class->get_preferred_height = mx_tooltip_get_preferred_height;
