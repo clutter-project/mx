@@ -667,7 +667,6 @@ mx_button_set_label (MxButton    *button,
                             "text", priv->text,
                             "line-alignment", PANGO_ALIGN_CENTER,
                             "ellipsize", PANGO_ELLIPSIZE_END,
-                            "use-markup", TRUE,
                             NULL);
       mx_bin_set_child ((MxBin*) button, label);
     }
