@@ -190,10 +190,10 @@ mx_widget_dispose (GObject *gobject)
       priv->border_image = NULL;
     }
 
-  if (priv->bg_color)
+  if (priv->background_image)
     {
-      clutter_color_free (priv->bg_color);
-      priv->bg_color = NULL;
+      clutter_actor_unparent (priv->background_image);
+      priv->background_image = NULL;
     }
 
   if (priv->tooltip)
@@ -207,6 +207,8 @@ mx_widget_dispose (GObject *gobject)
 
       if (parent)
         clutter_container_remove_actor (parent, tooltip);
+      else
+        clutter_actor_destroy (tooltip);
 
       priv->tooltip = NULL;
     }
@@ -221,6 +223,8 @@ mx_widget_finalize (GObject *gobject)
 
   g_free (priv->style_class);
   g_free (priv->pseudo_class);
+
+  clutter_color_free (priv->bg_color);
 
   G_OBJECT_CLASS (mx_widget_parent_class)->finalize (gobject);
 }
