@@ -290,16 +290,10 @@ scrollable_get_adjustments (MxScrollable  *scrollable,
                             MxAdjustment **vadjustment)
 {
   MxGridPrivate *priv;
-  ClutterActor *actor, *stage;
 
   g_return_if_fail (MX_IS_GRID (scrollable));
 
   priv = ((MxGrid *) scrollable)->priv;
-
-  actor = CLUTTER_ACTOR (scrollable);
-  stage = clutter_actor_get_stage (actor);
-  if (G_UNLIKELY (stage == NULL))
-    stage = clutter_stage_get_default ();
 
   if (hadjustment)
     {
@@ -308,18 +302,16 @@ scrollable_get_adjustments (MxScrollable  *scrollable,
       else
         {
           MxAdjustment *adjustment;
-          gdouble width, stage_width, increment;
 
-          width = clutter_actor_get_width (actor);
-          stage_width = clutter_actor_get_width (stage);
-          increment = MAX (1.0, MIN (stage_width, width));
+          /* create an initial adjustment. this is filled with correct values
+           * as soon as allocate() is called */
 
-          adjustment = mx_adjustment_new (0,
-                                          0,
-                                          width,
+          adjustment = mx_adjustment_new (0.0,
+                                          0.0,
                                           1.0,
-                                          increment,
-                                          increment);
+                                          1.0,
+                                          1.0,
+                                          1.0);
 
           scrollable_set_adjustments (scrollable,
                                       adjustment,
@@ -336,18 +328,16 @@ scrollable_get_adjustments (MxScrollable  *scrollable,
       else
         {
           MxAdjustment *adjustment;
-          gdouble height, stage_height, increment;
 
-          height = clutter_actor_get_height (actor);
-          stage_height = clutter_actor_get_height (stage);
-          increment = MAX (1.0, MIN (stage_height, height));
+          /* create an initial adjustment. this is filled with correct values
+           * as soon as allocate() is called */
 
-          adjustment = mx_adjustment_new (0,
-                                          0,
-                                          height,
+          adjustment = mx_adjustment_new (0.0,
+                                          0.0,
                                           1.0,
-                                          increment,
-                                          increment);
+                                          1.0,
+                                          1.0,
+                                          1.0);
 
           scrollable_set_adjustments (scrollable,
                                       priv->hadjustment,
