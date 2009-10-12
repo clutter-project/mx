@@ -370,7 +370,7 @@ mx_label_set_text (MxLabel     *label,
 ClutterActor*
 mx_label_get_clutter_text (MxLabel *label)
 {
-  g_return_val_if_fail (MX_LABEL (label), NULL);
+  g_return_val_if_fail (MX_IS_LABEL (label), NULL);
 
   return label->priv->label;
 }

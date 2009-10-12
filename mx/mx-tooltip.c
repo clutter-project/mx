@@ -678,7 +678,7 @@ mx_tooltip_hide (MxTooltip *tooltip)
 {
   ClutterAnimation *animation;
 
-  g_return_if_fail (MX_TOOLTIP (tooltip));
+  g_return_if_fail (MX_IS_TOOLTIP (tooltip));
 
   /* make sure we're not currently already animating (e.g. hiding) */
   animation = clutter_actor_get_animation (CLUTTER_ACTOR (tooltip));

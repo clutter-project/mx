@@ -849,7 +849,7 @@ mx_widget_set_style_class_name (MxWidget    *actor,
 {
   MxWidgetPrivate *priv = actor->priv;
 
-  g_return_if_fail (MX_WIDGET (actor));
+  g_return_if_fail (MX_IS_WIDGET (actor));
 
   priv = actor->priv;
 
@@ -877,7 +877,7 @@ mx_widget_set_style_class_name (MxWidget    *actor,
 const gchar*
 mx_widget_get_style_class_name (MxWidget *actor)
 {
-  g_return_val_if_fail (MX_WIDGET (actor), NULL);
+  g_return_val_if_fail (MX_IS_WIDGET (actor), NULL);
 
   return actor->priv->style_class;
 }
@@ -894,7 +894,7 @@ mx_widget_get_style_class_name (MxWidget *actor)
 const gchar*
 mx_widget_get_style_pseudo_class (MxWidget *actor)
 {
-  g_return_val_if_fail (MX_WIDGET (actor), NULL);
+  g_return_val_if_fail (MX_IS_WIDGET (actor), NULL);
 
   return actor->priv->pseudo_class;
 }
@@ -912,7 +912,7 @@ mx_widget_set_style_pseudo_class (MxWidget    *actor,
 {
   MxWidgetPrivate *priv;
 
-  g_return_if_fail (MX_WIDGET (actor));
+  g_return_if_fail (MX_IS_WIDGET (actor));
 
   priv = actor->priv;
 

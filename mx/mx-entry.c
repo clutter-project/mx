@@ -816,7 +816,7 @@ mx_entry_set_text (MxEntry     *entry,
 ClutterActor*
 mx_entry_get_clutter_text (MxEntry *entry)
 {
-  g_return_val_if_fail (MX_ENTRY (entry), NULL);
+  g_return_val_if_fail (MX_IS_ENTRY (entry), NULL);
 
   return entry->priv->entry;
 }
