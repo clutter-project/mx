@@ -228,6 +228,24 @@ mx_style_finalize (GObject *gobject)
       g_free (l->data);
     }
 
+  if (priv->style_hash)
+    {
+      g_hash_table_destroy (priv->style_hash);
+      priv->style_hash = NULL;
+    }
+
+  if (priv->node_hash)
+    {
+      g_hash_table_destroy (priv->node_hash);
+      priv->node_hash = NULL;
+    }
+
+  if (priv->stylesheet)
+    {
+      ccss_stylesheet_destroy (priv->stylesheet);
+      priv->stylesheet = NULL;
+    }
+
   G_OBJECT_CLASS (mx_style_parent_class)->finalize (gobject);
 }
 
