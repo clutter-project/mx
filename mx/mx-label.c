@@ -244,6 +244,18 @@ mx_label_unmap (ClutterActor *actor)
 }
 
 static void
+mx_label_dispose (GObject *actor)
+{
+  MxLabelPrivate *priv = MX_LABEL (actor)->priv;
+
+  if (priv->label)
+    {
+      clutter_actor_destroy (priv->label);
+      priv->label = NULL;
+    }
+}
+
+static void
 mx_label_class_init (MxLabelClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -254,6 +266,7 @@ mx_label_class_init (MxLabelClass *klass)
 
   gobject_class->set_property = mx_label_set_property;
   gobject_class->get_property = mx_label_get_property;
+  gobject_class->dispose = mx_label_dispose;
 
   actor_class->paint = mx_label_paint;
   actor_class->allocate = mx_label_allocate;
