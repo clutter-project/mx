@@ -1,4 +1,4 @@
-SUBDIRS = mx data examples tests docs build po
+SUBDIRS = mx data tests docs build po
 
 GITIGNOREFILES= $(top_srcdir)/build/autotools\
 		$(top_srcdir)/docs/reference/libmx/tmpl
