@@ -137,6 +137,12 @@ mx_clipboard_provider (XEvent       *xev,
     }
   else
     {
+      if (!clipboard->priv->clipboard_text)
+        {
+          g_warning ("Clipboard request received, but no text available");
+          return CLUTTER_X11_FILTER_REMOVE;
+        }
+
       XChangeProperty (req_event->display,
                        req_event->requestor,
                        req_event->property,
