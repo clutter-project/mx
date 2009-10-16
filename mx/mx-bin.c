@@ -299,9 +299,12 @@ mx_bin_get_preferred_width (ClutterActor *self,
 {
   MxBinPrivate *priv = MX_BIN (self)->priv;
   gfloat min_width, natural_width;
+  gfloat available_height;
   MxPadding padding = { 0, };
 
   mx_widget_get_padding (MX_WIDGET (self), &padding);
+
+  available_height = for_height - padding.top - padding.bottom;
 
   min_width = natural_width = padding.left + padding.right;
 
@@ -315,7 +318,7 @@ mx_bin_get_preferred_width (ClutterActor *self,
     }
   else
     {
-      clutter_actor_get_preferred_width (priv->child, for_height,
+      clutter_actor_get_preferred_width (priv->child, available_height,
                                          min_width_p,
                                          natural_width_p);
 
@@ -335,9 +338,12 @@ mx_bin_get_preferred_height (ClutterActor *self,
 {
   MxBinPrivate *priv = MX_BIN (self)->priv;
   gfloat min_height, natural_height;
+  gfloat available_width;
   MxPadding padding = { 0, };
 
   mx_widget_get_padding (MX_WIDGET (self), &padding);
+
+  available_width = for_width - padding.left - padding.right;
 
   min_height = natural_height = padding.top + padding.bottom;
 
@@ -351,7 +357,7 @@ mx_bin_get_preferred_height (ClutterActor *self,
     }
   else
     {
-      clutter_actor_get_preferred_height (priv->child, for_width,
+      clutter_actor_get_preferred_height (priv->child, available_width,
                                           min_height_p,
                                           natural_height_p);
 
