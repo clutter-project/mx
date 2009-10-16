@@ -146,7 +146,6 @@ AC_CONFIG_FILES([
         docs/reference/Makefile
         docs/reference/libmx/Makefile
         docs/reference/libmx/version.xml
-        examples/Makefile
         mx/Makefile
         mx/mx-version.h
         po/Makefile.in
