@@ -269,14 +269,11 @@ static void
 mx_table_dispose (GObject *gobject)
 {
   MxTablePrivate *priv = MX_TABLE (gobject)->priv;
-  GSList *l, *next;
 
-  for (l = priv->children; l;)
+  while (priv->children)
     {
-      next = l->next;
-      clutter_container_remove_actor ((ClutterContainer *) gobject,
-                                      CLUTTER_ACTOR (l->data));
-      l = next;
+      clutter_actor_destroy (CLUTTER_ACTOR (priv->children->data));
+      priv->children = g_slist_delete_link (priv->children, priv->children);
     }
 
   G_OBJECT_CLASS (mx_table_parent_class)->dispose (gobject);

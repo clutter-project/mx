@@ -376,7 +376,7 @@ mx_bin_dispose (GObject *gobject)
 
   if (priv->child)
     {
-      clutter_actor_unparent (priv->child);
+      clutter_actor_destroy (priv->child);
       priv->child = NULL;
     }
 

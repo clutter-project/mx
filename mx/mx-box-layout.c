@@ -388,7 +388,7 @@ mx_box_layout_dispose (GObject *object)
 
   while (priv->children)
     {
-      clutter_actor_unparent (CLUTTER_ACTOR (priv->children->data));
+      clutter_actor_destroy (CLUTTER_ACTOR (priv->children->data));
 
       priv->children = g_list_delete_link (priv->children, priv->children);
     }
