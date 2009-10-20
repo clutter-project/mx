@@ -35,6 +35,12 @@ clear_btn_clicked_cb (ClutterActor *button, MxEntry *entry)
   mx_entry_set_text (entry, "");
 }
 
+static void
+text_changed_cb (ClutterText *text, MxEntry *entry)
+{
+  printf ("Text: %s\n", mx_entry_get_text (entry));
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -65,6 +71,8 @@ main (int argc, char *argv[])
   mx_entry_set_hint_text (MX_ENTRY (entry), "hint hint...");
 
   clutter_imtext_set_autoshow_im (CLUTTER_IMTEXT (mx_entry_get_clutter_text (MX_ENTRY (entry))), TRUE);
+  g_signal_connect (mx_entry_get_clutter_text (MX_ENTRY (entry)),
+                    "text-changed", text_changed_cb, entry);
 
   button = mx_button_new_with_label ("Set");
   clutter_actor_set_position (CLUTTER_ACTOR (button), 20, 120);
