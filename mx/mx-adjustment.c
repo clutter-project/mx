@@ -58,6 +58,15 @@ struct _MxAdjustmentPrivate
   gdouble  page_increment;
   gdouble  page_size;
 
+  /* For signal emission/notification */
+  guint lower_source;
+  guint upper_source;
+  guint value_source;
+  guint step_inc_source;
+  guint page_inc_source;
+  guint page_size_source;
+  guint changed_source;
+
   /* For interpolation */
   ClutterTimeline *interpolation;
   gdouble          old_position;
@@ -236,9 +245,30 @@ stop_interpolation (MxAdjustment *adjustment)
 }
 
 static void
+mx_adjustment_remove_idle (guint *source)
+{
+  if (*source)
+    {
+      g_source_remove (*source);
+      *source = 0;
+    }
+}
+
+static void
 mx_adjustment_dispose (GObject *object)
 {
+  MxAdjustmentPrivate *priv = MX_ADJUSTMENT (object)->priv;
+
   stop_interpolation (MX_ADJUSTMENT (object));
+
+  /* Remove idle handlers */
+  mx_adjustment_remove_idle (&priv->value_source);
+  mx_adjustment_remove_idle (&priv->lower_source);
+  mx_adjustment_remove_idle (&priv->upper_source);
+  mx_adjustment_remove_idle (&priv->page_inc_source);
+  mx_adjustment_remove_idle (&priv->step_inc_source);
+  mx_adjustment_remove_idle (&priv->page_size_source);
+  mx_adjustment_remove_idle (&priv->changed_source);
 
   G_OBJECT_CLASS (mx_adjustment_parent_class)->dispose (object);
 }
@@ -387,6 +417,83 @@ mx_adjustment_get_value (MxAdjustment *adjustment)
     return priv->value;
 }
 
+static gboolean
+mx_adjustment_value_notify_cb (MxAdjustment *adjustment)
+{
+  MxAdjustmentPrivate *priv = adjustment->priv;
+
+  priv->value_source = 0;
+  g_object_notify (G_OBJECT (adjustment), "value");
+
+  return FALSE;
+}
+
+static gboolean
+mx_adjustment_lower_notify_cb (MxAdjustment *adjustment)
+{
+  MxAdjustmentPrivate *priv = adjustment->priv;
+
+  priv->lower_source = 0;
+  g_object_notify (G_OBJECT (adjustment), "lower");
+
+  return FALSE;
+}
+
+static gboolean
+mx_adjustment_upper_notify_cb (MxAdjustment *adjustment)
+{
+  MxAdjustmentPrivate *priv = adjustment->priv;
+
+  priv->upper_source = 0;
+  g_object_notify (G_OBJECT (adjustment), "upper");
+
+  return FALSE;
+}
+
+static gboolean
+mx_adjustment_step_inc_notify_cb (MxAdjustment *adjustment)
+{
+  MxAdjustmentPrivate *priv = adjustment->priv;
+
+  priv->step_inc_source = 0;
+  g_object_notify (G_OBJECT (adjustment), "step-increment");
+
+  return FALSE;
+}
+
+static gboolean
+mx_adjustment_page_inc_notify_cb (MxAdjustment *adjustment)
+{
+  MxAdjustmentPrivate *priv = adjustment->priv;
+
+  priv->page_inc_source = 0;
+  g_object_notify (G_OBJECT (adjustment), "page-increment");
+
+  return FALSE;
+}
+
+static gboolean
+mx_adjustment_page_size_notify_cb (MxAdjustment *adjustment)
+{
+  MxAdjustmentPrivate *priv = adjustment->priv;
+
+  priv->page_size_source = 0;
+  g_object_notify (G_OBJECT (adjustment), "page-size");
+
+  return FALSE;
+}
+
+static gboolean
+mx_adjustment_emit_changed_cb (MxAdjustment *adjustment)
+{
+  MxAdjustmentPrivate *priv = adjustment->priv;
+
+  priv->changed_source = 0;
+  g_signal_emit (adjustment, signals[CHANGED], 0);
+
+  return FALSE;
+}
+
 void
 mx_adjustment_set_value (MxAdjustment *adjustment,
                          gdouble       value)
@@ -412,7 +519,12 @@ mx_adjustment_set_value (MxAdjustment *adjustment,
     {
       priv->value = value;
 
-      g_object_notify (G_OBJECT (adjustment), "value");
+      if (!priv->value_source)
+        priv->value_source =
+          g_idle_add_full (CLUTTER_PRIORITY_REDRAW,
+                           (GSourceFunc)mx_adjustment_value_notify_cb,
+                           adjustment,
+                           NULL);
     }
 }
 
@@ -447,8 +559,25 @@ mx_adjustment_clamp_page (MxAdjustment *adjustment,
       changed = TRUE;
     }
 
-  if (changed)
-    g_object_notify (G_OBJECT (adjustment), "value");
+  if (changed && !priv->value_source)
+    priv->value_source =
+      g_idle_add_full (CLUTTER_PRIORITY_REDRAW,
+                       (GSourceFunc)mx_adjustment_value_notify_cb,
+                       adjustment,
+                       NULL);
+}
+
+static void
+mx_adjustment_emit_changed (MxAdjustment *adjustment)
+{
+  MxAdjustmentPrivate *priv = adjustment->priv;
+
+  if (!priv->changed_source)
+    priv->changed_source =
+      g_idle_add_full (CLUTTER_PRIORITY_REDRAW,
+                       (GSourceFunc)mx_adjustment_emit_changed_cb,
+                       adjustment,
+                       NULL);
 }
 
 static gboolean
@@ -461,9 +590,14 @@ mx_adjustment_set_lower (MxAdjustment *adjustment,
     {
       priv->lower = lower;
 
-      g_signal_emit (adjustment, signals[CHANGED], 0);
+      mx_adjustment_emit_changed (adjustment);
 
-      g_object_notify (G_OBJECT (adjustment), "lower");
+      if (!priv->lower_source)
+        priv->lower_source =
+          g_idle_add_full (CLUTTER_PRIORITY_REDRAW,
+                           (GSourceFunc)mx_adjustment_lower_notify_cb,
+                           adjustment,
+                           NULL);
 
       /* Defer clamp until after construction. */
       if (!priv->is_constructing)
@@ -485,9 +619,14 @@ mx_adjustment_set_upper (MxAdjustment *adjustment,
     {
       priv->upper = upper;
 
-      g_signal_emit (adjustment, signals[CHANGED], 0);
+      mx_adjustment_emit_changed (adjustment);
 
-      g_object_notify (G_OBJECT (adjustment), "upper");
+      if (!priv->upper_source)
+        priv->upper_source =
+          g_idle_add_full (CLUTTER_PRIORITY_REDRAW,
+                           (GSourceFunc)mx_adjustment_upper_notify_cb,
+                           adjustment,
+                           NULL);
 
       /* Defer clamp until after construction. */
       if (!priv->is_constructing)
@@ -509,9 +648,14 @@ mx_adjustment_set_step_increment (MxAdjustment *adjustment,
     {
       priv->step_increment = step;
 
-      g_signal_emit (adjustment, signals[CHANGED], 0);
+      mx_adjustment_emit_changed (adjustment);
 
-      g_object_notify (G_OBJECT (adjustment), "step-increment");
+      if (!priv->step_inc_source)
+        priv->step_inc_source =
+          g_idle_add_full (CLUTTER_PRIORITY_REDRAW,
+                           (GSourceFunc)mx_adjustment_step_inc_notify_cb,
+                           adjustment,
+                           NULL);
 
       return TRUE;
     }
@@ -529,9 +673,14 @@ mx_adjustment_set_page_increment (MxAdjustment *adjustment,
     {
       priv->page_increment = page;
 
-      g_signal_emit (adjustment, signals[CHANGED], 0);
+      mx_adjustment_emit_changed (adjustment);
 
-      g_object_notify (G_OBJECT (adjustment), "page-increment");
+      if (!priv->page_inc_source)
+        priv->page_inc_source =
+          g_idle_add_full (CLUTTER_PRIORITY_REDRAW,
+                           (GSourceFunc)mx_adjustment_page_inc_notify_cb,
+                           adjustment,
+                           NULL);
 
       return TRUE;
     }
@@ -549,9 +698,14 @@ mx_adjustment_set_page_size (MxAdjustment *adjustment,
     {
       priv->page_size = size;
 
-      g_signal_emit (adjustment, signals[CHANGED], 0);
+      mx_adjustment_emit_changed (adjustment);
 
-      g_object_notify (G_OBJECT (adjustment), "page_size");
+      if (!priv->page_size_source)
+        priv->page_size_source =
+          g_idle_add_full (CLUTTER_PRIORITY_REDRAW,
+                           (GSourceFunc)mx_adjustment_page_size_notify_cb,
+                           adjustment,
+                           NULL);
 
       /* Well explicitely clamp after construction. */
       if (!priv->is_constructing)
@@ -601,7 +755,7 @@ mx_adjustment_set_values (MxAdjustment *adjustment,
     }
 
   if (emit_changed)
-    g_signal_emit (G_OBJECT (adjustment), signals[CHANGED], 0);
+    mx_adjustment_emit_changed (adjustment);
 
   g_object_thaw_notify (G_OBJECT (adjustment));
 }
