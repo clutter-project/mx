@@ -67,8 +67,6 @@ struct _MxButtonClass
   /* vfuncs, not signals */
   void (* pressed)    (MxButton     *button);
   void (* released)   (MxButton     *button);
-  void (* transition) (MxButton     *button,
-                       ClutterActor *old_bg);
 
   /* signals */
   void (* clicked) (MxButton *button);

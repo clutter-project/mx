@@ -56,8 +56,7 @@ enum
 
   PROP_LABEL,
   PROP_TOGGLE,
-  PROP_ACTIVE,
-  PROP_TRANSITION
+  PROP_ACTIVE
 };
 
 enum
@@ -83,8 +82,6 @@ struct _MxButtonPrivate
   guint             is_hover : 1;
   guint             is_checked : 1;
   guint             is_toggle : 1;
-
-  gint              transition_duration;
 
   ClutterAnimation *animation;
 
@@ -231,37 +228,24 @@ mx_button_style_changed (MxWidget *widget)
   mx_button_update_label_style (button);
 
   /* run a transition if applicable */
-  if (button_class->transition)
+  if (priv->old_bg &&
+      (!mx_widget_get_style_pseudo_class (widget)))
     {
-      button_class->transition (button, priv->old_bg);
-    }
-  else
-    {
-      if (priv->old_bg &&
-          (!mx_widget_get_style_pseudo_class (widget)))
-        {
-          ClutterAnimation *animation;
-          if (!clutter_actor_get_parent (priv->old_bg))
-            {
-              clutter_actor_set_parent (priv->old_bg, (ClutterActor*) widget);
-              priv->old_bg_parented = TRUE;
-            }
-          if (priv->transition_duration > 0)
-            {
-              animation = clutter_actor_animate (priv->old_bg,
-                                                 CLUTTER_LINEAR,
-                                                 priv->transition_duration,
-                                                 "opacity", 0,
-                                                 NULL);
-              g_signal_connect (animation, "completed",
-                                G_CALLBACK (mx_animation_completed), button);
-            }
-          else
-            {
-              mx_button_dispose_old_bg (button);
-            }
+      ClutterAnimation *animation;
 
+      if (!clutter_actor_get_parent (priv->old_bg))
+        {
+          clutter_actor_set_parent (priv->old_bg, (ClutterActor*) widget);
+          priv->old_bg_parented = TRUE;
         }
+
+      animation = clutter_actor_animate (priv->old_bg,
+                                         CLUTTER_LINEAR,
+                                         120,
+                                         "opacity", 0,
+                                         NULL);
+      g_signal_connect (animation, "completed",
+                        G_CALLBACK (mx_animation_completed), button);
     }
 }
 
@@ -390,7 +374,6 @@ mx_button_set_property (GObject      *gobject,
                         GParamSpec   *pspec)
 {
   MxButton *button = MX_BUTTON (gobject);
-  MxButtonPrivate *priv = MX_BUTTON (gobject)->priv;
 
   switch (prop_id)
     {
@@ -403,10 +386,6 @@ mx_button_set_property (GObject      *gobject,
     case PROP_ACTIVE:
       mx_button_set_checked (button, g_value_get_boolean (value));
       break;
-    case PROP_TRANSITION:
-      priv->transition_duration = g_value_get_int (value);
-      break;
-
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -433,10 +412,6 @@ mx_button_get_property (GObject    *gobject,
     case PROP_ACTIVE:
       g_value_set_boolean (value, priv->is_checked);
       break;
-    case PROP_TRANSITION:
-      g_value_set_int (value, priv->transition_duration);
-      break;
-
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -546,13 +521,6 @@ mx_button_class_init (MxButtonClass *klass)
                                 FALSE, G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_ACTIVE, pspec);
 
-  pspec = g_param_spec_int ("transition-duration",
-                            "Transition Duration",
-                            "Duration of the state transition effect",
-                            0, G_MAXINT, 120, G_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class, PROP_TRANSITION, pspec);
-
-
   /**
    * MxButton::clicked:
    * @button: the object that received the signal
@@ -575,7 +543,6 @@ static void
 mx_button_init (MxButton *button)
 {
   button->priv = MX_BUTTON_GET_PRIVATE (button);
-  button->priv->transition_duration = 120;
   button->priv->spacing = 6;
 
   clutter_actor_set_reactive ((ClutterActor *) button, TRUE);
