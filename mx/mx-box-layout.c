@@ -386,12 +386,12 @@ mx_box_layout_dispose (GObject *object)
 {
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (object)->priv;
 
+  /* destroy the children
+   * clutter_actor_destroy() will call clutter_container_remove() which will
+   * remove the children from the internal list
+   */
   while (priv->children)
-    {
-      clutter_actor_destroy (CLUTTER_ACTOR (priv->children->data));
-
-      priv->children = g_list_delete_link (priv->children, priv->children);
-    }
+    clutter_actor_destroy (CLUTTER_ACTOR (priv->children->data));
 
   if (priv->hadjustment)
     {

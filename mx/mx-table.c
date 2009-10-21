@@ -270,11 +270,12 @@ mx_table_dispose (GObject *gobject)
 {
   MxTablePrivate *priv = MX_TABLE (gobject)->priv;
 
+  /* destroy the children
+   * clutter_actor_destroy() will call clutter_container_remove() which will
+   * remove the children from the internal list
+   */
   while (priv->children)
-    {
-      clutter_actor_destroy (CLUTTER_ACTOR (priv->children->data));
-      priv->children = g_slist_delete_link (priv->children, priv->children);
-    }
+    clutter_actor_destroy (CLUTTER_ACTOR (priv->children->data));
 
   G_OBJECT_CLASS (mx_table_parent_class)->dispose (gobject);
 }
