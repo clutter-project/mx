@@ -410,6 +410,8 @@ mx_tooltip_dispose (GObject *object)
       clutter_actor_destroy (tooltip->priv->label);
       tooltip->priv->label = NULL;
     }
+
+  G_OBJECT_CLASS (mx_tooltip_parent_class)->dispose (object);
 }
 
 static void
@@ -422,6 +424,8 @@ mx_tooltip_finalize (GObject *object)
       g_boxed_free (CLUTTER_TYPE_GEOMETRY, tooltip->priv->tip_area);
       tooltip->priv->tip_area = NULL;
     }
+
+  G_OBJECT_CLASS (mx_tooltip_parent_class)->finalize (object);
 }
 
 static void

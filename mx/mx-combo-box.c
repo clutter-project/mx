@@ -108,11 +108,9 @@ mx_combo_box_dispose (GObject *object)
 {
   MxComboBoxPrivate *priv = MX_COMBO_BOX (object)->priv;
 
-  G_OBJECT_CLASS (mx_combo_box_parent_class)->dispose (object);
-
   if (priv->label)
     {
-      g_object_unref (priv->label);
+      clutter_actor_destroy (priv->label);
       priv->label = NULL;
     }
 
@@ -123,6 +121,8 @@ mx_combo_box_dispose (GObject *object)
       stage = clutter_actor_get_stage (CLUTTER_ACTOR (object));
       clutter_container_remove_actor ((ClutterContainer*) stage, priv->popup);
     }
+
+  G_OBJECT_CLASS (mx_combo_box_parent_class)->dispose (object);
 }
 
 static void
@@ -130,13 +130,13 @@ mx_combo_box_finalize (GObject *object)
 {
   MxComboBoxPrivate *priv = MX_COMBO_BOX (object)->priv;
 
-  G_OBJECT_CLASS (mx_combo_box_parent_class)->finalize (object);
-
   if (priv->text_list)
     {
       g_slist_foreach (priv->text_list, (GFunc) g_free, NULL);
       g_slist_free (priv->text_list);
     }
+
+  G_OBJECT_CLASS (mx_combo_box_parent_class)->finalize (object);
 }
 
 static void

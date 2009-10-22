@@ -165,6 +165,8 @@ mx_entry_dispose (GObject *object)
       clutter_actor_unparent (priv->entry);
       priv->entry = NULL;
     }
+
+  G_OBJECT_CLASS (mx_entry_parent_class)->dispose (object);
 }
 
 static void
@@ -174,6 +176,8 @@ mx_entry_finalize (GObject *object)
 
   g_free (priv->hint);
   priv->hint = NULL;
+
+  G_OBJECT_CLASS (mx_entry_parent_class)->finalize (object);
 }
 
 static void

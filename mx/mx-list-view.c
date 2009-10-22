@@ -119,8 +119,6 @@ mx_list_view_dispose (GObject *object)
 {
   MxListViewPrivate *priv = MX_LIST_VIEW (object)->priv;
 
-  G_OBJECT_CLASS (mx_list_view_parent_class)->dispose (object);
-
   /* This will cause the unref of the model and also disconnect the signals */
   mx_list_view_set_model (MX_LIST_VIEW (object), NULL);
 
@@ -129,6 +127,8 @@ mx_list_view_dispose (GObject *object)
       g_object_unref (priv->factory);
       priv->factory = NULL;
     }
+
+  G_OBJECT_CLASS (mx_list_view_parent_class)->dispose (object);
 }
 
 static void
@@ -136,15 +136,14 @@ mx_list_view_finalize (GObject *object)
 {
   MxListViewPrivate *priv = MX_LIST_VIEW (object)->priv;
 
-  G_OBJECT_CLASS (mx_list_view_parent_class)->finalize (object);
-
-
   if (priv->attributes)
     {
       g_slist_foreach (priv->attributes, (GFunc) g_free, NULL);
       g_slist_free (priv->attributes);
       priv->attributes = NULL;
     }
+
+  G_OBJECT_CLASS (mx_list_view_parent_class)->finalize (object);
 }
 
 static void

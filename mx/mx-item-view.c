@@ -115,10 +115,10 @@ mx_item_view_set_property (GObject      *object,
 static void
 mx_item_view_dispose (GObject *object)
 {
-  G_OBJECT_CLASS (mx_item_view_parent_class)->dispose (object);
-
   /* This will cause the unref of the model and also disconnect the signals */
   mx_item_view_set_model (MX_ITEM_VIEW (object), NULL);
+
+  G_OBJECT_CLASS (mx_item_view_parent_class)->dispose (object);
 }
 
 static void
@@ -126,15 +126,14 @@ mx_item_view_finalize (GObject *object)
 {
   MxItemViewPrivate *priv = MX_ITEM_VIEW (object)->priv;
 
-  G_OBJECT_CLASS (mx_item_view_parent_class)->finalize (object);
-
-
   if (priv->attributes)
     {
       g_slist_foreach (priv->attributes, (GFunc) g_free, NULL);
       g_slist_free (priv->attributes);
       priv->attributes = NULL;
     }
+
+  G_OBJECT_CLASS (mx_item_view_parent_class)->finalize (object);
 }
 
 static void
