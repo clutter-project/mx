@@ -125,8 +125,6 @@ mx_scroll_view_dispose (GObject *object)
 {
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (object)->priv;
 
-  priv->child = NULL;
-
   if (priv->vscroll)
     {
       clutter_actor_unparent (priv->vscroll);
@@ -139,6 +137,7 @@ mx_scroll_view_dispose (GObject *object)
       priv->hscroll = NULL;
     }
 
+  /* Chaining up will remove the child actor */
   G_OBJECT_CLASS (mx_scroll_view_parent_class)->dispose (object);
 }
 
