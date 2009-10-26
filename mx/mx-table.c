@@ -124,8 +124,11 @@ mx_container_remove_actor (ClutterContainer *container,
                            ClutterActor     *actor)
 {
   MxTablePrivate *priv = MX_TABLE (container)->priv;
+  gint rows, cols;
 
   GSList *item = NULL;
+  MxTableChild *meta;
+  GSList *l;
 
   item = g_slist_find (priv->children, actor);
 
@@ -141,6 +144,20 @@ mx_container_remove_actor (ClutterContainer *container,
 
   priv->children = g_slist_delete_link (priv->children, item);
   clutter_actor_unparent (actor);
+
+  /* update row/column count */
+  rows = 0;
+  cols = 0;
+  for (l = priv->children; l; l = l->next)
+    {
+      ClutterActor *child = CLUTTER_ACTOR (l->data);
+      meta = (MxTableChild *) clutter_container_get_child_meta (container,
+                                                                  child);
+      rows = MAX (rows, meta->row + 1);
+      cols = MAX (cols, meta->col + 1);
+    }
+  priv->n_rows = rows;
+  priv->n_cols = cols;
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
 
