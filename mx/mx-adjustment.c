@@ -420,10 +420,20 @@ mx_adjustment_get_value (MxAdjustment *adjustment)
 static gboolean
 mx_adjustment_value_notify_cb (MxAdjustment *adjustment)
 {
+  ClutterTimeline *interpolation;
   MxAdjustmentPrivate *priv = adjustment->priv;
 
   priv->value_source = 0;
+
+  /* Temporarily set the interpolation timeline to NULL so that
+   * if mx_adjustment_get_value gets called in this callback,
+   * it will get the interpolated value and not just the final
+   * value.
+   */
+  interpolation = priv->interpolation;
+  priv->interpolation = NULL;
   g_object_notify (G_OBJECT (adjustment), "value");
+  priv->interpolation = interpolation;
 
   return FALSE;
 }
