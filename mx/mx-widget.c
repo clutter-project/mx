@@ -62,6 +62,7 @@ struct _MxWidgetPrivate
 
   gboolean      has_tooltip : 1;
   gboolean      is_style_dirty : 1;
+  gboolean      is_hovered : 1;
 
   MxTooltip    *tooltip;
 };
@@ -609,31 +610,61 @@ static gboolean
 mx_widget_enter (ClutterActor         *actor,
                  ClutterCrossingEvent *event)
 {
-  MxWidgetPrivate *priv = MX_WIDGET (actor)->priv;
+  MxWidget *widget = MX_WIDGET (actor);
+  MxWidgetPrivate *priv = widget->priv;
 
+  mx_widget_set_style_pseudo_class (widget, "hover");
+  priv->is_hovered = TRUE;
 
   if (priv->has_tooltip)
-    mx_widget_show_tooltip ((MxWidget*) actor);
+    mx_widget_show_tooltip (widget);
 
-  if (CLUTTER_ACTOR_CLASS (mx_widget_parent_class)->enter_event)
-    return CLUTTER_ACTOR_CLASS (mx_widget_parent_class)->enter_event (actor, event);
-  else
-    return FALSE;
+  return TRUE;
 }
 
 static gboolean
 mx_widget_leave (ClutterActor         *actor,
                  ClutterCrossingEvent *event)
 {
-  MxWidgetPrivate *priv = MX_WIDGET (actor)->priv;
+  MxWidget *widget = MX_WIDGET (actor);
+  MxWidgetPrivate *priv = widget->priv;
+
+  mx_widget_set_style_pseudo_class (widget, "");
+  priv->is_hovered = FALSE;
 
   if (priv->has_tooltip)
     mx_tooltip_hide (priv->tooltip);
 
-  if (CLUTTER_ACTOR_CLASS (mx_widget_parent_class)->leave_event)
-    return CLUTTER_ACTOR_CLASS (mx_widget_parent_class)->leave_event (actor, event);
-  else
-    return FALSE;
+  return TRUE;
+}
+
+static gboolean
+mx_widget_button_press (ClutterActor       *actor,
+                        ClutterButtonEvent *event)
+{
+  MxWidget *widget = MX_WIDGET (actor);
+
+  if (event->button == 1)
+    mx_widget_set_style_pseudo_class (widget, "active");
+
+  return TRUE;
+}
+
+static gboolean
+mx_widget_button_release (ClutterActor       *actor,
+                          ClutterButtonEvent *event)
+{
+  MxWidget *widget = MX_WIDGET (actor);
+
+  if (event->button == 1)
+    {
+      if (widget->priv->is_hovered)
+        mx_widget_set_style_pseudo_class (widget, "hover");
+      else
+        mx_widget_set_style_pseudo_class (widget, "");
+    }
+
+  return TRUE;
 }
 
 static void
@@ -672,6 +703,9 @@ mx_widget_class_init (MxWidgetClass *klass)
 
   actor_class->enter_event = mx_widget_enter;
   actor_class->leave_event = mx_widget_leave;
+  actor_class->button_press_event = mx_widget_button_press;
+  actor_class->button_release_event = mx_widget_button_release;
+
   actor_class->hide = mx_widget_hide;
 
   klass->draw_background = mx_widget_real_draw_background;
