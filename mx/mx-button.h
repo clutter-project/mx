@@ -64,10 +64,6 @@ struct _MxButtonClass
 {
   MxBinClass parent_class;
 
-  /* vfuncs, not signals */
-  void (* pressed)    (MxButton     *button);
-  void (* released)   (MxButton     *button);
-
   /* signals */
   void (* clicked) (MxButton *button);
 };

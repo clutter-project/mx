@@ -217,7 +217,6 @@ mx_button_style_changed (MxWidget *widget)
 {
   MxButton *button = MX_BUTTON (widget);
   MxButtonPrivate *priv = button->priv;
-  MxButtonClass *button_class = MX_BUTTON_GET_CLASS (button);
 
   /* get the spacing value */
   mx_stylable_get (MX_STYLABLE (widget),
@@ -249,26 +248,6 @@ mx_button_style_changed (MxWidget *widget)
     }
 }
 
-static void
-mx_button_real_pressed (MxButton *button)
-{
-  mx_widget_set_style_pseudo_class ((MxWidget*) button, "active");
-}
-
-static void
-mx_button_real_released (MxButton *button)
-{
-  MxButtonPrivate *priv = button->priv;
-
-  if (priv->is_checked)
-    mx_widget_set_style_pseudo_class ((MxWidget*) button, "checked");
-  else if (!priv->is_hover)
-    mx_widget_set_style_pseudo_class ((MxWidget*) button, NULL);
-  else
-    mx_widget_set_style_pseudo_class ((MxWidget*) button, "hover");
-
-}
-
 static gboolean
 mx_button_button_press (ClutterActor       *actor,
                         ClutterButtonEvent *event)
@@ -278,19 +257,17 @@ mx_button_button_press (ClutterActor       *actor,
   if (event->button == 1)
     {
       MxButton *button = MX_BUTTON (actor);
-      MxButtonClass *klass = MX_BUTTON_GET_CLASS (button);
 
       button->priv->is_pressed = TRUE;
 
       clutter_grab_pointer (actor);
 
-      if (klass->pressed)
-        klass->pressed (button);
+      mx_widget_set_style_pseudo_class ((MxWidget*) button, "active");
 
       return TRUE;
     }
 
-  return FALSE;
+  return TRUE;
 }
 
 static gboolean
@@ -300,7 +277,7 @@ mx_button_button_release (ClutterActor       *actor,
   if (event->button == 1)
     {
       MxButton *button = MX_BUTTON (actor);
-      MxButtonClass *klass = MX_BUTTON_GET_CLASS (button);
+      MxButtonPrivate *priv = button->priv;
 
       if (!button->priv->is_pressed)
         return FALSE;
@@ -314,15 +291,20 @@ mx_button_button_release (ClutterActor       *actor,
 
       button->priv->is_pressed = FALSE;
 
-      if (klass->released)
-        klass->released (button);
-
       g_signal_emit (button, button_signals[CLICKED], 0);
+
+
+      if (priv->is_checked)
+        mx_widget_set_style_pseudo_class ((MxWidget*) button, "checked");
+      else if (!priv->is_hover)
+        mx_widget_set_style_pseudo_class ((MxWidget*) button, NULL);
+      else
+        mx_widget_set_style_pseudo_class ((MxWidget*) button, "hover");
 
       return TRUE;
     }
 
-  return FALSE;
+  return TRUE;
 }
 
 static gboolean
@@ -336,7 +318,7 @@ mx_button_enter (ClutterActor         *actor,
 
   button->priv->is_hover = 1;
 
-  return CLUTTER_ACTOR_CLASS (mx_button_parent_class)->enter_event (actor, event);
+  return TRUE;
 }
 
 static gboolean
@@ -349,14 +331,9 @@ mx_button_leave (ClutterActor         *actor,
 
   if (button->priv->is_pressed)
     {
-      MxButtonClass *klass = MX_BUTTON_GET_CLASS (button);
-
       clutter_ungrab_pointer ();
 
       button->priv->is_pressed = FALSE;
-
-      if (klass->released)
-        klass->released (button);
     }
 
   if (button->priv->is_checked)
@@ -364,7 +341,7 @@ mx_button_leave (ClutterActor         *actor,
   else
     mx_widget_set_style_pseudo_class ((MxWidget*) button, NULL);
 
-  return CLUTTER_ACTOR_CLASS (mx_button_parent_class)->leave_event (actor, event);
+  return TRUE;
 }
 
 static void
@@ -483,9 +460,6 @@ mx_button_class_init (MxButtonClass *klass)
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (MxButtonPrivate));
-
-  klass->pressed = mx_button_real_pressed;
-  klass->released = mx_button_real_released;
 
   gobject_class->set_property = mx_button_set_property;
   gobject_class->get_property = mx_button_get_property;
