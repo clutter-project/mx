@@ -549,7 +549,7 @@ mx_viewport_init (MxViewport *self)
   g_object_set (G_OBJECT (self), "reactive", FALSE, NULL);
 }
 
-MxWidget *
+ClutterActor *
 mx_viewport_new (void)
 {
   return g_object_new (MX_TYPE_VIEWPORT, NULL);

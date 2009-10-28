@@ -1320,7 +1320,7 @@ void _mx_table_update_row_col (MxTable *table,
  *
  * Returns: a new #MxTable
  */
-MxWidget*
+ClutterActor *
 mx_table_new (void)
 {
   return g_object_new (MX_TYPE_TABLE, NULL);

@@ -69,7 +69,7 @@ struct _MxTextureFrameClass
 
 GType mx_texture_frame_get_type (void) G_GNUC_CONST;
 
-ClutterActor *  mx_texture_frame_new                (ClutterTexture *texture,
+ClutterActor   *mx_texture_frame_new                (ClutterTexture *texture,
                                                      gfloat          top,
                                                      gfloat          right,
                                                      gfloat          bottom,

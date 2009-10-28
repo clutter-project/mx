@@ -699,7 +699,7 @@ mx_expander_init (MxExpander *self)
  *
  * Returns: the newly allocated #MxExpander
  */
-MxWidget*
+ClutterActor *
 mx_expander_new (void)
 {
   return g_object_new (MX_TYPE_EXPANDER, NULL);

@@ -561,7 +561,7 @@ mx_bin_init (MxBin *bin)
  *
  * Return value: the newly created #MxBin actor
  */
-MxWidget *
+ClutterActor *
 mx_bin_new (void)
 {
   return g_object_new (MX_TYPE_BIN, NULL);

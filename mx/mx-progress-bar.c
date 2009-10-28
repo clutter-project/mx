@@ -258,7 +258,7 @@ mx_progress_bar_init (MxProgressBar *self)
  *
  * Returns: a new #MxProgressBar
  */
-MxWidget *
+ClutterActor *
 mx_progress_bar_new (void)
 {
   return g_object_new (MX_TYPE_PROGRESS_BAR, NULL);

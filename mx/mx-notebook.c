@@ -317,7 +317,7 @@ mx_notebook_init (MxNotebook *self)
   self->priv = NOTEBOOK_PRIVATE (self);
 }
 
-MxNotebook *
+ClutterActor *
 mx_notebook_new (void)
 {
   return g_object_new (MX_TYPE_NOTEBOOK, NULL);

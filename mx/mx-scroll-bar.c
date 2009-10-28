@@ -1060,7 +1060,7 @@ mx_scroll_bar_init (MxScrollBar *self)
                     G_CALLBACK (mx_scroll_bar_notify_reactive), NULL);
 }
 
-MxWidget *
+ClutterActor *
 mx_scroll_bar_new (MxAdjustment *adjustment)
 {
   return g_object_new (MX_TYPE_SCROLL_BAR,

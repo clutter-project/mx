@@ -310,7 +310,7 @@ row_removed_cb (ClutterModel     *model,
  *
  * Returns: a newly allocated #MxItemView
  */
-MxWidget*
+ClutterActor *
 mx_item_view_new (void)
 {
   return g_object_new (MX_TYPE_ITEM_VIEW, NULL);

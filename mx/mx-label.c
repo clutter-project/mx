@@ -310,7 +310,7 @@ mx_label_init (MxLabel *label)
  *
  * Returns: a new #MxLabel
  */
-MxWidget *
+ClutterActor *
 mx_label_new (const gchar *text)
 {
   if (text == NULL || *text == '\0')

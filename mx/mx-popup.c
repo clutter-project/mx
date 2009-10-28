@@ -480,7 +480,7 @@ mx_popup_init (MxPopup *self)
  *
  * Returns: a newly allocated #MxPopup
  */
-MxWidget *
+ClutterActor *
 mx_popup_new (void)
 {
   return g_object_new (MX_TYPE_POPUP, NULL);

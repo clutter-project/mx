@@ -76,14 +76,14 @@ typedef struct {
 
 GType mx_expander_get_type (void);
 
-MxWidget* mx_expander_new (void);
+ClutterActor  *mx_expander_new (void);
 
-void      mx_expander_set_label    (MxExpander  *expander,
-                                    const gchar *label);
+void           mx_expander_set_label    (MxExpander  *expander,
+                                         const gchar *label);
 
-gboolean  mx_expander_get_expanded (MxExpander  *expander);
-void      mx_expander_set_expanded (MxExpander  *expander,
-                                    gboolean     expanded);
+gboolean       mx_expander_get_expanded (MxExpander  *expander);
+void           mx_expander_set_expanded (MxExpander  *expander,
+                                         gboolean     expanded);
 
 G_END_DECLS
 

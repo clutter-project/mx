@@ -704,7 +704,7 @@ clutter_container_iface_init (ClutterContainerIface *iface)
   iface->foreach_with_internals = mx_scroll_view_foreach_with_internals;
 }
 
-MxWidget *
+ClutterActor *
 mx_scroll_view_new (void)
 {
   return g_object_new (MX_TYPE_SCROLL_VIEW, NULL);

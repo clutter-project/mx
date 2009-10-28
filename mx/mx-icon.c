@@ -109,7 +109,7 @@ mx_icon_init (MxIcon *self)
  *
  * Returns: A newly allocated #MxIcon
  */
-MxIcon*
+ClutterActor *
 mx_icon_new (void)
 {
   return g_object_new (MX_TYPE_ICON, NULL);

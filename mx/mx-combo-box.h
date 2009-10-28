@@ -79,7 +79,7 @@ struct _MxComboBoxClass
 
 GType mx_combo_box_get_type (void);
 
-MxComboBox *mx_combo_box_new (void);
+ClutterActor *mx_combo_box_new (void);
 
 
 void mx_combo_box_insert_text  (MxComboBox  *box,

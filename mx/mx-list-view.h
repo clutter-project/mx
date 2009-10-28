@@ -77,7 +77,7 @@ typedef struct {
 
 GType mx_list_view_get_type (void);
 
-MxWidget* mx_list_view_new (void);
+ClutterActor *mx_list_view_new (void);
 
 void          mx_list_view_set_model     (MxListView    *list_view,
                                           ClutterModel  *model);

@@ -835,7 +835,7 @@ mx_grid_free_actor_data (gpointer data)
   g_slice_free (MxGridActorData, data);
 }
 
-MxWidget *
+ClutterActor *
 mx_grid_new (void)
 {
   MxWidget *self = g_object_new (MX_TYPE_GRID, NULL);

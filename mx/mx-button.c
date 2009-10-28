@@ -535,7 +535,7 @@ mx_button_init (MxButton *button)
  *
  * Returns: a new #MxButton
  */
-MxWidget *
+ClutterActor *
 mx_button_new (void)
 {
   return g_object_new (MX_TYPE_BUTTON, NULL);
@@ -549,7 +549,7 @@ mx_button_new (void)
  *
  * Returns: a new #MxButton
  */
-MxWidget *
+ClutterActor *
 mx_button_new_with_label (const gchar *text)
 {
   return g_object_new (MX_TYPE_BUTTON, "label", text, NULL);

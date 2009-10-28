@@ -70,7 +70,7 @@ struct _MxBinClass
 
 GType mx_bin_get_type (void) G_GNUC_CONST;
 
-MxWidget   *  mx_bin_new           (void);
+ClutterActor *mx_bin_new           (void);
 void          mx_bin_set_child     (MxBin        *bin,
                                     ClutterActor *child);
 ClutterActor *mx_bin_get_child     (MxBin        *bin);

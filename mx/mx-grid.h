@@ -79,31 +79,31 @@ struct _MxGrid
 
 GType mx_grid_get_type (void) G_GNUC_CONST;
 
-MxWidget   *mx_grid_new                    (void);
-void        mx_grid_set_end_align          (MxGrid   *self,
-                                            gboolean  value);
-gboolean    mx_grid_get_end_align          (MxGrid   *self);
-void        mx_grid_set_homogenous_rows    (MxGrid   *self,
-                                            gboolean  value);
-gboolean    mx_grid_get_homogenous_rows    (MxGrid   *self);
-void        mx_grid_set_homogenous_columns (MxGrid   *self,
-                                            gboolean  value);
-gboolean    mx_grid_get_homogenous_columns (MxGrid   *self);
-void        mx_grid_set_column_major       (MxGrid   *self,
-                                            gboolean  value);
-gboolean    mx_grid_get_column_major       (MxGrid   *self);
-void        mx_grid_set_row_gap            (MxGrid   *self,
-                                            gfloat    value);
-gfloat      mx_grid_get_row_gap            (MxGrid   *self);
-void        mx_grid_set_column_gap         (MxGrid   *self,
-                                            gfloat    value);
-gfloat      mx_grid_get_column_gap         (MxGrid   *self);
-void        mx_grid_set_valign             (MxGrid   *self,
-                                            gdouble   value);
-gdouble     mx_grid_get_valign             (MxGrid   *self);
-void        mx_grid_set_halign             (MxGrid   *self,
-                                            gdouble   value);
-gdouble     mx_grid_get_halign             (MxGrid   *self);
+ClutterActor  *mx_grid_new                    (void);
+void           mx_grid_set_end_align          (MxGrid   *self,
+                                               gboolean  value);
+gboolean       mx_grid_get_end_align          (MxGrid   *self);
+void           mx_grid_set_homogenous_rows    (MxGrid   *self,
+                                               gboolean  value);
+gboolean       mx_grid_get_homogenous_rows    (MxGrid   *self);
+void           mx_grid_set_homogenous_columns (MxGrid   *self,
+                                               gboolean  value);
+gboolean       mx_grid_get_homogenous_columns (MxGrid   *self);
+void           mx_grid_set_column_major       (MxGrid   *self,
+                                               gboolean  value);
+gboolean       mx_grid_get_column_major       (MxGrid   *self);
+void           mx_grid_set_row_gap            (MxGrid   *self,
+                                               gfloat    value);
+gfloat         mx_grid_get_row_gap            (MxGrid   *self);
+void           mx_grid_set_column_gap         (MxGrid   *self,
+                                               gfloat    value);
+gfloat         mx_grid_get_column_gap         (MxGrid   *self);
+void           mx_grid_set_valign             (MxGrid   *self,
+                                               gdouble   value);
+gdouble        mx_grid_get_valign             (MxGrid   *self);
+void           mx_grid_set_halign             (MxGrid   *self,
+                                               gdouble   value);
+gdouble        mx_grid_get_halign             (MxGrid   *self);
 
 void mx_grid_set_max_stride (MxGrid *self,
                              gint    value);

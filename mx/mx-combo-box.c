@@ -458,7 +458,7 @@ mx_combo_box_init (MxComboBox *self)
  *
  * Returns: a newly allocated MxComboBox
  */
-MxComboBox *
+ClutterActor *
 mx_combo_box_new (void)
 {
   return g_object_new (MX_TYPE_COMBO_BOX, NULL);

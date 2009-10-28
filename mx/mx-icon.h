@@ -66,7 +66,7 @@ typedef struct {
 
 GType mx_icon_get_type (void);
 
-MxIcon* mx_icon_new (void);
+ClutterActor* mx_icon_new (void);
 
 G_END_DECLS
 

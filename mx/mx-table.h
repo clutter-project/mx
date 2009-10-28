@@ -84,7 +84,7 @@ struct _MxTableClass
 
 GType mx_table_get_type (void) G_GNUC_CONST;
 
-MxWidget* mx_table_new (void);
+ClutterActor *mx_table_new (void);
 
 void mx_table_set_col_spacing (MxTable      *table,
                                gint          spacing);

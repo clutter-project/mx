@@ -746,7 +746,7 @@ mx_entry_init (MxEntry *entry)
  *
  * Returns: a new #MxEntry
  */
-MxWidget *
+ClutterActor *
 mx_entry_new (const gchar *text)
 {
   MxWidget *entry;
