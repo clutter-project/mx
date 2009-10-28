@@ -72,10 +72,13 @@ struct _MxStylePrivate
   GHashTable        *node_hash;
 };
 
-typedef struct {
-  ccss_node_t      parent;
-  MxStylable      *stylable;
-  MxStylableIface *iface;
+typedef struct
+{
+  ccss_node_t  parent;
+
+  MxStylable  *stylable;
+  gchar       *class;
+  gchar       *pseudo_class;
 } mx_style_node_t;
 
 static ccss_function_t const * peek_css_functions (void);
@@ -92,6 +95,31 @@ static GQuark
 g_style_error_quark (void)
 {
   return g_quark_from_static_string ("mx-style-error-quark");
+}
+
+static mx_style_node_t*
+mx_style_node_new (MxStylable *stylable)
+{
+  mx_style_node_t *node;
+
+  node = g_slice_new0 (mx_style_node_t);
+
+  ccss_node_init ((ccss_node_t*) node, peek_node_class ());
+  node->stylable = stylable;
+  g_object_get (stylable,
+                "style-class", &node->class,
+                "style-pseudo-class", &node->pseudo_class,
+                NULL);
+
+  return node;
+}
+
+static void
+mx_style_node_free (mx_style_node_t *node)
+{
+  g_free (node->class);
+  g_free (node->pseudo_class);
+  g_slice_free (mx_style_node_t, node);
 }
 
 static gboolean
@@ -347,7 +375,7 @@ mx_style_init (MxStyle *style)
 
   /* create a hash table to look up pointer keys and values */
   style->priv->node_hash = g_hash_table_new_full (NULL, NULL,
-                                                  NULL, g_free);
+                                                  NULL, mx_style_node_free);
   style->priv->style_hash = g_hash_table_new_full (NULL, NULL,
                                                    NULL, (GDestroyNotify) ccss_style_destroy);
 
@@ -396,21 +424,14 @@ get_container (mx_style_node_t *node)
   mx_style_node_t *container;
   ClutterActor *parent;
 
-  g_return_val_if_fail (node, NULL);
-  g_return_val_if_fail (node->iface, NULL);
-  g_return_val_if_fail (node->stylable, NULL);
-
   parent = clutter_actor_get_parent (CLUTTER_ACTOR (node->stylable));
-  while (parent && !MX_IS_WIDGET (parent))
+  while (parent && !MX_IS_STYLABLE (parent))
     parent = clutter_actor_get_parent (CLUTTER_ACTOR (parent));
 
   if (!parent)
     return NULL;
 
-  container = g_new0 (mx_style_node_t, 1);
-  ccss_node_init ((ccss_node_t*) container, peek_node_class ());
-  container->iface = node->iface;
-  container->stylable = MX_STYLABLE (parent);
+  container = mx_style_node_new (MX_STYLABLE (parent));
 
   return container;
 }
@@ -418,40 +439,31 @@ get_container (mx_style_node_t *node)
 static const gchar*
 get_style_id (mx_style_node_t *node)
 {
-  return mx_stylable_get_style_id (node->stylable);
+  if (CLUTTER_IS_ACTOR (node->stylable))
+    return clutter_actor_get_name (CLUTTER_ACTOR (node->stylable));
+  else
+    return NULL;
 }
 
 static const gchar*
 get_style_type (mx_style_node_t *node)
 {
-  return mx_stylable_get_style_type (node->stylable);
+  if (G_IS_OBJECT (node->stylable))
+    return G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (node->stylable));
+  else
+    return NULL;
 }
 
 static const gchar*
 get_style_class (mx_style_node_t *node)
 {
-  return mx_stylable_get_style_class (node->stylable);
+  return node->class;
 }
 
 static const gchar*
 get_pseudo_class (mx_style_node_t *node)
 {
-  return mx_stylable_get_pseudo_class (node->stylable);
-}
-
-static const gchar*
-get_attribute (mx_style_node_t *node,
-               const char      *name)
-{
-  return mx_stylable_get_attribute (node->stylable, name);
-}
-
-static void
-release (mx_style_node_t *node)
-{
-  g_return_if_fail (node);
-
-  g_free (node);
+  return node->pseudo_class;
 }
 
 static ccss_node_class_t *
@@ -465,8 +477,8 @@ peek_node_class (void)
     .get_class        = (ccss_node_get_class_f) get_style_class,
     .get_pseudo_class = (ccss_node_get_pseudo_class_f) get_pseudo_class,
     .get_viewport     = NULL, // (ccss_node_get_viewport_f) get_viewport,
-    .get_attribute    = (ccss_node_get_attribute_f) get_attribute,
-    .release          = (ccss_node_release_f) release
+    .get_attribute    = NULL, // (ccss_node_get_attribute_f) get_attribute,
+    .release          = (ccss_node_release_f) mx_style_node_free
   };
 
   return &_node_class;
@@ -591,7 +603,6 @@ static ccss_style_t*
 mx_style_get_ccss_query (MxStyle    *style,
                          MxStylable *stylable)
 {
-  MxStylableIface *iface = MX_STYLABLE_GET_IFACE (stylable);
   ccss_style_t *ccss_style;
   mx_style_node_t *ccss_node;
 
@@ -599,10 +610,7 @@ mx_style_get_ccss_query (MxStyle    *style,
 
   if (!ccss_node)
     {
-      ccss_node = g_new0 (mx_style_node_t, 1);
-      ccss_node_init ((ccss_node_t*) ccss_node, peek_node_class ());
-      ccss_node->iface = iface;
-      ccss_node->stylable = stylable;
+      ccss_node = mx_style_node_new (stylable);
 
       g_hash_table_insert (style->priv->node_hash, stylable, ccss_node);
       g_signal_connect_swapped (stylable, "stylable-changed",

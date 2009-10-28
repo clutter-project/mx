@@ -82,8 +82,8 @@ enum
   PROP_0,
 
   PROP_STYLE,
-  PROP_PSEUDO_CLASS,
   PROP_STYLE_CLASS,
+  PROP_STYLE_PSEUDO_CLASS,
 
   PROP_HAS_TOOLTIP,
   PROP_TOOLTIP_TEXT
@@ -113,7 +113,7 @@ mx_widget_set_property (GObject      *gobject,
                              g_value_get_object (value));
       break;
 
-    case PROP_PSEUDO_CLASS:
+    case PROP_STYLE_PSEUDO_CLASS:
       mx_widget_set_style_pseudo_class (actor, g_value_get_string (value));
       break;
 
@@ -150,7 +150,7 @@ mx_widget_get_property (GObject    *gobject,
       g_value_set_object (value, priv->style);
       break;
 
-    case PROP_PSEUDO_CLASS:
+    case PROP_STYLE_PSEUDO_CLASS:
       g_value_set_string (value, priv->pseudo_class);
       break;
 
@@ -676,33 +676,12 @@ mx_widget_class_init (MxWidgetClass *klass)
 
   klass->draw_background = mx_widget_real_draw_background;
 
-  /**
-   * MxWidget:pseudo-class:
-   *
-   * The pseudo-class of the actor. Typical values include "hover", "active",
-   * "focus".
-   */
-  g_object_class_install_property (gobject_class,
-                                   PROP_PSEUDO_CLASS,
-                                   g_param_spec_string ("pseudo-class",
-                                                        "Pseudo Class",
-                                                        "Pseudo class for styling",
-                                                        "",
-                                                        MX_PARAM_READWRITE));
-  /**
-   * MxWidget:style-class:
-   *
-   * The style-class of the actor for use in styling.
-   */
-  g_object_class_install_property (gobject_class,
-                                   PROP_STYLE_CLASS,
-                                   g_param_spec_string ("style-class",
-                                                        "Style Class",
-                                                        "Style class for styling",
-                                                        "",
-                                                        MX_PARAM_READWRITE));
-
+  /* stylable interface properties */
   g_object_class_override_property (gobject_class, PROP_STYLE, "style");
+  g_object_class_override_property (gobject_class, PROP_STYLE_CLASS,
+                                    "style-class");
+  g_object_class_override_property (gobject_class, PROP_STYLE_PSEUDO_CLASS,
+                                    "style-pseudo-class");
 
   /**
    * MxWidget:has-tooltip:
@@ -765,75 +744,6 @@ mx_widget_set_style (MxStylable *stylable,
                     "changed",
                     G_CALLBACK (mx_style_changed_cb),
                     stylable);
-}
-
-static MxStylable*
-mx_widget_get_container (MxStylable *stylable)
-{
-  ClutterActor *parent;
-
-  g_return_val_if_fail (MX_IS_WIDGET (stylable), NULL);
-
-  parent = clutter_actor_get_parent (CLUTTER_ACTOR (stylable));
-
-  if (MX_IS_STYLABLE (parent))
-    return MX_STYLABLE (parent);
-  else
-    return NULL;
-}
-
-static MxStylable*
-mx_widget_get_base_style (MxStylable *stylable)
-{
-  return NULL;
-}
-
-static const gchar*
-mx_widget_get_style_id (MxStylable *stylable)
-{
-  g_return_val_if_fail (MX_IS_WIDGET (stylable), NULL);
-
-  return clutter_actor_get_name (CLUTTER_ACTOR (stylable));
-}
-
-static const gchar*
-mx_widget_get_style_type (MxStylable *stylable)
-{
-  return G_OBJECT_TYPE_NAME (stylable);
-}
-
-static const gchar*
-mx_widget_get_style_class (MxStylable *stylable)
-{
-  g_return_val_if_fail (MX_IS_WIDGET (stylable), NULL);
-
-  return MX_WIDGET (stylable)->priv->style_class;
-}
-
-static const gchar*
-mx_widget_get_pseudo_class (MxStylable *stylable)
-{
-  g_return_val_if_fail (MX_IS_WIDGET (stylable), NULL);
-
-  return MX_WIDGET (stylable)->priv->pseudo_class;
-}
-
-static gboolean
-mx_widget_get_viewport (MxStylable *stylable,
-                        gint       *x,
-                        gint       *y,
-                        gint       *width,
-                        gint       *height)
-{
-  g_return_val_if_fail (MX_IS_WIDGET (stylable), FALSE);
-
-  *x = 0;
-  *y = 0;
-
-  *width = clutter_actor_get_width (CLUTTER_ACTOR (stylable));
-  *height = clutter_actor_get_height (CLUTTER_ACTOR (stylable));
-
-  return TRUE;
 }
 
 /**
@@ -923,7 +833,7 @@ mx_widget_set_style_pseudo_class (MxWidget    *actor,
 
       mx_stylable_changed ((MxStylable*) actor);
 
-      g_object_notify (G_OBJECT (actor), "pseudo-class");
+      g_object_notify (G_OBJECT (actor), "style-pseudo-class");
     }
 }
 
@@ -996,14 +906,6 @@ mx_stylable_iface_init (MxStylableIface *iface)
 
       iface->get_style = mx_widget_get_style;
       iface->set_style = mx_widget_set_style;
-      iface->get_base_style = mx_widget_get_base_style;
-      iface->get_container = mx_widget_get_container;
-      iface->get_style_id = mx_widget_get_style_id;
-      iface->get_style_type = mx_widget_get_style_type;
-      iface->get_style_class = mx_widget_get_style_class;
-      iface->get_pseudo_class = mx_widget_get_pseudo_class;
-      /* iface->get_attribute = mx_widget_get_attribute; */
-      iface->get_viewport = mx_widget_get_viewport;
     }
 }
 

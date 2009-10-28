@@ -28,12 +28,6 @@
  *
  * Stylable objects are classes that can have "style properties", that is
  * properties that can be changed by attaching a #MxStyle to them.
- *
- * Objects can choose to subclass #MxWidget, and thus inherit all the
- * #MxWidget style properties; or they can subclass #MxWidget and
- * reimplement the #MxStylable interface to add new style properties
- * specific for them (and their subclasses); or, finally, they can simply
- * subclass #GObject and implement #MxStylable to install new properties.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -105,76 +99,88 @@ static void
 mx_stylable_base_init (gpointer g_iface)
 {
   static gboolean initialised = FALSE;
+  GParamSpec *pspec;
+  GType iface_type = G_TYPE_FROM_INTERFACE (g_iface);
 
-  if (G_UNLIKELY (!initialised))
-    {
-      GType iface_type = G_TYPE_FROM_INTERFACE (g_iface);
+  if (G_LIKELY (initialised))
+    return;
 
-      initialised = TRUE;
+  initialised = TRUE;
 
-      quark_real_owner = g_quark_from_static_string ("mx-stylable-real-owner-quark");
-      quark_style = g_quark_from_static_string ("mx-stylable-style-quark");
+  quark_real_owner =
+    g_quark_from_static_string ("mx-stylable-real-owner-quark");
+  quark_style = g_quark_from_static_string ("mx-stylable-style-quark");
 
-      style_property_spec_pool = g_param_spec_pool_new (FALSE);
+  style_property_spec_pool = g_param_spec_pool_new (FALSE);
 
-      property_notify_context.quark_notify_queue = g_quark_from_static_string ("MxStylable-style-property-notify-queue");
-      property_notify_context.dispatcher = mx_stylable_notify_dispatcher;
+  property_notify_context.quark_notify_queue =
+    g_quark_from_static_string ("MxStylable-style-property-notify-queue");
+  property_notify_context.dispatcher = mx_stylable_notify_dispatcher;
 
-      /**
-       * MxStylable:style:
-       *
-       * The #MxStyle attached to a stylable object.
-       */
-      g_object_interface_install_property (g_iface,
-                                           g_param_spec_object ("style",
-                                                                "Style",
-                                                                "A style object",
-                                                                MX_TYPE_STYLE,
-                                                                MX_PARAM_READWRITE));
+  pspec = g_param_spec_object ("style",
+                               "Style",
+                               "A style object",
+                               MX_TYPE_STYLE,
+                               MX_PARAM_READWRITE);
+  g_object_interface_install_property (g_iface, pspec);
 
-      /**
-       * MxStylable::style-changed:
-       * @stylable: the #MxStylable that received the signal
-       * @old_style: the previously set #MxStyle for @stylable
-       *
-       * The ::style-changed signal is emitted each time one of the style
-       * properties have changed.
-       */
-      stylable_signals[STYLE_CHANGED] =
-        g_signal_new (I_("style-changed"),
-                      iface_type,
-                      G_SIGNAL_RUN_FIRST,
-                      G_STRUCT_OFFSET (MxStylableIface, style_changed),
-                      NULL, NULL,
-                      _mx_marshal_VOID__VOID,
-                      G_TYPE_NONE, 0);
+  pspec = g_param_spec_string ("style-class",
+                               "Style Class",
+                               "String representation of the item's class",
+                               "",
+                               MX_PARAM_READWRITE);
+  g_object_interface_install_property (g_iface, pspec);
 
-      /**
-       * MxStylable::stylable-changed:
-       * @actor: the actor that received the signal
-       *
-       * The ::changed signal is emitted each time any of the properties of the
-       * stylable has changed.
-       */
-      stylable_signals[CHANGED] =
-        g_signal_new (I_("stylable-changed"),
-                      iface_type,
-                      G_SIGNAL_RUN_LAST,
-                      G_STRUCT_OFFSET (MxStylableIface, stylable_changed),
-                      NULL, NULL,
-                      _mx_marshal_VOID__VOID,
-                      G_TYPE_NONE, 0);
+  pspec = g_param_spec_string ("style-pseudo-class",
+                               "Style Pseudo Class",
+                               "Pseudo class, such as current state",
+                               "",
+                               MX_PARAM_READWRITE);
+  g_object_interface_install_property (g_iface, pspec);
 
-      stylable_signals[STYLE_NOTIFY] =
-        g_signal_new (I_("style-notify"),
-                      iface_type,
-                      G_SIGNAL_RUN_FIRST | G_SIGNAL_NO_RECURSE | G_SIGNAL_DETAILED | G_SIGNAL_NO_HOOKS | G_SIGNAL_ACTION,
-                      G_STRUCT_OFFSET (MxStylableIface, style_notify),
-                      NULL, NULL,
-                      _mx_marshal_VOID__PARAM,
-                      G_TYPE_NONE, 1,
-                      G_TYPE_PARAM);
-    }
+  /**
+   * MxStylable::style-changed:
+   * @stylable: the #MxStylable that received the signal
+   * @old_style: the previously set #MxStyle for @stylable
+   *
+   * The ::style-changed signal is emitted each time one of the style
+   * properties have changed.
+   */
+  stylable_signals[STYLE_CHANGED] =
+    g_signal_new (I_("style-changed"),
+                  iface_type,
+                  G_SIGNAL_RUN_FIRST,
+                  G_STRUCT_OFFSET (MxStylableIface, style_changed),
+                  NULL, NULL,
+                  _mx_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
+
+  /**
+   * MxStylable::stylable-changed:
+   * @actor: the actor that received the signal
+   *
+   * The ::changed signal is emitted each time any of the properties of the
+   * stylable has changed.
+   */
+  stylable_signals[CHANGED] =
+    g_signal_new (I_("stylable-changed"),
+                  iface_type,
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (MxStylableIface, stylable_changed),
+                  NULL, NULL,
+                  _mx_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
+
+  stylable_signals[STYLE_NOTIFY] =
+    g_signal_new (I_("style-notify"),
+                  iface_type,
+                  G_SIGNAL_RUN_FIRST | G_SIGNAL_NO_RECURSE | G_SIGNAL_DETAILED
+                  | G_SIGNAL_NO_HOOKS | G_SIGNAL_ACTION,
+                  G_STRUCT_OFFSET (MxStylableIface, style_notify),
+                  NULL, NULL,
+                  _mx_marshal_VOID__PARAM,
+                  G_TYPE_NONE, 1,
+                  G_TYPE_PARAM);
 }
 
 GType
@@ -617,224 +623,6 @@ mx_stylable_set_style (MxStylable *stylable,
 
   g_object_notify (G_OBJECT (stylable), "style");
 }
-
-/**
- * mx_stylable_get_container:
- * @stylable: a #MxStylable
- *
- * Obtain the parent #MxStylable that contains @stylable.
- *
- * Return value: The parent #MxStylable
- */
-MxStylable*
-mx_stylable_get_container (MxStylable *stylable)
-{
-  MxStylableIface *iface;
-
-  g_return_val_if_fail (MX_IS_STYLABLE (stylable), NULL);
-
-  iface = MX_STYLABLE_GET_IFACE (stylable);
-
-  if (iface->get_container)
-    return iface->get_container (stylable);
-  else
-    return NULL;
-}
-
-/**
- * mx_stylable_get_base_style:
- * @stylable: a #MxStylable
- *
- * Get the parent ancestor #MxStylable of @stylable.
- *
- * Return value: the parent #MxStylable
- */
-MxStylable*
-mx_stylable_get_base_style (MxStylable *stylable)
-{
-  MxStylableIface *iface;
-
-  g_return_val_if_fail (MX_IS_STYLABLE (stylable), NULL);
-
-  iface = MX_STYLABLE_GET_IFACE (stylable);
-
-  if (iface->get_base_style)
-    return iface->get_base_style (stylable);
-  else
-    return NULL;
-}
-
-
-/**
- * mx_stylable_get_style_id:
- * @stylable: a #MxStylable
- *
- * Get the ID value of @stylable
- *
- * Return value: the id of @stylable
- */
-const gchar*
-mx_stylable_get_style_id (MxStylable *stylable)
-{
-  MxStylableIface *iface;
-
-  g_return_val_if_fail (MX_IS_STYLABLE (stylable), NULL);
-
-  iface = MX_STYLABLE_GET_IFACE (stylable);
-
-  if (iface->get_style_id)
-    return iface->get_style_id (stylable);
-  else
-    return NULL;
-}
-
-/**
- * mx_stylable_get_style_type:
- * @stylable: a #MxStylable
- *
- * Get the type name of @stylable
- *
- * Return value: the type name of @stylable
- */
-const gchar*
-mx_stylable_get_style_type (MxStylable *stylable)
-{
-  MxStylableIface *iface;
-
-  g_return_val_if_fail (MX_IS_STYLABLE (stylable), NULL);
-
-  iface = MX_STYLABLE_GET_IFACE (stylable);
-
-  if (iface->get_style_type)
-    return iface->get_style_type (stylable);
-  else
-    return G_OBJECT_TYPE_NAME (stylable);
-}
-
-/**
- * mx_stylable_get_style_class:
- * @stylable: a #MxStylable
- *
- * Get the style class name of @stylable
- *
- * Return value: the type name of @stylable
- */
-const gchar*
-mx_stylable_get_style_class (MxStylable *stylable)
-{
-  MxStylableIface *iface;
-
-  g_return_val_if_fail (MX_IS_STYLABLE (stylable), NULL);
-
-  iface = MX_STYLABLE_GET_IFACE (stylable);
-
-  if (iface->get_style_class)
-    return iface->get_style_class (stylable);
-  else
-    return NULL;
-}
-
-/**
- * mx_stylable_get_pseudo_class:
- * @stylable: a #MxStylable
- *
- * Get the pseudo class name of @stylable
- *
- * Return value: the pseudo class name of @stylable
- */
-const gchar*
-mx_stylable_get_pseudo_class (MxStylable *stylable)
-{
-  MxStylableIface *iface;
-
-  g_return_val_if_fail (MX_IS_STYLABLE (stylable), NULL);
-
-  iface = MX_STYLABLE_GET_IFACE (stylable);
-
-  if (iface->get_pseudo_class)
-    return iface->get_pseudo_class (stylable);
-  else
-    return NULL;
-}
-
-/**
- * mx_stylable_get_attribute:
- * @stylable: a #MxStylable
- * @name: attribute name
- *
- * Get the named attribute from @stylable
- *
- * Return value: the value of the attribute
- */
-gchar*
-mx_stylable_get_attribute (MxStylable  *stylable,
-                           const gchar *name)
-{
-  MxStylableIface *iface;
-  GValue value = { 0, };
-  GValue string_value = { 0, };
-  gchar *ret;
-  GParamSpec *pspec;
-
-  g_return_val_if_fail (MX_IS_STYLABLE (stylable), NULL);
-
-  iface = MX_STYLABLE_GET_IFACE (stylable);
-
-  if (iface->get_attribute)
-    return iface->get_attribute (stylable, name);
-
-  /* look up a generic gobject property */
-  pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (stylable), name);
-
-  /* if no such property exists, return NULL */
-  if (pspec == NULL)
-    return NULL;
-
-  g_value_init (&value, G_PARAM_SPEC_VALUE_TYPE (pspec));
-  g_object_get_property (G_OBJECT (stylable), name, &value);
-
-  g_value_init (&string_value, G_TYPE_STRING);
-  if (g_value_transform (&value, &string_value))
-    ret = g_strdup (g_value_get_string (&string_value));
-  else
-    ret = NULL;
-
-  g_value_unset (&value);
-  g_value_unset (&string_value);
-
-  return ret;
-}
-
-/**
- * mx_stylable_get_viewport:
- * @stylable: a #MxStylable
- * @x: location to store X coordinate
- * @y: location to store Y coordinate
- * @width: location to store width
- * @height: location to store height
- *
- * Obtain the position and dimensions of @stylable.
- *
- * Return value: true if the function succeeded
- */
-gboolean
-mx_stylable_get_viewport (MxStylable *stylable,
-                          gint       *x,
-                          gint       *y,
-                          gint       *width,
-                          gint       *height)
-{
-  MxStylableIface *iface;
-
-  g_return_val_if_fail (MX_IS_STYLABLE (stylable), FALSE);
-
-  iface = MX_STYLABLE_GET_IFACE (stylable);
-  if (iface->get_viewport)
-    return iface->get_viewport (stylable, x, y, width, height);
-  else
-    return FALSE;
-}
-
 
 /**
  * mx_stylable_changed:
