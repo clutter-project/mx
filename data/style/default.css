@@ -178,12 +178,12 @@ MxPopup {
   border-image: url('file://menu.png') 2;
 }
 
-MxPopup > MxButton {
+MxPopup > MxLabel {
   padding: 3;
   border-image: none;
 }
 
-MxPopup > MxButton:hover, MxPopup > MxButton:active {
+MxPopup > MxLabel:hover, MxPopup > MxLabel:active {
   color: white;
   border-image: url('file://menu-item.png') 2;
 }

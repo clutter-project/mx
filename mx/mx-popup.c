@@ -536,14 +536,11 @@ mx_popup_add_action (MxPopup  *popup,
 
   child.action = g_object_ref_sink (action);
   /* TODO: Connect to notify signals in case action properties change */
-  child.button = g_object_new (MX_TYPE_BUTTON,
-                               "label", mx_action_get_name (action),
-                               "transition-duration", 0,
+  child.button = g_object_new (MX_TYPE_LABEL,
+                               "text", mx_action_get_name (action),
+                               "reactive", TRUE,
                                NULL);
 
-  mx_bin_set_alignment (MX_BIN (child.button),
-                        MX_ALIGN_START,
-                        MX_ALIGN_MIDDLE);
   g_signal_connect (child.button, "button-release-event",
                     G_CALLBACK (mx_popup_button_release_cb), action);
   clutter_actor_set_parent (CLUTTER_ACTOR (child.button),
