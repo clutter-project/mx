@@ -699,7 +699,7 @@ mx_table_calculate_row_heights (MxTable *table,
 
       row->min_size = MAX (row->min_size, c_min);
       row->pref_size = MAX (row->pref_size, c_pref);
-      row->expand = MAX (row->expand, meta->x_expand);
+      row->expand = MAX (row->expand, meta->y_expand);
     }
 
 
