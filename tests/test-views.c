@@ -107,8 +107,7 @@ allocation_notify_cb (ClutterActor *stage,
 int
 main (int argc, char *argv[])
 {
-  MxWidget *view, *scroll;
-  ClutterActor *stage;
+  ClutterActor *stage, *view, *scroll;
   ClutterModel *model;
   ClutterColor color = { 0x00, 0xff, 0xff, 0xff };
   gint i;
@@ -137,17 +136,15 @@ main (int argc, char *argv[])
 
   scroll = mx_scroll_view_new ();
   clutter_actor_set_position ((ClutterActor*) scroll, 50, 50);
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage),
-                               CLUTTER_ACTOR (scroll));
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), scroll);
 
 
   if (list)
     view = mx_list_view_new ();
   else
     view = mx_item_view_new ();
-  clutter_container_add_actor (CLUTTER_CONTAINER (scroll),
-                               CLUTTER_ACTOR (view));
 
+  clutter_container_add_actor (CLUTTER_CONTAINER (scroll), view);
 
   model = clutter_list_model_new (2, CLUTTER_TYPE_COLOR, "color",
                                   G_TYPE_FLOAT, "size");

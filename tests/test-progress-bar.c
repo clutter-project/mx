@@ -25,8 +25,7 @@
 int
 main (int argc, char *argv[])
 {
-  ClutterActor *stage;
-  MxWidget *progress_bar;
+  ClutterActor *stage, *progress_bar;
   ClutterAnimation *animation;
   ClutterColor stage_color =  { 0xff, 0xff, 0xff, 0xff };
 
@@ -36,17 +35,16 @@ main (int argc, char *argv[])
   clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
 
   progress_bar = mx_progress_bar_new ();
-  animation = clutter_actor_animate (CLUTTER_ACTOR (progress_bar),
+  animation = clutter_actor_animate (progress_bar,
                                      CLUTTER_LINEAR,
                                      5000,
                                      "progress", 1.0,
                                      NULL);
   clutter_animation_set_loop (animation, TRUE);
 
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage),
-                               CLUTTER_ACTOR (progress_bar));
-  clutter_actor_set_size (CLUTTER_ACTOR (progress_bar), 280, 75);
-  clutter_actor_set_position (CLUTTER_ACTOR (progress_bar), 20, 20);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), progress_bar);
+  clutter_actor_set_size (progress_bar, 280, 75);
+  clutter_actor_set_position (progress_bar, 20, 20);
 
   clutter_actor_show (stage);
 

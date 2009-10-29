@@ -44,9 +44,7 @@ text_changed_cb (ClutterText *text, MxEntry *entry)
 int
 main (int argc, char *argv[])
 {
-  MxWidget *entry;
-  ClutterActor *stage;
-  MxWidget *button, *clear_button;
+  ClutterActor *stage, *entry, *button, *clear_button;
 
   clutter_init (&argc, &argv);
 
@@ -54,46 +52,46 @@ main (int argc, char *argv[])
   clutter_actor_set_size (stage, 400, 300);
 
   entry = mx_entry_new ("Hello World!");
-  clutter_actor_set_position (CLUTTER_ACTOR (entry), 20, 20);
-  clutter_actor_set_width (CLUTTER_ACTOR (entry), 150);
+  clutter_actor_set_position (entry, 20, 20);
+  clutter_actor_set_width (entry, 150);
 
   clutter_container_add (CLUTTER_CONTAINER (stage),
-                         CLUTTER_ACTOR (entry), NULL);
+                         entry, NULL);
 
   clutter_stage_set_key_focus (CLUTTER_STAGE (stage),
-                               CLUTTER_ACTOR (mx_entry_get_clutter_text (MX_ENTRY (entry))));
+                               mx_entry_get_clutter_text (MX_ENTRY (entry)));
 
   entry = mx_entry_new ("");
-  clutter_actor_set_position (CLUTTER_ACTOR (entry), 20, 70);
+  clutter_actor_set_position (entry, 20, 70);
 
   clutter_container_add (CLUTTER_CONTAINER (stage),
-                         CLUTTER_ACTOR (entry), NULL);
+                         entry, NULL);
   mx_entry_set_hint_text (MX_ENTRY (entry), "hint hint...");
 
   clutter_imtext_set_autoshow_im (CLUTTER_IMTEXT (mx_entry_get_clutter_text (MX_ENTRY (entry))), TRUE);
   g_signal_connect (mx_entry_get_clutter_text (MX_ENTRY (entry)),
-                    "text-changed", text_changed_cb, entry);
+                    "text-changed", G_CALLBACK (text_changed_cb), entry);
 
   button = mx_button_new_with_label ("Set");
-  clutter_actor_set_position (CLUTTER_ACTOR (button), 20, 120);
+  clutter_actor_set_position (button, 20, 120);
   g_signal_connect (button, "clicked", G_CALLBACK (btn_clicked_cb), entry);
 
   clear_button = mx_button_new_with_label ("clear");
-  clutter_actor_set_position (CLUTTER_ACTOR (clear_button), 70, 120);
+  clutter_actor_set_position (clear_button, 70, 120);
   g_signal_connect (clear_button, "clicked",
                     G_CALLBACK (clear_btn_clicked_cb), entry);
 
   clutter_container_add (CLUTTER_CONTAINER (stage),
-                         CLUTTER_ACTOR (button),
-                         CLUTTER_ACTOR (clear_button),
+                         button,
+                         clear_button,
                          NULL);
 
 
   entry = mx_entry_new ("");
-  clutter_actor_set_position (CLUTTER_ACTOR (entry), 20, 170);
+  clutter_actor_set_position (entry, 20, 170);
 
   clutter_container_add (CLUTTER_CONTAINER (stage),
-                         CLUTTER_ACTOR (entry), NULL);
+                         entry, NULL);
   mx_entry_set_hint_text (MX_ENTRY (entry), "Search...");
   mx_entry_set_primary_icon_from_file (MX_ENTRY (entry),
                                          "edit-find.png");

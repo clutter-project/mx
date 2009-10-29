@@ -25,31 +25,31 @@
 #include <mx/mx.h>
 
 static void
-toggle_expand (MxButton *button, ClutterContainer *table)
+toggle_expand (ClutterActor *button, ClutterContainer *table)
 {
   gboolean x_expand;
   gchar *label;
 
 
-  clutter_container_child_get (table, CLUTTER_ACTOR (button),
+  clutter_container_child_get (table, button,
                                "x-expand", &x_expand,
                                NULL);
 
   x_expand = !x_expand;
 
-  clutter_container_child_set (table, CLUTTER_ACTOR (button),
+  clutter_container_child_set (table, button,
                                "x-expand", x_expand,
                                "y-expand", x_expand,
                                NULL);
 
   label = g_strdup_printf ("Expand = %d", x_expand);
-  mx_button_set_label (button, label);
+  mx_button_set_label (MX_BUTTON (button), label);
 
   g_free (label);
 }
 
 static void
-randomise_align (MxButton *button, ClutterContainer *table)
+randomise_align (ClutterActor *button, ClutterContainer *table)
 {
   gdouble x_align, y_align;
   gchar *label;
@@ -57,13 +57,13 @@ randomise_align (MxButton *button, ClutterContainer *table)
   x_align = g_random_double ();
   y_align = g_random_double ();
   
-  clutter_container_child_set (table, CLUTTER_ACTOR (button),
+  clutter_container_child_set (table, button,
                                "x-align", x_align,
                                "y-align", y_align,
                                NULL);
 
   label = g_strdup_printf ("Align (%.2lf, %.2lf)", x_align, y_align);
-  mx_button_set_label (button, label);
+  mx_button_set_label (MX_BUTTON (button), label);
   g_free (label);
 }
 
@@ -79,9 +79,9 @@ stage_size_notify_cb (ClutterActor *stage,
 }
 
 static void
-toggle_visible (MxButton *button)
+toggle_visible (ClutterActor *button)
 {
-  clutter_actor_hide (CLUTTER_ACTOR (button));
+  clutter_actor_hide (button);
 }
 
 gboolean drag = FALSE;
@@ -125,17 +125,15 @@ motion_event (ClutterActor *actor, ClutterMotionEvent *event,
 int
 main (int argc, char *argv[])
 {
-  ClutterActor *stage, *button2;
-  MxWidget *table;
-  MxWidget *button1, *button3, *button4, *button5,
-             *button6, *button7, *button8, *button9,
-             *button10;
+  ClutterActor *stage, *button2, *table;
+  ClutterActor *button1, *button3, *button4, *button5, *button6, *button7,
+               *button8, *button9, *button10;
 
   clutter_init (&argc, &argv);
 
   /* load the style sheet */
   mx_style_load_from_file (mx_style_get_default (),
-                             "style/default.css", NULL);
+                           "style/default.css", NULL);
 
   stage = clutter_stage_get_default ();
   clutter_stage_set_user_resizable (CLUTTER_STAGE (stage), TRUE);
@@ -161,56 +159,56 @@ main (int argc, char *argv[])
   button9 = mx_button_new_with_label ("button9");
   button10 = mx_button_new_with_label ("button10");
 
-  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (button1), 0, 0);
+  mx_table_add_actor (MX_TABLE (table), button1, 0, 0);
   mx_table_add_actor (MX_TABLE (table), button2, 0, 1);
-  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (button3), 1, 1);
-  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (button4), 2, 0);
-  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (button5), 3, 0);
-  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (button6), 3, 1);
-  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (button7), 4, 1);
-  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (button8), 4, 0);
-  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (button9), 5, 0);
-  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (button10), -1, 0);
-  mx_table_child_set_row_span (MX_TABLE (table), CLUTTER_ACTOR (button1), 2);
-  mx_table_child_set_row_span (MX_TABLE (table), CLUTTER_ACTOR (button7), 2);
-  mx_table_child_set_col_span (MX_TABLE (table), CLUTTER_ACTOR (button4), 2);
+  mx_table_add_actor (MX_TABLE (table), button3, 1, 1);
+  mx_table_add_actor (MX_TABLE (table), button4, 2, 0);
+  mx_table_add_actor (MX_TABLE (table), button5, 3, 0);
+  mx_table_add_actor (MX_TABLE (table), button6, 3, 1);
+  mx_table_add_actor (MX_TABLE (table), button7, 4, 1);
+  mx_table_add_actor (MX_TABLE (table), button8, 4, 0);
+  mx_table_add_actor (MX_TABLE (table), button9, 5, 0);
+  mx_table_add_actor (MX_TABLE (table), button10, -1, 0);
+  mx_table_child_set_row_span (MX_TABLE (table), button1, 2);
+  mx_table_child_set_row_span (MX_TABLE (table), button7, 2);
+  mx_table_child_set_col_span (MX_TABLE (table), button4, 2);
 
 
-  clutter_actor_set_size (CLUTTER_ACTOR (button1), 100, 100);
-  clutter_actor_set_width (CLUTTER_ACTOR (button4), 250);
+  clutter_actor_set_size (button1, 100, 100);
+  clutter_actor_set_width (button4, 250);
 
   clutter_container_child_set (CLUTTER_CONTAINER (table),
-                               CLUTTER_ACTOR (button1),
+                               button1,
                                "x-expand", FALSE, "y-expand", FALSE,
                                NULL);
   clutter_container_child_set (CLUTTER_CONTAINER (table),
-                               CLUTTER_ACTOR (button5),
+                               button5,
                                "x-expand", FALSE, "y-expand", FALSE,
                                NULL);
   clutter_container_child_set (CLUTTER_CONTAINER (table),
-                               CLUTTER_ACTOR (button7),
+                               button7,
                                "x-expand", TRUE, "y-expand", TRUE,
                                "x-fill", FALSE, "y-fill", FALSE,
                                NULL);
   clutter_container_child_set (CLUTTER_CONTAINER (table),
-                               CLUTTER_ACTOR (button8),
+                               button8,
                                "x-expand", FALSE, "y-expand", FALSE,
                                NULL);
   clutter_container_child_set (CLUTTER_CONTAINER (table),
-                               CLUTTER_ACTOR (button9),
+                               button9,
                                "x-expand", FALSE, "y-expand", FALSE,
                                NULL);
 
   g_object_set (G_OBJECT (button2), "keep-aspect-ratio", TRUE, NULL);
   clutter_container_child_set (CLUTTER_CONTAINER (table),
-                               CLUTTER_ACTOR (button2),
+                               button2,
                                "y-fill", FALSE,
                                "x-fill", FALSE,
                                NULL);
 
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (table));
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), table);
 
-  clutter_actor_set_position (CLUTTER_ACTOR (table), 5, 5);
+  clutter_actor_set_position (table, 5, 5);
 
   g_signal_connect (button4, "clicked", G_CALLBACK (toggle_expand), table);
   g_signal_connect (button7, "clicked", G_CALLBACK (randomise_align), table);

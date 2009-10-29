@@ -53,8 +53,7 @@ set_max_stride (ClutterActor    *actor,
 int
 main (int argc, char *argv[])
 {
-  MxWidget *scroll, *grid;
-  ClutterActor *stage;
+  ClutterActor *stage, *scroll, *grid;
   int i;
 
   clutter_init (&argc, &argv);
@@ -62,25 +61,22 @@ main (int argc, char *argv[])
   stage = clutter_stage_get_default ();
   clutter_stage_set_user_resizable (CLUTTER_STAGE (stage), TRUE);
 
-  scroll = (MxWidget *) mx_scroll_view_new ();
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage),
-                               CLUTTER_ACTOR (scroll));
-  clutter_actor_set_position (CLUTTER_ACTOR (scroll), 50, 50);
+  scroll = mx_scroll_view_new ();
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), scroll);
+  clutter_actor_set_position (scroll, 50, 50);
 
   grid = mx_grid_new ();
-  clutter_container_add_actor (CLUTTER_CONTAINER (scroll),
-                               CLUTTER_ACTOR (grid));
+  clutter_container_add_actor (CLUTTER_CONTAINER (scroll), grid);
 
   for (i = 1; i <= 200; i++)
     {
-      MxWidget *button;
+      ClutterActor *button;
       gchar *label;
 
       label = g_strdup_printf ("Button %d", i);
 
       button = mx_button_new_with_label (label);
-      clutter_container_add_actor (CLUTTER_CONTAINER (grid),
-                                   CLUTTER_ACTOR (button));
+      clutter_container_add_actor (CLUTTER_CONTAINER (grid), button);
       mx_widget_set_tooltip_text (MX_WIDGET (button), "test");
       if (i == 1)
         g_signal_connect (button,

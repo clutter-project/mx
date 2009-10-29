@@ -840,7 +840,7 @@ mx_grid_new (void)
 {
   MxWidget *self = g_object_new (MX_TYPE_GRID, NULL);
 
-  return self;
+  return (ClutterActor*) self;
 }
 
 static void

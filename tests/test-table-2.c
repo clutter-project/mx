@@ -26,8 +26,7 @@ int
 main (int     argc,
       char  **argv)
 {
-  MxWidget *table, *label, *label2;
-  ClutterActor *stage, *txt;
+  ClutterActor *stage, *txt, *table, *label, *label2;
 
   clutter_init (&argc, &argv);
 
@@ -39,13 +38,12 @@ main (int     argc,
 
   table = mx_table_new ();
   mx_table_set_col_spacing (MX_TABLE (table), 10);
-  clutter_actor_set_position (CLUTTER_ACTOR (table), 50, 50);
-  clutter_actor_set_width (CLUTTER_ACTOR (table), 300);
-  clutter_container_add (CLUTTER_CONTAINER (stage), 
-			 CLUTTER_ACTOR (table), NULL);
+  clutter_actor_set_position (table, 50, 50);
+  clutter_actor_set_width (table, 300);
+  clutter_container_add (CLUTTER_CONTAINER (stage), table, NULL);
 
   label = mx_label_new ("Short top text");
-  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (label), 0, 0);
+  mx_table_add_actor (MX_TABLE (table), label, 0, 0);
 
   label2 = mx_label_new ("");
   
@@ -54,16 +52,16 @@ main (int     argc,
   clutter_text_set_line_alignment (CLUTTER_TEXT (txt), PANGO_ALIGN_LEFT);
   clutter_text_set_line_wrap (CLUTTER_TEXT (txt), TRUE);
 
-  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (label2), 1, 0);
+  mx_table_add_actor (MX_TABLE (table), label2, 1, 0);
 
   clutter_container_child_set (CLUTTER_CONTAINER (table),
-                               CLUTTER_ACTOR (label2),
+                               label2,
                                "y-expand", FALSE,
                                "x-expand", FALSE,
                                NULL);
 
   label = mx_label_new ("Short Bottom text");
-  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (label), 2, 0);
+  mx_table_add_actor (MX_TABLE (table), label, 2, 0);
 
   mx_label_set_text (MX_LABEL (label2), "Really really long long long long long long long long long long long long long long long long long long (ooooh this is verrrrrrry long!) long longlong long long longlong long long long \nlong longlong long long long longlonglonglonglonglonglonglonglonglonglonglonglong long long long long long long long long long Loooooooooooooooong text");
 

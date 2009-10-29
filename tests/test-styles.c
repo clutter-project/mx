@@ -25,19 +25,18 @@
 
 static ClutterActor *stage = NULL;
 
-static MxWidget*
+static ClutterActor *
 create_button (ClutterActor *parent,
                const gchar  *text,
                gint          x,
                gint          y)
 {
-  MxWidget *button;
+  ClutterActor *button;
 
   button = mx_button_new_with_label (text);
-  clutter_container_add_actor (CLUTTER_CONTAINER (parent),
-                               CLUTTER_ACTOR (button));
-  clutter_actor_set_position (CLUTTER_ACTOR (button), x, y);
-  clutter_actor_set_size (CLUTTER_ACTOR (button), 150, 100);
+  clutter_container_add_actor (CLUTTER_CONTAINER (parent), button);
+  clutter_actor_set_position (button, x, y);
+  clutter_actor_set_size (button, 150, 100);
 
   return button;
 }
@@ -45,7 +44,7 @@ create_button (ClutterActor *parent,
 int
 main (int argc, char *argv[])
 {
-  MxWidget *button, *table;
+  ClutterActor *button, *table;
   ClutterColor stage_color =  { 0xff, 0xff, 0xff, 0xff };
 
   clutter_init (&argc, &argv);
@@ -58,25 +57,25 @@ main (int argc, char *argv[])
   clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
 
   button = create_button (stage, "Default Style", 100, 100);
-  clutter_actor_set_name (CLUTTER_ACTOR (button), "default-button");
+  clutter_actor_set_name (button, "default-button");
 
   button = create_button (stage, "Red Style", 100, 300);
-  clutter_actor_set_name (CLUTTER_ACTOR (button), "red-button");
+  clutter_actor_set_name (button, "red-button");
 
   button = create_button (stage, "Green Style", 350, 100);
-  clutter_actor_set_name (CLUTTER_ACTOR (button), "green-button");
+  clutter_actor_set_name (button, "green-button");
 
   button = create_button (stage, "Blue Style", 350, 300);
-  clutter_actor_set_name (CLUTTER_ACTOR (button), "blue-button");
+  clutter_actor_set_name (button, "blue-button");
 
   table = mx_table_new ();
-  clutter_actor_set_size (CLUTTER_ACTOR (table), 200, 80);
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (table));
-  clutter_actor_set_position (CLUTTER_ACTOR (table), 200, 215);
+  clutter_actor_set_size (table, 200, 80);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), table);
+  clutter_actor_set_position (table, 200, 215);
 
   button = mx_button_new_with_label ("Container Test");
-  clutter_actor_set_name (CLUTTER_ACTOR (button), "container-button");
-  mx_table_add_actor (MX_TABLE (table), CLUTTER_ACTOR (button), 0, 0);
+  clutter_actor_set_name (button, "container-button");
+  mx_table_add_actor (MX_TABLE (table), button, 0, 0);
   clutter_actor_show (stage);
 
   clutter_main ();

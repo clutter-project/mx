@@ -375,7 +375,7 @@ mx_style_init (MxStyle *style)
 
   /* create a hash table to look up pointer keys and values */
   style->priv->node_hash = g_hash_table_new_full (NULL, NULL,
-                                                  NULL, mx_style_node_free);
+                                                  NULL, (GDestroyNotify) mx_style_node_free);
   style->priv->style_hash = g_hash_table_new_full (NULL, NULL,
                                                    NULL, (GDestroyNotify) ccss_style_destroy);
 

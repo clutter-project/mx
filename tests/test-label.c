@@ -25,7 +25,7 @@
 int
 main (int argc, char *argv[])
 {
-  MxWidget *label;
+  ClutterActor *label;
   ClutterActor *stage;
 
   clutter_init (&argc, &argv);
@@ -37,9 +37,9 @@ main (int argc, char *argv[])
   clutter_actor_set_size (stage, 400, 200);
 
   label = mx_label_new ("Hello World!");
-  clutter_actor_set_position (CLUTTER_ACTOR (label), 50, 50);
+  clutter_actor_set_position (label, 50, 50);
 
-  clutter_container_add (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (label), NULL);
+  clutter_container_add (CLUTTER_CONTAINER (stage), label, NULL);
 
   clutter_actor_show (stage);
 

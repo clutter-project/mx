@@ -61,8 +61,7 @@ stage_size_notify_cb (ClutterActor *stage,
 int
 main (int argc, char *argv[])
 {
-  MxWidget *expander, *scroll, *grid;
-  ClutterActor *stage;
+  ClutterActor *stage, *expander, *scroll, *grid;
   int i;
 
   clutter_init (&argc, &argv);
@@ -74,31 +73,28 @@ main (int argc, char *argv[])
   expander = mx_expander_new ();
   mx_expander_set_label (MX_EXPANDER (expander), "Expander");
   clutter_container_add_actor (CLUTTER_CONTAINER (stage),
-                               CLUTTER_ACTOR (expander));
-  clutter_actor_set_position (CLUTTER_ACTOR (expander), 10, 10);
+                               expander);
+  clutter_actor_set_position (expander, 10, 10);
 
   g_signal_connect (expander, "expand-complete",
                     G_CALLBACK (expand_complete_cb), NULL);
 
-  scroll = (MxWidget *) mx_scroll_view_new ();
-  clutter_container_add_actor (CLUTTER_CONTAINER (expander),
-                               CLUTTER_ACTOR (scroll));
-  clutter_actor_set_size (CLUTTER_ACTOR (scroll), 320, 240);
+  scroll = mx_scroll_view_new ();
+  clutter_container_add_actor (CLUTTER_CONTAINER (expander), scroll);
+  clutter_actor_set_size (scroll, 320, 240);
 
   grid = mx_grid_new ();
-  clutter_container_add_actor (CLUTTER_CONTAINER (scroll),
-                               CLUTTER_ACTOR (grid));
+  clutter_container_add_actor (CLUTTER_CONTAINER (scroll), grid);
 
   for (i = 1; i <= 50; i++)
     {
-      MxWidget *button;
+      ClutterActor *button;
       gchar *label;
 
       label = g_strdup_printf ("Button %d", i);
 
       button = mx_button_new_with_label (label);
-      clutter_container_add_actor (CLUTTER_CONTAINER (grid),
-                                   CLUTTER_ACTOR (button));
+      clutter_container_add_actor (CLUTTER_CONTAINER (grid), button);
 
       g_free (label);
     }

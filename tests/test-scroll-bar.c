@@ -63,8 +63,7 @@ key_press_event (ClutterActor    *actor,
 int
 main (int argc, char *argv[])
 {
-  ClutterActor    *stage;
-  MxWidget      *scroll;
+  ClutterActor *stage, *scroll;
   MxAdjustment  *adjustment;
 
   clutter_init (&argc, &argv);
@@ -77,9 +76,9 @@ main (int argc, char *argv[])
                     G_CALLBACK (changed_cb), NULL);  
 
   scroll = mx_scroll_bar_new (adjustment);
-  clutter_actor_set_position (CLUTTER_ACTOR (scroll), 50, 100);
-  clutter_actor_set_size (CLUTTER_ACTOR (scroll), 200, 30);
-  clutter_container_add (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (scroll), NULL);
+  clutter_actor_set_position (scroll, 50, 100);
+  clutter_actor_set_size (scroll, 200, 30);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), scroll);
 
   clutter_actor_show (stage);
 

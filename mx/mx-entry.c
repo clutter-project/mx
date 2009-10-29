@@ -756,7 +756,7 @@ mx_entry_new (const gchar *text)
                         "text", text,
                         NULL);
 
-  return entry;
+  return (ClutterActor*) entry;
 }
 
 /**
@@ -860,7 +860,7 @@ mx_entry_set_hint_text (MxEntry     *entry,
   priv->hint = g_strdup (text);
 
   if (!strcmp (clutter_text_get_text (CLUTTER_TEXT (priv->entry)), "")
-      && !HAS_FOCUS (entry))
+      && !HAS_FOCUS (priv->entry))
     {
       priv->hint_visible = TRUE;
 

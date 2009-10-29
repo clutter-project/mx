@@ -196,9 +196,7 @@ stage_size_changed_cb (ClutterActor *stage, GParamSpec *pspec, ClutterActor *scr
 int
 main (int argc, char *argv[])
 {
-  MxWidget *box;
-  ClutterActor *stage;
-  MxWidget *scrollview;
+  ClutterActor *stage, *box, *scrollview;
 
   clutter_init (&argc, &argv);
 
@@ -206,14 +204,13 @@ main (int argc, char *argv[])
   clutter_stage_set_user_resizable ((ClutterStage *) stage, TRUE);
 
   scrollview = mx_scroll_view_new ();
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage),
-                               (ClutterActor*) scrollview);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), scrollview);
 
-  clutter_actor_set_position ((ClutterActor*) scrollview, 50, 50);
-  clutter_actor_set_size ((ClutterActor*) scrollview, 200, 200);
+  clutter_actor_set_position (scrollview, 50, 50);
+  clutter_actor_set_size (scrollview, 200, 200);
 
   box = mx_box_layout_new ();
-  clutter_container_add_actor (CLUTTER_CONTAINER (scrollview), (ClutterActor*) box);
+  clutter_container_add_actor (CLUTTER_CONTAINER (scrollview), box);
 
   add_actor ((ClutterContainer*) box);
   add_actor ((ClutterContainer*) box);

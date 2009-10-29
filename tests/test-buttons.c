@@ -31,7 +31,7 @@ button_clicked_cb (MxButton *button, gchar *name)
 int
 main (int argc, char *argv[])
 {
-  MxWidget *button;
+  ClutterActor *button;
   ClutterColor stage_color =  { 0xff, 0xff, 0xff, 0xff };
   ClutterActor *stage;
 
@@ -42,18 +42,16 @@ main (int argc, char *argv[])
   clutter_actor_set_size (stage, 320, 240);
 
   button = mx_button_new_with_label ("Normal Button");
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage),
-                               CLUTTER_ACTOR (button));
-  clutter_actor_set_position (CLUTTER_ACTOR (button), 100, 50);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), button);
+  clutter_actor_set_position (button, 100, 50);
 
   button = mx_button_new_with_label ("Toggle Button");
   g_signal_connect (button, "clicked",
                     G_CALLBACK (button_clicked_cb),
                     "toggle");
   mx_button_set_toggle_mode (MX_BUTTON (button), TRUE);
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage),
-                               CLUTTER_ACTOR (button));
-  clutter_actor_set_position (CLUTTER_ACTOR (button), 100, 100);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), button);
+  clutter_actor_set_position (button, 100, 100);
 
   clutter_actor_show (stage);
 
