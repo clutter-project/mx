@@ -1,9 +1,12 @@
+*
+{
+  font-size: 13;
+}
+
 MxButton
 {
   padding: 10;
   border-image: url("file://button.png") 10;
-  font-family: "Liberation Sans";
-  font-size: 13;
 }
 
 MxButton:hover
@@ -21,8 +24,6 @@ MxEntry
 {
   padding: 5 6 6 5;
   border-image: url("file://entry.png") 5;
-  font-family: "Liberation Sans";
-  font-size: 13;
 }
 
 MxEntry:focus
@@ -153,7 +154,7 @@ MxTooltip {
   color: white;
   padding: 4 10 12 10;
   border-image: url('file://tooltip-background.png') 4 11 12 11;
-  font-size: 15px;
+  font-size: 15;
 }
 
 
@@ -169,8 +170,6 @@ MxProgressBar MxProgressBarFill {
 MxComboBox {
   padding: 5 38 5 5;
   border-image: url('file://combobox.png') 4 32 4 4;
-  font-family: "Liberation Sans";
-  font-size: 13;
 }
 
 MxPopup {
