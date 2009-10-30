@@ -155,7 +155,8 @@ draw (GtkWidget *lightswitch,
   /* draw the trough */
   gtk_paint_box (style,
                  lightswitch->window,
-                 (priv->active) ? GTK_STATE_SELECTED : state_type,
+                 (state_type != GTK_STATE_INSENSITIVE && priv->active)
+                 ? GTK_STATE_SELECTED : state_type,
                  GTK_SHADOW_IN,
                  NULL,
                  NULL,
