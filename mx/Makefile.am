@@ -21,6 +21,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-box-layout-child.h	\
 	$(top_srcdir)/mx/mx-combo-box.h 		\
 	$(top_srcdir)/mx/mx-button.h 		\
+	$(top_srcdir)/mx/mx-button-group.h 	\
 	$(top_srcdir)/mx/mx-draggable.h 		\
 	$(top_srcdir)/mx/mx-droppable.h 		\
 	$(top_srcdir)/mx/mx-clipboard.h		\
@@ -69,6 +70,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-box-layout-child.c	\
 	$(top_srcdir)/mx/mx-combo-box.c		\
 	$(top_srcdir)/mx/mx-button.c 		\
+	$(top_srcdir)/mx/mx-button-group.c 	\
 	$(top_srcdir)/mx/mx-draggable.c		\
 	$(top_srcdir)/mx/mx-droppable.c		\
 	$(top_srcdir)/mx/mx-clipboard.c 		\
