@@ -26,6 +26,8 @@
 
 #include <glib-object.h>
 
+#include <mx-button.h>
+
 G_BEGIN_DECLS
 
 #define MX_TYPE_BUTTON_GROUP mx_button_group_get_type()
@@ -69,6 +71,18 @@ struct _MxButtonGroupClass
 GType mx_button_group_get_type (void) G_GNUC_CONST;
 
 MxButtonGroup *mx_button_group_new (void);
+
+void mx_button_group_add     (MxButtonGroup   *group,
+                              MxButton        *button);
+void mx_button_group_remove  (MxButtonGroup   *group,
+                              MxButton        *button);
+void mx_button_group_foreach (MxButtonGroup   *group,
+                              ClutterCallback  callback,
+                              gpointer         userdata);
+
+void      mx_button_group_set_active_button (MxButtonGroup *group,
+                                             MxButton      *button);
+MxButton* mx_button_group_get_active_button (MxButtonGroup *group);
 
 G_END_DECLS
 
