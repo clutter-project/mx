@@ -35,7 +35,7 @@ Clutter.init (0, null);
 let stage = Clutter.Stage.get_default ();
 stage.title = "Test Toolkit"
 
-let group = new Mx.ButtonGroup ()
+let group = new Mx.ButtonGroup ({allow_no_active: true})
 
 let box = new Mx.BoxLayout ()
 stage.add_actor (box)

@@ -80,9 +80,12 @@ void mx_button_group_foreach (MxButtonGroup   *group,
                               ClutterCallback  callback,
                               gpointer         userdata);
 
-void      mx_button_group_set_active_button (MxButtonGroup *group,
-                                             MxButton      *button);
-MxButton* mx_button_group_get_active_button (MxButtonGroup *group);
+void      mx_button_group_set_active_button   (MxButtonGroup *group,
+                                               MxButton      *button);
+MxButton* mx_button_group_get_active_button   (MxButtonGroup *group);
+void      mx_button_group_set_allow_no_active (MxButtonGroup *group,
+                                               gboolean       allow_no_active);
+gboolean  mx_button_group_get_allow_no_active (MxButtonGroup *group);
 
 G_END_DECLS
 

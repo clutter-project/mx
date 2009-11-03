@@ -34,11 +34,14 @@ struct _MxButtonGroupPrivate
 {
   MxButton *active_button;
   GSList *children;
+
+  gboolean allow_no_active : 1;
 };
 
 enum
 {
-  PROP_ACTIVE_BUTTON = 1
+  PROP_ACTIVE_BUTTON = 1,
+  PROP_ALLOW_NO_ACTIVE
 };
 
 static void
@@ -54,6 +57,11 @@ mx_button_group_get_property (GObject    *object,
     case PROP_ACTIVE_BUTTON:
       g_value_set_object (value, group->priv->active_button);
       break;
+
+    case PROP_ALLOW_NO_ACTIVE:
+      g_value_set_boolean (value, group->priv->allow_no_active);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -70,9 +78,13 @@ mx_button_group_set_property (GObject      *object,
   switch (property_id)
     {
     case PROP_ACTIVE_BUTTON:
-      mx_button_group_set_active_button (group,
-                                         g_value_get_object (value));
+      mx_button_group_set_active_button (group, g_value_get_object (value));
       break;
+
+    case PROP_ALLOW_NO_ACTIVE:
+      mx_button_group_set_allow_no_active (group, g_value_get_boolean (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -120,6 +132,13 @@ mx_button_group_class_init (MxButtonGroupClass *klass)
                                MX_TYPE_BUTTON,
                                MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_ACTIVE_BUTTON, pspec);
+
+  pspec = g_param_spec_boolean ("allow-no-active",
+                                "Allow No Active",
+                                "Allow no buttons to be active (toggled)",
+                                FALSE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_ALLOW_NO_ACTIVE, pspec);
 }
 
 static void
@@ -145,6 +164,17 @@ button_checked_notify_cb (MxButton      *button,
     mx_button_group_set_active_button (group, NULL);
 }
 
+static gboolean
+button_click_intercept (MxButton           *button,
+                        ClutterButtonEvent *event,
+                        MxButtonGroup      *group)
+{
+  if (button == group->priv->active_button && !group->priv->allow_no_active)
+    return TRUE;
+  else
+    return FALSE;
+}
+
 void
 mx_button_group_add (MxButtonGroup   *group,
                      MxButton        *button)
@@ -157,6 +187,10 @@ mx_button_group_add (MxButtonGroup   *group,
 
   g_signal_connect (button, "notify::checked",
                     G_CALLBACK (button_checked_notify_cb), group);
+  g_signal_connect (button, "button-press-event",
+                    G_CALLBACK (button_click_intercept), group);
+  g_signal_connect (button, "button-release-event",
+                    G_CALLBACK (button_click_intercept), group);
 }
 
 void
@@ -170,6 +204,7 @@ mx_button_group_remove (MxButtonGroup   *group,
 
   g_signal_handlers_disconnect_by_func (button, button_checked_notify_cb,
                                         group);
+  g_signal_handlers_disconnect_by_func (button, button_click_intercept, group);
 
   g_object_unref (button);
 }
@@ -219,4 +254,26 @@ mx_button_group_get_active_button (MxButtonGroup *group)
   priv = group->priv;
 
   return priv->active_button;
+}
+
+void
+mx_button_group_set_allow_no_active (MxButtonGroup *group,
+                                     gboolean       allow_no_active)
+{
+  g_return_if_fail (MX_IS_BUTTON_GROUP (group));
+
+  if (group->priv->allow_no_active != allow_no_active)
+    {
+      group->priv->allow_no_active = allow_no_active;
+
+      g_object_notify (G_OBJECT (group), "allow-no-active");
+    }
+}
+
+gboolean
+mx_button_group_get_allow_no_active (MxButtonGroup *group)
+{
+  g_return_val_if_fail (MX_IS_BUTTON_GROUP (group), FALSE);
+
+  return group->priv->allow_no_active;
 }
