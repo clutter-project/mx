@@ -198,7 +198,8 @@ mx_button_group_set_active_button (MxButtonGroup *group,
   if (button == priv->active_button)
     return;
 
-  mx_button_set_checked (priv->active_button, FALSE);
+  if (priv->active_button)
+    mx_button_set_checked (priv->active_button, FALSE);
 
   if (button)
     mx_button_set_checked (button, TRUE);
