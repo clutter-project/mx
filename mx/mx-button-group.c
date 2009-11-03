@@ -176,13 +176,19 @@ button_click_intercept (MxButton           *button,
 }
 
 void
+button_weak_notify (MxButtonGroup *group,
+                    MxButton      *button)
+{
+  group->priv->children = g_slist_remove (group->priv->children, button);
+}
+
+void
 mx_button_group_add (MxButtonGroup   *group,
                      MxButton        *button)
 {
   g_return_if_fail (MX_IS_BUTTON_GROUP (group));
   g_return_if_fail (MX_IS_BUTTON (button));
 
-  g_object_ref (button);
   group->priv->children = g_slist_prepend (group->priv->children, button);
 
   g_signal_connect (button, "notify::checked",
@@ -191,6 +197,9 @@ mx_button_group_add (MxButtonGroup   *group,
                     G_CALLBACK (button_click_intercept), group);
   g_signal_connect (button, "button-release-event",
                     G_CALLBACK (button_click_intercept), group);
+
+  g_object_weak_ref (G_OBJECT (button), (GWeakNotify) button_weak_notify,
+                     group);
 }
 
 void
@@ -206,7 +215,8 @@ mx_button_group_remove (MxButtonGroup   *group,
                                         group);
   g_signal_handlers_disconnect_by_func (button, button_click_intercept, group);
 
-  g_object_unref (button);
+  g_object_weak_unref (G_OBJECT (button), (GWeakNotify) button_weak_notify,
+                       group);
 }
 
 void
