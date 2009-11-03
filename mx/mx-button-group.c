@@ -206,10 +206,29 @@ void
 mx_button_group_remove (MxButtonGroup   *group,
                         MxButton        *button)
 {
+  GSList *l;
+  MxButtonGroupPrivate *priv;
+  gboolean found;
+
   g_return_if_fail (MX_IS_BUTTON_GROUP (group));
   g_return_if_fail (MX_IS_BUTTON (button));
 
-  group->priv->children = g_slist_remove (group->priv->children, button);
+  priv = group->priv;
+
+  /* check the button exists in this group */
+  found = FALSE;
+  for (l = priv->children; l; l = g_slist_next (l))
+    {
+      if ((MxButton*) l->data == button)
+        {
+          found = TRUE;
+          break;
+        }
+    }
+  if (!found)
+    return;
+
+  priv->children = g_slist_remove (priv->children, button);
 
   g_signal_handlers_disconnect_by_func (button, button_checked_notify_cb,
                                         group);
