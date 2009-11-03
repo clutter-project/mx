@@ -33,17 +33,13 @@
 
 #include <glib-object.h>
 #include <gobject/gvaluecollector.h>
-#include <glib/gi18n-lib.h>
-
-#include <clutter/clutter.h>
-
-#include <ccss/ccss.h>
 
 #include "mx-stylable.h"
+#include "mx-css.h"
+
+#include "mx-marshal.h"
 #include "mx-style.h"
 #include "mx-types.h"
-#include "mx-marshal.h"
-#include "mx-widget.h"
 
 enum
 {
@@ -53,37 +49,24 @@ enum
 };
 
 #define MX_STYLE_GET_PRIVATE(obj) \
-  (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_STYLE, MxStylePrivate))
+        (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_STYLE, MxStylePrivate))
 
 #define MX_STYLE_ERROR g_style_error_quark ()
 
 typedef struct {
-  GType  value_type;
+  GType value_type;
   gchar *value_name;
   GValue value;
 } StyleProperty;
 
 struct _MxStylePrivate
 {
-  ccss_stylesheet_t *stylesheet;
-  GList             *image_paths;
+  MxStyleSheet *stylesheet;
+  GList *image_paths;
 
-  GHashTable        *style_hash;
-  GHashTable        *node_hash;
+  GHashTable *style_hash;
+  GHashTable *node_hash;
 };
-
-typedef struct
-{
-  ccss_node_t  parent;
-
-  MxStylable  *stylable;
-  gchar       *class;
-  gchar       *pseudo_class;
-} mx_style_node_t;
-
-static ccss_function_t const * peek_css_functions (void);
-
-static ccss_node_class_t * peek_node_class (void);
 
 static guint style_signals[LAST_SIGNAL] = { 0, };
 
@@ -97,42 +80,14 @@ g_style_error_quark (void)
   return g_quark_from_static_string ("mx-style-error-quark");
 }
 
-static mx_style_node_t*
-mx_style_node_new (MxStylable *stylable)
-{
-  mx_style_node_t *node;
-
-  node = g_slice_new0 (mx_style_node_t);
-
-  ccss_node_init ((ccss_node_t*) node, peek_node_class ());
-  node->stylable = stylable;
-  g_object_get (stylable,
-                "style-class", &node->class,
-                "style-pseudo-class", &node->pseudo_class,
-                NULL);
-
-  return node;
-}
-
-static void
-mx_style_node_free (mx_style_node_t *node)
-{
-  g_free (node->class);
-  g_free (node->pseudo_class);
-  g_slice_free (mx_style_node_t, node);
-}
-
 static gboolean
-mx_style_real_load_from_file (MxStyle     *style,
-                              const gchar *filename,
-                              GError     **error,
-                              gint         priority)
+mx_style_real_load_from_file (MxStyle    *style,
+                                const gchar  *filename,
+                                GError      **error,
+                                gint          priority)
 {
   MxStylePrivate *priv;
-  ccss_grammar_t *grammar;
   GError *internal_error;
-  gchar *path;
-  GList *l;
 
   g_return_val_if_fail (MX_IS_STYLE (style), FALSE);
   g_return_val_if_fail (filename != NULL, FALSE);
@@ -143,47 +98,15 @@ mx_style_real_load_from_file (MxStyle     *style,
     {
       internal_error = g_error_new (MX_STYLE_ERROR,
                                     MX_STYLE_ERROR_INVALID_FILE,
-                                    _("Invalid theme file '%s'"), filename);
+                                    "Invalid theme file '%s'", filename);
       g_propagate_error (error, internal_error);
       return FALSE;
     }
 
-
-  /* add the path of the stylesheet to the search path */
-  path = g_path_get_dirname (filename);
-
-  /* make sure path is valid */
-  if (!path)
-    return TRUE;
-
-  for (l = priv->image_paths; l; l = l->next)
-    {
-      if (g_str_equal ((gchar *) l->data, path))
-        {
-          /* we have this path already */
-          g_free (path);
-          path = NULL;
-        }
-    }
-
-  /* Add the new path */
-  if (path)
-    priv->image_paths = g_list_append (priv->image_paths, path);
-
-  /* now load the stylesheet */
   if (!priv->stylesheet)
-    {
-      grammar = ccss_grammar_create_css ();
-      ccss_grammar_add_functions (grammar, peek_css_functions ());
-      priv->stylesheet = ccss_grammar_create_stylesheet_from_file (grammar,
-                                                                   filename,
-                                                                   path);
-      ccss_grammar_destroy (grammar);
-    }
-  else
-    {
-      ccss_stylesheet_add_from_file (priv->stylesheet, filename, priority, path);
-    }
+    priv->stylesheet = mx_style_sheet_new ();
+
+  mx_style_sheet_add_from_file (priv->stylesheet, filename, NULL);
 
   g_signal_emit (style, style_signals[CHANGED], 0, NULL);
 
@@ -202,12 +125,11 @@ mx_style_real_load_from_file (MxStyle     *style,
  * FALSE on error.
  */
 gboolean
-mx_style_load_from_file (MxStyle     *style,
-                         const gchar *filename,
-                         GError     **error)
+mx_style_load_from_file (MxStyle    *style,
+                           const gchar  *filename,
+                           GError      **error)
 {
-  return mx_style_real_load_from_file (style, filename, error,
-                                       CCSS_STYLESHEET_AUTHOR);
+  return mx_style_real_load_from_file (style, filename, error, 0);
 }
 
 static void
@@ -233,7 +155,7 @@ mx_style_load (MxStyle *style)
   if (g_file_test (rc_file, G_FILE_TEST_EXISTS))
     {
       /* load the default theme with lowest priority */
-      if (!mx_style_real_load_from_file (style, rc_file, &error, CCSS_STYLESHEET_USER_AGENT))
+      if (!mx_style_real_load_from_file (style, rc_file, &error, 0))
         {
           g_critical ("Unable to load resource file '%s': %s",
                       rc_file,
@@ -248,31 +170,13 @@ mx_style_load (MxStyle *style)
 static void
 mx_style_finalize (GObject *gobject)
 {
-  MxStylePrivate *priv = ((MxStyle *) gobject)->priv;
+  MxStylePrivate *priv = ((MxStyle *)gobject)->priv;
   GList *l;
 
   for (l = priv->image_paths; l; l = g_list_delete_link (l, l))
-    {
-      g_free (l->data);
-    }
-
-  if (priv->style_hash)
-    {
-      g_hash_table_destroy (priv->style_hash);
-      priv->style_hash = NULL;
-    }
-
-  if (priv->node_hash)
-    {
-      g_hash_table_destroy (priv->node_hash);
-      priv->node_hash = NULL;
-    }
-
-  if (priv->stylesheet)
-    {
-      ccss_stylesheet_destroy (priv->stylesheet);
-      priv->stylesheet = NULL;
-    }
+  {
+    g_free (l->data);
+  }
 
   G_OBJECT_CLASS (mx_style_parent_class)->finalize (gobject);
 }
@@ -303,68 +207,6 @@ mx_style_class_init (MxStyleClass *klass)
                   G_TYPE_NONE, 0);
 }
 
-/* url loader for libccss */
-static char *
-ccss_url (GSList const *args,
-          void         *user_data)
-{
-  const gchar *given_path, *filename;
-  gchar *test_path;
-
-  g_return_val_if_fail (args, NULL);
-
-  given_path = (char const *) args->data;
-
-  /* we can only deal with local paths */
-  if (!g_str_has_prefix (given_path, "file://"))
-    return NULL;
-  filename = &given_path[7];
-
-  /*
-   * Handle absolute paths correctly
-   */
-  if (*filename == '/')
-    return strdup (filename);
-
-  /* first try looking in the theme dir */
-  test_path = g_build_filename (g_get_user_config_dir (),
-                                "mx",
-                                filename,
-                                NULL);
-  if (g_file_test (test_path, G_FILE_TEST_IS_REGULAR))
-    return test_path;
-  g_free (test_path);
-
-  if (user_data)
-    {
-      test_path = g_build_filename ((gchar *) user_data, filename, NULL);
-
-      if (g_file_test (test_path, G_FILE_TEST_IS_REGULAR))
-        return test_path;
-
-      g_free (test_path);
-    }
-  else
-    {
-      g_warning ("No path available css url resolver!");
-    }
-
-  /* couldn't find the image anywhere, so just return the filename */
-  return strdup (given_path);
-}
-
-static ccss_function_t const *
-peek_css_functions (void)
-{
-  static ccss_function_t const ccss_functions[] =
-  {
-    { "url", ccss_url },
-    { NULL }
-  };
-
-  return ccss_functions;
-}
-
 
 static void
 mx_style_init (MxStyle *style)
@@ -372,12 +214,6 @@ mx_style_init (MxStyle *style)
   MxStylePrivate *priv;
 
   style->priv = priv = MX_STYLE_GET_PRIVATE (style);
-
-  /* create a hash table to look up pointer keys and values */
-  style->priv->node_hash = g_hash_table_new_full (NULL, NULL,
-                                                  NULL, (GDestroyNotify) mx_style_node_free);
-  style->priv->style_hash = g_hash_table_new_full (NULL, NULL,
-                                                   NULL, (GDestroyNotify) ccss_style_destroy);
 
   mx_style_load (style);
 }
@@ -416,236 +252,6 @@ mx_style_get_default (void)
   return default_style;
 }
 
-/* functions for ccss */
-
-static mx_style_node_t *
-get_container (mx_style_node_t *node)
-{
-  mx_style_node_t *container;
-  ClutterActor *parent;
-
-  parent = clutter_actor_get_parent (CLUTTER_ACTOR (node->stylable));
-  while (parent && !MX_IS_STYLABLE (parent))
-    parent = clutter_actor_get_parent (CLUTTER_ACTOR (parent));
-
-  if (!parent)
-    return NULL;
-
-  container = mx_style_node_new (MX_STYLABLE (parent));
-
-  return container;
-}
-
-static const gchar*
-get_style_id (mx_style_node_t *node)
-{
-  if (CLUTTER_IS_ACTOR (node->stylable))
-    return clutter_actor_get_name (CLUTTER_ACTOR (node->stylable));
-  else
-    return NULL;
-}
-
-static const gchar*
-get_style_type (mx_style_node_t *node)
-{
-  if (G_IS_OBJECT (node->stylable))
-    return G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (node->stylable));
-  else
-    return NULL;
-}
-
-static const gchar*
-get_style_class (mx_style_node_t *node)
-{
-  return node->class;
-}
-
-static const gchar*
-get_pseudo_class (mx_style_node_t *node)
-{
-  return node->pseudo_class;
-}
-
-static ccss_node_class_t *
-peek_node_class (void)
-{
-  static ccss_node_class_t _node_class = {
-    .is_a             = NULL,
-    .get_container    = (ccss_node_get_container_f) get_container,
-    .get_id           = (ccss_node_get_id_f) get_style_id,
-    .get_type         = (ccss_node_get_type_f) get_style_type,
-    .get_class        = (ccss_node_get_class_f) get_style_class,
-    .get_pseudo_class = (ccss_node_get_pseudo_class_f) get_pseudo_class,
-    .get_viewport     = NULL, // (ccss_node_get_viewport_f) get_viewport,
-    .get_attribute    = NULL, // (ccss_node_get_attribute_f) get_attribute,
-    .release          = (ccss_node_release_f) mx_style_node_free
-  };
-
-  return &_node_class;
-}
-
-static void
-mx_style_fetch_ccss_property (ccss_style_t *ccss_style,
-                              GParamSpec   *pspec,
-                              GValue       *value)
-{
-  gboolean value_set = FALSE;
-
-  g_value_init (value, G_PARAM_SPEC_VALUE_TYPE (pspec));
-
-  if (G_PARAM_SPEC_VALUE_TYPE (pspec))
-    {
-      double number;
-
-      if (G_IS_PARAM_SPEC_INT (pspec))
-        {
-          if (ccss_style_get_double (ccss_style, pspec->name, &number))
-            {
-              g_value_set_int (value, (gint) number);
-              value_set = TRUE;
-            }
-        }
-      else if (G_IS_PARAM_SPEC_UINT (pspec))
-        {
-          if (ccss_style_get_double (ccss_style, pspec->name, &number))
-            {
-              g_value_set_uint (value, (guint) number);
-              value_set = TRUE;
-            }
-        }
-      else if (G_PARAM_SPEC_VALUE_TYPE (pspec) == MX_TYPE_BORDER_IMAGE &&
-               !g_strcmp0 ("border-image", pspec->name))
-        {
-          ccss_border_image_t const *border_image;
-
-          if (ccss_style_get_property (ccss_style,
-                                       "border-image",
-                                       (ccss_property_base_t const **) &border_image))
-            {
-              if (border_image &&
-                  border_image->base.state == CCSS_PROPERTY_STATE_SET)
-                {
-                  g_value_set_boxed (value, border_image);
-                  value_set = TRUE;
-                }
-            }
-        }
-      else if (MX_TYPE_PADDING == G_PARAM_SPEC_VALUE_TYPE (pspec) &&
-               0 == g_strcmp0 ("padding", pspec->name))
-        {
-          MxPadding padding = { 0, };
-          gboolean padding_set = 0;
-
-          if (ccss_style_get_double (ccss_style, "padding-top", &number))
-            {
-              padding.top = number;
-              padding_set = TRUE;
-            }
-
-          if (ccss_style_get_double (ccss_style, "padding-right", &number))
-            {
-              padding.right = number;
-              padding_set = TRUE;
-            }
-
-          if (ccss_style_get_double (ccss_style, "padding-bottom", &number))
-            {
-              padding.bottom = number;
-              padding_set = TRUE;
-            }
-
-          if (ccss_style_get_double (ccss_style, "padding-left", &number))
-            {
-              padding.left = number;
-              padding_set = TRUE;
-            }
-
-          if (padding_set)
-            {
-              g_value_set_boxed (value, &padding);
-              value_set = TRUE;
-            }
-        }
-      else
-        {
-          gchar *string = NULL;
-
-          ccss_style_get_string (ccss_style, pspec->name, &string);
-
-          if (string)
-            {
-              if (CLUTTER_IS_PARAM_SPEC_COLOR (pspec))
-                {
-                  ClutterColor color = { 0, };
-
-                  clutter_color_from_string (&color, string);
-                  clutter_value_set_color (value, &color);
-
-                  value_set = TRUE;
-                }
-              else
-              if (G_IS_PARAM_SPEC_STRING (pspec))
-                {
-                  g_value_set_string (value, string);
-                  value_set = TRUE;
-                }
-              g_free (string);
-            }
-        }
-    }
-
-  /* no value was found in css, so copy in the default value */
-  if (!value_set)
-    g_param_value_set_default (pspec, value);
-}
-
-static ccss_style_t*
-mx_style_get_ccss_query (MxStyle    *style,
-                         MxStylable *stylable)
-{
-  ccss_style_t *ccss_style;
-  mx_style_node_t *ccss_node;
-
-  ccss_node = g_hash_table_lookup (style->priv->node_hash, stylable);
-
-  if (!ccss_node)
-    {
-      ccss_node = mx_style_node_new (stylable);
-
-      g_hash_table_insert (style->priv->node_hash, stylable, ccss_node);
-      g_signal_connect_swapped (stylable, "stylable-changed",
-                                G_CALLBACK (g_hash_table_remove),
-                                style->priv->node_hash);
-
-
-      g_object_weak_ref ((GObject*) stylable,
-                         (GWeakNotify) g_hash_table_remove, style->priv->node_hash);
-    }
-
-
-  ccss_style = g_hash_table_lookup (style->priv->style_hash, stylable);
-
-  if (!ccss_style)
-    {
-      ccss_style = ccss_stylesheet_query (style->priv->stylesheet,
-                                          (ccss_node_t *) ccss_node);
-
-      g_hash_table_insert (style->priv->style_hash, stylable, ccss_style);
-
-      /* remove the cache if the stylable changes */
-      g_signal_connect_swapped (stylable, "stylable-changed",
-                                G_CALLBACK (g_hash_table_remove),
-                                style->priv->style_hash);
-
-      g_object_weak_ref ((GObject*) stylable,
-                         (GWeakNotify) g_hash_table_remove, style->priv->style_hash);
-    }
-
-  return ccss_style;
-
-}
-
-
 /**
  * mx_style_get_property:
  * @style: the style data store object
@@ -675,21 +281,53 @@ mx_style_get_property (MxStyle    *style,
   /* look up the property in the css */
   if (priv->stylesheet)
     {
-      ccss_style_t *ccss_style;
+      GHashTable *properties;
+      MxNode node = { 0, };
+      gchar *str;
 
-      ccss_style = mx_style_get_ccss_query (style, stylable);
-      if (ccss_style)
+      g_object_get (stylable,
+                    "name", &node.id,
+                    "style-class", &node.class,
+                    "style-pseudo-class", &node.pseudo_class,
+                    NULL);
+
+      node.type = g_strdup (G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (stylable)));
+
+      properties = mx_style_sheet_get_properties (priv->stylesheet, &node);
+
+      g_free (node.id);
+      g_free (node.type);
+      g_free (node.class);
+      g_free (node.pseudo_class);
+
+      str = g_hash_table_lookup (properties, pspec->name);
+
+      if (str)
         {
-          mx_style_fetch_ccss_property (ccss_style, pspec, value);
-          value_set = TRUE;
+          GValue gv = { 0, };
+
+          g_value_init (&gv, G_TYPE_STRING);
+          g_value_set_string (&gv, str);
+          if (!g_value_transform (&gv, value))
+            {
+              g_warning ("Error setting \"%s\" on \"%s\", could not transform"
+                         " value from string to type %s", pspec->name,
+                         G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (stylable)),
+                         g_type_name (pspec->value_type));
+            }
         }
+      else
+        {
+          /* no value was found in css, so copy in the default value */
+          g_value_init (value, G_PARAM_SPEC_VALUE_TYPE (pspec));
+          g_param_value_set_default (pspec, value);
+        }
+
+      g_hash_table_destroy (properties);
     }
 
-  /* no value was found in css, so copy in the default value */
   if (!value_set)
     {
-      g_value_init (value, G_PARAM_SPEC_VALUE_TYPE (pspec));
-      g_param_value_set_default (pspec, value);
     }
 }
 
@@ -724,31 +362,61 @@ mx_style_get_valist (MxStyle     *style,
   /* look up the property in the css */
   if (priv->stylesheet)
     {
-      ccss_style_t *ccss_style;
+      GHashTable *properties;
+      MxNode node = { 0, };
 
-      ccss_style = mx_style_get_ccss_query (style, stylable);
+      g_object_get (stylable,
+                    "name", &node.id,
+                    "style-class", &node.class,
+                    "style-pseudo-class", &node.pseudo_class,
+                    NULL);
 
-      if (ccss_style)
+      node.type = g_strdup (G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (stylable)));
+
+      properties = mx_style_sheet_get_properties (priv->stylesheet, &node);
+
+      g_free (node.id);
+      g_free (node.type);
+      g_free (node.class);
+      g_free (node.pseudo_class);
+
+      while (name)
         {
-          while (name)
+          GValue value = { 0, }, strval = { 0, };
+          GParamSpec *pspec = mx_stylable_find_property (stylable, name);
+          gchar *str, *error;
+
+          str = g_hash_table_lookup (properties, name);
+
+          g_value_init (&strval, G_TYPE_STRING);
+          g_value_set_string (&strval, str);
+
+          g_value_init (&value, pspec->value_type);
+
+          if (!g_value_transform (&strval, &value))
             {
-              GValue value = { 0, };
-              gchar *error = NULL;
-              GParamSpec *pspec = mx_stylable_find_property (stylable, name);
-              mx_style_fetch_ccss_property (ccss_style, pspec, &value);
-              G_VALUE_LCOPY (&value, va_args, 0, &error);
-              if (error)
-                {
-                  g_warning ("%s: %s", G_STRLOC, error);
-                  g_free (error);
-                  g_value_unset (&value);
-                  break;
-                }
-              g_value_unset (&value);
-              name = va_arg (va_args, gchar*);
+              g_warning ("Error setting \"%s\" on \"%s\", could not transform"
+                         " value from string to type %s", name,
+                         G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (stylable)),
+                         g_type_name (pspec->value_type));
             }
-          values_set = TRUE;
+
+          G_VALUE_LCOPY (&value, va_args, 0, &error);
+
+          if (error)
+            {
+              g_warning ("%s: %s", G_STRLOC, error);
+              g_free (error);
+              g_value_unset (&value);
+              break;
+            }
+
+          g_value_unset (&value);
+          g_value_unset (&strval);
+
+          name = va_arg (va_args, gchar*);
         }
+      values_set = TRUE;
     }
 
   if (!values_set)
@@ -790,9 +458,9 @@ mx_style_get_valist (MxStyle     *style,
  */
 void
 mx_style_get (MxStyle     *style,
-              MxStylable  *stylable,
-              const gchar *first_property_name,
-              ...)
+                MxStylable  *stylable,
+                const gchar   *first_property_name,
+                ...)
 {
   va_list va_args;
 

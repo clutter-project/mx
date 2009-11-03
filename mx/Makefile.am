@@ -68,6 +68,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-bin.c			\
 	$(top_srcdir)/mx/mx-box-layout.c		\
 	$(top_srcdir)/mx/mx-box-layout-child.c	\
+	$(top_srcdir)/mx/mx-css.c		\
 	$(top_srcdir)/mx/mx-combo-box.c		\
 	$(top_srcdir)/mx/mx-button.c 		\
 	$(top_srcdir)/mx/mx-button-group.c 	\
