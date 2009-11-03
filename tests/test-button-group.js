@@ -28,6 +28,7 @@ function add_button (name, box, group)
   button.toggle_mode = true;
   box.add_actor (button);
   group.add (button)
+  return button;
 }
 
 Clutter.init (0, null);
@@ -45,14 +46,17 @@ add_button ("Table", box, group)
 add_button ("Scroll View", box, group)
 add_button ("Progress Bar", box, group)
 add_button ("Drag and Drop", box, group)
-add_button ("Expander", box, group)
-add_button ("Combo Box", box, group)
+let button1 = add_button ("Expander", box, group)
+let button2 = add_button ("Combo Box", box, group)
 
 group.connect ("notify::active-button",
                function (g, p) { if (g.active_button)
                                   stage.title = g.active_button.label
                                  else
                                   stage.title = "" } )
+
+stage.connect ("button-press-event", function (s, e) { group.remove (button1)});
+stage.connect ("key-press-event", function (s, e) { button2.destroy() });
 
 stage.show ();
 Clutter.main ();
