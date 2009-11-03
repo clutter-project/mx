@@ -447,7 +447,7 @@ mx_table_calculate_col_widths (MxTable *table,
       DimensionData *col;
       gfloat c_min, c_pref;
       gfloat min_width, pref_width;
-      gint i, start_col, end_col;
+      gint start_col, end_col;
       gint n_expand;
 
       child = CLUTTER_ACTOR (l->data);
@@ -712,7 +712,7 @@ mx_table_calculate_row_heights (MxTable *table,
       DimensionData *row;
       gfloat c_min, c_pref;
       gfloat min_height, pref_height;
-      gint i, start_row, end_row;
+      gint start_row, end_row;
       gint n_expand;
 
       child = CLUTTER_ACTOR (l->data);

@@ -175,7 +175,7 @@ button_click_intercept (MxButton           *button,
     return FALSE;
 }
 
-void
+static void
 button_weak_notify (MxButtonGroup *group,
                     MxButton      *button)
 {
