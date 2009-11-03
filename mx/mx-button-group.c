@@ -134,6 +134,17 @@ mx_button_group_new (void)
   return g_object_new (MX_TYPE_BUTTON_GROUP, NULL);
 }
 
+static void
+button_checked_notify_cb (MxButton      *button,
+                          GParamSpec    *pspec,
+                          MxButtonGroup *group)
+{
+  if (mx_button_get_checked (button))
+    mx_button_group_set_active_button (group, button);
+  else
+    mx_button_group_set_active_button (group, NULL);
+}
+
 void
 mx_button_group_add (MxButtonGroup   *group,
                      MxButton        *button)
@@ -143,6 +154,9 @@ mx_button_group_add (MxButtonGroup   *group,
 
   g_object_ref (button);
   group->priv->children = g_slist_prepend (group->priv->children, button);
+
+  g_signal_connect (button, "notify::checked",
+                    G_CALLBACK (button_checked_notify_cb), group);
 }
 
 void
@@ -152,8 +166,12 @@ mx_button_group_remove (MxButtonGroup   *group,
   g_return_if_fail (MX_IS_BUTTON_GROUP (group));
   g_return_if_fail (MX_IS_BUTTON (button));
 
-  g_object_unref (button);
   group->priv->children = g_slist_remove (group->priv->children, button);
+
+  g_signal_handlers_disconnect_by_func (button, button_checked_notify_cb,
+                                        group);
+
+  g_object_unref (button);
 }
 
 void
@@ -174,7 +192,7 @@ mx_button_group_set_active_button (MxButtonGroup *group,
   MxButtonGroupPrivate *priv;
 
   g_return_if_fail (MX_IS_BUTTON_GROUP (group));
-  g_return_if_fail (MX_IS_BUTTON (button));
+  g_return_if_fail (button == NULL || MX_IS_BUTTON (button));
 
   priv = group->priv;
   if (button == priv->active_button)
@@ -182,7 +200,9 @@ mx_button_group_set_active_button (MxButtonGroup *group,
 
   mx_button_set_checked (priv->active_button, FALSE);
 
-  mx_button_set_checked (button, TRUE);
+  if (button)
+    mx_button_set_checked (button, TRUE);
+
   priv->active_button = button;
 
   g_object_notify (G_OBJECT (group), "active-button");
