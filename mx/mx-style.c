@@ -393,12 +393,24 @@ mx_style_get_valist (MxStyle     *style,
 
           g_value_init (&value, pspec->value_type);
 
-          if (!g_value_transform (&strval, &value))
+          if (pspec->value_type == G_TYPE_INT)
             {
-              g_warning ("Error setting \"%s\" on \"%s\", could not transform"
-                         " value from string to type %s", name,
-                         G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (stylable)),
-                         g_type_name (pspec->value_type));
+              if (str)
+                g_value_set_int (&value, atoi (str));
+              else
+                g_value_set_int (&value, 0);
+            }
+          else
+            {
+              if (!g_value_transform (&strval, &value))
+                {
+                  g_warning ("Error setting property \"%s\" on \"%s\", could"
+                             " not transform \"%s\" from string to type %s",
+                             name,
+                             G_OBJECT_CLASS_NAME(G_OBJECT_GET_CLASS (stylable)),
+                             str,
+                             g_type_name (pspec->value_type));
+                }
             }
 
           G_VALUE_LCOPY (&value, va_args, 0, &error);
