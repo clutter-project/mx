@@ -769,29 +769,3 @@ mx_bin_get_fill (MxBin    *bin,
   if (y_fill)
     *y_fill = bin->priv->y_fill;
 }
-
-static gpointer
-mx_padding_copy (gpointer data)
-{
-  return g_slice_dup (MxPadding, data);
-}
-
-static void
-mx_padding_free (gpointer data)
-{
-  if (G_LIKELY (data))
-    g_slice_free (MxPadding, data);
-}
-
-GType
-mx_padding_get_type (void)
-{
-  static GType our_type = 0;
-
-  if (G_UNLIKELY (our_type == 0))
-    our_type = g_boxed_type_register_static (I_("MxPadding"),
-                                             mx_padding_copy,
-                                             mx_padding_free);
-
-  return our_type;
-}

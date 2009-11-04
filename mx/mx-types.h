@@ -39,9 +39,30 @@ G_BEGIN_DECLS
 #define MX_TYPE_BORDER_IMAGE          (mx_border_image_get_type ())
 #define MX_TYPE_PADDING               (mx_padding_get_type ())
 
-typedef struct _MxPadding             MxPadding;
+typedef struct _MxBorderImage MxBorderImage;
+typedef struct _MxPadding     MxPadding;
+
 
 GType mx_border_image_get_type (void) G_GNUC_CONST;
+
+/**
+ * MxBorderImage:
+ * @uri: uri of a supported image file
+ *
+ * @top: top border slice width
+ * @right: right border slice width
+ * @bottom: bottom border slice width
+ * @left: bottom border slice width
+ */
+struct _MxBorderImage
+{
+  gchar *uri;
+
+  gint top;
+  gint right;
+  gint bottom;
+  gint left;
+};
 
 /**
  * MxPadding:
@@ -61,6 +82,8 @@ struct _MxPadding
 };
 
 GType mx_padding_get_type (void) G_GNUC_CONST;
+
+
 
 typedef enum {
   MX_ALIGN_START,

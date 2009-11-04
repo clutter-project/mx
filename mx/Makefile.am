@@ -97,7 +97,8 @@ source_c = \
 	$(top_srcdir)/mx/mx-texture-cache.c 	\
 	$(top_srcdir)/mx/mx-texture-frame.c 	\
 	$(top_srcdir)/mx/mx-tooltip.c 		\
-	$(top_srcdir)/mx/mx-utils.c                 \
+	$(top_srcdir)/mx/mx-types.c 		\
+	$(top_srcdir)/mx/mx-utils.c 		\
 	$(top_srcdir)/mx/mx-viewport.c 		\
 	$(top_srcdir)/mx/mx-widget.c		\
 	$(NULL)
