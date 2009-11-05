@@ -46,6 +46,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-table.h 		\
 	$(top_srcdir)/mx/mx-texture-cache.h 	\
 	$(top_srcdir)/mx/mx-texture-frame.h 	\
+	$(top_srcdir)/mx/mx-toggle.h 		\
 	$(top_srcdir)/mx/mx-tooltip.h		\
 	$(top_srcdir)/mx/mx-types.h 		\
 	$(top_srcdir)/mx/mx-utils.h                 \
@@ -95,6 +96,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-table-child.c 		\
 	$(top_srcdir)/mx/mx-texture-cache.c 	\
 	$(top_srcdir)/mx/mx-texture-frame.c 	\
+	$(top_srcdir)/mx/mx-toggle.c		\
 	$(top_srcdir)/mx/mx-tooltip.c 		\
 	$(top_srcdir)/mx/mx-utils.c                 \
 	$(top_srcdir)/mx/mx-viewport.c 		\
