@@ -27,8 +27,62 @@ GType mx_toggle_handle_get_type (void) G_GNUC_CONST;
 G_DEFINE_TYPE (MxToggleHandle, mx_toggle_handle, MX_TYPE_WIDGET)
 
 static void
+mx_toggle_handle_get_preferred_width (ClutterActor *actor,
+                                      gfloat        for_height,
+                                      gfloat       *min_width_p,
+                                      gfloat       *pref_width_p)
+{
+  ClutterActor *background;
+
+  background = mx_widget_get_background_image (MX_WIDGET (actor));
+
+  if (!background)
+    {
+      if (*min_width_p)
+        min_width_p = 0;
+      if (*pref_width_p)
+        pref_width_p = 0;
+
+      return;
+    }
+
+  clutter_actor_get_preferred_width (background, for_height, min_width_p,
+                                     pref_width_p);
+}
+
+static void
+mx_toggle_handle_get_preferred_height (ClutterActor *actor,
+                                       gfloat        for_width,
+                                       gfloat       *min_height_p,
+                                       gfloat       *pref_height_p)
+{
+  ClutterActor *background;
+
+  background = mx_widget_get_background_image (MX_WIDGET (actor));
+
+  if (!background)
+    {
+      if (*min_height_p)
+        min_height_p = 0;
+      if (*pref_height_p)
+        pref_height_p = 0;
+
+      return;
+    }
+
+  clutter_actor_get_preferred_height (background, for_width, min_height_p,
+                                      pref_height_p);
+}
+
+
+
+static void
 mx_toggle_handle_class_init (MxToggleHandleClass *klass)
 {
+  ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
+
+  actor_class->get_preferred_width = mx_toggle_handle_get_preferred_width;
+  actor_class->get_preferred_height = mx_toggle_handle_get_preferred_height;
 }
 
 static void
