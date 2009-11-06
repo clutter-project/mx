@@ -168,6 +168,14 @@ mx_toggle_set_property (GObject      *object,
 static void
 mx_toggle_dispose (GObject *object)
 {
+  MxTogglePrivate *priv = MX_TOGGLE (object)->priv;
+
+  if (priv->handle)
+    {
+      clutter_actor_destroy (priv->handle);
+      priv->handle = NULL;
+    }
+
   G_OBJECT_CLASS (mx_toggle_parent_class)->dispose (object);
 }
 
