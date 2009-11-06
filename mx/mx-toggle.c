@@ -248,7 +248,40 @@ mx_toggle_get_preferred_height (ClutterActor *actor,
     *pref_height_p = 39;
 }
 
+static void
+mx_toggle_allocate (ClutterActor          *actor,
+                    const ClutterActorBox *box,
+                    ClutterAllocationFlags flags)
+{
+  MxTogglePrivate *priv = MX_TOGGLE (actor)->priv;
+  ClutterActorBox handle_box, child_box;
+  gfloat handle_w, handle_h;
 
+  CLUTTER_ACTOR_CLASS (mx_toggle_parent_class)->allocate (actor, box, flags);
+
+  clutter_actor_get_preferred_width (priv->handle, -1, NULL, &handle_w);
+  clutter_actor_get_preferred_height (priv->handle, -1, NULL, &handle_h);
+
+  mx_widget_get_available_area (MX_WIDGET (actor), box, &child_box);
+
+
+  if (!priv->active)
+    {
+      handle_box.x1 = child_box.x1;
+      handle_box.y1 = child_box.y1;
+      handle_box.x2 = handle_box.x1 + handle_w;
+      handle_box.y2 = handle_box.y1 + handle_h;
+    }
+  else
+    {
+      handle_box.x1 = child_box.x2 - handle_w;
+      handle_box.y1 = child_box.y1;
+      handle_box.x2 = child_box.x2;
+      handle_box.y2 = child_box.y1 + handle_h;
+    }
+
+  clutter_actor_allocate (priv->handle, &handle_box, flags);
+}
 
 static void
 mx_toggle_class_init (MxToggleClass *klass)
@@ -270,6 +303,7 @@ mx_toggle_class_init (MxToggleClass *klass)
   actor_class->unmap = mx_toggle_unmap;
   actor_class->get_preferred_width = mx_toggle_get_preferred_width;
   actor_class->get_preferred_height = mx_toggle_get_preferred_height;
+  actor_class->allocate = mx_toggle_allocate;
 
   pspec = g_param_spec_boolean ("active",
                                 "Active",
