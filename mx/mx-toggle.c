@@ -107,6 +107,10 @@ struct _MxTogglePrivate
 
   ClutterActor *handle;
   gchar        *handle_filename;
+
+
+  ClutterAlpha *alpha;
+  gfloat        position;
 };
 
 enum
@@ -256,6 +260,7 @@ mx_toggle_allocate (ClutterActor          *actor,
   MxTogglePrivate *priv = MX_TOGGLE (actor)->priv;
   ClutterActorBox handle_box, child_box;
   gfloat handle_w, handle_h;
+  gfloat toggle_pos;
 
   CLUTTER_ACTOR_CLASS (mx_toggle_parent_class)->allocate (actor, box, flags);
 
@@ -264,21 +269,15 @@ mx_toggle_allocate (ClutterActor          *actor,
 
   mx_widget_get_available_area (MX_WIDGET (actor), box, &child_box);
 
+  toggle_pos = child_box.x2 - handle_w - child_box.x1;
 
-  if (!priv->active)
-    {
-      handle_box.x1 = child_box.x1;
-      handle_box.y1 = child_box.y1;
-      handle_box.x2 = handle_box.x1 + handle_w;
-      handle_box.y2 = handle_box.y1 + handle_h;
-    }
-  else
-    {
-      handle_box.x1 = child_box.x2 - handle_w;
-      handle_box.y1 = child_box.y1;
-      handle_box.x2 = child_box.x2;
-      handle_box.y2 = child_box.y1 + handle_h;
-    }
+  toggle_pos = toggle_pos * priv->position;
+
+
+  handle_box.x1 = (gint) (child_box.x1 + toggle_pos);
+  handle_box.y1 = child_box.y1;
+  handle_box.x2 = handle_box.x1 + handle_w;
+  handle_box.y2 = handle_box.y1 + handle_h;
 
   clutter_actor_allocate (priv->handle, &handle_box, flags);
 }
@@ -314,16 +313,37 @@ mx_toggle_class_init (MxToggleClass *klass)
 }
 
 static void
+mx_toggle_update_position (ClutterTimeline *timeline,
+                           gint             msecs,
+                           MxToggle        *toggle)
+{
+  MxTogglePrivate *priv = toggle->priv;
+
+  priv->position = clutter_alpha_get_alpha (priv->alpha);
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (toggle));
+}
+
+static void
 mx_toggle_init (MxToggle *self)
 {
+  ClutterTimeline *timeline;
+
   self->priv = TOGGLE_PRIVATE (self);
 
   self->priv->handle = g_object_new (MX_TYPE_TOGGLE_HANDLE,
                                      "reactive", TRUE, NULL);
   clutter_actor_set_parent (self->priv->handle, CLUTTER_ACTOR (self));
 
-  clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
+  timeline = clutter_timeline_new (300);
+  g_signal_connect (timeline, "new-frame",
+                    G_CALLBACK (mx_toggle_update_position), self);
 
+  self->priv->alpha = clutter_alpha_new_full (timeline,
+                                              CLUTTER_EASE_IN_OUT_CUBIC);
+
+  clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
+  clutter_actor_set_reactive (CLUTTER_ACTOR (self->priv->handle), TRUE);
 }
 
 ClutterActor *
@@ -333,17 +353,32 @@ mx_toggle_new (void)
 }
 
 void
-mx_toggle_set_active (MxToggle *toggle, gboolean active)
+mx_toggle_set_active (MxToggle *toggle,
+                      gboolean  active)
 {
   g_return_if_fail (MX_IS_TOGGLE (toggle));
 
   if (toggle->priv->active != active)
     {
+      ClutterTimeline *timeline;
+
+      timeline = clutter_alpha_get_timeline (toggle->priv->alpha);
+
+      if (clutter_timeline_is_playing (timeline))
+        return;
+
+      if (active)
+        clutter_timeline_set_direction (timeline, CLUTTER_TIMELINE_FORWARD);
+      else
+        clutter_timeline_set_direction (timeline, CLUTTER_TIMELINE_BACKWARD);
+
+      clutter_timeline_rewind (timeline);
+
+      clutter_timeline_start (timeline);
+
       toggle->priv->active = active;
 
       g_object_notify (G_OBJECT (toggle), "active");
-
-      clutter_actor_queue_relayout (CLUTTER_ACTOR (toggle));
     }
 }
 
