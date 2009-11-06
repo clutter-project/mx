@@ -128,28 +128,6 @@ mx_toggle_stylable_iface_init (MxStylableIface *iface)
 }
 
 static void
-mx_toggle_style_changed (MxStylable *stylable)
-{
-  gboolean changed;
-  gchar *handle_image;
-  MxTogglePrivate *priv = MX_TOGGLE (stylable)->priv;
-
-  changed = FALSE;
-  mx_stylable_get (stylable, "handle-image", &handle_image, NULL);
-
-  if (g_strcmp0 (handle_image, priv->handle_filename))
-    {
-      g_free (priv->handle_filename);
-      priv->handle_filename = handle_image;
-      clutter_texture_set_from_file (CLUTTER_TEXTURE (priv->handle),
-                                     handle_image, NULL);
-      changed = TRUE;
-    }
-  else
-      g_free (handle_image);
-}
-
-static void
 mx_toggle_get_property (GObject    *object,
                         guint       property_id,
                         GValue     *value,
@@ -304,8 +282,6 @@ mx_toggle_init (MxToggle *self)
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
 
-  g_signal_connect (self, "style-changed",
-                   G_CALLBACK (mx_toggle_style_changed), NULL);
 }
 
 ClutterActor *
