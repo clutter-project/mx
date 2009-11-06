@@ -102,6 +102,9 @@ ClutterActor *mx_widget_get_border_image     (MxWidget  *actor);
 void          mx_widget_get_padding          (MxWidget  *widget,
                                               MxPadding *padding);
 void          mx_widget_draw_background      (MxWidget  *widget);
+void          mx_widget_get_available_area   (MxWidget              *widget,
+                                              const ClutterActorBox *allocation,
+                                              ClutterActorBox       *area);
 
 G_END_DECLS
 
