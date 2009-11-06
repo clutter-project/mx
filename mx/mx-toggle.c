@@ -149,6 +149,34 @@ mx_toggle_unmap (ClutterActor *actor)
 }
 
 static void
+mx_toggle_get_preferred_width (ClutterActor *actor,
+                               gfloat        for_height,
+                               gfloat       *min_width_p,
+                               gfloat       *pref_width_p)
+{
+  if (min_width_p)
+    *min_width_p = 105;
+
+  if (pref_width_p)
+    *pref_width_p = 105;
+}
+
+static void
+mx_toggle_get_preferred_height (ClutterActor *actor,
+                                gfloat        for_width,
+                                gfloat       *min_height_p,
+                                gfloat       *pref_height_p)
+{
+  if (min_height_p)
+    *min_height_p = 39;
+
+  if (pref_height_p)
+    *pref_height_p = 39;
+}
+
+
+
+static void
 mx_toggle_class_init (MxToggleClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -166,6 +194,8 @@ mx_toggle_class_init (MxToggleClass *klass)
   actor_class->paint = mx_toggle_paint;
   actor_class->map = mx_toggle_map;
   actor_class->unmap = mx_toggle_unmap;
+  actor_class->get_preferred_width = mx_toggle_get_preferred_width;
+  actor_class->get_preferred_height = mx_toggle_get_preferred_height;
 
   pspec = g_param_spec_boolean ("active",
                                 "Active",
