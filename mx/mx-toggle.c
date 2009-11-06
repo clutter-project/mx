@@ -342,6 +342,8 @@ mx_toggle_set_active (MxToggle *toggle, gboolean active)
       toggle->priv->active = active;
 
       g_object_notify (G_OBJECT (toggle), "active");
+
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (toggle));
     }
 }
 
