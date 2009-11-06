@@ -4,6 +4,40 @@
 #include "mx-private.h"
 #include "mx-stylable.h"
 
+
+/* mx-toggle-handle */
+#define MX_TYPE_TOGGLE_HANDLE mx_toggle_handle_get_type()
+
+#define MX_TOGGLE_HANDLE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), MX_TYPE_TOGGLE_HANDLE, MxToggleHandle))
+
+#define MX_IS_TOGGLE_HANDLE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MX_TYPE_TOGGLE_HANDLE))
+
+typedef struct
+{
+  MxWidget parent;
+} MxToggleHandle;
+
+typedef struct
+{
+  MxWidgetClass parent_class;
+} MxToggleHandleClass;
+
+GType mx_toggle_handle_get_type (void) G_GNUC_CONST;
+
+G_DEFINE_TYPE (MxToggleHandle, mx_toggle_handle, MX_TYPE_WIDGET)
+
+static void
+mx_toggle_handle_class_init (MxToggleHandleClass *klass)
+{
+}
+
+static void
+mx_toggle_handle_init (MxToggleHandle *self)
+{
+}
+
+/* mx-toggle */
+
 static void mx_toggle_stylable_iface_init (MxStylableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxToggle, mx_toggle, MX_TYPE_WIDGET,
@@ -210,7 +244,8 @@ mx_toggle_init (MxToggle *self)
 {
   self->priv = TOGGLE_PRIVATE (self);
 
-  self->priv->handle = clutter_texture_new ();
+  self->priv->handle = g_object_new (MX_TYPE_TOGGLE_HANDLE,
+                                     "reactive", TRUE, NULL);
   clutter_actor_set_parent (self->priv->handle, CLUTTER_ACTOR (self));
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
