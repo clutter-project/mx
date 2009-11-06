@@ -186,3 +186,11 @@ MxPopup > MxLabel:hover, MxPopup > MxLabel:active {
   color: white;
   border-image: url('file://menu-item.png') 2;
 }
+
+MxToggle {
+  background-image: url("file://toggle-background.png");
+}
+
+MxToggle:checked {
+  background-image: url("file://toggle-background-active.png");
+}
