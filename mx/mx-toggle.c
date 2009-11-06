@@ -111,6 +111,10 @@ struct _MxTogglePrivate
 
   ClutterAlpha *alpha;
   gfloat        position;
+
+  gfloat        drag_offset;
+  gfloat        slide_length;
+  gfloat        last_move;
 };
 
 enum
@@ -244,6 +248,7 @@ mx_toggle_allocate (ClutterActor          *actor,
   mx_widget_get_available_area (MX_WIDGET (actor), box, &child_box);
 
   toggle_pos = child_box.x2 - handle_w - child_box.x1;
+  priv->slide_length = toggle_pos;
 
   toggle_pos = toggle_pos * priv->position;
 
@@ -255,6 +260,81 @@ mx_toggle_allocate (ClutterActor          *actor,
 
   clutter_actor_allocate (priv->handle, &handle_box, flags);
 }
+
+static gboolean
+mx_toggle_button_release_event (ClutterActor       *actor,
+                                ClutterButtonEvent *event)
+{
+  MxToggle *toggle = MX_TOGGLE (actor);
+
+  mx_toggle_set_active (toggle, !toggle->priv->active);
+
+  return TRUE;
+}
+
+static gboolean
+mx_toggle_handle_button_press_event (ClutterActor       *actor,
+                                     ClutterButtonEvent *event,
+                                     MxToggle           *toggle)
+{
+  clutter_grab_pointer (actor);
+
+  toggle->priv->drag_offset = event->x;
+
+  return TRUE;
+}
+
+static gboolean
+mx_toggle_handle_button_release_event (ClutterActor       *actor,
+                                       ClutterButtonEvent *event,
+                                       MxToggle           *toggle)
+{
+  toggle->priv->drag_offset = -1;
+
+  if (toggle->priv->last_move == 0)
+    mx_toggle_set_active (toggle, !toggle->priv->active);
+  else
+    mx_toggle_set_active (toggle, (toggle->priv->last_move > 0.0));
+
+  toggle->priv->last_move = 0;
+
+  clutter_ungrab_pointer ();
+
+  return TRUE;
+}
+
+static gboolean
+mx_toggle_handle_motion_event (ClutterActor       *actor,
+                               ClutterMotionEvent *event,
+                               MxToggle           *toggle)
+{
+  MxTogglePrivate *priv = toggle->priv;
+
+  if (priv->drag_offset > -1)
+    {
+      if (priv->slide_length)
+        {
+          gfloat pos;
+
+          if (priv->active)
+            pos = 1 - ((priv->drag_offset - event->x) / priv->slide_length);
+          else
+            pos = (event->x - priv->drag_offset) / priv->slide_length;
+
+          if (pos - priv->position)
+            priv->last_move = (pos - priv->position);
+
+          priv->position = CLAMP (pos, 0, 1);
+        }
+      else
+        priv->position = 0;
+
+      clutter_actor_queue_relayout (actor);
+    }
+
+  return TRUE;
+}
+
 
 static void
 mx_toggle_class_init (MxToggleClass *klass)
@@ -277,6 +357,7 @@ mx_toggle_class_init (MxToggleClass *klass)
   actor_class->get_preferred_width = mx_toggle_background_get_preferred_width;
   actor_class->get_preferred_height = mx_toggle_background_get_preferred_height;
   actor_class->allocate = mx_toggle_allocate;
+  actor_class->button_release_event = mx_toggle_button_release_event;
 
   pspec = g_param_spec_boolean ("active",
                                 "Active",
@@ -318,6 +399,15 @@ mx_toggle_init (MxToggle *self)
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
   clutter_actor_set_reactive (CLUTTER_ACTOR (self->priv->handle), TRUE);
+
+  self->priv->drag_offset = -1;
+  g_signal_connect (self->priv->handle, "button-press-event",
+                    G_CALLBACK (mx_toggle_handle_button_press_event), self);
+  g_signal_connect (self->priv->handle, "button-release-event",
+                    G_CALLBACK (mx_toggle_handle_button_release_event), self);
+  g_signal_connect (self->priv->handle, "motion-event",
+                    G_CALLBACK (mx_toggle_handle_motion_event), self);
+
 }
 
 ClutterActor *
@@ -332,7 +422,8 @@ mx_toggle_set_active (MxToggle *toggle,
 {
   g_return_if_fail (MX_IS_TOGGLE (toggle));
 
-  if (toggle->priv->active != active)
+  if (toggle->priv->active != active
+      || (toggle->priv->position > 0 && toggle->priv->position < 1))
     {
       ClutterTimeline *timeline;
 
@@ -347,6 +438,12 @@ mx_toggle_set_active (MxToggle *toggle,
         clutter_timeline_set_direction (timeline, CLUTTER_TIMELINE_BACKWARD);
 
       clutter_timeline_rewind (timeline);
+
+      if (toggle->priv->position > 0 && toggle->priv->position < 1)
+        {
+          /* FIXME: this doesn't take into account the alpha function */
+          clutter_timeline_advance (timeline, toggle->priv->position * 300);
+        }
 
       clutter_timeline_start (timeline);
 
