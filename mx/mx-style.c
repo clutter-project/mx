@@ -252,6 +252,52 @@ mx_style_get_default (void)
   return default_style;
 }
 
+
+static void
+mx_style_transform_css_value (MxStyleSheetValue *css_value,
+                              MxStylable        *stylable,
+                              GParamSpec        *pspec,
+                              GValue            *value)
+{
+  if (pspec->value_type == G_TYPE_INT)
+    {
+      g_value_init (value, pspec->value_type);
+
+      if (css_value->string)
+        g_value_set_int (value, atoi (css_value->string));
+      else
+        g_value_set_int (value, 0);
+    }
+  else if (pspec->value_type == MX_TYPE_BORDER_IMAGE)
+    {
+      g_value_init (value, pspec->value_type);
+
+      mx_border_image_set_from_string (value,
+                                       css_value->string,
+                                       css_value->source);
+    }
+  else
+    {
+      GValue strval = { 0, };
+
+      g_value_init (value, pspec->value_type);
+
+      g_value_init (&strval, G_TYPE_STRING);
+      g_value_set_string (&strval, css_value->string);
+
+      if (!g_value_transform (&strval, value))
+        {
+          g_warning ("Error setting property \"%s\" on \"%s\", could"
+                     " not transform \"%s\" from string to type %s",
+                     pspec->name,
+                     G_OBJECT_CLASS_NAME(G_OBJECT_GET_CLASS (stylable)),
+                     css_value->string,
+                     g_type_name (pspec->value_type));
+        }
+      g_value_unset (&strval);
+    }
+}
+
 /**
  * mx_style_get_property:
  * @style: the style data store object
@@ -269,7 +315,6 @@ mx_style_get_property (MxStyle    *style,
                        GValue     *value)
 {
   MxStylePrivate *priv;
-  gboolean value_set = FALSE;
 
   g_return_if_fail (MX_IS_STYLE (style));
   g_return_if_fail (MX_IS_STYLABLE (stylable));
@@ -281,9 +326,9 @@ mx_style_get_property (MxStyle    *style,
   /* look up the property in the css */
   if (priv->stylesheet)
     {
+      MxStyleSheetValue *css_value;
       GHashTable *properties;
       MxNode node = { 0, };
-      gchar *str;
 
       g_object_get (stylable,
                     "name", &node.id,
@@ -300,34 +345,18 @@ mx_style_get_property (MxStyle    *style,
       g_free (node.class);
       g_free (node.pseudo_class);
 
-      str = g_hash_table_lookup (properties, pspec->name);
+      css_value = g_hash_table_lookup (properties, pspec->name);
 
-      if (str)
+      if (!css_value)
         {
-          GValue gv = { 0, };
-
-          g_value_init (&gv, G_TYPE_STRING);
-          g_value_set_string (&gv, str);
-          if (!g_value_transform (&gv, value))
-            {
-              g_warning ("Error setting \"%s\" on \"%s\", could not transform"
-                         " value from string to type %s", pspec->name,
-                         G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (stylable)),
-                         g_type_name (pspec->value_type));
-            }
-        }
-      else
-        {
-          /* no value was found in css, so copy in the default value */
+          /* get the default value */
           g_value_init (value, G_PARAM_SPEC_VALUE_TYPE (pspec));
           g_param_value_set_default (pspec, value);
         }
+      else
+        mx_style_transform_css_value (css_value, stylable, pspec, value);
 
       g_hash_table_destroy (properties);
-    }
-
-  if (!value_set)
-    {
     }
 }
 
@@ -382,36 +411,21 @@ mx_style_get_valist (MxStyle     *style,
 
       while (name)
         {
-          GValue value = { 0, }, strval = { 0, };
+          GValue value = { 0, };
           GParamSpec *pspec = mx_stylable_find_property (stylable, name);
-          gchar *str, *error;
+          gchar *error;
+          MxStyleSheetValue *css_value;
 
-          str = g_hash_table_lookup (properties, name);
+          css_value = g_hash_table_lookup (properties, name);
 
-          g_value_init (&strval, G_TYPE_STRING);
-          g_value_set_string (&strval, str);
-
-          g_value_init (&value, pspec->value_type);
-
-          if (pspec->value_type == G_TYPE_INT)
+          if (!css_value)
             {
-              if (str)
-                g_value_set_int (&value, atoi (str));
-              else
-                g_value_set_int (&value, 0);
+              /* get the default value */
+              g_value_init (&value, G_PARAM_SPEC_VALUE_TYPE (pspec));
+              g_param_value_set_default (pspec, &value);
             }
           else
-            {
-              if (!g_value_transform (&strval, &value))
-                {
-                  g_warning ("Error setting property \"%s\" on \"%s\", could"
-                             " not transform \"%s\" from string to type %s",
-                             name,
-                             G_OBJECT_CLASS_NAME(G_OBJECT_GET_CLASS (stylable)),
-                             str,
-                             g_type_name (pspec->value_type));
-                }
-            }
+            mx_style_transform_css_value (css_value, stylable, pspec, &value);
 
           G_VALUE_LCOPY (&value, va_args, 0, &error);
 
@@ -424,7 +438,6 @@ mx_style_get_valist (MxStyle     *style,
             }
 
           g_value_unset (&value);
-          g_value_unset (&strval);
 
           name = va_arg (va_args, gchar*);
         }

@@ -43,6 +43,21 @@ struct _MxSelector
 };
 
 
+/* MxStyleSheetValue */
+
+static MxStyleSheetValue *
+mx_style_sheet_value_new ()
+{
+  return g_slice_new0 (MxStyleSheetValue);
+}
+
+static void
+mx_style_sheet_value_free (MxStyleSheetValue *value)
+{
+  g_slice_free (MxStyleSheetValue, value);
+}
+
+
 static gchar*
 append (gchar *str1, const gchar *str2)
 {
@@ -354,7 +369,8 @@ css_parse_block (GScanner *scanner, GList **selectors, GList **styles)
 
 
   /* create a hash table for the properties */
-  table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+  table = g_hash_table_new_full (g_str_hash, g_direct_equal, g_free,
+                                 (GDestroyNotify) mx_style_sheet_value_free);
 
   token = css_parse_style (scanner, table);
 
@@ -515,12 +531,24 @@ compare_selector_matches (SelectorMatch *a,
   return a->score - b->score;
 }
 
-static void
-hash_table_copy (gpointer    *key,
-                 gpointer    *value,
-                 GHashTable *table)
+struct _css_table_copy_data
 {
-  g_hash_table_insert (table, key, value);
+  GHashTable *table;
+  const gchar *filename;
+};
+
+static void
+css_table_copy (gpointer                    *key,
+                gpointer                    *value,
+                struct _css_table_copy_data *data)
+{
+  MxStyleSheetValue *css_value;
+
+  css_value = mx_style_sheet_value_new ();
+  css_value->source = data->filename;
+  css_value->string = (gchar*) value;
+
+  g_hash_table_insert (data->table, key, css_value);
 }
 
 static void
@@ -562,8 +590,13 @@ mx_style_sheet_get_properties (MxStyleSheet *sheet,
   for (l = matching_selectors; l; l = l->next)
     {
       SelectorMatch *match = l->data;
-      g_hash_table_foreach (match->selector->style, (GHFunc) hash_table_copy,
-                            result);
+      struct _css_table_copy_data copy_data;
+
+      copy_data.filename = match->selector->filename;
+      copy_data.table = result;
+
+      g_hash_table_foreach (match->selector->style, (GHFunc) css_table_copy,
+                            &copy_data);
     }
 
   g_list_foreach (matching_selectors, (GFunc) free_selector_match, NULL);

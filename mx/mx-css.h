@@ -34,8 +34,8 @@ struct _MxNode
 
 struct _MxStyleSheetValue
 {
-  const gchar *value;
-  const gchar *filename;
+  const gchar *string;
+  const gchar *source;
 };
 
 MxStyleSheet*  mx_style_sheet_new            ();

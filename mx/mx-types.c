@@ -109,22 +109,19 @@ mx_border_image_free (MxBorderImage *border_image)
     }
 }
 
-static void
-mx_border_image_from_string (const GValue *src,
-                             GValue       *dest)
+void
+mx_border_image_set_from_string (GValue *dest,
+                                 const gchar *str,
+                                 const gchar *filename)
 {
+  MxBorderImage border_image;
   gchar **strv;
-  const gchar *str;
   gint n_tokens;
-  MxBorderImage border_image = { 0, };
+  gchar *base;
 
-  str = g_value_get_string (src);
-
-  strv = g_strsplit_set (str, " ()", 0);
+  strv = g_strsplit_set (str, " (\"\')", 0);
 
   n_tokens = g_strv_length (strv);
-
-  g_debug ("tokens = %d", n_tokens);
 
   if (n_tokens < 2)
     {
@@ -142,33 +139,41 @@ mx_border_image_from_string (const GValue *src,
       return;
     }
 
-  border_image.uri = g_strdup (strv[1]);
+  /* check for relative path */
+  if (strv[2][0] == '/')
+    border_image.uri = g_strdup (strv[2]);
+  else
+    {
+      base = g_path_get_dirname (filename);
 
-  if (n_tokens == 3) /* one */
+      border_image.uri = g_strconcat (base, "/", strv[2], NULL);
+
+      g_free (base);
+    }
+
+  if (n_tokens == 6) /* one */
     {
       border_image.top = border_image.right
-        = border_image.bottom = border_image.left = atoi (strv[2]);
+        = border_image.bottom = border_image.left = atoi (strv[5]);
     }
-  else if (n_tokens == 4) /* two */
+  else if (n_tokens == 7) /* two */
     {
-      border_image.top = border_image.bottom = atoi (strv[2]);
-      border_image.right = border_image.left = atoi (strv[3]);
+      border_image.top = border_image.bottom = atoi (strv[5]);
+      border_image.right = border_image.left = atoi (strv[6]);
     }
-  else if (n_tokens == 5) /* three */
+  else if (n_tokens == 8) /* three */
     {
-      border_image.top = atoi (strv[2]);
-      border_image.right = border_image.left = atoi (strv[3]);
-      border_image.bottom = atoi (strv[4]);
+      border_image.top = atoi (strv[5]);
+      border_image.right = border_image.left = atoi (strv[6]);
+      border_image.bottom = atoi (strv[7]);
     }
-  else if (n_tokens == 6) /* four */
+  else if (n_tokens == 9) /* four */
     {
-      border_image.top = atoi (strv[2]);
-      border_image.right = atoi (strv[3]);
-      border_image.bottom = atoi (strv[4]);
-      border_image.left = atoi (strv[5]);
+      border_image.top = atoi (strv[5]);
+      border_image.right = atoi (strv[6]);
+      border_image.bottom = atoi (strv[7]);
+      border_image.left = atoi (strv[8]);
     }
-
-
 
   g_value_set_boxed (dest, &border_image);
 }
@@ -184,7 +189,5 @@ mx_border_image_get_type (void)
                                     (GBoxedCopyFunc) mx_border_image_copy,
                                     (GBoxedFreeFunc) mx_border_image_free);
 
-  g_value_register_transform_func (G_TYPE_STRING, our_type,
-                                   mx_border_image_from_string);
   return our_type;
 }
