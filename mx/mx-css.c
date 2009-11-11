@@ -38,6 +38,7 @@ struct _MxSelector
   gchar *class;
   gchar *pseudo_class;
   MxSelector *parent;
+  MxSelector *ancestor;
   GHashTable *style;
   const gchar *filename; /* origin of this selector */
 };
@@ -306,8 +307,24 @@ css_parse_ruleset (GScanner *scanner, GList **selectors)
         case '#':
         case '.':
         case ':':
+
+          if (selector)
+            parent = selector;
+          else
+            parent = NULL;
+
+          /* check if there was a previous selector and if so, the new one
+           * should use the previous selector to match an ancestor */
+
           selector = mx_selector_new (scanner->input_name);
           *selectors = g_list_prepend (*selectors, selector);
+
+          if (parent)
+            {
+              *selectors = g_list_remove (*selectors, parent);
+              selector->ancestor = parent;
+            }
+
           token = css_parse_simple_selector (scanner, selector);
           if (token != G_TOKEN_NONE)
             return token;
