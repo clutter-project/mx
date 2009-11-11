@@ -260,9 +260,14 @@ css_parse_simple_selector (GScanner      *scanner,
 
 
 static MxSelector *
-mx_selector_new ()
+mx_selector_new (const gchar *filename)
 {
-  return g_slice_new0 (MxSelector);
+  MxSelector *s;
+
+  s = g_slice_new0 (MxSelector);
+  s->filename = filename;
+
+  return s;
 }
 
 static void
@@ -301,8 +306,7 @@ css_parse_ruleset (GScanner *scanner, GList **selectors)
         case '#':
         case '.':
         case ':':
-          selector = mx_selector_new ();
-          selector->filename = scanner->input_name;
+          selector = mx_selector_new (scanner->input_name);
           *selectors = g_list_prepend (*selectors, selector);
           token = css_parse_simple_selector (scanner, selector);
           if (token != G_TOKEN_NONE)
@@ -319,7 +323,7 @@ css_parse_ruleset (GScanner *scanner, GList **selectors)
 
           parent = selector;
 
-          selector = mx_selector_new ();
+          selector = mx_selector_new (scanner->input_name);
           *selectors = g_list_prepend (*selectors, selector);
 
           /* remove parent from list of selectors and link it to the new
@@ -335,9 +339,12 @@ css_parse_ruleset (GScanner *scanner, GList **selectors)
 
         case ',':
           g_scanner_get_next_token (scanner);
-          selector = mx_selector_new ();
+
+          selector = mx_selector_new (scanner->input_name);
           *selectors = g_list_prepend (*selectors, selector);
+
           token = css_parse_simple_selector (scanner, selector);
+
           if (token != G_TOKEN_NONE)
             return token;
 
