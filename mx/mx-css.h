@@ -17,6 +17,11 @@
  * Author: Thomas Wood <thos@gnome.org>
  *
  */
+
+
+#ifndef MX_CSS_H
+#define MX_CSS_H
+
 #include <glib.h>
 
 typedef struct _MxNode MxNode;
@@ -45,3 +50,5 @@ gboolean       mx_style_sheet_add_from_file  (MxStyleSheet *sheet,
                                               GError       **error);
 GHashTable*    mx_style_sheet_get_properties (MxStyleSheet *sheet,
                                               MxNode       *node);
+
+#endif /* MX_CSS_H */
