@@ -6,29 +6,29 @@
 MxButton
 {
   padding: 10;
-  border-image: url("file://button.png") 10;
+  border-image: url("button.png") 10;
 }
 
 MxButton:hover
 {
-  border-image: url("file://button-hover.png") 10;
+  border-image: url("button-hover.png") 10;
 }
 
 MxButton:active, MxButton:checked
 {
   padding: 11 9 9 11;
-  border-image: url("file://button-active.png") 10;
+  border-image: url("button-active.png") 10;
 }
 
 MxEntry
 {
   padding: 5 6 6 5;
-  border-image: url("file://entry.png") 5;
+  border-image: url("entry.png") 5;
 }
 
 MxEntry:focus
 {
-  border-image: url("file://entry-active.png") 5;
+  border-image: url("entry-active.png") 5;
 }
 
 MxEntry:indeterminate
@@ -51,66 +51,66 @@ MxScrollView
 
 MxButton#backward-stepper
 {
-  border-image: url("file://scroll-button-left.png") 5;
+  border-image: url("scroll-button-left.png") 5;
 }
 
 MxButton#backward-stepper:hover,
 MxButton#backward-stepper:active
 {
-  border-image: url("file://scroll-button-left-hover.png") 5;
+  border-image: url("scroll-button-left-hover.png") 5;
 }
 
 MxButton#forward-stepper
 {
-  border-image: url("file://scroll-button-right.png") 5;
+  border-image: url("scroll-button-right.png") 5;
 }
 
 MxButton#forward-stepper:hover,
 MxButton#forward-stepper:active
 {
-  border-image: url("file://scroll-button-right-hover.png") 5;
+  border-image: url("scroll-button-right-hover.png") 5;
 }
 
 MxButton#up-stepper
 {
-  border-image: url("file://scroll-button-up.png") 5;
+  border-image: url("scroll-button-up.png") 5;
 }
 
 MxButton#up-stepper:hover,
 MxButton#up-stepper:active
 {
-  border-image: url("file://scroll-button-up-hover.png") 5;
+  border-image: url("scroll-button-up-hover.png") 5;
 }
 
 MxButton#down-stepper
 {
-  border-image: url("file://scroll-button-down.png") 5;
+  border-image: url("scroll-button-down.png") 5;
 }
 
 MxButton#down-stepper:hover,
 MxButton#down-stepper:active
 {
-  border-image: url("file://scroll-button-down-hover.png") 5;
+  border-image: url("scroll-button-down-hover.png") 5;
 }
 
 MxScrollBar MxButton#vhandle
 {
-  border-image: url("file://scroll-vhandle.png") 5;
+  border-image: url("scroll-vhandle.png") 5;
 }
 
 MxScrollBar MxButton#vhandle:hover
 {
-  border-image: url("file://scroll-vhandle-hover.png") 5;
+  border-image: url("scroll-vhandle-hover.png") 5;
 }
 
 MxScrollBar MxButton#hhandle
 {
-  border-image: url("file://scroll-hhandle.png") 5;
+  border-image: url("scroll-hhandle.png") 5;
 }
 
 MxScrollBar MxButton#hhandle:hover
 {
-  border-image: url("file://scroll-hhandle-hover.png") 5;
+  border-image: url("scroll-hhandle-hover.png") 5;
 }
 
 
@@ -121,60 +121,60 @@ MxScrollBar MxButton#hhandle:hover
 MxExpander {
   color: blank;
   font-size: 15;
-  border-image: url('file://expander-closed.png') 6;
+  border-image: url('expander-closed.png') 6;
   padding: 6 12;
 }
 
 MxExpander:hover {
-  border-image: url('file://expander-hover.png') 6;
+  border-image: url('expander-hover.png') 6;
 }
 
 MxExpander:active {
-  border-image: url('file://expander-open.png') 36 6 6 6;
+  border-image: url('expander-open.png') 36 6 6 6;
 }
 
 MxExpander > *#mx-expander-arrow-closed {
     padding: 0;
-    background-image: url('file://expander-arrow-up.png');
+    background-image: url('expander-arrow-up.png');
 }
 
 MxExpander > *#mx-expander-arrow-closed:hover {
-    background-image: url('file://expander-arrow-up-hover.png');
+    background-image: url('expander-arrow-up-hover.png');
 }
 
 MxExpander > *#mx-expander-arrow-open {
-    background-image: url('file://expander-arrow-down.png');
+    background-image: url('expander-arrow-down.png');
 }
 
 MxExpander > *#mx-expander-arrow-open:hover {
-    background-image: url('file://expander-arrow-down-hover.png');
+    background-image: url('expander-arrow-down-hover.png');
 }
 
 MxTooltip {
   color: white;
   padding: 4 10 12 10;
-  border-image: url('file://tooltip-background.png') 4 11 12 11;
+  border-image: url('tooltip-background.png') 4 11 12 11;
   font-size: 15;
 }
 
 
 MxProgressBar {
   padding: 3;
-  border-image: url('file://progress-bar-background.png') 2 stretch stretch;
+  border-image: url('progress-bar-background.png') 2 stretch stretch;
 }
 
 MxProgressBar MxProgressBarFill {
-  border-image: url('file://progress-bar-bar.png') 2 stretch stretch;
+  border-image: url('progress-bar-bar.png') 2 stretch stretch;
 }
 
 MxComboBox {
   padding: 5 38 5 5;
-  border-image: url('file://combobox.png') 4 32 4 4;
+  border-image: url('combobox.png') 4 32 4 4;
 }
 
 MxPopup {
   padding: 3;
-  border-image: url('file://menu.png') 2;
+  border-image: url('menu.png') 2;
 }
 
 MxPopup > MxLabel {
@@ -184,5 +184,5 @@ MxPopup > MxLabel {
 
 MxPopup > MxLabel:hover, MxPopup > MxLabel:active {
   color: white;
-  border-image: url('file://menu-item.png') 2;
+  border-image: url('menu-item.png') 2;
 }
