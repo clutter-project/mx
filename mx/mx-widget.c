@@ -438,10 +438,10 @@ static void
 mx_widget_style_changed (MxStylable *self)
 {
   MxWidgetPrivate *priv = MX_WIDGET (self)->priv;
-  MxBorderImage *border_image = NULL;
+  MxBorderImage *border_image = NULL, *background_image = NULL;
   MxTextureCache *texture_cache;
   ClutterTexture *texture;
-  gchar *bg_file = NULL;
+  gchar *bg_file;
   MxPadding *padding = NULL;
   gboolean relayout_needed = FALSE;
   gboolean has_changed = FALSE;
@@ -450,7 +450,7 @@ mx_widget_style_changed (MxStylable *self)
   /* cache these values for use in the paint function */
   mx_stylable_get (self,
                    "background-color", &color,
-                   "background-image", &bg_file,
+                   "background-image", &background_image,
                    "border-image", &border_image,
                    "padding", &padding,
                    NULL);
@@ -541,24 +541,28 @@ mx_widget_style_changed (MxStylable *self)
       relayout_needed = TRUE;
     }
 
-  if (bg_file != NULL &&
-      strcmp (bg_file, "none"))
+  if (background_image)
     {
-      texture = mx_texture_cache_get_texture (texture_cache, bg_file);
-      priv->background_image = (ClutterActor*) texture;
-
-      if (priv->background_image != NULL)
+      bg_file = background_image->uri;
+      if (bg_file != NULL &&
+          strcmp (bg_file, "none"))
         {
-          clutter_actor_set_parent (priv->background_image,
-                                    CLUTTER_ACTOR (self));
-        }
-      else
-        g_warning ("Could not load %s", bg_file);
+          texture = mx_texture_cache_get_texture (texture_cache, bg_file);
+          priv->background_image = (ClutterActor*) texture;
 
-      has_changed = TRUE;
-      relayout_needed = TRUE;
+          if (priv->background_image != NULL)
+            {
+              clutter_actor_set_parent (priv->background_image,
+                                        CLUTTER_ACTOR (self));
+            }
+          else
+            g_warning ("Could not load %s", bg_file);
+
+          has_changed = TRUE;
+          relayout_needed = TRUE;
+        }
+      g_boxed_free (MX_TYPE_BORDER_IMAGE, background_image);
     }
-  g_free (bg_file);
 
   /* If there are any properties above that need to cause a relayout thay
    * should set this flag.
@@ -897,11 +901,11 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                         G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
 
-      pspec = g_param_spec_string ("background-image",
-                                   "Background Image",
-                                   "Background image filename",
-                                   NULL,
-                                   G_PARAM_READWRITE);
+      pspec = g_param_spec_boxed ("background-image",
+                                  "Background Image",
+                                  "Background image filename",
+                                  MX_TYPE_BORDER_IMAGE,
+                                  G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
 
       pspec = g_param_spec_string ("font-family",
