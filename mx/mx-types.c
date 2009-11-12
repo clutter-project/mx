@@ -119,6 +119,12 @@ mx_border_image_set_from_string (GValue *dest,
   gint n_tokens;
   gchar *base;
 
+  if (!strcmp (str, "none"))
+    {
+      g_value_set_boxed (dest, &border_image);
+      return;
+    }
+
   strv = g_strsplit_set (str, " (\"\')", 0);
 
   n_tokens = g_strv_length (strv);
