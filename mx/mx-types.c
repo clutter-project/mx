@@ -114,7 +114,7 @@ mx_border_image_set_from_string (GValue *dest,
                                  const gchar *str,
                                  const gchar *filename)
 {
-  MxBorderImage border_image;
+  MxBorderImage border_image = { 0, };
   gchar **strv;
   gint n_tokens;
   gchar *base;
