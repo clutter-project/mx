@@ -268,6 +268,15 @@ mx_style_transform_css_value (MxStyleSheetValue *css_value,
       else
         g_value_set_int (value, 0);
     }
+  else if (pspec->value_type == G_TYPE_UINT)
+    {
+      g_value_init (value, pspec->value_type);
+
+      if (css_value->string)
+        g_value_set_uint (value, atoi (css_value->string));
+      else
+        g_value_set_uint (value, 0);
+    }
   else if (pspec->value_type == MX_TYPE_BORDER_IMAGE)
     {
       g_value_init (value, pspec->value_type);
