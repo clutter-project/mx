@@ -473,71 +473,68 @@ css_node_matches_selector (MxNode       *node,
                            MxSelector   *selector)
 {
   gint score;
-  gboolean parent_matches, type_matches, id_matches, class_matches,
-           pseudo_class_matches;
+  gint a, b, c;
 
   score = 0;
-
-  parent_matches = 0;
-  type_matches = 0;
-  id_matches = 0;
-  class_matches = 0;
-  pseudo_class_matches = 0;
+  a = 0;
+  b = 0;
+  c = 0;
 
   if (selector->parent)
     {
+      gint parent_matches;
+
       if (!node->parent)
-        return 0;
+        return -1;
 
       parent_matches = css_node_matches_selector (node->parent,
                                                   selector->parent);
-      if (parent_matches == 0)
-        return 0;
+      if (parent_matches < 0)
+        return -1;
     }
 
   if (selector->type == NULL || selector->type[0] == '*')
-    type_matches = 1;
+    {
+      /* NULL or universal selector match, but are ignored for score */
+    }
   else
     {
-      if (node->type && !strcmp (selector->type, node->type))
-        type_matches = 1;
+      if (!node->type || strcmp (selector->type, node->type))
+        return -1;
       else
-        return 0;
+        c++;
     }
 
   if (selector->id)
     {
       if (!node->id || strcmp (selector->id, node->id))
-        return 0; /* no match */
+        return -1; /* no match */
       else
-        id_matches = 1;
+        a++;
     }
 
   if (selector->class)
     {
       if (!node->class || strcmp (selector->class, node->class))
-        return 0;
+        return -1;
       else
-        class_matches = 1;
+        b++;
     }
 
   if (selector->pseudo_class)
     {
       if (!node->pseudo_class
           || strcmp (selector->pseudo_class, node->pseudo_class))
-        return 0;
+        return -1;
       else
-        pseudo_class_matches = 1;
+        b++;
     }
 
-  if (type_matches == 1)
-    score += 1;
-  if (class_matches == 1)
-    score += 2;
-  if (id_matches == 1)
-    score += 4;
-  if (pseudo_class_matches == 1)
-    score += 8;
+
+  a = a * 100;
+  b = b * 10;
+
+  score = a + b + c;
 
   return score;
 }
@@ -596,7 +593,7 @@ mx_style_sheet_get_properties (MxStyleSheet *sheet,
 
       score = css_node_matches_selector (node, l->data);
 
-      if (score > 0)
+      if (score >= 0)
         {
           selector_match = g_slice_new (SelectorMatch);
           selector_match->selector = l->data;
