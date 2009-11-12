@@ -23,6 +23,7 @@
 #define MX_CSS_H
 
 #include <glib.h>
+#include "mx-stylable.h"
 
 typedef struct _MxNode MxNode;
 typedef struct _MxStyleSheetValue MxStyleSheetValue;
@@ -49,6 +50,6 @@ gboolean       mx_style_sheet_add_from_file  (MxStyleSheet *sheet,
                                               const gchar  *filename,
                                               GError       **error);
 GHashTable*    mx_style_sheet_get_properties (MxStyleSheet *sheet,
-                                              MxNode       *node);
+                                              MxStylable   *node);
 
 #endif /* MX_CSS_H */

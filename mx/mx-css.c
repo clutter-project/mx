@@ -18,6 +18,7 @@
  *
  */
 #include "mx-css.h"
+#include <clutter/clutter.h>
 #include <string.h>
 
 #include <unistd.h>
@@ -467,10 +468,13 @@ css_parse_file (MxStyleSheet *sheet,
     return FALSE;
 }
 
-
 static gint
-css_node_matches_selector (MxNode       *node,
-                           MxSelector   *selector)
+css_node_matches_selector (MxSelector   *selector,
+                           const gchar  *type,
+                           const gchar  *id,
+                           const gchar  *class,
+                           const gchar  *pseudo_class,
+                           MxStylable   *parent)
 {
   gint score;
   gint a, b, c;
@@ -483,14 +487,39 @@ css_node_matches_selector (MxNode       *node,
   if (selector->parent)
     {
       gint parent_matches;
+      const gchar *ptype;
+      gchar *pid, *pclass, *ppseudo_class;
+      MxStylable *pparent;
+      ClutterActor *actor;
 
-      if (!node->parent)
+      if (!parent)
         return -1;
 
-      parent_matches = css_node_matches_selector (node->parent,
-                                                  selector->parent);
+      g_object_get (parent,
+                    "name", &pid,
+                    "style-class", &pclass,
+                    "style-pseudo-class", &ppseudo_class,
+                    NULL);
+      ptype = G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (parent));
+      actor = clutter_actor_get_parent (CLUTTER_ACTOR (parent));
+      if (MX_IS_STYLABLE (actor))
+        pparent = MX_STYLABLE (actor);
+      else
+        pparent = NULL;
+
+
+      parent_matches = css_node_matches_selector (selector->parent,
+                                                  ptype,
+                                                  pid,
+                                                  pclass,
+                                                  ppseudo_class,
+                                                  pparent);
       if (parent_matches < 0)
         return -1;
+
+      g_free (pid);
+      g_free (pclass);
+      g_free (ppseudo_class);
     }
 
   if (selector->type == NULL || selector->type[0] == '*')
@@ -499,7 +528,7 @@ css_node_matches_selector (MxNode       *node,
     }
   else
     {
-      if (!node->type || strcmp (selector->type, node->type))
+      if (!type || strcmp (selector->type, type))
         return -1;
       else
         c++;
@@ -507,7 +536,7 @@ css_node_matches_selector (MxNode       *node,
 
   if (selector->id)
     {
-      if (!node->id || strcmp (selector->id, node->id))
+      if (!id || strcmp (selector->id, id))
         return -1; /* no match */
       else
         a++;
@@ -515,7 +544,7 @@ css_node_matches_selector (MxNode       *node,
 
   if (selector->class)
     {
-      if (!node->class || strcmp (selector->class, node->class))
+      if (!class || strcmp (selector->class, class))
         return -1;
       else
         b++;
@@ -523,8 +552,8 @@ css_node_matches_selector (MxNode       *node,
 
   if (selector->pseudo_class)
     {
-      if (!node->pseudo_class
-          || strcmp (selector->pseudo_class, node->pseudo_class))
+      if (!pseudo_class
+          || strcmp (selector->pseudo_class, pseudo_class))
         return -1;
       else
         b++;
@@ -580,18 +609,38 @@ free_selector_match (SelectorMatch *data)
 
 GHashTable *
 mx_style_sheet_get_properties (MxStyleSheet *sheet,
-                               MxNode       *node)
+                               MxStylable   *node)
 {
   GList *l, *matching_selectors = NULL;
   SelectorMatch *selector_match = NULL;
   GHashTable *result;
+  const gchar *type;
+  gchar *id, *class, *pseudo_class;
+  ClutterActor *actor;
+  MxStylable *parent;
+
+
+  g_object_get (node,
+                "name", &id,
+                "style-class", &class,
+                "style-pseudo-class", &pseudo_class,
+                NULL);
+  type = G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (node));
+  actor = clutter_actor_get_parent (CLUTTER_ACTOR (node));
+  if (MX_IS_STYLABLE (actor))
+    parent = MX_STYLABLE (actor);
+  else
+    parent = NULL;
+
 
   /* find matching selectors */
   for (l = sheet->selectors; l; l = l->next)
     {
       gint score;
 
-      score = css_node_matches_selector (node, l->data);
+
+      score = css_node_matches_selector (l->data,
+                                         type, id, class, pseudo_class, parent);
 
       if (score >= 0)
         {
@@ -602,6 +651,11 @@ mx_style_sheet_get_properties (MxStyleSheet *sheet,
                                                selector_match);
         }
     }
+
+  g_free (pseudo_class);
+  g_free (id);
+  g_free (class);
+
   /* score the selectors by their score */
   matching_selectors = g_list_sort (matching_selectors,
                                     (GCompareFunc) compare_selector_matches);

@@ -328,22 +328,8 @@ mx_style_get_property (MxStyle    *style,
     {
       MxStyleSheetValue *css_value;
       GHashTable *properties;
-      MxNode node = { 0, };
 
-      g_object_get (stylable,
-                    "name", &node.id,
-                    "style-class", &node.class,
-                    "style-pseudo-class", &node.pseudo_class,
-                    NULL);
-
-      node.type = g_strdup (G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (stylable)));
-
-      properties = mx_style_sheet_get_properties (priv->stylesheet, &node);
-
-      g_free (node.id);
-      g_free (node.type);
-      g_free (node.class);
-      g_free (node.pseudo_class);
+      properties = mx_style_sheet_get_properties (priv->stylesheet, stylable);
 
       css_value = g_hash_table_lookup (properties, pspec->name);
 
@@ -392,22 +378,8 @@ mx_style_get_valist (MxStyle     *style,
   if (priv->stylesheet)
     {
       GHashTable *properties;
-      MxNode node = { 0, };
 
-      g_object_get (stylable,
-                    "name", &node.id,
-                    "style-class", &node.class,
-                    "style-pseudo-class", &node.pseudo_class,
-                    NULL);
-
-      node.type = g_strdup (G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (stylable)));
-
-      properties = mx_style_sheet_get_properties (priv->stylesheet, &node);
-
-      g_free (node.id);
-      g_free (node.type);
-      g_free (node.class);
-      g_free (node.pseudo_class);
+      properties = mx_style_sheet_get_properties (priv->stylesheet, stylable);
 
       while (name)
         {
