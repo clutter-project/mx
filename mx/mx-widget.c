@@ -31,7 +31,6 @@
 #include <string.h>
 
 #include <clutter/clutter.h>
-#include <ccss/ccss.h>
 
 #include "mx-widget.h"
 
