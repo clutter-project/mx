@@ -189,13 +189,13 @@ MxPopup > MxLabel:hover, MxPopup > MxLabel:active {
 
 MxToggle {
   padding: 4;
-  background-image: url("file://toggle-background.png");
+  background-image: url("toggle-background.png");
 }
 
 MxToggle:checked {
-  background-image: url("file://toggle-background-active.png");
+  background-image: url("toggle-background-active.png");
 }
 
 MxToggleHandle {
-  background-image: url("file://toggle-handle.png");
+  background-image: url("toggle-handle.png");
 }
