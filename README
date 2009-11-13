@@ -1,9 +1,6 @@
 MX
-====
+==
 
-'MX' is a currently experiemental toolkit for the moblin-netbook
-implementation.
+'MX' is an experimental toolkit for the Moblin User Experience.
 
-It depends on libccss of which can be obtained from:
 
-http://people.freedesktop.org/~robsta/libccss/
