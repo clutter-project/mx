@@ -26,11 +26,14 @@ dist_style_DATA = \
 		scroll-hhandle-hover.png \
 		scroll-vhandle.png \
 		scroll-vhandle-hover.png \
-		tooltip-background.png \
-		menu.png \
 		menu-item.png \
+		menu.png \
 		progress-bar-background.png \
-		progress-bar-bar.png
+		progress-bar-bar.png \
+		toggle-background-active.png \
+		toggle-background.png \
+		toggle-handle.png \
+		tooltip-background.png
 
 -include $(top_srcdir)/git.mk
 

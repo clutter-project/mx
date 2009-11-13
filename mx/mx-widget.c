@@ -1229,3 +1229,17 @@ mx_widget_draw_background (MxWidget *self)
                           priv->bg_color);
 
 }
+
+void
+mx_widget_get_available_area (MxWidget              *widget,
+                              const ClutterActorBox *allocation,
+                              ClutterActorBox       *area)
+{
+  MxWidgetPrivate *priv = widget->priv;
+
+  area->x1 = priv->padding.left;
+  area->y1 = priv->padding.top;
+
+  area->x2 = allocation->x2 - allocation->x1 - priv->padding.right;
+  area->y2 = allocation->y2 - allocation->y1 - priv->padding.bottom;
+}
