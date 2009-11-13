@@ -718,8 +718,6 @@ mx_tooltip_set_tip_area (MxTooltip             *tooltip,
   if (tooltip->priv->tip_area)
     g_boxed_free (CLUTTER_TYPE_GEOMETRY, tooltip->priv->tip_area);
   tooltip->priv->tip_area = g_boxed_copy (CLUTTER_TYPE_GEOMETRY, area);
-
-  mx_tooltip_update_position (tooltip);
 }
 
 /**
