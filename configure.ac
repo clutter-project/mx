@@ -121,7 +121,7 @@ GLIB_DEFINE_LOCALEDIR(LOCALEDIR)
 
 AM_PROG_LIBTOOL
 
-MX_REQUIRES="clutter-1.0 clutter-imcontext-0.1 libccss-1 = 0.3.1"
+MX_REQUIRES="clutter-1.0 clutter-imcontext-0.1"
 PKG_CHECK_MODULES(MX, [$MX_REQUIRES])
 PKG_CHECK_MODULES(GTK, [gtk+-2.0])
 

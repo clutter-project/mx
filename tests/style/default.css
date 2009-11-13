@@ -14,20 +14,20 @@ MxLabel#padded-label {
 MxButton, MxFadeButton, MxScrollButton {
   color: blue;
   padding: 12;
-  border-image: url('file://border-image.png') 12 stretch stretch;
+  border-image: url('border-image.png') 12 stretch stretch;
 }
 
 MxButton:hover, MxFadeButton:hover, MxScrollButton:hover {
-  border-image: url('file://border-image-light.png') 12 stretch stretch;
+  border-image: url('border-image-light.png') 12 stretch stretch;
 }
 
 MxButton:active, MxFadeButton:active, MxScrollButton:active {
-  border-image: url('file://border-image-dark.png') 12 stretch stretch;
+  border-image: url('border-image-dark.png') 12 stretch stretch;
 }
 
 MxButton#test-border-image {
   color: black;
-  border-image: url('file://border-image.png') 12 stretch stretch;
+  border-image: url('border-image.png') 12 stretch stretch;
 }
 
 MxButton MxBin#button-icon {
@@ -40,33 +40,33 @@ MxButton MxBin#button-icon:hover {
 
 MxLabel#test-border-image {
   color: black;
-  border-image: url('file://border-image.png') 12 stretch stretch;
+  border-image: url('border-image.png') 12 stretch stretch;
   border-width: 12;
 }
 
 *#red-button {
-  border-image: url('file://red-button.png') 0 stretch stretch;
+  border-image: url('red-button.png') 0 stretch stretch;
 }
 
 *#blue-button {
-  border-image: url('file://cyan-button.png') 0 stretch stretch;
+  border-image: url('cyan-button.png') 0 stretch stretch;
 }
 
 *#green-button {
-  border-image: url('file://green-button.png') 0 stretch stretch;
+  border-image: url('green-button.png') 0 stretch stretch;
 }
 
 *#style-button {
-  border-image: url('file://green-button.png') 0;
+  border-image: url('green-button.png') 0;
 }
 
 *#style-button:hover {
-  border-image: url('file://red-button.png') 0;
+  border-image: url('red-button.png') 0;
 }
 
 MxTable {
   color: #aee;
   background-color: #ddd;
-  border-image: url('file://rounded-corner.png') 30;
+  border-image: url('rounded-corner.png') 30;
   padding: 10;
 }

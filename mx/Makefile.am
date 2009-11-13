@@ -68,6 +68,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-bin.c			\
 	$(top_srcdir)/mx/mx-box-layout.c		\
 	$(top_srcdir)/mx/mx-box-layout-child.c	\
+	$(top_srcdir)/mx/mx-css.c		\
 	$(top_srcdir)/mx/mx-combo-box.c		\
 	$(top_srcdir)/mx/mx-button.c 		\
 	$(top_srcdir)/mx/mx-button-group.c 	\
@@ -96,7 +97,8 @@ source_c = \
 	$(top_srcdir)/mx/mx-texture-cache.c 	\
 	$(top_srcdir)/mx/mx-texture-frame.c 	\
 	$(top_srcdir)/mx/mx-tooltip.c 		\
-	$(top_srcdir)/mx/mx-utils.c                 \
+	$(top_srcdir)/mx/mx-types.c 		\
+	$(top_srcdir)/mx/mx-utils.c 		\
 	$(top_srcdir)/mx/mx-viewport.c 		\
 	$(top_srcdir)/mx/mx-widget.c		\
 	$(NULL)

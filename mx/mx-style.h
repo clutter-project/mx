@@ -24,7 +24,6 @@
 #define __MX_STYLE_H__
 
 #include <glib-object.h>
-#include <clutter/clutter.h>
 
 G_BEGIN_DECLS
 

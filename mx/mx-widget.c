@@ -42,8 +42,6 @@
 #include "mx-texture-frame.h"
 #include "mx-tooltip.h"
 
-typedef ccss_border_image_t MxBorderImage;
-
 /*
  * Forward declaration for sake of MxWidgetChild
  */
@@ -440,10 +438,10 @@ static void
 mx_widget_style_changed (MxStylable *self)
 {
   MxWidgetPrivate *priv = MX_WIDGET (self)->priv;
-  MxBorderImage *border_image = NULL;
+  MxBorderImage *border_image = NULL, *background_image = NULL;
   MxTextureCache *texture_cache;
   ClutterTexture *texture;
-  gchar *bg_file = NULL;
+  gchar *bg_file;
   MxPadding *padding = NULL;
   gboolean relayout_needed = FALSE;
   gboolean has_changed = FALSE;
@@ -452,7 +450,7 @@ mx_widget_style_changed (MxStylable *self)
   /* cache these values for use in the paint function */
   mx_stylable_get (self,
                    "background-color", &color,
-                   "background-image", &bg_file,
+                   "background-image", &background_image,
                    "border-image", &border_image,
                    "padding", &padding,
                    NULL);
@@ -526,10 +524,10 @@ mx_widget_style_changed (MxStylable *self)
       clutter_texture_get_base_size (CLUTTER_TEXTURE (texture),
                                      &width, &height);
 
-      border_left = ccss_position_get_size (&border_image->left, width);
-      border_top = ccss_position_get_size (&border_image->top, height);
-      border_right = ccss_position_get_size (&border_image->right, width);
-      border_bottom = ccss_position_get_size (&border_image->bottom, height);
+      border_left = border_image->left;
+      border_top = border_image->top;
+      border_right = border_image->right;
+      border_bottom = border_image->bottom;
 
       priv->border_image = mx_texture_frame_new (texture,
                                                  border_top,
@@ -543,24 +541,28 @@ mx_widget_style_changed (MxStylable *self)
       relayout_needed = TRUE;
     }
 
-  if (bg_file != NULL &&
-      strcmp (bg_file, "none"))
+  if (background_image)
     {
-      texture = mx_texture_cache_get_texture (texture_cache, bg_file);
-      priv->background_image = (ClutterActor*) texture;
-
-      if (priv->background_image != NULL)
+      bg_file = background_image->uri;
+      if (bg_file != NULL &&
+          strcmp (bg_file, "none"))
         {
-          clutter_actor_set_parent (priv->background_image,
-                                    CLUTTER_ACTOR (self));
-        }
-      else
-        g_warning ("Could not load %s", bg_file);
+          texture = mx_texture_cache_get_texture (texture_cache, bg_file);
+          priv->background_image = (ClutterActor*) texture;
 
-      has_changed = TRUE;
-      relayout_needed = TRUE;
+          if (priv->background_image != NULL)
+            {
+              clutter_actor_set_parent (priv->background_image,
+                                        CLUTTER_ACTOR (self));
+            }
+          else
+            g_warning ("Could not load %s", bg_file);
+
+          has_changed = TRUE;
+          relayout_needed = TRUE;
+        }
+      g_boxed_free (MX_TYPE_BORDER_IMAGE, background_image);
     }
-  g_free (bg_file);
 
   /* If there are any properties above that need to cause a relayout thay
    * should set this flag.
@@ -899,11 +901,11 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                         G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
 
-      pspec = g_param_spec_string ("background-image",
-                                   "Background Image",
-                                   "Background image filename",
-                                   NULL,
-                                   G_PARAM_READWRITE);
+      pspec = g_param_spec_boxed ("background-image",
+                                  "Background Image",
+                                  "Background image filename",
+                                  MX_TYPE_BORDER_IMAGE,
+                                  G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
 
       pspec = g_param_spec_string ("font-family",
@@ -965,40 +967,6 @@ mx_widget_init (MxWidget *actor)
   /* set the default style */
   mx_widget_set_style (MX_STYLABLE (actor), mx_style_get_default ());
 
-}
-
-static MxBorderImage *
-mx_border_image_copy (const MxBorderImage *border_image)
-{
-  MxBorderImage *copy;
-
-  g_return_val_if_fail (border_image != NULL, NULL);
-
-  copy = g_slice_new (MxBorderImage);
-  *copy = *border_image;
-
-  return copy;
-}
-
-static void
-mx_border_image_free (MxBorderImage *border_image)
-{
-  if (G_LIKELY (border_image))
-    g_slice_free (MxBorderImage, border_image);
-}
-
-GType
-mx_border_image_get_type (void)
-{
-  static GType our_type = 0;
-
-  if (G_UNLIKELY (our_type == 0))
-    our_type =
-      g_boxed_type_register_static (I_("MxBorderImage"),
-                                    (GBoxedCopyFunc) mx_border_image_copy,
-                                    (GBoxedFreeFunc) mx_border_image_free);
-
-  return our_type;
 }
 
 /**
