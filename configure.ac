@@ -11,9 +11,12 @@ m4_define([mx_interface_age], [0])
 m4_define([mx_binary_age], [m4_eval(100 * mx_minor + mx_micro)])
 
 AC_INIT([mx], [mx_version])
-AC_CONFIG_MACRO_DIR([build/autotools])
+AC_CONFIG_MACRO_DIR([m4])
 
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
+
+# enable quiet ("silent") builds, if available
+m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
 AC_CONFIG_HEADERS([config.h])
 
@@ -130,16 +133,10 @@ GTK_DOC_CHECK([1.9])
 
 GOBJECT_INTROSPECTION_CHECK([0.6.4])
 
-SHAVE_INIT([build/autotools], [enable])
-
 AC_CONFIG_FILES([
         Makefile
         mx.pc
         mx-gtk.pc
-        build/Makefile
-        build/autotools/Makefile
-        build/autotools/shave
-        build/autotools/shave-libtool
         data/Makefile
         data/style/Makefile
         docs/Makefile

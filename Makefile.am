@@ -1,9 +1,9 @@
-SUBDIRS = mx data tests docs build po
+SUBDIRS = mx data tests docs po
 
-GITIGNOREFILES= $(top_srcdir)/build/autotools\
-		$(top_srcdir)/docs/reference/libmx/tmpl
+ACLOCAL_AMFLAGS=-I m4
 
-ACLOCAL_AMFLAGS = -I build/autotools
+GITIGNOREFILES=$(top_srcdir)/docs/reference/libmx/tmpl
+
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
 
 pcfiles = mx-$(MX_API_VERSION).pc mx-gtk-$(MX_API_VERSION).pc
