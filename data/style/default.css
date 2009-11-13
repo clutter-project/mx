@@ -160,11 +160,11 @@ MxTooltip {
 
 MxProgressBar {
   padding: 3;
-  border-image: url('progress-bar-background.png') 2 stretch stretch;
+  border-image: url('progress-bar-background.png') 2;
 }
 
 MxProgressBar MxProgressBarFill {
-  border-image: url('progress-bar-bar.png') 2 stretch stretch;
+  border-image: url('progress-bar-bar.png') 2;
 }
 
 MxComboBox {
