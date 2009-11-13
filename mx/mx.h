@@ -29,6 +29,7 @@
 #include <mx/mx-bin.h>
 #include <mx/mx-box-layout.h>
 #include <mx/mx-button.h>
+#include <mx/mx-button-group.h>
 #include <mx/mx-combo-box.h>
 #include <mx/mx-draggable.h>
 #include <mx/mx-droppable.h>
@@ -52,6 +53,7 @@
 #include <mx/mx-table-child.h>
 #include <mx/mx-texture-cache.h>
 #include <mx/mx-texture-frame.h>
+#include <mx/mx-toggle.h>
 #include <mx/mx-tooltip.h>
 #include <mx/mx-types.h>
 #include <mx/mx-utils.h>
