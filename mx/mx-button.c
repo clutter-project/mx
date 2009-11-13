@@ -312,11 +312,15 @@ mx_button_enter (ClutterActor         *actor,
                  ClutterCrossingEvent *event)
 {
   MxButton *button = MX_BUTTON (actor);
+  MxWidget *widget = MX_WIDGET (actor);
 
   if (!button->priv->is_checked)
-    mx_widget_set_style_pseudo_class ((MxWidget*) button, "hover");
+    mx_widget_set_style_pseudo_class (widget, "hover");
 
   button->priv->is_hover = 1;
+
+  if (mx_widget_get_has_tooltip (widget))
+    mx_widget_show_tooltip (widget);
 
   return TRUE;
 }
@@ -326,6 +330,7 @@ mx_button_leave (ClutterActor         *actor,
                  ClutterCrossingEvent *event)
 {
   MxButton *button = MX_BUTTON (actor);
+  MxWidget *widget = MX_WIDGET (actor);
 
   button->priv->is_hover = 0;
 
@@ -337,9 +342,12 @@ mx_button_leave (ClutterActor         *actor,
     }
 
   if (button->priv->is_checked)
-    mx_widget_set_style_pseudo_class ((MxWidget*) button, "checked");
+    mx_widget_set_style_pseudo_class (widget, "checked");
   else
-    mx_widget_set_style_pseudo_class ((MxWidget*) button, NULL);
+    mx_widget_set_style_pseudo_class (widget, NULL);
+
+  if (mx_widget_get_has_tooltip (widget))
+    mx_widget_hide_tooltip (widget);
 
   return TRUE;
 }
