@@ -296,11 +296,20 @@ paint_cb (ClutterActor      *actor,
           MxComboBoxPrivate *priv)
 {
   ClutterActorBox box;
+  gfloat x, y, width, height;
+
+  x = priv->clip_x - box.x1;
+  y = priv->clip_y - box.y1;
+  width = box.x2 - box.x1;
+  height = box.y2 - box.y1;
 
   /* set a clip so the menu appears to slide out of the button */
   clutter_actor_get_allocation_box (actor, &box);
-  cogl_clip_push (priv->clip_x - box.x1, priv->clip_y - box.y1,
-                  box.x2 - box.x1, box.y2 - box.y1);
+#if CLUTTER_CHECK_VERSION (1, 1, 3)
+  cogl_clip_push_rectangle (x, y, x + width, y + height);
+#else
+  cogl_clip_push (x, y, width, height);
+#endif
 }
 
 static void
