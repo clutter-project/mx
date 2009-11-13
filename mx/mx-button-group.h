@@ -26,7 +26,7 @@
 
 #include <glib-object.h>
 
-#include <mx-button.h>
+#include "mx-button.h"
 
 G_BEGIN_DECLS
 
