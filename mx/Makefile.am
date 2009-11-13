@@ -61,6 +61,7 @@ source_gtk_h = \
 	$(NULL)
 
 source_h_priv = \
+	$(top_srcdir)/mx/mx-css.h \
 	$(top_srcdir)/mx/mx-private.h
 
 source_c = \
