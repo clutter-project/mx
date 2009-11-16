@@ -719,14 +719,6 @@ mx_stylable_get_style
 mx_stylable_get
 mx_stylable_get_property
 mx_stylable_get_default_value
-mx_stylable_get_container
-mx_stylable_get_base_style
-mx_stylable_get_style_id
-mx_stylable_get_style_type
-mx_stylable_get_style_class
-mx_stylable_get_pseudo_class
-mx_stylable_get_attribute
-mx_stylable_get_viewport
 mx_stylable_changed
 <SUBSECTION Standard>
 MX_STYLABLE_IFACE
