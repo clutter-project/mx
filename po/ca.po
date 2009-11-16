@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mx 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-15 09:25+0000\n"
+"POT-Creation-Date: 2009-11-16 16:46+0000\n"
 "PO-Revision-Date: 2009-08-16 18:28+0200\n"
 "Last-Translator: Gil Forcada <gilforcada@guifi.net>\n"
 "Language-Team: Catalan <tradgnome@softcatala.org>\n"
@@ -15,78 +15,79 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../mx/mx-gtk-light-switch.c:163
+#: mx/mx-gtk-light-switch.c:175
 msgid "Unavailable"
 msgstr "No disponible"
 
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the MEDIUM VERTICAL BAR unicode character
 #. * instead
-#: ../mx/mx-gtk-light-switch.c:183 ../mx/mx-gtk-light-switch.c:256
+#: mx/mx-gtk-light-switch.c:195 mx/mx-gtk-light-switch.c:269
 msgid "On"
 msgstr "Actiu"
 
 #. Draw the second label; "Off"
 #. TRANSLATORS: If this string takes more than four or five characters in
-#. * your language, please use the ROUND CIRCLE unicode character instead
-#: ../mx/mx-gtk-light-switch.c:201 ../mx/mx-gtk-light-switch.c:254
+#. * your language, please use the WHITE CIRCLE U+25CB unicode character
+#. * instead
+#: mx/mx-gtk-light-switch.c:214 mx/mx-gtk-light-switch.c:267
 msgid "Off"
 msgstr "Apagat"
 
-#: mx/mx-utils.c:92
+#: mx/mx-utils.c:94
 msgid "Less than a minute ago"
 msgstr "Fa menys d'un minut"
 
-#: mx/mx-utils.c:96
+#: mx/mx-utils.c:98
 msgid "A few minutes ago"
 msgstr "Fa uns minuts"
 
-#: mx/mx-utils.c:100
+#: mx/mx-utils.c:102
 msgid "A couple of hours ago"
 msgstr "Fa unes hores"
 
-#: mx/mx-utils.c:107
+#: mx/mx-utils.c:109
 msgid "Earlier today"
 msgstr "Avui"
 
-#: mx/mx-utils.c:110
+#: mx/mx-utils.c:112
 msgid "Yesterday"
 msgstr "Ahir"
 
-#: mx/mx-utils.c:118
+#: mx/mx-utils.c:120
 #, c-format
 msgid "On %A"
 msgstr "El %A"
 
-#: mx/mx-utils.c:124
+#: mx/mx-utils.c:126
 msgid "Unknown"
 msgstr "Desconegut"
 
-#: mx/mx-utils.c:131
+#: mx/mx-utils.c:133
 msgid "Last week"
 msgstr "La setmana passada"
 
-#: mx/mx-utils.c:134
+#: mx/mx-utils.c:136
 msgid "A couple of weeks ago"
 msgstr "Fa un parell de setmanes"
 
-#: mx/mx-utils.c:140
+#: mx/mx-utils.c:142
 msgid "This month"
 msgstr "Aquest mes"
 
 #. Now Jan., last used in Dec.
-#: mx/mx-utils.c:144
+#: mx/mx-utils.c:146
 msgid "Last month"
 msgstr "El mes passat"
 
-#: mx/mx-utils.c:147
+#: mx/mx-utils.c:149
 msgid "This year"
 msgstr "Aquest any"
 
-#: mx/mx-utils.c:150
+#: mx/mx-utils.c:152
 msgid "Last year"
 msgstr "L'any passat"
 
-#: mx/mx-utils.c:152
+#: mx/mx-utils.c:154
 msgid "Ages ago"
 msgstr "Fa milers d'anys"
