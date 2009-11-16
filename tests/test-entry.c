@@ -18,9 +18,12 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <config.h>
 
 #include <clutter/clutter.h>
+#ifdef HAVE_CLUTTER_IMCONTEXT
 #include <clutter-imcontext/clutter-imtext.h>
+#endif
 #include <mx/mx.h>
 
 static void
@@ -68,7 +71,11 @@ main (int argc, char *argv[])
                          entry, NULL);
   mx_entry_set_hint_text (MX_ENTRY (entry), "hint hint...");
 
+#ifdef HAVE_CLUTTER_IMCONTEXT
   clutter_imtext_set_autoshow_im (CLUTTER_IMTEXT (mx_entry_get_clutter_text (MX_ENTRY (entry))), TRUE);
+#else
+  g_debug ("Input method support is disabled");
+#endif
   g_signal_connect (mx_entry_get_clutter_text (MX_ENTRY (entry)),
                     "text-changed", G_CALLBACK (text_changed_cb), entry);
 

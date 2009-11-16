@@ -52,7 +52,9 @@
 #include <glib.h>
 
 #include <clutter/clutter.h>
+#ifdef HAVE_CLUTTER_IMCONTEXT
 #include <clutter-imcontext/clutter-imtext.h>
+#endif
 
 #include "mx-entry.h"
 
@@ -713,7 +715,11 @@ mx_entry_init (MxEntry *entry)
 
   priv = entry->priv = MX_ENTRY_GET_PRIVATE (entry);
 
+#ifdef HAVE_CLUTTER_IM_CONTEXT
   priv->entry = g_object_new (CLUTTER_TYPE_IMTEXT,
+#else
+  priv->entry = g_object_new (CLUTTER_TYPE_TEXT,
+#endif
                               "line-alignment", PANGO_ALIGN_LEFT,
                               "editable", TRUE,
                               "reactive", TRUE,

@@ -111,6 +111,27 @@ AS_IF([test "x$enable_maintainer_flags" = "xyes"],
 
 AC_SUBST(MX_MAINTAINER_CFLAGS)
 
+
+dnl = Required Packages ====================================================
+
+MX_REQUIRES="clutter-1.0"
+
+dnl = Optional Packages ====================================================
+
+AC_ARG_WITH([clutter-imcontext],
+            [AC_HELP_STRING([--without-clutter-imcontext],
+                            [disable input method support])],
+            [],
+            [with_clutter_imcontext=yes])
+
+AS_IF([test "x$with_clutter_imcontext" != xno],
+      [PKG_CHECK_EXISTS([clutter-imcontext-0.1],
+                        [AC_DEFINE([HAVE_CLUTTER_IMCONTEXT], [1],
+                                   [Define you have clutter-imcontext])
+                         MX_REQUIRES="$MX_REQUIRES clutter-imcontext-0.1"],
+                        [AC_MSG_FAILURE([Could not find clutter-imcontext. Use --without-clutter-imcontext to disable input method support.])]]
+      ))
+
 dnl ***************************************************************************
 dnl Internationalization
 dnl ***************************************************************************
@@ -124,7 +145,6 @@ GLIB_DEFINE_LOCALEDIR(LOCALEDIR)
 
 AM_PROG_LIBTOOL
 
-MX_REQUIRES="clutter-1.0 clutter-imcontext-0.1"
 PKG_CHECK_MODULES(MX, [$MX_REQUIRES])
 PKG_CHECK_MODULES(GTK, [gtk+-2.0])
 
