@@ -518,7 +518,7 @@ css_node_matches_selector (MxSelector   *selector,
         return -1;
 
       /* increase the 'c' score, since the parent matched */
-      c++;
+      c += parent_matches;
 
       g_free (pid);
       g_free (pclass);
@@ -566,7 +566,7 @@ css_node_matches_selector (MxSelector   *selector,
            */
           if (ancestor_matches >= 0)
             {
-              c++;
+              c += ancestor_matches;
               break;
             }
 
