@@ -522,6 +522,57 @@ css_node_matches_selector (MxSelector   *selector,
       g_free (ppseudo_class);
     }
 
+  if (selector->ancestor)
+    {
+      gint ancestor_matches;
+      const gchar *ptype;
+      gchar *pid, *pclass, *ppseudo_class;
+      MxStylable *pparent, *ancestor;
+      ClutterActor *actor;
+
+      if (!parent)
+        return -1;
+
+      ancestor = parent;
+      while (ancestor)
+        {
+          g_object_get (parent,
+                        "name", &pid,
+                        "style-class", &pclass,
+                        "style-pseudo-class", &ppseudo_class,
+                        NULL);
+          ptype = G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (ancestor));
+          actor = clutter_actor_get_parent (CLUTTER_ACTOR (ancestor));
+          if (MX_IS_STYLABLE (actor))
+            pparent = MX_STYLABLE (actor);
+          else
+            pparent = NULL;
+
+
+          ancestor_matches = css_node_matches_selector (selector->ancestor,
+                                                        ptype,
+                                                        pid,
+                                                        pclass,
+                                                        ppseudo_class,
+                                                        pparent);
+          g_free (pid);
+          g_free (pclass);
+          g_free (ppseudo_class);
+
+          /* if one of the ancestors match, stop search and increase 'c' score
+           */
+          if (ancestor_matches >= 0)
+            {
+              c++;
+              break;
+            }
+
+          ancestor = pparent;
+          if (!ancestor || !MX_IS_STYLABLE (ancestor))
+            return -1;
+        }
+    }
+
   if (selector->type == NULL || selector->type[0] == '*')
     {
       /* NULL or universal selector match, but are ignored for score */
