@@ -44,6 +44,12 @@ text_changed_cb (ClutterText *text, MxEntry *entry)
   printf ("Text: %s\n", mx_entry_get_text (entry));
 }
 
+static void
+print_notice (ClutterText *text, gchar *message)
+{
+  printf ("%s\n", message);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -104,10 +110,10 @@ main (int argc, char *argv[])
                                          "edit-find.png");
   mx_entry_set_secondary_icon_from_file (MX_ENTRY (entry),
                                            "edit-clear.png");
-  g_signal_connect_swapped (entry, "primary-icon-clicked",
-                            G_CALLBACK (g_print), "primary icon clicked\n");
-  g_signal_connect_swapped (entry, "secondary-icon-clicked",
-                            G_CALLBACK (g_print), "secondary icon clicked\n");
+  g_signal_connect (entry, "primary-icon-clicked",
+                    G_CALLBACK (print_notice), "primary icon clicked\n");
+  g_signal_connect (entry, "secondary-icon-clicked",
+                    G_CALLBACK (print_notice), "secondary icon clicked\n");
 
   clutter_actor_show (stage);
 
