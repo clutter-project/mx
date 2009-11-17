@@ -539,7 +539,7 @@ css_node_matches_selector (MxSelector   *selector,
       ancestor = parent;
       while (ancestor)
         {
-          g_object_get (parent,
+          g_object_get (ancestor,
                         "name", &pid,
                         "style-class", &pclass,
                         "style-pseudo-class", &ppseudo_class,
