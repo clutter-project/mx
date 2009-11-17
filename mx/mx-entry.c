@@ -641,6 +641,26 @@ mx_entry_key_focus_in (ClutterActor *actor)
   clutter_actor_grab_key_focus (priv->entry);
 }
 
+static gboolean
+mx_entry_swallow_crossing_event (ClutterActor         *actor,
+                                 ClutterCrossingEvent *event)
+{
+  /* swallow enter and leave events, since the pseudo-class must not be set to
+   * 'hover' because it would loose the 'focus' state.
+   */
+  return TRUE;
+}
+
+static gboolean
+mx_entry_swallow_button_event (ClutterActor       *actor,
+                               ClutterButtonEvent *event)
+{
+  /* swallow enter and leave events, since the pseudo-class must not be set to
+   * 'active' because it would loose the 'focus' state.
+   */
+  return TRUE;
+}
+
 static void
 mx_entry_class_init (MxEntryClass *klass)
 {
@@ -662,6 +682,10 @@ mx_entry_class_init (MxEntryClass *klass)
   actor_class->pick = mx_entry_pick;
   actor_class->map = mx_entry_map;
   actor_class->unmap = mx_entry_unmap;
+  actor_class->enter_event = mx_entry_swallow_crossing_event;
+  actor_class->leave_event = mx_entry_swallow_crossing_event;
+  actor_class->button_press_event = mx_entry_swallow_button_event;
+  actor_class->button_release_event = mx_entry_swallow_button_event;
 
   actor_class->key_press_event = mx_entry_key_press_event;
   actor_class->key_focus_in = mx_entry_key_focus_in;
