@@ -260,7 +260,7 @@ css_parse_simple_selector (GScanner      *scanner,
   return G_TOKEN_NONE;
 }
 
-#ifdef MX_ENABLE_DEBUG
+#ifdef MX_DEBUG_CSS
 static void
 print_selector (MxSelector *selector, gint indent)
 {
@@ -718,7 +718,7 @@ mx_style_sheet_get_properties (MxStyleSheet *sheet,
 
 
   /* find matching selectors */
-#ifdef MX_ENABLE_DEBUG
+#ifdef MX_DEBUG_CSS
   printf ("%s.%s#%s:%s matches: \n", type, class, id, pseudo_class);
 #endif
   for (l = sheet->selectors; l; l = l->next)
@@ -736,13 +736,13 @@ mx_style_sheet_get_properties (MxStyleSheet *sheet,
           selector_match->score = score;
           matching_selectors = g_list_prepend (matching_selectors,
                                                selector_match);
-#ifdef MX_ENABLE_DEBUG
+#ifdef MX_DEBUG_CSS
           printf ("(%d) ", score);
           print_selector (selector_match->selector, 1);
 #endif
         }
     }
-#ifdef MX_ENABLE_DEBUG
+#ifdef MX_DEBUG_CSS
   printf ("----\n");
 #endif
 
@@ -811,7 +811,7 @@ mx_style_sheet_add_from_file (MxStyleSheet *sheet,
   result = css_parse_file (sheet, input_name);
   sheet->filenames = g_list_prepend (sheet->filenames, input_name);
 
-#ifdef MX_ENABLE_DEBUG
+#ifdef MX_DEBUG_CSS
   g_list_foreach (sheet->selectors, (GFunc)print_selector, GINT_TO_POINTER (0));
   printf ("-------\n");
 #endif
