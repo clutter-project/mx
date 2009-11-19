@@ -420,14 +420,18 @@ void
 mx_toggle_set_active (MxToggle *toggle,
                       gboolean  active)
 {
+  MxTogglePrivate *priv;
+
   g_return_if_fail (MX_IS_TOGGLE (toggle));
 
-  if (toggle->priv->active != active
-      || (toggle->priv->position > 0 && toggle->priv->position < 1))
+  priv = toggle->priv;
+
+  if (priv->active != active
+      || (priv->position > 0 && priv->position < 1))
     {
       ClutterTimeline *timeline;
 
-      timeline = clutter_alpha_get_timeline (toggle->priv->alpha);
+      timeline = clutter_alpha_get_timeline (priv->alpha);
 
       if (clutter_timeline_is_playing (timeline))
         return;
@@ -439,15 +443,19 @@ mx_toggle_set_active (MxToggle *toggle,
 
       clutter_timeline_rewind (timeline);
 
-      if (toggle->priv->position > 0 && toggle->priv->position < 1)
+      if (priv->position > 0 && priv->position < 1)
         {
-          /* FIXME: this doesn't take into account the alpha function */
-          clutter_timeline_advance (timeline, toggle->priv->position * 300);
+          clutter_alpha_set_mode (priv->alpha, CLUTTER_LINEAR);
+          clutter_timeline_advance (timeline, priv->position * 300);
+        }
+      else
+        {
+          clutter_alpha_set_mode (priv->alpha, CLUTTER_EASE_IN_OUT_CUBIC);
         }
 
       clutter_timeline_start (timeline);
 
-      toggle->priv->active = active;
+      priv->active = active;
 
       g_object_notify (G_OBJECT (toggle), "active");
     }
