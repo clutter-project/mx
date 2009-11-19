@@ -327,29 +327,6 @@ MxViewportPrivate
 </SECTION>
 
 <SECTION>
-<FILE>mx-gtk-expander</FILE>
-<TITLE>MxGtkExpander</TITLE>
-MxGtkExpander
-mx_gtk_expander_new
-mx_gtk_expander_set_expanded
-mx_gtk_expander_get_expanded
-mx_gtk_expander_set_label_widget
-mx_gtk_expander_get_label_widget
-mx_gtk_expander_set_has_indicator
-mx_gtk_expander_get_has_indicator
-<SUBSECTION Standard>
-MX_GTK_EXPANDER
-MX_IS_GTK_EXPANDER
-MX_TYPE_GTK_EXPANDER
-mx_gtk_expander_get_type
-MX_GTK_EXPANDER_CLASS
-MX_IS_GTK_EXPANDER_CLASS
-MX_GTK_EXPANDER_GET_CLASS
-<SUBSECTION Private>
-MxGtkExpanderPrivate
-</SECTION>
-
-<SECTION>
 <FILE>mx-icon</FILE>
 <TITLE>MxIcon</TITLE>
 MxIcon

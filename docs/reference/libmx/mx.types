@@ -11,7 +11,6 @@ mx_droppable_get_type
 mx_entry_get_type
 mx_expander_get_type
 mx_grid_get_type
-mx_gtk_expander_get_type
 mx_gtk_frame_get_type
 mx_gtk_light_switch_get_type
 mx_icon_get_type

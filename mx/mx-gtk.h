@@ -28,7 +28,6 @@
 
 #include <mx/mx-gtk-light-switch.h>
 #include <mx/mx-gtk-frame.h>
-#include <mx/mx-gtk-expander.h>
 
 #undef MX_H_INSIDE
 

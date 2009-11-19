@@ -56,7 +56,6 @@ source_h = \
 
 source_gtk_h = \
 	$(top_srcdir)/mx/mx-gtk-frame.h 		\
-	$(top_srcdir)/mx/mx-gtk-expander.h 		\
 	$(top_srcdir)/mx/mx-gtk-light-switch.h 	\
 	$(NULL)
 
@@ -108,7 +107,6 @@ source_c = \
 
 source_gtk_c = \
 	$(top_srcdir)/mx/mx-gtk-frame.c 		\
-	$(top_srcdir)/mx/mx-gtk-expander.c 		\
 	$(top_srcdir)/mx/mx-gtk-light-switch.c 	\
 	$(NULL)
 
