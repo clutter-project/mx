@@ -289,12 +289,12 @@ mx_toggle_handle_button_release_event (ClutterActor       *actor,
                                        ClutterButtonEvent *event,
                                        MxToggle           *toggle)
 {
-  toggle->priv->drag_offset = -1;
-
   if (toggle->priv->last_move == 0)
     mx_toggle_set_active (toggle, !toggle->priv->active);
   else
     mx_toggle_set_active (toggle, (toggle->priv->last_move > 0.0));
+
+  toggle->priv->drag_offset = -1;
 
   toggle->priv->last_move = 0;
 
@@ -443,7 +443,7 @@ mx_toggle_set_active (MxToggle *toggle,
 
       clutter_timeline_rewind (timeline);
 
-      if (priv->position > 0 && priv->position < 1)
+      if (priv->drag_offset > -1)
         {
           clutter_alpha_set_mode (priv->alpha, CLUTTER_LINEAR);
           clutter_timeline_advance (timeline, priv->position * 300);
