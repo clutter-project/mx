@@ -28,6 +28,12 @@ button_clicked_cb (MxButton *button, gchar *name)
   printf ("%s button clicked!\n", name);
 }
 
+static void
+button_long_press_cb (MxButton *button)
+{
+  printf ("long press detected\n");
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -42,13 +48,16 @@ main (int argc, char *argv[])
   clutter_actor_set_size (stage, 320, 240);
 
   button = mx_button_new_with_label ("Normal Button");
+  g_signal_connect (button, "long-press", G_CALLBACK (button_long_press_cb),
+                    NULL);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), button);
   clutter_actor_set_position (button, 100, 50);
 
   button = mx_button_new_with_label ("Toggle Button");
-  g_signal_connect (button, "clicked",
-                    G_CALLBACK (button_clicked_cb),
+  g_signal_connect (button, "clicked", G_CALLBACK (button_clicked_cb),
                     "toggle");
+  g_signal_connect (button, "long-press", G_CALLBACK (button_long_press_cb),
+                    NULL);
   mx_button_set_toggle_mode (MX_BUTTON (button), TRUE);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), button);
   clutter_actor_set_position (button, 100, 100);
