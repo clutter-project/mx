@@ -18,7 +18,7 @@
  * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Written by: Emmanuele Bassi <ebassi@openedhand.com>
- *             Thomas Wood <thomas@linux.intel.com>
+ *             Thomas Wood <thomas.wood@intel.com>
  *
  */
 
@@ -50,6 +50,8 @@
 #include "mx-texture-cache.h"
 #include "mx-private.h"
 
+#define LONG_PRESS_TIMOUT 500
+
 enum
 {
   PROP_0,
@@ -62,6 +64,7 @@ enum
 enum
 {
   CLICKED,
+  LONG_PRESS,
 
   LAST_SIGNAL
 };
@@ -86,6 +89,7 @@ struct _MxButtonPrivate
   ClutterAnimation *animation;
 
   gint              spacing;
+  guint             long_press_source;
 };
 
 static guint button_signals[LAST_SIGNAL] = { 0, };
@@ -249,20 +253,33 @@ mx_button_style_changed (MxWidget *widget)
 }
 
 static gboolean
+mx_button_emit_long_press (MxButton *button)
+{
+  if (button->priv->is_pressed)
+    g_signal_emit (button, button_signals[LONG_PRESS], 0);
+
+  return FALSE;
+}
+
+static gboolean
 mx_button_button_press (ClutterActor       *actor,
                         ClutterButtonEvent *event)
 {
+  MxButtonPrivate *priv = MX_BUTTON (actor)->priv;
+
   mx_widget_hide_tooltip (MX_WIDGET (actor));
 
   if (event->button == 1)
     {
-      MxButton *button = MX_BUTTON (actor);
-
-      button->priv->is_pressed = TRUE;
+      priv->is_pressed = TRUE;
 
       clutter_grab_pointer (actor);
 
-      mx_widget_set_style_pseudo_class ((MxWidget*) button, "active");
+      mx_widget_set_style_pseudo_class (MX_WIDGET (actor), "active");
+
+      priv->long_press_source = g_timeout_add (LONG_PRESS_TIMOUT,
+                                              (GSourceFunc) mx_button_emit_long_press,
+                                              actor);
 
       return TRUE;
     }
@@ -292,6 +309,12 @@ mx_button_button_release (ClutterActor       *actor,
       button->priv->is_pressed = FALSE;
 
       g_signal_emit (button, button_signals[CLICKED], 0);
+
+      if (priv->long_press_source)
+        {
+          g_source_remove (priv->long_press_source);
+          priv->long_press_source = 0;
+        }
 
 
       if (priv->is_checked)
@@ -516,6 +539,22 @@ mx_button_class_init (MxButtonClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxButtonClass, clicked),
+                  NULL, NULL,
+                  _mx_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
+
+  /**
+   * MxButton::long-press:
+   * @button: the object that received the signal
+   *
+   * Emitted when the user holds a mouse button down for a longer period.
+   */
+
+  button_signals[LONG_PRESS] =
+    g_signal_new ("long-press",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (MxButtonClass, long_press),
                   NULL, NULL,
                   _mx_marshal_VOID__VOID,
                   G_TYPE_NONE, 0);

@@ -66,6 +66,7 @@ struct _MxButtonClass
 
   /* signals */
   void (* clicked) (MxButton *button);
+  void (* long_press) (MxButton *button);
 };
 
 GType mx_button_get_type (void) G_GNUC_CONST;
