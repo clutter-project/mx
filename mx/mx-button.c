@@ -49,6 +49,7 @@
 #include "mx-texture-frame.h"
 #include "mx-texture-cache.h"
 #include "mx-private.h"
+#include "mx-enum-types.h"
 
 #define LONG_PRESS_TIMOUT 500
 
@@ -255,8 +256,14 @@ mx_button_style_changed (MxWidget *widget)
 static gboolean
 mx_button_emit_long_press (MxButton *button)
 {
+  gboolean result;
+
   if (button->priv->is_pressed)
-    g_signal_emit (button, button_signals[LONG_PRESS], 0);
+    {
+      g_signal_emit (button, button_signals[LONG_PRESS], 0,
+                     0.0, 0.0, MX_LONG_PRESS_ACTION, &result);
+      button->priv->long_press_source = 0;
+    }
 
   return FALSE;
 }
@@ -271,15 +278,21 @@ mx_button_button_press (ClutterActor       *actor,
 
   if (event->button == 1)
     {
+      gboolean query_result = FALSE;
+
       priv->is_pressed = TRUE;
 
       clutter_grab_pointer (actor);
 
       mx_widget_set_style_pseudo_class (MX_WIDGET (actor), "active");
 
-      priv->long_press_source = g_timeout_add (LONG_PRESS_TIMOUT,
-                                              (GSourceFunc) mx_button_emit_long_press,
-                                              actor);
+      g_signal_emit (actor, button_signals[LONG_PRESS], 0, event->x,
+                     event->y, MX_LONG_PRESS_QUERY, &query_result);
+
+      if (query_result)
+        priv->long_press_source = g_timeout_add (LONG_PRESS_TIMOUT,
+                                                 (GSourceFunc) mx_button_emit_long_press,
+                                                 actor);
 
       return TRUE;
     }
@@ -312,8 +325,12 @@ mx_button_button_release (ClutterActor       *actor,
 
       if (priv->long_press_source)
         {
+          gboolean result;
+
           g_source_remove (priv->long_press_source);
           priv->long_press_source = 0;
+          g_signal_emit (button, button_signals[LONG_PRESS], 0,
+                         0.0, 0.0, MX_LONG_PRESS_CANCEL, &result);
         }
 
 
@@ -556,8 +573,8 @@ mx_button_class_init (MxButtonClass *klass)
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxButtonClass, long_press),
                   NULL, NULL,
-                  _mx_marshal_VOID__VOID,
-                  G_TYPE_NONE, 0);
+                  _mx_marshal_BOOL__FLOAT_FLOAT_ENUM,
+                  G_TYPE_BOOLEAN, 3, G_TYPE_FLOAT, G_TYPE_FLOAT, MX_TYPE_LONG_PRESS_ACTION);
 }
 
 static void

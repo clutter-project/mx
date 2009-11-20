@@ -28,10 +28,16 @@ button_clicked_cb (MxButton *button, gchar *name)
   printf ("%s button clicked!\n", name);
 }
 
-static void
-button_long_press_cb (MxButton *button)
+static gboolean
+button_long_press_cb (MxButton *button, gfloat x, gfloat y,
+                      MxLongPressAction action)
 {
-  printf ("long press detected\n");
+  if (action == MX_LONG_PRESS_ACTION)
+    printf ("long press detected\n");
+  else if (action == MX_LONG_PRESS_CANCEL)
+    printf ("long press cancelled\n");
+
+  return TRUE;
 }
 
 int
