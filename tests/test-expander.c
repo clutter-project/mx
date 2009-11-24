@@ -16,11 +16,7 @@
  * Boston, MA 02111-1307, USA.
  *
  */
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <clutter/clutter.h>
-#include <mx/mx.h>
+#include "test-mx.h"
 
 static void
 expand_complete_cb (MxExpander  *expander,
@@ -58,21 +54,15 @@ stage_size_notify_cb (ClutterActor *stage,
   clutter_actor_get_size (stage, &width, &height);
 }
 
-int
-main (int argc, char *argv[])
+void
+expander_main (ClutterContainer *stage)
 {
-  ClutterActor *stage, *expander, *scroll, *grid;
+  ClutterActor *expander, *scroll, *grid;
   int i;
-
-  clutter_init (&argc, &argv);
-
-  stage = clutter_stage_get_default ();
-  clutter_actor_set_size (stage, 640, 480);
-  clutter_stage_set_user_resizable (CLUTTER_STAGE (stage), TRUE);
 
   expander = mx_expander_new ();
   mx_expander_set_label (MX_EXPANDER (expander), "Expander");
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage),
+  clutter_container_add_actor (stage,
                                expander);
   clutter_actor_set_position (expander, 10, 10);
 
@@ -105,8 +95,5 @@ main (int argc, char *argv[])
                     G_CALLBACK (stage_size_notify_cb), expander);
   g_signal_connect (stage, "key-release-event",
                     G_CALLBACK (set_expanded), expander);
-  clutter_actor_show (stage);
-  clutter_main ();
 
-  return EXIT_SUCCESS;
 }

@@ -1,5 +1,4 @@
-#include <mx/mx.h>
-
+#include "test-mx.h"
 
 static void
 title_changed_cb (MxComboBox *box)
@@ -32,15 +31,10 @@ stage_key_press_cb (ClutterActor *actor,
 }
 
 
-int
-main (int argc, char **argv)
+void
+combo_box_main (ClutterContainer *stage)
 {
-  ClutterActor *stage;
   ClutterActor *combo;
-
-  clutter_init (&argc, &argv);
-
-  stage = clutter_stage_get_default ();
 
   combo = (ClutterActor*) mx_combo_box_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), combo);
@@ -62,9 +56,4 @@ main (int argc, char **argv)
   g_signal_connect (stage, "key-press-event", G_CALLBACK (stage_key_press_cb),
                     combo);
 
-  clutter_actor_show (stage);
-
-  clutter_main ();
-
-  return 0;
 }

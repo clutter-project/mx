@@ -17,8 +17,7 @@
  *
  */
 
-#include <mx/mx.h>
-#include <clutter/clutter.h>
+#include "test-mx.h"
 
 static void
 changed_cb (MxAdjustment *adjustment,
@@ -60,16 +59,11 @@ key_press_event (ClutterActor    *actor,
   return TRUE;
 }
 
-int
-main (int argc, char *argv[])
+void
+scroll_bar_main (ClutterContainer *stage)
 {
-  ClutterActor *stage, *scroll;
+  ClutterActor *scroll;
   MxAdjustment  *adjustment;
-
-  clutter_init (&argc, &argv);
-
-  stage = clutter_stage_get_default ();
-  clutter_actor_set_size (stage, 400, 200);
 
   adjustment = mx_adjustment_new (50., 0., 100., 1., 10., 10.);
   g_signal_connect (adjustment, "notify::value", 
@@ -78,14 +72,9 @@ main (int argc, char *argv[])
   scroll = mx_scroll_bar_new (adjustment);
   clutter_actor_set_position (scroll, 50, 100);
   clutter_actor_set_size (scroll, 200, 30);
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage), scroll);
-
-  clutter_actor_show (stage);
+  clutter_container_add_actor (stage, scroll);
 
   g_signal_connect (stage, "key-press-event", G_CALLBACK (key_press_event),
                     adjustment);
 
-  clutter_main ();
-
-  return 0;
 }

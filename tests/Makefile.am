@@ -10,46 +10,38 @@ INCLUDES = \
 	-I$(top_builddir)
 
 noinst_PROGRAMS = 		\
-	test-buttons 		\
-	test-combo-box		\
 	test-draggable		\
 	test-droppable		\
-	test-label 		\
-	test-entry 		\
-	test-expander 		\
 	test-grid \
 	test-gtk		\
-	test-styles  		\
 	test-table   		\
 	test-table-2            \
 	test-texture-frame 	\
-	test-tooltips 		\
 	test-views 		\
-	test-progress-bar	\
-	test-scroll-bar		\
-	test-scroll-grid	\
-	test-scroll-view	\
 	test-box-layout		\
+	test-mx			\
 	$(NULL)
 
-test_buttons_SOURCES = test-buttons.c
-test_combo_box_SOURCES = test-combo-box.c
-test_styles_SOURCES = test-styles.c
 test_table_SOURCES = test-table.c
 test_table_2_SOURCES = test-table-2.c
-test_tooltips_SOURCES = test-tooltips.c
 test_texture_frame_SOURCES = test-texture-frame.c
-test_label_SOURCES = test-label.c
-test_entry_SOURCES = test-entry.c
-test_expander_SOURCES = test-expander.c
 test_grid_SOURCES = test-grid.c
 test_gtk_SOURCES = test-gtk.c
 test_views_SOURCES = test-views.c
-test_progress_bar_SOURCES = test-progress-bar.c
 
-test_scroll_bar_SOURCES = test-scroll-bar.c
-test_scroll_grid_SOURCES = test-scroll-grid.c
-test_scroll_view_SOURCES = test-scroll-view.c
+test_mx_SOURCES = test-mx.c \
+		  test-buttons.c \
+		  test-combo-box.c \
+		  test-entry.c \
+		  test-expander.c \
+		  test-label.c \
+		  test-progress-bar.c \
+		  test-scroll-bar.c \
+		  test-scroll-grid.c \
+		  test-scroll-view.c \
+		  test-styles.c \
+		  test-tooltips.c \
+		  $(NULL)
 
 test_draggable_SOURCES = test-draggable.c
 test_droppable_SOURCES = test-droppable.c

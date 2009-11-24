@@ -16,34 +16,22 @@
  * Boston, MA 02111-1307, USA.
  *
  */
-#include <stdio.h>
-#include <stdlib.h>
 
-#include <clutter/clutter.h>
-#include <mx/mx.h>
+#include "test-mx.h"
 
-int
-main (int argc, char *argv[])
+void
+label_main (ClutterContainer *stage)
 {
   ClutterActor *label;
-  ClutterActor *stage;
+  MxStyle *style;
 
-  clutter_init (&argc, &argv);
+  style = mx_style_new ();
 
-  mx_style_load_from_file (mx_style_get_default (),
-                             "style/default.css", NULL);
-
-  stage = clutter_stage_get_default ();
-  clutter_actor_set_size (stage, 400, 200);
+  mx_style_load_from_file (style, "style/default.css", NULL);
 
   label = mx_label_new ("Hello World!");
   clutter_actor_set_position (label, 50, 50);
+  mx_stylable_set_style (MX_STYLABLE (label), style);
 
-  clutter_container_add (CLUTTER_CONTAINER (stage), label, NULL);
-
-  clutter_actor_show (stage);
-
-  clutter_main ();
-
-  return EXIT_SUCCESS;
+  clutter_container_add (stage, label, NULL);
 }

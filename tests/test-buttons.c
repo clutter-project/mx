@@ -16,11 +16,7 @@
  * Boston, MA 02111-1307, USA.
  *
  */
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <clutter/clutter.h>
-#include <mx/mx.h>
+#include "test-mx.h"
 
 static void
 button_clicked_cb (MxButton *button, gchar *name)
@@ -40,18 +36,10 @@ button_long_press_cb (MxButton *button, gfloat x, gfloat y,
   return TRUE;
 }
 
-int
-main (int argc, char *argv[])
+void
+buttons_main (ClutterContainer *stage)
 {
   ClutterActor *button;
-  ClutterColor stage_color =  { 0xff, 0xff, 0xff, 0xff };
-  ClutterActor *stage;
-
-  clutter_init (&argc, &argv);
-
-  stage = clutter_stage_get_default ();
-  clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
-  clutter_actor_set_size (stage, 320, 240);
 
   button = mx_button_new_with_label ("Normal Button");
   g_signal_connect (button, "long-press", G_CALLBACK (button_long_press_cb),
@@ -67,10 +55,4 @@ main (int argc, char *argv[])
   mx_button_set_toggle_mode (MX_BUTTON (button), TRUE);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), button);
   clutter_actor_set_position (button, 100, 100);
-
-  clutter_actor_show (stage);
-
-  clutter_main ();
-
-  return EXIT_SUCCESS;
 }

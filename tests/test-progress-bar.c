@@ -16,23 +16,13 @@
  * Boston, MA 02111-1307, USA.
  *
  */
-#include <stdio.h>
-#include <stdlib.h>
+#include "test-mx.h"
 
-#include <clutter/clutter.h>
-#include <mx/mx.h>
-
-int
-main (int argc, char *argv[])
+void
+progress_bar_main (ClutterContainer *stage)
 {
-  ClutterActor *stage, *progress_bar;
+  ClutterActor *progress_bar;
   ClutterAnimation *animation;
-  ClutterColor stage_color =  { 0xff, 0xff, 0xff, 0xff };
-
-  clutter_init (&argc, &argv);
-
-  stage = clutter_stage_get_default ();
-  clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
 
   progress_bar = mx_progress_bar_new ();
   animation = clutter_actor_animate (progress_bar,
@@ -42,14 +32,8 @@ main (int argc, char *argv[])
                                      NULL);
   clutter_animation_set_loop (animation, TRUE);
 
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage), progress_bar);
+  clutter_container_add_actor (stage, progress_bar);
   clutter_actor_set_size (progress_bar, 280, 75);
   clutter_actor_set_position (progress_bar, 20, 20);
-
-  clutter_actor_show (stage);
-
-  clutter_main ();
-
-  return EXIT_SUCCESS;
 }
 

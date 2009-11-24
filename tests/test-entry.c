@@ -16,15 +16,11 @@
  * Boston, MA 02111-1307, USA.
  *
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <config.h>
-
-#include <clutter/clutter.h>
 #ifdef HAVE_CLUTTER_IMCONTEXT
 #include <clutter-imcontext/clutter-imtext.h>
 #endif
-#include <mx/mx.h>
+
+#include "test-mx.h"
 
 static void
 btn_clicked_cb (ClutterActor *button, MxEntry *entry)
@@ -50,31 +46,24 @@ print_notice (ClutterText *text, gchar *message)
   printf ("%s\n", message);
 }
 
-int
-main (int argc, char *argv[])
+void
+entry_main (ClutterContainer *stage)
 {
-  ClutterActor *stage, *entry, *button, *clear_button;
-
-  clutter_init (&argc, &argv);
-
-  stage = clutter_stage_get_default ();
-  clutter_actor_set_size (stage, 400, 300);
+  ClutterActor *entry, *button, *clear_button;
 
   entry = mx_entry_new ("Hello World!");
   clutter_actor_set_position (entry, 20, 20);
   clutter_actor_set_width (entry, 150);
 
-  clutter_container_add (CLUTTER_CONTAINER (stage),
-                         entry, NULL);
+  clutter_container_add_actor (stage, entry);
 
-  clutter_stage_set_key_focus (CLUTTER_STAGE (stage),
+  clutter_stage_set_key_focus (CLUTTER_STAGE (clutter_actor_get_stage (entry)),
                                mx_entry_get_clutter_text (MX_ENTRY (entry)));
 
   entry = mx_entry_new ("");
   clutter_actor_set_position (entry, 20, 70);
 
-  clutter_container_add (CLUTTER_CONTAINER (stage),
-                         entry, NULL);
+  clutter_container_add_actor (stage, entry);
   mx_entry_set_hint_text (MX_ENTRY (entry), "hint hint...");
 
 #ifdef HAVE_CLUTTER_IMCONTEXT
@@ -94,17 +83,13 @@ main (int argc, char *argv[])
   g_signal_connect (clear_button, "clicked",
                     G_CALLBACK (clear_btn_clicked_cb), entry);
 
-  clutter_container_add (CLUTTER_CONTAINER (stage),
-                         button,
-                         clear_button,
-                         NULL);
+  clutter_container_add (stage, button, clear_button, NULL);
 
 
   entry = mx_entry_new ("");
   clutter_actor_set_position (entry, 20, 170);
+  clutter_container_add_actor (stage, entry);
 
-  clutter_container_add (CLUTTER_CONTAINER (stage),
-                         entry, NULL);
   mx_entry_set_hint_text (MX_ENTRY (entry), "Search...");
   mx_entry_set_primary_icon_from_file (MX_ENTRY (entry),
                                          "edit-find.png");
@@ -114,10 +99,4 @@ main (int argc, char *argv[])
                     G_CALLBACK (print_notice), "primary icon clicked\n");
   g_signal_connect (entry, "secondary-icon-clicked",
                     G_CALLBACK (print_notice), "secondary icon clicked\n");
-
-  clutter_actor_show (stage);
-
-  clutter_main ();
-
-  return EXIT_SUCCESS;
 }

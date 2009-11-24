@@ -16,17 +16,10 @@
  * Boston, MA 02111-1307, USA.
  *
  */
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <clutter/clutter.h>
-#include <mx/mx.h>
-
-
-static ClutterActor *stage = NULL;
+#include "test-mx.h"
 
 static ClutterActor *
-create_button (ClutterActor *parent,
+create_button (ClutterContainer *parent,
                const gchar  *text,
                gint          x,
                gint          y)
@@ -41,44 +34,40 @@ create_button (ClutterActor *parent,
   return button;
 }
 
-int
-main (int argc, char *argv[])
+void
+styles_main (ClutterContainer *stage)
 {
   ClutterActor *button, *table;
-  ClutterColor stage_color =  { 0xff, 0xff, 0xff, 0xff };
-
-  clutter_init (&argc, &argv);
+  MxStyle *style;
 
   /* load the style sheet */
-  mx_style_load_from_file (mx_style_get_default (),
-                             "style/default.css", NULL);
-
-  stage = clutter_stage_get_default ();
-  clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
+  style = mx_style_new ();
+  mx_style_load_from_file (style, "style/default.css", NULL);
 
   button = create_button (stage, "Default Style", 100, 100);
+  mx_stylable_set_style (MX_STYLABLE (button), style);
   clutter_actor_set_name (button, "default-button");
 
   button = create_button (stage, "Red Style", 100, 300);
+  mx_stylable_set_style (MX_STYLABLE (button), style);
   clutter_actor_set_name (button, "red-button");
 
   button = create_button (stage, "Green Style", 350, 100);
+  mx_stylable_set_style (MX_STYLABLE (button), style);
   clutter_actor_set_name (button, "green-button");
 
   button = create_button (stage, "Blue Style", 350, 300);
+  mx_stylable_set_style (MX_STYLABLE (button), style);
   clutter_actor_set_name (button, "blue-button");
 
   table = mx_table_new ();
+  mx_stylable_set_style (MX_STYLABLE (table), style);
   clutter_actor_set_size (table, 200, 80);
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage), table);
+  clutter_container_add_actor (stage, table);
   clutter_actor_set_position (table, 200, 215);
 
   button = mx_button_new_with_label ("Container Test");
+  mx_stylable_set_style (MX_STYLABLE (button), style);
   clutter_actor_set_name (button, "container-button");
   mx_table_add_actor (MX_TABLE (table), button, 0, 0);
-  clutter_actor_show (stage);
-
-  clutter_main ();
-
-  return EXIT_SUCCESS;
 }
