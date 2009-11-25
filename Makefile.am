@@ -2,7 +2,16 @@ SUBDIRS = mx data tests docs po
 
 ACLOCAL_AMFLAGS=-I m4
 
-GITIGNOREFILES=$(top_srcdir)/docs/reference/libmx/tmpl
+GITIGNOREFILES= $(top_srcdir)/docs/reference/libmx/tmpl \
+		docs/reference/libmx/mx-overrides.txt \
+		m4/gtk-doc.m4 \
+		m4/libtool.m4 \
+		m4/ltoptions.m4 \
+		m4/ltsugar.m4 \
+		m4/ltversion.m4 \
+		m4/lt~obsolete.m4 \
+		po/mx-1.0.pot
+
 
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
 
