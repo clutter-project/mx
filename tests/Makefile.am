@@ -30,6 +30,7 @@ test_gtk_SOURCES = test-gtk.c
 test_views_SOURCES = test-views.c
 
 test_mx_SOURCES = test-mx.c \
+		  test-mx.h \
 		  test-buttons.c \
 		  test-combo-box.c \
 		  test-entry.c \
