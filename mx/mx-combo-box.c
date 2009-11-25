@@ -298,15 +298,16 @@ paint_cb (ClutterActor      *actor,
   ClutterActorBox box;
   gfloat x, y, width, height;
 
+  clutter_actor_get_allocation_box (actor, &box);
+
   x = priv->clip_x - box.x1;
   y = priv->clip_y - box.y1;
   width = box.x2 - box.x1;
   height = box.y2 - box.y1;
 
   /* set a clip so the menu appears to slide out of the button */
-  clutter_actor_get_allocation_box (actor, &box);
 #if CLUTTER_CHECK_VERSION (1, 1, 3)
-  cogl_clip_push_rectangle (x, y, x + width, y + height);
+  cogl_clip_push_rectangle (x, y, x + width + 1, y + height + 1);
 #else
   cogl_clip_push (x, y, width, height);
 #endif
