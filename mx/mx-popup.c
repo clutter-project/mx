@@ -43,8 +43,13 @@ struct _MxPopupPrivate
   GArray  *children;
   gboolean transition_out;
 
-  gulong   captured_event_cb;
+  CoglMatrix matrix;
+  CoglMatrix pick_matrix;
+
   ClutterActor *stage;
+  gulong captured_event_handler;
+  gulong pick_handler;
+  gulong paint_handler;
 };
 
 enum
@@ -55,6 +60,10 @@ enum
 };
 
 static guint signals[LAST_SIGNAL] = { 0, };
+
+static gboolean mx_popup_captured_event_handler (ClutterActor *actor,
+                                                 ClutterEvent *event,
+                                                 ClutterActor *popup);
 
 static void
 mx_popup_get_property (GObject    *object,
@@ -113,13 +122,6 @@ mx_popup_dispose (GObject *object)
       priv->children = NULL;
     }
 
-  if (priv->captured_event_cb != 0)
-    {
-      /* we assume the actor hasn't moved to a new stage since it was shown */
-      g_signal_handler_disconnect (priv->stage, priv->captured_event_cb);
-      priv->captured_event_cb = 0;
-      priv->stage = NULL;
-    }
 
   G_OBJECT_CLASS (mx_popup_parent_class)->dispose (object);
 }
@@ -244,13 +246,37 @@ mx_popup_allocate (ClutterActor          *actor,
 }
 
 static void
-mx_popup_paint (ClutterActor *actor)
+mx_popup_paint_null (ClutterActor *actor)
+{
+  /* store the matrix for later
+   * the popup is painted after the stage has painted, so that it appears above
+   * everything else */
+  cogl_get_modelview_matrix (&(MX_POPUP (actor)->priv->matrix));
+}
+
+static void
+mx_popup_pick_null (ClutterActor       *actor,
+                    const ClutterColor *color)
+{
+  /* store the matrix for later
+   * the popup is picked after the stage has picked, so that it appears above
+   * everything else */
+  cogl_get_modelview_matrix (&(MX_POPUP (actor)->priv->pick_matrix));
+}
+
+static void
+mx_popup_paint_from_stage (ClutterActor *stage,
+                           ClutterActor *popup)
 {
   gint i;
-  MxPopupPrivate *priv = MX_POPUP (actor)->priv;
+  MxPopupPrivate *priv = MX_POPUP (popup)->priv;
+
+  cogl_push_matrix ();
+
+  cogl_set_modelview_matrix (&(MX_POPUP (popup)->priv->matrix));
 
   /* Chain up to get background */
-  CLUTTER_ACTOR_CLASS (mx_popup_parent_class)->paint (actor);
+  CLUTTER_ACTOR_CLASS (mx_popup_parent_class)->paint (popup);
 
   /* Paint children */
   for (i = 0; i < priv->children->len; i++)
@@ -259,27 +285,45 @@ mx_popup_paint (ClutterActor *actor)
                                             i);
       clutter_actor_paint (CLUTTER_ACTOR (child->button));
     }
+
+  cogl_pop_matrix ();
 }
 
 static void
-mx_popup_pick (ClutterActor       *actor,
-               const ClutterColor *color)
+mx_popup_pick_from_stage (ClutterActor *stage,
+                          ClutterColor *color,
+                          ClutterActor *popup)
 {
   gint i;
-  MxPopupPrivate *priv = MX_POPUP (actor)->priv;
+  MxPopupPrivate *priv = MX_POPUP (popup)->priv;
 
-  CLUTTER_ACTOR_CLASS (mx_popup_parent_class)->pick (actor, color);
+  cogl_push_matrix ();
+
+  cogl_set_modelview_matrix (&(MX_POPUP (popup)->priv->pick_matrix));
+
+  /* chain up to get bounding rectangle */
+
+  CLUTTER_ACTOR_CLASS (mx_popup_parent_class)->pick (popup, color);
 
   /* pick children */
   for (i = 0; i < priv->children->len; i++)
     {
-      MxPopupChild *child = &g_array_index (priv->children, MxPopupChild,
-                                            i);
-      if (clutter_actor_should_pick_paint (CLUTTER_ACTOR (actor)))
+      MxPopupChild *child = &g_array_index (priv->children, MxPopupChild, i);
+
+      if (clutter_actor_should_pick_paint (CLUTTER_ACTOR (child->button)))
         {
-          clutter_actor_paint ((ClutterActor*) child->button);
+          clutter_actor_paint (CLUTTER_ACTOR (child->button));
         }
     }
+
+  cogl_pop_matrix ();
+}
+
+static void
+stage_weak_notify (MxPopup      *popup,
+                   ClutterStage *stage)
+{
+  popup->priv->stage = NULL;
 }
 
 static void
@@ -296,6 +340,31 @@ mx_popup_map (ClutterActor *actor)
                                             i);
       clutter_actor_map (CLUTTER_ACTOR (child->button));
     }
+
+  /* connect after the pain and pick signals on the stage have run, so that
+   * we can be sure to be painted and picked above all other actors else */
+  priv->stage = clutter_actor_get_stage (actor);
+  g_object_weak_ref (G_OBJECT (priv->stage), (GWeakNotify) stage_weak_notify,
+                     actor);
+
+  priv->paint_handler =
+    g_signal_connect_after (priv->stage,
+                            "paint",
+                            G_CALLBACK (mx_popup_paint_from_stage),
+                            actor);
+
+  priv->pick_handler =
+    g_signal_connect_after (priv->stage,
+                            "pick",
+                            G_CALLBACK (mx_popup_pick_from_stage),
+                            actor);
+
+  /* set up a capture so we can close the menu if the user clicks outside it */
+  priv->captured_event_handler =
+    g_signal_connect (priv->stage,
+                      "captured-event",
+                      G_CALLBACK (mx_popup_captured_event_handler),
+                      actor);
 }
 
 static void
@@ -311,6 +380,23 @@ mx_popup_unmap (ClutterActor *actor)
       MxPopupChild *child = &g_array_index (priv->children, MxPopupChild,
                                             i);
       clutter_actor_unmap (CLUTTER_ACTOR (child->button));
+    }
+
+  if (priv->stage)
+    {
+      g_signal_handler_disconnect (priv->stage, priv->paint_handler);
+      priv->paint_handler = 0;
+
+      g_signal_handler_disconnect (priv->stage, priv->pick_handler);
+      priv->pick_handler = 0;
+
+      g_signal_handler_disconnect (priv->stage, priv->captured_event_handler);
+      priv->captured_event_handler = 0;
+
+      g_object_weak_unref (G_OBJECT (priv->stage),
+                           (GWeakNotify) stage_weak_notify,
+                           actor);
+      priv->stage = NULL;
     }
 }
 
@@ -334,9 +420,9 @@ mx_popup_event (ClutterActor *actor,
 }
 
 static gboolean
-mx_popup_captured_event_cb (ClutterActor *actor,
-                            ClutterEvent *event,
-                            ClutterActor *popup)
+mx_popup_captured_event_handler (ClutterActor *actor,
+                                 ClutterEvent *event,
+                                 ClutterActor *popup)
 {
   int i;
   ClutterActor *source;
@@ -384,11 +470,10 @@ mx_popup_captured_event_cb (ClutterActor *actor,
 static void
 mx_popup_show (ClutterActor *actor)
 {
-  MxPopupPrivate *priv = MX_POPUP (actor)->priv;
   ClutterAnimation *animation = NULL;
 
   /* set reactive and opacity, since these may have been set by the fade-out
-   * animation (e.g. from captured_event_cb or button_release_cb) */
+   * animation (e.g. from captured_event_handler or button_release_cb) */
   if ((animation = clutter_actor_get_animation (actor)))
     {
       clutter_animation_completed (animation);
@@ -398,33 +483,12 @@ mx_popup_show (ClutterActor *actor)
 
   /* chain up to run show after re-setting properties above */
   CLUTTER_ACTOR_CLASS (mx_popup_parent_class)->show (actor);
-
-
-  /* set up a capture so we can close the menu if the user clicks outside it */
-  if (priv->captured_event_cb == 0)
-    {
-      priv->stage = clutter_actor_get_stage (actor);
-      priv->captured_event_cb =
-        g_signal_connect (priv->stage, "captured-event",
-                          G_CALLBACK (mx_popup_captured_event_cb), actor);
-    }
 }
 
 static void
 mx_popup_hide (ClutterActor *actor)
 {
-  MxPopupPrivate *priv = MX_POPUP (actor)->priv;
-
   CLUTTER_ACTOR_CLASS (mx_popup_parent_class)->hide (actor);
-
-  if (priv->captured_event_cb != 0)
-    {
-      /* we assume the actor hasn't moved to a new stage since it was shown */
-      g_signal_handler_disconnect (priv->stage,
-                                   priv->captured_event_cb);
-      priv->captured_event_cb = 0;
-      priv->stage = NULL;
-    }
 }
 
 static void
@@ -445,8 +509,8 @@ mx_popup_class_init (MxPopupClass *klass)
   actor_class->get_preferred_width = mx_popup_get_preferred_width;
   actor_class->get_preferred_height = mx_popup_get_preferred_height;
   actor_class->allocate = mx_popup_allocate;
-  actor_class->paint = mx_popup_paint;
-  actor_class->pick = mx_popup_pick;
+  actor_class->paint = mx_popup_paint_null;
+  actor_class->pick = mx_popup_pick_null;
   actor_class->map = mx_popup_map;
   actor_class->unmap = mx_popup_unmap;
   actor_class->event = mx_popup_event;

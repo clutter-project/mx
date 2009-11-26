@@ -34,11 +34,15 @@ stage_key_press_cb (ClutterActor *actor,
 void
 combo_box_main (ClutterContainer *stage)
 {
-  ClutterActor *combo;
+  ClutterActor *combo, *rectangle;
+  ClutterColor color = { 0xff, 0xff, 0x00, 0x80 };
 
   combo = (ClutterActor*) mx_combo_box_new ();
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage), combo);
   clutter_actor_set_position (combo, 10, 10);
+
+  rectangle = clutter_rectangle_new_with_color (&color);
+  clutter_actor_set_position (rectangle, 0, 0);
+  clutter_actor_set_size (rectangle, 200, 300);
 
   mx_combo_box_append_text (MX_COMBO_BOX (combo), "Strand");
   mx_combo_box_append_text (MX_COMBO_BOX (combo), "Fleet Street");
@@ -56,4 +60,5 @@ combo_box_main (ClutterContainer *stage)
   g_signal_connect (stage, "key-press-event", G_CALLBACK (stage_key_press_cb),
                     combo);
 
+  clutter_container_add (CLUTTER_CONTAINER (stage), combo, rectangle, NULL);
 }

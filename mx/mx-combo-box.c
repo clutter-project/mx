@@ -116,10 +116,8 @@ mx_combo_box_dispose (GObject *object)
 
   if (priv->popup)
     {
-      ClutterActor *stage;
-
-      stage = clutter_actor_get_stage (CLUTTER_ACTOR (object));
-      clutter_container_remove_actor ((ClutterContainer*) stage, priv->popup);
+      clutter_actor_destroy (priv->popup);
+      priv->popup = NULL;
     }
 
   G_OBJECT_CLASS (mx_combo_box_parent_class)->dispose (object);
@@ -147,6 +145,7 @@ mx_combo_box_map (ClutterActor *actor)
   CLUTTER_ACTOR_CLASS (mx_combo_box_parent_class)->map (actor);
 
   clutter_actor_map (priv->label);
+  clutter_actor_map (priv->popup);
 }
 
 static void
@@ -157,6 +156,7 @@ mx_combo_box_unmap (ClutterActor *actor)
   CLUTTER_ACTOR_CLASS (mx_combo_box_parent_class)->unmap (actor);
 
   clutter_actor_unmap (priv->label);
+  clutter_actor_unmap (priv->popup);
 }
 
 static void
@@ -167,6 +167,18 @@ mx_combo_box_paint (ClutterActor *actor)
   CLUTTER_ACTOR_CLASS (mx_combo_box_parent_class)->paint (actor);
 
   clutter_actor_paint (priv->label);
+  clutter_actor_paint (priv->popup);
+}
+
+static void
+mx_combo_box_pick (ClutterActor       *actor,
+                   const ClutterColor *color)
+{
+  MxComboBoxPrivate *priv = MX_COMBO_BOX (actor)->priv;
+
+  CLUTTER_ACTOR_CLASS (mx_combo_box_parent_class)->pick (actor, color);
+
+  clutter_actor_paint (priv->popup);
 }
 
 static void
@@ -271,6 +283,8 @@ mx_combo_box_allocate (ClutterActor          *actor,
   childbox.x2 = (int)(x + width);
   childbox.y2 = (int)(childbox.y1 + label_h);
   clutter_actor_allocate (priv->label, &childbox, flags);
+
+  clutter_actor_allocate_preferred_size (priv->popup, flags);
 }
 
 static void
@@ -292,36 +306,6 @@ mx_combo_box_action_activated_cb (ClutterActor *popup,
 }
 
 static void
-paint_cb (ClutterActor      *actor,
-          MxComboBoxPrivate *priv)
-{
-  ClutterActorBox box;
-  gfloat x, y, width, height;
-
-  clutter_actor_get_allocation_box (actor, &box);
-
-  x = priv->clip_x - box.x1;
-  y = priv->clip_y - box.y1;
-  width = box.x2 - box.x1;
-  height = box.y2 - box.y1;
-
-  /* set a clip so the menu appears to slide out of the button */
-#if CLUTTER_CHECK_VERSION (1, 1, 3)
-  cogl_clip_push_rectangle (x, y, x + width + 1, y + height + 1);
-#else
-  cogl_clip_push (x, y, width, height);
-#endif
-}
-
-static void
-paint_after_cb (ClutterActor *actor,
-                gpointer     *data)
-{
-  /* reset the clip from above*/
-  cogl_clip_pop ();
-}
-
-static void
 mx_combo_box_update_popup (MxComboBox *box)
 {
   MxComboBoxPrivate *priv = box->priv;
@@ -330,16 +314,6 @@ mx_combo_box_update_popup (MxComboBox *box)
 
   if (!priv->popup)
     {
-      ClutterActor *stage;
-
-      stage = clutter_actor_get_stage ((ClutterActor*) box);
-
-      priv->popup = (ClutterActor*) mx_popup_new ();
-      clutter_container_add_actor ((ClutterContainer *) stage, priv->popup);
-
-      g_signal_connect (priv->popup, "action-activated",
-                        G_CALLBACK (mx_combo_box_action_activated_cb),
-                        box);
 
     }
   else
@@ -362,48 +336,27 @@ mx_combo_box_update_popup (MxComboBox *box)
   clutter_actor_queue_relayout ((ClutterActor*) box);
 }
 
-static void
-popout_completed_cb (ClutterAnimation *animation,
-                     ClutterActor     *popup)
-{
-  clutter_actor_set_reactive (popup, TRUE);
-}
-
 static gboolean
 mx_combo_box_button_press_event (ClutterActor       *actor,
                                  ClutterButtonEvent *event)
 {
   MxComboBoxPrivate *priv = MX_COMBO_BOX (actor)->priv;
   ClutterContainer *stage;
-  gfloat x, y, width, height, popup_height;
+  gfloat width, height, popup_height;
 
   stage = (ClutterContainer *) clutter_actor_get_stage (actor);
 
-
-  clutter_actor_get_transformed_position (actor, &x, &y);
   clutter_actor_get_size (actor, &width, &height);
 
-
-  clutter_actor_set_opacity (priv->popup, 0xff);
+  clutter_actor_show (priv->popup);
+  clutter_actor_set_opacity (priv->popup, 0x0);
   clutter_actor_set_width (priv->popup, width);
 
-  clutter_actor_show (priv->popup);
-  /* don't set reactive until we have finished the "popup" animation */
-  clutter_actor_set_reactive (priv->popup, FALSE);
-
-  priv->clip_x = x;
-  priv->clip_y = y + height;
-  g_signal_connect (priv->popup, "paint", G_CALLBACK (paint_cb), priv);
-  g_signal_connect_after (priv->popup, "paint", G_CALLBACK (paint_after_cb),
-                          NULL);
-
   popup_height = clutter_actor_get_height (priv->popup);
-  clutter_actor_set_position (priv->popup, x,
-                              y + height - popup_height);
+  clutter_actor_set_position (priv->popup, 0.0, height);
 
   clutter_actor_animate (priv->popup, CLUTTER_EASE_OUT_CUBIC, 250,
-                         "y", y + height,
-                         "signal::completed", popout_completed_cb, priv->popup,
+                         "opacity", 0xff,
                          NULL);
 
   return FALSE;
@@ -426,6 +379,7 @@ mx_combo_box_class_init (MxComboBoxClass *klass)
   actor_class->map = mx_combo_box_map;
   actor_class->unmap = mx_combo_box_unmap;
   actor_class->paint = mx_combo_box_paint;
+  actor_class->pick = mx_combo_box_pick;
 
   actor_class->get_preferred_width = mx_combo_box_get_preferred_width;
   actor_class->get_preferred_height = mx_combo_box_get_preferred_height;
@@ -453,10 +407,20 @@ mx_combo_box_class_init (MxComboBoxClass *klass)
 static void
 mx_combo_box_init (MxComboBox *self)
 {
-  self->priv = COMBO_BOX_PRIVATE (self);
+  MxComboBoxPrivate *priv;
 
-  self->priv->label = clutter_text_new ();
-  clutter_actor_set_parent (self->priv->label, (ClutterActor*) self);
+  priv = self->priv = COMBO_BOX_PRIVATE (self);
+
+
+  priv->label = clutter_text_new ();
+  clutter_actor_set_parent (priv->label, (ClutterActor*) self);
+
+  priv->popup = mx_popup_new ();
+  clutter_actor_set_parent (priv->popup, CLUTTER_ACTOR (self));
+
+  g_signal_connect (priv->popup, "action-activated",
+                    G_CALLBACK (mx_combo_box_action_activated_cb),
+                    self);
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
 }
