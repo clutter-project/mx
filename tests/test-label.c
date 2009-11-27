@@ -24,10 +24,16 @@ label_main (ClutterContainer *stage)
 {
   ClutterActor *label;
   MxStyle *style;
+  GError *err = NULL;
 
   style = mx_style_new ();
 
-  mx_style_load_from_file (style, "style/default.css", NULL);
+  mx_style_load_from_file (style, "style/default.css", &err);
+
+  if (err)
+    {
+      g_warning ("%s", err->message);
+    }
 
   label = mx_label_new ("Hello World!");
   clutter_actor_set_position (label, 50, 50);
