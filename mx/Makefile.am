@@ -52,6 +52,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-utils.h                 \
 	$(top_srcdir)/mx/mx-viewport.h		\
 	$(top_srcdir)/mx/mx-widget.h		\
+	$(top_srcdir)/mx/mx-floating-widget.h \
 	$(NULL)
 
 source_gtk_h = \
@@ -61,7 +62,6 @@ source_gtk_h = \
 
 source_h_priv = \
 	$(top_srcdir)/mx/mx-css.h \
-	$(top_srcdir)/mx/mx-floating-widget.h \
 	$(top_srcdir)/mx/mx-private.h
 
 source_c = \
