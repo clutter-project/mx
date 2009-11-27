@@ -987,10 +987,12 @@ stepper_button_release_cb (ClutterActor       *actor,
                            ClutterButtonEvent *event,
                            MxScrollBar        *self)
 {
-  if (event->button != 1)
-    return FALSE;
 
-  g_source_remove (self->priv->stepper_source_id);
+  if (self->priv->stepper_source_id)
+    {
+      g_source_remove (self->priv->stepper_source_id);
+      self->priv->stepper_source_id = 0;
+    }
 
   return FALSE;
 }
@@ -1022,6 +1024,8 @@ mx_scroll_bar_init (MxScrollBar *self)
                     G_CALLBACK (stepper_button_press_event_cb), self);
   g_signal_connect (self->priv->bw_stepper, "button-release-event",
                     G_CALLBACK (stepper_button_release_cb), self);
+  g_signal_connect (self->priv->bw_stepper, "leave-event",
+                    G_CALLBACK (stepper_button_release_cb), self);
 
   self->priv->fw_stepper = (ClutterActor *) mx_button_new ();
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->fw_stepper),
@@ -1031,6 +1035,8 @@ mx_scroll_bar_init (MxScrollBar *self)
   g_signal_connect (self->priv->fw_stepper, "button-press-event",
                     G_CALLBACK (stepper_button_press_event_cb), self);
   g_signal_connect (self->priv->fw_stepper, "button-release-event",
+                    G_CALLBACK (stepper_button_release_cb), self);
+  g_signal_connect (self->priv->fw_stepper, "leave-event",
                     G_CALLBACK (stepper_button_release_cb), self);
 
   self->priv->trough = (ClutterActor *) mx_bin_new ();
