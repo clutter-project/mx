@@ -956,6 +956,9 @@ _mx_entry_set_icon_from_file (MxEntry       *entry,
 
       *icon = (ClutterActor*) mx_texture_cache_get_texture (cache, filename);
 
+      if (!*icon)
+          return;
+
       clutter_actor_set_reactive (*icon, TRUE);
       clutter_actor_set_parent (*icon, CLUTTER_ACTOR (entry));
       g_signal_connect (*icon, "button-release-event",
