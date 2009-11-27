@@ -24,9 +24,7 @@
 #ifndef _MX_POPUP_H
 #define _MX_POPUP_H
 
-#include <glib-object.h>
-#include <clutter/clutter.h>
-#include <mx/mx.h>
+#include "mx-floating-widget.h"
 #include "mx-action.h"
 
 G_BEGIN_DECLS
@@ -66,14 +64,14 @@ typedef struct _MxPopupPrivate MxPopupPrivate;
 struct _MxPopup
 {
   /*< private >*/
-  MxWidget parent;
+  MxFloatingWidget parent;
 
   MxPopupPrivate *priv;
 };
 
 struct _MxPopupClass
 {
-  MxWidgetClass parent_class;
+  MxFloatingWidgetClass parent_class;
 
   void (*action_activated) (MxPopup  *popup,
                             MxAction *action);
