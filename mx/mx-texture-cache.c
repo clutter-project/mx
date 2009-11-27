@@ -280,8 +280,6 @@ mx_texture_cache_get_texture (MxTextureCache *self,
       item->posX = -1;
       item->posY = -1;
       item->ptr = clutter_texture_new_from_file (path, &err);
-      clutter_texture_get_base_size (CLUTTER_TEXTURE (item->ptr),
-                                     &item->width, &item->height);
 
       if (!item->ptr)
         {
@@ -293,6 +291,9 @@ mx_texture_cache_get_texture (MxTextureCache *self,
 
           return NULL;
         }
+
+      clutter_texture_get_base_size (CLUTTER_TEXTURE (item->ptr),
+                                     &item->width, &item->height);
 
       add_texture_to_cache (self, path, item);
     }
