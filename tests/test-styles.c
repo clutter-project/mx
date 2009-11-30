@@ -44,19 +44,19 @@ styles_main (ClutterContainer *stage)
   style = mx_style_new ();
   mx_style_load_from_file (style, "style/default.css", NULL);
 
-  button = create_button (stage, "Default Style", 100, 100);
+  button = create_button (stage, "Default Style", 10, 10);
   mx_stylable_set_style (MX_STYLABLE (button), style);
   clutter_actor_set_name (button, "default-button");
 
-  button = create_button (stage, "Red Style", 100, 300);
+  button = create_button (stage, "Red Style", 10, 150);
   mx_stylable_set_style (MX_STYLABLE (button), style);
   clutter_actor_set_name (button, "red-button");
 
-  button = create_button (stage, "Green Style", 350, 100);
+  button = create_button (stage, "Green Style", 200, 10);
   mx_stylable_set_style (MX_STYLABLE (button), style);
   clutter_actor_set_name (button, "green-button");
 
-  button = create_button (stage, "Blue Style", 350, 300);
+  button = create_button (stage, "Blue Style", 200, 150);
   mx_stylable_set_style (MX_STYLABLE (button), style);
   clutter_actor_set_name (button, "blue-button");
 
@@ -64,7 +64,7 @@ styles_main (ClutterContainer *stage)
   mx_stylable_set_style (MX_STYLABLE (table), style);
   clutter_actor_set_size (table, 200, 80);
   clutter_container_add_actor (stage, table);
-  clutter_actor_set_position (table, 200, 215);
+  clutter_actor_set_position (table, 10, 300);
 
   button = mx_button_new_with_label ("Container Test");
   mx_stylable_set_style (MX_STYLABLE (button), style);

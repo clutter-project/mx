@@ -50,7 +50,7 @@ tooltips_main (ClutterContainer *stage)
   mx_widget_set_tooltip_text (MX_WIDGET (button), "Here is some really"
                               " long text to test the handling in MxTooltip");
   clutter_container_add_actor (stage, button);
-  clutter_actor_set_position (button, 500, 300);
+  clutter_actor_set_position (button, 360, 300);
 
   button = mx_button_new_with_label ("Crazy");
   mx_widget_set_tooltip_text (MX_WIDGET (button),
@@ -64,5 +64,5 @@ tooltips_main (ClutterContainer *stage)
   button = mx_button_new_with_label ("Bottom");
   mx_widget_set_tooltip_text (MX_WIDGET (button), "Hello Hello Hello");
   clutter_container_add_actor (stage, button);
-  clutter_actor_set_position (button, 250, 440);
+  clutter_actor_set_position (button, 250, 430);
 }

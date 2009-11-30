@@ -27,7 +27,7 @@ scroll_view_main (ClutterContainer *stage)
 
   scroll = (ClutterActor *) mx_scroll_view_new ();
   clutter_container_add_actor (stage, scroll);
-  clutter_actor_set_position (scroll, 50, 50);
+  clutter_actor_set_position (scroll, 10, 10);
   clutter_actor_set_size (scroll, 300, 300);
 
   view = (ClutterActor *) mx_viewport_new ();
