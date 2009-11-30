@@ -107,7 +107,7 @@ mx_floating_widget_paint_from_stage (ClutterActor     *stage,
 
   cogl_push_matrix ();
 
-  cogl_set_modelview_matrix (&(priv->pick_matrix));
+  cogl_set_modelview_matrix (&(priv->paint_matrix));
 
   has_clip = clutter_actor_has_clip (CLUTTER_ACTOR (widget));
 
