@@ -67,6 +67,7 @@ MxClipboardPrivate
 <FILE>mx-widget</FILE>
 <TITLE>MxWidget</TITLE>
 MxWidget
+mx_widget_get_available_area
 mx_widget_set_style_pseudo_class
 mx_widget_get_style_pseudo_class
 mx_widget_set_style_class_name
@@ -516,6 +517,8 @@ MxDragAxis
 MxDragContainment
 mx_draggable_set_axis
 mx_draggable_get_axis
+mx_draggable_get_drag_actor
+mx_draggable_set_drag_actor
 mx_draggable_set_drag_threshold
 mx_draggable_get_drag_threshold
 mx_draggable_set_containment_type
