@@ -31,7 +31,7 @@
 
 G_BEGIN_DECLS
 
-#include <mx/mx-bin.h>
+#include "mx-floating-widget.h"
 
 #define MX_TYPE_TOOLTIP                (mx_tooltip_get_type ())
 #define MX_TOOLTIP(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), MX_TYPE_TOOLTIP, MxTooltip))
@@ -53,14 +53,14 @@ typedef struct _MxTooltipClass         MxTooltipClass;
 struct _MxTooltip
 {
   /*< private >*/
-  MxBin parent_instance;
+  MxFloatingWidget parent_instance;
 
   MxTooltipPrivate *priv;
 };
 
 struct _MxTooltipClass
 {
-  MxBinClass parent_class;
+  MxFloatingWidgetClass parent_class;
 };
 
 GType mx_tooltip_get_type (void) G_GNUC_CONST;

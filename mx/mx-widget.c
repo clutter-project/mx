@@ -196,18 +196,7 @@ mx_widget_dispose (GObject *gobject)
 
   if (priv->tooltip)
     {
-      ClutterContainer *parent;
-      ClutterActor *tooltip = CLUTTER_ACTOR (priv->tooltip);
-
-      /* this is just a little bit awkward because the tooltip is parented
-       * on the stage, but we still want to "own" it */
-      parent = CLUTTER_CONTAINER (clutter_actor_get_parent (tooltip));
-
-      if (parent)
-        clutter_container_remove_actor (parent, tooltip);
-      else
-        clutter_actor_destroy (tooltip);
-
+      clutter_actor_unparent (CLUTTER_ACTOR (priv->tooltip));
       priv->tooltip = NULL;
     }
 
@@ -328,6 +317,10 @@ mx_widget_allocate (ClutterActor          *actor,
                               &frame_box,
                               flags);
     }
+
+  if (priv->tooltip)
+    clutter_actor_allocate_preferred_size (CLUTTER_ACTOR (priv->tooltip),
+                                           flags);
 }
 
 static void
@@ -377,6 +370,9 @@ mx_widget_paint (ClutterActor *self)
 
   if (priv->background_image != NULL)
     clutter_actor_paint (priv->background_image);
+
+  if (priv->tooltip)
+    clutter_actor_paint (CLUTTER_ACTOR (priv->tooltip));
 }
 
 static void
@@ -413,7 +409,7 @@ mx_widget_map (ClutterActor *actor)
     clutter_actor_map (priv->background_image);
 
   if (priv->tooltip)
-    clutter_actor_map ((ClutterActor *) priv->tooltip);
+    clutter_actor_map (CLUTTER_ACTOR (priv->tooltip));
 }
 
 static void
@@ -430,7 +426,7 @@ mx_widget_unmap (ClutterActor *actor)
     clutter_actor_unmap (priv->background_image);
 
   if (priv->tooltip)
-    clutter_actor_unmap ((ClutterActor *) priv->tooltip);
+    clutter_actor_unmap (CLUTTER_ACTOR (priv->tooltip));
 }
 
 static void
@@ -675,7 +671,7 @@ mx_widget_hide (ClutterActor *actor)
 
   /* hide the tooltip, if there is one */
   if (widget->priv->tooltip)
-    mx_tooltip_hide (MX_TOOLTIP (widget->priv->tooltip));
+    mx_tooltip_hide (widget->priv->tooltip);
 
   CLUTTER_ACTOR_CLASS (mx_widget_parent_class)->hide (actor);
 }
@@ -1057,8 +1053,11 @@ mx_widget_set_has_tooltip (MxWidget *widget,
                            gboolean  has_tooltip)
 {
   MxWidgetPrivate *priv;
+  ClutterActor *actor;
 
   g_return_if_fail (MX_IS_WIDGET (widget));
+
+  actor = CLUTTER_ACTOR (widget);
 
   priv = widget->priv;
 
@@ -1066,13 +1065,12 @@ mx_widget_set_has_tooltip (MxWidget *widget,
 
   if (has_tooltip)
     {
-      clutter_actor_set_reactive ((ClutterActor*) widget, TRUE);
+      clutter_actor_set_reactive (actor, TRUE);
 
       if (!priv->tooltip)
         {
           priv->tooltip = g_object_new (MX_TYPE_TOOLTIP, NULL);
-          clutter_actor_set_parent ((ClutterActor *) priv->tooltip,
-                                    (ClutterActor *) widget);
+          clutter_actor_set_parent (CLUTTER_ACTOR (priv->tooltip), actor);
         }
     }
   else

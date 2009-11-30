@@ -68,7 +68,7 @@ struct _MxTooltipPrivate
   ClutterGeometry *tip_area;
 };
 
-G_DEFINE_TYPE (MxTooltip, mx_tooltip, MX_TYPE_WIDGET);
+G_DEFINE_TYPE (MxTooltip, mx_tooltip, MX_TYPE_FLOATING_WIDGET);
 
 static void
 mx_tooltip_set_property (GObject      *gobject,
@@ -433,6 +433,7 @@ mx_tooltip_class_init (MxTooltipClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
+  MxFloatingWidgetClass *floating_class = MX_FLOATING_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (MxTooltipPrivate));
@@ -445,9 +446,10 @@ mx_tooltip_class_init (MxTooltipClass *klass)
   actor_class->get_preferred_width = mx_tooltip_get_preferred_width;
   actor_class->get_preferred_height = mx_tooltip_get_preferred_height;
   actor_class->allocate = mx_tooltip_allocate;
-  actor_class->paint = mx_tooltip_paint;
   actor_class->map = mx_tooltip_map;
   actor_class->unmap = mx_tooltip_unmap;
+
+  floating_class->floating_paint = mx_tooltip_paint;
 
   pspec = g_param_spec_string ("label",
                                "Label",
@@ -493,6 +495,7 @@ mx_tooltip_update_position (MxTooltip *tooltip)
   MxTooltipPrivate *priv = tooltip->priv;
   ClutterGeometry *tip_area = tooltip->priv->tip_area;
   gfloat tooltip_w, tooltip_h, tooltip_x, tooltip_y;
+  gfloat transformed_x, transformed_y;
   gfloat stage_w, stage_h;
   ClutterActor *stage;
 
@@ -557,7 +560,15 @@ mx_tooltip_update_position (MxTooltip *tooltip)
   /* calculate the arrow offset */
   priv->arrow_offset = tip_area->x + tip_area->width / 2 - tooltip_x;
 
-  clutter_actor_set_position ((ClutterActor*) tooltip, tooltip_x, tooltip_y);
+  /* co-ordinates were calculated with respect to the stage, so now
+   * convert them to be relative to the parent */
+
+  clutter_actor_get_transformed_position (clutter_actor_get_parent (CLUTTER_ACTOR (tooltip)),
+                                          &transformed_x, &transformed_y);
+
+  clutter_actor_set_position ((ClutterActor*) tooltip,
+                              tooltip_x - transformed_x,
+                              tooltip_y - transformed_y);
 }
 
 /**
@@ -609,7 +620,6 @@ mx_tooltip_show (MxTooltip *tooltip)
 {
   MxTooltipPrivate *priv;
   ClutterActor *parent;
-  ClutterActor *stage;
   ClutterActor *self = CLUTTER_ACTOR (tooltip);
   ClutterAnimation *animation;
 
@@ -620,28 +630,6 @@ mx_tooltip_show (MxTooltip *tooltip)
 
   priv = tooltip->priv;
   parent = clutter_actor_get_parent (self);
-  stage = clutter_actor_get_stage (self);
-
-  if (!stage)
-    {
-      g_warning ("MxTooltip is not on any stage.");
-      return;
-    }
-
-  /* make sure we're parented on the stage */
-  if (G_UNLIKELY (parent != stage))
-    {
-      g_object_ref (self);
-      clutter_actor_unparent (self);
-      clutter_actor_set_parent (self, stage);
-      g_object_unref (self);
-      parent = stage;
-    }
-
-  /* raise the tooltip to the top */
-  clutter_container_raise_child (CLUTTER_CONTAINER (stage),
-                                 CLUTTER_ACTOR (tooltip),
-                                 NULL);
 
   mx_tooltip_update_position (tooltip);
 
