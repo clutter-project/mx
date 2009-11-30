@@ -276,7 +276,11 @@ void
 mx_progress_bar_set_progress (MxProgressBar *bar,
                               gdouble        progress)
 {
-  MxProgressBarPrivate *priv = bar->priv;
+  MxProgressBarPrivate *priv;
+
+  g_return_if_fail (MX_IS_PROGRESS_BAR (bar));
+
+  priv = bar->priv;
 
   if (priv->progress != progress)
     {
@@ -298,6 +302,8 @@ mx_progress_bar_set_progress (MxProgressBar *bar,
 gdouble
 mx_progress_bar_get_progress (MxProgressBar *bar)
 {
+  g_return_val_if_fail (MX_IS_PROGRESS_BAR (bar), 0.0);
+
   return bar->priv->progress;
 }
 
