@@ -1,0 +1,38 @@
+0.2.0
+=====
+
+Changes since 0.1.0:
+
+ * Fix animation during drag and drop interaction on MxToggle
+ * Fix scrollbar stepper animation bugs (MB#7803)
+ * Fix insensitive colours in MxGtkLightSwitch (MB#7199)
+ * Integrate many of the tests into a single application
+ * Improved error reporting when loading of images or stylesheets fails
+ * Add MxFloatingWidget, a common base class for "always-on-top" actors, used
+   in tooltips and popup menus.
+ * Add more classes to the documentation generation
+ * Add a "long-press" signal to MxButton, to allow applications to handle
+   long-press (or "tap and hold") actions.
+ * Remove obsolete MxGtkExpander
+
+0.1.2
+=====
+
+Changes since 0.1.1:
+
+ * Prevent CSS debug messages when not requested
+
+0.1.1
+=====
+
+Changes since 0.1.0:
+
+ * Fix issues with hover states introduced to MxEntry by MxWidget
+ * Automatically generate the ChangeLog file for tarball releases
+ * Add ancestor matching to CSS
+ * Improve CSS match scoring in line with w3c specification
+
+0.1.0
+=====
+
+Initial release
