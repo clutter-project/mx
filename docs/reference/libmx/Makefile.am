@@ -56,6 +56,7 @@ CFILE_GLOB=$(top_srcdir)/mx/*.c
 # e.g. IGNORE_HFILES=gtkdebug.h gtkintl.h
 IGNORE_HFILES= \
 	mx.h \
+	mx-css.h \
 	mx-gtk.h \
 	mx-enum-types.c \
 	mx-enum-types.h \
