@@ -66,8 +66,8 @@ stage_test_actor (ClutterActor *stage,
   style_changed_id = g_signal_lookup ("style-changed", MX_TYPE_WIDGET);
   for (i = 0; i < n_iterations; i++)
     {
-      /* g_signal_emit (actor, style_changed_id, 0); */
-      MX_WIDGET_GET_CLASS (actor)->style_changed (actor);
+      g_signal_emit (actor, style_changed_id, 0);
+
     }
 
   clutter_container_remove_actor (CLUTTER_CONTAINER (stage),
