@@ -32,6 +32,7 @@
       <xi:include href="xml/mx-scroll-bar.xml"/>
       <xi:include href="xml/mx-texture-frame.xml"/>
       <xi:include href="xml/mx-tooltip.xml"/>
+      <xi:include href="xml/mx-toggle.xml"/>
     </chapter>
     <chapter>
       <title>Containers</title>
@@ -44,6 +45,7 @@
       <xi:include href="xml/mx-table-child.xml"/>
       <xi:include href="xml/mx-table.xml"/>
       <xi:include href="xml/mx-viewport.xml"/>
+      <xi:include href="xml/mx-notebook.xml"/>
     </chapter>
     <chapter>
       <title>Data Views</title>
@@ -63,6 +65,7 @@
       <xi:include href="xml/mx-action.xml"/>
       <xi:include href="xml/mx-adjustment.xml"/>
       <xi:include href="xml/mx-clipboard.xml"/>
+      <xi:include href="xml/mx-button-group.xml"/>
       <xi:include href="xml/mx-style.xml"/>
       <xi:include href="xml/mx-subtexture.xml"/>
       <xi:include href="xml/mx-texture-cache.xml"/>

@@ -4,6 +4,7 @@ mx_adjustment_get_type
 mx_bin_get_type
 mx_box_layout_get_type
 mx_button_get_type
+mx_button_group_get_type
 mx_clipboard_get_type
 mx_combo_box_get_type
 mx_draggable_get_type
@@ -17,6 +18,7 @@ mx_icon_get_type
 mx_item_view_get_type
 mx_label_get_type
 mx_list_view_get_type
+mx_notebook_get_type
 mx_padding_get_type
 mx_popup_get_type
 mx_progress_bar_get_type
@@ -30,6 +32,7 @@ mx_table_child_get_type
 mx_table_get_type
 mx_texture_cache_get_type
 mx_texture_frame_get_type
+mx_toggle_get_type
 mx_tooltip_get_type
 mx_viewport_get_type
 mx_widget_get_type

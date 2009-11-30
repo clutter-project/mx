@@ -756,6 +756,49 @@ MxTooltipPrivate
 </SECTION>
 
 <SECTION>
+<FILE>mx-button-group</FILE>
+<TITLE>MxButtonGroup</TITLE>
+MxButtonGroup
+mx_button_group_new
+mx_button_group_add
+mx_button_group_remove
+mx_button_group_foreach
+mx_button_group_set_active_button
+mx_button_group_get_active_button
+mx_button_group_set_allow_no_active
+mx_button_group_get_allow_no_active
+<SUBSECTION Standard>
+MX_BUTTON_GROUP
+MX_IS_BUTTON_GROUP
+MX_TYPE_BUTTON_GROUP
+mx_button_group_get_type
+MX_BUTTON_GROUP_CLASS
+MX_IS_BUTTON_GROUP_CLASS
+MX_BUTTON_GROUP_GET_CLASS
+<SUBSECTION Private>
+MxButtonGroupPrivate
+</SECTION>
+
+<SECTION>
+<FILE>mx-toggle</FILE>
+<TITLE>MxToggle</TITLE>
+MxToggle
+mx_toggle_new
+mx_toggle_set_active
+mx_toggle_get_active
+<SUBSECTION Standard>
+MX_TOGGLE
+MX_IS_TOGGLE
+MX_TYPE_TOGGLE
+mx_toggle_get_type
+MX_TOGGLE_CLASS
+MX_IS_TOGGLE_CLASS
+MX_TOGGLE_GET_CLASS
+<SUBSECTION Private>
+MxTogglePrivate
+</SECTION>
+
+<SECTION>
 <FILE>mx-entry</FILE>
 <TITLE>MxEntry</TITLE>
 MxEntry
@@ -803,4 +846,23 @@ MX_MICRO_VERSION
 MX_VERSION_S
 MX_VERSION_HEX
 MX_CHECK_VERSION
+</SECTION>
+
+<SECTION>
+<FILE>mx-notebook</FILE>
+<TITLE>MxNotebook</TITLE>
+MxNotebook
+mx_notebook_new
+mx_notebook_set_page
+mx_notebook_get_page
+<SUBSECTION Standard>
+MX_NOTEBOOK
+MX_IS_NOTEBOOK
+MX_TYPE_NOTEBOOK
+mx_notebook_get_type
+MX_NOTEBOOK_CLASS
+MX_IS_NOTEBOOK_CLASS
+MX_NOTEBOOK_GET_CLASS
+<SUBSECTION Private>
+MxNotebookPrivate
 </SECTION>
