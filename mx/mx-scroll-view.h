@@ -70,7 +70,6 @@ ClutterActor *mx_scroll_view_new (void);
 
 ClutterActor *mx_scroll_view_get_hscroll_bar     (MxScrollView *scroll);
 ClutterActor *mx_scroll_view_get_vscroll_bar     (MxScrollView *scroll);
-ClutterActor *mx_scroll_view_get_child           (MxScrollView *scroll);
 
 gfloat        mx_scroll_view_get_column_size     (MxScrollView *scroll);
 void          mx_scroll_view_set_column_size     (MxScrollView *scroll,
