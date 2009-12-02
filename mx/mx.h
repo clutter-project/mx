@@ -28,6 +28,7 @@
 #include <mx/mx-adjustment.h>
 #include <mx/mx-bin.h>
 #include <mx/mx-box-layout.h>
+#include <mx/mx-box-layout-child.h>
 #include <mx/mx-button.h>
 #include <mx/mx-button-group.h>
 #include <mx/mx-combo-box.h>
@@ -37,11 +38,14 @@
 #include <mx/mx-entry.h>
 #include <mx/mx-enum-types.h>
 #include <mx/mx-expander.h>
+#include <mx/mx-floating-widget.h>
 #include <mx/mx-grid.h>
 #include <mx/mx-icon.h>
+#include <mx/mx-item-factory.h>
 #include <mx/mx-item-view.h>
 #include <mx/mx-list-view.h>
 #include <mx/mx-label.h>
+#include <mx/mx-notebook.h>
 #include <mx/mx-popup.h>
 #include <mx/mx-progress-bar.h>
 #include <mx/mx-scroll-bar.h>
@@ -49,6 +53,7 @@
 #include <mx/mx-scrollable.h>
 #include <mx/mx-stylable.h>
 #include <mx/mx-style.h>
+#include <mx/mx-subtexture.h>
 #include <mx/mx-table.h>
 #include <mx/mx-table-child.h>
 #include <mx/mx-texture-cache.h>
@@ -57,6 +62,7 @@
 #include <mx/mx-tooltip.h>
 #include <mx/mx-types.h>
 #include <mx/mx-utils.h>
+#include <mx/mx-version.h>
 #include <mx/mx-viewport.h>
 #include <mx/mx-widget.h>
 
