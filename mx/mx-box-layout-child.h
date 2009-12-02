@@ -19,6 +19,10 @@
  * Written by: Thomas Wood <thomas.wood@intel.com>
  */
 
+#if !defined(MX_H_INSIDE) && !defined(MX_COMPILATION)
+#error "Only <mx/mx.h> can be included directly.h"
+#endif
+
 #ifndef _MX_BOX_LAYOUT_CHILD_H
 #define _MX_BOX_LAYOUT_CHILD_H
 
