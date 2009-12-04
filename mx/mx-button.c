@@ -500,6 +500,16 @@ mx_button_draw_background (MxWidget           *widget,
 }
 
 static void
+mx_button_allocate (ClutterActor           *actor,
+                    const ClutterActorBox  *box,
+                    ClutterAllocationFlags  flags)
+{
+  CLUTTER_ACTOR_CLASS (mx_button_parent_class)->allocate (actor, box, flags);
+
+  mx_bin_allocate_child (MX_BIN (actor), box, flags);
+}
+
+static void
 mx_button_class_init (MxButtonClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -521,6 +531,7 @@ mx_button_class_init (MxButtonClass *klass)
 
   actor_class->map = mx_button_map;
   actor_class->unmap = mx_button_unmap;
+  actor_class->allocate = mx_button_allocate;
 
   widget_class->draw_background = mx_button_draw_background;
 

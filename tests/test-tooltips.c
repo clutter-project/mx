@@ -31,7 +31,7 @@ tooltips_main (ClutterContainer *stage)
   clutter_container_add_actor (stage, button);
   clutter_actor_set_position (button, 50, 100);
 
-  bin = mx_bin_new ();
+  bin = mx_frame_new ();
   clutter_container_add_actor (stage, bin);
   clutter_actor_set_position (bin, 50, 200);
 
@@ -39,6 +39,7 @@ tooltips_main (ClutterContainer *stage)
   mx_widget_set_tooltip_text (MX_WIDGET (button),
                               "Testing tooltips in a container...");
   clutter_container_add_actor (CLUTTER_CONTAINER (bin), button);
+
 
   button = mx_button_new_with_label ("Testing Long Text");
   mx_widget_set_tooltip_text (MX_WIDGET (button), "Here is some really"

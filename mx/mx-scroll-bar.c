@@ -37,7 +37,7 @@
 #include <clutter/clutter.h>
 
 #include "mx-scroll-bar.h"
-#include "mx-bin.h"
+#include "mx-frame.h"
 #include "mx-marshal.h"
 #include "mx-stylable.h"
 #include "mx-enum-types.h"
@@ -1039,7 +1039,7 @@ mx_scroll_bar_init (MxScrollBar *self)
   g_signal_connect (self->priv->fw_stepper, "leave-event",
                     G_CALLBACK (stepper_button_release_cb), self);
 
-  self->priv->trough = (ClutterActor *) mx_bin_new ();
+  self->priv->trough = mx_frame_new ();
   clutter_actor_set_reactive ((ClutterActor *) self->priv->trough, TRUE);
   clutter_actor_set_name (CLUTTER_ACTOR (self->priv->trough), "trough");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->trough),

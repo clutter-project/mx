@@ -27,6 +27,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-clipboard.h		\
 	$(top_srcdir)/mx/mx-entry.h 		\
 	$(top_srcdir)/mx/mx-expander.h 		\
+	$(top_srcdir)/mx/mx-frame.h		\
 	$(top_srcdir)/mx/mx-grid.h 			\
 	$(top_srcdir)/mx/mx-item-factory.h		\
 	$(top_srcdir)/mx/mx-item-view.h 		\
@@ -80,6 +81,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-clipboard.c 		\
 	$(top_srcdir)/mx/mx-entry.c 		\
 	$(top_srcdir)/mx/mx-expander.c 		\
+	$(top_srcdir)/mx/mx-frame.c		\
 	$(top_srcdir)/mx/mx-grid.c 			\
 	$(top_srcdir)/mx/mx-icon.c 			\
 	$(top_srcdir)/mx/mx-item-factory.c 		\

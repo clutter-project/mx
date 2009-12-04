@@ -67,9 +67,9 @@ enum
 
 static void clutter_container_iface_init (ClutterContainerIface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (MxBin, mx_bin, MX_TYPE_WIDGET,
-                         G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
-                                                clutter_container_iface_init));
+G_DEFINE_ABSTRACT_TYPE_WITH_CODE (MxBin, mx_bin, MX_TYPE_WIDGET,
+                                  G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
+                                                         clutter_container_iface_init));
 
 void
 _mx_bin_get_align_factors (MxBin   *bin,
@@ -186,15 +186,16 @@ mx_bin_pick (ClutterActor       *self,
     clutter_actor_paint (priv->child);
 }
 
-static void
-mx_bin_allocate (ClutterActor          *self,
-                 const ClutterActorBox *box,
-                 ClutterAllocationFlags flags)
+void
+mx_bin_allocate_child (MxBin                 *bin,
+                       const ClutterActorBox *box,
+                       ClutterAllocationFlags flags)
 {
-  MxBinPrivate *priv = MX_BIN (self)->priv;
+  MxBinPrivate *priv;
 
-  CLUTTER_ACTOR_CLASS (mx_bin_parent_class)->allocate (self, box,
-                                                       flags);
+  g_return_if_fail (MX_IS_BIN (bin));
+
+  priv = bin->priv;
 
   if (priv->child)
     {
@@ -207,9 +208,9 @@ mx_bin_allocate (ClutterActor          *self,
       MxPadding padding = { 0, };
       gdouble x_align, y_align;
 
-      _mx_bin_get_align_factors (MX_BIN (self), &x_align, &y_align);
+      _mx_bin_get_align_factors (bin, &x_align, &y_align);
 
-      mx_widget_get_padding (MX_WIDGET (self), &padding);
+      mx_widget_get_padding (MX_WIDGET (bin), &padding);
 
       available_width  = box->x2 - box->x1
                          - padding.left - padding.right;
@@ -476,7 +477,6 @@ mx_bin_class_init (MxBinClass *klass)
 
   actor_class->get_preferred_width = mx_bin_get_preferred_width;
   actor_class->get_preferred_height = mx_bin_get_preferred_height;
-  actor_class->allocate = mx_bin_allocate;
   actor_class->paint = mx_bin_paint;
   actor_class->pick = mx_bin_pick;
 
@@ -552,19 +552,6 @@ mx_bin_init (MxBin *bin)
 
   bin->priv->x_align = MX_ALIGN_MIDDLE;
   bin->priv->y_align = MX_ALIGN_MIDDLE;
-}
-
-/**
- * mx_bin_new:
- *
- * Creates a new #MxBin, a simple container for one child.
- *
- * Return value: the newly created #MxBin actor
- */
-ClutterActor *
-mx_bin_new (void)
-{
-  return g_object_new (MX_TYPE_BIN, NULL);
 }
 
 /**
