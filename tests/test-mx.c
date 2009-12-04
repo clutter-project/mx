@@ -58,23 +58,34 @@ add_tab (ClutterContainer *box,
 int
 main (int argc, char *argv[])
 {
-  ClutterActor *stage, *vbox, *hbox, *holder;
+  ClutterActor *stage, *vbox, *hbox, *holder, *mainbox, *toolbar;
   MxButtonGroup *group;
-  ClutterColor color = { 0xc0, 0xc0, 0xc0, 0xff};
 
   clutter_init (&argc, &argv);
 
   stage = clutter_stage_new ();
-  clutter_stage_set_color (CLUTTER_STAGE (stage), &color);
 
+  mainbox = mx_box_layout_new ();
+  clutter_actor_set_size (mainbox, 640, 480);
+  mx_box_layout_set_vertical (MX_BOX_LAYOUT (mainbox), TRUE);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), mainbox);
+
+  /* create the toolbar */
+  toolbar = mx_toolbar_new ();
+
+  /* create the horizontal layout */
   hbox = mx_box_layout_new ();
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage), hbox);
   clutter_actor_set_position (hbox, 12, 12);
 
+  /* add toolbar and hoizontal layout to main container */
+  clutter_container_add (CLUTTER_CONTAINER (mainbox), toolbar, hbox, NULL);
+
+  /* create a vbox for the list of tests */
   vbox = mx_box_layout_new ();
   mx_box_layout_set_vertical (MX_BOX_LAYOUT (vbox), TRUE);
   clutter_container_add_actor (CLUTTER_CONTAINER (hbox), vbox);
 
+  /* create a place holder for the tests */
   holder = clutter_group_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (hbox), holder);
 
