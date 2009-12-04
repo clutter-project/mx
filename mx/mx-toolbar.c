@@ -142,6 +142,12 @@ mx_toolbar_dispose (GObject *object)
       clutter_actor_unparent (priv->close_button);
       priv->close_button = NULL;
     }
+
+  if (priv->child)
+    {
+      clutter_actor_destroy (priv->child);
+      priv->child = NULL;
+    }
 }
 
 static void
