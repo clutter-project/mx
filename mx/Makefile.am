@@ -260,7 +260,6 @@ Mx-@MX_API_VERSION@.gir: $(INTROSPECTION_SCANNER) libmx-@MX_API_VERSION@.la
 		--libtool="$(top_builddir)/libtool" \
 		--pkg gobject-2.0 \
 		--pkg clutter-1.0 \
-		--pkg libccss-1 \
 		--output $@ \
 		$(source_h) \
 		$(top_srcdir)/mx/mx.h \
@@ -281,7 +280,6 @@ MxGtk-@MX_API_VERSION@.gir: $(INTROSPECTION_SCANNER) libmx-gtk-@MX_API_VERSION@.
 		--libtool="$(top_builddir)/libtool" \
 		--pkg gobject-2.0 \
 		--pkg gtk+-2.0 \
-		--pkg libccss-1 \
 		--output $@ \
 		$(source_gtk_h) \
 		$(top_srcdir)/mx/mx-gtk.h \
