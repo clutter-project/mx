@@ -59,6 +59,7 @@
 #include <mx/mx-texture-cache.h>
 #include <mx/mx-texture-frame.h>
 #include <mx/mx-toggle.h>
+#include <mx/mx-toolbar.h>
 #include <mx/mx-tooltip.h>
 #include <mx/mx-types.h>
 #include <mx/mx-utils.h>

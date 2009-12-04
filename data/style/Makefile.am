@@ -4,6 +4,8 @@ dist_style_DATA = \
 		button-hover.png \
 		button.png \
 		combobox.png \
+		close.png \
+		close-hover.png \
 		default.css \
 		entry.png \
 		entry-active.png \

@@ -199,3 +199,18 @@ MxToggle:checked {
 MxToggleHandle {
   background-image: url("toggle-handle.png");
 }
+
+MxToolbar {
+  background-color: #333;
+  padding: 6;
+}
+
+MxToolbar MxButton {
+  border-image: url('close.png') 0;
+  padding: 51 57 0 0;
+}
+
+MxToolbar MxButton:hover, MxToolbar MxButton:active {
+  border-image: url('close-hover.png') 0;
+  padding: 51 57 0 0;
+}
