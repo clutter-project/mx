@@ -67,6 +67,9 @@ struct _MxToolbar
 struct _MxToolbarClass
 {
   MxBinClass parent_class;
+
+  /* signals */
+  gboolean (*close_button_clicked) (MxToolbar *toolbar);
 };
 
 GType mx_toolbar_get_type (void) G_GNUC_CONST;

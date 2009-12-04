@@ -21,6 +21,7 @@
 
 #include "mx-toolbar.h"
 #include "mx-private.h"
+#include "mx-marshal.h"
 #include <clutter/clutter.h>
 
 G_DEFINE_TYPE (MxToolbar, mx_toolbar, MX_TYPE_BIN)
@@ -34,6 +35,14 @@ G_DEFINE_TYPE (MxToolbar, mx_toolbar, MX_TYPE_BIN)
 enum {
   PROP_CLOSE_BUTTON = 1
 };
+
+enum {
+  CLOSE_BUTTON_CLICKED,
+
+  LAST_SIGNAL
+};
+
+static guint toolbar_signals[LAST_SIGNAL] = { 0, };
 
 struct _MxToolbarPrivate
 {
@@ -334,6 +343,17 @@ mx_toolbar_class_init (MxToolbarClass *klass)
                                 TRUE,
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_CLOSE_BUTTON, pspec);
+
+  toolbar_signals[CLOSE_BUTTON_CLICKED] =
+    g_signal_new ("close-button-clicked",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (MxToolbarClass, close_button_clicked),
+                  NULL, NULL,
+                  _mx_marshal_BOOL__VOID,
+                  G_TYPE_BOOLEAN, 0);
+
+
 }
 
 static void
@@ -344,6 +364,17 @@ mx_toolbar_init (MxToolbar *self)
   mx_toolbar_set_has_close_button (self, TRUE);
 
   mx_bin_set_alignment (MX_BIN (self), MX_ALIGN_START, MX_ALIGN_MIDDLE);
+}
+
+static void
+close_button_click_cb (MxButton  *button,
+                       MxToolbar *toolbar)
+{
+  gboolean handled;
+  g_signal_emit (toolbar, toolbar_signals[CLOSE_BUTTON_CLICKED], 0, &handled);
+
+  if (!handled)
+    clutter_main_quit ();
 }
 
 ClutterActor *
@@ -380,6 +411,8 @@ mx_toolbar_set_has_close_button (MxToolbar *toolbar,
           priv->close_button = mx_button_new ();
           clutter_actor_set_parent (priv->close_button,
                                     CLUTTER_ACTOR (toolbar));
+          g_signal_connect (priv->close_button, "clicked",
+                            G_CALLBACK (close_button_click_cb), toolbar);
         }
 
       clutter_actor_queue_relayout (CLUTTER_ACTOR (toolbar));
