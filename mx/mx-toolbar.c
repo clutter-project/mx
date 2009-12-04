@@ -23,10 +23,7 @@
 #include "mx-private.h"
 #include <clutter/clutter.h>
 
-static void clutter_container_iface_init (ClutterContainerIface *iface);
-
-G_DEFINE_TYPE_WITH_CODE (MxToolbar, mx_toolbar, MX_TYPE_WIDGET,
-                         G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER, clutter_container_iface_init))
+G_DEFINE_TYPE (MxToolbar, mx_toolbar, MX_TYPE_BIN)
 
 #define TOOLBAR_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_TOOLBAR, MxToolbarPrivate))
@@ -42,57 +39,7 @@ struct _MxToolbarPrivate
 {
   gboolean has_close_button;
   ClutterActor *close_button;
-
-  ClutterActor *child;
 };
-
-void
-mx_toolbar_add (ClutterContainer *container,
-                ClutterActor     *actor)
-{
-  MxToolbarPrivate *priv = MX_TOOLBAR (container)->priv;
-
-  /* remove the old child */
-  if (priv->child)
-    clutter_actor_destroy (priv->child);
-
-  /* add the new one */
-  clutter_actor_set_parent (actor, CLUTTER_ACTOR (container));
-  priv->child = actor;
-}
-
-void
-mx_toolbar_remove (ClutterContainer *container,
-                   ClutterActor     *actor)
-{
-  MxToolbarPrivate *priv = MX_TOOLBAR (container)->priv;
-
-  if (priv->child == actor)
-    {
-      clutter_actor_destroy (priv->child);
-      priv->child = NULL;
-    }
-}
-
-void
-mx_toolbar_foreach (ClutterContainer *container,
-                    ClutterCallback   callback,
-                    gpointer          data)
-{
-  MxToolbarPrivate *priv = MX_TOOLBAR (container)->priv;
-
-  if (priv->child)
-    callback (priv->child, data);
-}
-
-static void
-clutter_container_iface_init (ClutterContainerIface *iface)
-{
-  iface->add = mx_toolbar_add;
-  iface->remove = mx_toolbar_remove;
-  iface->foreach = mx_toolbar_foreach;
-}
-
 
 static void
 mx_toolbar_get_property (GObject    *object,
@@ -135,18 +82,13 @@ static void
 mx_toolbar_dispose (GObject *object)
 {
   MxToolbarPrivate *priv = MX_TOOLBAR (object)->priv;
+
   G_OBJECT_CLASS (mx_toolbar_parent_class)->dispose (object);
 
   if (priv->close_button)
     {
       clutter_actor_unparent (priv->close_button);
       priv->close_button = NULL;
-    }
-
-  if (priv->child)
-    {
-      clutter_actor_destroy (priv->child);
-      priv->child = NULL;
     }
 }
 
@@ -187,6 +129,19 @@ mx_toolbar_get_preferred_width (ClutterActor *actor,
   MxToolbarPrivate *priv = MX_TOOLBAR (actor)->priv;
   MxPadding padding;
   gfloat min_child, pref_child, min_close, pref_close;
+  ClutterActor *child;
+
+  /* if there is no close button, then use the default preferred width
+   * function from MxBin */
+  if (!priv->has_close_button)
+    {
+      CLUTTER_ACTOR_CLASS (mx_toolbar_parent_class)->
+        get_preferred_width (actor,
+                             for_height,
+                             min_width,
+                             pref_width);
+      return;
+    }
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
@@ -205,9 +160,10 @@ mx_toolbar_get_preferred_width (ClutterActor *actor,
       pref_close = 0;
     }
 
-  if (priv->child)
+  child = mx_bin_get_child (MX_BIN (actor));
+  if (child)
     {
-      clutter_actor_get_preferred_width (priv->child,
+      clutter_actor_get_preferred_width (child,
                                          for_height,
                                          &min_child,
                                          &pref_child);
@@ -234,6 +190,19 @@ mx_toolbar_get_preferred_height (ClutterActor *actor,
   MxToolbarPrivate *priv = MX_TOOLBAR (actor)->priv;
   MxPadding padding;
   gfloat min_child, pref_child, min_close, pref_close;
+  ClutterActor *child;
+
+  /* if there is no close button, then use the default preferred width
+   * function from MxBin */
+  if (!priv->has_close_button)
+    {
+      CLUTTER_ACTOR_CLASS (mx_toolbar_parent_class)->
+        get_preferred_height (actor,
+                              for_width,
+                              min_height,
+                              pref_height);
+      return;
+    }
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
@@ -252,9 +221,10 @@ mx_toolbar_get_preferred_height (ClutterActor *actor,
       pref_close = 0;
     }
 
-  if (priv->child)
+  child = mx_bin_get_child (MX_BIN (actor));
+  if (child)
     {
-      clutter_actor_get_preferred_height (priv->child,
+      clutter_actor_get_preferred_height (child,
                                           -1,
                                           &min_child,
                                           &pref_child);
@@ -298,20 +268,17 @@ mx_toolbar_allocate (ClutterActor           *actor,
 
       clutter_actor_allocate (priv->close_button, &childbox, flags);
     }
-
-  if (priv->child)
+  else
     {
-      gfloat pref_w, pref_h;
-
-      clutter_actor_get_preferred_size (priv->child,
-                                        NULL, NULL, &pref_w, &pref_h);
-      childbox.x1 = avail.x1;
-      childbox.y1 = avail.y1;
-      childbox.x2 = avail.x2 - close_w - PADDING;
-      childbox.y2 = avail.y2;
-
-      clutter_actor_allocate (priv->child, &childbox, flags);
+      close_w = 0;
     }
+
+  childbox.x1 = avail.x1;
+  childbox.y1 = avail.y1;
+  childbox.x2 = avail.x2 - close_w - PADDING;
+  childbox.y2 = avail.y2;
+
+  mx_bin_allocate_child (MX_BIN (actor), &childbox, flags);
 }
 
 static void
@@ -325,9 +292,6 @@ mx_toolbar_pick (ClutterActor       *actor,
   if (priv->close_button
       && clutter_actor_should_pick_paint (priv->close_button))
     clutter_actor_paint (priv->close_button);
-
-  if (priv->child && clutter_actor_should_pick_paint (priv->child))
-    clutter_actor_paint (priv->child);
 }
 
 static void
@@ -339,9 +303,6 @@ mx_toolbar_paint (ClutterActor *actor)
 
   if (priv->close_button)
     clutter_actor_paint (priv->close_button);
-
-  if (priv->child)
-    clutter_actor_paint (priv->child);
 }
 
 static void
@@ -381,6 +342,8 @@ mx_toolbar_init (MxToolbar *self)
   self->priv = TOOLBAR_PRIVATE (self);
 
   mx_toolbar_set_has_close_button (self, TRUE);
+
+  mx_bin_set_alignment (MX_BIN (self), MX_ALIGN_START, MX_ALIGN_MIDDLE);
 }
 
 ClutterActor *

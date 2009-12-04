@@ -59,14 +59,14 @@ typedef struct _MxToolbarPrivate MxToolbarPrivate;
 
 struct _MxToolbar
 {
-  MxWidget parent;
+  MxBin parent;
 
   MxToolbarPrivate *priv;
 };
 
 struct _MxToolbarClass
 {
-  MxWidgetClass parent_class;
+  MxBinClass parent_class;
 };
 
 GType mx_toolbar_get_type (void) G_GNUC_CONST;
