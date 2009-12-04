@@ -119,7 +119,6 @@ MxScrollBar MxButton#hhandle:hover
  */
 
 MxExpander {
-  color: blank;
   font-size: 15;
   border-image: url('expander-closed.png') 6;
   padding: 6 12;
