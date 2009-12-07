@@ -64,6 +64,11 @@
 #include "mx-marshal.h"
 #include "mx-clipboard.h"
 
+/* for pointer cursor support */
+#include <clutter/x11/clutter-x11.h>
+#include <X11/Xlib.h>
+#include <X11/cursorfont.h>
+
 #define HAS_FOCUS(actor) (clutter_actor_get_stage (actor) && clutter_stage_get_key_focus ((ClutterStage *) clutter_actor_get_stage (actor)) == actor)
 
 
@@ -645,6 +650,28 @@ static gboolean
 mx_entry_swallow_crossing_event (ClutterActor         *actor,
                                  ClutterCrossingEvent *event)
 {
+
+  if (event->source == MX_ENTRY (actor)->priv->entry
+      && event->related != NULL)
+    {
+      Display *dpy;
+      ClutterActor *stage;
+      Window wid;
+      static Cursor ibeam = None;
+
+      dpy = clutter_x11_get_default_display ();
+      stage = clutter_actor_get_stage (actor);
+      wid = clutter_x11_get_stage_window (CLUTTER_STAGE (stage));
+
+      if (ibeam == None)
+        ibeam = XCreateFontCursor (dpy, XC_xterm);
+
+      if (event->type == CLUTTER_ENTER)
+        XDefineCursor (dpy, wid, ibeam);
+      else
+        XUndefineCursor (dpy, wid);
+    }
+
   /* swallow enter and leave events, since the pseudo-class must not be set to
    * 'hover' because it would loose the 'focus' state.
    */
@@ -655,9 +682,10 @@ static gboolean
 mx_entry_swallow_button_event (ClutterActor       *actor,
                                ClutterButtonEvent *event)
 {
-  /* swallow enter and leave events, since the pseudo-class must not be set to
+  /* swallow button events, since the pseudo-class must not be set to
    * 'active' because it would loose the 'focus' state.
    */
+
   return TRUE;
 }
 
