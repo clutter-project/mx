@@ -25,7 +25,24 @@
  * @short_description: a container which the user can show or hide its child
  *
  * #MxExpander is a single child container that allows the user to show or
- * hide its child.
+ * hide its child. It displays a clickable bar (with a text label), 
+ * which (by default) when clicked toggles display of the child.
+ *
+ * <figure id="mx-expander-expanded">
+ *   <title>MxExpander in its expanded state</title>
+ *   <para>The image shows an #MxExpander with the
+ *   #MxExpander:expanded property set to
+ *   #TRUE.</para>
+ *   <graphic fileref="MxExpander-expanded.png" format="PNG"/>
+ * </figure>
+ *
+ * <figure id="mx-expander-contracted">
+ *   <title>MxExpander in its contracted state</title>
+ *   <para>The image shows an #MxExpander with the
+ *   #MxExpander:expanded property set to
+ *   #FALSE.</para>
+ *   <graphic fileref="MxExpander-contracted.png" format="PNG"/>
+ * </figure>
  */
 
 #include "mx-marshal.h"
@@ -727,8 +744,8 @@ mx_expander_set_label (MxExpander  *expander,
  * @expander: A #MxExpander
  * @expanded: the state of the expander to set
  *
- * Set the state of the expander. This will cause the expander to open and
- * close if the state is changed.
+ * Set the state (the #MxExpander:expanded property) of the expander. 
+ * This will cause the expander to open or close.
  */
 void
 mx_expander_set_expanded (MxExpander *expander,
@@ -746,7 +763,7 @@ mx_expander_set_expanded (MxExpander *expander,
  * mx_expander_get_expanded:
  * @expander: a #MxExpander
  *
- * Get the current state of the expander
+ * Get the current state of the expander (the value of #MxExpander:expanded)
  *
  * Returns: #TRUE if the expander is open, #FALSE if it is closed
  */
