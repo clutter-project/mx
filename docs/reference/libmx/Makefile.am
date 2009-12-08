@@ -68,7 +68,16 @@ IGNORE_HFILES= \
 
 # Images to copy into HTML directory.
 # e.g. HTML_IMAGES=$(top_srcdir)/gtk/stock-icons/stock_about_24.png
-HTML_IMAGES=
+HTML_IMAGES=\
+	MxBoxLayout-horizontal.png \
+	MxBoxLayout-vertical.png \
+	MxExpander-expanded.png \
+	MxExpander-contracted.png \
+	MxGrid-3x3.png \
+	MxGrid-9x1.png \
+	MxGrid-2cols-column-major.png \
+	MxGrid-2rows-row-major.png \
+	MxScrollView.png
 
 # Extra SGML files that are included by $(DOC_MAIN_SGML_FILE).
 # e.g. content_files=running.sgml building.sgml changes-2.0.sgml
