@@ -36,6 +36,62 @@
  * #MxGrid is a layout container that arranges its children by placing them
  * in a single line and wrapping round to a new line when the edge of the
  * container is reached.
+ *
+ * This layout is particularly flexible, with the following configuration possibilities:
+ *
+ * <itemizedlist>
+ *   <listitem><para>Column and row spacing are controllable 
+ *   (#MxGrid:column_gap and #MxGrid:row_gap)</para></listitem>
+ *   <listitem><para>Column and row sizes can be made consistent, regardless of the size 
+ *   of the contained actors (#MxGrid:homogenous_columns and #MxGrid:homogenous_rows)
+ *   </para></listitem>
+ *   <listitem><para>Prefer to pack children vertically first,
+ *   rather than horizontally (#MxGrid:column_major)</para></listitem>
+ *   <listitem><para>Specify the maximum number of rows or columns 
+ *   to allow in the layout, to prevent it from being excessively stretched 
+ *   (#MxGrid:max_stride).</para></listitem>
+ * </itemizedlist>
+ *
+ * To demonstrate how these settings interact, here are a few images.
+ *
+ * <figure id="mx-grid">
+ *   <title>MxGrid flowing across multiple rows</title>
+ *   <para>An #MxGrid containing 9 child actors; 
+ *   #MxGrid:column_major is set to the default (#FALSE, 
+ *   i.e. lay out horizontally first); #MxGrid:max_stride has not been set 
+ *   (so there's no maximum row size); #MxGrid:column_gap and #MxGrid:row_gap have
+ *   been set so that there is spacing between cells vertically and horizontally.</para>
+ *   <graphic fileref="MxGrid-3x3.png" format="PNG"/>
+ * </figure>
+ *
+ * <figure id="mx-grid-horizontal">
+ *   <title>MxGrid flowing on a single row</title>
+ *   <para>The image shows the same #MxGrid with its children flowing into one row.
+ *   This is the layout's response to being resized horizontally.</para>
+ *   <graphic fileref="MxGrid-9x1.png" format="PNG"/>
+ * </figure>
+ *
+ * <figure id="mx-grid-two-rows">
+ *   <title>MxGrid flowing onto two rows</title>
+ *   <para>The same #MxGrid with 9 children wrapping onto two rows: notice 
+ *   how the "odd" rectangle is on the end of a row, rather than at the 
+ *   bottom of a column. This is because preference 
+ *   is being given to packing onto the end of rows, rather than columns, 
+ *   because #MxGrid:column_major is set to #FALSE. Even though 
+ *   there is room for the rectangle at the bottom of the column, the 
+ *   layout prefers to place children onto the end of a row if there is room.</para>
+ *   <graphic fileref="MxGrid-2rows-row-major.png" format="PNG"/>
+ * </figure>
+ *
+ * <figure id="mx-grid-two-columns">
+ *   <title>MxGrid flowing into two columns</title>
+ *   <para>The same #MxGrid 9 children with #MxGrid:column_major set to #TRUE. This time,
+ *   the layout wraps onto two columns rather than two rows. Even though 
+ *   there is room on the end of the rows for the children, the preference 
+ *   is for them to be placed on the bottom of columns, or into new columns, 
+ *   before being added to rows.</para>
+ *   <graphic fileref="MxGrid-2cols-column-major.png" format="PNG"/>
+ * </figure>
  */
 
 #include <string.h>
@@ -467,7 +523,10 @@ mx_grid_class_init (MxGridClass *klass)
   pspec = g_param_spec_int ("max-stride",
                             "Maximum stride",
                             "Maximum number of rows or columns, depending"
-                            " on orientation",
+                            " on orientation. For example, if max-stride is set to 3 with"
+                            " column-major FALSE, there"
+                            " will be a maximum of 3 children in a row; if column-major"
+                            " is TRUE, there will be a maximum of 3 children in a column",
                             0, G_MAXINT, 0,
                             G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
   g_object_class_install_property (gobject_class, PROP_MAX_STRIDE, pspec);
