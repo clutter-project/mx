@@ -62,7 +62,6 @@ struct _MxTableChild
   gint row_span;
   gdouble x_align;
   gdouble y_align;
-  guint allocate_hidden : 1;
   guint x_expand : 1;
   guint y_expand : 1;
   guint x_fill : 1;
@@ -117,11 +116,6 @@ MxAlign  mx_table_child_get_y_align         (MxTable      *table,
 void     mx_table_child_set_y_align         (MxTable      *table,
                                              ClutterActor *child,
                                              MxAlign       align);
-void     mx_table_child_set_allocate_hidden (MxTable      *table,
-                                             ClutterActor *child,
-                                             gboolean      value);
-gboolean mx_table_child_get_allocate_hidden (MxTable      *table,
-                                             ClutterActor *child);
 
 G_END_DECLS
 
