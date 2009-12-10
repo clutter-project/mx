@@ -22,8 +22,7 @@ static void
 swap_orientation (ClutterActor *button,
                   MxGrid     *grid)
 {
-  mx_grid_set_column_major (grid,
-                              !mx_grid_get_column_major (grid));
+  mx_grid_set_vertical (grid, !mx_grid_get_vertical (grid));
 }
 
 static void

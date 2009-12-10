@@ -46,7 +46,7 @@
  *   of the contained actors (#MxGrid:homogenous_columns and #MxGrid:homogenous_rows)
  *   </para></listitem>
  *   <listitem><para>Prefer to pack children vertically first,
- *   rather than horizontally (#MxGrid:column_major)</para></listitem>
+ *   rather than horizontally (#MxGrid:vertical)</para></listitem>
  *   <listitem><para>Specify the maximum number of rows or columns 
  *   to allow in the layout, to prevent it from being excessively stretched 
  *   (#MxGrid:max_stride).</para></listitem>
@@ -57,7 +57,7 @@
  * <figure id="mx-grid">
  *   <title>MxGrid flowing across multiple rows</title>
  *   <para>An #MxGrid containing 9 child actors; 
- *   #MxGrid:column_major is set to the default (#FALSE, 
+ *   #MxGrid:vertical is set to the default (#FALSE, 
  *   i.e. lay out horizontally first); #MxGrid:max_stride has not been set 
  *   (so there's no maximum row size); #MxGrid:column_spacing and #MxGrid:row_spacing have
  *   been set so that there is spacing between cells vertically and horizontally.</para>
@@ -77,7 +77,7 @@
  *   how the "odd" rectangle is on the end of a row, rather than at the 
  *   bottom of a column. This is because preference 
  *   is being given to packing onto the end of rows, rather than columns, 
- *   because #MxGrid:column_major is set to #FALSE. Even though 
+ *   because #MxGrid:vertical is set to #FALSE. Even though 
  *   there is room for the rectangle at the bottom of the column, the 
  *   layout prefers to place children onto the end of a row if there is room.</para>
  *   <graphic fileref="MxGrid-2rows-row-major.png" format="PNG"/>
@@ -85,7 +85,7 @@
  *
  * <figure id="mx-grid-two-columns">
  *   <title>MxGrid flowing into two columns</title>
- *   <para>The same #MxGrid 9 children with #MxGrid:column_major set to #TRUE. This time,
+ *   <para>The same #MxGrid 9 children with #MxGrid:vertical set to #TRUE. This time,
  *   the layout wraps onto two columns rather than two rows. Even though 
  *   there is room on the end of the rows for the children, the preference 
  *   is for them to be placed on the bottom of columns, or into new columns, 
@@ -188,7 +188,7 @@ struct _MxGridPrivate
   gfloat        column_spacing, row_spacing;
   gdouble       valign, halign;
 
-  gboolean      column_major;
+  gboolean      vertical;
 
   gboolean      first_of_batch;
   gfloat        a_current_sum, a_wrap;
@@ -213,7 +213,7 @@ enum
   PROP_VALIGN,
   PROP_HALIGN,
   PROP_END_ALIGN,
-  PROP_COLUMN_MAJOR,
+  PROP_VERTICAL,
   PROP_HADJUST,
   PROP_VADJUST,
   PROP_MAX_STRIDE,
@@ -490,13 +490,13 @@ mx_grid_class_init (MxGridClass *klass)
                                    PROP_HOMOGENOUS_COLUMNS,
                                    pspec);
 
-  pspec = g_param_spec_boolean ("column-major",
-                                "column-major",
-                                "Do a column filling first instead of row"
-                                " filling first",
+  pspec = g_param_spec_boolean ("vertical",
+                                "Vertical",
+                                "Pack children vertically (in columns), "
+                                "instead of horizontally (in rows)",
                                 FALSE,
                                 G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
-  g_object_class_install_property (gobject_class, PROP_COLUMN_MAJOR, pspec);
+  g_object_class_install_property (gobject_class, PROP_VERTICAL, pspec);
 
   pspec = g_param_spec_boolean ("end-align",
                                 "end-align",
@@ -524,8 +524,8 @@ mx_grid_class_init (MxGridClass *klass)
                             "Maximum stride",
                             "Maximum number of rows or columns, depending"
                             " on orientation. For example, if max-stride is set to 3 with"
-                            " column-major FALSE, there"
-                            " will be a maximum of 3 children in a row; if column-major"
+                            " vertical FALSE, there"
+                            " will be a maximum of 3 children in a row; if vertical"
                             " is TRUE, there will be a maximum of 3 children in a column",
                             0, G_MAXINT, 0,
                             G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
@@ -664,19 +664,19 @@ mx_grid_get_homogenous_columns (MxGrid *self)
 
 
 void
-mx_grid_set_column_major (MxGrid  *self,
-                          gboolean value)
+mx_grid_set_vertical (MxGrid  *self,
+                      gboolean value)
 {
   MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  priv->column_major = value;
+  priv->vertical = value;
   clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
 }
 
 gboolean
-mx_grid_get_column_major (MxGrid *self)
+mx_grid_get_vertical (MxGrid *self)
 {
   MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  return priv->column_major;
+  return priv->vertical;
 }
 
 void
@@ -790,8 +790,8 @@ mx_grid_set_property (GObject      *object,
     case PROP_HOMOGENOUS_COLUMNS:
       mx_grid_set_homogenous_columns (grid, g_value_get_boolean (value));
       break;
-    case PROP_COLUMN_MAJOR:
-      mx_grid_set_column_major (grid, g_value_get_boolean (value));
+    case PROP_VERTICAL:
+      mx_grid_set_vertical (grid, g_value_get_boolean (value));
       break;
     case PROP_COLUMN_SPACING:
       mx_grid_set_column_spacing (grid, g_value_get_float (value));
@@ -852,8 +852,8 @@ mx_grid_get_property (GObject    *object,
     case PROP_END_ALIGN:
       g_value_set_boolean (value, mx_grid_get_end_align (grid));
       break;
-    case PROP_COLUMN_MAJOR:
-      g_value_set_boolean (value, mx_grid_get_column_major (grid));
+    case PROP_VERTICAL:
+      g_value_set_boolean (value, mx_grid_get_vertical (grid));
       break;
     case PROP_COLUMN_SPACING:
       g_value_set_float (value, mx_grid_get_column_spacing (grid));
@@ -1148,7 +1148,7 @@ compute_row_height (GList         *siblings,
   gboolean homogenous_b;
   gfloat gap;
 
-  if (priv->column_major)
+  if (priv->vertical)
     {
       homogenous_b = priv->homogenous_columns;
       homogenous_a = priv->homogenous_rows;
@@ -1171,7 +1171,7 @@ compute_row_height (GList         *siblings,
                                         NULL, NULL,
                                         &natural_width, &natural_height);
 
-      if (priv->column_major)
+      if (priv->vertical)
         {
           gfloat temp = natural_height;
           natural_height = natural_width;
@@ -1211,7 +1211,7 @@ compute_row_start (GList         *siblings,
   gboolean homogenous_b;
   gfloat gap;
 
-  if (priv->column_major)
+  if (priv->vertical)
     {
       homogenous_b = priv->homogenous_columns;
       homogenous_a = priv->homogenous_rows;
@@ -1235,7 +1235,7 @@ compute_row_start (GList         *siblings,
                                         &natural_width, &natural_height);
 
 
-      if (priv->column_major)
+      if (priv->vertical)
         natural_width = natural_height;
 
       /* if the primary axis is homogenous, each additional item is the same width */
@@ -1290,7 +1290,7 @@ mx_grid_do_allocate (ClutterActor          *self,
 
   GList *iter;
 
-  if (priv->column_major)
+  if (priv->vertical)
     {
       priv->a_wrap = box->y2 - box->y1 - padding.top - padding.bottom;
       homogenous_b = priv->homogenous_columns;
@@ -1339,7 +1339,7 @@ mx_grid_do_allocate (ClutterActor          *self,
         }
     }
 
-  if (priv->column_major)
+  if (priv->vertical)
     {
       gfloat temp = priv->max_extent_a;
       priv->max_extent_a = priv->max_extent_b;
@@ -1361,7 +1361,7 @@ mx_grid_do_allocate (ClutterActor          *self,
                                         NULL, NULL,
                                         &natural_a, &natural_b);
 
-      if (priv->column_major) /* swap axes around if column is major */
+      if (priv->vertical) /* swap axes around if column is major */
         {
           gfloat temp = natural_a;
           natural_a = natural_b;
@@ -1422,7 +1422,7 @@ mx_grid_do_allocate (ClutterActor          *self,
         child_box.y2 = child_box.y1 + natural_b;
 
 
-        if (priv->column_major)
+        if (priv->vertical)
           {
             gfloat temp = child_box.x1;
             child_box.x1 = child_box.y1;
@@ -1475,7 +1475,7 @@ mx_grid_allocate (ClutterActor          *self,
   /* chain up here to preserve the allocated size
    *
    * (we ignore the height of the allocation if we have a vadjustment set,
-   *  or the width of the allocation if an column_major is set and an
+   *  or the width of the allocation if an vertical is set and an
    *  hadjustment is set)
    */
   CLUTTER_ACTOR_CLASS (mx_grid_parent_class)
@@ -1483,7 +1483,7 @@ mx_grid_allocate (ClutterActor          *self,
 
 
   /* only update vadjustment - we don't really want horizontal scrolling */
-  if (priv->vadjustment && !priv->column_major)
+  if (priv->vadjustment && !priv->vertical)
     {
       gdouble prev_value;
       gfloat height;
@@ -1519,7 +1519,7 @@ mx_grid_allocate (ClutterActor          *self,
       prev_value = mx_adjustment_get_value (priv->vadjustment);
       mx_adjustment_set_value (priv->vadjustment, prev_value);
     }
-  if (priv->hadjustment && priv->column_major)
+  if (priv->hadjustment && priv->vertical)
     {
       gdouble prev_value;
       gfloat width;

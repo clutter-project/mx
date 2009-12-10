@@ -213,7 +213,7 @@ main (int argc, char **argv)
   { /* add controls */
     ClutterActor *vbox = g_object_new (MX_TYPE_GRID,
                              "row-spacing", 5.0f,
-                             "column-major", TRUE,
+                             "vertical", TRUE,
                              "x", 60.0f,
                              "y", 60.0f,
                              NULL);
@@ -222,7 +222,7 @@ main (int argc, char **argv)
     clutter_container_add (CLUTTER_CONTAINER (vbox),
       clutter_text_new_with_text ("Sans 20px", "MxGrid properties:"),
       boolean_toggle    (G_OBJECT(data.layout), "end-align",          "end-align"),
-      boolean_toggle    (G_OBJECT(data.layout), "column-major",       "columns"),
+      boolean_toggle    (G_OBJECT(data.layout), "vertical",           "columns"),
       boolean_toggle    (G_OBJECT(data.layout), "homogenous-columns", "homogenous columns"),
       boolean_toggle    (G_OBJECT(data.layout), "homogenous-rows",    "homogenous rows"),
       normalized_slider (G_OBJECT(data.layout), "valign",             "valign"),
@@ -310,7 +310,7 @@ main (int argc, char **argv)
                                          "x",      60.0f,
                                          "y",      5.0f,
                                          "max-stride", 1,
-                                         "column-major", TRUE,
+                                         "vertical", TRUE,
                                          NULL);
     clutter_container_add (CLUTTER_CONTAINER (data.stage), layout, NULL);
     fill_container (layout);

@@ -89,9 +89,9 @@ gboolean       mx_grid_get_homogenous_rows    (MxGrid   *self);
 void           mx_grid_set_homogenous_columns (MxGrid   *self,
                                                gboolean  value);
 gboolean       mx_grid_get_homogenous_columns (MxGrid   *self);
-void           mx_grid_set_column_major       (MxGrid   *self,
+void           mx_grid_set_vertical           (MxGrid   *self,
                                                gboolean  value);
-gboolean       mx_grid_get_column_major       (MxGrid   *self);
+gboolean       mx_grid_get_vertical           (MxGrid   *self);
 void           mx_grid_set_row_spacing        (MxGrid   *self,
                                                gfloat    value);
 gfloat         mx_grid_get_row_spacing        (MxGrid   *self);
