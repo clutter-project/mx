@@ -190,10 +190,10 @@ mx_grid_set_homogenous_columns
 mx_grid_get_homogenous_columns
 mx_grid_set_column_major
 mx_grid_get_column_major
-mx_grid_set_row_gap
-mx_grid_get_row_gap
-mx_grid_set_column_gap
-mx_grid_get_column_gap
+mx_grid_set_row_spacing
+mx_grid_get_row_spacing
+mx_grid_set_column_spacing
+mx_grid_get_column_spacing
 mx_grid_set_valign
 mx_grid_get_valign
 mx_grid_set_halign

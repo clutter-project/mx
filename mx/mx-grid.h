@@ -92,12 +92,12 @@ gboolean       mx_grid_get_homogenous_columns (MxGrid   *self);
 void           mx_grid_set_column_major       (MxGrid   *self,
                                                gboolean  value);
 gboolean       mx_grid_get_column_major       (MxGrid   *self);
-void           mx_grid_set_row_gap            (MxGrid   *self,
+void           mx_grid_set_row_spacing        (MxGrid   *self,
                                                gfloat    value);
-gfloat         mx_grid_get_row_gap            (MxGrid   *self);
-void           mx_grid_set_column_gap         (MxGrid   *self,
+gfloat         mx_grid_get_row_spacing        (MxGrid   *self);
+void           mx_grid_set_column_spacing     (MxGrid   *self,
                                                gfloat    value);
-gfloat         mx_grid_get_column_gap         (MxGrid   *self);
+gfloat         mx_grid_get_column_spacing     (MxGrid   *self);
 void           mx_grid_set_valign             (MxGrid   *self,
                                                gdouble   value);
 gdouble        mx_grid_get_valign             (MxGrid   *self);

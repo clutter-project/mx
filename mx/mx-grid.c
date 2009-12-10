@@ -41,7 +41,7 @@
  *
  * <itemizedlist>
  *   <listitem><para>Column and row spacing are controllable 
- *   (#MxGrid:column_gap and #MxGrid:row_gap)</para></listitem>
+ *   (#MxGrid:column_spacing and #MxGrid:row_spacing)</para></listitem>
  *   <listitem><para>Column and row sizes can be made consistent, regardless of the size 
  *   of the contained actors (#MxGrid:homogenous_columns and #MxGrid:homogenous_rows)
  *   </para></listitem>
@@ -59,7 +59,7 @@
  *   <para>An #MxGrid containing 9 child actors; 
  *   #MxGrid:column_major is set to the default (#FALSE, 
  *   i.e. lay out horizontally first); #MxGrid:max_stride has not been set 
- *   (so there's no maximum row size); #MxGrid:column_gap and #MxGrid:row_gap have
+ *   (so there's no maximum row size); #MxGrid:column_spacing and #MxGrid:row_spacing have
  *   been set so that there is spacing between cells vertically and horizontally.</para>
  *   <graphic fileref="MxGrid-3x3.png" format="PNG"/>
  * </figure>
@@ -185,7 +185,7 @@ struct _MxGridPrivate
   gboolean      homogenous_rows;
   gboolean      homogenous_columns;
   gboolean      end_align;
-  gfloat        column_gap, row_gap;
+  gfloat        column_spacing, row_spacing;
   gdouble       valign, halign;
 
   gboolean      column_major;
@@ -208,8 +208,8 @@ enum
   PROP_0,
   PROP_HOMOGENOUS_ROWS,
   PROP_HOMOGENOUS_COLUMNS,
-  PROP_ROW_GAP,
-  PROP_COLUMN_GAP,
+  PROP_ROW_SPACING,
+  PROP_COLUMN_SPACING,
   PROP_VALIGN,
   PROP_HALIGN,
   PROP_END_ALIGN,
@@ -457,21 +457,21 @@ mx_grid_class_init (MxGridClass *klass)
   g_type_class_add_private (klass, sizeof (MxGridPrivate));
 
 
-  pspec = g_param_spec_float ("row-gap",
-                              "Row gap",
-                              "gap between rows in the layout",
+  pspec = g_param_spec_float ("row-spacing",
+                              "Row spacing",
+                              "spacing between rows in the layout",
                               0, G_MAXFLOAT,
                               0,
                               G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
-  g_object_class_install_property (gobject_class, PROP_ROW_GAP, pspec);
+  g_object_class_install_property (gobject_class, PROP_ROW_SPACING, pspec);
 
-  pspec = g_param_spec_float ("column-gap",
-                              "Column gap",
-                              "gap between columns in the layout",
+  pspec = g_param_spec_float ("column-spacing",
+                              "Column spacing",
+                              "spacing between columns in the layout",
                               0, G_MAXFLOAT,
                               0,
                               G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
-  g_object_class_install_property (gobject_class, PROP_COLUMN_GAP, pspec);
+  g_object_class_install_property (gobject_class, PROP_COLUMN_SPACING, pspec);
 
 
   pspec = g_param_spec_boolean ("homogenous-rows",
@@ -680,37 +680,37 @@ mx_grid_get_column_major (MxGrid *self)
 }
 
 void
-mx_grid_set_column_gap (MxGrid *self,
+mx_grid_set_column_spacing (MxGrid *self,
                         gfloat  value)
 {
   MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  priv->column_gap = value;
+  priv->column_spacing = value;
   clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
 }
 
 gfloat
-mx_grid_get_column_gap (MxGrid *self)
+mx_grid_get_column_spacing (MxGrid *self)
 {
   MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  return priv->column_gap;
+  return priv->column_spacing;
 }
 
 
 
 void
-mx_grid_set_row_gap (MxGrid *self,
+mx_grid_set_row_spacing (MxGrid *self,
                      gfloat  value)
 {
   MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  priv->row_gap = value;
+  priv->row_spacing = value;
   clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
 }
 
 gfloat
-mx_grid_get_row_gap (MxGrid *self)
+mx_grid_get_row_spacing (MxGrid *self)
 {
   MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  return priv->row_gap;
+  return priv->row_spacing;
 }
 
 
@@ -793,11 +793,11 @@ mx_grid_set_property (GObject      *object,
     case PROP_COLUMN_MAJOR:
       mx_grid_set_column_major (grid, g_value_get_boolean (value));
       break;
-    case PROP_COLUMN_GAP:
-      mx_grid_set_column_gap (grid, g_value_get_float (value));
+    case PROP_COLUMN_SPACING:
+      mx_grid_set_column_spacing (grid, g_value_get_float (value));
       break;
-    case PROP_ROW_GAP:
-      mx_grid_set_row_gap (grid, g_value_get_float (value));
+    case PROP_ROW_SPACING:
+      mx_grid_set_row_spacing (grid, g_value_get_float (value));
       break;
     case PROP_VALIGN:
       mx_grid_set_valign (grid, g_value_get_double (value));
@@ -855,11 +855,11 @@ mx_grid_get_property (GObject    *object,
     case PROP_COLUMN_MAJOR:
       g_value_set_boolean (value, mx_grid_get_column_major (grid));
       break;
-    case PROP_COLUMN_GAP:
-      g_value_set_float (value, mx_grid_get_column_gap (grid));
+    case PROP_COLUMN_SPACING:
+      g_value_set_float (value, mx_grid_get_column_spacing (grid));
       break;
-    case PROP_ROW_GAP:
-      g_value_set_float (value, mx_grid_get_row_gap (grid));
+    case PROP_ROW_SPACING:
+      g_value_set_float (value, mx_grid_get_row_spacing (grid));
       break;
     case PROP_VALIGN:
       g_value_set_double (value, mx_grid_get_valign (grid));
@@ -1152,13 +1152,13 @@ compute_row_height (GList         *siblings,
     {
       homogenous_b = priv->homogenous_columns;
       homogenous_a = priv->homogenous_rows;
-      gap          = priv->row_gap;
+      gap          = priv->row_spacing;
     }
   else
     {
       homogenous_a = priv->homogenous_columns;
       homogenous_b = priv->homogenous_rows;
-      gap          = priv->column_gap;
+      gap          = priv->column_spacing;
     }
 
   for (l = siblings; l != NULL; l = l->next)
@@ -1215,13 +1215,13 @@ compute_row_start (GList         *siblings,
     {
       homogenous_b = priv->homogenous_columns;
       homogenous_a = priv->homogenous_rows;
-      gap          = priv->row_gap;
+      gap          = priv->row_spacing;
     }
   else
     {
       homogenous_a = priv->homogenous_columns;
       homogenous_b = priv->homogenous_rows;
-      gap          = priv->column_gap;
+      gap          = priv->column_spacing;
     }
 
   for (l = siblings; l != NULL; l = l->next)
@@ -1297,8 +1297,8 @@ mx_grid_do_allocate (ClutterActor          *self,
       homogenous_a = priv->homogenous_rows;
       aalign = priv->valign;
       balign = priv->halign;
-      agap          = priv->row_gap;
-      bgap          = priv->column_gap;
+      agap          = priv->row_spacing;
+      bgap          = priv->column_spacing;
     }
   else
     {
@@ -1307,8 +1307,8 @@ mx_grid_do_allocate (ClutterActor          *self,
       homogenous_b = priv->homogenous_rows;
       aalign = priv->halign;
       balign = priv->valign;
-      agap          = priv->column_gap;
-      bgap          = priv->row_gap;
+      agap          = priv->column_spacing;
+      bgap          = priv->row_spacing;
     }
 
   priv->max_extent_a = 0;

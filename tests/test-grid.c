@@ -205,14 +205,14 @@ main (int argc, char **argv)
   data.layout =g_object_new (MX_TYPE_GRID,
                              "valign", 0.5,
                              "halign", 0.5,
-                             "row-gap", 5.0f,
-                             "column-gap", 5.0f,
+                             "row-spacing", 5.0f,
+                             "column-spacing", 5.0f,
                              NULL);
 
 
   { /* add controls */
     ClutterActor *vbox = g_object_new (MX_TYPE_GRID,
-                             "row-gap", 5.0f,
+                             "row-spacing", 5.0f,
                              "column-major", TRUE,
                              "x", 60.0f,
                              "y", 60.0f,
@@ -227,8 +227,8 @@ main (int argc, char **argv)
       boolean_toggle    (G_OBJECT(data.layout), "homogenous-rows",    "homogenous rows"),
       normalized_slider (G_OBJECT(data.layout), "valign",             "valign"),
       normalized_slider (G_OBJECT(data.layout), "halign",             "halign"),
-      units_slider      (G_OBJECT(data.layout), "column-gap",         "column-gap"),
-      units_slider      (G_OBJECT(data.layout), "row-gap",            "row-gap"),
+      units_slider      (G_OBJECT(data.layout), "column-spacing",         "column-gap"),
+      units_slider      (G_OBJECT(data.layout), "row-spacing",            "row-gap"),
       NULL);
   }
 
@@ -322,7 +322,7 @@ main (int argc, char **argv)
                                          "y",       420.0f,
                                          "valign",  1.0,
                                          "max-stride", 1,
-                                         "column-gap", 4.0f,
+                                         "column-spacing", 4.0f,
                                          NULL);
     clutter_container_add (CLUTTER_CONTAINER (data.stage), layout, NULL);
     fill_container (layout);
