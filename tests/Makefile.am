@@ -42,6 +42,7 @@ test_mx_SOURCES = test-mx.c \
 		  test-scroll-view.c \
 		  test-styles.c \
 		  test-tooltips.c \
+		  test-toggle.c \
 		  $(NULL)
 
 test_draggable_SOURCES = test-draggable.c

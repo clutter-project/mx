@@ -64,9 +64,10 @@ main (int argc, char *argv[])
   clutter_init (&argc, &argv);
 
   stage = clutter_stage_new ();
+  clutter_actor_set_size (stage, 800, 600);
 
   mainbox = mx_box_layout_new ();
-  clutter_actor_set_size (mainbox, 640, 480);
+  clutter_actor_set_size (mainbox, 800, 600);
   mx_box_layout_set_vertical (MX_BOX_LAYOUT (mainbox), TRUE);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), mainbox);
 
@@ -101,6 +102,8 @@ main (int argc, char *argv[])
            (GCallback) combo_box_main, CLUTTER_CONTAINER (holder));
   add_tab (CLUTTER_CONTAINER (vbox), group, "Progress Bar",
            (GCallback) progress_bar_main, CLUTTER_CONTAINER (holder));
+  add_tab (CLUTTER_CONTAINER (vbox), group, "Toggle",
+           (GCallback) toggle_main, CLUTTER_CONTAINER (holder));
 
   add_tab (CLUTTER_CONTAINER (vbox), group, "Tooltips",
            (GCallback) tooltips_main, CLUTTER_CONTAINER (holder));

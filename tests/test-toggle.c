@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2009 Intel Corporation.
  *
@@ -16,18 +17,15 @@
  * Boston, MA 02111-1307, USA.
  *
  */
-#include <clutter/clutter.h>
-#include <mx/mx.h>
+#include "test-mx.h"
 
-void label_main (ClutterContainer *container);
-void entry_main (ClutterContainer *container);
-void tooltips_main (ClutterContainer *container);
-void buttons_main (ClutterContainer *container);
-void combo_box_main (ClutterContainer *container);
-void progress_bar_main (ClutterContainer *container);
-void expander_main (ClutterContainer *container);
-void scroll_grid_main (ClutterContainer *container);
-void scroll_bar_main (ClutterContainer *container);
-void scroll_view_main (ClutterContainer *container);
-void styles_main (ClutterContainer *container);
-void toggle_main (ClutterContainer *container);
+void
+toggle_main (ClutterContainer *stage)
+{
+  ClutterActor *toggle;
+
+  toggle = mx_toggle_new ();
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), toggle);
+  clutter_actor_set_position (toggle, 50, 50);
+
+}
