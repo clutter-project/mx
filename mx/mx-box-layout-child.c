@@ -87,6 +87,9 @@ mx_box_layout_child_set_property (GObject      *object,
   MxBoxLayoutChild *child = MX_BOX_LAYOUT_CHILD (object);
   MxBoxLayout *box = MX_BOX_LAYOUT (CLUTTER_CHILD_META (object)->container);
 
+  _mx_box_layout_start_animation (box);
+
+
   switch (property_id)
     {
     case PROP_EXPAND:

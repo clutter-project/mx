@@ -67,7 +67,7 @@ button_release_event (ClutterActor *actor, ClutterButtonEvent *event,
                                    "y-fill", !yfill,
                                    NULL);
     }
-  else
+  else if (event->button == 3)
     {
       clutter_container_child_get (box, actor,
                                    "x-align", &xalign,
@@ -88,6 +88,13 @@ button_release_event (ClutterActor *actor, ClutterButtonEvent *event,
                                    "x-align", xalign,
                                    "y-align", yalign,
                                    NULL);
+    }
+  else if (event->button == 2)
+    {
+      gboolean expand;
+      clutter_container_child_get (box, actor, "expand", &expand, NULL);
+
+      clutter_container_child_set (box, actor, "expand", !expand, NULL);
     }
 }
 
@@ -207,7 +214,7 @@ main (int argc, char *argv[])
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), scrollview);
 
   clutter_actor_set_position (scrollview, 50, 50);
-  clutter_actor_set_size (scrollview, 200, 200);
+  clutter_actor_set_size (scrollview, 500, 300);
 
   box = mx_box_layout_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (scrollview), box);

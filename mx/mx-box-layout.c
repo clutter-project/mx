@@ -90,7 +90,60 @@ struct _MxBoxLayoutPrivate
 
   MxAdjustment *hadjustment;
   MxAdjustment *vadjustment;
+
+  GHashTable      *start_allocations;
+  ClutterTimeline *timeline;
+  ClutterAlpha    *alpha;
+  guint            is_animating : 1;
+  guint            animation_enabled : 1;
 };
+
+void _mx_box_layout_finish_animation (MxBoxLayout *box);
+
+void
+_mx_box_layout_start_animation (MxBoxLayout *box)
+{
+  MxBoxLayoutPrivate *priv = box->priv;
+
+  if (priv->is_animating)
+      return;
+
+  if (!CLUTTER_ACTOR_IS_MAPPED (CLUTTER_ACTOR (box)))
+    return;
+
+  priv->is_animating = TRUE;
+
+  priv->timeline = clutter_timeline_new (500);
+  g_signal_connect_swapped (priv->timeline, "new-frame",
+                            G_CALLBACK (clutter_actor_queue_relayout), box);
+  g_signal_connect_swapped (priv->timeline, "completed",
+                            G_CALLBACK (_mx_box_layout_finish_animation), box);
+
+  priv->alpha = clutter_alpha_new_full (priv->timeline,
+                                        CLUTTER_EASE_OUT_CUBIC);
+
+  clutter_timeline_start (priv->timeline);
+}
+
+void
+_mx_box_layout_finish_animation (MxBoxLayout *box)
+{
+  MxBoxLayoutPrivate *priv = box->priv;
+
+  if (priv->timeline)
+    {
+      g_object_unref (priv->timeline);
+      priv->timeline = NULL;
+    }
+
+  if (priv->alpha)
+    {
+      g_object_unref (priv->alpha);
+      priv->alpha = NULL;
+    }
+
+  priv->is_animating = FALSE;
+}
 
 /*
  * MxScrollable Interface Implementation
@@ -227,6 +280,13 @@ mx_box_scrollable_interface_init (MxScrollableInterface *iface)
 /*
  * ClutterContainer Implementation
  */
+
+static void
+fade_in_actor (ClutterActor *actor)
+{
+  clutter_actor_animate (actor, CLUTTER_LINEAR, 300, "opacity", 0xff, NULL);
+}
+
 static void
 mx_box_container_add_actor (ClutterContainer *container,
                             ClutterActor     *actor)
@@ -237,7 +297,45 @@ mx_box_container_add_actor (ClutterContainer *container,
 
   priv->children = g_list_append (priv->children, actor);
 
+  _mx_box_layout_start_animation (MX_BOX_LAYOUT (container));
+
+  if (priv->timeline)
+    {
+      /* fade in the new actor when there is room */
+      clutter_actor_set_opacity (actor, 0);
+      g_signal_connect_swapped (priv->timeline, "completed",
+                                G_CALLBACK (fade_in_actor), actor);
+    }
+
   g_signal_emit_by_name (container, "actor-added", actor);
+}
+
+static void
+real_remove_actor (ClutterActor    *actor)
+{
+  ClutterContainer *container;
+  MxBoxLayoutPrivate *priv;
+  GList *item = NULL;
+
+  container = CLUTTER_CONTAINER (clutter_actor_get_parent (actor));
+
+
+  if (!container)
+    return;
+
+  priv = MX_BOX_LAYOUT (container)->priv;
+
+
+  item = g_list_find (priv->children, actor);
+
+  priv->children = g_list_delete_link (priv->children, item);
+  clutter_actor_unparent (actor);
+
+  _mx_box_layout_start_animation (MX_BOX_LAYOUT (container));
+
+  g_signal_emit_by_name (container, "actor-removed", actor);
+
+  g_object_unref (actor);
 }
 
 static void
@@ -260,14 +358,23 @@ mx_box_container_remove_actor (ClutterContainer *container,
 
   g_object_ref (actor);
 
-  priv->children = g_list_delete_link (priv->children, item);
-  clutter_actor_unparent (actor);
+#if 0 /* disable animation, since clutter destroys the child meta */
+  if (CLUTTER_ACTOR_IS_MAPPED (CLUTTER_ACTOR (container)))
+    {
+      clutter_actor_animate (actor, CLUTTER_LINEAR, 300,
+                             "opacity", 0x00,
+                             "signal-swapped::completed",
+                             real_remove_actor, actor,
+                             NULL);
+    }
+  else
+    {
+#endif
+      real_remove_actor (actor);
+#if 0
+    }
+#endif
 
-  g_signal_emit_by_name (container, "actor-removed", actor);
-
-  g_object_unref (actor);
-
-  clutter_actor_queue_relayout ((ClutterActor*) container);
 }
 
 static void
@@ -418,6 +525,13 @@ mx_box_layout_dispose (GObject *object)
     {
       g_object_unref (priv->vadjustment);
       priv->vadjustment = NULL;
+    }
+
+
+  if (priv->start_allocations)
+    {
+      g_hash_table_destroy (priv->start_allocations);
+      priv->start_allocations = NULL;
     }
 
   G_OBJECT_CLASS (mx_box_layout_parent_class)->dispose (object);
@@ -579,6 +693,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
   if (priv->children == NULL)
     return;
 
+
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
   avail_width  = box->x2 - box->x1
                  - padding.left
@@ -706,14 +821,6 @@ mx_box_layout_allocate (ClutterActor          *actor,
             child_box.y2 = position + child_nat;
           child_box.x1 = padding.left;
           child_box.x2 = avail_width + padding.left;
-
-          _mx_allocate_fill (child, &child_box, xalign, yalign, xfill, yfill);
-          clutter_actor_allocate (child, &child_box, flags);
-
-          if (expand)
-            position += (child_nat + priv->spacing + extra_space);
-          else
-            position += (child_nat + priv->spacing);
         }
       else
         {
@@ -730,14 +837,57 @@ mx_box_layout_allocate (ClutterActor          *actor,
 
           child_box.y1 = padding.top;
           child_box.y2 = avail_height + padding.top;
-          _mx_allocate_fill (child, &child_box, xalign, yalign, xfill, yfill);
-          clutter_actor_allocate (child, &child_box, flags);
-
-          if (expand)
-            position += (child_nat + priv->spacing + extra_space);
-          else
-            position += (child_nat + priv->spacing);
         }
+
+      _mx_allocate_fill (child, &child_box, xalign, yalign, xfill, yfill);
+
+      if (priv->is_animating)
+        {
+          ClutterActorBox *start, *end, now;
+          gdouble alpha;
+
+
+          ClutterActorBox *copy = g_new (ClutterActorBox, 1);
+
+          *copy = child_box;
+
+          start = g_hash_table_lookup (priv->start_allocations, child);
+          end = &child_box;
+          alpha = clutter_alpha_get_alpha (priv->alpha);
+
+          if (!start)
+            {
+              /* don't know where this actor was from (possibly recently
+               * added), so just allocate the end co-ordinates */
+              clutter_actor_allocate (child, end, flags);
+              continue;
+            }
+
+          now.x1 = (int) (start->x1 + (end->x1 - start->x1) * alpha);
+          now.x2 = (int) (start->x2 + (end->x2 - start->x2) * alpha);
+          now.y1 = (int) (start->y1 + (end->y1 - start->y1) * alpha);
+          now.y2 = (int) (start->y2 + (end->y2 - start->y2) * alpha);
+
+          clutter_actor_allocate (child, &now, flags);
+        }
+      else
+        {
+          /* store the allocations in case an animation is needed soon */
+          ClutterActorBox *copy;
+
+          /* update the value in the hash table */
+          copy = g_boxed_copy (CLUTTER_TYPE_ACTOR_BOX, &child_box);
+          g_hash_table_insert (priv->start_allocations, child, copy);
+
+
+          clutter_actor_allocate (child, copy, flags);
+        }
+
+      if (expand)
+        position += (child_nat + priv->spacing + extra_space);
+      else
+        position += (child_nat + priv->spacing);
+
     }
 }
 
@@ -918,9 +1068,22 @@ mx_box_layout_class_init (MxBoxLayoutClass *klass)
 }
 
 static void
+mx_box_layout_free_allocation (ClutterActorBox *box)
+{
+  g_boxed_free (CLUTTER_TYPE_ACTOR_BOX, box);
+}
+
+static void
 mx_box_layout_init (MxBoxLayout *self)
 {
   self->priv = BOX_LAYOUT_PRIVATE (self);
+
+
+  self->priv->start_allocations = g_hash_table_new_full (g_direct_hash,
+                                                         g_direct_equal,
+                                                         NULL,
+                                                         (GDestroyNotify)
+                                                         mx_box_layout_free_allocation);
 }
 
 /**
@@ -953,6 +1116,7 @@ mx_box_layout_set_vertical (MxBoxLayout *box,
   if (box->priv->is_vertical != vertical)
     {
       box->priv->is_vertical = vertical;
+      _mx_box_layout_start_animation (box);
       clutter_actor_queue_relayout ((ClutterActor*) box);
 
       g_object_notify (G_OBJECT (box), "vertical");
