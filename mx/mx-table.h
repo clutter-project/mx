@@ -33,25 +33,6 @@
 
 G_BEGIN_DECLS
 
-/**
- * MxTableChildOptions:
- * @MX_KEEP_ASPECT_RATIO: whether to respect the widget's aspect ratio
- * @MX_X_EXPAND: whether to allocate extra space on the widget's x-axis
- * @MX_Y_EXPAND: whether to allocate extra space on the widget's y-axis
- * @MX_X_FILL: whether to stretch the child to fill the cell horizontally
- * @MX_Y_FILL: whether to stretch the child to fill the cell vertically
- *
- * Denotes the child properties an MxTable child will have.
- */
-typedef enum
-{
-  MX_KEEP_ASPECT_RATIO = 1 << 0,
-  MX_X_EXPAND          = 1 << 1,
-  MX_Y_EXPAND          = 1 << 2,
-  MX_X_FILL            = 1 << 3,
-  MX_Y_FILL            = 1 << 4
-} MxTableChildOptions;
-
 #define MX_TYPE_TABLE                (mx_table_get_type ())
 #define MX_TABLE(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), MX_TYPE_TABLE, MxTable))
 #define MX_IS_TABLE(obj)             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MX_TYPE_TABLE))

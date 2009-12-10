@@ -616,7 +616,6 @@ MX_ITEM_FACTORY_GET_IFACE
 <SECTION>
 <FILE>mx-table</FILE>
 <TITLE>MxTable</TITLE>
-MxTableChildOptions
 MxTable
 mx_table_new
 mx_table_set_col_spacing
