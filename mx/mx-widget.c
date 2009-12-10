@@ -324,9 +324,9 @@ mx_widget_allocate (ClutterActor          *actor,
 }
 
 static void
-mx_widget_real_draw_background (MxWidget           *self,
-                                ClutterActor       *background,
-                                const ClutterColor *color)
+mx_widget_real_paint_background (MxWidget           *self,
+                                 ClutterActor       *background,
+                                 const ClutterColor *color)
 {
   /* Default implementation just draws the background
    * colour and the image on top
@@ -364,9 +364,9 @@ mx_widget_paint (ClutterActor *self)
   MxWidgetPrivate *priv = MX_WIDGET (self)->priv;
   MxWidgetClass *klass = MX_WIDGET_GET_CLASS (self);
 
-  klass->draw_background (MX_WIDGET (self),
-                          priv->border_image,
-                          priv->bg_color);
+  klass->paint_background (MX_WIDGET (self),
+                           priv->border_image,
+                           priv->bg_color);
 
   if (priv->background_image != NULL)
     clutter_actor_paint (priv->background_image);
@@ -705,7 +705,7 @@ mx_widget_class_init (MxWidgetClass *klass)
 
   actor_class->hide = mx_widget_hide;
 
-  klass->draw_background = mx_widget_real_draw_background;
+  klass->paint_background = mx_widget_real_paint_background;
 
   /* stylable interface properties */
   g_object_class_override_property (gobject_class, PROP_STYLE, "style");
@@ -1201,17 +1201,17 @@ mx_widget_hide_tooltip (MxWidget *widget)
 }
 
 /**
- * mx_widget_draw_background:
+ * mx_widget_paint_background:
  * @widget: a #MxWidget
  *
- * Invokes #MxWidget::draw_background() using the default background
+ * Invokes #MxWidget::paint_background() using the default background
  * image and/or color from the @widget style
  *
  * This function should be used by subclasses of #MxWidget that override
  * the paint() virtual function and cannot chain up
  */
 void
-mx_widget_draw_background (MxWidget *self)
+mx_widget_paint_background (MxWidget *self)
 {
   MxWidgetPrivate *priv;
   MxWidgetClass *klass;
@@ -1221,7 +1221,7 @@ mx_widget_draw_background (MxWidget *self)
   priv = self->priv;
 
   klass = MX_WIDGET_GET_CLASS (self);
-  klass->draw_background (MX_WIDGET (self),
+  klass->paint_background (MX_WIDGET (self),
                           priv->border_image,
                           priv->bg_color);
 

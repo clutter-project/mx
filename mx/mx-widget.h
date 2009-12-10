@@ -69,9 +69,9 @@ struct _MxWidgetClass
   ClutterActorClass parent_class;
 
   /* vfuncs */
-  void (* draw_background) (MxWidget           *self,
-                            ClutterActor       *background,
-                            const ClutterColor *color);
+  void (* paint_background) (MxWidget           *self,
+                             ClutterActor       *background,
+                             const ClutterColor *color);
 };
 
 GType mx_widget_get_type (void) G_GNUC_CONST;
@@ -101,7 +101,7 @@ ClutterActor *mx_widget_get_background_image (MxWidget  *actor);
 ClutterActor *mx_widget_get_border_image     (MxWidget  *actor);
 void          mx_widget_get_padding          (MxWidget  *widget,
                                               MxPadding *padding);
-void          mx_widget_draw_background      (MxWidget  *widget);
+void          mx_widget_paint_background     (MxWidget  *widget);
 void          mx_widget_get_available_area   (MxWidget              *widget,
                                               const ClutterActorBox *allocation,
                                               ClutterActorBox       *area);

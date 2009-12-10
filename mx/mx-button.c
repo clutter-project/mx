@@ -485,13 +485,15 @@ mx_button_unmap (ClutterActor *self)
 }
 
 static void
-mx_button_draw_background (MxWidget           *widget,
+mx_button_paint_background (MxWidget           *widget,
                            ClutterActor       *background,
                            const ClutterColor *color)
 {
   MxButtonPrivate *priv;
 
-  MX_WIDGET_CLASS (mx_button_parent_class)->draw_background (widget, background, color);
+  MX_WIDGET_CLASS (mx_button_parent_class)->paint_background (widget,
+                                                              background,
+                                                              color);
 
   priv = MX_BUTTON (widget)->priv;
 
@@ -533,7 +535,7 @@ mx_button_class_init (MxButtonClass *klass)
   actor_class->unmap = mx_button_unmap;
   actor_class->allocate = mx_button_allocate;
 
-  widget_class->draw_background = mx_button_draw_background;
+  widget_class->paint_background = mx_button_paint_background;
 
   pspec = g_param_spec_string ("label",
                                "Label",
