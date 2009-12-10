@@ -6,7 +6,7 @@
 
 <book id="index" xmlns:xi="http://www.w3.org/2003/XInclude">
   <bookinfo>
-    <title>Netbook Toolkit Reference Manual</title>
+    <title>Moblin UI Toolkit Reference Manual</title>
     <releaseinfo>
       for mx &version;
     </releaseinfo>
