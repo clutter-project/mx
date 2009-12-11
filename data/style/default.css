@@ -213,3 +213,28 @@ MxToolbar MxButton:hover, MxToolbar MxButton:active {
   border-image: url('close-hover.png') 0;
   padding: 51 57 0 0;
 }
+
+MxToolbar MxComboBox {
+  color: #dadada;
+  border-image: url('combobox-toolbar.png') 4 32 4 4;
+  padding: 12 38 12 14;
+  font-size: 15;
+}
+
+MxToolbar MxPopup {
+  font-size: 15;
+  border-image: url('menu-toolbar.png') 4 4 7 4;
+  padding: 12;
+}
+
+MxToolbar MxPopup > MxLabel {
+  font-size: 15;
+  color: #dadada;
+}
+
+MxToolbar MxPopup > MxLabel:hover, MxToolbar MxPopup > MxLabel:active
+{
+  font-size: 15;
+  color: #44b6e8;
+  border-image: none;
+}

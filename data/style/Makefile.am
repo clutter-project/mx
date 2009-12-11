@@ -4,6 +4,7 @@ dist_style_DATA = \
 		button-hover.png \
 		button.png \
 		combobox.png \
+		combobox-toolbar.png \
 		close.png \
 		close-hover.png \
 		default.css \
@@ -30,6 +31,7 @@ dist_style_DATA = \
 		scroll-vhandle-hover.png \
 		menu-item.png \
 		menu.png \
+		menu-toolbar.png \
 		progress-bar-background.png \
 		progress-bar-bar.png \
 		toggle-background-active.png \
