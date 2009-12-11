@@ -92,6 +92,10 @@ void          mx_box_layout_set_spacing    (MxBoxLayout *box,
                                             guint        spacing);
 guint         mx_box_layout_get_spacing    (MxBoxLayout *box);
 
+gboolean      mx_box_layout_get_enable_animations (MxBoxLayout *box);
+void          mx_box_layout_set_enable_animations (MxBoxLayout *box,
+                                                   gboolean     enable_animations);
+
 G_END_DECLS
 
 #endif /* _MX_BOX_LAYOUT_H */

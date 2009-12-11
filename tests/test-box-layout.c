@@ -188,6 +188,12 @@ key_release_cb (ClutterActor    *actor,
         }
     }
 
+  if (event->keyval == 'a')
+    {
+      mx_box_layout_set_enable_animations (box,
+                                           !mx_box_layout_get_enable_animations (box));
+    }
+
   return FALSE;
 }
 

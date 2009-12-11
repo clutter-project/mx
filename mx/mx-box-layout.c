@@ -76,7 +76,9 @@ enum {
   PROP_SPACING,
 
   PROP_HADJUST,
-  PROP_VADJUST
+  PROP_VADJUST,
+
+  PROP_ENABLE_ANIMATIONS
 };
 
 struct _MxBoxLayoutPrivate
@@ -95,7 +97,7 @@ struct _MxBoxLayoutPrivate
   ClutterTimeline *timeline;
   ClutterAlpha    *alpha;
   guint            is_animating : 1;
-  guint            animation_enabled : 1;
+  guint            enable_animations : 1;
 };
 
 void _mx_box_layout_finish_animation (MxBoxLayout *box);
@@ -105,7 +107,7 @@ _mx_box_layout_start_animation (MxBoxLayout *box)
 {
   MxBoxLayoutPrivate *priv = box->priv;
 
-  if (priv->is_animating)
+  if (priv->is_animating || !priv->enable_animations)
       return;
 
   if (!CLUTTER_ACTOR_IS_MAPPED (CLUTTER_ACTOR (box)))
@@ -297,14 +299,17 @@ mx_box_container_add_actor (ClutterContainer *container,
 
   priv->children = g_list_append (priv->children, actor);
 
-  _mx_box_layout_start_animation (MX_BOX_LAYOUT (container));
-
-  if (priv->timeline)
+  if (priv->enable_animations)
     {
-      /* fade in the new actor when there is room */
-      clutter_actor_set_opacity (actor, 0);
-      g_signal_connect_swapped (priv->timeline, "completed",
-                                G_CALLBACK (fade_in_actor), actor);
+      _mx_box_layout_start_animation (MX_BOX_LAYOUT (container));
+
+      if (priv->timeline)
+        {
+          /* fade in the new actor when there is room */
+          clutter_actor_set_opacity (actor, 0);
+          g_signal_connect_swapped (priv->timeline, "completed",
+                                    G_CALLBACK (fade_in_actor), actor);
+        }
     }
 
   g_signal_emit_by_name (container, "actor-added", actor);
@@ -414,6 +419,10 @@ mx_box_layout_get_property (GObject    *object,
       g_value_set_uint (value, priv->spacing);
       break;
 
+    case PROP_ENABLE_ANIMATIONS:
+      g_value_set_boolean (value, priv->enable_animations);
+      break;
+
     case PROP_HADJUST:
       scrollable_get_adjustments (MX_SCROLLABLE (object), &adjustment, NULL);
       g_value_set_object (value, adjustment);
@@ -449,6 +458,10 @@ mx_box_layout_set_property (GObject      *object,
 
     case PROP_SPACING:
       mx_box_layout_set_spacing (box, g_value_get_uint (value));
+      break;
+
+    case PROP_ENABLE_ANIMATIONS:
+      mx_box_layout_set_enable_animations (box, g_value_get_boolean (value));
       break;
 
     case PROP_HADJUST:
@@ -848,9 +861,15 @@ mx_box_layout_allocate (ClutterActor          *actor,
           ClutterActorBox *copy;
 
           /* update the value in the hash table */
-          copy = g_boxed_copy (CLUTTER_TYPE_ACTOR_BOX, &child_box);
-          g_hash_table_insert (priv->start_allocations, child, copy);
-
+          if (priv->enable_animations)
+            {
+              copy = g_boxed_copy (CLUTTER_TYPE_ACTOR_BOX, &child_box);
+              g_hash_table_insert (priv->start_allocations, child, copy);
+            }
+          else
+            {
+              copy = &child_box;
+            }
 
           clutter_actor_allocate (child, copy, flags);
         }
@@ -1029,6 +1048,14 @@ mx_box_layout_class_init (MxBoxLayoutClass *klass)
                              MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_SPACING, pspec);
 
+  pspec = g_param_spec_boolean ("enable-animations",
+                                "Enable Animations",
+                                "Enable animations between certain property"
+                                " and child property changes",
+                                FALSE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_ENABLE_ANIMATIONS, pspec);
+
   /* MxScrollable properties */
   g_object_class_override_property (object_class,
                                     PROP_HADJUST,
@@ -1057,6 +1084,7 @@ mx_box_layout_init (MxBoxLayout *self)
                                                          NULL,
                                                          (GDestroyNotify)
                                                          mx_box_layout_free_allocation);
+
 }
 
 /**
@@ -1194,3 +1222,44 @@ mx_box_layout_get_spacing (MxBoxLayout *box)
 
   return box->priv->spacing;
 }
+
+/**
+ * mx_box_layout_set_enable_animations:
+ * @box: A #MxBoxLayout
+ * @enable_animations: #TRUE to enable animations
+ *
+ * Enable animations when certain properties change.
+ *
+ */
+void
+mx_box_layout_set_enable_animations (MxBoxLayout *box,
+                                     gboolean     enable_animations)
+{
+  g_return_if_fail (MX_IS_BOX_LAYOUT (box));
+
+  if (box->priv->enable_animations != enable_animations)
+    {
+      box->priv->enable_animations = enable_animations;
+      clutter_actor_queue_relayout ((ClutterActor*) box);
+
+      g_object_notify (G_OBJECT (box), "enable-animations");
+    }
+}
+
+/**
+ * mx_box_layout_get_enable_animations:
+ * @box: A #MxBoxLayout
+ *
+ * Get the value of the #MxBoxLayout:enable-animations property.
+ *
+ * Returns: #TRUE if animations enabled
+ */
+gboolean
+mx_box_layout_get_enable_animations (MxBoxLayout *box)
+{
+  g_return_val_if_fail (MX_IS_BOX_LAYOUT (box), FALSE);
+
+  return box->priv->enable_animations;
+}
+
+
