@@ -527,6 +527,13 @@ mx_box_layout_dispose (GObject *object)
       priv->vadjustment = NULL;
     }
 
+  G_OBJECT_CLASS (mx_box_layout_parent_class)->dispose (object);
+}
+
+static void
+mx_box_layout_finalize (GObject *object)
+{
+  MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (object)->priv;
 
   if (priv->start_allocations)
     {
@@ -534,7 +541,7 @@ mx_box_layout_dispose (GObject *object)
       priv->start_allocations = NULL;
     }
 
-  G_OBJECT_CLASS (mx_box_layout_parent_class)->dispose (object);
+  G_OBJECT_CLASS (mx_box_layout_parent_class)->finalize (object);
 }
 
 static void
@@ -1025,6 +1032,7 @@ mx_box_layout_class_init (MxBoxLayoutClass *klass)
   object_class->get_property = mx_box_layout_get_property;
   object_class->set_property = mx_box_layout_set_property;
   object_class->dispose = mx_box_layout_dispose;
+  object_class->finalize = mx_box_layout_finalize;
 
   actor_class->allocate = mx_box_layout_allocate;
   actor_class->get_preferred_width = mx_box_layout_get_preferred_width;
