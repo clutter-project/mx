@@ -31,6 +31,21 @@
  * is enabled, then the position of the actor within the available space can
  * be determined by the alignment child property.
  *
+ * <figure id="mx-box-layout-horizontal">
+ *   <title>Box layout with horizontal flow</title>
+ *   <para>The image shows an #MxBoxLayout with the
+ *   #MxBoxLayout:vertical property set to
+ *   #FALSE.</para>
+ *   <graphic fileref="MxBoxLayout-horizontal.png" format="PNG"/>
+ * </figure>
+ *
+ * <figure id="mx-box-layout-vertical">
+ *   <title>Box layout with vertical flow</title>
+ *   <para>The image shows an #MxBoxLayout with the
+ *   #MxBoxLayout:vertical property set to
+ *   #TRUE.</para>
+ *   <graphic fileref="MxBoxLayout-vertical.png" format="PNG"/>
+ * </figure>
  */
 
 #include "mx-box-layout.h"
@@ -871,7 +886,7 @@ mx_box_layout_class_init (MxBoxLayoutClass *klass)
 
   pspec = g_param_spec_boolean ("vertical",
                                 "Vertical",
-                                "Whether the layout should be vertical, rather"
+                                "Whether the layout should be vertical, rather "
                                 "than horizontal",
                                 FALSE,
                                 MX_PARAM_READWRITE);
@@ -948,7 +963,7 @@ mx_box_layout_set_vertical (MxBoxLayout *box,
  * mx_box_layout_get_vertical:
  * @box: A #MxBoxLayout
  *
- * Get the value of the #MxBoxLayout::vertical property.
+ * Get the value of the #MxBoxLayout:vertical property.
  *
  * Returns: #TRUE if the layout is vertical
  */
@@ -965,7 +980,7 @@ mx_box_layout_get_vertical (MxBoxLayout *box)
  * @box: A #MxBoxLayout
  * @pack_start: #TRUE if the layout should use pack-start
  *
- * Set the value of the #MxBoxLayout::pack-start property.
+ * Set the value of the #MxBoxLayout:pack-start property.
  *
  */
 void
@@ -987,7 +1002,7 @@ mx_box_layout_set_pack_start (MxBoxLayout *box,
  * mx_box_layout_get_pack_start:
  * @box: A #MxBoxLayout
  *
- * Get the value of the #MxBoxLayout::pack-start property.
+ * Get the value of the #MxBoxLayout:pack-start property.
  *
  * Returns: #TRUE if pack-start is enabled
  */

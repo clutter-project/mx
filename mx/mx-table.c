@@ -27,8 +27,22 @@
  * and columns
  *
  * #MxTable is a mult-child layout container based on a table arrangement
- * with rows and columns. #MxTable adds several child properties to it's
- * children that control their position and size in the table.
+ * with rows and columns. #MxTable adds several child properties to its
+ * children which control their position and size in the table.
+ *
+ * While other layouts (like #MxGrid) allow you to achieve 
+ * table-like effects, #MxTable is the only layout which allows 
+ * you to precisely (and easily) place elements at particular grid coordinates,
+ * via mx_table_add_actor().
+ *
+ * <figure id="mx-table">
+ *   <title>#MxTable, 3 rows by 3 columns</title>
+ *   <para>Notice how rectangles have only been placed in a few of 
+ *   the cells inside the table: this would be very difficult to do 
+ *   with any other layout, without having layouts within layouts within 
+ *   layouts...</para>
+ *   <graphic fileref="MxTable.png" format="PNG"/>
+ * </figure>
  */
 
 #ifdef HAVE_CONFIG_H

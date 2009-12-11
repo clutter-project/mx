@@ -29,6 +29,17 @@
  * #MxScrollView is a single child container for actors that implement
  * #MxScrollable. It provides scrollbars around the edge of the child to
  * allow the user to move around the scrollable area.
+ *
+ * <figure id="mx-scroll-view">
+ *   <title>#MxScrollView around an #MxBoxLayout</title>
+ *   <para>An example of an #MxScrollView wrapped around an #MxBoxLayout 
+ *   actor (which implements #MxScrollable). The #MxBoxLayout contains 
+ *   nine #ClutterRectangle instances, but the stage is too small for 
+ *   all of them to be visible. The #MxScrollView adds the appropriate
+ *   horizontal scroll, which makes it possible to scroll to the end
+ *   of the row of rectangles.</para>
+ *   <graphic fileref="MxScrollView.png" format="PNG"/>
+ * </figure>
  */
 
 #include "mx-scroll-view.h"
