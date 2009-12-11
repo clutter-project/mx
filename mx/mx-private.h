@@ -24,10 +24,7 @@
 #define __MX_PRIVATE_H__
 
 #include <glib.h>
-#include "mx-widget.h"
-#include "mx-bin.h"
-#include "mx-table.h"
-#include "mx-stylable.h"
+#include "mx.h"
 
 G_BEGIN_DECLS
 
@@ -44,6 +41,8 @@ G_BEGIN_DECLS
 G_END_DECLS
 
 ClutterActor *_mx_widget_get_dnd_clone (MxWidget *widget);
+
+void _mx_box_layout_start_animation (MxBoxLayout *box);
 
 void _mx_bin_get_align_factors (MxBin   *bin,
                                 gdouble *x_align,
