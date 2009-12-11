@@ -27,6 +27,7 @@
 #include "mx-widget.h"
 #include "mx-bin.h"
 #include "mx-table.h"
+#include "mx-stylable.h"
 
 G_BEGIN_DECLS
 
@@ -60,4 +61,6 @@ void _mx_allocate_fill (ClutterActor    *child,
                         gboolean         x_fill,
                         gboolean         y_fill);
 
+void _mx_widget_set_clutter_text_attributes (MxWidget    *widget,
+                                             ClutterText *text);
 #endif /* __MX_PRIVATE_H__ */

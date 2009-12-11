@@ -109,3 +109,64 @@ _mx_allocate_fill (ClutterActor    *child,
   *childbox = allocation;
 
 }
+
+void
+_mx_widget_set_clutter_text_attributes (MxWidget    *widget,
+                                        ClutterText *text)
+{
+  ClutterColor *real_color = NULL;
+  gchar *font_name = NULL;
+  gint font_size = 0;
+  MxFontWeight font_weight;
+  PangoAttribute *attr;
+  PangoWeight weight;
+  PangoAttrList *attrs;
+
+  mx_stylable_get (MX_STYLABLE (widget),
+                   "color", &real_color,
+                   "font-family", &font_name,
+                   "font-size", &font_size,
+                   "font-weight", &font_weight,
+                   NULL);
+
+  /* ensure there is an attribute list */
+  attrs = clutter_text_get_attributes (text);
+  if (!attrs)
+    {
+      attrs = pango_attr_list_new ();
+      clutter_text_set_attributes (text, attrs);
+    }
+
+  /* font name */
+  clutter_text_set_font_name (text, font_name);
+
+  /* font size */
+  attr = pango_attr_size_new_absolute (font_size * PANGO_SCALE);
+  pango_attr_list_change (attrs, attr);
+
+  /* font weight */
+  switch (font_weight)
+    {
+  case MX_WEIGHT_BOLD:
+    weight = PANGO_WEIGHT_BOLD;
+    break;
+  case MX_WEIGHT_LIGHTER:
+    weight = PANGO_WEIGHT_LIGHT;
+    break;
+  case MX_WEIGHT_BOLDER:
+    weight = PANGO_WEIGHT_HEAVY;
+    break;
+  default:
+    weight = PANGO_WEIGHT_NORMAL;
+    break;
+    }
+  attr = pango_attr_weight_new (weight);
+  pango_attr_list_change (attrs, attr);
+
+  /* font color */
+  if (real_color)
+    {
+      clutter_text_set_color (text, real_color);
+      clutter_color_free (real_color);
+    }
+}
