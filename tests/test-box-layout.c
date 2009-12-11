@@ -208,6 +208,7 @@ main (int argc, char *argv[])
   clutter_init (&argc, &argv);
 
   stage = clutter_stage_get_default ();
+  clutter_actor_set_size (stage, 640, 480);
   clutter_stage_set_user_resizable ((ClutterStage *) stage, TRUE);
 
   scrollview = mx_scroll_view_new ();
