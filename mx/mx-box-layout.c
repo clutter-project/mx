@@ -115,7 +115,7 @@ _mx_box_layout_start_animation (MxBoxLayout *box)
 
   priv->is_animating = TRUE;
 
-  priv->timeline = clutter_timeline_new (500);
+  priv->timeline = clutter_timeline_new (300);
   g_signal_connect_swapped (priv->timeline, "new-frame",
                             G_CALLBACK (clutter_actor_queue_relayout), box);
   g_signal_connect_swapped (priv->timeline, "completed",
