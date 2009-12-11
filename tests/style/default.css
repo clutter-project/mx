@@ -46,14 +46,17 @@ MxLabel#test-border-image {
 
 *#red-button {
   border-image: url('red-button.png') 0;
+  font-weight: bold;
 }
 
 *#blue-button {
   border-image: url('cyan-button.png') 0;
+  font-weight: bolder;
 }
 
 *#green-button {
   border-image: url('green-button.png') 0;
+  font-weight: lighter;
 }
 
 *#style-button {
@@ -70,3 +73,4 @@ MxTable {
   border-image: url('rounded-corner.png') 30;
   padding: 10;
 }
+
