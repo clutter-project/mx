@@ -58,7 +58,7 @@ add_tab (ClutterContainer *box,
 int
 main (int argc, char *argv[])
 {
-  ClutterActor *stage, *vbox, *hbox, *holder, *mainbox, *toolbar;
+  ClutterActor *stage, *vbox, *hbox, *holder, *mainbox, *toolbar, *combo;
   MxButtonGroup *group;
 
   clutter_init (&argc, &argv);
@@ -73,6 +73,13 @@ main (int argc, char *argv[])
 
   /* create the toolbar */
   toolbar = mx_toolbar_new ();
+  mx_bin_set_alignment (MX_BIN (toolbar), MX_ALIGN_MIDDLE, MX_ALIGN_MIDDLE);
+
+  combo = mx_combo_box_new ();
+  clutter_container_add_actor (CLUTTER_CONTAINER (toolbar), combo);
+  mx_combo_box_set_title (MX_COMBO_BOX (combo), "Select");
+  mx_combo_box_append_text (MX_COMBO_BOX (combo), "Hello");
+  mx_combo_box_append_text (MX_COMBO_BOX (combo), "World");
 
   /* create the horizontal layout */
   hbox = mx_box_layout_new ();
