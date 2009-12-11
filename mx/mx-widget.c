@@ -40,6 +40,7 @@
 #include "mx-texture-cache.h"
 #include "mx-texture-frame.h"
 #include "mx-tooltip.h"
+#include "mx-enum-types.h"
 
 /*
  * Forward declaration for sake of MxWidgetChild
@@ -915,6 +916,14 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                 "Size of the font to use in pixels",
                                 0, G_MAXINT, 12,
                                 G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
+
+      pspec = g_param_spec_enum ("font-weight",
+                                 "Font Weight",
+                                 "Font Weight",
+                                 MX_TYPE_FONT_WEIGHT,
+                                 MX_WEIGHT_NORMAL,
+                                 G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
 
       pspec = g_param_spec_boxed ("border-image",

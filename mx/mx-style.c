@@ -39,6 +39,7 @@
 
 #include "mx-marshal.h"
 #include "mx-style.h"
+#include "mx-enum-types.h"
 #include "mx-types.h"
 
 enum
@@ -284,6 +285,12 @@ mx_style_transform_css_value (MxStyleSheetValue *css_value,
       mx_border_image_set_from_string (value,
                                        css_value->string,
                                        css_value->source);
+    }
+  else if (pspec->value_type == MX_TYPE_FONT_WEIGHT)
+    {
+      g_value_init (value, pspec->value_type);
+
+      mx_font_weight_set_from_string (value, css_value->string);
     }
   else
     {

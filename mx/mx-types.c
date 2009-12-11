@@ -1,7 +1,30 @@
 #include <mx-types.h>
 
 #include <stdlib.h>
+#include <string.h>
 #include "mx-private.h"
+
+void
+mx_font_weight_set_from_string (GValue      *dest,
+                                const gchar *src)
+{
+  if (!src)
+    {
+      g_value_set_enum (dest, MX_WEIGHT_NORMAL);
+      return;
+    }
+
+  if (!strcmp (src, "bold"))
+    g_value_set_enum (dest, MX_WEIGHT_BOLD);
+  else if (!strcmp (src, "normal"))
+    g_value_set_enum (dest, MX_WEIGHT_NORMAL);
+  else if (!strcmp (src, "lighter"))
+    g_value_set_enum (dest, MX_WEIGHT_LIGHTER);
+  else if (!strcmp (src, "bolder"))
+    g_value_set_enum (dest, MX_WEIGHT_BOLDER);
+  else
+    g_value_set_enum (dest, MX_WEIGHT_NORMAL);
+}
 
 static gpointer
 mx_padding_copy (gpointer data)

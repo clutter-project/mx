@@ -68,6 +68,8 @@ void mx_border_image_set_from_string (GValue *value,
                                       const gchar *str,
                                       const gchar *filename);
 
+void mx_font_weight_set_from_string (GValue *value, const gchar *str);
+
 /**
  * MxPadding:
  * @top: padding from the top
@@ -94,6 +96,14 @@ typedef enum {
   MX_ALIGN_MIDDLE,
   MX_ALIGN_END
 } MxAlign;
+
+typedef enum
+{
+  MX_WEIGHT_NORMAL,
+  MX_WEIGHT_BOLD,
+  MX_WEIGHT_BOLDER,
+  MX_WEIGHT_LIGHTER
+} MxFontWeight;
 
 G_END_DECLS
 
