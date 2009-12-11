@@ -282,10 +282,10 @@ mx_toolbar_allocate (ClutterActor           *actor,
       close_w = 0;
     }
 
-  childbox.x1 = avail.x1;
-  childbox.y1 = avail.y1;
-  childbox.x2 = avail.x2 - close_w - PADDING;
-  childbox.y2 = avail.y2;
+  childbox.x1 = box->x1;
+  childbox.y1 = box->y1;
+  childbox.x2 = box->x2 - close_w - PADDING;
+  childbox.y2 = box->y2;
 
   mx_bin_allocate_child (MX_BIN (actor), &childbox, flags);
 }
