@@ -363,6 +363,13 @@ mx_combo_box_button_press_event (ClutterActor       *actor,
 }
 
 static void
+mx_combo_box_style_changed (MxComboBox *combo)
+{
+  _mx_widget_set_clutter_text_attributes (MX_WIDGET (combo),
+                                          CLUTTER_TEXT (combo->priv->label));
+}
+
+static void
 mx_combo_box_class_init (MxComboBoxClass *klass)
 {
   GParamSpec *pspec;
@@ -421,6 +428,9 @@ mx_combo_box_init (MxComboBox *self)
   g_signal_connect (priv->popup, "action-activated",
                     G_CALLBACK (mx_combo_box_action_activated_cb),
                     self);
+
+  g_signal_connect (self, "style-changed",
+                    G_CALLBACK (mx_combo_box_style_changed), NULL);
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
 }
