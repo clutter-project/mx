@@ -1,3 +1,22 @@
+0.3.0
+=====
+
+Changes since 0.2.0
+
+ * New toolbar widget
+ * Convert MxBin to abstract class
+ * Add MxFrame as a drop-in replacement for plain instances of MxBin
+ * Use the i-beam insertion mouse cursor in MxEntry
+ * Clean up MxGrid API to be more consistent with other widgets
+ * Add support for font-weight property to buttons and labels
+ * Add animation layout support to MxBoxLayout
+ * Add special styling for ComboBoxes inside a toolbar
+ * Implement font styling in ComboBox
+ * Fix expander label visibility
+ * Add missing public headers and single include guards (Bastian Winkler)
+ * Clean up various references to removed functions (Bastian Winkler)
+ * Documentation improvements (Elliot Smith)
+
 0.2.0
 =====
 
