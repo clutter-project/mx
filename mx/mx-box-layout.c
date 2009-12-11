@@ -311,34 +311,6 @@ mx_box_container_add_actor (ClutterContainer *container,
 }
 
 static void
-real_remove_actor (ClutterActor    *actor)
-{
-  ClutterContainer *container;
-  MxBoxLayoutPrivate *priv;
-  GList *item = NULL;
-
-  container = CLUTTER_CONTAINER (clutter_actor_get_parent (actor));
-
-
-  if (!container)
-    return;
-
-  priv = MX_BOX_LAYOUT (container)->priv;
-
-
-  item = g_list_find (priv->children, actor);
-
-  priv->children = g_list_delete_link (priv->children, item);
-  clutter_actor_unparent (actor);
-
-  _mx_box_layout_start_animation (MX_BOX_LAYOUT (container));
-
-  g_signal_emit_by_name (container, "actor-removed", actor);
-
-  g_object_unref (actor);
-}
-
-static void
 mx_box_container_remove_actor (ClutterContainer *container,
                                ClutterActor     *actor)
 {
@@ -358,23 +330,16 @@ mx_box_container_remove_actor (ClutterContainer *container,
 
   g_object_ref (actor);
 
-#if 0 /* disable animation, since clutter destroys the child meta */
-  if (CLUTTER_ACTOR_IS_MAPPED (CLUTTER_ACTOR (container)))
-    {
-      clutter_actor_animate (actor, CLUTTER_LINEAR, 300,
-                             "opacity", 0x00,
-                             "signal-swapped::completed",
-                             real_remove_actor, actor,
-                             NULL);
-    }
-  else
-    {
-#endif
-      real_remove_actor (actor);
-#if 0
-    }
-#endif
+  priv = MX_BOX_LAYOUT (container)->priv;
 
+  priv->children = g_list_delete_link (priv->children, item);
+  clutter_actor_unparent (actor);
+
+  _mx_box_layout_start_animation (MX_BOX_LAYOUT (container));
+
+  g_signal_emit_by_name (container, "actor-removed", actor);
+
+  g_object_unref (actor);
 }
 
 static void
