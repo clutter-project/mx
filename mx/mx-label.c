@@ -45,6 +45,7 @@
 
 #include "mx-widget.h"
 #include "mx-stylable.h"
+#include "mx-private.h"
 
 enum
 {
@@ -106,42 +107,8 @@ static void
 mx_label_style_changed (MxWidget *self)
 {
   MxLabelPrivate *priv = MX_LABEL (self)->priv;
-  ClutterColor *color = NULL;
-  gchar *font_name;
-  gchar *font_string;
-  gint font_size;
 
-  mx_stylable_get (MX_STYLABLE (self),
-                   "color", &color,
-                   "font-family", &font_name,
-                   "font-size", &font_size,
-                   NULL);
-
-  if (color)
-    {
-      clutter_text_set_color (CLUTTER_TEXT (priv->label), color);
-      clutter_color_free (color);
-    }
-
-  if (font_name || font_size)
-    {
-      if (font_name && font_size)
-        {
-          font_string = g_strdup_printf ("%s %dpx", font_name, font_size);
-          g_free (font_name);
-        }
-      else
-        {
-          if (font_size)
-            font_string = g_strdup_printf ("%dpx", font_size);
-          else
-            font_string = font_name;
-        }
-
-      clutter_text_set_font_name (CLUTTER_TEXT (priv->label), font_string);
-      g_free (font_string);
-    }
-
+  _mx_widget_set_clutter_text_attributes (self, CLUTTER_TEXT (priv->label));
 }
 
 static void
