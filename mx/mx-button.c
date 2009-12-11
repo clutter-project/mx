@@ -135,10 +135,6 @@ mx_stylable_iface_init (MxStylableIface *iface)
 static void
 mx_button_update_label_style (MxButton *button)
 {
-  ClutterColor *real_color = NULL;
-  gchar *font_string = NULL;
-  gchar *font_name = NULL;
-  gint font_size = 0;
   ClutterActor *label;
 
   label = mx_bin_get_child ((MxBin*) button);
@@ -147,37 +143,8 @@ mx_button_update_label_style (MxButton *button)
   if (!CLUTTER_IS_TEXT (label))
     return;
 
-  mx_stylable_get (MX_STYLABLE (button),
-                   "color", &real_color,
-                   "font-family", &font_name,
-                   "font-size", &font_size,
-                   NULL);
-
-  if (font_name || font_size)
-    {
-      if (font_name && font_size)
-        font_string = g_strdup_printf ("%s %dpx", font_name, font_size);
-      else
-        {
-          if (font_size)
-            font_string = g_strdup_printf ("%dpx", font_size);
-          else
-            font_string = font_name;
-        }
-
-      clutter_text_set_font_name (CLUTTER_TEXT (label), font_string);
-
-      if (font_string != font_name)
-        g_free (font_string);
-    }
-
-  g_free (font_name);
-
-  if (real_color)
-    {
-      clutter_text_set_color (CLUTTER_TEXT (label), real_color);
-      clutter_color_free (real_color);
-    }
+  _mx_widget_set_clutter_text_attributes (MX_WIDGET (button),
+                                          CLUTTER_TEXT (label));
 }
 
 static void
