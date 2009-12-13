@@ -68,6 +68,11 @@ enum {
 
 static guint mx_gtk_light_switch_signals[LAST_SIGNAL] = { 0 };
 
+enum {
+  PROP_0,
+  PROP_ACTIVE,
+};
+
 typedef struct _MxGtkLightSwitchPrivate MxGtkLightSwitchPrivate;
 
 struct _MxGtkLightSwitchPrivate {
@@ -83,13 +88,57 @@ struct _MxGtkLightSwitchPrivate {
 };
 
 static void
+mx_gtk_light_switch_set_property (GObject      *object,
+                                  guint         prop_id,
+                                  const GValue *value,
+                                  GParamSpec   *pspec)
+{
+  MxGtkLightSwitch *ls;
+
+  ls = MX_GTK_LIGHT_SWITCH (object);
+
+  switch (prop_id)
+    {
+    case PROP_ACTIVE:
+      mx_gtk_light_switch_set_active (ls, g_value_get_boolean (value));
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+    }
+}
+
+static void
+mx_gtk_light_switch_get_property (GObject      *object,
+                                  guint         prop_id,
+                                  GValue       *value,
+                                  GParamSpec   *pspec)
+{
+  MxGtkLightSwitchPrivate *priv;
+
+  priv = MX_GTK_LIGHT_SWITCH_GET_PRIVATE (object);
+
+  switch (prop_id)
+    {
+    case PROP_ACTIVE:
+      g_value_set_boolean (value, priv->active);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+    }
+}
+
+static void
 mx_gtk_light_switch_class_init (MxGtkLightSwitchClass *klass)
 {
   GObjectClass *object_class;
   GtkWidgetClass *widget_class;
+  GParamSpec *spec;
 
   object_class = G_OBJECT_CLASS (klass);
   widget_class = GTK_WIDGET_CLASS (klass);
+
+  object_class->set_property = mx_gtk_light_switch_set_property;
+  object_class->get_property = mx_gtk_light_switch_get_property;
 
   widget_class->configure_event = mx_gtk_light_switch_configure;
   widget_class->expose_event = mx_gtk_light_switch_expose;
@@ -98,6 +147,13 @@ mx_gtk_light_switch_class_init (MxGtkLightSwitchClass *klass)
   widget_class->motion_notify_event = mx_gtk_light_switch_motion_notify;
   widget_class->size_request = mx_gtk_light_switch_size_request;
   widget_class->style_set = mx_gtk_light_switch_style_set;
+
+  spec = g_param_spec_boolean ("active",
+                               "Active",
+                               "Is the light switch on or not",
+                               FALSE,
+                               G_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_ACTIVE, spec);
 
   /* MxGtkLightSwitch signals */
   mx_gtk_light_switch_signals[SWITCH_FLIPPED] =
@@ -392,6 +448,7 @@ mx_gtk_light_switch_set_active (MxGtkLightSwitch *lightswitch,
 
       gtk_widget_queue_draw ((GtkWidget *) lightswitch);
 
+      g_object_notify (G_OBJECT (lightswitch), "active");
       g_signal_emit (lightswitch,
                      mx_gtk_light_switch_signals[SWITCH_FLIPPED],
                      0,
