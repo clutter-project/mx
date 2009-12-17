@@ -30,44 +30,10 @@
  */
 
 #include "mx-progress-bar.h"
+#include "mx-progress-bar-fill.h"
 #include "mx-texture-frame.h"
 
-#define MX_TYPE_PROGRESS_BAR_FILL mx_progress_bar_fill_get_type()
-
-#define MX_PROGRESS_BAR_FILL(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-                               MX_TYPE_PROGRESS_BAR_FILL, MxProgressBarFill))
-
-#define MX_PROGRESS_BAR_FILL_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST ((klass), \
-                            MX_TYPE_PROGRESS_BAR_FILL, MxProgressBarFillClass))
-
-#define MX_IS_PROGRESS_BAR_FILL(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
-                               MX_TYPE_PROGRESS_BAR_FILL))
-
-#define MX_IS_PROGRESS_BAR_FILL_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE ((klass), \
-                            MX_TYPE_PROGRESS_BAR_FILL))
-
-#define MX_PROGRESS_BAR_FILL_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-                              MX_TYPE_PROGRESS_BAR_FILL, MxProgressBarFillClass))
-
-typedef struct
-{
-  MxWidget parent;
-} MxProgressBarFill;
-
-typedef struct
-{
-  MxWidgetClass parent_class;
-} MxProgressBarFillClass;
-
-GType mx_progress_bar_fill_get_type (void);
-
 G_DEFINE_TYPE (MxProgressBar, mx_progress_bar, MX_TYPE_WIDGET)
-G_DEFINE_TYPE (MxProgressBarFill, mx_progress_bar_fill, MX_TYPE_WIDGET)
 
 #define PROGRESS_BAR_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_PROGRESS_BAR, MxProgressBarPrivate))
@@ -306,14 +272,3 @@ mx_progress_bar_get_progress (MxProgressBar *bar)
 
   return bar->priv->progress;
 }
-
-static void
-mx_progress_bar_fill_class_init (MxProgressBarFillClass *klass)
-{
-}
-
-static void
-mx_progress_bar_fill_init (MxProgressBarFill *self)
-{
-}
-

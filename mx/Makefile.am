@@ -63,8 +63,10 @@ source_gtk_h = \
 	$(NULL)
 
 source_h_priv = \
-	$(top_srcdir)/mx/mx-css.h \
-	$(top_srcdir)/mx/mx-private.h
+	$(top_srcdir)/mx/mx-css.h		\
+	$(top_srcdir)/mx/mx-progress-bar-fill.h	\
+	$(top_srcdir)/mx/mx-private.h		\
+	$(NULL)
 
 source_c = \
 	$(top_srcdir)/mx/mx-adjustment.c 		\
@@ -90,6 +92,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-label.c 		\
 	$(top_srcdir)/mx/mx-notebook.c 		\
 	$(top_srcdir)/mx/mx-progress-bar.c		\
+	$(top_srcdir)/mx/mx-progress-bar-fill.c	\
 	$(top_srcdir)/mx/mx-popup.c			\
 	$(top_srcdir)/mx/mx-scroll-bar.c 		\
 	$(top_srcdir)/mx/mx-scroll-view.c		\
