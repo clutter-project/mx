@@ -175,7 +175,7 @@ mx_border_image_set_from_string (GValue *dest,
     {
       base = g_path_get_dirname (filename);
 
-      border_image.uri = g_strconcat (base, "/", strv[2], NULL);
+      border_image.uri = g_build_filename (base, strv[2], NULL);
 
       g_free (base);
     }
