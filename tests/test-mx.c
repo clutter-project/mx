@@ -109,6 +109,8 @@ main (int argc, char *argv[])
            (GCallback) combo_box_main, CLUTTER_CONTAINER (holder));
   add_tab (CLUTTER_CONTAINER (vbox), group, "Progress Bar",
            (GCallback) progress_bar_main, CLUTTER_CONTAINER (holder));
+  add_tab (CLUTTER_CONTAINER (vbox), group, "Slider",
+           (GCallback) slider_main, CLUTTER_CONTAINER (holder));
   add_tab (CLUTTER_CONTAINER (vbox), group, "Toggle",
            (GCallback) toggle_main, CLUTTER_CONTAINER (holder));
 

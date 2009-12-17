@@ -25,6 +25,7 @@ void tooltips_main (ClutterContainer *container);
 void buttons_main (ClutterContainer *container);
 void combo_box_main (ClutterContainer *container);
 void progress_bar_main (ClutterContainer *container);
+void slider_main (ClutterContainer *container);
 void expander_main (ClutterContainer *container);
 void scroll_grid_main (ClutterContainer *container);
 void scroll_bar_main (ClutterContainer *container);
