@@ -30,6 +30,7 @@
       <xi:include href="xml/mx-popup.xml"/>
       <xi:include href="xml/mx-progress-bar.xml"/>
       <xi:include href="xml/mx-scroll-bar.xml"/>
+      <xi:include href="xml/mx-slider.xml"/>
       <xi:include href="xml/mx-texture-frame.xml"/>
       <xi:include href="xml/mx-tooltip.xml"/>
       <xi:include href="xml/mx-toggle.xml"/>

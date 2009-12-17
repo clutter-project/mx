@@ -683,6 +683,25 @@ MxProgressBarPrivate
 </SECTION>
 
 <SECTION>
+<FILE>mx-slider</FILE>
+<TITLE>MxSlider</TITLE>
+MxSlider
+mx_slider_new
+mx_slider_set_progress
+mx_slider_get_progress
+<SUBSECTION Standard>
+MX_SLIDER
+MX_IS_SLIDER
+MX_TYPE_SLIDER
+mx_slider_get_type
+MX_SLIDER_CLASS
+MX_IS_SLIDER_CLASS
+MX_PROGRESS_BAR_GET_CLASS
+<SUBSECTION Private>
+MxSliderPrivate
+</SECTION>
+
+<SECTION>
 <FILE>mx-stylable</FILE>
 <TITLE>MxStylable</TITLE>
 MxStylableIface

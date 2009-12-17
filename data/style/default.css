@@ -238,3 +238,15 @@ MxToolbar MxPopup > MxLabel:hover, MxToolbar MxPopup > MxLabel:active
   color: #44b6e8;
   border-image: none;
 }
+
+MxSlider {
+  trough-height: 8;
+}
+
+MxSlider *#trough-background {
+  background-color: #dadada;
+}
+
+MxSlider *#fill {
+  background-color: #84dbf5;
+}

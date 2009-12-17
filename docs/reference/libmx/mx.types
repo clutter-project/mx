@@ -25,6 +25,7 @@ mx_progress_bar_get_type
 mx_scroll_bar_get_type
 mx_scroll_view_get_type
 mx_scrollable_get_type
+mx_slider_get_type
 mx_stylable_get_type
 mx_style_get_type
 mx_subtexture_get_type

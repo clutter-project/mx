@@ -52,6 +52,7 @@
 #include <mx/mx-scroll-bar.h>
 #include <mx/mx-scroll-view.h>
 #include <mx/mx-scrollable.h>
+#include <mx/mx-slider.h>
 #include <mx/mx-stylable.h>
 #include <mx/mx-style.h>
 #include <mx/mx-subtexture.h>
