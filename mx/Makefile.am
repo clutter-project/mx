@@ -129,7 +129,7 @@ CLEANFILES = $(STAMP_FILES) $(BUILT_SOURCES)
 mx-marshal.h: stamp-mx-marshal.h
 	@true
 stamp-mx-marshal.h: Makefile mx-marshal.list
-	$(GLIB_GENMARSHAL) \
+	$(AM_V_GEN)$(GLIB_GENMARSHAL) \
 		--prefix=_mx_marshal \
 		--header \
 	$(srcdir)/mx-marshal.list > xgen-tmh && \
@@ -138,7 +138,7 @@ stamp-mx-marshal.h: Makefile mx-marshal.list
 	echo timestamp > $(@F)
 
 mx-marshal.c: Makefile mx-marshal.list
-	(echo "#include \"mx-marshal.h\"" ; \
+	$(AM_V_GEN)(echo "#include \"mx-marshal.h\"" ; \
 	 $(GLIB_GENMARSHAL) \
 		--prefix=_mx_marshal \
 		--body \
@@ -149,7 +149,7 @@ mx-marshal.c: Makefile mx-marshal.list
 mx-enum-types.h: stamp-mx-enum-types.h Makefile
 	@true
 stamp-mx-enum-types.h: $(source_h) mx-enum-types.h.in
-	( cd $(srcdir) && \
+	$(AM_V_GEN)( cd $(srcdir) && \
 	  $(GLIB_MKENUMS) \
 	    --template mx-enum-types.h.in \
 	  $(source_h) ) >> xgen-teth && \
@@ -158,7 +158,7 @@ stamp-mx-enum-types.h: $(source_h) mx-enum-types.h.in
 	echo timestamp > $(@F)
 
 mx-enum-types.c: stamp-mx-enum-types.h mx-enum-types.c.in
-	( cd $(srcdir) && \
+	$(AM_V_GEN)( cd $(srcdir) && \
 	  $(GLIB_MKENUMS) \
 	    --template mx-enum-types.c.in \
 	  $(source_h) ) >> xgen-tetc && \
@@ -250,7 +250,7 @@ if HAVE_INTROSPECTION
 BUILT_GIRSOURCES =
 
 Mx-@MX_API_VERSION@.gir: $(INTROSPECTION_SCANNER) libmx-@MX_API_VERSION@.la
-	$(QUIET_GEN)$(INTROSPECTION_SCANNER) -v \
+	$(AM_V_GEN)$(INTROSPECTION_SCANNER) -v \
 		--namespace Mx --nsversion=@MX_API_VERSION@ \
 		$(common_includes) \
 		--c-include="mx/mx.h" \
@@ -270,7 +270,7 @@ Mx-@MX_API_VERSION@.gir: $(INTROSPECTION_SCANNER) libmx-@MX_API_VERSION@.la
 BUILT_GIRSOURCES += Mx-@MX_API_VERSION@.gir
 
 MxGtk-@MX_API_VERSION@.gir: $(INTROSPECTION_SCANNER) libmx-gtk-@MX_API_VERSION@.la
-	$(QUIET_GEN)$(INTROSPECTION_SCANNER) -v \
+	$(AM_V_GEN)$(INTROSPECTION_SCANNER) -v \
 		--namespace MxGtk --nsversion=@MX_API_VERSION@ \
 		$(common_includes) \
 		--c-include="mx/mx-gtk.h" \
@@ -294,7 +294,7 @@ typelibsdir = $(libdir)/girepository-1.0/
 typelibs_DATA = $(BUILT_GIRSOURCES:.gir=.typelib)
 
 %.typelib: %.gir $(INTROSPECTION_COMPILER)
-	$(QUIET_GEN) \
+	$(AM_V_GEN) \
 	LD_LIBRARY_PATH=.libs${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} \
 	$(INTROSPECTION_COMPILER) \
 		--includedir=$(srcdir) \
