@@ -671,7 +671,7 @@ mx_button_set_checked (MxButton *button,
         mx_widget_set_style_pseudo_class ((MxWidget*) button, "hover");
       else
         mx_widget_set_style_pseudo_class ((MxWidget*) button, NULL);
-    }
 
-  g_object_notify (G_OBJECT (button), "checked");
+      g_object_notify (G_OBJECT (button), "checked");
+    }
 }
