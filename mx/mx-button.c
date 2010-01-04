@@ -89,7 +89,6 @@ struct _MxButtonPrivate
 
   ClutterAnimation *animation;
 
-  gint              spacing;
   guint             long_press_source;
 };
 
@@ -110,16 +109,6 @@ mx_stylable_iface_init (MxStylableIface *iface)
     {
       ClutterColor bg_color = { 0xcc, 0xcc, 0xcc, 0x00 };
       GParamSpec *pspec;
-
-      is_initialized = TRUE;
-
-      pspec = g_param_spec_int ("border-spacing",
-                                "Border Spacing",
-                                "Spacing between internal elements",
-                                0, G_MAXINT, 6,
-                                G_PARAM_READWRITE);
-      mx_stylable_iface_install_property (iface, MX_TYPE_BUTTON, pspec);
-
 
       is_initialized = TRUE;
 
@@ -189,11 +178,6 @@ mx_button_style_changed (MxWidget *widget)
 {
   MxButton *button = MX_BUTTON (widget);
   MxButtonPrivate *priv = button->priv;
-
-  /* get the spacing value */
-  mx_stylable_get (MX_STYLABLE (widget),
-                   "border-spacing", &priv->spacing,
-                   NULL);
 
   /* update the label styling */
   mx_button_update_label_style (button);
@@ -561,7 +545,6 @@ static void
 mx_button_init (MxButton *button)
 {
   button->priv = MX_BUTTON_GET_PRIVATE (button);
-  button->priv->spacing = 6;
 
   clutter_actor_set_reactive ((ClutterActor *) button, TRUE);
 
