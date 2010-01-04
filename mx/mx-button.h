@@ -60,23 +60,12 @@ struct _MxButton
   MxButtonPrivate *priv;
 };
 
-typedef enum
-{
-  MX_LONG_PRESS_QUERY,
-  MX_LONG_PRESS_ACTION,
-  MX_LONG_PRESS_CANCEL
-} MxLongPressAction;
-
 struct _MxButtonClass
 {
   MxBinClass parent_class;
 
   /* signals */
   void     (* clicked)    (MxButton          *button);
-  gboolean (* long_press) (MxButton          *button,
-                           MxLongPressAction  action,
-                           gfloat             x,
-                           gfloat             y);
 };
 
 GType mx_button_get_type (void) G_GNUC_CONST;

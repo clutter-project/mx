@@ -51,8 +51,6 @@
 #include "mx-private.h"
 #include "mx-enum-types.h"
 
-#define LONG_PRESS_TIMOUT 500
-
 enum
 {
   PROP_0,
@@ -65,7 +63,6 @@ enum
 enum
 {
   CLICKED,
-  LONG_PRESS,
 
   LAST_SIGNAL
 };
@@ -88,8 +85,6 @@ struct _MxButtonPrivate
   guint             is_toggle : 1;
 
   ClutterAnimation *animation;
-
-  guint             long_press_source;
 };
 
 static guint button_signals[LAST_SIGNAL] = { 0, };
@@ -204,46 +199,26 @@ mx_button_style_changed (MxWidget *widget)
     }
 }
 
-static gboolean
-mx_button_emit_long_press (MxButton *button)
-{
-  gboolean result;
 
-  if (button->priv->is_pressed)
-    {
-      g_signal_emit (button, button_signals[LONG_PRESS], 0,
-                     0.0, 0.0, MX_LONG_PRESS_ACTION, &result);
-      button->priv->long_press_source = 0;
-    }
-
-  return FALSE;
-}
 
 static gboolean
 mx_button_button_press (ClutterActor       *actor,
                         ClutterButtonEvent *event)
 {
   MxButtonPrivate *priv = MX_BUTTON (actor)->priv;
+  MxWidget *widget = MX_WIDGET (actor);
 
-  mx_widget_hide_tooltip (MX_WIDGET (actor));
+  mx_widget_hide_tooltip (widget);
 
   if (event->button == 1)
     {
-      gboolean query_result = FALSE;
-
       priv->is_pressed = TRUE;
 
       clutter_grab_pointer (actor);
 
-      mx_widget_set_style_pseudo_class (MX_WIDGET (actor), "active");
+      mx_widget_set_style_pseudo_class (widget, "active");
 
-      g_signal_emit (actor, button_signals[LONG_PRESS], 0, event->x,
-                     event->y, MX_LONG_PRESS_QUERY, &query_result);
-
-      if (query_result)
-        priv->long_press_source = g_timeout_add (LONG_PRESS_TIMOUT,
-                                                 (GSourceFunc) mx_button_emit_long_press,
-                                                 actor);
+      mx_widget_long_press_query (widget, event);
 
       return TRUE;
     }
@@ -258,6 +233,7 @@ mx_button_button_release (ClutterActor       *actor,
   if (event->button == 1)
     {
       MxButton *button = MX_BUTTON (actor);
+      MxWidget *widget = MX_WIDGET (actor);
       MxButtonPrivate *priv = button->priv;
 
       if (!button->priv->is_pressed)
@@ -274,23 +250,14 @@ mx_button_button_release (ClutterActor       *actor,
 
       g_signal_emit (button, button_signals[CLICKED], 0);
 
-      if (priv->long_press_source)
-        {
-          gboolean result;
-
-          g_source_remove (priv->long_press_source);
-          priv->long_press_source = 0;
-          g_signal_emit (button, button_signals[LONG_PRESS], 0,
-                         0.0, 0.0, MX_LONG_PRESS_CANCEL, &result);
-        }
-
+      mx_widget_long_press_cancel (widget);
 
       if (priv->is_checked)
-        mx_widget_set_style_pseudo_class ((MxWidget*) button, "checked");
+        mx_widget_set_style_pseudo_class (widget, "checked");
       else if (!priv->is_hover)
-        mx_widget_set_style_pseudo_class ((MxWidget*) button, NULL);
+        mx_widget_set_style_pseudo_class (widget, NULL);
       else
-        mx_widget_set_style_pseudo_class ((MxWidget*) button, "hover");
+        mx_widget_set_style_pseudo_class (widget, "hover");
 
       return TRUE;
     }
@@ -523,22 +490,6 @@ mx_button_class_init (MxButtonClass *klass)
                   NULL, NULL,
                   _mx_marshal_VOID__VOID,
                   G_TYPE_NONE, 0);
-
-  /**
-   * MxButton::long-press:
-   * @button: the object that received the signal
-   *
-   * Emitted when the user holds a mouse button down for a longer period.
-   */
-
-  button_signals[LONG_PRESS] =
-    g_signal_new ("long-press",
-                  G_TYPE_FROM_CLASS (klass),
-                  G_SIGNAL_RUN_LAST,
-                  G_STRUCT_OFFSET (MxButtonClass, long_press),
-                  NULL, NULL,
-                  _mx_marshal_BOOL__FLOAT_FLOAT_ENUM,
-                  G_TYPE_BOOLEAN, 3, G_TYPE_FLOAT, G_TYPE_FLOAT, MX_TYPE_LONG_PRESS_ACTION);
 }
 
 static void

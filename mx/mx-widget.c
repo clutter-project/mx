@@ -2,7 +2,7 @@
  * mx-widget.c: Base class for Mx actors
  *
  * Copyright 2007 OpenedHand
- * Copyright 2008, 2009 Intel Corporation.
+ * Copyright 2008, 2009, 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -42,6 +42,8 @@
 #include "mx-tooltip.h"
 #include "mx-enum-types.h"
 
+#define LONG_PRESS_TIMOUT 500
+
 /*
  * Forward declaration for sake of MxWidgetChild
  */
@@ -63,6 +65,8 @@ struct _MxWidgetPrivate
   gboolean      is_hovered : 1;
 
   MxTooltip    *tooltip;
+
+  guint         long_press_source;
 };
 
 /**
@@ -87,6 +91,15 @@ enum
   PROP_HAS_TOOLTIP,
   PROP_TOOLTIP_TEXT
 };
+
+enum
+{
+  LONG_PRESS,
+
+  LAST_SIGNAL
+};
+
+static guint widget_signals[LAST_SIGNAL] = { 0, };
 
 static void mx_stylable_iface_init (MxStylableIface *iface);
 
@@ -637,6 +650,64 @@ mx_widget_leave (ClutterActor         *actor,
 }
 
 static gboolean
+mx_widget_emit_long_press (MxWidget *widget)
+{
+  gboolean result;
+
+  g_signal_emit (widget, widget_signals[LONG_PRESS], 0,
+                 0.0, 0.0, MX_LONG_PRESS_ACTION, &result);
+  widget->priv->long_press_source = 0;
+
+  return FALSE;
+}
+
+/**
+ * mx_widget_long_press_query:
+ * @widget: An MxWidget
+ * @event: the event used to determine whether to run a long-press
+ *
+ * Emit the long-press query signal and start a long-press timeout if required.
+ */
+void
+mx_widget_long_press_query (MxWidget           *widget,
+                            ClutterButtonEvent *event)
+{
+  MxWidgetPrivate *priv = widget->priv;
+  gboolean query_result = FALSE;
+
+  g_signal_emit (widget, widget_signals[LONG_PRESS], 0, event->x,
+                 event->y, MX_LONG_PRESS_QUERY, &query_result);
+
+  if (query_result)
+    priv->long_press_source = g_timeout_add (LONG_PRESS_TIMOUT,
+                                             (GSourceFunc) mx_widget_emit_long_press,
+                                             widget);
+}
+
+/**
+ * mx_widget_long_press_cancel:
+ * @widget: An MxWidget
+ *
+ * Cancel a long-press timeout if one is running and emit the signal to notify
+ * that the long-press has been cancelled.
+ */
+void
+mx_widget_long_press_cancel (MxWidget *widget)
+{
+  MxWidgetPrivate *priv = widget->priv;
+
+  if (priv->long_press_source)
+    {
+      gboolean result;
+
+      g_source_remove (priv->long_press_source);
+      priv->long_press_source = 0;
+      g_signal_emit (widget, widget_signals[LONG_PRESS], 0,
+                     0.0, 0.0, MX_LONG_PRESS_CANCEL, &result);
+    }
+}
+
+static gboolean
 mx_widget_button_press (ClutterActor       *actor,
                         ClutterButtonEvent *event)
 {
@@ -644,6 +715,8 @@ mx_widget_button_press (ClutterActor       *actor,
 
   if (event->button == 1)
     mx_widget_set_style_pseudo_class (widget, "active");
+
+  mx_widget_long_press_query (widget, event);
 
   return TRUE;
 }
@@ -661,6 +734,8 @@ mx_widget_button_release (ClutterActor       *actor,
       else
         mx_widget_set_style_pseudo_class (widget, "");
     }
+
+  mx_widget_long_press_cancel (widget);
 
   return TRUE;
 }
@@ -742,6 +817,24 @@ mx_widget_class_init (MxWidgetClass *klass)
                                "",
                                MX_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_TOOLTIP_TEXT, pspec);
+
+
+  /**
+   * MxWidget::long-press:
+   * @widget: the object that received the signal
+   *
+   * Emitted when the user holds a mouse button down for a longer period.
+   */
+
+  widget_signals[LONG_PRESS] =
+    g_signal_new ("long-press",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (MxWidgetClass, long_press),
+                  NULL, NULL,
+                  _mx_marshal_BOOL__FLOAT_FLOAT_ENUM,
+                  G_TYPE_BOOLEAN, 3, G_TYPE_FLOAT, G_TYPE_FLOAT,
+                  MX_TYPE_LONG_PRESS_ACTION);
 
 }
 

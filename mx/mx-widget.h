@@ -43,6 +43,13 @@ typedef struct _MxWidget               MxWidget;
 typedef struct _MxWidgetPrivate        MxWidgetPrivate;
 typedef struct _MxWidgetClass          MxWidgetClass;
 
+typedef enum
+{
+  MX_LONG_PRESS_QUERY,
+  MX_LONG_PRESS_ACTION,
+  MX_LONG_PRESS_CANCEL
+} MxLongPressAction;
+
 /**
  * MxWidget:
  *
@@ -72,6 +79,10 @@ struct _MxWidgetClass
   void (* paint_background) (MxWidget           *self,
                              ClutterActor       *background,
                              const ClutterColor *color);
+  gboolean (* long_press) (MxWidget          *widget,
+                           MxLongPressAction  action,
+                           gfloat             x,
+                           gfloat             y);
 };
 
 GType mx_widget_get_type (void) G_GNUC_CONST;
@@ -95,6 +106,9 @@ void mx_widget_hide_tooltip (MxWidget *widget);
 
 void mx_widget_ensure_style (MxWidget *widget);
 
+void mx_widget_long_press_query  (MxWidget           *widget,
+                                  ClutterButtonEvent *event);
+void mx_widget_long_press_cancel (MxWidget           *widget);
 
 /* Only to be used by sub-classes of MxWidget */
 ClutterActor *mx_widget_get_background_image (MxWidget  *actor);
