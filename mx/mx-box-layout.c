@@ -357,13 +357,29 @@ mx_box_container_foreach (ClutterContainer *container,
   g_list_foreach (priv->children, (GFunc) callback, callback_data);
 }
 
+/*
+ * Implementations for raise, lower and sort_by_depth_order are taken from
+ * ClutterBox.
+ */
 static void
 mx_box_container_lower (ClutterContainer *container,
                         ClutterActor     *actor,
                         ClutterActor     *sibling)
 {
-  /* XXX: not yet implemented */
-  g_warning ("%s() not yet implemented", __FUNCTION__);
+  MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (container)->priv;
+
+  priv->children = g_list_remove (priv->children, actor);
+
+  if (sibling == NULL)
+    priv->children = g_list_prepend (priv->children, actor);
+  else
+    {
+      gint index_ = g_list_index (priv->children, sibling);
+
+      priv->children = g_list_insert (priv->children, actor, index_);
+    }
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
 }
 
 static void
@@ -371,15 +387,46 @@ mx_box_container_raise (ClutterContainer *container,
                         ClutterActor     *actor,
                         ClutterActor     *sibling)
 {
-  /* XXX: not yet implemented */
-  g_warning ("%s() not yet implemented", __FUNCTION__);
+  MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (container)->priv;
+
+  priv->children = g_list_remove (priv->children, actor);
+
+  if (sibling == NULL)
+    priv->children = g_list_append (priv->children, actor);
+  else
+    {
+      gint index_ = g_list_index (priv->children, sibling) + 1;
+
+      priv->children = g_list_insert (priv->children, actor, index_);
+    }
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
+}
+
+static gint
+sort_by_depth (gconstpointer a,
+               gconstpointer b)
+{
+  gfloat depth_a = clutter_actor_get_depth ((ClutterActor *) a);
+  gfloat depth_b = clutter_actor_get_depth ((ClutterActor *) b);
+
+  if (depth_a < depth_b)
+    return -1;
+
+  if (depth_a > depth_b)
+    return 1;
+
+  return 0;
 }
 
 static void
 mx_box_container_sort_depth_order (ClutterContainer *container)
 {
-  /* XXX: not yet implemented */
-  g_warning ("%s() not yet implemented", __FUNCTION__);
+  MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (container)->priv;
+
+  priv->children = g_list_sort (priv->children, sort_by_depth);
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
 }
 
 static void
