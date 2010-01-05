@@ -132,6 +132,21 @@ AS_IF([test "x$with_clutter_imcontext" != xno],
                         [AC_MSG_FAILURE([Could not find clutter-imcontext. Use --without-clutter-imcontext to disable input method support.])]]
       ))
 
+
+AC_ARG_WITH([clutter-gesture],
+            [AC_HELP_STRING([--with-clutter-gesture],
+                            [enable gesture support])],
+            [],
+            [with_clutter_gesture=no])
+
+AS_IF([test "x$with_clutter_gesture" = xyes],
+      [PKG_CHECK_EXISTS([clutter-gesture],
+                        [AC_DEFINE([HAVE_CLUTTER_GESTURE], [1],
+                                   [Define if clutter-gesture is available])
+                         MX_REQUIRES="$MX_REQUIRES clutter-gesture"],
+                        [AC_MSG_FAILURE([Could not find clutter-gesture. Use --without-clutter-gesture to disable gesture support.])]]
+       ))
+
 dnl ***************************************************************************
 dnl Internationalization
 dnl ***************************************************************************
