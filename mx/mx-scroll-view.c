@@ -49,6 +49,11 @@
 #include "mx-stylable.h"
 #include <clutter/clutter.h>
 
+#include "config.h"
+#ifdef HAVE_CLUTTER_GESTURE
+#include <clutter-gesture/clutter-gesture.h>
+#endif
+
 static void clutter_container_iface_init (ClutterContainerIface *iface);
 static void mx_stylable_iface_init (MxStylableIface *iface);
 
@@ -81,6 +86,11 @@ struct _MxScrollViewPrivate
   gboolean      row_size_set : 1;
   gboolean      column_size_set : 1;
   guint         mouse_scroll : 1;
+
+#ifdef HAVE_CLUTTER_GESTURE
+  ClutterGesture *gesture;
+  ClutterAnimation *animation;
+#endif
 };
 
 enum {
@@ -147,6 +157,20 @@ mx_scroll_view_dispose (GObject *object)
       clutter_actor_unparent (priv->hscroll);
       priv->hscroll = NULL;
     }
+
+#ifdef HAVE_CLUTTER_GESTURE
+  if (priv->gesture)
+    {
+      g_object_unref (priv->gesture);
+      priv->gesture = NULL;
+    }
+
+  if (priv->animation)
+    {
+      g_object_unref (priv->animation);
+      priv->animation = NULL;
+    }
+#endif
 
   /* Chaining up will remove the child actor */
   G_OBJECT_CLASS (mx_scroll_view_parent_class)->dispose (object);
@@ -605,6 +629,79 @@ child_vadjustment_notify_cb (GObject    *gobject,
     }
 }
 
+#ifdef HAVE_CLUTTER_GESTURE
+gboolean
+mx_scroll_view_gesture_slide_event_cb (ClutterGesture           *gesture,
+                                       ClutterGestureSlideEvent *event,
+                                       MxScrollView             *scrollview)
+{
+  MxScrollViewPrivate *priv = scrollview->priv;
+  gdouble step, value, final;
+  MxAdjustment *adjustment;
+
+  ClutterInterval *interval;
+  ClutterTimeline *timeline;
+
+  if (!priv->animation)
+    {
+      priv->animation = clutter_animation_new ();
+
+      clutter_animation_set_duration (priv->animation, 1000);
+      clutter_animation_set_mode (priv->animation,
+                                  CLUTTER_EASE_OUT_CUBIC);
+    }
+
+  if (event->direction > 2)
+    adjustment =
+      mx_scroll_bar_get_adjustment (MX_SCROLL_BAR(priv->hscroll));
+  else
+    adjustment =
+      mx_scroll_bar_get_adjustment (MX_SCROLL_BAR(priv->vscroll));
+
+  g_object_get (adjustment,
+                "page-increment", &step,
+                "value", &value,
+                NULL);
+  clutter_animation_set_object (priv->animation,
+                                G_OBJECT (adjustment));
+
+  if (event->direction % 2)
+    /* up, left (1, 3) */
+    final = value + step;
+  else
+    /* down, right (2, 4) */
+    final = value - step;
+
+  timeline = clutter_animation_get_timeline (priv->animation);
+  interval = clutter_animation_get_interval (priv->animation, "value");
+
+  if (!interval)
+    {
+      interval = clutter_interval_new (G_TYPE_DOUBLE, value, final);
+      clutter_animation_bind_interval (priv->animation, "value",
+                                       interval);
+      clutter_timeline_start (timeline);
+
+    }
+  else
+    {
+      GValue *end, *start;
+
+      end = clutter_interval_peek_final_value (interval);
+      start = clutter_interval_peek_initial_value (interval);
+
+      g_value_set_double (end, final);
+      g_value_set_double (start, value);
+
+      clutter_timeline_rewind (timeline);
+      clutter_timeline_start (timeline);
+    }
+
+  return TRUE;
+}
+
+#endif
+
 static void
 mx_scroll_view_init (MxScrollView *self)
 {
@@ -623,6 +720,15 @@ mx_scroll_view_init (MxScrollView *self)
 
   g_signal_connect (self, "style-changed",
                     G_CALLBACK (mx_scroll_view_style_changed), NULL);
+
+#ifdef HAVE_CLUTTER_GESTURE
+  priv->gesture = clutter_gesture_new (CLUTTER_ACTOR (self));
+  clutter_gesture_set_gesture_mask (priv->gesture, CLUTTER_ACTOR (self),
+                                    GESTURE_MASK_SLIDE);
+  g_signal_connect (priv->gesture, "gesture-slide-event",
+                    G_CALLBACK (mx_scroll_view_gesture_slide_event_cb),
+                    self);
+#endif
 }
 
 static void
