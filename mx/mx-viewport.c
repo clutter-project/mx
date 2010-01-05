@@ -325,6 +325,7 @@ mx_viewport_allocate (ClutterActor          *self,
                         "lower", 0.0,
                         "page-size", available_width,
                         "upper", natural_width,
+                        "page-increment", available_width / 3,
                         NULL);
 
           /* Make sure value is clamped */
@@ -338,6 +339,7 @@ mx_viewport_allocate (ClutterActor          *self,
                         "lower", 0.0,
                         "page-size", available_height,
                         "upper", natural_height,
+                        "page-increment", available_height / 3,
                         NULL);
 
           prev_value = mx_adjustment_get_value (priv->vadjustment);
