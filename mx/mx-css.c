@@ -505,7 +505,6 @@ css_node_matches_selector (MxSelector *selector,
   gint score;
   gint a, b, c;
 
-  const gchar *type;
   gchar *id, *class, *pseudo_class;
   ClutterActor *actor;
   MxStylable *parent;
@@ -521,7 +520,6 @@ css_node_matches_selector (MxSelector *selector,
                 "style-class", &class,
                 "style-pseudo-class", &pseudo_class,
                 NULL);
-  type = G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (stylable));
   actor = clutter_actor_get_parent (CLUTTER_ACTOR (stylable));
   if (MX_IS_STYLABLE (actor))
     parent = MX_STYLABLE (actor);
@@ -597,7 +595,29 @@ css_node_matches_selector (MxSelector *selector,
     }
   else
     {
-      if (!type || strcmp (selector->type, type))
+      const gchar *type;
+      GType type_id;
+      gboolean matched;
+
+      type_id = G_OBJECT_CLASS_TYPE (G_OBJECT_GET_CLASS (stylable));
+      type = g_type_name (type_id);
+      matched = FALSE;
+
+      while (type)
+        {
+          if (!strcmp (selector->type, type))
+            {
+              matched = TRUE;
+              break;
+            }
+          else
+            {
+              type_id = g_type_parent (type_id);
+              type = g_type_name (type_id);
+            }
+        }
+
+      if (!matched)
         {
           score = -1;
           goto out;
