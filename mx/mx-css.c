@@ -527,6 +527,82 @@ css_node_matches_selector (MxSelector *selector,
   else
     parent = NULL;
 
+  /* check type */
+  if (selector->type == NULL || selector->type[0] == '*')
+    {
+      /* NULL or universal selector match, but are ignored for score */
+    }
+  else
+    {
+      const gchar *type;
+      GType type_id;
+      gboolean matched;
+
+      type_id = G_OBJECT_CLASS_TYPE (G_OBJECT_GET_CLASS (stylable));
+      type = g_type_name (type_id);
+      matched = FALSE;
+
+      while (type)
+        {
+          if (!strcmp (selector->type, type))
+            {
+              matched = TRUE;
+              break;
+            }
+          else
+            {
+              type_id = g_type_parent (type_id);
+              type = g_type_name (type_id);
+            }
+        }
+
+      if (!matched)
+        {
+          score = -1;
+          goto out;
+        }
+      else
+        c++;
+    }
+
+  /* check id */
+  if (selector->id)
+    {
+      if (!id || strcmp (selector->id, id))
+        {
+          score = -1;
+          goto out;
+        }
+      else
+        a++;
+    }
+
+  /* check psuedo_class */
+  if (selector->pseudo_class)
+    {
+      if (!pseudo_class
+          || strcmp (selector->pseudo_class, pseudo_class))
+        {
+          score = -1;
+          goto out;
+        }
+      else
+        b++;
+    }
+
+  /* check class */
+  if (selector->class)
+    {
+      if (!class || strcmp (selector->class, class))
+        {
+          score = -1;
+          goto out;
+        }
+      else
+        b++;
+    }
+
+  /* check parent */
   if (selector->parent)
     {
       gint parent_matches;
@@ -548,6 +624,7 @@ css_node_matches_selector (MxSelector *selector,
       c += parent_matches;
     }
 
+  /* check ancestor */
   if (selector->ancestor)
     {
       gint ancestor_matches;
@@ -588,77 +665,6 @@ css_node_matches_selector (MxSelector *selector,
               goto out;
             }
         }
-    }
-
-  if (selector->type == NULL || selector->type[0] == '*')
-    {
-      /* NULL or universal selector match, but are ignored for score */
-    }
-  else
-    {
-      const gchar *type;
-      GType type_id;
-      gboolean matched;
-
-      type_id = G_OBJECT_CLASS_TYPE (G_OBJECT_GET_CLASS (stylable));
-      type = g_type_name (type_id);
-      matched = FALSE;
-
-      while (type)
-        {
-          if (!strcmp (selector->type, type))
-            {
-              matched = TRUE;
-              break;
-            }
-          else
-            {
-              type_id = g_type_parent (type_id);
-              type = g_type_name (type_id);
-            }
-        }
-
-      if (!matched)
-        {
-          score = -1;
-          goto out;
-        }
-      else
-        c++;
-    }
-
-  if (selector->id)
-    {
-      if (!id || strcmp (selector->id, id))
-        {
-          score = -1;
-          goto out;
-        }
-      else
-        a++;
-    }
-
-  if (selector->class)
-    {
-      if (!class || strcmp (selector->class, class))
-        {
-          score = -1;
-          goto out;
-        }
-      else
-        b++;
-    }
-
-  if (selector->pseudo_class)
-    {
-      if (!pseudo_class
-          || strcmp (selector->pseudo_class, pseudo_class))
-        {
-          score = -1;
-          goto out;
-        }
-      else
-        b++;
     }
 
 
