@@ -721,23 +721,6 @@ mx_style_sheet_get_properties (MxStyleSheet *sheet,
   GList *l, *matching_selectors = NULL;
   SelectorMatch *selector_match = NULL;
   GHashTable *result;
-  const gchar *type;
-  gchar *id, *class, *pseudo_class;
-  ClutterActor *actor;
-  MxStylable *parent;
-
-
-  g_object_get (node,
-                "name", &id,
-                "style-class", &class,
-                "style-pseudo-class", &pseudo_class,
-                NULL);
-  type = G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (node));
-  actor = clutter_actor_get_parent (CLUTTER_ACTOR (node));
-  if (MX_IS_STYLABLE (actor))
-    parent = MX_STYLABLE (actor);
-  else
-    parent = NULL;
 
 
   /* find matching selectors */
@@ -766,10 +749,6 @@ mx_style_sheet_get_properties (MxStyleSheet *sheet,
 #ifdef MX_DEBUG_CSS
   printf ("----\n");
 #endif
-
-  g_free (pseudo_class);
-  g_free (id);
-  g_free (class);
 
   /* score the selectors by their score */
   matching_selectors = g_list_sort (matching_selectors,
