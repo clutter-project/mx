@@ -499,82 +499,71 @@ css_parse_file (MxStyleSheet *sheet,
 }
 
 static gint
-css_node_matches_selector (MxSelector   *selector,
-                           const gchar  *type,
-                           const gchar  *id,
-                           const gchar  *class,
-                           const gchar  *pseudo_class,
-                           MxStylable   *parent)
+css_node_matches_selector (MxSelector *selector,
+                           MxStylable *stylable)
 {
   gint score;
   gint a, b, c;
+
+  const gchar *type;
+  gchar *id, *class, *pseudo_class;
+  ClutterActor *actor;
+  MxStylable *parent;
 
   score = 0;
   a = 0;
   b = 0;
   c = 0;
 
+  /* get properties for this stylable */
+  g_object_get (stylable,
+                "name", &id,
+                "style-class", &class,
+                "style-pseudo-class", &pseudo_class,
+                NULL);
+  type = G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (stylable));
+  actor = clutter_actor_get_parent (CLUTTER_ACTOR (stylable));
+  if (MX_IS_STYLABLE (actor))
+    parent = MX_STYLABLE (actor);
+  else
+    parent = NULL;
+
   if (selector->parent)
     {
       gint parent_matches;
-      const gchar *ptype;
-      gchar *pid, *pclass, *ppseudo_class;
-      MxStylable *pparent;
-      ClutterActor *actor;
 
       if (!parent)
-        return -1;
+        {
+          score = -1;
+          goto out;
+        }
 
-      g_object_get (parent,
-                    "name", &pid,
-                    "style-class", &pclass,
-                    "style-pseudo-class", &ppseudo_class,
-                    NULL);
-      ptype = G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (parent));
-      actor = clutter_actor_get_parent (CLUTTER_ACTOR (parent));
-      if (MX_IS_STYLABLE (actor))
-        pparent = MX_STYLABLE (actor);
-      else
-        pparent = NULL;
-
-
-      parent_matches = css_node_matches_selector (selector->parent,
-                                                  ptype,
-                                                  pid,
-                                                  pclass,
-                                                  ppseudo_class,
-                                                  pparent);
+      parent_matches = css_node_matches_selector (selector->parent, parent);
       if (parent_matches < 0)
-        return -1;
+        {
+          score = -1;
+          goto out;
+        }
 
       /* increase the 'c' score, since the parent matched */
       c += parent_matches;
-
-      g_free (pid);
-      g_free (pclass);
-      g_free (ppseudo_class);
     }
 
   if (selector->ancestor)
     {
       gint ancestor_matches;
-      const gchar *ptype;
-      gchar *pid, *pclass, *ppseudo_class;
       MxStylable *pparent, *ancestor;
       ClutterActor *actor;
 
       if (!parent)
-        return -1;
+        {
+          score = -1;
+          goto out;
+        }
 
       ancestor = parent;
       while (ancestor)
         {
-          g_object_get (ancestor,
-                        "name", &pid,
-                        "style-class", &pclass,
-                        "style-pseudo-class", &ppseudo_class,
-                        NULL);
-          ptype = G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (ancestor));
           actor = clutter_actor_get_parent (CLUTTER_ACTOR (ancestor));
           if (MX_IS_STYLABLE (actor))
             pparent = MX_STYLABLE (actor);
@@ -583,14 +572,7 @@ css_node_matches_selector (MxSelector   *selector,
 
 
           ancestor_matches = css_node_matches_selector (selector->ancestor,
-                                                        ptype,
-                                                        pid,
-                                                        pclass,
-                                                        ppseudo_class,
-                                                        pparent);
-          g_free (pid);
-          g_free (pclass);
-          g_free (ppseudo_class);
+                                                        ancestor);
 
           /* if one of the ancestors match, stop search and increase 'c' score
            */
@@ -602,7 +584,10 @@ css_node_matches_selector (MxSelector   *selector,
 
           ancestor = pparent;
           if (!ancestor || !MX_IS_STYLABLE (ancestor))
-            return -1;
+            {
+              score = -1;
+              goto out;
+            }
         }
     }
 
@@ -613,7 +598,10 @@ css_node_matches_selector (MxSelector   *selector,
   else
     {
       if (!type || strcmp (selector->type, type))
-        return -1;
+        {
+          score = -1;
+          goto out;
+        }
       else
         c++;
     }
@@ -621,7 +609,10 @@ css_node_matches_selector (MxSelector   *selector,
   if (selector->id)
     {
       if (!id || strcmp (selector->id, id))
-        return -1; /* no match */
+        {
+          score = -1;
+          goto out;
+        }
       else
         a++;
     }
@@ -629,7 +620,10 @@ css_node_matches_selector (MxSelector   *selector,
   if (selector->class)
     {
       if (!class || strcmp (selector->class, class))
-        return -1;
+        {
+          score = -1;
+          goto out;
+        }
       else
         b++;
     }
@@ -638,7 +632,10 @@ css_node_matches_selector (MxSelector   *selector,
     {
       if (!pseudo_class
           || strcmp (selector->pseudo_class, pseudo_class))
-        return -1;
+        {
+          score = -1;
+          goto out;
+        }
       else
         b++;
     }
@@ -648,6 +645,12 @@ css_node_matches_selector (MxSelector   *selector,
   b = b * 10;
 
   score = a + b + c;
+
+out:
+
+  g_free (pseudo_class);
+  g_free (id);
+  g_free (class);
 
   return score;
 }
@@ -725,9 +728,7 @@ mx_style_sheet_get_properties (MxStyleSheet *sheet,
     {
       gint score;
 
-
-      score = css_node_matches_selector (l->data,
-                                         type, id, class, pseudo_class, parent);
+      score = css_node_matches_selector (l->data, node);
 
       if (score >= 0)
         {
