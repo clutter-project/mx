@@ -505,7 +505,8 @@ css_node_matches_selector (MxSelector *selector,
   gint score;
   gint a, b, c;
 
-  gchar *id, *class, *pseudo_class;
+  gchar *class, *pseudo_class;
+  const gchar *id;
   ClutterActor *actor;
   MxStylable *parent;
 
@@ -515,8 +516,8 @@ css_node_matches_selector (MxSelector *selector,
   c = 0;
 
   /* get properties for this stylable */
+  id = clutter_actor_get_name (CLUTTER_ACTOR (stylable));
   g_object_get (stylable,
-                "name", &id,
                 "style-class", &class,
                 "style-pseudo-class", &pseudo_class,
                 NULL);
@@ -669,7 +670,6 @@ css_node_matches_selector (MxSelector *selector,
 out:
 
   g_free (pseudo_class);
-  g_free (id);
   g_free (class);
 
   return score;
