@@ -505,7 +505,7 @@ css_node_matches_selector (MxSelector *selector,
   gint score;
   gint a, b, c;
 
-  gchar *class, *pseudo_class;
+  const gchar *class, *pseudo_class;
   const gchar *id;
   ClutterActor *actor;
   MxStylable *parent;
@@ -517,10 +517,8 @@ css_node_matches_selector (MxSelector *selector,
 
   /* get properties for this stylable */
   id = clutter_actor_get_name (CLUTTER_ACTOR (stylable));
-  g_object_get (stylable,
-                "style-class", &class,
-                "style-pseudo-class", &pseudo_class,
-                NULL);
+  class = mx_stylable_get_style_class (stylable);
+  pseudo_class = mx_stylable_get_style_pseudo_class (stylable);
   actor = clutter_actor_get_parent (CLUTTER_ACTOR (stylable));
   if (MX_IS_STYLABLE (actor))
     parent = MX_STYLABLE (actor);
@@ -675,8 +673,6 @@ css_node_matches_selector (MxSelector *selector,
 
 out:
 
-  g_free (pseudo_class);
-  g_free (class);
 
   return score;
 }
@@ -728,10 +724,9 @@ mx_style_sheet_get_properties (MxStyleSheet *sheet,
   SelectorMatch *selector_match = NULL;
   GHashTable *result;
 
-
   /* find matching selectors */
 #ifdef MX_DEBUG_CSS
-  printf ("%s.%s#%s:%s matches: \n", type, class, id, pseudo_class);
+  GTimer *timer = g_timer_new ();
 #endif
   for (l = sheet->selectors; l; l = l->next)
     {
@@ -752,9 +747,6 @@ mx_style_sheet_get_properties (MxStyleSheet *sheet,
 #endif
         }
     }
-#ifdef MX_DEBUG_CSS
-  printf ("----\n");
-#endif
 
   /* score the selectors by their score */
   matching_selectors = g_list_sort (matching_selectors,
@@ -777,6 +769,19 @@ mx_style_sheet_get_properties (MxStyleSheet *sheet,
   g_list_foreach (matching_selectors, (GFunc) free_selector_match, NULL);
   g_list_free (matching_selectors);
 
+#ifdef MX_DEBUG_CSS
+  printf ("----\n");
+
+  g_timer_stop (timer);
+  static int count = 1;
+  static double avg = 0, new;
+  new = g_timer_elapsed (timer, NULL);
+  avg = ((avg * count + new) / (count + 1));
+  count++;
+  printf ("%f - finished (total: %d, average: %f) %s \n",
+          new, count, avg, G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (node)));
+
+#endif
   return result;
 }
 

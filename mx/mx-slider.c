@@ -145,7 +145,7 @@ on_handle_capture_event (ClutterActor *trough,
                                         ((ClutterButtonEvent*) event)->y);
       if (target != priv->handle)
         {
-          mx_widget_set_style_pseudo_class (MX_WIDGET (priv->handle),
+          mx_stylable_set_style_pseudo_class (MX_STYLABLE (priv->handle),
                                             NULL);
         }
     }

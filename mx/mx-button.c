@@ -179,7 +179,7 @@ mx_button_style_changed (MxWidget *widget)
 
   /* run a transition if applicable */
   if (priv->old_bg &&
-      (!mx_widget_get_style_pseudo_class (widget)))
+      (!mx_stylable_get_style_pseudo_class (MX_STYLABLE (widget))))
     {
       ClutterAnimation *animation;
 
@@ -216,7 +216,7 @@ mx_button_button_press (ClutterActor       *actor,
 
       clutter_grab_pointer (actor);
 
-      mx_widget_set_style_pseudo_class (widget, "active");
+      mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "active");
 
       mx_widget_long_press_query (widget, event);
 
@@ -253,11 +253,11 @@ mx_button_button_release (ClutterActor       *actor,
       mx_widget_long_press_cancel (widget);
 
       if (priv->is_checked)
-        mx_widget_set_style_pseudo_class (widget, "checked");
+        mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "checked");
       else if (!priv->is_hover)
-        mx_widget_set_style_pseudo_class (widget, NULL);
+        mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), NULL);
       else
-        mx_widget_set_style_pseudo_class (widget, "hover");
+        mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "hover");
 
       return TRUE;
     }
@@ -273,7 +273,7 @@ mx_button_enter (ClutterActor         *actor,
   MxWidget *widget = MX_WIDGET (actor);
 
   if (!button->priv->is_checked)
-    mx_widget_set_style_pseudo_class (widget, "hover");
+    mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "hover");
 
   button->priv->is_hover = 1;
 
@@ -300,9 +300,9 @@ mx_button_leave (ClutterActor         *actor,
     }
 
   if (button->priv->is_checked)
-    mx_widget_set_style_pseudo_class (widget, "checked");
+    mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "checked");
   else
-    mx_widget_set_style_pseudo_class (widget, NULL);
+    mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), NULL);
 
   if (mx_widget_get_has_tooltip (widget))
     mx_widget_hide_tooltip (widget);
@@ -665,12 +665,12 @@ mx_button_set_checked (MxButton *button,
       button->priv->is_checked = checked;
 
       if (checked)
-        mx_widget_set_style_pseudo_class ((MxWidget*) button, "checked");
+        mx_stylable_set_style_pseudo_class (MX_STYLABLE (button), "checked");
       else
       if (button->priv->is_hover)
-        mx_widget_set_style_pseudo_class ((MxWidget*) button, "hover");
+        mx_stylable_set_style_pseudo_class (MX_STYLABLE (button), "hover");
       else
-        mx_widget_set_style_pseudo_class ((MxWidget*) button, NULL);
+        mx_stylable_set_style_pseudo_class (MX_STYLABLE (button), NULL);
 
       g_object_notify (G_OBJECT (button), "checked");
     }

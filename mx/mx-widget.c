@@ -126,11 +126,11 @@ mx_widget_set_property (GObject      *gobject,
       break;
 
     case PROP_STYLE_PSEUDO_CLASS:
-      mx_widget_set_style_pseudo_class (actor, g_value_get_string (value));
+      mx_stylable_set_style_pseudo_class (MX_STYLABLE (actor), g_value_get_string (value));
       break;
 
     case PROP_STYLE_CLASS:
-      mx_widget_set_style_class_name (actor, g_value_get_string (value));
+      mx_stylable_set_style_class (MX_STYLABLE (actor), g_value_get_string (value));
       break;
 
     case PROP_HAS_TOOLTIP:
@@ -624,7 +624,7 @@ mx_widget_enter (ClutterActor         *actor,
   MxWidget *widget = MX_WIDGET (actor);
   MxWidgetPrivate *priv = widget->priv;
 
-  mx_widget_set_style_pseudo_class (widget, "hover");
+  mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "hover");
   priv->is_hovered = TRUE;
 
   if (priv->has_tooltip)
@@ -640,7 +640,7 @@ mx_widget_leave (ClutterActor         *actor,
   MxWidget *widget = MX_WIDGET (actor);
   MxWidgetPrivate *priv = widget->priv;
 
-  mx_widget_set_style_pseudo_class (widget, "");
+  mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "");
   priv->is_hovered = FALSE;
 
   if (priv->has_tooltip)
@@ -714,7 +714,7 @@ mx_widget_button_press (ClutterActor       *actor,
   MxWidget *widget = MX_WIDGET (actor);
 
   if (event->button == 1)
-    mx_widget_set_style_pseudo_class (widget, "active");
+    mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "active");
 
   mx_widget_long_press_query (widget, event);
 
@@ -730,9 +730,9 @@ mx_widget_button_release (ClutterActor       *actor,
   if (event->button == 1)
     {
       if (widget->priv->is_hovered)
-        mx_widget_set_style_pseudo_class (widget, "hover");
+        mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "hover");
       else
-        mx_widget_set_style_pseudo_class (widget, "");
+        mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "");
     }
 
   mx_widget_long_press_cancel (widget);
@@ -871,95 +871,59 @@ mx_widget_set_style (MxStylable *stylable,
                     stylable);
 }
 
-/**
- * mx_widget_set_style_class_name:
- * @actor: a #MxWidget
- * @style_class: a new style class string
- *
- * Set the style class name
- */
-void
-mx_widget_set_style_class_name (MxWidget    *actor,
-                                const gchar *style_class)
+static void
+_mx_widget_set_style_class (MxStylable  *actor,
+                            const gchar *style_class)
 {
-  MxWidgetPrivate *priv = actor->priv;
+  MxWidgetPrivate *priv;
 
   g_return_if_fail (MX_IS_WIDGET (actor));
 
-  priv = actor->priv;
+  priv = MX_WIDGET (actor)->priv;
 
   if (g_strcmp0 (style_class, priv->style_class))
     {
       g_free (priv->style_class);
       priv->style_class = g_strdup (style_class);
 
-      mx_stylable_changed ((MxStylable*) actor);
+      mx_stylable_changed (actor);
 
       g_object_notify (G_OBJECT (actor), "style-class");
     }
 }
 
-
-/**
- * mx_widget_get_style_class_name:
- * @actor: a #MxWidget
- *
- * Get the current style class name
- *
- * Returns: the class name string. The string is owned by the #MxWidget and
- * should not be modified or freed.
- */
-const gchar*
-mx_widget_get_style_class_name (MxWidget *actor)
-{
-  g_return_val_if_fail (MX_IS_WIDGET (actor), NULL);
-
-  return actor->priv->style_class;
-}
-
-/**
- * mx_widget_get_style_pseudo_class:
- * @actor: a #MxWidget
- *
- * Get the current style pseudo class
- *
- * Returns: the pseudo class string. The string is owned by the #MxWidget and
- * should not be modified or freed.
- */
-const gchar*
-mx_widget_get_style_pseudo_class (MxWidget *actor)
-{
-  g_return_val_if_fail (MX_IS_WIDGET (actor), NULL);
-
-  return actor->priv->pseudo_class;
-}
-
-/**
- * mx_widget_set_style_pseudo_class:
- * @actor: a #MxWidget
- * @pseudo_class: a new pseudo class string
- *
- * Set the style pseudo class
- */
-void
-mx_widget_set_style_pseudo_class (MxWidget    *actor,
-                                  const gchar *pseudo_class)
+static void
+_mx_stylable_set_style_pseudo_class (MxStylable  *actor,
+                                   const gchar *pseudo_class)
 {
   MxWidgetPrivate *priv;
 
   g_return_if_fail (MX_IS_WIDGET (actor));
 
-  priv = actor->priv;
+  priv = MX_WIDGET (actor)->priv;
 
   if (g_strcmp0 (pseudo_class, priv->pseudo_class))
     {
       g_free (priv->pseudo_class);
       priv->pseudo_class = g_strdup (pseudo_class);
 
-      mx_stylable_changed ((MxStylable*) actor);
+      mx_stylable_changed (actor);
 
       g_object_notify (G_OBJECT (actor), "style-pseudo-class");
     }
+}
+
+static const gchar*
+_mx_stylable_get_style_pseudo_class (MxStylable *actor)
+{
+  return ((MxWidget *) actor)->priv->pseudo_class;
+}
+
+
+static const gchar*
+_mx_widget_get_style_class (MxStylable *actor)
+{
+  return ((MxWidget *) actor)->priv->style_class;
 }
 
 
@@ -1039,6 +1003,11 @@ mx_stylable_iface_init (MxStylableIface *iface)
 
       iface->get_style = mx_widget_get_style;
       iface->set_style = mx_widget_set_style;
+
+      iface->get_style_pseudo_class = _mx_stylable_get_style_pseudo_class;
+      iface->set_style_pseudo_class = _mx_stylable_set_style_pseudo_class;
+      iface->get_style_class = _mx_widget_get_style_class;
+      iface->set_style_class = _mx_widget_set_style_class;
     }
 }
 

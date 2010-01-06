@@ -228,12 +228,12 @@ mx_expander_toggle_expanded (MxExpander *expander)
   if (priv->expanded)
     {
       clutter_actor_set_name (priv->arrow, "mx-expander-arrow-open");
-      mx_widget_set_style_pseudo_class (MX_WIDGET (expander), "active");
+      mx_stylable_set_style_pseudo_class (MX_STYLABLE (expander), "active");
     }
   else
     {
       clutter_actor_set_name (priv->arrow, "mx-expander-arrow-closed");
-      mx_widget_set_style_pseudo_class (MX_WIDGET (expander), NULL);
+      mx_stylable_set_style_pseudo_class (MX_STYLABLE (expander), NULL);
     }
 
   child = mx_bin_get_child (MX_BIN (expander));
@@ -521,9 +521,9 @@ mx_expander_style_changed (MxWidget *widget)
   gchar *font_string;
   gint font_size;
 
-  pseudo_class = mx_widget_get_style_pseudo_class (widget);
+  pseudo_class = mx_stylable_get_style_pseudo_class (MX_STYLABLE (widget));
 
-  mx_widget_set_style_pseudo_class (MX_WIDGET (expander->priv->arrow),
+  mx_stylable_set_style_pseudo_class (MX_STYLABLE (expander->priv->arrow),
                                     pseudo_class);
 
 
@@ -565,7 +565,7 @@ mx_expander_enter (ClutterActor         *actor,
                    ClutterCrossingEvent *event)
 {
   if (!MX_EXPANDER (actor)->priv->expanded)
-    mx_widget_set_style_pseudo_class (MX_WIDGET (actor), "hover");
+    mx_stylable_set_style_pseudo_class (MX_STYLABLE (actor), "hover");
 
   return FALSE;
 }
@@ -575,7 +575,7 @@ mx_expander_leave (ClutterActor         *actor,
                    ClutterCrossingEvent *event)
 {
   if (!MX_EXPANDER (actor)->priv->expanded)
-    mx_widget_set_style_pseudo_class (MX_WIDGET (actor), NULL);
+    mx_stylable_set_style_pseudo_class (MX_STYLABLE (actor), NULL);
 
   return FALSE;
 }

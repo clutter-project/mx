@@ -635,3 +635,113 @@ mx_stylable_changed (MxStylable *stylable)
 {
   g_signal_emit (stylable, stylable_signals[CHANGED], 0, NULL);
 }
+
+/**
+ * mx_stylable_set_style_class:
+ * @actor: a #MxWidget
+ * @style_class: a new style class string
+ *
+ * Set the style class name
+ */
+
+/**
+ * mx_stylable_get_style_class:
+ * @actor: a #MxWidget
+ *
+ * Get the current style class name
+ *
+ * Returns: the class name string. The string is owned by the #MxWidget and
+ * should not be modified or freed.
+ */
+
+
+/**
+ * mx_stylable_get_style_pseudo_class:
+ * @actor: a #MxWidget
+ *
+ * Get the current style pseudo class
+ *
+ * Returns: the pseudo class string. The string is owned by the #MxWidget and
+ * should not be modified or freed.
+ */
+
+/**
+ * mx_stylable_set_style_pseudo_class:
+ * @actor: a #MxWidget
+ * @pseudo_class: a new pseudo class string
+ *
+ * Set the style pseudo class
+ */
+
+
+G_CONST_RETURN gchar*
+mx_stylable_get_style_pseudo_class (MxStylable *stylable)
+{
+  MxStylableIface *iface;
+
+  g_return_val_if_fail (MX_IS_STYLABLE (stylable), NULL);
+
+  iface = MX_STYLABLE_GET_IFACE (stylable);
+
+  if (iface->get_style_pseudo_class)
+    return iface->get_style_pseudo_class (stylable);
+
+  g_warning ("MxStylable of type '%s' does not implement"
+             " get_style_pseudo_class()",
+             g_type_name (G_OBJECT_TYPE (stylable)));
+  return NULL;
+}
+
+void
+mx_stylable_set_style_pseudo_class (MxStylable  *stylable,
+                                    const gchar *pseudo_class)
+{
+  MxStylableIface *iface;
+
+  g_return_if_fail (MX_IS_STYLABLE (stylable));
+
+  iface = MX_STYLABLE_GET_IFACE (stylable);
+
+  if (iface->set_style_pseudo_class)
+    iface->set_style_pseudo_class (stylable, pseudo_class);
+  else
+    g_warning ("MxStylable of type '%s' does not implement"
+               " set_style_pseudo_class()",
+               g_type_name (G_OBJECT_TYPE (stylable)));
+}
+
+G_CONST_RETURN gchar*
+mx_stylable_get_style_class (MxStylable *stylable)
+{
+  MxStylableIface *iface;
+
+  g_return_val_if_fail (MX_IS_STYLABLE (stylable), NULL);
+
+  iface = MX_STYLABLE_GET_IFACE (stylable);
+
+  if (iface->get_style_class)
+    return iface->get_style_class (stylable);
+
+  g_warning ("MxStylable of type '%s' does not implement get_style_class()",
+             g_type_name (G_OBJECT_TYPE (stylable)));
+  return NULL;
+}
+
+void
+mx_stylable_set_style_class (MxStylable  *stylable,
+                             const gchar *style_class)
+{
+  MxStylableIface *iface;
+
+  g_return_if_fail (MX_IS_STYLABLE (stylable));
+
+  iface = MX_STYLABLE_GET_IFACE (stylable);
+
+  if (iface->set_style_class)
+    iface->set_style_class (stylable, style_class);
+  else
+    g_warning ("MxStylable of type '%s' does not implement"
+               " set_style_class()",
+               g_type_name (G_OBJECT_TYPE (stylable)));
+}
+

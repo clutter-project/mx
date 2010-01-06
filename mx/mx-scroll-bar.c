@@ -672,7 +672,7 @@ handle_capture_event_cb (ClutterActor *trough,
                                                ((ClutterButtonEvent*) event)->y);
       if (target != bar->priv->handle)
         {
-          mx_widget_set_style_pseudo_class ((MxWidget*) bar->priv->handle, NULL);
+          mx_stylable_set_style_pseudo_class (MX_STYLABLE (bar->priv->handle), NULL);
         }
 
 
