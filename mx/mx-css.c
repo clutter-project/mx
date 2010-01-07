@@ -627,7 +627,7 @@ css_node_matches_selector (MxSelector *selector,
     {
       gint ancestor_matches;
       MxStylable *pparent, *ancestor;
-      ClutterActor *actor;
+      ClutterActor *parent_actor;
 
       if (!parent)
         {
@@ -638,9 +638,9 @@ css_node_matches_selector (MxSelector *selector,
       ancestor = parent;
       while (ancestor)
         {
-          actor = clutter_actor_get_parent (CLUTTER_ACTOR (ancestor));
-          if (MX_IS_STYLABLE (actor))
-            pparent = MX_STYLABLE (actor);
+          parent_actor = clutter_actor_get_parent (CLUTTER_ACTOR (ancestor));
+          if (MX_IS_STYLABLE (parent_actor))
+            pparent = MX_STYLABLE (parent_actor);
           else
             pparent = NULL;
 
