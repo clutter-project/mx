@@ -526,6 +526,15 @@ mx_slider_dispose (GObject *object)
   MxSlider *self = MX_SLIDER (object);
   MxSliderPrivate *priv = self->priv;
 
+  if (priv->capture_handler && priv->trough)
+    {
+      ClutterActor *stage;
+
+      stage = clutter_actor_get_stage (priv->trough);
+      g_signal_handler_disconnect (stage, priv->capture_handler);
+      priv->capture_handler = 0;
+    }
+
   if (priv->trough_bg)
     {
       clutter_actor_unparent (priv->trough_bg);
@@ -538,24 +547,18 @@ mx_slider_dispose (GObject *object)
       priv->fill = NULL;
     }
 
+  /* unparent the handle before the trough, as the handle is parented on the
+   * trough */
+  if (priv->handle)
+    {
+      clutter_actor_unparent (priv->handle);
+      priv->handle = NULL;
+    }
+
   if (priv->trough)
     {
       clutter_actor_unparent (priv->trough);
       priv->trough = NULL;
-    }
-
-  if (priv->handle)
-    {
-      if (priv->capture_handler)
-        {
-          ClutterActor *stage;
-
-          stage = clutter_actor_get_stage(priv->trough);
-          g_signal_handler_disconnect (stage, priv->capture_handler);
-          priv->capture_handler = 0;
-        }
-      clutter_actor_unparent (priv->handle);
-      priv->handle = NULL;
     }
 
   G_OBJECT_CLASS (mx_slider_parent_class)->dispose (object);
