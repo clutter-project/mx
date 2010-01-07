@@ -709,7 +709,8 @@ mx_table_calculate_row_heights (MxTable *table,
 
       row = &rows[meta->row];
 
-      clutter_actor_get_preferred_height (child, -1, &c_min, &c_pref);
+      clutter_actor_get_preferred_height (child, columns[meta->col].final_size,
+                                          &c_min, &c_pref);
 
       row->min_size = MAX (row->min_size, c_min);
       row->pref_size = MAX (row->pref_size, c_pref);
@@ -1117,7 +1118,8 @@ mx_table_get_preferred_width (ClutterActor *self,
       return;
     }
 
-  mx_table_calculate_col_widths (MX_TABLE (self), for_height);
+  mx_table_calculate_dimensions (MX_TABLE (self), -1, for_height);
+
   columns = (DimensionData*) priv->columns->data;
 
   total_min_width = padding.left + padding.right
@@ -1155,9 +1157,7 @@ mx_table_get_preferred_height (ClutterActor *self,
     }
 
   /* use min_widths to help allocation of height-for-width widgets */
-  mx_table_calculate_col_widths (MX_TABLE (self), -1);
-
-  mx_table_calculate_row_heights (MX_TABLE (self), for_width);
+  mx_table_calculate_dimensions (MX_TABLE (self), for_width, -1);
 
   rows = (DimensionData*) priv->rows->data;
 
