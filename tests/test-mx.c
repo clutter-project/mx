@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Intel Corporation.
+ * Copyright 2009, 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -14,6 +14,8 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  * Boston, MA 02111-1307, USA.
+ *
+ * Author: Thomas Wood <thomas.wood@intel.com>
  *
  */
 #include <stdio.h>
@@ -60,10 +62,12 @@ main (int argc, char *argv[])
 {
   ClutterActor *stage, *vbox, *hbox, *holder, *mainbox, *toolbar, *combo;
   MxButtonGroup *group;
+  MxApplication *application;
 
-  clutter_init (&argc, &argv);
+  application = mx_application_new (&argc, &argv, "Test Mx",
+                                    MX_APPLICATION_SINGLE_INSTANCE);
 
-  stage = clutter_stage_new ();
+  stage = (ClutterActor*) mx_application_create_window (application);
   clutter_actor_set_size (stage, 800, 600);
 
   mainbox = mx_box_layout_new ();
@@ -129,9 +133,7 @@ main (int argc, char *argv[])
 
   clutter_actor_show (stage);
 
-  g_signal_connect (stage, "destroy", clutter_main_quit, NULL);
-
-  clutter_main ();
+  mx_application_run (application);
 
   return EXIT_SUCCESS;
 }

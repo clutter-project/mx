@@ -1,7 +1,7 @@
 /*
  * mx.h: Collection of high-level actors for Clutter
  *
- * Copyright 2009 Intel Corporation.
+ * Copyright 2009, 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -26,6 +26,7 @@
 
 #include <mx/mx-action.h>
 #include <mx/mx-adjustment.h>
+#include <mx/mx-application.h>
 #include <mx/mx-bin.h>
 #include <mx/mx-box-layout.h>
 #include <mx/mx-box-layout-child.h>

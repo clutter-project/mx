@@ -34,6 +34,8 @@
 
 G_BEGIN_DECLS
 
+void   mx_set_locale ();
+
 gchar *mx_utils_format_time (GTimeVal *time_);
 
 G_END_DECLS
