@@ -49,6 +49,11 @@
 #include "mx-stylable.h"
 #include <clutter/clutter.h>
 
+#include "config.h"
+#ifdef HAVE_CLUTTER_GESTURE
+#include <clutter-gesture/clutter-gesture.h>
+#endif
+
 static void clutter_container_iface_init (ClutterContainerIface *iface);
 static void mx_stylable_iface_init (MxStylableIface *iface);
 
@@ -81,6 +86,12 @@ struct _MxScrollViewPrivate
   gboolean      row_size_set : 1;
   gboolean      column_size_set : 1;
   guint         mouse_scroll : 1;
+  guint         enable_gestures : 1;
+
+#ifdef HAVE_CLUTTER_GESTURE
+  ClutterGesture *gesture;
+  ClutterAnimation *animation;
+#endif
 };
 
 enum {
@@ -88,7 +99,8 @@ enum {
 
   PROP_HSCROLL,
   PROP_VSCROLL,
-  PROP_MOUSE_SCROLL
+  PROP_MOUSE_SCROLL,
+  PROP_ENABLE_GESTURES
 };
 
 static void
@@ -110,6 +122,9 @@ mx_scroll_view_get_property (GObject    *object,
     case PROP_MOUSE_SCROLL:
       g_value_set_boolean (value, priv->mouse_scroll);
       break;
+    case PROP_ENABLE_GESTURES:
+      g_value_set_boolean (value, priv->enable_gestures);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -121,11 +136,18 @@ mx_scroll_view_set_property (GObject      *object,
                              const GValue *value,
                              GParamSpec   *pspec)
 {
+  MxScrollView *view = MX_SCROLL_VIEW (object);
+
   switch (property_id)
     {
     case PROP_MOUSE_SCROLL:
-      mx_scroll_view_set_mouse_scrolling ((MxScrollView *) object,
-                                          g_value_get_boolean (value));
+      mx_scroll_view_set_mouse_scrolling (view, g_value_get_boolean (value));
+      break;
+
+    case PROP_ENABLE_GESTURES:
+      mx_scroll_view_set_enable_gestures (view, g_value_get_boolean (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -147,6 +169,20 @@ mx_scroll_view_dispose (GObject *object)
       clutter_actor_unparent (priv->hscroll);
       priv->hscroll = NULL;
     }
+
+#ifdef HAVE_CLUTTER_GESTURE
+  if (priv->gesture)
+    {
+      g_object_unref (priv->gesture);
+      priv->gesture = NULL;
+    }
+
+  if (priv->animation)
+    {
+      g_object_unref (priv->animation);
+      priv->animation = NULL;
+    }
+#endif
 
   /* Chaining up will remove the child actor */
   G_OBJECT_CLASS (mx_scroll_view_parent_class)->dispose (object);
@@ -484,6 +520,12 @@ mx_scroll_view_class_init (MxScrollViewClass *klass)
                                    PROP_MOUSE_SCROLL,
                                    pspec);
 
+  pspec = g_param_spec_boolean ("enable-gestures",
+                                "Enable Gestures",
+                                "Enable use of pointer gestures for scrolling",
+                                FALSE,
+                                G_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_ENABLE_GESTURES, pspec);
 }
 
 static void
@@ -605,6 +647,82 @@ child_vadjustment_notify_cb (GObject    *gobject,
     }
 }
 
+#ifdef HAVE_CLUTTER_GESTURE
+static gboolean
+mx_scroll_view_gesture_slide_event_cb (ClutterGesture           *gesture,
+                                       ClutterGestureSlideEvent *event,
+                                       MxScrollView             *scrollview)
+{
+  MxScrollViewPrivate *priv = scrollview->priv;
+  gdouble step, value, final;
+  MxAdjustment *adjustment;
+
+  ClutterInterval *interval;
+  ClutterTimeline *timeline;
+
+  if (!priv->enable_gestures)
+    return FALSE;
+
+  if (!priv->animation)
+    {
+      priv->animation = clutter_animation_new ();
+
+      clutter_animation_set_duration (priv->animation, 1000);
+      clutter_animation_set_mode (priv->animation,
+                                  CLUTTER_EASE_OUT_CUBIC);
+    }
+
+  if (event->direction > 2)
+    adjustment =
+      mx_scroll_bar_get_adjustment (MX_SCROLL_BAR(priv->hscroll));
+  else
+    adjustment =
+      mx_scroll_bar_get_adjustment (MX_SCROLL_BAR(priv->vscroll));
+
+  g_object_get (adjustment,
+                "page-increment", &step,
+                "value", &value,
+                NULL);
+  clutter_animation_set_object (priv->animation,
+                                G_OBJECT (adjustment));
+
+  if (event->direction % 2)
+    /* up, left (1, 3) */
+    final = value + step;
+  else
+    /* down, right (2, 4) */
+    final = value - step;
+
+  timeline = clutter_animation_get_timeline (priv->animation);
+  interval = clutter_animation_get_interval (priv->animation, "value");
+
+  if (!interval)
+    {
+      interval = clutter_interval_new (G_TYPE_DOUBLE, value, final);
+      clutter_animation_bind_interval (priv->animation, "value",
+                                       interval);
+      clutter_timeline_start (timeline);
+
+    }
+  else
+    {
+      GValue *end, *start;
+
+      end = clutter_interval_peek_final_value (interval);
+      start = clutter_interval_peek_initial_value (interval);
+
+      g_value_set_double (end, final);
+      g_value_set_double (start, value);
+
+      clutter_timeline_rewind (timeline);
+      clutter_timeline_start (timeline);
+    }
+
+  return TRUE;
+}
+
+#endif
+
 static void
 mx_scroll_view_init (MxScrollView *self)
 {
@@ -623,6 +741,15 @@ mx_scroll_view_init (MxScrollView *self)
 
   g_signal_connect (self, "style-changed",
                     G_CALLBACK (mx_scroll_view_style_changed), NULL);
+
+#ifdef HAVE_CLUTTER_GESTURE
+  priv->gesture = clutter_gesture_new (CLUTTER_ACTOR (self));
+  clutter_gesture_set_gesture_mask (priv->gesture, CLUTTER_ACTOR (self),
+                                    GESTURE_MASK_SLIDE);
+  g_signal_connect (priv->gesture, "gesture-slide-event",
+                    G_CALLBACK (mx_scroll_view_gesture_slide_event_cb),
+                    self);
+#endif
 }
 
 static void
@@ -857,4 +984,34 @@ mx_scroll_view_get_mouse_scrolling (MxScrollView *scroll)
   priv = MX_SCROLL_VIEW (scroll)->priv;
 
   return priv->mouse_scroll;
+}
+
+void
+mx_scroll_view_set_enable_gestures (MxScrollView *scroll,
+                                    gboolean      enabled)
+{
+  MxScrollViewPrivate *priv;
+
+  g_return_if_fail (MX_IS_SCROLL_VIEW (scroll));
+
+  priv = MX_SCROLL_VIEW (scroll)->priv;
+
+  if (priv->enable_gestures != enabled)
+    {
+      priv->enable_gestures = enabled;
+
+#ifndef HAVE_CLUTTER_GESTURE
+      g_warning ("Gestures are disabled as Clutter Gesture is not available");
+#endif
+
+      g_object_notify (G_OBJECT (scroll), "enable-gestures");
+    }
+}
+
+gboolean
+mx_scroll_view_get_enable_gestures (MxScrollView *scroll)
+{
+  g_return_val_if_fail (MX_IS_SCROLL_VIEW (scroll), FALSE);
+
+  return scroll->priv->enable_gestures;
 }
