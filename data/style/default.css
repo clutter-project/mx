@@ -204,12 +204,12 @@ MxToolbar {
   padding: 6;
 }
 
-MxToolbar MxButton {
+MxToolbar MxButton#close-button {
   border-image: url('close.png') 0;
   padding: 51 57 0 0;
 }
 
-MxToolbar MxButton:hover, MxToolbar MxButton:active {
+MxToolbar MxButton#close-button:hover, MxToolbar MxButton#close-button:active {
   border-image: url('close-hover.png') 0;
   padding: 51 57 0 0;
 }

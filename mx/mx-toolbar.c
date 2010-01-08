@@ -409,6 +409,7 @@ mx_toolbar_set_has_close_button (MxToolbar *toolbar,
       else
         {
           priv->close_button = mx_button_new ();
+          clutter_actor_set_name (priv->close_button, "close-button");
           clutter_actor_set_parent (priv->close_button,
                                     CLUTTER_ACTOR (toolbar));
           g_signal_connect (priv->close_button, "clicked",
