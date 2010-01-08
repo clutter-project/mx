@@ -139,6 +139,7 @@ _mx_widget_set_clutter_text_attributes (MxWidget    *widget,
 
   /* font name */
   clutter_text_set_font_name (text, font_name);
+  g_free (font_name);
 
   /* font size */
   attr = pango_attr_size_new_absolute (font_size * PANGO_SCALE);
