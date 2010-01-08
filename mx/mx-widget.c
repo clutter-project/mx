@@ -630,7 +630,7 @@ mx_widget_enter (ClutterActor         *actor,
   if (priv->has_tooltip)
     mx_widget_show_tooltip (widget);
 
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean
@@ -646,7 +646,7 @@ mx_widget_leave (ClutterActor         *actor,
   if (priv->has_tooltip)
     mx_tooltip_hide (priv->tooltip);
 
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean

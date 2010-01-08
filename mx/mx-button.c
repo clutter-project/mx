@@ -280,7 +280,7 @@ mx_button_enter (ClutterActor         *actor,
   if (mx_widget_get_has_tooltip (widget))
     mx_widget_show_tooltip (widget);
 
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean
@@ -307,7 +307,7 @@ mx_button_leave (ClutterActor         *actor,
   if (mx_widget_get_has_tooltip (widget))
     mx_widget_hide_tooltip (widget);
 
-  return TRUE;
+  return FALSE;
 }
 
 static void
