@@ -637,43 +637,14 @@ mx_stylable_changed (MxStylable *stylable)
 }
 
 /**
- * mx_stylable_set_style_class:
- * @actor: a #MxWidget
- * @style_class: a new style class string
- *
- * Set the style class name
- */
-
-/**
- * mx_stylable_get_style_class:
- * @actor: a #MxWidget
- *
- * Get the current style class name
- *
- * Returns: the class name string. The string is owned by the #MxWidget and
- * should not be modified or freed.
- */
-
-
-/**
  * mx_stylable_get_style_pseudo_class:
- * @actor: a #MxWidget
+ * @stylable: a #MxStylable
  *
  * Get the current style pseudo class
  *
  * Returns: the pseudo class string. The string is owned by the #MxWidget and
  * should not be modified or freed.
  */
-
-/**
- * mx_stylable_set_style_pseudo_class:
- * @actor: a #MxWidget
- * @pseudo_class: a new pseudo class string
- *
- * Set the style pseudo class
- */
-
-
 G_CONST_RETURN gchar*
 mx_stylable_get_style_pseudo_class (MxStylable *stylable)
 {
@@ -692,6 +663,13 @@ mx_stylable_get_style_pseudo_class (MxStylable *stylable)
   return NULL;
 }
 
+/**
+ * mx_stylable_set_style_pseudo_class:
+ * @stylable: a #MxStylable
+ * @pseudo_class: a new pseudo class string
+ *
+ * Set the style pseudo class
+ */
 void
 mx_stylable_set_style_pseudo_class (MxStylable  *stylable,
                                     const gchar *pseudo_class)
@@ -710,6 +688,15 @@ mx_stylable_set_style_pseudo_class (MxStylable  *stylable,
                g_type_name (G_OBJECT_TYPE (stylable)));
 }
 
+/**
+ * mx_stylable_get_style_class:
+ * @stylable: a #MxStylable
+ *
+ * Get the current style class name
+ *
+ * Returns: the class name string. The string is owned by the #MxWidget and
+ * should not be modified or freed.
+ */
 G_CONST_RETURN gchar*
 mx_stylable_get_style_class (MxStylable *stylable)
 {
@@ -727,6 +714,13 @@ mx_stylable_get_style_class (MxStylable *stylable)
   return NULL;
 }
 
+/**
+ * mx_stylable_set_style_class:
+ * @stylable: a #MxStylable
+ * @style_class: a new style class string
+ *
+ * Set the style class name
+ */
 void
 mx_stylable_set_style_class (MxStylable  *stylable,
                              const gchar *style_class)
