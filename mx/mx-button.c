@@ -272,6 +272,9 @@ mx_button_enter (ClutterActor         *actor,
   MxButton *button = MX_BUTTON (actor);
   MxWidget *widget = MX_WIDGET (actor);
 
+  if (event->source != actor)
+    return FALSE;
+
   if (!button->priv->is_checked)
     mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "hover");
 
@@ -289,6 +292,9 @@ mx_button_leave (ClutterActor         *actor,
 {
   MxButton *button = MX_BUTTON (actor);
   MxWidget *widget = MX_WIDGET (actor);
+
+  if (event->source != actor)
+    return FALSE;
 
   button->priv->is_hover = 0;
 

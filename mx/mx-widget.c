@@ -624,6 +624,9 @@ mx_widget_enter (ClutterActor         *actor,
   MxWidget *widget = MX_WIDGET (actor);
   MxWidgetPrivate *priv = widget->priv;
 
+  if (event->source != actor)
+    return FALSE;
+
   mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "hover");
   priv->is_hovered = TRUE;
 
@@ -639,6 +642,9 @@ mx_widget_leave (ClutterActor         *actor,
 {
   MxWidget *widget = MX_WIDGET (actor);
   MxWidgetPrivate *priv = widget->priv;
+
+  if (event->source != actor)
+    return FALSE;
 
   mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "");
   priv->is_hovered = FALSE;
