@@ -204,6 +204,7 @@ mx_border_image_set_from_string (GValue *dest,
       border_image.left = atoi (strv[8]);
     }
 
+  g_strfreev (strv);
   g_value_set_boxed (dest, &border_image);
 }
 
