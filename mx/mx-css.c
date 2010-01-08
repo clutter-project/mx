@@ -534,30 +534,34 @@ css_node_matches_selector (MxSelector *selector,
     {
       const gchar *type;
       GType type_id;
-      gboolean matched;
+      gint matched;
+      gint depth;
 
       type_id = G_OBJECT_CLASS_TYPE (G_OBJECT_GET_CLASS (stylable));
       type = g_type_name (type_id);
       matched = FALSE;
 
+      depth = 10;
       while (type)
         {
           if (!strcmp (selector->type, type))
             {
-              matched = TRUE;
+              matched = depth;
               break;
             }
           else
             {
               type_id = g_type_parent (type_id);
               type = g_type_name (type_id);
+              if (depth > 1)
+                depth--;
             }
         }
 
       if (!matched)
         return -1;
       else
-        c++;
+        c += depth;
     }
 
   /* check id */
@@ -566,7 +570,7 @@ css_node_matches_selector (MxSelector *selector,
       if (!id || strcmp (selector->id, id))
         return -1;
       else
-        a++;
+        a += 10;
     }
 
   /* check psuedo_class */
@@ -576,7 +580,7 @@ css_node_matches_selector (MxSelector *selector,
           || strcmp (selector->pseudo_class, pseudo_class))
         return -1;
       else
-        b++;
+        b += 10;
     }
 
   /* check class */
@@ -585,7 +589,7 @@ css_node_matches_selector (MxSelector *selector,
       if (!class || strcmp (selector->class, class))
         return -1;
       else
-        b++;
+        b += 10;
     }
 
   /* check parent */
@@ -642,8 +646,8 @@ css_node_matches_selector (MxSelector *selector,
     }
 
 
-  a = a * 100;
-  b = b * 10;
+  a = a * 10000;
+  b = b * 100;
 
   score = a + b + c;
 
