@@ -718,10 +718,6 @@ mx_style_sheet_get_properties (MxStyleSheet *sheet,
           selector_match->score = score;
           matching_selectors = g_list_prepend (matching_selectors,
                                                selector_match);
-#ifdef MX_DEBUG_CSS
-          printf ("(%d) ", score);
-          print_selector (selector_match->selector, 1);
-#endif
         }
     }
 
@@ -741,13 +737,17 @@ mx_style_sheet_get_properties (MxStyleSheet *sheet,
 
       g_hash_table_foreach (match->selector->style, (GHFunc) css_table_copy,
                             &copy_data);
+
+#ifdef MX_DEBUG_CSS
+          printf ("(%6d) ", match->score);
+          print_selector (match->selector, 3);
+#endif
     }
 
   g_list_foreach (matching_selectors, (GFunc) free_selector_match, NULL);
   g_list_free (matching_selectors);
 
 #ifdef MX_DEBUG_CSS
-  printf ("----\n");
 
   g_timer_stop (timer);
   static int count = 1;
@@ -757,7 +757,7 @@ mx_style_sheet_get_properties (MxStyleSheet *sheet,
   count++;
   printf ("%f - finished (total: %d, average: %f) %s \n",
           new, count, avg, G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (node)));
-
+  printf ("----\n");
 #endif
   return result;
 }
