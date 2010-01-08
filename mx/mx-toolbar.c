@@ -374,7 +374,7 @@ close_button_click_cb (MxButton  *button,
   g_signal_emit (toolbar, toolbar_signals[CLOSE_BUTTON_CLICKED], 0, &handled);
 
   if (!handled)
-    clutter_main_quit ();
+    clutter_actor_destroy (clutter_actor_get_stage (CLUTTER_ACTOR (toolbar)));
 }
 
 ClutterActor *
