@@ -430,6 +430,7 @@ mx_style_get_valist (MxStyle     *style,
           name = va_arg (va_args, gchar*);
         }
       values_set = TRUE;
+      g_hash_table_unref (properties);
     }
 
   if (!values_set)

@@ -726,7 +726,10 @@ mx_style_sheet_get_properties (MxStyleSheet *sheet,
                                     (GCompareFunc) compare_selector_matches);
 
   /* get properties from selector's styles */
-  result = g_hash_table_new (g_str_hash, g_str_equal);
+  result = g_hash_table_new_full (g_str_hash,
+                                  g_str_equal,
+                                  NULL,
+                                  (GDestroyNotify)mx_style_sheet_value_free);
   for (l = matching_selectors; l; l = l->next)
     {
       SelectorMatch *match = l->data;
