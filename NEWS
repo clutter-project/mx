@@ -1,7 +1,22 @@
+0.4.0
+====
+
+Changes since 0.3.0:
+
+ * New MxSlider widget (Damien Lespiau)
+ * New MxApplication class to manage windows and application configuration
+ * Experimental gesture support in MxScrollView
+ * Performance improvements to styling
+
+ * Fixed bugs:
+    MB#8892 - [css] Apply styling from parent classes to subclasses
+    MB#8710 - [button] only emit notify::checked when the property has changed
+    MB#8923 - [box-layout] Implement raise/lower/sort_depth_order
+
 0.3.0
 =====
 
-Changes since 0.2.0
+Changes since 0.2.0:
 
  * New toolbar widget
  * Convert MxBin to abstract class
