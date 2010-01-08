@@ -555,10 +555,7 @@ css_node_matches_selector (MxSelector *selector,
         }
 
       if (!matched)
-        {
-          score = -1;
-          goto out;
-        }
+        return -1;
       else
         c++;
     }
@@ -567,10 +564,7 @@ css_node_matches_selector (MxSelector *selector,
   if (selector->id)
     {
       if (!id || strcmp (selector->id, id))
-        {
-          score = -1;
-          goto out;
-        }
+        return -1;
       else
         a++;
     }
@@ -580,10 +574,7 @@ css_node_matches_selector (MxSelector *selector,
     {
       if (!pseudo_class
           || strcmp (selector->pseudo_class, pseudo_class))
-        {
-          score = -1;
-          goto out;
-        }
+        return -1;
       else
         b++;
     }
@@ -592,10 +583,7 @@ css_node_matches_selector (MxSelector *selector,
   if (selector->class)
     {
       if (!class || strcmp (selector->class, class))
-        {
-          score = -1;
-          goto out;
-        }
+        return -1;
       else
         b++;
     }
@@ -606,17 +594,11 @@ css_node_matches_selector (MxSelector *selector,
       gint parent_matches;
 
       if (!parent)
-        {
-          score = -1;
-          goto out;
-        }
+        return -1;
 
       parent_matches = css_node_matches_selector (selector->parent, parent);
       if (parent_matches < 0)
-        {
-          score = -1;
-          goto out;
-        }
+        return -1;
 
       /* increase the 'c' score, since the parent matched */
       c += parent_matches;
@@ -630,10 +612,7 @@ css_node_matches_selector (MxSelector *selector,
       ClutterActor *parent_actor;
 
       if (!parent)
-        {
-          score = -1;
-          goto out;
-        }
+        return -1;
 
       ancestor = parent;
       while (ancestor)
@@ -658,10 +637,7 @@ css_node_matches_selector (MxSelector *selector,
 
           ancestor = pparent;
           if (!ancestor || !MX_IS_STYLABLE (ancestor))
-            {
-              score = -1;
-              goto out;
-            }
+            return -1;
         }
     }
 
@@ -670,9 +646,6 @@ css_node_matches_selector (MxSelector *selector,
   b = b * 10;
 
   score = a + b + c;
-
-out:
-
 
   return score;
 }
