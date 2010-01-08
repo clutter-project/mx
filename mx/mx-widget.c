@@ -544,10 +544,15 @@ mx_widget_style_changed (MxStylable *self)
                                                  border_bottom,
                                                  border_left);
       clutter_actor_set_parent (priv->border_image, CLUTTER_ACTOR (self));
-      g_boxed_free (MX_TYPE_BORDER_IMAGE, border_image);
 
       has_changed = TRUE;
       relayout_needed = TRUE;
+    }
+
+  /* Might get a border-image: none */
+  if (border_image)
+    {
+      g_boxed_free (MX_TYPE_BORDER_IMAGE, border_image);
     }
 
   if (background_image)
