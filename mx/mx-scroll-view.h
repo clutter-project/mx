@@ -82,6 +82,9 @@ void          mx_scroll_view_set_row_size        (MxScrollView *scroll,
 void          mx_scroll_view_set_mouse_scrolling (MxScrollView *scroll,
                                                   gboolean      enabled);
 gboolean      mx_scroll_view_get_mouse_scrolling (MxScrollView *scroll);
+void          mx_scroll_view_set_enable_gestures (MxScrollView *scroll,
+                                                  gboolean      enabled);
+gboolean      mx_scroll_view_get_enable_gestures (MxScrollView *scroll);
 
 G_END_DECLS
 

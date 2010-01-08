@@ -86,6 +86,7 @@ struct _MxScrollViewPrivate
   gboolean      row_size_set : 1;
   gboolean      column_size_set : 1;
   guint         mouse_scroll : 1;
+  guint         enable_gestures : 1;
 
 #ifdef HAVE_CLUTTER_GESTURE
   ClutterGesture *gesture;
@@ -98,7 +99,8 @@ enum {
 
   PROP_HSCROLL,
   PROP_VSCROLL,
-  PROP_MOUSE_SCROLL
+  PROP_MOUSE_SCROLL,
+  PROP_ENABLE_GESTURES
 };
 
 static void
@@ -120,6 +122,9 @@ mx_scroll_view_get_property (GObject    *object,
     case PROP_MOUSE_SCROLL:
       g_value_set_boolean (value, priv->mouse_scroll);
       break;
+    case PROP_ENABLE_GESTURES:
+      g_value_set_boolean (value, priv->enable_gestures);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -131,11 +136,18 @@ mx_scroll_view_set_property (GObject      *object,
                              const GValue *value,
                              GParamSpec   *pspec)
 {
+  MxScrollView *view = MX_SCROLL_VIEW (object);
+
   switch (property_id)
     {
     case PROP_MOUSE_SCROLL:
-      mx_scroll_view_set_mouse_scrolling ((MxScrollView *) object,
-                                          g_value_get_boolean (value));
+      mx_scroll_view_set_mouse_scrolling (view, g_value_get_boolean (value));
+      break;
+
+    case PROP_ENABLE_GESTURES:
+      mx_scroll_view_set_enable_gestures (view, g_value_get_boolean (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -508,6 +520,12 @@ mx_scroll_view_class_init (MxScrollViewClass *klass)
                                    PROP_MOUSE_SCROLL,
                                    pspec);
 
+  pspec = g_param_spec_boolean ("enable-gestures",
+                                "Enable Gestures",
+                                "Enable use of pointer gestures for scrolling",
+                                FALSE,
+                                G_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_ENABLE_GESTURES, pspec);
 }
 
 static void
@@ -630,7 +648,7 @@ child_vadjustment_notify_cb (GObject    *gobject,
 }
 
 #ifdef HAVE_CLUTTER_GESTURE
-gboolean
+static gboolean
 mx_scroll_view_gesture_slide_event_cb (ClutterGesture           *gesture,
                                        ClutterGestureSlideEvent *event,
                                        MxScrollView             *scrollview)
@@ -641,6 +659,9 @@ mx_scroll_view_gesture_slide_event_cb (ClutterGesture           *gesture,
 
   ClutterInterval *interval;
   ClutterTimeline *timeline;
+
+  if (!priv->enable_gestures)
+    return FALSE;
 
   if (!priv->animation)
     {
@@ -963,4 +984,34 @@ mx_scroll_view_get_mouse_scrolling (MxScrollView *scroll)
   priv = MX_SCROLL_VIEW (scroll)->priv;
 
   return priv->mouse_scroll;
+}
+
+void
+mx_scroll_view_set_enable_gestures (MxScrollView *scroll,
+                                    gboolean      enabled)
+{
+  MxScrollViewPrivate *priv;
+
+  g_return_if_fail (MX_IS_SCROLL_VIEW (scroll));
+
+  priv = MX_SCROLL_VIEW (scroll)->priv;
+
+  if (priv->enable_gestures != enabled)
+    {
+      priv->enable_gestures = enabled;
+
+#ifndef HAVE_CLUTTER_GESTURE
+      g_warning ("Gestures are disabled as Clutter Gesture is not available");
+#endif
+
+      g_object_notify (G_OBJECT (scroll), "enable-gestures");
+    }
+}
+
+gboolean
+mx_scroll_view_get_enable_gestures (MxScrollView *scroll)
+{
+  g_return_val_if_fail (MX_IS_SCROLL_VIEW (scroll), FALSE);
+
+  return scroll->priv->enable_gestures;
 }

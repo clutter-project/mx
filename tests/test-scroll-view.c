@@ -25,7 +25,9 @@ scroll_view_main (ClutterContainer *stage)
 {
   ClutterActor *scroll, *view, *texture;
 
-  scroll = (ClutterActor *) mx_scroll_view_new ();
+  scroll = mx_scroll_view_new ();
+  mx_scroll_view_set_enable_gestures (MX_SCROLL_VIEW (scroll), TRUE);
+
   clutter_container_add_actor (stage, scroll);
   clutter_actor_set_position (scroll, 10, 10);
   clutter_actor_set_size (scroll, 300, 300);
