@@ -361,11 +361,11 @@ mx_notebook_allocate (ClutterActor          *actor,
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
-  childbox.x1 = box->x1 + padding.left;
-  childbox.x2 = box->x2 - padding.right;
+  childbox.x1 = 0 + padding.left;
+  childbox.x2 = box->x2 - box->x1 - padding.right;
 
-  childbox.y1 = box->y1 + padding.top;
-  childbox.y2 = box->y2 - padding.bottom;
+  childbox.y1 = 0 + padding.top;
+  childbox.y2 = box->y2 - box->y1 - padding.bottom;
 
   for (l = priv->children; l; l = l->next)
     {
