@@ -16,7 +16,8 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Written by: Thomas Wood <thomas.wood@intel.com>
+ * Written by: Thomas Wood <thomas.wood@intel.com>,
+ *             Chris Lord  <chris@linux.intel.com>
  */
 
 #include "config.h"
@@ -26,6 +27,12 @@
 #include "mx-private.h"
 
 #include <glib/gi18n-lib.h>
+#include <clutter/x11/clutter-x11.h>
+
+#ifdef HAVE_STARTUP_NOTIFICATION
+#  define SN_API_NOT_YET_FROZEN
+#  include <libsn/sn.h>
+#endif
 
 G_DEFINE_TYPE (MxApplication, mx_application, G_TYPE_OBJECT)
 
@@ -34,11 +41,13 @@ G_DEFINE_TYPE (MxApplication, mx_application, G_TYPE_OBJECT)
 
 struct _MxApplicationPrivate
 {
-  GList *windows;
+  GList              *windows;
+  gchar              *name;
+  MxApplicationFlags  flags;
 
-  gchar *name;
-
-  MxApplicationFlags flags;
+#ifdef HAVE_STARTUP_NOTIFICATION
+  SnLauncheeContext  *sn_context;
+#endif
 };
 
 enum
@@ -108,6 +117,7 @@ mx_application_set_property (GObject      *object,
     {
   case PROP_APP_NAME:
     priv->name = g_value_dup_string (value);
+    g_set_application_name (priv->name);
     break;
 
   case PROP_FLAGS:
@@ -128,6 +138,15 @@ mx_application_dispose (GObject *object)
 static void
 mx_application_finalize (GObject *object)
 {
+  MxApplicationPrivate *priv = MX_APPLICATION (object)->priv;
+
+#ifdef HAVE_STARTUP_NOTIFICATION
+  if (priv->sn_context)
+    sn_launchee_context_unref (priv->sn_context);
+#endif
+
+  g_free (priv->name);
+
   G_OBJECT_CLASS (mx_application_parent_class)->finalize (object);
 }
 
@@ -196,6 +215,32 @@ mx_application_window_destroy_cb (ClutterActor  *actor,
     }
 }
 
+#ifdef HAVE_STARTUP_NOTIFICATION
+static void
+mx_application_window_map_cb (ClutterActor  *actor,
+                              GParamSpec    *pspec,
+                              MxApplication *application)
+{
+  Window xwindow;
+
+  MxApplicationPrivate *priv = application->priv;
+
+  if (CLUTTER_ACTOR_IS_MAPPED (actor))
+    {
+      xwindow = clutter_x11_get_stage_window (CLUTTER_STAGE (actor));
+      sn_launchee_context_setup_window (priv->sn_context, xwindow);
+      sn_launchee_context_complete (priv->sn_context);
+
+      sn_launchee_context_unref (priv->sn_context);
+      priv->sn_context = NULL;
+
+      g_signal_handlers_disconnect_by_func (actor,
+                                            mx_application_window_map_cb,
+                                            application);
+    }
+}
+#endif
+
 MxApplication *
 mx_application_new (gint                *argc,
                     gchar             ***argv,
@@ -207,7 +252,7 @@ mx_application_new (gint                *argc,
   /* initialise clutter and the type system */
   if (flags & MX_APPLICATION_CLUTTER_GTK)
     {
-      g_assert ("ClutterGtk not yet supported");
+      g_error ("ClutterGtk not yet supported");
       return NULL;
     }
   else
@@ -246,13 +291,60 @@ void
 mx_application_add_window (MxApplication *application,
                            ClutterStage  *window)
 {
+#ifdef HAVE_STARTUP_NOTIFICATION
+  static gboolean first_window = TRUE;
+#endif
+
+  MxApplicationPrivate *priv = application->priv;
+
   g_return_if_fail (MX_IS_APPLICATION (application));
   g_return_if_fail (CLUTTER_IS_STAGE (window));
 
-  application->priv->windows = g_list_prepend (application->priv->windows,
-                                               window);
+  priv->windows = g_list_prepend (application->priv->windows, window);
   g_signal_connect (window, "destroy",
                     G_CALLBACK (mx_application_window_destroy_cb), application);
+
+#ifdef HAVE_STARTUP_NOTIFICATION
+  /* Use the first window of the application for startup notification */
+  if (first_window)
+    {
+      SnDisplay *display;
+      Display *xdisplay;
+      int screen;
+
+      first_window = FALSE;
+
+      if (priv->flags & MX_APPLICATION_CLUTTER_GTK)
+        {
+          g_error ("ClutterGtk not yet supported");
+          return;
+        }
+      else
+        {
+          xdisplay = clutter_x11_get_default_display ();
+          screen = clutter_x11_get_default_screen ();
+        }
+
+      if (g_getenv ("LIBSN_SYNC"))
+        XSynchronize (xdisplay, True);
+
+      display = sn_display_new (xdisplay, NULL, NULL);
+      priv->sn_context = sn_launchee_context_new_from_environment (display,
+                                                                   screen);
+
+      if (priv->sn_context)
+        {
+          if (CLUTTER_ACTOR_IS_MAPPED (window))
+            mx_application_window_map_cb (CLUTTER_ACTOR (window),
+                                          NULL,
+                                          application);
+          else
+            g_signal_connect (window, "notify::mapped",
+                              G_CALLBACK (mx_application_window_map_cb),
+                              application);
+        }
+    }
+#endif
 }
 
 void

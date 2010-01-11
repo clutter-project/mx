@@ -147,6 +147,20 @@ AS_IF([test "x$with_clutter_gesture" = xyes],
                         [AC_MSG_FAILURE([Could not find clutter-gesture. Use --without-clutter-gesture to disable gesture support.])]]
        ))
 
+AC_ARG_WITH([startup-notification],
+            [AC_HELP_STRING([--without-startup-notification],
+                            [enable startup notification])],
+            [],
+            [with_startup_notification=yes])
+
+AS_IF([test "x$with_startup_notification" = xyes],
+      [PKG_CHECK_EXISTS([libstartup-notification-1.0 >= 0.9],
+                        [AC_DEFINE([HAVE_STARTUP_NOTIFICATION], [1],
+                                   [Define if startup notification is enabled])
+                        MX_REQUIRES="$MX_REQUIRES libstartup-notification-1.0 >= 0.9"],
+                        [AC_MSG_FAILURE([Could not find libstartup-notification. Use --without-startup-notification to disable startup notification support.])]]
+      ))
+
 dnl ***************************************************************************
 dnl Internationalization
 dnl ***************************************************************************
