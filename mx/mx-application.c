@@ -60,6 +60,8 @@ struct _MxApplicationPrivate
   gchar              *service_name;
   DBusGProxy         *proxy;
 #endif
+
+  GHashTable         *actions;
 };
 
 enum
@@ -100,12 +102,10 @@ mx_application_constructed (GObject *object)
 #ifdef HAVE_DBUS
   DBusGConnection *bus;
   guint32 request_status;
+  gboolean unique, success;
 
   GError *error = NULL;
   MxApplicationPrivate *priv = MX_APPLICATION (object)->priv;
-
-  if (!(priv->flags & MX_APPLICATION_SINGLE_INSTANCE))
-    return;
 
   if (!priv->service_name)
     {
@@ -125,9 +125,13 @@ mx_application_constructed (GObject *object)
                                            DBUS_PATH_DBUS,
                                            DBUS_INTERFACE_DBUS);
 
+  unique = (priv->flags & MX_APPLICATION_SINGLE_INSTANCE) ? TRUE : FALSE;
+  success = FALSE;
+
   if (!org_freedesktop_DBus_request_name (priv->proxy,
                                           priv->service_name,
-                                          DBUS_NAME_FLAG_DO_NOT_QUEUE,
+                                          unique ?
+                                            DBUS_NAME_FLAG_DO_NOT_QUEUE : 0,
                                           &request_status,
                                           &error))
     {
@@ -138,11 +142,23 @@ mx_application_constructed (GObject *object)
     {
       priv->is_proxy = TRUE;
     }
+  else if (request_status == DBUS_REQUEST_NAME_REPLY_IN_QUEUE)
+    {
+      if (!unique)
+        g_warning ("Single-instance application in queue.");
+      else
+        success = TRUE;
+    }
   else if (request_status != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER)
     {
       g_warning ("Failed to request name");
     }
   else
+    {
+      success = TRUE;
+    }
+
+  if (success)
     {
       gchar *path_from_name = g_strdelimit (priv->service_name, ".", '/');
       dbus_g_connection_register_g_object (bus,
@@ -271,15 +287,21 @@ mx_application_set_property (GObject      *object,
 static void
 mx_application_dispose (GObject *object)
 {
-#ifdef HAVE_DBUS
   MxApplicationPrivate *priv = MX_APPLICATION (object)->priv;
 
+#ifdef HAVE_DBUS
   if (priv->proxy)
     {
       g_object_unref (priv->proxy);
       priv->proxy = NULL;
     }
 #endif
+
+  if (priv->actions)
+    {
+      g_hash_table_destroy (priv->actions);
+      priv->actions = NULL;
+    }
 
   G_OBJECT_CLASS (mx_application_parent_class)->dispose (object);
 }
@@ -368,7 +390,12 @@ mx_application_class_init (MxApplicationClass *klass)
 static void
 mx_application_init (MxApplication *self)
 {
-  self->priv = APPLICATION_PRIVATE (self);
+  MxApplicationPrivate *priv = self->priv = APPLICATION_PRIVATE (self);
+
+  priv->actions = g_hash_table_new_full (g_str_hash,
+                                         g_str_equal,
+                                         g_free,
+                                         g_object_unref);
 }
 
 static void
@@ -556,3 +583,50 @@ mx_application_create_window (MxApplication *application)
 
   return MX_APPLICATION_GET_CLASS (application)->create_window (application);
 }
+
+void
+mx_application_add_action (MxApplication *application,
+                           MxAction      *action)
+{
+  MxApplicationPrivate *priv = application->priv;
+
+  g_hash_table_insert (priv->actions,
+                       g_strdup (mx_action_get_name (action)),
+                       g_object_ref (action));
+}
+
+void
+mx_application_remove_action (MxApplication *application,
+                              const gchar   *name)
+{
+  MxApplicationPrivate *priv = application->priv;
+
+  if (priv->is_proxy)
+    {
+      g_warning ("Can't remove actions on remote applications");
+      return;
+    }
+
+  g_hash_table_remove (priv->actions, name);
+}
+
+void
+mx_application_invoke_action (MxApplication *application,
+                              const gchar   *name)
+{
+  MxApplicationPrivate *priv = application->priv;
+
+  if (priv->is_proxy)
+    {
+#ifdef HAVE_DBUS
+#endif
+    }
+  else
+    {
+      MxAction *action = g_hash_table_lookup (priv->actions, name);
+      if (action)
+        g_signal_emit_by_name (action, "activated", NULL);
+    }
+
+}
+

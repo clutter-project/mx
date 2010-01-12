@@ -23,6 +23,7 @@
 #define _MX_APPLICATION_H
 
 #include <clutter/clutter.h>
+#include <mx/mx-action.h>
 
 G_BEGIN_DECLS
 
@@ -94,6 +95,14 @@ void                  mx_application_remove_window (MxApplication *application,
 
 G_CONST_RETURN GList* mx_application_get_windows   (MxApplication *application);
 
+void                  mx_application_add_action    (MxApplication *application,
+                                                    MxAction      *action);
+
+void                  mx_application_remove_action (MxApplication *application,
+                                                    const gchar   *name);
+
+void                  mx_application_invoke_action (MxApplication *application,
+                                                    const gchar   *name);
 
 G_END_DECLS
 
