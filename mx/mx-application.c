@@ -34,6 +34,12 @@
 #  include <libsn/sn.h>
 #endif
 
+#ifdef HAVE_DBUS
+#include <dbus/dbus.h>
+#include <dbus/dbus-glib.h>
+#include <dbus/dbus-glib-bindings.h>
+#endif
+
 G_DEFINE_TYPE (MxApplication, mx_application, G_TYPE_OBJECT)
 
 #define APPLICATION_PRIVATE(o) \
@@ -44,9 +50,15 @@ struct _MxApplicationPrivate
   GList              *windows;
   gchar              *name;
   MxApplicationFlags  flags;
+  gboolean            is_proxy;
 
 #ifdef HAVE_STARTUP_NOTIFICATION
   SnLauncheeContext  *sn_context;
+#endif
+
+#ifdef HAVE_DBUS
+  gchar              *service_name;
+  DBusGProxy         *proxy;
 #endif
 };
 
@@ -80,6 +92,67 @@ mx_application_constructor (GType                  type,
     object = g_object_ref (G_OBJECT (app_singleton));
 
   return object;
+}
+
+static void
+mx_application_constructed (GObject *object)
+{
+#ifdef HAVE_DBUS
+  DBusGConnection *bus;
+  guint32 request_status;
+
+  GError *error = NULL;
+  MxApplicationPrivate *priv = MX_APPLICATION (object)->priv;
+
+  if (!(priv->flags & MX_APPLICATION_SINGLE_INSTANCE))
+    return;
+
+  if (!priv->service_name)
+    {
+      g_warning ("No service name, not registering DBus service");
+      return;
+    }
+
+  if (!(bus = dbus_g_bus_get (DBUS_BUS_SESSION, &error)))
+    {
+      g_warning ("%s", error->message);
+      g_error_free (error);
+      return;
+    }
+
+  priv->proxy = dbus_g_proxy_new_for_name (bus,
+                                           DBUS_SERVICE_DBUS,
+                                           DBUS_PATH_DBUS,
+                                           DBUS_INTERFACE_DBUS);
+
+  if (!org_freedesktop_DBus_request_name (priv->proxy,
+                                          priv->service_name,
+                                          DBUS_NAME_FLAG_DO_NOT_QUEUE,
+                                          &request_status,
+                                          &error))
+    {
+      g_warning ("Failed to request name: %s", error->message);
+      g_error_free (error);
+    }
+  else if (request_status == DBUS_REQUEST_NAME_REPLY_EXISTS)
+    {
+      priv->is_proxy = TRUE;
+    }
+  else if (request_status != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER)
+    {
+      g_warning ("Failed to request name");
+    }
+  else
+    {
+      gchar *path_from_name = g_strdelimit (priv->service_name, ".", '/');
+      dbus_g_connection_register_g_object (bus,
+                                           path_from_name,
+                                           object);
+      g_free (path_from_name);
+    }
+
+  dbus_g_connection_unref (bus);
+#endif
 }
 
 static void
@@ -118,6 +191,72 @@ mx_application_set_property (GObject      *object,
   case PROP_APP_NAME:
     priv->name = g_value_dup_string (value);
     g_set_application_name (priv->name);
+
+#ifdef HAVE_DBUS
+    if (priv->name)
+      {
+        gint i;
+        gboolean raise;
+        gchar *name, *name_ptr, *camel;
+
+        /* Create an ASCII CamelCase string from the program name */
+        /* We prefer the program name over the application name,
+         * as the application name may be localised.
+         */
+        name = g_get_prgname ();
+        if (!name)
+          name = g_strdup (priv->name);
+        else
+          name = g_filename_display_basename (name);
+
+        camel = g_malloc (strlen (name) + 1);
+        name_ptr = name;
+        raise = TRUE;
+        i = 0;
+
+        while (*name_ptr)
+          {
+            /* Ignore non-ASCII */
+            if (*name_ptr < 0x80)
+              {
+                /* Don't let the first character be a number and
+                 * only accept alpha/number.
+                 */
+                if (g_ascii_isalpha (*name_ptr) ||
+                    ((i != 0) && g_ascii_isalnum (*name_ptr)))
+                  {
+                    if (raise)
+                      {
+                        camel[i] = g_ascii_toupper (*name_ptr);
+                        raise = FALSE;
+                      }
+                    else
+                      camel[i] = *name_ptr;
+
+                    i++;
+                  }
+                else if ((*name_ptr == '-') ||
+                         (*name_ptr == '_') ||
+                         (*name_ptr == ' '))
+                  {
+                    /* Use upper-case after dashes/underscores/spaces */
+                    raise = TRUE;
+                  }
+              }
+
+            name_ptr = g_utf8_find_next_char (name_ptr, NULL);
+          }
+
+        g_free (name);
+
+        /* Make sure string is NULL-terminated */
+        camel[i] = '\0';
+
+        /* Use CamelCase name for service path */
+        priv->service_name = g_strconcat ("org.moblin.", camel, NULL);
+        g_free (camel);
+      }
+#endif
     break;
 
   case PROP_FLAGS:
@@ -132,6 +271,16 @@ mx_application_set_property (GObject      *object,
 static void
 mx_application_dispose (GObject *object)
 {
+#ifdef HAVE_DBUS
+  MxApplicationPrivate *priv = MX_APPLICATION (object)->priv;
+
+  if (priv->proxy)
+    {
+      g_object_unref (priv->proxy);
+      priv->proxy = NULL;
+    }
+#endif
+
   G_OBJECT_CLASS (mx_application_parent_class)->dispose (object);
 }
 
@@ -143,6 +292,10 @@ mx_application_finalize (GObject *object)
 #ifdef HAVE_STARTUP_NOTIFICATION
   if (priv->sn_context)
     sn_launchee_context_unref (priv->sn_context);
+#endif
+
+#ifdef HAVE_DBUS
+  g_free (priv->service_name);
 #endif
 
   g_free (priv->name);
@@ -164,6 +317,20 @@ mx_application_default_create_window (MxApplication *application)
   return stage;
 }
 
+static void
+mx_application_default_raise (MxApplication *application)
+{
+  MxApplicationPrivate *priv = application->priv;
+
+  if (priv->flags & MX_APPLICATION_CLUTTER_GTK)
+    {
+      g_error ("ClutterGtk not yet supported");
+      return;
+    }
+
+  g_debug ("Raise");
+}
+
 
 static void
 mx_application_class_init (MxApplicationClass *klass)
@@ -174,12 +341,14 @@ mx_application_class_init (MxApplicationClass *klass)
   g_type_class_add_private (klass, sizeof (MxApplicationPrivate));
 
   object_class->constructor = mx_application_constructor;
+  object_class->constructed = mx_application_constructed;
   object_class->get_property = mx_application_get_property;
   object_class->set_property = mx_application_set_property;
   object_class->dispose = mx_application_dispose;
   object_class->finalize = mx_application_finalize;
 
   klass->create_window = mx_application_default_create_window;
+  klass->raise = mx_application_default_raise;
 
   pspec = g_param_spec_string ("application-name",
                                "Application Name",

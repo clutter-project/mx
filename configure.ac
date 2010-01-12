@@ -161,6 +161,20 @@ AS_IF([test "x$with_startup_notification" = xyes],
                         [AC_MSG_FAILURE([Could not find libstartup-notification. Use --without-startup-notification to disable startup notification support.])]]
       ))
 
+AC_ARG_WITH([dbus],
+            [AC_HELP_STRING([--without-dbus],
+                            [enable DBus support])],
+            [],
+            [with_dbus=yes])
+
+AS_IF([test "x$with_dbus" = xyes],
+      [PKG_CHECK_EXISTS([dbus-glib-1 >= 0.82],
+                        [AC_DEFINE([HAVE_DBUS], [1],
+                                   [Define if DBus support is enabled])
+                        MX_REQUIRES="$MX_REQUIRES dbus-glib-1 >= 0.82"],
+                        [AC_MSG_FAILURE([Could not find dbus-glib. Use --without-dbus to disable DBus support.])]]
+      ))
+
 dnl ***************************************************************************
 dnl Internationalization
 dnl ***************************************************************************
