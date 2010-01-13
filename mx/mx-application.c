@@ -742,7 +742,7 @@ mx_application_register_actions (MxApplication *application)
   GString *data;
   GHashTableIter iter;
   DBusGObjectInfo *info;
-  gint i, n_actions, offset, prefix;
+  gint i, n_actions, offset;
 
   MxApplicationPrivate *priv = application->priv;
 
@@ -764,10 +764,7 @@ mx_application_register_actions (MxApplication *application)
   g_free ((gpointer)info->method_infos);
   info->method_infos = g_new (DBusGMethodInfo, n_actions);
 
-  data = g_string_new (priv->service_name);
-  g_string_append_c (data, '\0');
-  prefix = data->len;
-
+  data = g_string_new ("");
   g_hash_table_iter_init (&iter, priv->actions);
   for (i = 0, offset = 0; i < n_actions; i++)
     {
@@ -785,6 +782,8 @@ mx_application_register_actions (MxApplication *application)
         g_error ("Action hash-table size mismatch");
 
       /* Generate introspection data */
+      g_string_append (data, priv->service_name);
+      g_string_append_c (data, '\0');
       g_string_append (data, name);
       g_string_append_c (data, '\0');
       g_string_append_c (data, 'S');
@@ -801,7 +800,7 @@ mx_application_register_actions (MxApplication *application)
       method_info->data_offset = offset;
 
       /* Update offset to point to the beginning of the next string */
-      offset = data->len + 1 - prefix;
+      offset = data->len;
     }
 
   g_free ((gpointer)info->data);
