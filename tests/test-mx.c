@@ -205,10 +205,10 @@ main (int argc, char *argv[])
   add_tab (CLUTTER_CONTAINER (vbox), group, "Styles",
            (GCallback) styles_main, CLUTTER_CONTAINER (holder));
 
-  prev = mx_action_new_full ("Previous",
+  prev = mx_action_new_full ("Previous tab",
                              G_CALLBACK (prev_tab_activated_cb),
                              group);
-  next = mx_action_new_full ("Next",
+  next = mx_action_new_full ("Next tab",
                              G_CALLBACK (next_tab_activated_cb),
                              group);
   mx_application_add_action (application, prev);

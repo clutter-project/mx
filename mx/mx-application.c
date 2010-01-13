@@ -236,7 +236,7 @@ mx_application_constructed (GObject *object)
 #endif
 
   /* Add default 'raise' action */
-  raise = mx_action_new_full ("raise",
+  raise = mx_action_new_full ("Raise",
                               G_CALLBACK (mx_application_raise_activated_cb),
                               self);
   mx_application_add_action (self, raise);
@@ -265,6 +265,61 @@ mx_application_get_property (GObject    *object,
     }
 }
 
+#ifdef HAVE_DBUS
+static gchar *
+mx_application_get_safe_name (const gchar *name)
+{
+  gint i;
+  gchar *camel;
+  gboolean raise;
+  const gchar *name_ptr;
+
+  /* Create an ASCII CamelCase string from arbitrary UTF-8 */
+  camel = g_malloc (strlen (name) + 1);
+  name_ptr = name;
+  raise = TRUE;
+  i = 0;
+
+  while (*name_ptr)
+    {
+      /* Ignore non-ASCII */
+      if (*name_ptr < 0x80)
+        {
+          /* Don't let the first character be a number and
+           * only accept alpha/number.
+           */
+          if (g_ascii_isalpha (*name_ptr) ||
+              ((i != 0) && g_ascii_isalnum (*name_ptr)))
+            {
+              if (raise)
+                {
+                  camel[i] = g_ascii_toupper (*name_ptr);
+                  raise = FALSE;
+                }
+              else
+                camel[i] = *name_ptr;
+
+              i++;
+            }
+          else if ((*name_ptr == '-') ||
+                   (*name_ptr == '_') ||
+                   (*name_ptr == ' '))
+            {
+              /* Use upper-case after dashes/underscores/spaces */
+              raise = TRUE;
+            }
+        }
+
+      name_ptr = g_utf8_find_next_char (name_ptr, NULL);
+    }
+
+  /* Make sure string is NULL-terminated */
+  camel[i] = '\0';
+
+  return camel;
+}
+#endif
+
 static void
 mx_application_set_property (GObject      *object,
                              guint         property_id,
@@ -282,11 +337,8 @@ mx_application_set_property (GObject      *object,
 #ifdef HAVE_DBUS
     if (priv->name)
       {
-        gint i;
-        gboolean raise;
-        gchar *name, *name_ptr, *camel;
+        gchar *name, *camel;
 
-        /* Create an ASCII CamelCase string from the program name */
         /* We prefer the program name over the application name,
          * as the application name may be localised.
          */
@@ -296,48 +348,8 @@ mx_application_set_property (GObject      *object,
         else
           name = g_filename_display_basename (name);
 
-        camel = g_malloc (strlen (name) + 1);
-        name_ptr = name;
-        raise = TRUE;
-        i = 0;
-
-        while (*name_ptr)
-          {
-            /* Ignore non-ASCII */
-            if (*name_ptr < 0x80)
-              {
-                /* Don't let the first character be a number and
-                 * only accept alpha/number.
-                 */
-                if (g_ascii_isalpha (*name_ptr) ||
-                    ((i != 0) && g_ascii_isalnum (*name_ptr)))
-                  {
-                    if (raise)
-                      {
-                        camel[i] = g_ascii_toupper (*name_ptr);
-                        raise = FALSE;
-                      }
-                    else
-                      camel[i] = *name_ptr;
-
-                    i++;
-                  }
-                else if ((*name_ptr == '-') ||
-                         (*name_ptr == '_') ||
-                         (*name_ptr == ' '))
-                  {
-                    /* Use upper-case after dashes/underscores/spaces */
-                    raise = TRUE;
-                  }
-              }
-
-            name_ptr = g_utf8_find_next_char (name_ptr, NULL);
-          }
-
+        camel = mx_application_get_safe_name (name);
         g_free (name);
-
-        /* Make sure string is NULL-terminated */
-        camel[i] = '\0';
 
         /* Use CamelCase name for service path */
         priv->service_name = g_strconcat ("org.moblin.", camel, NULL);
@@ -603,7 +615,7 @@ mx_application_run (MxApplication *application)
   else
     {
       /* Raise the running instance and fall through */
-      mx_application_invoke_action (application, "raise");
+      mx_application_invoke_action (application, "Raise");
     }
 
   priv->is_running = FALSE;
@@ -793,7 +805,7 @@ mx_application_register_actions (MxApplication *application)
   for (i = 0, offset = 0; i < n_actions; i++)
     {
       MxAction *action;
-      const gchar *name;
+      gchar *name;
       DBusGMethodInfo *method_info = (DBusGMethodInfo *)&info->method_infos[i];
 
       /* It shouldn't be possible for this to fail, unless there's
@@ -804,6 +816,9 @@ mx_application_register_actions (MxApplication *application)
                                    (gpointer *)(&name),
                                    (gpointer *)(&action)))
         g_error ("Action hash-table size mismatch");
+
+      /* Get a safe name to put on the bus */
+      name = mx_application_get_safe_name (name);
 
       /* Generate introspection data */
       g_string_append (data, priv->service_name);
@@ -816,6 +831,8 @@ mx_application_register_actions (MxApplication *application)
       g_string_append_c (data, '\0');
       /* Output descriptions would go here */
       g_string_append_c (data, '\0');
+
+      g_free (name);
 
       /* Fill in method info */
       method_info->function = (GCallback)action;
