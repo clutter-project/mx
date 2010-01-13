@@ -35,6 +35,66 @@ clear_holder (ClutterContainer *holder)
 }
 
 static void
+next_tab_activated_cb (MxAction      *action,
+                       MxButtonGroup *group)
+{
+  GSList *b;
+
+  gboolean activate_next = FALSE;
+  MxButton *button = mx_button_group_get_active_button (group);
+  const GSList *buttons = mx_button_group_get_buttons (group);
+
+  if (!buttons)
+    return;
+
+  if (!button)
+    mx_button_group_set_active_button (group, (MxButton *)buttons->data);
+
+  for (b = (GSList *)buttons; b; b = b->next)
+    {
+      MxButton *current_button = (MxButton *)b->data;
+
+      if (activate_next)
+        {
+          mx_button_group_set_active_button (group, current_button);
+          break;
+        }
+
+      if (current_button == button)
+        activate_next = TRUE;
+    }
+}
+
+static void
+prev_tab_activated_cb (MxAction      *action,
+                       MxButtonGroup *group)
+{
+  GSList *b;
+
+  MxButton *last_button = NULL;
+  MxButton *button = mx_button_group_get_active_button (group);
+  const GSList *buttons = mx_button_group_get_buttons (group);
+
+  if (!buttons)
+    return;
+
+  for (b = (GSList *)buttons; b; b = b->next)
+    {
+      MxButton *current_button = (MxButton *)b->data;
+
+      if (current_button == button)
+        break;
+
+      last_button = current_button;
+    }
+
+  if (!last_button)
+    last_button = (MxButton *)g_slist_last ((GSList *)buttons)->data;
+
+  mx_button_group_set_active_button (group, last_button);
+}
+
+static void
 add_tab (ClutterContainer *box,
          MxButtonGroup    *group,
          const gchar      *name,
@@ -61,6 +121,7 @@ int
 main (int argc, char *argv[])
 {
   ClutterActor *stage, *vbox, *hbox, *holder, *mainbox, *toolbar, *combo;
+  MxAction *prev, *next;
   MxButtonGroup *group;
   MxApplication *application;
 
@@ -130,6 +191,15 @@ main (int argc, char *argv[])
            (GCallback) scroll_view_main, CLUTTER_CONTAINER (holder));
   add_tab (CLUTTER_CONTAINER (vbox), group, "Styles",
            (GCallback) styles_main, CLUTTER_CONTAINER (holder));
+
+  prev = mx_action_new_full ("Previous",
+                             G_CALLBACK (prev_tab_activated_cb),
+                             group);
+  next = mx_action_new_full ("Next",
+                             G_CALLBACK (next_tab_activated_cb),
+                             group);
+  mx_application_add_action (application, prev);
+  mx_application_add_action (application, next);
 
   clutter_actor_show (stage);
 
