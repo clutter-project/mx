@@ -104,6 +104,8 @@ void                  mx_application_remove_action (MxApplication *application,
 void                  mx_application_invoke_action (MxApplication *application,
                                                     const gchar   *name);
 
+gboolean              mx_application_is_running    (MxApplication *application);
+
 G_END_DECLS
 
 #endif /* _MX_APPLICATION_H */

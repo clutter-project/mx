@@ -51,6 +51,7 @@ struct _MxApplicationPrivate
   gchar              *name;
   MxApplicationFlags  flags;
   gboolean            is_proxy;
+  gboolean            is_running;
 
 #ifdef HAVE_STARTUP_NOTIFICATION
   SnLauncheeContext  *sn_context;
@@ -104,6 +105,29 @@ mx_application_raise_activated_cb (MxAction *action, MxApplication *application)
 }
 
 #ifdef HAVE_DBUS
+static gchar *
+mx_application_get_service_path (MxApplication *application)
+{
+  gint i, length;
+  gchar *path_from_name;
+
+  MxApplicationPrivate *priv = application->priv;
+
+  if (!priv->service_name)
+    return NULL;
+
+  length = strlen (priv->service_name);
+  path_from_name = g_malloc (length + 2);
+
+  path_from_name[0] = '/';
+  for (i = 0; i < length; i++)
+    path_from_name[i+1] = (priv->service_name[i] == '.') ?
+      '/' : priv->service_name[i];
+  path_from_name[i+1] = '\0';
+
+  return path_from_name;
+}
+
 static void
 mx_application_register_dbus (MxApplication *application,
                               gboolean       unregister)
@@ -111,7 +135,6 @@ mx_application_register_dbus (MxApplication *application,
   DBusGConnection *bus;
 
   GError *error = NULL;
-  MxApplicationPrivate *priv = application->priv;
 
   if (!(bus = dbus_g_bus_get (DBUS_BUS_SESSION, &error)))
     {
@@ -131,17 +154,7 @@ mx_application_register_dbus (MxApplication *application,
     }
   else
     {
-      gint i, length;
-      gchar *path_from_name;
-
-      length = strlen (priv->service_name);
-      path_from_name = g_malloc (length + 2);
-
-      path_from_name[0] = '/';
-      for (i = 0; i < length; i++)
-        path_from_name[i+1] = (priv->service_name[i] == '.') ?
-          '/' : priv->service_name[i];
-      path_from_name[i+1] = '\0';
+      gchar *path_from_name = mx_application_get_service_path (application);
 
       dbus_g_connection_register_g_object (bus,
                                            path_from_name,
@@ -582,7 +595,24 @@ mx_application_new (gint                *argc,
 void
 mx_application_run (MxApplication *application)
 {
-  clutter_main ();
+  MxApplicationPrivate *priv;
+
+  g_return_if_fail (MX_IS_APPLICATION (application));
+
+  priv = application->priv;
+
+  if (!priv->is_proxy)
+    {
+      priv->is_running = TRUE;
+      clutter_main ();
+    }
+  else
+    {
+      /* Raise the running instance and fall through */
+      mx_application_invoke_action (application, "raise");
+    }
+
+  priv->is_running = FALSE;
 }
 
 void
@@ -858,6 +888,38 @@ mx_application_invoke_action (MxApplication *application,
   if (priv->is_proxy)
     {
 #ifdef HAVE_DBUS
+      gchar *path_from_name;
+      DBusGConnection *bus;
+      DBusGProxy *proxy;
+
+      GError *error = NULL;
+
+      if (!(bus = dbus_g_bus_get (DBUS_BUS_SESSION, &error)))
+        {
+          g_warning (G_STRLOC "%s", error->message);
+          g_error_free (error);
+          return;
+        }
+
+      path_from_name = mx_application_get_service_path (application);
+      proxy = dbus_g_proxy_new_for_name (bus,
+                                         priv->service_name,
+                                         path_from_name,
+                                         priv->service_name);
+      g_free (path_from_name);
+
+      if (proxy)
+        {
+          if (!dbus_g_proxy_call (proxy,
+                                  name,
+                                  &error,
+                                  G_TYPE_INVALID,
+                                  G_TYPE_INVALID))
+            {
+              g_warning (G_STRLOC "%s", error->message);
+              g_error_free (error);
+            }
+        }
 #endif
     }
   else
@@ -866,6 +928,13 @@ mx_application_invoke_action (MxApplication *application,
       if (action)
         g_signal_emit_by_name (action, "activated", NULL);
     }
+}
 
+gboolean
+mx_application_is_running (MxApplication *application)
+{
+  g_return_val_if_fail (MX_IS_APPLICATION (application), FALSE);
+
+  return (application->priv->is_proxy || application->priv->is_running);
 }
 
