@@ -19,6 +19,8 @@
 #include <clutter/clutter.h>
 #include <mx/mx.h>
 
+typedef void (*TestMxCallback)(ClutterContainer *container);
+
 void label_main (ClutterContainer *container);
 void entry_main (ClutterContainer *container);
 void tooltips_main (ClutterContainer *container);

@@ -25,13 +25,22 @@
 
 
 static void
-clear_holder (ClutterContainer *holder)
+show_page (MxButton         *button,
+           GParamSpec       *pspec,
+           ClutterContainer *holder)
 {
   GList *children;
+  TestMxCallback callback;
+
+  if (!mx_button_get_checked (button))
+    return;
 
   children = clutter_container_get_children (holder);
 
   g_list_foreach (children, (GFunc) clutter_actor_destroy, NULL);
+
+  callback = g_object_get_data (G_OBJECT (button), "callback");
+  callback ((gpointer)holder);
 }
 
 static void
@@ -47,22 +56,25 @@ next_tab_activated_cb (MxAction      *action,
   if (!buttons)
     return;
 
-  if (!button)
-    mx_button_group_set_active_button (group, (MxButton *)buttons->data);
+  if (button)
+    for (b = (GSList *)buttons; b; b = b->next)
+      {
+        MxButton *current_button = (MxButton *)b->data;
 
-  for (b = (GSList *)buttons; b; b = b->next)
-    {
-      MxButton *current_button = (MxButton *)b->data;
+        if (activate_next)
+          {
+            button = current_button;
+            break;
+          }
 
-      if (activate_next)
-        {
-          mx_button_group_set_active_button (group, current_button);
-          break;
-        }
+        if ((current_button == button) && b->next)
+          activate_next = TRUE;
+      }
 
-      if (current_button == button)
-        activate_next = TRUE;
-    }
+  if (!activate_next)
+    button = (MxButton *)buttons->data;
+
+  mx_button_group_set_active_button (group, button);
 }
 
 static void
@@ -109,11 +121,12 @@ add_tab (ClutterContainer *box,
   clutter_container_add_actor (box, button);
   mx_button_group_add (group, MX_BUTTON (button));
 
-  g_signal_connect_swapped (button, "clicked", G_CALLBACK (clear_holder),
-                            holder);
-
   if (callback)
-    g_signal_connect_swapped (button, "clicked", callback, holder);
+    {
+      g_object_set_data (G_OBJECT (button), "callback", callback);
+      g_signal_connect (button, "notify::checked",
+                        G_CALLBACK (show_page), holder);
+    }
 
 }
 
