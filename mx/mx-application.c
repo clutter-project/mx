@@ -575,12 +575,6 @@ mx_application_new (gint                *argc,
   else
     clutter_init (argc, argv);
 
-  /* check single instance */
-  if (flags & MX_APPLICATION_SINGLE_INSTANCE)
-    {
-      g_warning ("Single instance applications not yet supported");
-    }
-
   mx_set_locale ();
 
   /* create the application singleton */
