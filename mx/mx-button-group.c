@@ -306,3 +306,11 @@ mx_button_group_get_allow_no_active (MxButtonGroup *group)
 
   return group->priv->allow_no_active;
 }
+
+G_CONST_RETURN GSList *
+mx_button_group_get_buttons (MxButtonGroup *group)
+{
+  g_return_val_if_fail (MX_IS_BUTTON_GROUP (group), NULL);
+
+  return group->priv->children;
+}
