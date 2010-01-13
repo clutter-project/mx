@@ -59,6 +59,7 @@ struct _MxApplicationPrivate
 #ifdef HAVE_DBUS
   gchar              *service_name;
   DBusGProxy         *proxy;
+  DBusGObjectInfo     object_info;
 #endif
 
   GHashTable         *actions;
@@ -97,15 +98,72 @@ mx_application_constructor (GType                  type,
 }
 
 static void
+mx_application_raise_activated_cb (MxAction *action, MxApplication *application)
+{
+  MX_APPLICATION_GET_CLASS (application)->raise (application);
+}
+
+#ifdef HAVE_DBUS
+static void
+mx_application_register_dbus (MxApplication *application,
+                              gboolean       unregister)
+{
+  DBusGConnection *bus;
+
+  GError *error = NULL;
+  MxApplicationPrivate *priv = application->priv;
+
+  if (!(bus = dbus_g_bus_get (DBUS_BUS_SESSION, &error)))
+    {
+      g_warning (G_STRLOC "%s", error->message);
+      g_error_free (error);
+      return;
+    }
+
+  if (unregister)
+    {
+      static gboolean first_run = TRUE;
+
+      if (first_run)
+        first_run = FALSE;
+      else
+        dbus_g_connection_unregister_g_object (bus, G_OBJECT (application));
+    }
+  else
+    {
+      gint i, length;
+      gchar *path_from_name;
+
+      length = strlen (priv->service_name);
+      path_from_name = g_malloc (length + 2);
+
+      path_from_name[0] = '/';
+      for (i = 0; i < length; i++)
+        path_from_name[i+1] = (priv->service_name[i] == '.') ?
+          '/' : priv->service_name[i];
+      path_from_name[i+1] = '\0';
+
+      dbus_g_connection_register_g_object (bus,
+                                           path_from_name,
+                                           G_OBJECT (application));
+
+      g_free (path_from_name);
+    }
+}
+#endif
+
+static void
 mx_application_constructed (GObject *object)
 {
+  MxAction *raise;
 #ifdef HAVE_DBUS
   DBusGConnection *bus;
   guint32 request_status;
   gboolean unique, success;
 
   GError *error = NULL;
-  MxApplicationPrivate *priv = MX_APPLICATION (object)->priv;
+  MxApplication *self = MX_APPLICATION (object);
+  MxApplicationPrivate *priv = self->priv;
 
   if (!priv->service_name)
     {
@@ -158,17 +216,17 @@ mx_application_constructed (GObject *object)
       success = TRUE;
     }
 
-  if (success)
-    {
-      gchar *path_from_name = g_strdelimit (priv->service_name, ".", '/');
-      dbus_g_connection_register_g_object (bus,
-                                           path_from_name,
-                                           object);
-      g_free (path_from_name);
-    }
+  /*if (success)
+    mx_application_register_dbus (self, FALSE);*/
 
   dbus_g_connection_unref (bus);
 #endif
+
+  /* Add default 'raise' action */
+  raise = mx_action_new_full ("raise",
+                              G_CALLBACK (mx_application_raise_activated_cb),
+                              self);
+  mx_application_add_action (self, raise);
 }
 
 static void
@@ -318,6 +376,8 @@ mx_application_finalize (GObject *object)
 
 #ifdef HAVE_DBUS
   g_free (priv->service_name);
+  g_free ((gpointer)priv->object_info.method_infos);
+  g_free ((gpointer)priv->object_info.data);
 #endif
 
   g_free (priv->name);
@@ -584,15 +644,145 @@ mx_application_create_window (MxApplication *application)
   return MX_APPLICATION_GET_CLASS (application)->create_window (application);
 }
 
+#ifdef HAVE_DBUS
+/* The following function/define are derived from generated code from
+ * dbus-binding-tool.
+ */
+#define g_marshal_value_peek_pointer(v)  (v)->data[0].v_pointer
+static void
+dbus_glib_marshal_mx_application_BOOLEAN_POINTER (GClosure     *closure,
+                                                  GValue       *return_value,
+                                                  guint         n_param_values,
+                                                  const GValue *param_values,
+                                                  gpointer      invocation_hint,
+                                                  gpointer      marshal_data)
+{
+  typedef gboolean (*GMarshalFunc_BOOLEAN__POINTER) (gpointer     data1,
+                                                     gpointer     arg_1,
+                                                     gpointer     data2);
+  register GCClosure *cc = (GCClosure*) closure;
+  register gpointer data1, data2;
+  register MxAction *action;
+
+  g_return_if_fail (return_value != NULL);
+  g_return_if_fail (n_param_values == 2);
+
+  if (G_CCLOSURE_SWAP_DATA (closure))
+    {
+      data1 = closure->data;
+      data2 = g_value_peek_pointer (param_values + 0);
+    }
+  else
+    {
+      data1 = g_value_peek_pointer (param_values + 0);
+      data2 = closure->data;
+    }
+
+  /*application = (MxApplication *)data1;*/
+  /*GError **error = g_marshal_value_peek_pointer (param_values + 1);*/
+  action = (MxAction *)(marshal_data ? marshal_data : cc->callback);
+  g_signal_emit_by_name (action, "activated", NULL);
+
+  g_value_set_boolean (return_value, TRUE);
+}
+#endif
+
+static void
+mx_application_register_actions (MxApplication *application)
+{
+#ifdef HAVE_DBUS
+  GString *data;
+  GHashTableIter iter;
+  DBusGObjectInfo *info;
+  gint i, n_actions, offset, prefix;
+
+  MxApplicationPrivate *priv = application->priv;
+
+  /* Unregister the object first as we'll be messing with the
+   * DBusGObjectInfo that backs the object on the bus.
+   */
+  mx_application_register_dbus (application, TRUE);
+
+  info = &priv->object_info;
+  n_actions = g_hash_table_size (priv->actions);
+
+  /* Fill in the basic information of the object info struct */
+  info->format_version = 0;
+  info->n_method_infos = n_actions;
+  info->exported_signals = "\0";
+  info->exported_properties = "\0";
+
+  /* Generate the method info to map actions on the bus object */
+  g_free ((gpointer)info->method_infos);
+  info->method_infos = g_new (DBusGMethodInfo, n_actions);
+
+  data = g_string_new (priv->service_name);
+  g_string_append_c (data, '\0');
+  prefix = data->len;
+
+  g_hash_table_iter_init (&iter, priv->actions);
+  for (i = 0, offset = 0; i < n_actions; i++)
+    {
+      MxAction *action;
+      const gchar *name;
+      DBusGMethodInfo *method_info = (DBusGMethodInfo *)&info->method_infos[i];
+
+      /* It shouldn't be possible for this to fail, unless there's
+       * memory corruption between here and the call to hash_table_size
+       * above.
+       */
+      if (!g_hash_table_iter_next (&iter,
+                                   (gpointer *)(&name),
+                                   (gpointer *)(&action)))
+        g_error ("Action hash-table size mismatch");
+
+      /* Generate introspection data */
+      g_string_append (data, name);
+      g_string_append_c (data, '\0');
+      g_string_append_c (data, 'S');
+      g_string_append_c (data, '\0');
+      /* Input parameter descriptions would go here */
+      g_string_append_c (data, '\0');
+      /* Output descriptions would go here */
+      g_string_append_c (data, '\0');
+
+      /* Fill in method info */
+      method_info->function = (GCallback)action;
+      method_info->marshaller =
+        dbus_glib_marshal_mx_application_BOOLEAN_POINTER;
+      method_info->data_offset = offset;
+
+      /* Update offset to point to the beginning of the next string */
+      offset = data->len + 1 - prefix;
+    }
+
+  g_free ((gpointer)info->data);
+  info->data = data->str;
+  dbus_g_object_type_install_info (MX_TYPE_APPLICATION, info);
+
+  g_string_free (data, FALSE);
+
+  mx_application_register_dbus (application, FALSE);
+#endif
+}
+
 void
 mx_application_add_action (MxApplication *application,
                            MxAction      *action)
 {
   MxApplicationPrivate *priv = application->priv;
 
+  if (priv->is_proxy)
+    {
+      g_warning ("Can't add actions to remote applications");
+      return;
+    }
+
   g_hash_table_insert (priv->actions,
                        g_strdup (mx_action_get_name (action)),
                        g_object_ref (action));
+
+  mx_application_register_actions (application);
 }
 
 void
@@ -608,6 +798,8 @@ mx_application_remove_action (MxApplication *application,
     }
 
   g_hash_table_remove (priv->actions, name);
+
+  mx_application_register_actions (application);
 }
 
 void
