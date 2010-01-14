@@ -61,6 +61,7 @@ struct _MxApplicationPrivate
   gchar              *service_name;
   DBusGProxy         *proxy;
   DBusGObjectInfo     object_info;
+  gboolean            actions_valid;
 #endif
 
   GHashTable         *actions;
@@ -172,6 +173,18 @@ mx_application_register_dbus (MxApplication *application,
       g_free (path_from_name);
     }
 }
+
+static void
+mx_application_actions_changed_cb (DBusGProxy *proxy,
+                                   gpointer    data)
+{
+  MxApplicationPrivate *priv = MX_APPLICATION (data)->priv;
+
+  /* Mark that our actions table is outdated */
+  priv->actions_valid = FALSE;
+
+  g_signal_emit (data, signals[ACTIONS_CHANGED], 0);
+}
 #endif
 
 static void
@@ -220,7 +233,24 @@ mx_application_constructed (GObject *object)
     }
   else if (request_status == DBUS_REQUEST_NAME_REPLY_EXISTS)
     {
+      DBusGProxy *proxy;
+      gchar *path_from_name;
+
       priv->is_proxy = TRUE;
+
+      path_from_name = mx_application_get_service_path (self);
+      proxy = dbus_g_proxy_new_for_name (bus,
+                                         priv->service_name,
+                                         path_from_name,
+                                         priv->service_name);
+      g_free (path_from_name);
+
+      dbus_g_proxy_add_signal (proxy, "ActionsChanged", G_TYPE_INVALID);
+
+      dbus_g_proxy_connect_signal (proxy, "ActionsChanged",
+                                   G_CALLBACK (
+                                     mx_application_actions_changed_cb),
+                                   self, NULL);
     }
   else if (request_status == DBUS_REQUEST_NAME_REPLY_IN_QUEUE)
     {
@@ -238,6 +268,9 @@ mx_application_constructed (GObject *object)
       success = TRUE;
     }
 
+  /* No need to register here, adding an action will cause us to
+   * re-register anyway (and we add raise below).
+   */
   /*if (success)
     mx_application_register_dbus (self, FALSE);*/
 
