@@ -922,8 +922,9 @@ mx_application_invoke_action (MxApplication *application,
 
       if (proxy)
         {
+          gchar *safe_name = mx_application_get_safe_name (name);
           if (!dbus_g_proxy_call (proxy,
-                                  name,
+                                  safe_name,
                                   &error,
                                   G_TYPE_INVALID,
                                   G_TYPE_INVALID))
@@ -931,6 +932,7 @@ mx_application_invoke_action (MxApplication *application,
               g_warning (G_STRLOC "%s", error->message);
               g_error_free (error);
             }
+          g_free (safe_name);
         }
 #endif
     }
