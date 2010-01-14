@@ -65,8 +65,11 @@ struct _MxApplicationClass
   GObjectClass parent_class;
 
   /* vfuncs */
-  ClutterStage* (*create_window) (MxApplication *app);
-  void          (*raise)         (MxApplication *app);
+  ClutterStage* (*create_window)   (MxApplication *app);
+  void          (*raise)           (MxApplication *app);
+
+  /* signals */
+  void          (*actions_changed) (MxApplication *app);
 };
 
 GType mx_application_get_type (void) G_GNUC_CONST;

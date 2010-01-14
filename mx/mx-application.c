@@ -74,6 +74,15 @@ enum
   PROP_FLAGS
 };
 
+enum
+{
+  ACTIONS_CHANGED,
+
+  LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL] = { 0, };
+
 static MxApplication *app_singleton = NULL;
 
 static GObject*
@@ -404,6 +413,7 @@ mx_application_finalize (GObject *object)
   g_free (priv->service_name);
   g_free ((gpointer)priv->object_info.method_infos);
   g_free ((gpointer)priv->object_info.data);
+  g_free ((gpointer)priv->object_info.exported_signals);
 #endif
 
   g_free (priv->name);
@@ -519,6 +529,15 @@ mx_application_class_init (MxApplicationClass *klass)
                              0, G_MAXINT, 0,
                              G_PARAM_CONSTRUCT_ONLY | MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_FLAGS, pspec);
+
+  signals[ACTIONS_CHANGED] =
+    g_signal_new ("actions-changed",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (MxApplicationClass, actions_changed),
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
 }
 
 static void
@@ -794,8 +813,6 @@ mx_application_register_actions (MxApplication *application)
   /* Fill in the basic information of the object info struct */
   info->format_version = 0;
   info->n_method_infos = n_actions;
-  info->exported_signals = "\0";
-  info->exported_properties = "\0";
 
   /* Generate the method info to map actions on the bus object */
   g_free ((gpointer)info->method_infos);
@@ -822,15 +839,13 @@ mx_application_register_actions (MxApplication *application)
       name = mx_application_get_safe_name (name);
 
       /* Generate introspection data */
-      g_string_append (data, priv->service_name);
+      g_string_append (data, priv->service_name); /* Iface */
       g_string_append_c (data, '\0');
-      g_string_append (data, name);
+      g_string_append (data, name);               /* Name */
       g_string_append_c (data, '\0');
-      g_string_append_c (data, 'S');
+      g_string_append_c (data, 'S');              /* A/S (Synchronous) */
       g_string_append_c (data, '\0');
-      /* Input parameter descriptions would go here */
-      g_string_append_c (data, '\0');
-      /* Output descriptions would go here */
+      /* Arguments would go here */
       g_string_append_c (data, '\0');
 
       g_free (name);
@@ -847,12 +862,33 @@ mx_application_register_actions (MxApplication *application)
 
   g_free ((gpointer)info->data);
   info->data = data->str;
-  dbus_g_object_type_install_info (MX_TYPE_APPLICATION, info);
-
   g_string_free (data, FALSE);
+
+  /* Generate signal info (currently just ActionsChanged)
+   * NOTE: If this string changes location, bad things happen -
+   *       i.e. this shouldn't change
+   */
+  if (!info->exported_signals)
+    {
+      data = g_string_new (priv->service_name);
+      g_string_append_c (data, '\0');
+      g_string_append (data, "ActionsChanged");
+      g_string_append_c (data, '\0');
+
+      info->exported_signals = data->str;
+      g_string_free (data, FALSE);
+    }
+
+  /* Generate property info (currently none) */
+  info->exported_properties = "\0";
+
+  /* Install info */
+  dbus_g_object_type_install_info (MX_TYPE_APPLICATION, info);
 
   mx_application_register_dbus (application, FALSE);
 #endif
+
+  g_signal_emit (application, signals[ACTIONS_CHANGED], 0);
 }
 
 void
