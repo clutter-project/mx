@@ -789,6 +789,99 @@ dbus_glib_marshal_mx_application_BOOLEAN_POINTER (GClosure     *closure,
 
   g_value_set_boolean (return_value, TRUE);
 }
+
+/* The following marshaller was generated with dbus-binding-tool */
+static void
+dbus_glib_marshal_mx_application_BOOLEAN__POINTER_POINTER (
+                                                  GClosure     *closure,
+                                                  GValue       *return_value,
+                                                  guint         n_param_values,
+                                                  const GValue *param_values,
+                                                  gpointer      invocation_hint,
+                                                  gpointer      marshal_data)
+{
+  typedef gboolean (*GMarshalFunc_BOOLEAN__POINTER_POINTER)(gpointer     data1,
+                                                            gpointer     arg_1,
+                                                            gpointer     arg_2,
+                                                            gpointer     data2);
+  register GMarshalFunc_BOOLEAN__POINTER_POINTER callback;
+  register GCClosure *cc = (GCClosure*) closure;
+  register gpointer data1, data2;
+  gboolean v_return;
+
+  g_return_if_fail (return_value != NULL);
+  g_return_if_fail (n_param_values == 3);
+
+  if (G_CCLOSURE_SWAP_DATA (closure))
+    {
+      data1 = closure->data;
+      data2 = g_value_peek_pointer (param_values + 0);
+    }
+  else
+    {
+      data1 = g_value_peek_pointer (param_values + 0);
+      data2 = closure->data;
+    }
+  callback = (GMarshalFunc_BOOLEAN__POINTER_POINTER) (marshal_data ?
+                                                      marshal_data :
+                                                      cc->callback);
+
+  v_return = callback (data1,
+                       g_marshal_value_peek_pointer (param_values + 1),
+                       g_marshal_value_peek_pointer (param_values + 2),
+                       data2);
+
+  g_value_set_boolean (return_value, v_return);
+}
+
+static gboolean
+mx_application_get_actions_cb (MxApplication  *application,
+                               GPtrArray     **actions,
+                               GError        **error)
+{
+  GHashTableIter iter;
+  gpointer key, value;
+
+  MxApplicationPrivate *priv = application->priv;
+  GValue string_value = { 0 };
+  GValue bool_value = { 0 };
+
+  *actions = g_ptr_array_new ();
+  g_value_init (&string_value, G_TYPE_STRING);
+  g_value_init (&bool_value, G_TYPE_BOOLEAN);
+
+  g_hash_table_iter_init (&iter, priv->actions);
+  while (g_hash_table_iter_next (&iter, &key, &value))
+    {
+      const gchar *name, *display_name;
+
+      MxAction *action = value;
+      GValueArray *value_array = g_value_array_new (3);
+
+      name = mx_action_get_name (action);
+      display_name = mx_action_get_display_name (action);
+      if (!name)
+        name = "";
+      if (!display_name)
+        display_name = name;
+
+      g_value_set_string (&string_value, name);
+      g_value_array_append (value_array, &string_value);
+
+      g_value_set_string (&string_value, display_name);
+      g_value_array_append (value_array, &string_value);
+
+      g_value_set_boolean (&bool_value, mx_action_get_active (action));
+      g_value_array_append (value_array, &bool_value);
+
+      g_ptr_array_add (*actions, value_array);
+    }
+
+  g_value_unset (&string_value);
+  g_value_unset (&bool_value);
+
+  return TRUE;
+}
 #endif
 
 static void
@@ -798,9 +891,12 @@ mx_application_register_actions (MxApplication *application)
   GString *data;
   GHashTableIter iter;
   DBusGObjectInfo *info;
-  gint i, n_actions, offset;
+  gint i, n_methods, offset;
+  DBusGMethodInfo *method_info;
 
   MxApplicationPrivate *priv = application->priv;
+  const gchar get_actions_data[] =
+    "\0GetActions\0S\0actions\0O\0F\0N\0a(ssb)\0";
 
   /* Unregister the object first as we'll be messing with the
    * DBusGObjectInfo that backs the object on the bus.
@@ -808,23 +904,33 @@ mx_application_register_actions (MxApplication *application)
   mx_application_register_dbus (application, TRUE);
 
   info = &priv->object_info;
-  n_actions = g_hash_table_size (priv->actions);
+  n_methods = g_hash_table_size (priv->actions) + 1;
 
   /* Fill in the basic information of the object info struct */
   info->format_version = 0;
-  info->n_method_infos = n_actions;
+  info->n_method_infos = n_methods;
 
   /* Generate the method info to map actions on the bus object */
   g_free ((gpointer)info->method_infos);
-  info->method_infos = g_new (DBusGMethodInfo, n_actions);
+  info->method_infos = g_new (DBusGMethodInfo, n_methods);
 
-  data = g_string_new ("");
+  /* First add the GetActions function */
+  data = g_string_new (priv->service_name);
+  g_string_append_len (data, get_actions_data, sizeof (get_actions_data));
+  method_info = (DBusGMethodInfo *)&info->method_infos[0];
+  method_info->function = (GCallback)mx_application_get_actions_cb;
+  method_info->marshaller =
+    dbus_glib_marshal_mx_application_BOOLEAN__POINTER_POINTER;
+  method_info->data_offset = 0;
+
+  /* Now the methods for the actions */
   g_hash_table_iter_init (&iter, priv->actions);
-  for (i = 0, offset = 0; i < n_actions; i++)
+  for (i = 1, offset = data->len; i < n_methods; i++)
     {
       MxAction *action;
       gchar *name;
-      DBusGMethodInfo *method_info = (DBusGMethodInfo *)&info->method_infos[i];
+
+      method_info = (DBusGMethodInfo *)&info->method_infos[i];
 
       /* It shouldn't be possible for this to fail, unless there's
        * memory corruption between here and the call to hash_table_size
@@ -846,6 +952,7 @@ mx_application_register_actions (MxApplication *application)
       g_string_append_c (data, 'S');              /* A/S (Synchronous) */
       g_string_append_c (data, '\0');
       /* Arguments would go here */
+      g_string_append_c (data, '\0');
       g_string_append_c (data, '\0');
 
       g_free (name);
