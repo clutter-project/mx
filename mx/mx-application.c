@@ -927,6 +927,21 @@ mx_application_remove_action (MxApplication *application,
   mx_application_register_actions (application);
 }
 
+GList *
+mx_application_get_actions (MxApplication *application)
+{
+  MxApplicationPrivate *priv = application->priv;
+
+  if (priv->is_proxy)
+    {
+#ifdef HAVE_DBUS
+      /* Refresh our list of actions if necessary */
+#endif
+    }
+
+  return g_hash_table_get_values (priv->actions);
+}
+
 void
 mx_application_invoke_action (MxApplication *application,
                               const gchar   *name)

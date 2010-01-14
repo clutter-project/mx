@@ -104,6 +104,8 @@ void                  mx_application_add_action    (MxApplication *application,
 void                  mx_application_remove_action (MxApplication *application,
                                                     const gchar   *name);
 
+GList               * mx_application_get_actions   (MxApplication *application);
+
 void                  mx_application_invoke_action (MxApplication *application,
                                                     const gchar   *name);
 
