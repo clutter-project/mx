@@ -190,7 +190,6 @@ mx_application_actions_changed_cb (DBusGProxy *proxy,
 static void
 mx_application_constructed (GObject *object)
 {
-  MxAction *raise;
 #ifdef HAVE_DBUS
   DBusGConnection *bus;
   guint32 request_status;
@@ -282,11 +281,15 @@ mx_application_constructed (GObject *object)
 #endif
 
   /* Add default 'raise' action */
-  raise = mx_action_new_full ("Raise",
-                              _("Raise application"),
-                              G_CALLBACK (mx_application_raise_activated_cb),
-                              self);
-  mx_application_add_action (self, raise);
+  if (!priv->is_proxy)
+    {
+      MxAction *raise =
+        mx_action_new_full ("Raise",
+                            _("Raise application"),
+                            G_CALLBACK (mx_application_raise_activated_cb),
+                            self);
+      mx_application_add_action (self, raise);
+    }
 }
 
 static void
@@ -384,21 +387,8 @@ mx_application_set_property (GObject      *object,
 #ifdef HAVE_DBUS
     if (priv->name)
       {
-        gchar *name, *camel;
-
-        /* We prefer the program name over the application name,
-         * as the application name may be localised.
-         */
-        name = g_get_prgname ();
-        if (!name)
-          name = g_strdup (priv->name);
-        else
-          name = g_filename_display_basename (name);
-
-        camel = mx_application_get_safe_name (name);
-        g_free (name);
-
-        /* Use CamelCase name for service path */
+        /* Use CamelCase name for service name */
+        gchar *camel = mx_application_get_safe_name (priv->name);
         priv->service_name = g_strconcat ("org.moblin.", camel, NULL);
         g_free (camel);
       }
