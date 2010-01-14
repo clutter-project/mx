@@ -237,6 +237,7 @@ mx_application_constructed (GObject *object)
 
   /* Add default 'raise' action */
   raise = mx_action_new_full ("Raise",
+                              _("Raise application"),
                               G_CALLBACK (mx_application_raise_activated_cb),
                               self);
   mx_application_add_action (self, raise);

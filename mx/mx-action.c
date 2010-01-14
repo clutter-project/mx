@@ -37,6 +37,7 @@ G_DEFINE_TYPE (MxAction, mx_action, G_TYPE_INITIALLY_UNOWNED)
 struct _MxActionPrivate
 {
   gchar   *name;
+  gchar   *display_name;
   gboolean active;
 };
 
@@ -45,6 +46,7 @@ enum
   PROP_0,
 
   PROP_NAME,
+  PROP_DISPLAY_NAME,
   PROP_ACTIVE
 };
 
@@ -71,6 +73,10 @@ mx_action_get_property (GObject    *object,
       g_value_set_string (value, mx_action_get_name (action));
       break;
 
+    case PROP_DISPLAY_NAME:
+      g_value_set_string (value, mx_action_get_display_name (action));
+      break;
+
     case PROP_ACTIVE:
       g_value_set_boolean (value, mx_action_get_active (action));
       break;
@@ -92,6 +98,10 @@ mx_action_set_property (GObject      *object,
     {
     case PROP_NAME:
       mx_action_set_name (action, g_value_get_string (value));
+      break;
+
+    case PROP_DISPLAY_NAME:
+      mx_action_set_display_name (action, g_value_get_string (value));
       break;
 
     case PROP_ACTIVE:
@@ -132,6 +142,18 @@ mx_action_class_init (MxActionClass *klass)
                                    g_param_spec_string ("name",
                                                         "Name",
                                                         "Action name.",
+                                                        NULL,
+                                                        G_PARAM_READWRITE |
+                                                        G_PARAM_STATIC_NAME |
+                                                        G_PARAM_STATIC_NICK |
+                                                        G_PARAM_STATIC_BLURB));
+
+  g_object_class_install_property (object_class,
+                                   PROP_DISPLAY_NAME,
+                                   g_param_spec_string ("display-name",
+                                                        "Display name",
+                                                        "Localised name to use "
+                                                        "for display.",
                                                         NULL,
                                                         G_PARAM_READWRITE |
                                                         G_PARAM_STATIC_NAME |
@@ -183,6 +205,7 @@ mx_action_new (void)
 /**
  * mx_action_new_full:
  * @name: name of the action
+ * @display_name: name of the action to display to the user
  * @activated_cb: callback to connect to the activated signal
  * @user_data: user data to be passed to the callback
  *
@@ -192,10 +215,14 @@ mx_action_new (void)
  */
 MxAction *
 mx_action_new_full (const gchar *name,
+                    const gchar *display_name,
                     GCallback    activated_cb,
                     gpointer     user_data)
 {
-  MxAction *action = g_object_new (MX_TYPE_ACTION, "name", name, NULL);
+  MxAction *action = g_object_new (MX_TYPE_ACTION,
+                                   "name", name,
+                                   "display-name", display_name,
+                                   NULL);
 
   if (activated_cb)
     g_signal_connect (action, "activated", activated_cb, user_data);
@@ -285,6 +312,49 @@ mx_action_set_active (MxAction *action,
     {
       priv->active = active;
       g_object_notify (G_OBJECT (action), "active");
+    }
+}
+
+/**
+ * mx_action_get_display_name:
+ * @action: A #MxAction
+ *
+ * Get the display name of the action
+ *
+ * Returns: display-name of the action, owned by MxAction
+ */
+const gchar *
+mx_action_get_display_name (MxAction *action)
+{
+  g_return_val_if_fail (MX_IS_ACTION (action), NULL);
+
+  return action->priv->display_name;
+}
+
+/**
+ * mx_action_set_display_name:
+ * @action: A #MxAction
+ * @name: new display name to set
+ *
+ * Set the name of the action to display to the user
+ *
+ */
+void
+mx_action_set_display_name (MxAction    *action,
+                            const gchar *name)
+{
+  MxActionPrivate *priv;
+
+  g_return_if_fail (MX_IS_ACTION (action));
+
+  priv = action->priv;
+
+  if (g_strcmp0 (priv->display_name, name))
+    {
+      g_free (priv->display_name);
+      priv->display_name = g_strdup (name);
+
+      g_object_notify (G_OBJECT (action), "display-name");
     }
 }
 

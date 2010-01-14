@@ -82,12 +82,17 @@ GType mx_action_get_type (void);
 MxAction *mx_action_new (void);
 
 MxAction *   mx_action_new_full   (const gchar *name,
+                                   const gchar *display_name,
                                    GCallback    activated_cb,
                                    gpointer     user_data);
 
 const gchar *mx_action_get_name   (MxAction    *action);
 void         mx_action_set_name   (MxAction    *action,
                                    const gchar *name);
+
+const gchar *mx_action_get_display_name (MxAction    *action);
+void         mx_action_set_display_name (MxAction    *action,
+                                         const gchar *name);
 
 gboolean     mx_action_get_active (MxAction    *action);
 void         mx_action_set_active (MxAction    *action,
