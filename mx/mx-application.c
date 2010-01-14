@@ -245,12 +245,16 @@ mx_application_constructed (GObject *object)
                                          priv->service_name);
       g_free (path_from_name);
 
-      dbus_g_proxy_add_signal (proxy, "ActionsChanged", G_TYPE_INVALID);
+      if (proxy)
+        {
+          dbus_g_proxy_add_signal (proxy, "ActionsChanged", G_TYPE_INVALID);
 
-      dbus_g_proxy_connect_signal (proxy, "ActionsChanged",
-                                   G_CALLBACK (
-                                     mx_application_actions_changed_cb),
-                                   self, NULL);
+          dbus_g_proxy_connect_signal (proxy, "ActionsChanged",
+                                       G_CALLBACK (
+                                         mx_application_actions_changed_cb),
+                                       self, NULL);
+          g_object_unref (proxy);
+        }
     }
   else if (request_status == DBUS_REQUEST_NAME_REPLY_IN_QUEUE)
     {
@@ -1067,6 +1071,43 @@ mx_application_remove_action (MxApplication *application,
   mx_application_register_actions (application);
 }
 
+#ifdef HAVE_DBUS
+DBusGProxy *
+mx_application_get_dbus_proxy (MxApplication *application)
+{
+  gchar *path_from_name;
+  DBusGConnection *bus;
+  DBusGProxy *proxy;
+
+  GError *error = NULL;
+  MxApplicationPrivate *priv = application->priv;
+
+  if (!(bus = dbus_g_bus_get (DBUS_BUS_SESSION, &error)))
+    {
+      g_warning (G_STRLOC "%s", error->message);
+      g_error_free (error);
+      return NULL;
+    }
+
+  path_from_name = mx_application_get_service_path (application);
+  proxy = dbus_g_proxy_new_for_name (bus,
+                                     priv->service_name,
+                                     path_from_name,
+                                     priv->service_name);
+  g_free (path_from_name);
+  dbus_g_connection_unref (bus);
+
+  return proxy;
+}
+
+static void
+mx_application_proxy_action_cb (MxAction      *action,
+                                MxApplication *application)
+{
+  mx_application_invoke_action (application, mx_action_get_name (action));
+}
+#endif
+
 GList *
 mx_application_get_actions (MxApplication *application)
 {
@@ -1076,6 +1117,76 @@ mx_application_get_actions (MxApplication *application)
     {
 #ifdef HAVE_DBUS
       /* Refresh our list of actions if necessary */
+      if (!priv->actions_valid)
+        {
+          DBusGProxy *proxy = mx_application_get_dbus_proxy (application);
+
+          if (proxy)
+            {
+              GType array_type, struct_type;
+              GPtrArray *actions;
+
+              GError *error = NULL;
+
+              /* All this code is just for calling a dbus method with the
+               * signiature 'a(ssb)' (the GetActions method) and creating
+               * corresponding MxAction objects.
+               */
+              struct_type = dbus_g_type_get_struct ("GValueArray",
+                                                    G_TYPE_STRING,
+                                                    G_TYPE_STRING,
+                                                    G_TYPE_BOOLEAN,
+                                                    G_TYPE_INVALID);
+              array_type = dbus_g_type_get_collection ("GPtrArray",
+                                                       struct_type);
+
+              if (!dbus_g_proxy_call (proxy,
+                                      "GetActions",
+                                      &error,
+                                      G_TYPE_INVALID,
+                                      array_type,
+                                      &actions,
+                                      G_TYPE_INVALID))
+                {
+                  g_warning (G_STRLOC "%s", error->message);
+                  g_error_free (error);
+                }
+              else
+                {
+                  guint i;
+
+                  g_hash_table_remove_all (priv->actions);
+                  for (i = 0; i < actions->len; i++)
+                    {
+                      GValue *name, *display_name, *active;
+                      MxAction *action;
+
+                      GValueArray *value_array = g_ptr_array_index (actions, i);
+
+                      name = g_value_array_get_nth (value_array, 0);
+                      display_name = g_value_array_get_nth (value_array, 1);
+                      active = g_value_array_get_nth (value_array, 2);
+
+                      action =
+                        mx_action_new_full (g_value_get_string (name),
+                                            g_value_get_string (display_name),
+                                            G_CALLBACK (
+                                              mx_application_proxy_action_cb),
+                                            application);
+                      mx_action_set_active (action,
+                                            g_value_get_boolean (active));
+
+                      g_hash_table_insert (priv->actions,
+                                           g_value_dup_string (name),
+                                           action);
+
+                      g_value_array_free (value_array);
+                    }
+                  g_ptr_array_free (actions, TRUE);
+                }
+              g_object_unref (proxy);
+            }
+        }
 #endif
     }
 
@@ -1091,28 +1202,11 @@ mx_application_invoke_action (MxApplication *application,
   if (priv->is_proxy)
     {
 #ifdef HAVE_DBUS
-      gchar *path_from_name;
-      DBusGConnection *bus;
-      DBusGProxy *proxy;
-
-      GError *error = NULL;
-
-      if (!(bus = dbus_g_bus_get (DBUS_BUS_SESSION, &error)))
-        {
-          g_warning (G_STRLOC "%s", error->message);
-          g_error_free (error);
-          return;
-        }
-
-      path_from_name = mx_application_get_service_path (application);
-      proxy = dbus_g_proxy_new_for_name (bus,
-                                         priv->service_name,
-                                         path_from_name,
-                                         priv->service_name);
-      g_free (path_from_name);
+      DBusGProxy *proxy = mx_application_get_dbus_proxy (application);
 
       if (proxy)
         {
+          GError *error = NULL;
           gchar *safe_name = mx_application_get_safe_name (name);
           if (!dbus_g_proxy_call (proxy,
                                   safe_name,
@@ -1124,6 +1218,7 @@ mx_application_invoke_action (MxApplication *application,
               g_error_free (error);
             }
           g_free (safe_name);
+          g_object_unref (proxy);
         }
 #endif
     }
