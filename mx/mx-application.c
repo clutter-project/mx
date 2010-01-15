@@ -759,6 +759,16 @@ mx_application_remove_window (MxApplication *application,
 }
 
 
+/**
+ * mx_application_get_windows:
+ * @application: an #MxApplication
+ *
+ * Retrieves all windows added to @application.
+ *
+ * Return value: (element-type ClutterStage) (transfer none): a list
+ *   of #ClutterStage<!-- -->s. The returned list is owned by
+ *   @application and must not be altered.
+ */
 G_CONST_RETURN GList*
 mx_application_get_windows (MxApplication *application)
 {
@@ -1098,6 +1108,16 @@ mx_application_proxy_action_cb (MxAction      *action,
 }
 #endif
 
+/**
+ * mx_application_get_actions:
+ * @application: an #MxApplication
+ *
+ * Retrieves all actions registered on @application.
+ *
+ * Return value: (element-type Action) (transfer container): a list
+ *   of #MxAction<!-- -->s. Use g_list_free() on the returned list
+ *   when done.
+ */
 GList *
 mx_application_get_actions (MxApplication *application)
 {
