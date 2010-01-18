@@ -328,7 +328,7 @@ mx_combo_box_update_popup (MxComboBox *box)
 
       action = mx_action_new ();
       g_object_set_data ((GObject*) action, "index", GINT_TO_POINTER (index));
-      mx_action_set_name (action, (gchar*) l->data);
+      mx_action_set_display_name (action, (gchar*) l->data);
 
       mx_popup_add_action (MX_POPUP (priv->popup), action);
     }
