@@ -396,14 +396,6 @@ mx_notebook_init (MxNotebook *self)
 {
   self->priv = NOTEBOOK_PRIVATE (self);
 
-#ifdef HAVE_CLUTTER_GESTURE
-  self->priv->gesture = clutter_gesture_new (CLUTTER_ACTOR (self));
-  clutter_gesture_set_gesture_mask (self->priv->gesture, CLUTTER_ACTOR (self),
-                                    GESTURE_MASK_SLIDE);
-  g_signal_connect (self->priv->gesture, "gesture-slide-event",
-                    G_CALLBACK (mx_notebook_gesture_slide_event_cb),
-                    self);
-#endif
 }
 
 ClutterActor *
@@ -483,7 +475,17 @@ mx_notebook_set_enable_gestures (MxNotebook *book,
 #ifndef HAVE_CLUTTER_GESTURE
       g_warning ("Gestures are disabled as Clutter Gesture is not available");
 #else
-      clutter_actor_set_reactive (CLUTTER_ACTOR (book), TRUE);
+      if (enabled && !priv->gesture)
+        {
+          priv->gesture = clutter_gesture_new (CLUTTER_ACTOR (book));
+          clutter_gesture_set_gesture_mask (priv->gesture,
+                                            CLUTTER_ACTOR (book),
+                                            GESTURE_MASK_SLIDE);
+          g_signal_connect (priv->gesture, "gesture-slide-event",
+                            G_CALLBACK (mx_notebook_gesture_slide_event_cb),
+                            book);
+          clutter_actor_set_reactive (CLUTTER_ACTOR (book), TRUE);
+        }
 #endif
 
       g_object_notify (G_OBJECT (book), "enable-gestures");

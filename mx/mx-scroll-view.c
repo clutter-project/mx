@@ -742,14 +742,6 @@ mx_scroll_view_init (MxScrollView *self)
   g_signal_connect (self, "style-changed",
                     G_CALLBACK (mx_scroll_view_style_changed), NULL);
 
-#ifdef HAVE_CLUTTER_GESTURE
-  priv->gesture = clutter_gesture_new (CLUTTER_ACTOR (self));
-  clutter_gesture_set_gesture_mask (priv->gesture, CLUTTER_ACTOR (self),
-                                    GESTURE_MASK_SLIDE);
-  g_signal_connect (priv->gesture, "gesture-slide-event",
-                    G_CALLBACK (mx_scroll_view_gesture_slide_event_cb),
-                    self);
-#endif
 }
 
 static void
@@ -1002,6 +994,18 @@ mx_scroll_view_set_enable_gestures (MxScrollView *scroll,
 
 #ifndef HAVE_CLUTTER_GESTURE
       g_warning ("Gestures are disabled as Clutter Gesture is not available");
+#else
+      if (enabled && !priv->gesture)
+        {
+          priv->gesture = clutter_gesture_new (CLUTTER_ACTOR (scroll));
+          clutter_gesture_set_gesture_mask (priv->gesture,
+                                            CLUTTER_ACTOR (scroll),
+                                            GESTURE_MASK_SLIDE);
+          g_signal_connect (priv->gesture, "gesture-slide-event",
+                            G_CALLBACK (mx_scroll_view_gesture_slide_event_cb),
+                            scroll);
+          clutter_actor_set_reactive (CLUTTER_ACTOR (scroll), TRUE);
+        }
 #endif
 
       g_object_notify (G_OBJECT (scroll), "enable-gestures");
