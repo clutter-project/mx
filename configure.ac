@@ -137,9 +137,9 @@ AC_ARG_WITH([clutter-gesture],
             [AC_HELP_STRING([--with-clutter-gesture],
                             [enable gesture support])],
             [],
-            [with_clutter_gesture=no])
+            [with_clutter_gesture=yes])
 
-AS_IF([test "x$with_clutter_gesture" = xyes],
+AS_IF([test "x$with_clutter_gesture" != xno],
       [PKG_CHECK_EXISTS([clutter-gesture],
                         [AC_DEFINE([HAVE_CLUTTER_GESTURE], [1],
                                    [Define if clutter-gesture is available])
