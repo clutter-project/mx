@@ -1,7 +1,7 @@
 /*
  * mx-notebook: notebook actor
  *
- * Copyright 2009 Intel Corporation.
+ * Copyright 2009, 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -77,6 +77,9 @@ void mx_notebook_set_page (MxNotebook *notebook,
                            gint        page);
 gint mx_notebook_get_page (MxNotebook *notebook);
 
+gboolean mx_notebook_get_enable_gestures (MxNotebook *book);
+void     mx_notebook_set_enable_gestures (MxNotebook *book,
+                                          gboolean    enabled);
 G_END_DECLS
 
 #endif /* _MX_NOTEBOOK_H */

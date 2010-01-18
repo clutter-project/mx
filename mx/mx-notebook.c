@@ -1,7 +1,7 @@
 /*
  * mx-notebook: notebook actor
  *
- * Copyright 2009 Intel Corporation.
+ * Copyright 2009, 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -20,8 +20,12 @@
  *
  */
 
+#include <config.h>
 #include "mx-notebook.h"
 #include "mx-private.h"
+#ifdef HAVE_CLUTTER_GESTURE
+#include <clutter-gesture/clutter-gesture.h>
+#endif
 
 static void clutter_container_iface_init (ClutterContainerIface *iface);
 
@@ -37,11 +41,18 @@ struct _MxNotebookPrivate
   gint    current_page;
 
   GSList *children;
+
+  gboolean enable_gestures;
+
+#if HAVE_CLUTTER_GESTURE
+  ClutterGesture *gesture;
+#endif
 };
 
 enum
 {
-  PROP_PAGE = 1
+  PROP_PAGE = 1,
+  PROP_ENABLE_GESTURES
 };
 
 static void
@@ -118,6 +129,11 @@ mx_notebook_get_property (GObject    *object,
     case PROP_PAGE:
       g_value_set_int (value, priv->current_page);
       break;
+
+    case PROP_ENABLE_GESTURES:
+      g_value_set_boolean (value, priv->enable_gestures);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -134,6 +150,12 @@ mx_notebook_set_property (GObject      *object,
     case PROP_PAGE:
       mx_notebook_set_page (MX_NOTEBOOK (object), g_value_get_int (value));
       break;
+
+    case PROP_ENABLE_GESTURES:
+      mx_notebook_set_enable_gestures (MX_NOTEBOOK (object),
+                                       g_value_get_boolean (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -142,7 +164,20 @@ mx_notebook_set_property (GObject      *object,
 static void
 mx_notebook_dispose (GObject *object)
 {
+  MxNotebook *notebook;
+
   G_OBJECT_CLASS (mx_notebook_parent_class)->dispose (object);
+
+  notebook = MX_NOTEBOOK (object);
+
+#ifdef HAVE_CLUTTER_GESTURE
+  if (notebook->priv->gesture)
+    {
+      g_object_unref (notebook->priv->gesture);
+      notebook->priv->gesture = NULL;
+    }
+#endif
+
 }
 
 static void
@@ -283,6 +318,30 @@ mx_notebook_allocate (ClutterActor          *actor,
     }
 }
 
+#ifdef HAVE_CLUTTER_GESTURE
+static gboolean
+mx_notebook_gesture_slide_event_cb (ClutterGesture           *gesture,
+                                    ClutterGestureSlideEvent *event,
+                                    MxNotebook               *book)
+{
+  MxNotebookPrivate *priv = book->priv;
+
+  g_debug ("slide");
+
+  if (!priv->enable_gestures)
+    return FALSE;
+
+  if (event->direction % 2)
+    /* up, left (1, 3) */
+    mx_notebook_set_page (book, priv->current_page - 1);
+  else
+    /* down, right (2, 4) */
+    mx_notebook_set_page (book, priv->current_page + 1);
+
+  return TRUE;
+}
+#endif
+
 static void
 mx_notebook_class_init (MxNotebookClass *klass)
 {
@@ -309,12 +368,28 @@ mx_notebook_class_init (MxNotebookClass *klass)
                             0, G_MAXINT, 0,
                             MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_PAGE, pspec);
+
+  pspec = g_param_spec_boolean ("enable-gestures",
+                                "Enable Gestures",
+                                "Enable use of pointer gestures to switch page",
+                                FALSE,
+                                G_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_ENABLE_GESTURES, pspec);
 }
 
 static void
 mx_notebook_init (MxNotebook *self)
 {
   self->priv = NOTEBOOK_PRIVATE (self);
+
+#ifdef HAVE_CLUTTER_GESTURE
+  self->priv->gesture = clutter_gesture_new (CLUTTER_ACTOR (self));
+  clutter_gesture_set_gesture_mask (self->priv->gesture, CLUTTER_ACTOR (self),
+                                    GESTURE_MASK_SLIDE);
+  g_signal_connect (self->priv->gesture, "gesture-slide-event",
+                    G_CALLBACK (mx_notebook_gesture_slide_event_cb),
+                    self);
+#endif
 }
 
 ClutterActor *
@@ -375,4 +450,36 @@ mx_notebook_get_page (MxNotebook *book)
   g_return_val_if_fail (MX_IS_NOTEBOOK (book), -1);
 
   return book->priv->current_page;
+}
+
+void
+mx_notebook_set_enable_gestures (MxNotebook *book,
+                                 gboolean    enabled)
+{
+  MxNotebookPrivate *priv;
+
+  g_return_if_fail (MX_IS_NOTEBOOK (book));
+
+  priv = book->priv;
+
+  if (priv->enable_gestures != enabled)
+    {
+      priv->enable_gestures = enabled;
+
+#ifndef HAVE_CLUTTER_GESTURE
+      g_warning ("Gestures are disabled as Clutter Gesture is not available");
+#else
+      clutter_actor_set_reactive (CLUTTER_ACTOR (book), TRUE);
+#endif
+
+      g_object_notify (G_OBJECT (book), "enable-gestures");
+    }
+}
+
+gboolean
+mx_notebook_get_enable_gestures (MxNotebook *book)
+{
+  g_return_val_if_fail (MX_IS_NOTEBOOK (book), FALSE);
+
+  return book->priv->enable_gestures;
 }
