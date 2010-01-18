@@ -127,8 +127,8 @@ mx_button_update_label_style (MxButton *button)
   if (!CLUTTER_IS_TEXT (label))
     return;
 
-  _mx_widget_set_clutter_text_attributes (MX_WIDGET (button),
-                                          CLUTTER_TEXT (label));
+  mx_stylable_apply_clutter_text_attributes (MX_STYLABLE (button),
+                                             CLUTTER_TEXT (label));
 }
 
 static void

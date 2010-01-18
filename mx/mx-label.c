@@ -108,7 +108,8 @@ mx_label_style_changed (MxWidget *self)
 {
   MxLabelPrivate *priv = MX_LABEL (self)->priv;
 
-  _mx_widget_set_clutter_text_attributes (self, CLUTTER_TEXT (priv->label));
+  mx_stylable_apply_clutter_text_attributes (MX_STYLABLE (self),
+                                             CLUTTER_TEXT (priv->label));
 }
 
 static void

@@ -31,6 +31,7 @@
 #define __MX_UTILS_H__
 
 #include <glib.h>
+#include <mx/mx.h>
 
 G_BEGIN_DECLS
 
@@ -38,6 +39,13 @@ void   mx_set_locale ();
 
 gchar *mx_utils_format_time (GTimeVal *time_);
 
+
+void mx_allocate_align_fill (ClutterActor    *child,
+                             ClutterActorBox *childbox,
+                             MxAlign          x_alignment,
+                             MxAlign          y_alignment,
+                             gboolean         x_fill,
+                             gboolean         y_fill);
 G_END_DECLS
 
 #endif /* __MX_UTILS_H__ */

@@ -871,7 +871,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
           child_box.y2 = avail_height + padding.top;
         }
 
-      _mx_allocate_fill (child, &child_box, xalign, yalign, xfill, yfill);
+      mx_allocate_align_fill (child, &child_box, xalign, yalign, xfill, yfill);
 
       if (priv->is_animating)
         {

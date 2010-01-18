@@ -53,13 +53,4 @@ void _mx_table_update_row_col (MxTable *table,
                                gint     row,
                                gint     col);
 
-void _mx_allocate_fill (ClutterActor    *child,
-                        ClutterActorBox *childbox,
-                        MxAlign          x_align,
-                        MxAlign          y_align,
-                        gboolean         x_fill,
-                        gboolean         y_fill);
-
-void _mx_widget_set_clutter_text_attributes (MxWidget    *widget,
-                                             ClutterText *text);
 #endif /* __MX_PRIVATE_H__ */

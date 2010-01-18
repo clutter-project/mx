@@ -32,6 +32,7 @@
 #include "mx-popup.h"
 
 #include "mx-private.h"
+#include "mx-stylable.h"
 
 G_DEFINE_TYPE (MxComboBox, mx_combo_box, MX_TYPE_WIDGET)
 
@@ -365,8 +366,8 @@ mx_combo_box_button_press_event (ClutterActor       *actor,
 static void
 mx_combo_box_style_changed (MxComboBox *combo)
 {
-  _mx_widget_set_clutter_text_attributes (MX_WIDGET (combo),
-                                          CLUTTER_TEXT (combo->priv->label));
+  mx_stylable_apply_clutter_text_attributes (MX_STYLABLE (combo),
+                                             CLUTTER_TEXT (combo->priv->label));
 }
 
 static void

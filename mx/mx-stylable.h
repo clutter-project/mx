@@ -31,6 +31,7 @@
 
 #include <glib-object.h>
 #include <mx/mx-style.h>
+#include <clutter/clutter.h>
 
 G_BEGIN_DECLS
 
@@ -107,6 +108,10 @@ void                  mx_stylable_set_style_class (MxStylable  *stylable,
 G_CONST_RETURN gchar* mx_stylable_get_style_pseudo_class (MxStylable  *stylable);
 void                  mx_stylable_set_style_pseudo_class (MxStylable  *stylable,
                                                           const gchar *pseudo_class);
+
+/* utilities */
+void mx_stylable_apply_clutter_text_attributes (MxStylable  *stylable,
+                                                ClutterText *text);
 
 G_END_DECLS
 
