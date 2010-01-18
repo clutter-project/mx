@@ -198,11 +198,11 @@ mx_notebook_get_preferred_width (ClutterActor *actor,
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
-  if (*min_width_p)
-    *min_width_p = padding.left + padding.right;
+  if (min_width_p)
+    *min_width_p = 0;
 
-  if (*natural_width_p)
-    *natural_width_p = padding.left + padding.right;
+  if (natural_width_p)
+    *natural_width_p = 0;
 
   for (l = priv->children; l; l = l->next)
     {
@@ -211,12 +211,19 @@ mx_notebook_get_preferred_width (ClutterActor *actor,
       clutter_actor_get_preferred_width (CLUTTER_ACTOR (l->data), for_height,
                                          &child_min, &child_nat);
 
-      if (*min_width_p)
-        *min_width_p = MAX (*min_width_p, child_min);
+      if (min_width_p)
+        *min_width_p = MAX ((*min_width_p), child_min);
 
-      if (*natural_width_p)
-        *natural_width_p = MAX (*natural_width_p, child_nat);
+      if (natural_width_p)
+        *natural_width_p = MAX ((*natural_width_p), child_nat);
     }
+
+  if (min_width_p)
+    *min_width_p += padding.left + padding.right;
+
+  if (natural_width_p)
+    *natural_width_p += padding.left + padding.right;
+
 }
 
 static void
@@ -231,11 +238,11 @@ mx_notebook_get_preferred_height (ClutterActor *actor,
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
-  if (*min_height_p)
-    *min_height_p = padding.top + padding.bottom;
+  if (min_height_p)
+    *min_height_p = 0;
 
-  if (*natural_height_p)
-    *natural_height_p = padding.top + padding.bottom;
+  if (natural_height_p)
+    *natural_height_p = 0;
 
   for (l = priv->children; l; l = l->next)
     {
@@ -244,12 +251,19 @@ mx_notebook_get_preferred_height (ClutterActor *actor,
       clutter_actor_get_preferred_height (CLUTTER_ACTOR (l->data), for_width,
                                           &child_min, &child_nat);
 
-      if (*min_height_p)
+      if (min_height_p)
         *min_height_p = MAX (*min_height_p, child_min);
 
-      if (*natural_height_p)
+      if (natural_height_p)
         *natural_height_p = MAX (*natural_height_p, child_nat);
     }
+
+  if (min_height_p)
+    *min_height_p += padding.top + padding.bottom;
+
+  if (natural_height_p)
+    *natural_height_p += padding.top + padding.bottom;
+
 }
 
 static void
