@@ -548,7 +548,7 @@ mx_popup_add_action (MxPopup  *popup,
   child.action = g_object_ref_sink (action);
   /* TODO: Connect to notify signals in case action properties change */
   child.button = g_object_new (MX_TYPE_LABEL,
-                               "text", mx_action_get_name (action),
+                               "text", mx_action_get_display_name (action),
                                "reactive", TRUE,
                                NULL);
 

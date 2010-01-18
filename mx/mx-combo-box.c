@@ -296,7 +296,7 @@ mx_combo_box_action_activated_cb (ClutterActor *popup,
 
   /* set the title */
   clutter_text_set_text ((ClutterText*) box->priv->label,
-                         mx_action_get_name (action));
+                         mx_action_get_display_name (action));
   g_object_notify ((GObject*) box, "title");
 
   index = GPOINTER_TO_INT (g_object_get_data ((GObject*) action, "index"));
