@@ -78,7 +78,8 @@ enum
   PROP_0,
 
   PROP_ENTRY,
-  PROP_HINT
+  PROP_HINT,
+  PROP_PASSWORD_CHAR
 };
 
 /* signals */
@@ -105,6 +106,7 @@ struct _MxEntryPrivate
   gfloat        spacing;
 
   gboolean hint_visible;
+  gunichar password_char;
 };
 
 static guint entry_signals[LAST_SIGNAL] = { 0, };
@@ -133,6 +135,10 @@ mx_entry_set_property (GObject      *gobject,
       mx_entry_set_hint_text (entry, g_value_get_string (value));
       break;
 
+    case PROP_PASSWORD_CHAR:
+      mx_entry_set_password_char (entry, g_value_get_uint (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -155,6 +161,11 @@ mx_entry_get_property (GObject    *gobject,
 
     case PROP_HINT:
       g_value_set_string (value, priv->hint);
+      break;
+
+    case PROP_PASSWORD_CHAR:
+      g_value_set_uint (value, priv->password_char);
+      break;
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -458,6 +469,11 @@ clutter_text_focus_in_cb (ClutterText  *text,
       priv->hint_visible = FALSE;
 
       clutter_text_set_text (text, "");
+
+      if (priv->password_char != 0)
+        {
+          clutter_text_set_password_char (text, priv->password_char);
+        }
     }
   mx_stylable_set_style_pseudo_class (MX_STYLABLE (actor), "focus");
   clutter_text_set_cursor_visible (text, TRUE);
@@ -476,6 +492,11 @@ clutter_text_focus_out_cb (ClutterText  *text,
 
       clutter_text_set_text (text, priv->hint);
       mx_stylable_set_style_pseudo_class (MX_STYLABLE (actor), "indeterminate");
+
+      if (clutter_text_get_password_char (text) != 0)
+        {
+          clutter_text_set_password_char (text, 0);
+        }
     }
   else
     {
@@ -731,6 +752,12 @@ mx_entry_class_init (MxEntryClass *klass)
                                NULL, G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_ENTRY, pspec);
 
+  pspec = g_param_spec_unichar ("password-char",
+                                "Password Character",
+                                "Character to display instead of entered text",
+                                0, G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_PASSWORD_CHAR, pspec);
+
   /* signals */
   /**
    * MxEntry::primary-icon-clicked:
@@ -848,6 +875,7 @@ mx_entry_set_text (MxEntry     *entry,
                    const gchar *text)
 {
   MxEntryPrivate *priv;
+  gunichar password_char;
 
   g_return_if_fail (MX_IS_ENTRY (entry));
 
@@ -861,6 +889,7 @@ mx_entry_set_text (MxEntry     *entry,
       text = priv->hint;
       priv->hint_visible = TRUE;
       mx_stylable_set_style_pseudo_class (MX_STYLABLE (entry), "indeterminate");
+      password_char = 0;
     }
   else
     {
@@ -870,9 +899,14 @@ mx_entry_set_text (MxEntry     *entry,
         mx_stylable_set_style_pseudo_class (MX_STYLABLE (entry), NULL);
 
       priv->hint_visible = FALSE;
+      password_char = priv->password_char;
     }
 
   clutter_text_set_text (CLUTTER_TEXT (priv->entry), text);
+  if (clutter_text_get_password_char (CLUTTER_TEXT (priv->entry)) != password_char)
+    {
+      clutter_text_set_password_char (CLUTTER_TEXT (priv->entry), password_char);
+    }
 
   g_object_notify (G_OBJECT (entry), "text");
 }
@@ -924,6 +958,10 @@ mx_entry_set_hint_text (MxEntry     *entry,
 
       clutter_text_set_text (CLUTTER_TEXT (priv->entry), priv->hint);
       mx_stylable_set_style_pseudo_class (MX_STYLABLE (entry), "indeterminate");
+      if (clutter_text_get_password_char (CLUTTER_TEXT (priv->entry)) != 0)
+        {
+          clutter_text_set_password_char (CLUTTER_TEXT (priv->entry), 0);
+        }
     }
 }
 
@@ -943,6 +981,49 @@ mx_entry_get_hint_text (MxEntry *entry)
   g_return_val_if_fail (MX_IS_ENTRY (entry), NULL);
 
   return entry->priv->hint;
+}
+
+/**
+ * mx_entry_set_password_char:
+ * @entry: a #MxEntry
+ * @password_char: text to set as the entry hint
+ *
+ * Sets the character to display instead of the text. Use 0 to display
+ * the actual text.
+ */
+void
+mx_entry_set_password_char (MxEntry  *entry,
+                            gunichar  password_char)
+{
+  MxEntryPrivate *priv;
+
+  g_return_if_fail (MX_IS_ENTRY (entry));
+
+  priv = entry->priv;
+
+  priv->password_char = password_char;
+
+  if (!priv->hint_visible)
+    {
+      clutter_text_set_password_char (CLUTTER_TEXT (priv->entry),
+                                      password_char);
+    }
+}
+
+/**
+ * mx_entry_get_password_char:
+ * @entry: a #MxEntry
+ *
+ * Gets the character to display instead of the text.
+ *
+ * Return value: a character, or 0 if input should not be hidden.
+ */
+gunichar
+mx_entry_get_password_char (MxEntry *entry)
+{
+  g_return_val_if_fail (MX_IS_ENTRY (entry), 0);
+
+  return entry->priv->password_char;
 }
 
 static gboolean

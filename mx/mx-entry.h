@@ -78,6 +78,10 @@ void                  mx_entry_set_hint_text    (MxEntry     *entry,
                                                  const gchar *text);
 G_CONST_RETURN gchar *mx_entry_get_hint_text    (MxEntry     *entry);
 
+void                  mx_entry_set_password_char (MxEntry  *entry,
+                                                  gunichar  text);
+gunichar              mx_entry_get_password_char (MxEntry  *entry);
+
 void mx_entry_set_primary_icon_from_file   (MxEntry     *entry,
                                             const gchar *filename);
 void mx_entry_set_secondary_icon_from_file (MxEntry     *entry,
