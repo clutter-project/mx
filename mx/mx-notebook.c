@@ -41,6 +41,7 @@ struct _MxNotebookPrivate
   gint    current_page;
 
   GSList *children;
+  gint    n_children;
 
   gboolean enable_gestures;
 
@@ -96,8 +97,10 @@ mx_notebook_add (ClutterContainer *container,
   clutter_actor_set_parent (actor, CLUTTER_ACTOR (container));
   priv->children = g_slist_append (priv->children, actor);
 
+  priv->n_children++;
+
   /* hide the actor until its page is displayed */
-  if ((g_slist_length (priv->children) - 1) != priv->current_page)
+  if ((priv->n_children - 1) != priv->current_page)
     clutter_actor_hide (actor);
 
   g_signal_emit_by_name (container, "actor-added", actor);
@@ -129,6 +132,13 @@ mx_notebook_remove (ClutterContainer *container,
   g_signal_emit_by_name (container, "actor-removed", actor);
 
   g_object_unref (actor);
+
+  priv->n_children--;
+
+  /* check if the last page was just removed and it was also the visible page */
+  if (priv->current_page > (priv->n_children - 1))
+    priv->current_page = priv->n_children - 1;
+
 
   mx_notebook_update_children (MX_NOTEBOOK (container));
 }
@@ -451,6 +461,10 @@ mx_notebook_set_page (MxNotebook *book,
   priv = book->priv;
 
   if (page == priv->current_page)
+    return;
+
+  /* check for invalid page numbers */
+  if (page < 0 || page > (priv->n_children - 1))
     return;
 
   priv->current_page = page;
