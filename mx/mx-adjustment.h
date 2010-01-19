@@ -106,7 +106,8 @@ void          mx_adjustment_get_values  (MxAdjustment *adjustment,
 
 void          mx_adjustment_interpolate (MxAdjustment *adjustment,
                                          gdouble       value,
-                                         guint         duration);
+                                         guint         duration,
+                                         gulong        mode);
 
 gboolean      mx_adjustment_get_elastic (MxAdjustment *adjustment);
 void          mx_adjustment_set_elastic (MxAdjustment *adjustment,
@@ -114,7 +115,8 @@ void          mx_adjustment_set_elastic (MxAdjustment *adjustment,
 
 gboolean      mx_adjustment_clamp       (MxAdjustment *adjustment,
                                          gboolean      interpolate,
-                                         guint         duration);
+                                         guint         duration,
+                                         gulong        mode);
 
 G_END_DECLS
 

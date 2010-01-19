@@ -71,6 +71,7 @@ struct _MxAdjustmentPrivate
   ClutterTimeline *interpolation;
   gdouble          old_position;
   gdouble          new_position;
+  ClutterAlpha    *interpolate_alpha;
 
   /* For elasticity */
   gboolean      elastic;
@@ -270,6 +271,12 @@ mx_adjustment_dispose (GObject *object)
   mx_adjustment_remove_idle (&priv->page_size_source);
   mx_adjustment_remove_idle (&priv->changed_source);
 
+  if (priv->interpolate_alpha)
+    {
+      g_object_unref (priv->interpolate_alpha);
+      priv->interpolate_alpha = NULL;
+    }
+
   G_OBJECT_CLASS (mx_adjustment_parent_class)->dispose (object);
 }
 
@@ -407,33 +414,17 @@ mx_adjustment_get_value (MxAdjustment *adjustment)
 
   priv = adjustment->priv;
 
-  if (priv->interpolation)
-    {
-      return MAX (priv->lower,
-                  MIN (priv->upper - priv->page_size,
-                       priv->new_position));
-    }
-  else
-    return priv->value;
+  return priv->value;
 }
 
 static gboolean
 mx_adjustment_value_notify_cb (MxAdjustment *adjustment)
 {
-  ClutterTimeline *interpolation;
   MxAdjustmentPrivate *priv = adjustment->priv;
 
   priv->value_source = 0;
 
-  /* Temporarily set the interpolation timeline to NULL so that
-   * if mx_adjustment_get_value gets called in this callback,
-   * it will get the interpolated value and not just the final
-   * value.
-   */
-  interpolation = priv->interpolation;
-  priv->interpolation = NULL;
   g_object_notify (G_OBJECT (adjustment), "value");
-  priv->interpolation = interpolation;
 
   return FALSE;
 }
@@ -529,12 +520,7 @@ mx_adjustment_set_value (MxAdjustment *adjustment,
     {
       priv->value = value;
 
-      if (!priv->value_source)
-        priv->value_source =
-          g_idle_add_full (CLUTTER_PRIORITY_REDRAW,
-                           (GSourceFunc)mx_adjustment_value_notify_cb,
-                           adjustment,
-                           NULL);
+      g_object_notify (G_OBJECT (adjustment), "value");
     }
 }
 
@@ -826,7 +812,7 @@ interpolation_new_frame_cb (ClutterTimeline *timeline,
     mx_adjustment_set_value (adjustment,
                              priv->old_position +
                              (priv->new_position - priv->old_position) *
-                             clutter_timeline_get_progress (timeline));
+                             clutter_alpha_get_alpha (priv->interpolate_alpha));
 
   priv->interpolation = timeline;
 }
@@ -866,7 +852,8 @@ interpolation_completed_cb (ClutterTimeline *timeline,
 void
 mx_adjustment_interpolate (MxAdjustment *adjustment,
                            gdouble       value,
-                           guint         duration)
+                           guint         duration,
+                           gulong        mode)
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
 
@@ -886,6 +873,12 @@ mx_adjustment_interpolate (MxAdjustment *adjustment,
   if (priv->elastic)
     priv->bounce_alpha = clutter_alpha_new_full (priv->interpolation,
                                                  CLUTTER_LINEAR);
+
+  if (priv->interpolate_alpha)
+    g_object_unref (priv->interpolate_alpha);
+
+  priv->interpolate_alpha = clutter_alpha_new_full (priv->interpolation,
+                                                    mode);
 
   g_signal_connect (priv->interpolation,
                     "new-frame",
@@ -915,7 +908,8 @@ mx_adjustment_set_elastic (MxAdjustment *adjustment,
 gboolean
 mx_adjustment_clamp (MxAdjustment *adjustment,
                      gboolean      interpolate,
-                     guint         duration)
+                     guint         duration,
+                     gulong        mode)
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
   gdouble dest = priv->value;
@@ -929,7 +923,7 @@ mx_adjustment_clamp (MxAdjustment *adjustment,
   if (dest != priv->value)
     {
       if (interpolate)
-        mx_adjustment_interpolate (adjustment, dest, duration);
+        mx_adjustment_interpolate (adjustment, dest, duration, mode);
       else
         mx_adjustment_set_value (adjustment, dest);
 
