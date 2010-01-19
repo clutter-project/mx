@@ -65,6 +65,7 @@ struct _MxWidgetPrivate
   gboolean      is_hovered : 1;
 
   MxTooltip    *tooltip;
+  MxPopup      *popup;
 
   guint         long_press_source;
 };
@@ -214,6 +215,12 @@ mx_widget_dispose (GObject *gobject)
       priv->tooltip = NULL;
     }
 
+  if (priv->popup)
+    {
+      clutter_actor_unparent (CLUTTER_ACTOR (priv->popup));
+      priv->popup = NULL;
+    }
+
   G_OBJECT_CLASS (mx_widget_parent_class)->dispose (gobject);
 }
 
@@ -335,6 +342,9 @@ mx_widget_allocate (ClutterActor          *actor,
   if (priv->tooltip)
     clutter_actor_allocate_preferred_size (CLUTTER_ACTOR (priv->tooltip),
                                            flags);
+  if (priv->popup)
+    clutter_actor_allocate_preferred_size (CLUTTER_ACTOR (priv->popup),
+                                           flags);
 }
 
 static void
@@ -387,6 +397,20 @@ mx_widget_paint (ClutterActor *self)
 
   if (priv->tooltip)
     clutter_actor_paint (CLUTTER_ACTOR (priv->tooltip));
+
+  if (priv->popup)
+    clutter_actor_paint (CLUTTER_ACTOR (priv->popup));
+}
+
+static void
+mx_widget_pick (ClutterActor *self, const ClutterColor *color)
+{
+  MxWidgetPrivate *priv = MX_WIDGET (self)->priv;
+
+  CLUTTER_ACTOR_CLASS (mx_widget_parent_class)->pick (self, color);
+
+  if (priv->popup)
+    clutter_actor_paint (CLUTTER_ACTOR (priv->popup));
 }
 
 static void
@@ -424,6 +448,9 @@ mx_widget_map (ClutterActor *actor)
 
   if (priv->tooltip)
     clutter_actor_map (CLUTTER_ACTOR (priv->tooltip));
+
+  if (priv->popup)
+    clutter_actor_map (CLUTTER_ACTOR (priv->popup));
 }
 
 static void
@@ -441,6 +468,9 @@ mx_widget_unmap (ClutterActor *actor)
 
   if (priv->tooltip)
     clutter_actor_unmap (CLUTTER_ACTOR (priv->tooltip));
+
+  if (priv->popup)
+    clutter_actor_unmap (CLUTTER_ACTOR (priv->popup));
 }
 
 static void
@@ -781,6 +811,7 @@ mx_widget_class_init (MxWidgetClass *klass)
 
   actor_class->allocate = mx_widget_allocate;
   actor_class->paint = mx_widget_paint;
+  actor_class->pick = mx_widget_pick;
   actor_class->parent_set = mx_widget_parent_set;
   actor_class->map = mx_widget_map;
   actor_class->unmap = mx_widget_unmap;
@@ -1322,3 +1353,104 @@ mx_widget_get_available_area (MxWidget              *widget,
   area->x2 = allocation->x2 - allocation->x1 - priv->padding.right;
   area->y2 = allocation->y2 - allocation->y1 - priv->padding.bottom;
 }
+
+void
+mx_widget_set_popup (MxWidget *widget,
+                     MxPopup  *popup)
+{
+  MxWidgetPrivate *priv = widget->priv;
+
+  if (priv->popup)
+    {
+      clutter_actor_unparent (CLUTTER_ACTOR (priv->popup));
+      priv->popup = NULL;
+    }
+
+  if (popup)
+    {
+      ClutterActor *popup_actor = CLUTTER_ACTOR (popup);
+
+      priv->popup = popup;
+      clutter_actor_set_parent (popup_actor, CLUTTER_ACTOR (widget));
+      clutter_actor_hide (popup_actor);
+      clutter_actor_set_reactive (popup_actor, FALSE);
+    }
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (widget));
+}
+
+MxPopup *
+mx_widget_get_popup (MxWidget *widget)
+{
+  return widget->priv->popup;
+}
+
+static gboolean
+mx_widget_popup_disconnect_anim (MxWidget *widget)
+{
+  ClutterActor *popup_actor;
+  ClutterAnimation *animation;
+
+  MxWidgetPrivate *priv = widget->priv;
+
+  if (!priv->popup)
+    return FALSE;
+
+  popup_actor = CLUTTER_ACTOR (priv->popup);
+
+  if (!(animation = clutter_actor_get_animation (popup_actor)))
+    return FALSE;
+
+  return g_signal_handlers_disconnect_by_func (animation,
+                                               clutter_actor_hide,
+                                               popup_actor) ?
+    TRUE : FALSE;
+}
+
+void
+mx_widget_show_popup (MxWidget *widget, gfloat x, gfloat y)
+{
+  ClutterActor *popup_actor;
+  MxWidgetPrivate *priv = widget->priv;
+
+  if (!priv->popup || CLUTTER_ACTOR_IS_REACTIVE (priv->popup))
+    return;
+
+  popup_actor = CLUTTER_ACTOR (priv->popup);
+
+  clutter_actor_set_position (popup_actor, x, y);
+
+  if (!mx_widget_popup_disconnect_anim (widget))
+    {
+      clutter_actor_show (popup_actor);
+      clutter_actor_set_opacity (popup_actor, 0x00);
+    }
+
+  clutter_actor_set_reactive (popup_actor, TRUE);
+  clutter_actor_animate (popup_actor, CLUTTER_EASE_OUT_CUBIC, 150,
+                         "opacity", (guchar)0xff,
+                         NULL);
+}
+
+void
+mx_widget_hide_popup (MxWidget *widget)
+{
+  ClutterActor *popup_actor;
+  MxWidgetPrivate *priv = widget->priv;
+
+  if (!priv->popup)
+    return;
+
+  popup_actor = CLUTTER_ACTOR (priv->popup);
+
+  if (CLUTTER_ACTOR_IS_REACTIVE (popup_actor))
+    {
+      clutter_actor_set_reactive (popup_actor, FALSE);
+      clutter_actor_animate (popup_actor, CLUTTER_LINEAR, 250,
+                             "opacity", (guchar) 0,
+                             "signal-swapped::completed", clutter_actor_hide,
+                             popup_actor,
+                             NULL);
+    }
+}
+

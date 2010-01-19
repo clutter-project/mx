@@ -42,6 +42,7 @@ G_BEGIN_DECLS
 typedef struct _MxWidget               MxWidget;
 typedef struct _MxWidgetPrivate        MxWidgetPrivate;
 typedef struct _MxWidgetClass          MxWidgetClass;
+typedef struct _MxPopup                MxPopup;
 
 typedef enum
 {
@@ -96,6 +97,12 @@ const gchar* mx_widget_get_tooltip_text (MxWidget    *widget);
 
 void mx_widget_show_tooltip (MxWidget *widget);
 void mx_widget_hide_tooltip (MxWidget *widget);
+
+void      mx_widget_set_popup  (MxWidget *widget,
+                                MxPopup  *popup);
+MxPopup * mx_widget_get_popup  (MxWidget *widget);
+void      mx_widget_show_popup (MxWidget *widget, gfloat x, gfloat y);
+void      mx_widget_hide_popup (MxWidget *widget);
 
 void mx_widget_ensure_style (MxWidget *widget);
 

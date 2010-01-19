@@ -51,7 +51,8 @@ G_BEGIN_DECLS
   (G_TYPE_INSTANCE_GET_CLASS ((obj), \
   MX_TYPE_POPUP, MxPopupClass))
 
-typedef struct _MxPopup MxPopup;
+/* The following is defined in mx-widget.h to avoid recursion */
+/* typedef struct _MxPopup MxPopup; */
 typedef struct _MxPopupClass MxPopupClass;
 typedef struct _MxPopupPrivate MxPopupPrivate;
 
