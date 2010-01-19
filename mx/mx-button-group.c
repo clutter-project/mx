@@ -244,7 +244,7 @@ mx_button_group_foreach (MxButtonGroup   *group,
                          gpointer         userdata)
 {
   g_return_if_fail (MX_IS_BUTTON_GROUP (group));
-  g_return_if_fail (callback == NULL);
+  g_return_if_fail (callback != NULL);
 
   g_slist_foreach (group->priv->children, (GFunc) callback, userdata);
 }
