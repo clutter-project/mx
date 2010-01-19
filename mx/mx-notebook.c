@@ -56,6 +56,38 @@ enum
 };
 
 static void
+mx_notebook_update_children (MxNotebook *book)
+{
+  MxNotebookPrivate *priv = book->priv;
+  gint i;
+  GSList *l;
+
+  i = 0;
+  for (l = priv->children; l; l = l->next)
+    {
+      ClutterActor *child = CLUTTER_ACTOR (l->data);
+
+      if (i == priv->current_page)
+        {
+          {
+            clutter_actor_set_opacity (child, 0);
+            clutter_actor_show (child);
+            clutter_actor_animate (child, CLUTTER_LINEAR, 250,
+                                   "opacity", 255, NULL);
+          }
+        }
+      else
+      if (CLUTTER_ACTOR_IS_VISIBLE (child))
+        {
+          clutter_actor_animate (child, CLUTTER_LINEAR, 250,
+                                 "opacity", 0, NULL);
+        }
+
+      i++;
+    }
+}
+
+static void
 mx_notebook_add (ClutterContainer *container,
                  ClutterActor     *actor)
 {
@@ -98,7 +130,7 @@ mx_notebook_remove (ClutterContainer *container,
 
   g_object_unref (actor);
 
-  clutter_actor_queue_relayout ((ClutterActor*) container);
+  mx_notebook_update_children (MX_NOTEBOOK (container));
 }
 
 static void
@@ -413,8 +445,6 @@ mx_notebook_set_page (MxNotebook *book,
                       gint        page)
 {
   MxNotebookPrivate *priv;
-  gint i;
-  GSList *l;
 
   g_return_if_fail (MX_IS_NOTEBOOK (book));
 
@@ -423,33 +453,10 @@ mx_notebook_set_page (MxNotebook *book,
   if (page == priv->current_page)
     return;
 
-  /* If "page" is invalid, all children will be hidden. */
-
-  i = 0;
-  for (l = priv->children; l; l = l->next)
-    {
-      ClutterActor *child = CLUTTER_ACTOR (l->data);
-
-      if (i == page)
-        {
-          {
-            clutter_actor_set_opacity (child, 0);
-            clutter_actor_show (child);
-            clutter_actor_animate (child, CLUTTER_LINEAR, 250,
-                                   "opacity", 255, NULL);
-          }
-        }
-      else
-      if (CLUTTER_ACTOR_IS_VISIBLE (child))
-        {
-          clutter_actor_animate (child, CLUTTER_LINEAR, 250,
-                                 "opacity", 0, NULL);
-        }
-
-      i++;
-    }
-
   priv->current_page = page;
+
+  /* ensure the correct child is visible */
+  mx_notebook_update_children (book);
 
   g_object_notify (G_OBJECT (book), "page");
 }
