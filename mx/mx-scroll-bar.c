@@ -79,8 +79,6 @@ struct _MxScrollBarPrivate
   gboolean          stepper_forward;
   guint             stepper_source_id;
 
-  ClutterAnimation *paging_animation;
-
   gboolean          vertical;
 };
 
@@ -865,29 +863,10 @@ trough_leave_event_cb (ClutterActor *actor,
 }
 
 static void
-stepper_animation_completed_cb (ClutterAnimation *a,
-                                gpointer          data)
-{
-  g_object_unref (a);
-}
-
-static void
 stepper_move_on (MxScrollBarPrivate *priv,
                  gint                mode)
 {
-  ClutterAnimation *a;
-  ClutterTimeline *t;
-  GValue v = { 0, };
   double value, inc;
-
-  a = g_object_new (CLUTTER_TYPE_ANIMATION,
-                    "object", priv->adjustment,
-                    "duration", PAGING_SUBSEQUENT_REPEAT_TIMEOUT,
-                    "mode", mode,
-                    NULL);
-
-  g_signal_connect (a, "completed", G_CALLBACK (stepper_animation_completed_cb),
-                    NULL);
 
   g_object_get (priv->adjustment,
                 "step-increment", &inc,
@@ -899,12 +878,8 @@ stepper_move_on (MxScrollBarPrivate *priv,
   else
     value = value - inc;
 
-  g_value_init (&v, G_TYPE_DOUBLE);
-  g_value_set_double (&v, value);
-  clutter_animation_bind (a, "value", &v);
-
-  t = clutter_animation_get_timeline (a);
-  clutter_timeline_start (t);
+  mx_adjustment_interpolate (priv->adjustment, value,
+                             PAGING_SUBSEQUENT_REPEAT_TIMEOUT, mode);
 }
 
 static gboolean
