@@ -64,6 +64,10 @@ mx_notebook_add (ClutterContainer *container,
   clutter_actor_set_parent (actor, CLUTTER_ACTOR (container));
   priv->children = g_slist_append (priv->children, actor);
 
+  /* hide the actor until its page is displayed */
+  if ((g_slist_length (priv->children) - 1) != priv->current_page)
+    clutter_actor_hide (actor);
+
   g_signal_emit_by_name (container, "actor-added", actor);
 }
 
