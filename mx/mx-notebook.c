@@ -386,8 +386,6 @@ mx_notebook_gesture_slide_event_cb (ClutterGesture           *gesture,
 {
   MxNotebookPrivate *priv = book->priv;
 
-  g_debug ("slide");
-
   if (!priv->enable_gestures)
     return FALSE;
 
