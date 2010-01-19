@@ -87,6 +87,9 @@ mx_floating_widget_pick_from_stage (ClutterActor       *stage,
   MxFloatingWidgetPrivate *priv = widget->priv;
   gboolean has_clip;
 
+  if (!CLUTTER_ACTOR_IS_REACTIVE (widget))
+    return;
+
   klass = MX_FLOATING_WIDGET_CLASS (G_OBJECT_GET_CLASS (widget));
 
   cogl_push_matrix ();
