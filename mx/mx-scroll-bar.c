@@ -2,7 +2,7 @@
  * mx-scroll-bar.c: Scroll bar actor
  *
  * Copyright 2008 OpenedHand
- * Copyright 2009 Intel Corporation.
+ * Copyright 2009, 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -366,6 +366,8 @@ mx_scroll_bar_allocate (ClutterActor          *actor,
                                 NULL,
                                 &page_size);
 
+      value = mx_adjustment_get_value (priv->adjustment);
+
       if ((upper == lower)
           || (page_size >= (upper - lower)))
         increment = 1.0;
@@ -715,14 +717,6 @@ handle_button_press_event_cb (ClutterActor       *actor,
   return TRUE;
 }
 
-static void
-animation_completed_cb (ClutterAnimation   *animation,
-                        MxScrollBarPrivate *priv)
-{
-  g_object_unref (priv->paging_animation);
-  priv->paging_animation = NULL;
-}
-
 static gboolean
 trough_paging_cb (MxScrollBar *self)
 {
@@ -730,11 +724,7 @@ trough_paging_cb (MxScrollBar *self)
   gdouble value;
   gdouble page_increment;
   gboolean ret;
-
   gulong mode;
-  ClutterAnimation *a;
-  GValue v = { 0, };
-  ClutterTimeline *t;
 
   if (self->priv->paging_event_no == 0)
     {
@@ -815,25 +805,7 @@ trough_paging_cb (MxScrollBar *self)
       value -= page_increment;
     }
 
-  if (self->priv->paging_animation)
-    {
-      clutter_animation_completed (self->priv->paging_animation);
-    }
-
-  /* FIXME: Creating a new animation for each scroll is probably not the best
-  * idea, but it's a lot less involved than extenind the current animation */
-  a = self->priv->paging_animation = g_object_new (CLUTTER_TYPE_ANIMATION,
-                                                   "object", self->priv->adjustment,
-                                                   "duration", PAGING_SUBSEQUENT_REPEAT_TIMEOUT,
-                                                   "mode", mode,
-                                                   NULL);
-  g_value_init (&v, G_TYPE_DOUBLE);
-  g_value_set_double (&v, value);
-  clutter_animation_bind (self->priv->paging_animation, "value", &v);
-  t = clutter_animation_get_timeline (self->priv->paging_animation);
-  g_signal_connect (a, "completed", G_CALLBACK (animation_completed_cb),
-                    self->priv);
-  clutter_timeline_start (t);
+  mx_adjustment_interpolate (self->priv->adjustment, value, 250, mode);
 
   return ret;
 }
