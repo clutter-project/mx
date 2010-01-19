@@ -42,7 +42,6 @@ G_DEFINE_TYPE (MxComboBox, mx_combo_box, MX_TYPE_WIDGET)
 struct _MxComboBoxPrivate
 {
   ClutterActor *label;
-  ClutterActor *popup;
   GSList       *text_list;
   gfloat        clip_x;
   gfloat        clip_y;
@@ -115,12 +114,6 @@ mx_combo_box_dispose (GObject *object)
       priv->label = NULL;
     }
 
-  if (priv->popup)
-    {
-      clutter_actor_destroy (priv->popup);
-      priv->popup = NULL;
-    }
-
   G_OBJECT_CLASS (mx_combo_box_parent_class)->dispose (object);
 }
 
@@ -146,7 +139,6 @@ mx_combo_box_map (ClutterActor *actor)
   CLUTTER_ACTOR_CLASS (mx_combo_box_parent_class)->map (actor);
 
   clutter_actor_map (priv->label);
-  clutter_actor_map (priv->popup);
 }
 
 static void
@@ -157,7 +149,6 @@ mx_combo_box_unmap (ClutterActor *actor)
   CLUTTER_ACTOR_CLASS (mx_combo_box_parent_class)->unmap (actor);
 
   clutter_actor_unmap (priv->label);
-  clutter_actor_unmap (priv->popup);
 }
 
 static void
@@ -168,18 +159,6 @@ mx_combo_box_paint (ClutterActor *actor)
   CLUTTER_ACTOR_CLASS (mx_combo_box_parent_class)->paint (actor);
 
   clutter_actor_paint (priv->label);
-  clutter_actor_paint (priv->popup);
-}
-
-static void
-mx_combo_box_pick (ClutterActor       *actor,
-                   const ClutterColor *color)
-{
-  MxComboBoxPrivate *priv = MX_COMBO_BOX (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_combo_box_parent_class)->pick (actor, color);
-
-  clutter_actor_paint (priv->popup);
 }
 
 static void
@@ -192,20 +171,22 @@ mx_combo_box_get_preferred_width (ClutterActor *actor,
   gfloat height;
   gfloat min_label_w, nat_label_w;
   MxPadding padding;
+  ClutterActor *popup;
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
   height = for_height - padding.top - padding.bottom;
 
-  if (priv->popup)
+  popup = (ClutterActor *) mx_widget_get_popup (MX_WIDGET (actor));
+  if (popup)
     {
       ClutterActorClass *actor_class;
 
-      mx_widget_ensure_style ((MxWidget*) priv->popup);
+      mx_widget_ensure_style ((MxWidget*) popup);
 
       /* call the vfunc directly to prevent retrieving any cached value */
-      actor_class = CLUTTER_ACTOR_CLASS (G_OBJECT_GET_CLASS (priv->popup));
-      actor_class->get_preferred_width (priv->popup,
+      actor_class = CLUTTER_ACTOR_CLASS (G_OBJECT_GET_CLASS (popup));
+      actor_class->get_preferred_width (popup,
                                         -1,
                                         &min_label_w,
                                         &nat_label_w);
@@ -284,8 +265,6 @@ mx_combo_box_allocate (ClutterActor          *actor,
   childbox.x2 = (int)(x + width);
   childbox.y2 = (int)(childbox.y1 + label_h);
   clutter_actor_allocate (priv->label, &childbox, flags);
-
-  clutter_actor_allocate_preferred_size (priv->popup, flags);
 }
 
 static void
@@ -312,15 +291,13 @@ mx_combo_box_update_popup (MxComboBox *box)
   MxComboBoxPrivate *priv = box->priv;
   GSList *l;
   gint index;
+  MxPopup *popup;
 
-  if (!priv->popup)
-    {
+  popup = mx_widget_get_popup (MX_WIDGET (box));
+  if (!popup)
+    return;
 
-    }
-  else
-    {
-      mx_popup_clear (MX_POPUP (priv->popup));
-    }
+  mx_popup_clear (popup);
 
   for (index = 0, l = priv->text_list; l; l = g_slist_next (l), index++)
     {
@@ -330,7 +307,7 @@ mx_combo_box_update_popup (MxComboBox *box)
       g_object_set_data ((GObject*) action, "index", GINT_TO_POINTER (index));
       mx_action_set_display_name (action, (gchar*) l->data);
 
-      mx_popup_add_action (MX_POPUP (priv->popup), action);
+      mx_popup_add_action (popup, action);
     }
 
   /* queue a relayout so the combobox size can match the new popup */
@@ -341,24 +318,17 @@ static gboolean
 mx_combo_box_button_press_event (ClutterActor       *actor,
                                  ClutterButtonEvent *event)
 {
-  MxComboBoxPrivate *priv = MX_COMBO_BOX (actor)->priv;
-  ClutterContainer *stage;
-  gfloat width, height, popup_height;
+  gfloat width, height;
+  ClutterActor *popup;
 
-  stage = (ClutterContainer *) clutter_actor_get_stage (actor);
+  popup = (ClutterActor *) mx_widget_get_popup (MX_WIDGET (actor));
+  if (!popup)
+    return FALSE;
 
   clutter_actor_get_size (actor, &width, &height);
+  clutter_actor_set_width (popup, width);
 
-  clutter_actor_show (priv->popup);
-  clutter_actor_set_opacity (priv->popup, 0x0);
-  clutter_actor_set_width (priv->popup, width);
-
-  popup_height = clutter_actor_get_height (priv->popup);
-  clutter_actor_set_position (priv->popup, 0.0, height);
-
-  clutter_actor_animate (priv->popup, CLUTTER_EASE_OUT_CUBIC, 250,
-                         "opacity", 0xff,
-                         NULL);
+  mx_widget_show_popup (MX_WIDGET (actor), 0.0, height);
 
   return FALSE;
 }
@@ -387,7 +357,6 @@ mx_combo_box_class_init (MxComboBoxClass *klass)
   actor_class->map = mx_combo_box_map;
   actor_class->unmap = mx_combo_box_unmap;
   actor_class->paint = mx_combo_box_paint;
-  actor_class->pick = mx_combo_box_pick;
 
   actor_class->get_preferred_width = mx_combo_box_get_preferred_width;
   actor_class->get_preferred_height = mx_combo_box_get_preferred_height;
@@ -416,6 +385,7 @@ static void
 mx_combo_box_init (MxComboBox *self)
 {
   MxComboBoxPrivate *priv;
+  ClutterActor *popup;
 
   priv = self->priv = COMBO_BOX_PRIVATE (self);
 
@@ -423,10 +393,10 @@ mx_combo_box_init (MxComboBox *self)
   priv->label = clutter_text_new ();
   clutter_actor_set_parent (priv->label, (ClutterActor*) self);
 
-  priv->popup = mx_popup_new ();
-  clutter_actor_set_parent (priv->popup, CLUTTER_ACTOR (self));
+  popup = mx_popup_new ();
+  mx_widget_set_popup (MX_WIDGET (self), MX_POPUP (popup));
 
-  g_signal_connect (priv->popup, "action-activated",
+  g_signal_connect (popup, "action-activated",
                     G_CALLBACK (mx_combo_box_action_activated_cb),
                     self);
 
