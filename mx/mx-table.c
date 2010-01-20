@@ -438,6 +438,9 @@ mx_table_calculate_col_widths (MxTable *table,
 
       child = CLUTTER_ACTOR (l->data);
 
+      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
+
       meta = (MxTableChild *)
         clutter_container_get_child_meta (CLUTTER_CONTAINER (table), child);
 
@@ -465,6 +468,9 @@ mx_table_calculate_col_widths (MxTable *table,
       gint n_expand;
 
       child = CLUTTER_ACTOR (l->data);
+
+      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
 
       meta = (MxTableChild *)
         clutter_container_get_child_meta (CLUTTER_CONTAINER (table), child);
@@ -701,6 +707,9 @@ mx_table_calculate_row_heights (MxTable *table,
 
       child = CLUTTER_ACTOR (l->data);
 
+      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
+
       meta = (MxTableChild *)
         clutter_container_get_child_meta (CLUTTER_CONTAINER (table), child);
 
@@ -731,6 +740,9 @@ mx_table_calculate_row_heights (MxTable *table,
       gint n_expand;
 
       child = CLUTTER_ACTOR (l->data);
+
+      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
 
       meta = (MxTableChild *)
         clutter_container_get_child_meta (CLUTTER_CONTAINER (table), child);
