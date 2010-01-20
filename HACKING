@@ -16,6 +16,18 @@ foo_bar_set_int (FooBar *type,
   ...
 }
 
+Users of the Vim editor will want to set the following options to help produce
+properly indented code:
+
+:set expandtab shiftwidth=2 softtabstop=2
+:set cindent cinoptions=>4,n-2,{2,^-2,\:0,=2,g0,h2,t0,+2,(0,u0,w1,m1
+
+Alternatively, set the following lines in your .vimrc file to enable reading
+the local vim settings from the sources directory:
+
+set exrc          " enable per-directory .vimrc files
+set secure        " disable unsafe commands in local .vimrc files
+
 
 Committing
 ==========
