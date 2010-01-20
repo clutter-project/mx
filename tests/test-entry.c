@@ -99,4 +99,11 @@ entry_main (ClutterContainer *stage)
                     G_CALLBACK (print_notice), "primary icon clicked\n");
   g_signal_connect (entry, "secondary-icon-clicked",
                     G_CALLBACK (print_notice), "secondary icon clicked\n");
+
+  entry = mx_entry_new ("");
+  clutter_actor_set_position (entry, 20, 220);
+  clutter_container_add_actor (stage, entry);
+
+  mx_entry_set_hint_text (MX_ENTRY (entry), "Secret!");
+  mx_entry_set_password_char (MX_ENTRY (entry), 0x2022);
 }
