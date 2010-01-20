@@ -965,12 +965,29 @@ mx_grid_real_foreach (ClutterContainer *container,
   g_list_foreach (priv->list, (GFunc) callback, user_data);
 }
 
+/*
+ * Implementations for raise, lower and sort_by_depth_order are taken from
+ * ClutterBox.
+ */
 static void
 mx_grid_real_raise (ClutterContainer *container,
                     ClutterActor     *actor,
                     ClutterActor     *sibling)
 {
-  /* STUB */
+  MxGridPrivate *priv = MX_GRID (container)->priv;
+
+  priv->list = g_list_remove (priv->list, actor);
+
+  if (sibling == NULL)
+    priv->list = g_list_append (priv->list, actor);
+  else
+    {
+      gint index_ = g_list_index (priv->list, sibling) + 1;
+
+      priv->list = g_list_insert (priv->list, actor, index_);
+    }
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
 }
 
 static void
@@ -978,13 +995,46 @@ mx_grid_real_lower (ClutterContainer *container,
                     ClutterActor     *actor,
                     ClutterActor     *sibling)
 {
-  /* STUB */
+  MxGridPrivate *priv = MX_GRID (container)->priv;
+
+  priv->list = g_list_remove (priv->list, actor);
+
+  if (sibling == NULL)
+    priv->list = g_list_prepend (priv->list, actor);
+  else
+    {
+      gint index_ = g_list_index (priv->list, sibling);
+
+      priv->list = g_list_insert (priv->list, actor, index_);
+    }
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
+}
+
+static gint
+sort_by_depth (gconstpointer a,
+               gconstpointer b)
+{
+  gfloat depth_a = clutter_actor_get_depth ((ClutterActor *) a);
+  gfloat depth_b = clutter_actor_get_depth ((ClutterActor *) b);
+
+  if (depth_a < depth_b)
+    return -1;
+
+  if (depth_a > depth_b)
+    return 1;
+
+  return 0;
 }
 
 static void
 mx_grid_real_sort_depth_order (ClutterContainer *container)
 {
-  /* STUB */
+  MxGridPrivate *priv = MX_GRID (container)->priv;
+
+  priv->list = g_list_sort (priv->list, sort_by_depth);
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
 }
 
 static void
