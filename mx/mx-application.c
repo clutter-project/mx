@@ -283,12 +283,12 @@ mx_application_constructed (GObject *object)
   /* Add default 'raise' action */
   if (!priv->is_proxy)
     {
-      MxAction *raise =
+      MxAction *raise_action =
         mx_action_new_full ("Raise",
                             _("Raise application"),
                             G_CALLBACK (mx_application_raise_activated_cb),
                             self);
-      mx_application_add_action (self, raise);
+      mx_application_add_action (self, raise_action);
     }
 }
 
@@ -321,13 +321,13 @@ mx_application_get_safe_name (const gchar *name)
 {
   gint i;
   gchar *camel;
-  gboolean raise;
+  gboolean raise_case;
   const gchar *name_ptr;
 
   /* Create an ASCII CamelCase string from arbitrary UTF-8 */
   camel = g_malloc (strlen (name) + 1);
   name_ptr = name;
-  raise = TRUE;
+  raise_case = TRUE;
   i = 0;
 
   while (*name_ptr)
@@ -341,10 +341,10 @@ mx_application_get_safe_name (const gchar *name)
           if (g_ascii_isalpha (*name_ptr) ||
               ((i != 0) && g_ascii_isalnum (*name_ptr)))
             {
-              if (raise)
+              if (raise_case)
                 {
                   camel[i] = g_ascii_toupper (*name_ptr);
-                  raise = FALSE;
+                  raise_case = FALSE;
                 }
               else
                 camel[i] = *name_ptr;
@@ -356,7 +356,7 @@ mx_application_get_safe_name (const gchar *name)
                    (*name_ptr == ' '))
             {
               /* Use upper-case after dashes/underscores/spaces */
-              raise = TRUE;
+              raise_case = TRUE;
             }
         }
 
@@ -1072,7 +1072,7 @@ mx_application_remove_action (MxApplication *application,
 }
 
 #ifdef HAVE_DBUS
-DBusGProxy *
+static DBusGProxy *
 mx_application_get_dbus_proxy (MxApplication *application)
 {
   gchar *path_from_name;
