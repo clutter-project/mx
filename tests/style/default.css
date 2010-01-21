@@ -11,20 +11,6 @@ MxLabel#padded-label {
   padding: 10;
 }
 
-MxButton, MxScrollButton {
-  color: blue;
-  padding: 12;
-  border-image: url('border-image.png') 12;
-}
-
-MxButton:hover, MxScrollButton:hover {
-  border-image: url('border-image-light.png') 12;
-}
-
-MxButton:active, MxFadeButton:active, MxScrollButton:active {
-  border-image: url('border-image-dark.png') 12;
-}
-
 MxButton#test-border-image {
   color: black;
   border-image: url('border-image.png') 12;
@@ -74,3 +60,18 @@ MxTable {
   padding: 10;
 }
 
+MxTable > MxButton {
+  color: blue;
+  padding: 12;
+  border-image: url('border-image.png') 12;
+}
+
+MxTable > MxButton:hover
+{
+  border-image: url('border-image-light.png') 12;
+}
+
+MxTable > MxButton:active
+{
+  border-image: url('border-image-dark.png') 12;
+}

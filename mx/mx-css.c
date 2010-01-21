@@ -42,6 +42,7 @@ struct _MxSelector
   MxSelector *ancestor;
   GHashTable *style;
   const gchar *filename; /* origin of this selector */
+  gint priority;
 };
 
 
@@ -292,12 +293,13 @@ print_selector (MxSelector *selector, gint indent)
 
 
 static MxSelector *
-mx_selector_new (const gchar *filename)
+mx_selector_new (const gchar *filename, gint priority)
 {
   MxSelector *s;
 
   s = g_slice_new0 (MxSelector);
   s->filename = filename;
+  s->priority = priority;
 
   return s;
 }
@@ -347,7 +349,8 @@ css_parse_ruleset (GScanner *scanner, GList **selectors)
           /* check if there was a previous selector and if so, the new one
            * should use the previous selector to match an ancestor */
 
-          selector = mx_selector_new (scanner->input_name);
+          selector = mx_selector_new (scanner->input_name,
+                                      GPOINTER_TO_INT (scanner->user_data));
           *selectors = g_list_prepend (*selectors, selector);
 
           if (parent)
@@ -371,7 +374,8 @@ css_parse_ruleset (GScanner *scanner, GList **selectors)
 
           parent = selector;
 
-          selector = mx_selector_new (scanner->input_name);
+          selector = mx_selector_new (scanner->input_name,
+                                      GPOINTER_TO_INT (scanner->user_data));
           *selectors = g_list_prepend (*selectors, selector);
 
           /* remove parent from list of selectors and link it to the new
@@ -388,7 +392,8 @@ css_parse_ruleset (GScanner *scanner, GList **selectors)
         case ',':
           g_scanner_get_next_token (scanner);
 
-          selector = mx_selector_new (scanner->input_name);
+          selector = mx_selector_new (scanner->input_name,
+                                      GPOINTER_TO_INT (scanner->user_data));
           *selectors = g_list_prepend (*selectors, selector);
 
           token = css_parse_simple_selector (scanner, selector);
@@ -449,7 +454,8 @@ css_parse_block (GScanner *scanner, GList **selectors, GList **styles)
 
 static gboolean
 css_parse_file (MxStyleSheet *sheet,
-                gchar         *filename)
+                gchar        *filename,
+                gint          priority)
 {
   GScanner *scanner;
   int fd;
@@ -461,6 +467,7 @@ css_parse_file (MxStyleSheet *sheet,
 
   scanner = g_scanner_new (NULL);
   scanner->input_name = filename;
+  scanner->user_data = GINT_TO_POINTER (priority);
 
   /* turn off single line comments, we need to parse '#' */
   scanner->config->cpair_comment_single = "\1\n";
@@ -664,7 +671,8 @@ static gint
 compare_selector_matches (SelectorMatch *a,
                           SelectorMatch *b)
 {
-  return a->score - b->score;
+  gint priority = a->selector->priority - b->selector->priority;
+  return priority ? priority : (a->score - b->score);
 }
 
 struct _css_table_copy_data
@@ -799,7 +807,7 @@ mx_style_sheet_add_from_file (MxStyleSheet *sheet,
   g_return_val_if_fail (filename != NULL, FALSE);
 
   input_name = g_strdup (filename);
-  result = css_parse_file (sheet, input_name);
+  result = css_parse_file (sheet, input_name, g_list_length (sheet->filenames));
   sheet->filenames = g_list_prepend (sheet->filenames, input_name);
 
 #ifdef MX_DEBUG_CSS
