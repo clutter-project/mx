@@ -190,14 +190,14 @@ mx_application_actions_changed_cb (DBusGProxy *proxy,
 static void
 mx_application_constructed (GObject *object)
 {
+  MxApplication *self = MX_APPLICATION (object);
+  MxApplicationPrivate *priv = self->priv;
 #ifdef HAVE_DBUS
+  GError *error = NULL;
+
   DBusGConnection *bus;
   guint32 request_status;
   gboolean unique, success;
-
-  GError *error = NULL;
-  MxApplication *self = MX_APPLICATION (object);
-  MxApplicationPrivate *priv = self->priv;
 
   if (!priv->service_name)
     {
