@@ -107,6 +107,10 @@ struct _MxEntryPrivate
 
   gboolean hint_visible;
   gunichar password_char;
+
+  gboolean  pause_undo;
+  GQueue   *undo_history;
+  gulong    undo_timeout_source;
 };
 
 static guint entry_signals[LAST_SIGNAL] = { 0, };
@@ -194,6 +198,19 @@ mx_entry_finalize (GObject *object)
 
   g_free (priv->hint);
   priv->hint = NULL;
+
+  if (priv->undo_history)
+    {
+      g_queue_foreach (priv->undo_history, (GFunc) g_free, NULL);
+      g_queue_free (priv->undo_history);
+      priv->undo_history = NULL;
+    }
+
+  if (priv->undo_timeout_source)
+    {
+      g_source_remove (priv->undo_timeout_source);
+      priv->undo_timeout_source = 0;
+    }
 
   G_OBJECT_CLASS (mx_entry_parent_class)->finalize (object);
 }
@@ -654,6 +671,31 @@ mx_entry_key_press_event (ClutterActor    *actor,
       return TRUE;
     }
 
+  /* undo */
+  if ((event->modifier_state & CLUTTER_CONTROL_MASK)
+      && event->keyval == CLUTTER_z)
+    {
+      gchar *str;
+
+      /* pop the current value off the undo history stack and set the text to
+       * the new value */
+      if (priv->undo_timeout_source == 0)
+        {
+          str = g_queue_pop_head (priv->undo_history);
+          g_free (str);
+        }
+
+      /* prevent storing the value just restored */
+      priv->pause_undo = TRUE;
+
+      if (priv->undo_history)
+        {
+          clutter_text_set_text (CLUTTER_TEXT (priv->entry),
+                                 (gchar*) g_queue_peek_head (priv->undo_history));
+        }
+      return TRUE;
+    }
+
   return FALSE;
 }
 
@@ -787,6 +829,83 @@ mx_entry_class_init (MxEntryClass *klass)
                   G_TYPE_NONE, 0);
 }
 
+
+static gboolean
+mx_entry_store_undo_timeout (MxEntry *entry)
+{
+  const gchar *str;
+  MxEntryPrivate *priv = entry->priv;
+
+  priv->undo_timeout_source = 0;
+
+  str = mx_entry_get_text (entry);
+
+  if (!priv->undo_history)
+    priv->undo_history = g_queue_new ();
+
+  /* prevent duplicated */
+  if (!g_strcmp0 (str, (gchar*) g_queue_peek_head (priv->undo_history)))
+    {
+      return FALSE;
+    }
+
+  g_queue_push_head (priv->undo_history, g_strdup (str));
+
+  /* keep the undo history to only 20 items */
+  if (g_queue_get_length (priv->undo_history) > 20)
+    {
+      gpointer *tmp;
+
+      tmp = g_queue_pop_tail (priv->undo_history);
+
+      g_free (tmp);
+    }
+
+  return FALSE;
+}
+
+static void
+mx_entry_store_undo_history (ClutterText *text,
+                             MxEntry     *entry)
+{
+  if (entry->priv->undo_timeout_source)
+    {
+      g_source_remove (entry->priv->undo_timeout_source);
+      entry->priv->undo_timeout_source = 0;
+    }
+
+  if (entry->priv->pause_undo)
+    {
+      entry->priv->pause_undo = FALSE;
+      return;
+    }
+
+  entry->priv->undo_timeout_source =
+    g_timeout_add (750, (GSourceFunc) mx_entry_store_undo_timeout, entry);
+}
+
+static gboolean
+mx_entry_store_undo_on_keypress (ClutterText     *text,
+                                 ClutterKeyEvent *event,
+                                 MxEntry         *entry)
+{
+  if (event->keyval == CLUTTER_space)
+    {
+      /* store the text immediately */
+      if (entry->priv->undo_timeout_source)
+        {
+          g_source_remove (entry->priv->undo_timeout_source);
+          entry->priv->undo_timeout_source = 0;
+        }
+
+      mx_entry_store_undo_timeout (entry);
+
+      entry->priv->pause_undo = TRUE;
+    }
+
+  return FALSE;
+}
+
 static void
 mx_entry_init (MxEntry *entry)
 {
@@ -810,6 +929,12 @@ mx_entry_init (MxEntry *entry)
 
   g_signal_connect (priv->entry, "key-focus-out",
                     G_CALLBACK (clutter_text_focus_out_cb), entry);
+
+  g_signal_connect (priv->entry, "text-changed",
+                    G_CALLBACK (mx_entry_store_undo_history), entry);
+  g_signal_connect (priv->entry, "key-press-event",
+                    G_CALLBACK (mx_entry_store_undo_on_keypress), entry);
+
 
   priv->spacing = 6.0f;
 
