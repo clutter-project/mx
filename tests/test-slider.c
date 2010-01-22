@@ -46,7 +46,7 @@ slider_main (ClutterContainer *stage)
                     G_CALLBACK (on_progress_changed), rectangle);
 
   clutter_container_add_actor (stage, slider);
-  clutter_actor_set_size (slider, 280, 16);
+  clutter_actor_set_width (slider, 280);
   clutter_actor_set_position (slider, 20, 20);
 
   clutter_container_add_actor (stage, rectangle);

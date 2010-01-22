@@ -66,7 +66,9 @@ struct _MxSliderPrivate
   /* keep those around for ::alocate_fill() */
   gfloat        trough_box_y1;
   gfloat        trough_box_y2;
-  gint          handle_width;
+  gint          trough_height;
+  guint         handle_width;
+  guint         handle_height;
 
   gdouble       progress;
 };
@@ -274,7 +276,7 @@ mx_stylable_iface_init (MxStylableIface *iface)
       pspec = g_param_spec_int ("trough-height",
                                 "Height of the trough",
                                 "Height of the trough, in px",
-                                -1, G_MAXUINT, -1,
+                                -1, G_MAXINT, -1,
                                 G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface,
                                           MX_TYPE_SLIDER, pspec);
@@ -337,6 +339,44 @@ mx_slider_pick (ClutterActor       *actor,
 }
 
 static void
+mx_slider_get_preferred_width (ClutterActor *actor,
+                               gfloat        for_height,
+                               gfloat       *min_width_p,
+                               gfloat       *nat_width_p)
+{
+  MxPadding padding;
+  MxSliderPrivate *priv = MX_SLIDER (actor)->priv;
+
+  mx_widget_get_padding (MX_WIDGET (actor), &padding);
+
+  /* Set the size of the handle + padding */
+  if (min_width_p)
+    *min_width_p = priv->handle_width + padding.left + padding.right;
+  if (nat_width_p)
+    *nat_width_p = priv->handle_width + padding.left + padding.right;
+}
+
+static void
+mx_slider_get_preferred_height (ClutterActor *actor,
+                                gfloat        for_width,
+                                gfloat       *min_height_p,
+                                gfloat       *nat_height_p)
+{
+  MxPadding padding;
+  MxSliderPrivate *priv = MX_SLIDER (actor)->priv;
+
+  mx_widget_get_padding (MX_WIDGET (actor), &padding);
+
+  /* Add on the size of the trough/handle + padding */
+  if (min_height_p)
+    *min_height_p = MAX (priv->handle_height, priv->trough_height) +
+                    padding.top + padding.bottom;
+  if (nat_height_p)
+    *nat_height_p = MAX (priv->handle_height, priv->trough_height) +
+                    padding.top + padding.bottom;
+}
+
+static void
 mx_slider_allocate_fill_handle (MxSlider               *self,
                                 const ClutterActorBox  *box,
                                 ClutterAllocationFlags  flags)
@@ -373,9 +413,22 @@ mx_slider_allocate_fill_handle (MxSlider               *self,
 
   /* handle */
   handle_box.x1 = fill_box.x2 - handle_width_2;
-  handle_box.y1 = padding.top;
   handle_box.x2 = handle_box.x1 + priv->handle_width;
-  handle_box.y2 = (box->y2 - box->y1) - padding.bottom;
+
+  /* If the handle height is unset, or the handle height is greater than the
+   * trough height, we want the handle to occupy all available space.
+   * Otherwise we want it to be centred in the trough.
+   */
+  if ((priv->handle_height == 0) || (priv->handle_height > priv->trough_height))
+    {
+      handle_box.y1 = padding.top;
+      handle_box.y2 = (box->y2 - box->y1) - padding.bottom;
+    }
+  else
+    {
+      handle_box.y1 = (box->y2 - box->y1 - priv->handle_height) / 2.f;
+      handle_box.y2 = handle_box.y1 + priv->handle_height;
+    }
 
   /* snap to pixel */
   handle_box.x1 = (int) handle_box.x1;
@@ -397,8 +450,7 @@ mx_slider_allocate (ClutterActor           *actor,
   ClutterActorClass *actor_class;
   ClutterActorBox    bar_box;
   ClutterActorBox    trough_box;
-  guint              handle_width_2, handle_height;
-  gint               trough_height;
+  guint              handle_width_2;
 
   actor_class = CLUTTER_ACTOR_CLASS (mx_slider_parent_class);
   actor_class->allocate (actor, box, flags);
@@ -409,11 +461,6 @@ mx_slider_allocate (ClutterActor           *actor,
       box = &bar_box;
     }
 
-  mx_stylable_get (MX_STYLABLE (self),
-                   "trough-height", &trough_height,
-                   "handle-width",  &priv->handle_width,
-                   "handle-height",  &handle_height,
-                   NULL);
   handle_width_2 = priv->handle_width >> 1;
 
   mx_widget_get_padding (MX_WIDGET (self), &padding);
@@ -423,7 +470,7 @@ mx_slider_allocate (ClutterActor           *actor,
   priv->handle_middle_end   = box->x2 - box->x1 - padding.right -
     handle_width_2 - 1;
 
-  if (trough_height < 0)
+  if (priv->trough_height < 0)
     {
       /* trough-height has not been specified, take the whole height */
       trough_box.x1 = padding.left;
@@ -435,9 +482,9 @@ mx_slider_allocate (ClutterActor           *actor,
     {
       trough_box.x1 = padding.left;
       trough_box.y1 = (box->y2 - box->y1 - padding.bottom - padding.top -
-                       trough_height) / 2;
+                       priv->trough_height) / 2;
       trough_box.x2 = (box->x2 - box->x1) - padding.right;
-      trough_box.y2 = trough_box.y1 + trough_height;
+      trough_box.y2 = trough_box.y1 + priv->trough_height;
     }
 
   clutter_actor_allocate (priv->trough_bg, &trough_box, flags);
@@ -579,6 +626,8 @@ mx_slider_class_init (MxSliderClass *klass)
 
   actor_class->paint = mx_slider_paint;
   actor_class->pick = mx_slider_pick;
+  actor_class->get_preferred_width = mx_slider_get_preferred_width;
+  actor_class->get_preferred_height = mx_slider_get_preferred_height;
   actor_class->allocate = mx_slider_allocate;
   actor_class->map = mx_slider_map;
   actor_class->unmap = mx_slider_unmap;
@@ -591,11 +640,53 @@ mx_slider_class_init (MxSliderClass *klass)
 }
 
 static void
+mx_slider_style_changed_cb (MxSlider *self)
+{
+  gboolean relayout;
+  gint trough_height;
+  guint handle_width, handle_height;
+
+  MxSliderPrivate *priv = self->priv;
+
+  mx_stylable_get (MX_STYLABLE (self),
+                   "trough-height", &trough_height,
+                   "handle-width",  &handle_width,
+                   "handle-height", &handle_height,
+                   NULL);
+
+  relayout = FALSE;
+
+  if (priv->trough_height != trough_height)
+    {
+      priv->trough_height = trough_height;
+      relayout = TRUE;
+    }
+
+  if (priv->handle_width != handle_width)
+    {
+      priv->handle_width = handle_width;
+      relayout = TRUE;
+    }
+
+  if (priv->handle_height != handle_height)
+    {
+      priv->handle_height = handle_height;
+      relayout = TRUE;
+    }
+
+  if (relayout)
+    clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+}
+
+static void
 mx_slider_init (MxSlider *self)
 {
   MxSliderPrivate *priv;
 
   self->priv = priv = SLIDER_PRIVATE (self);
+
+  g_signal_connect (self, "style-changed",
+                    G_CALLBACK (mx_slider_style_changed_cb), NULL);
 
   priv->trough_bg = CLUTTER_ACTOR (_mx_progress_bar_fill_new ());
   clutter_actor_set_name (priv->trough_bg, "trough-background");
