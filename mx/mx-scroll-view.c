@@ -80,11 +80,6 @@ struct _MxScrollViewPrivate
   ClutterActor *hscroll;
   ClutterActor *vscroll;
 
-  gfloat        row_size;
-  gfloat        column_size;
-
-  gboolean      row_size_set : 1;
-  gboolean      column_size_set : 1;
   guint         mouse_scroll : 1;
   guint         enable_gestures : 1;
 
@@ -598,14 +593,6 @@ child_hadjustment_notify_cb (GObject    *gobject,
   mx_scrollable_get_adjustments (MX_SCROLLABLE (actor), &hadjust, NULL);
   if (hadjust)
     {
-      /* Force scroll step if neede. */
-      if (priv->column_size_set)
-        {
-          g_object_set (hadjust,
-                        "step-increment", priv->column_size,
-                        NULL);
-        }
-
       mx_scroll_bar_set_adjustment (MX_SCROLL_BAR(priv->hscroll), hadjust);
       g_signal_connect (hadjust, "changed", G_CALLBACK (
                           child_adjustment_changed_cb), priv->hscroll);
@@ -632,14 +619,6 @@ child_vadjustment_notify_cb (GObject    *gobject,
   mx_scrollable_get_adjustments (MX_SCROLLABLE(actor), NULL, &vadjust);
   if (vadjust)
     {
-      /* Force scroll step if neede. */
-      if (priv->row_size_set)
-        {
-          g_object_set (vadjust,
-                        "step-increment", priv->row_size,
-                        NULL);
-        }
-
       mx_scroll_bar_set_adjustment (MX_SCROLL_BAR(priv->vscroll), vadjust);
       g_signal_connect (vadjust, "changed", G_CALLBACK (
                           child_adjustment_changed_cb), priv->vscroll);
@@ -854,96 +833,6 @@ mx_scroll_view_get_vscroll_bar (MxScrollView *scroll)
   g_return_val_if_fail (MX_IS_SCROLL_VIEW (scroll), NULL);
 
   return scroll->priv->vscroll;
-}
-
-gfloat
-mx_scroll_view_get_column_size (MxScrollView *scroll)
-{
-  MxAdjustment *adjustment;
-  gdouble column_size;
-
-  g_return_val_if_fail (scroll, 0);
-
-  adjustment = mx_scroll_bar_get_adjustment (
-    MX_SCROLL_BAR (scroll->priv->hscroll));
-  g_object_get (adjustment,
-                "step-increment", &column_size,
-                NULL);
-
-  return column_size;
-}
-
-void
-mx_scroll_view_set_column_size (MxScrollView *scroll,
-                                gfloat        column_size)
-{
-  MxAdjustment *adjustment;
-
-  g_return_if_fail (scroll);
-
-  if (column_size < 0)
-    {
-      scroll->priv->column_size_set = FALSE;
-      scroll->priv->column_size = -1;
-    }
-  else
-    {
-      scroll->priv->column_size_set = TRUE;
-      scroll->priv->column_size = column_size;
-
-      adjustment = mx_scroll_bar_get_adjustment (
-        MX_SCROLL_BAR (scroll->priv->hscroll));
-
-      if (adjustment)
-        g_object_set (adjustment,
-                      "step-increment", (gdouble) scroll->priv->column_size,
-                      NULL);
-    }
-}
-
-gfloat
-mx_scroll_view_get_row_size (MxScrollView *scroll)
-{
-  MxAdjustment *adjustment;
-  gdouble row_size;
-
-  g_return_val_if_fail (scroll, 0);
-
-  adjustment = mx_scroll_bar_get_adjustment (
-    MX_SCROLL_BAR (scroll->priv->vscroll));
-  g_object_get (adjustment,
-                "step-increment", &row_size,
-                NULL);
-
-  return row_size;
-}
-
-void
-mx_scroll_view_set_row_size (MxScrollView *scroll,
-                             gfloat        row_size)
-{
-  MxAdjustment *adjustment;
-
-  g_return_if_fail (scroll);
-
-  if (row_size < 0)
-    {
-      scroll->priv->row_size_set = FALSE;
-      scroll->priv->row_size = -1;
-    }
-  else
-    {
-      scroll->priv->row_size_set = TRUE;
-      scroll->priv->row_size = row_size;
-
-      adjustment = mx_scroll_bar_get_adjustment (
-        MX_SCROLL_BAR (scroll->priv->vscroll));
-
-      if (adjustment)
-        g_object_set (adjustment,
-                      "step-increment", (gdouble) scroll->priv->row_size,
-                      NULL);
-    }
 }
 
 void
