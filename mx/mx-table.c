@@ -61,6 +61,7 @@
 #include "mx-private.h"
 #include "mx-table-child.h"
 #include "mx-stylable.h"
+#include "mx-focusable.h"
 
 enum
 {
@@ -107,12 +108,83 @@ struct _MxTablePrivate
 };
 
 static void mx_container_iface_init (ClutterContainerIface *iface);
+static void mx_focusable_iface_init (MxFocusableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxTable, mx_table, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
-                                                mx_container_iface_init));
+                                                mx_container_iface_init)
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
+                                                mx_focusable_iface_init));
 
+static MxFocusable*
+mx_table_move_focus (MxFocusable *focusable,
+                     MxDirection  direction,
+                     MxFocusable *from)
+{
+  MxTablePrivate *priv = MX_TABLE (focusable)->priv;
+  GSList *l, *childlink;
 
+  /* find the current focus */
+  childlink = g_slist_find (priv->children, from);
+
+  if (!childlink)
+    return NULL;
+
+  /* find the next widget to focus */
+  if (direction == MX_NEXT)
+    {
+      for (l = childlink->next; l; l = g_slist_next (l))
+        {
+          if (MX_IS_FOCUSABLE (l->data))
+            {
+              MxFocusable *focused;
+
+              focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data));
+
+              if (focused)
+                  return focused;
+            }
+        }
+
+      /* no next widgets to focus */
+      return NULL;
+    }
+  else if (direction == MX_PREVIOUS)
+    {
+      /* FIXME: need to convert to child list to double linked list! */
+    }
+
+  return NULL;
+}
+
+static MxFocusable*
+mx_table_accept_focus (MxFocusable *focusable)
+{
+  MxTablePrivate *priv = MX_TABLE (focusable)->priv;
+  GSList* l;
+
+  /* find the first focusable widget */
+  for (l = priv->children; l; l = g_slist_next (l))
+    {
+      if (MX_IS_FOCUSABLE (l->data))
+        {
+          MxFocusable *focused = NULL;
+
+          focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data));
+
+          if (focused)
+            return focused;
+        }
+    }
+  return NULL;
+}
+
+static void
+mx_focusable_iface_init (MxFocusableIface *iface)
+{
+  iface->move_focus = mx_table_move_focus;
+  iface->accept_focus = mx_table_accept_focus;
+}
 
 /*
  * ClutterContainer Implementation
