@@ -505,8 +505,6 @@ mx_adjustment_set_value (MxAdjustment *adjustment,
 
   priv = adjustment->priv;
 
-  stop_interpolation (adjustment);
-
   /* Defer clamp until after construction. */
   if (!priv->is_constructing)
     {
@@ -518,6 +516,8 @@ mx_adjustment_set_value (MxAdjustment *adjustment,
 
   if (priv->value != value)
     {
+      stop_interpolation (adjustment);
+
       priv->value = value;
 
       g_object_notify (G_OBJECT (adjustment), "value");
@@ -890,6 +890,25 @@ mx_adjustment_interpolate (MxAdjustment *adjustment,
                     adjustment);
 
   clutter_timeline_start (priv->interpolation);
+}
+
+void
+mx_adjustment_interpolate_relative (MxAdjustment *adjustment,
+                                    gdouble       offset,
+                                    guint         duration,
+                                    gulong        mode)
+{
+  MxAdjustmentPrivate *priv = adjustment->priv;
+
+  if (priv->interpolation)
+    offset += priv->new_position;
+  else
+    offset += priv->value;
+
+  mx_adjustment_interpolate (adjustment,
+                             offset,
+                             duration,
+                             mode);
 }
 
 gboolean
