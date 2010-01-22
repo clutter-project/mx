@@ -444,25 +444,29 @@ mx_scroll_view_scroll_event (ClutterActor       *self,
       if (value == lower)
         return FALSE;
       else
-        mx_adjustment_set_value (vadjustment, value - step);
+        mx_adjustment_interpolate_relative (vadjustment, -step,
+                                            250, CLUTTER_EASE_OUT_CUBIC);
       break;
     case CLUTTER_SCROLL_DOWN:
       if (value == upper)
         return FALSE;
       else
-        mx_adjustment_set_value (vadjustment, value + step);
+        mx_adjustment_interpolate_relative (vadjustment, step,
+                                            250, CLUTTER_EASE_OUT_CUBIC);
       break;
     case CLUTTER_SCROLL_LEFT:
       if (value == lower)
         return FALSE;
       else
-        mx_adjustment_set_value (hadjustment, value - step);
+        mx_adjustment_interpolate_relative (hadjustment, -step,
+                                            250, CLUTTER_EASE_OUT_CUBIC);
       break;
     case CLUTTER_SCROLL_RIGHT:
       if (value == upper)
         return FALSE;
       else
-        mx_adjustment_set_value (hadjustment, value + step);
+        mx_adjustment_interpolate_relative (hadjustment, step,
+                                            250, CLUTTER_EASE_OUT_CUBIC);
       break;
     }
 
