@@ -1,7 +1,7 @@
 /*
- * mx-item-view.h: MxGrid powered by a model
+ * mx-item-view.h: MxBoxLayout powered by a model
  *
- * Copyright 2009 Intel Corporation.
+ * Copyright 2009,2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -29,7 +29,7 @@
 #define _MX_LIST_VIEW_H
 
 #include <glib-object.h>
-#include "mx-grid.h"
+#include "mx-box-layout.h"
 #include "mx-item-factory.h"
 
 G_BEGIN_DECLS
@@ -66,13 +66,13 @@ typedef struct _MxListViewPrivate MxListViewPrivate;
  */
 typedef struct {
   /*< private >*/
-  MxGrid parent;
+  MxBoxLayout parent;
 
   MxListViewPrivate *priv;
 } MxListView;
 
 typedef struct {
-  MxGridClass parent_class;
+  MxBoxLayoutClass parent_class;
 } MxListViewClass;
 
 GType mx_list_view_get_type (void);
