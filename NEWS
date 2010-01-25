@@ -1,5 +1,42 @@
+0.5.0
+=====
+
+Changes since 0.4.0:
+
+ * Single instance, startup notification and action support added to
+   MxApplication.
+ * Expose mx_allocate_align_fill and mx_stylable_apply_clutter_text_attributes
+   utility functions.
+ * Add gesture support for changing pages in MxNotebook.
+ * Fixes to various aspects of MxNotebook.
+ * Use interpolations in stepper animations.
+ * Add "popup" property to MxWidget.
+ * Add MxFocusable and MxFocusManager to help with focus navigation.
+ * Remove redundant row/column API from scroll view.
+ * Add preferred width and height functions to MxSlider.
+ * Set CSS property priorities based on load order.
+
+ * Fixed bugs:
+    MB#9054 - [button-group] fix incorrect parameter check in
+              mx_button_group_foreach
+    MB#9046 - [notebook] make sure children are hidden until needed when added
+    MB#9028 - Position MxNotebook children relative to the parent
+    MB#3785 - [grid] Add raise, lower and sort depth implementations
+    MB#9147 - Add password-char property to MxEntry
+    MB#9148 - [table] Skip hidden children when calculating row and column sizes
+
+
+Many thanks to:
+
+  Chris Lord
+  Evan Nemerson
+  Gustavo Noronha Silva
+  Rob Bradford
+  Thomas Wood
+
+
 0.4.0
-====
+=====
 
 Changes since 0.3.0:
 
