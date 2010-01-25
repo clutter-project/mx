@@ -492,14 +492,16 @@ mx_scroll_bar_scroll_event (ClutterActor       *actor,
       if (value == lower)
         return FALSE;
       else
-        mx_adjustment_set_value (priv->adjustment, value - step);
+        mx_adjustment_interpolate_relative (priv->adjustment, -step,
+                                            250, CLUTTER_EASE_OUT_CUBIC);
       break;
     case CLUTTER_SCROLL_DOWN:
     case CLUTTER_SCROLL_RIGHT:
       if (value == upper)
         return FALSE;
       else
-        mx_adjustment_set_value (priv->adjustment, value + step);
+        mx_adjustment_interpolate_relative (priv->adjustment, step,
+                                            250, CLUTTER_EASE_OUT_CUBIC);
       break;
     }
 
