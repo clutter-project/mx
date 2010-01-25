@@ -40,6 +40,7 @@
 #include <glib.h>
 
 #include <clutter/clutter.h>
+#include <clutter/clutter-keysyms.h>
 
 #include "mx-button.h"
 
@@ -50,6 +51,7 @@
 #include "mx-texture-cache.h"
 #include "mx-private.h"
 #include "mx-enum-types.h"
+#include "mx-focusable.h"
 
 enum
 {
@@ -90,10 +92,13 @@ struct _MxButtonPrivate
 static guint button_signals[LAST_SIGNAL] = { 0, };
 
 static void mx_stylable_iface_init (MxStylableIface *iface);
+static void mx_focusable_iface_init (MxFocusableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxButton, mx_button, MX_TYPE_BIN,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
-                                                mx_stylable_iface_init));
+                                                mx_stylable_iface_init)
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
+                                                mx_focusable_iface_init));
 
 static void
 mx_stylable_iface_init (MxStylableIface *iface)
@@ -114,6 +119,40 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                         G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_BUTTON, pspec);
     }
+}
+
+static MxFocusable*
+mx_button_accept_focus (MxFocusable *focusable)
+{
+  /* FIXME: pretend hover is the same as focus for now */
+  mx_stylable_set_style_pseudo_class (MX_STYLABLE (focusable), "hover");
+  MX_BUTTON (focusable)->priv->is_hover = TRUE;
+
+  clutter_actor_grab_key_focus (CLUTTER_ACTOR (focusable));
+
+  return focusable;
+}
+
+static MxFocusable*
+mx_button_move_focus (MxFocusable *focusable,
+                      MxDirection  direction,
+                      MxFocusable *from)
+{
+  /* check if focus is being moved from us */
+  if (focusable == from)
+    {
+      mx_stylable_set_style_pseudo_class (MX_STYLABLE (focusable), "");
+      MX_BUTTON (focusable)->priv->is_hover = FALSE;
+    }
+
+  return NULL;
+}
+
+static void
+mx_focusable_iface_init (MxFocusableIface *iface)
+{
+  iface->accept_focus = mx_button_accept_focus;
+  iface->move_focus = mx_button_move_focus;
 }
 
 static void
@@ -200,25 +239,61 @@ mx_button_style_changed (MxWidget *widget)
 }
 
 
+static void
+mx_button_push (MxButton           *button,
+                ClutterButtonEvent *event)
+{
+  MxWidget *widget = MX_WIDGET (button);
+
+  mx_widget_hide_tooltip (widget);
+
+  button->priv->is_pressed = TRUE;
+
+  clutter_grab_pointer (CLUTTER_ACTOR (button));
+
+  mx_stylable_set_style_pseudo_class (MX_STYLABLE (button), "active");
+
+  if (event)
+    mx_widget_long_press_query (widget, event);
+}
+
+static void
+mx_button_pull (MxButton *button)
+{
+  MxWidget *widget = MX_WIDGET (button);
+  MxButtonPrivate *priv = button->priv;
+
+  if (!button->priv->is_pressed)
+    return;
+
+  clutter_ungrab_pointer ();
+
+  if (button->priv->is_toggle)
+    {
+      mx_button_set_checked (button, !button->priv->is_checked);
+    }
+
+  button->priv->is_pressed = FALSE;
+
+  g_signal_emit (button, button_signals[CLICKED], 0);
+
+  mx_widget_long_press_cancel (widget);
+
+  if (priv->is_checked)
+    mx_stylable_set_style_pseudo_class (MX_STYLABLE (button), "checked");
+  else if (!priv->is_hover)
+    mx_stylable_set_style_pseudo_class (MX_STYLABLE (button), NULL);
+  else
+    mx_stylable_set_style_pseudo_class (MX_STYLABLE (button), "hover");
+}
 
 static gboolean
 mx_button_button_press (ClutterActor       *actor,
                         ClutterButtonEvent *event)
 {
-  MxButtonPrivate *priv = MX_BUTTON (actor)->priv;
-  MxWidget *widget = MX_WIDGET (actor);
-
-  mx_widget_hide_tooltip (widget);
-
   if (event->button == 1)
     {
-      priv->is_pressed = TRUE;
-
-      clutter_grab_pointer (actor);
-
-      mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "active");
-
-      mx_widget_long_press_query (widget, event);
+      mx_button_push (MX_BUTTON (actor), event);
 
       return TRUE;
     }
@@ -232,37 +307,40 @@ mx_button_button_release (ClutterActor       *actor,
 {
   if (event->button == 1)
     {
-      MxButton *button = MX_BUTTON (actor);
-      MxWidget *widget = MX_WIDGET (actor);
-      MxButtonPrivate *priv = button->priv;
-
-      if (!button->priv->is_pressed)
-        return FALSE;
-
-      clutter_ungrab_pointer ();
-
-      if (button->priv->is_toggle)
-        {
-          mx_button_set_checked (button, !button->priv->is_checked);
-        }
-
-      button->priv->is_pressed = FALSE;
-
-      g_signal_emit (button, button_signals[CLICKED], 0);
-
-      mx_widget_long_press_cancel (widget);
-
-      if (priv->is_checked)
-        mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "checked");
-      else if (!priv->is_hover)
-        mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), NULL);
-      else
-        mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "hover");
+      mx_button_pull (MX_BUTTON (actor));
 
       return TRUE;
     }
 
   return TRUE;
+}
+
+static gboolean
+mx_button_key_press (ClutterActor    *actor,
+                     ClutterKeyEvent *event)
+{
+  if (event->keyval == CLUTTER_Return || event->keyval == CLUTTER_space)
+    {
+      mx_button_push (MX_BUTTON (actor), NULL);
+
+      return TRUE;
+    }
+
+  return FALSE;
+}
+
+static gboolean
+mx_button_key_release (ClutterActor    *actor,
+                       ClutterKeyEvent *event)
+{
+  if (event->keyval == CLUTTER_Return || event->keyval == CLUTTER_space)
+    {
+      mx_button_pull (MX_BUTTON (actor));
+
+      return TRUE;
+    }
+
+  return FALSE;
 }
 
 static gboolean
@@ -452,6 +530,8 @@ mx_button_class_init (MxButtonClass *klass)
 
   actor_class->button_press_event = mx_button_button_press;
   actor_class->button_release_event = mx_button_button_release;
+  actor_class->key_press_event = mx_button_key_press;
+  actor_class->key_release_event = mx_button_key_release;
   actor_class->enter_event = mx_button_enter;
   actor_class->leave_event = mx_button_leave;
 
