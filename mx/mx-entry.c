@@ -63,6 +63,7 @@
 #include "mx-texture-cache.h"
 #include "mx-marshal.h"
 #include "mx-clipboard.h"
+#include "mx-focusable.h"
 
 /* for pointer cursor support */
 #include <clutter/x11/clutter-x11.h>
@@ -116,10 +117,13 @@ struct _MxEntryPrivate
 static guint entry_signals[LAST_SIGNAL] = { 0, };
 
 static void mx_stylable_iface_init (MxStylableIface *iface);
+static void mx_focusable_iface_init (MxFocusableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxEntry, mx_entry, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
-                                                mx_stylable_iface_init));
+                                                mx_stylable_iface_init)
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
+                                                mx_focusable_iface_init));
 
 static void
 mx_entry_set_property (GObject      *gobject,
@@ -242,6 +246,20 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                         G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_ENTRY, pspec);
     }
+}
+
+static MxFocusable*
+mx_entry_accept_focus (MxFocusable *focusable)
+{
+  clutter_actor_grab_key_focus (MX_ENTRY (focusable)->priv->entry);
+
+  return focusable;
+}
+
+static void
+mx_focusable_iface_init (MxFocusableIface *iface)
+{
+  iface->accept_focus = mx_entry_accept_focus;
 }
 
 static void

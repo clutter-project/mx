@@ -1,7 +1,7 @@
 /*
  * mx-box-layout.h: box layout actor
  *
- * Copyright 2009 Intel Corporation.
+ * Copyright 2009, 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -53,17 +53,20 @@
 #include "mx-private.h"
 #include "mx-scrollable.h"
 #include "mx-box-layout-child.h"
-
+#include "mx-focusable.h"
 
 
 static void mx_box_container_iface_init (ClutterContainerIface *iface);
 static void mx_box_scrollable_interface_init (MxScrollableInterface *iface);
+static void mx_box_focusable_iface_init (MxFocusableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxBoxLayout, mx_box_layout, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
                                                 mx_box_container_iface_init)
                          G_IMPLEMENT_INTERFACE (MX_TYPE_SCROLLABLE,
-                                                mx_box_scrollable_interface_init));
+                                                mx_box_scrollable_interface_init)
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
+                                                mx_box_focusable_iface_init));
 
 #define BOX_LAYOUT_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_BOX_LAYOUT, MxBoxLayoutPrivate))
@@ -440,6 +443,91 @@ mx_box_container_iface_init (ClutterContainerIface *iface)
   iface->sort_depth_order = mx_box_container_sort_depth_order;
 
   iface->child_meta_type = MX_TYPE_BOX_LAYOUT_CHILD;
+}
+
+/*
+ * focusable implementation
+ */
+static MxFocusable*
+mx_box_layout_move_focus (MxFocusable *focusable,
+                          MxDirection  direction,
+                          MxFocusable *from)
+{
+  MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (focusable)->priv;
+  GList *l, *childlink;
+
+  /* find the current focus */
+  childlink = g_list_find (priv->children, from);
+
+  if (!childlink)
+    return NULL;
+
+  /* find the next widget to focus */
+  if (direction == MX_NEXT)
+    {
+      for (l = childlink->next; l; l = g_list_next (l))
+        {
+          if (MX_IS_FOCUSABLE (l->data))
+            {
+              MxFocusable *focused;
+
+              focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data));
+
+              if (focused)
+                  return focused;
+            }
+        }
+
+      /* no next widgets to focus */
+      return NULL;
+    }
+  else if (direction == MX_PREVIOUS)
+    {
+      for (l = g_list_previous (childlink); l; l = g_list_previous (l))
+        {
+          if (MX_IS_FOCUSABLE (l->data))
+            {
+              MxFocusable *focused;
+
+              focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data));
+
+              if (focused)
+                  return focused;
+            }
+        }
+    }
+
+  return NULL;
+}
+
+static MxFocusable*
+mx_box_layout_accept_focus (MxFocusable *focusable)
+{
+  MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (focusable)->priv;
+  GList* l;
+
+  /* find the first focusable widget */
+  for (l = priv->children; l; l = g_list_next (l))
+    {
+      if (MX_IS_FOCUSABLE (l->data))
+        {
+          MxFocusable *focused = NULL;
+
+          focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data));
+
+          if (focused)
+            return focused;
+        }
+    }
+
+  return NULL;
+}
+
+static void
+mx_box_focusable_iface_init (MxFocusableIface *iface)
+{
+  iface->move_focus = mx_box_layout_move_focus;
+  iface->accept_focus = mx_box_layout_accept_focus;
 }
 
 

@@ -40,6 +40,8 @@
 #include <mx/mx-enum-types.h>
 #include <mx/mx-expander.h>
 #include <mx/mx-floating-widget.h>
+#include <mx/mx-focus-manager.h>
+#include <mx/mx-focusable.h>
 #include <mx/mx-frame.h>
 #include <mx/mx-grid.h>
 #include <mx/mx-icon.h>
