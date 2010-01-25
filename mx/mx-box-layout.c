@@ -750,14 +750,35 @@ mx_box_layout_allocate (ClutterActor          *actor,
   /* update adjustments for scrolling */
   if (priv->vadjustment)
     {
-      gdouble prev_value;
+      gdouble prev_value, step_inc, page_inc;
+
+      /* Base the adjustment stepping on the size of the first child.
+       * In the case where all your children are the same size, this
+       * will probably provide the desired behaviour.
+       */
+      if (priv->children && priv->is_vertical)
+        {
+          gfloat child_height;
+          ClutterActor *first_child = (ClutterActor *)priv->children->data;
+          clutter_actor_get_preferred_height (first_child,
+                                              avail_width,
+                                              NULL,
+                                              &child_height);
+          step_inc = child_height;
+          page_inc = ((gint)(avail_height / step_inc)) * step_inc;
+        }
+      else
+        {
+          step_inc = avail_height / 6;
+          page_inc = avail_height;
+        }
 
       g_object_set (G_OBJECT (priv->vadjustment),
                     "lower", 0.0,
                     "upper", pref_height,
                     "page-size", avail_height,
-                    "step-increment", avail_height / 6,
-                    "page-increment", avail_height,
+                    "step-increment", step_inc,
+                    "page-increment", page_inc,
                     NULL);
 
       prev_value = mx_adjustment_get_value (priv->vadjustment);
@@ -766,14 +787,31 @@ mx_box_layout_allocate (ClutterActor          *actor,
 
   if (priv->hadjustment)
     {
-      gdouble prev_value;
+      gdouble prev_value, step_inc, page_inc;
+
+      if (priv->children && !priv->is_vertical)
+        {
+          gfloat child_width;
+          ClutterActor *first_child = (ClutterActor *)priv->children->data;
+          clutter_actor_get_preferred_width (first_child,
+                                             avail_height,
+                                             &child_width,
+                                             NULL);
+          step_inc = child_width;
+          page_inc = ((gint)(avail_width / step_inc)) * step_inc;
+        }
+      else
+        {
+          step_inc = avail_width / 6;
+          page_inc = avail_width;
+        }
 
       g_object_set (G_OBJECT (priv->hadjustment),
                     "lower", 0.0,
                     "upper", pref_width,
                     "page-size", avail_width,
-                    "step-increment", avail_width / 6,
-                    "page-increment", avail_width,
+                    "step-increment", step_inc,
+                    "page-increment", page_inc,
                     NULL);
 
       prev_value = mx_adjustment_get_value (priv->hadjustment);
