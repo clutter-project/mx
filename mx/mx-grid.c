@@ -99,6 +99,7 @@
 #include "mx-scrollable.h"
 #include "mx-grid.h"
 #include "mx-stylable.h"
+#include "mx-focusable.h"
 
 typedef struct _MxGridActorData MxGridActorData;
 
@@ -165,13 +166,16 @@ mx_grid_do_allocate (ClutterActor          *self,
                      gfloat                *actual_height);
 
 static void scrollable_interface_init (MxScrollableInterface *iface);
+static void mx_box_focusable_iface_init (MxFocusableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxGrid, mx_grid,
                          MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
                                                 clutter_container_iface_init)
                          G_IMPLEMENT_INTERFACE (MX_TYPE_SCROLLABLE,
-                                                scrollable_interface_init));
+                                                scrollable_interface_init)
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
+                                                mx_box_focusable_iface_init));
 
 #define MX_GRID_GET_PRIVATE(obj) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_GRID, \
@@ -560,6 +564,93 @@ clutter_container_iface_init (ClutterContainerIface *iface)
   iface->lower            = mx_grid_real_lower;
   iface->sort_depth_order = mx_grid_real_sort_depth_order;
 }
+
+
+/*
+ * focusable implementation
+ */
+static MxFocusable*
+mx_grid_move_focus (MxFocusable *focusable,
+                          MxDirection  direction,
+                          MxFocusable *from)
+{
+  MxGridPrivate *priv = MX_GRID (focusable)->priv;
+  GList *l, *childlink;
+
+  /* find the current focus */
+  childlink = g_list_find (priv->list, from);
+
+  if (!childlink)
+    return NULL;
+
+  /* find the next widget to focus */
+  if (direction == MX_NEXT)
+    {
+      for (l = childlink->next; l; l = g_list_next (l))
+        {
+          if (MX_IS_FOCUSABLE (l->data))
+            {
+              MxFocusable *focused;
+
+              focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data));
+
+              if (focused)
+                  return focused;
+            }
+        }
+
+      /* no next widgets to focus */
+      return NULL;
+    }
+  else if (direction == MX_PREVIOUS)
+    {
+      for (l = g_list_previous (childlink); l; l = g_list_previous (l))
+        {
+          if (MX_IS_FOCUSABLE (l->data))
+            {
+              MxFocusable *focused;
+
+              focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data));
+
+              if (focused)
+                  return focused;
+            }
+        }
+    }
+
+  return NULL;
+}
+
+static MxFocusable*
+mx_grid_accept_focus (MxFocusable *focusable)
+{
+  MxGridPrivate *priv = MX_GRID (focusable)->priv;
+  GList* l;
+
+  /* find the first focusable widget */
+  for (l = priv->list; l; l = g_list_next (l))
+    {
+      if (MX_IS_FOCUSABLE (l->data))
+        {
+          MxFocusable *focused = NULL;
+
+          focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data));
+
+          if (focused)
+            return focused;
+        }
+    }
+
+  return NULL;
+}
+
+static void
+mx_box_focusable_iface_init (MxFocusableIface *iface)
+{
+  iface->move_focus = mx_grid_move_focus;
+  iface->accept_focus = mx_grid_accept_focus;
+}
+
 
 static void
 mx_grid_init (MxGrid *self)
