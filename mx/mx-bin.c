@@ -39,7 +39,8 @@
 #include "mx-bin.h"
 #include "mx-enum-types.h"
 #include "mx-private.h"
-#include "mx-stylable.h"
+#include "mx-focusable.h"
+
 
 #define MX_BIN_GET_PRIVATE(obj)       (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_BIN, MxBinPrivate))
 
@@ -66,10 +67,13 @@ enum
 };
 
 static void clutter_container_iface_init (ClutterContainerIface *iface);
+static void mx_bin_focusable_iface_init (MxFocusableIface *iface);
 
 G_DEFINE_ABSTRACT_TYPE_WITH_CODE (MxBin, mx_bin, MX_TYPE_WIDGET,
                                   G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
-                                                         clutter_container_iface_init));
+                                                         clutter_container_iface_init)
+                                  G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
+                                                         mx_bin_focusable_iface_init));
 
 void
 _mx_bin_get_align_factors (MxBin   *bin,
@@ -159,6 +163,24 @@ clutter_container_iface_init (ClutterContainerIface *iface)
   iface->remove = mx_bin_remove;
   iface->foreach = mx_bin_foreach;
 }
+
+static MxFocusable*
+mx_bin_accept_focus (MxFocusable *focusable)
+{
+  MxBinPrivate *priv = MX_BIN (focusable)->priv;
+
+  if (MX_IS_FOCUSABLE (priv->child))
+    return mx_focusable_accept_focus (MX_FOCUSABLE (priv->child));
+  else
+    return NULL;
+}
+
+static void
+mx_bin_focusable_iface_init (MxFocusableIface *iface)
+{
+  iface->accept_focus = mx_bin_accept_focus;
+}
+
 
 static void
 mx_bin_paint (ClutterActor *self)
