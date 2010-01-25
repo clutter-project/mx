@@ -925,6 +925,17 @@ mx_entry_store_undo_on_keypress (ClutterText     *text,
 }
 
 static void
+clutter_text_changed_cb (ClutterText *text,
+                         MxEntry     *entry)
+{
+  g_return_if_fail (MX_IS_ENTRY (entry));
+
+  g_object_notify (G_OBJECT (entry), "text");
+
+  mx_entry_store_undo_history (text, entry);
+}
+
+static void
 mx_entry_init (MxEntry *entry)
 {
   MxEntryPrivate *priv;
@@ -949,7 +960,8 @@ mx_entry_init (MxEntry *entry)
                     G_CALLBACK (clutter_text_focus_out_cb), entry);
 
   g_signal_connect (priv->entry, "text-changed",
-                    G_CALLBACK (mx_entry_store_undo_history), entry);
+                    G_CALLBACK (clutter_text_changed_cb), entry);
+
   g_signal_connect (priv->entry, "key-press-event",
                     G_CALLBACK (mx_entry_store_undo_on_keypress), entry);
 
@@ -1050,8 +1062,6 @@ mx_entry_set_text (MxEntry     *entry,
     {
       clutter_text_set_password_char (CLUTTER_TEXT (priv->entry), password_char);
     }
-
-  g_object_notify (G_OBJECT (entry), "text");
 }
 
 /**

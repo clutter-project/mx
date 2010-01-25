@@ -35,7 +35,7 @@ clear_btn_clicked_cb (ClutterActor *button, MxEntry *entry)
 }
 
 static void
-text_changed_cb (ClutterText *text, MxEntry *entry)
+text_changed_cb (MxEntry *entry, GParamSpec *pspec, void *user_data)
 {
   printf ("Text: %s\n", mx_entry_get_text (entry));
 }
@@ -71,8 +71,8 @@ entry_main (ClutterContainer *stage)
 #else
   g_debug ("Input method support is disabled");
 #endif
-  g_signal_connect (mx_entry_get_clutter_text (MX_ENTRY (entry)),
-                    "text-changed", G_CALLBACK (text_changed_cb), entry);
+  g_signal_connect (G_OBJECT (entry),
+                    "notify::text", G_CALLBACK (text_changed_cb), NULL);
 
   button = mx_button_new_with_label ("Set");
   clutter_actor_set_position (button, 20, 120);
