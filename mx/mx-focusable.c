@@ -53,16 +53,18 @@ mx_focusable_move_focus (MxFocusable *focusable,
                          MxFocusable *from)
 {
   MxFocusableIface *iface;
+  ClutterActor *actor, *parent;
+  MxFocusable  *moved = NULL;
 
   g_return_val_if_fail (MX_IS_FOCUSABLE (focusable), FALSE);
 
   iface = MX_FOCUSABLE_GET_INTERFACE (focusable);
 
-  ClutterActor *actor, *parent;
-  MxFocusable  *moved = NULL;
-
   if (iface->move_focus)
-    return iface->move_focus (focusable, direction, from);
+    moved = iface->move_focus (focusable, direction, from);
+
+  if (moved)
+    return moved;
   else
     {
       /* try and pass the focus up to something that can manage it */
