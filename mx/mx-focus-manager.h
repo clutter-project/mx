@@ -30,6 +30,7 @@
 #include <glib-object.h>
 
 #include <clutter/clutter.h>
+#include "mx-focusable.h"
 
 G_BEGIN_DECLS
 
@@ -79,6 +80,10 @@ ClutterStage* mx_focus_manager_get_stage (MxFocusManager *manager);
 void          mx_focus_manager_set_stage (MxFocusManager *manager,
                                           ClutterStage   *stage);
 
+MxFocusable* mx_focus_manager_get_focused (MxFocusManager *manager);
+
+void         mx_focus_manager_push_focus  (MxFocusManager *manager,
+                                           MxFocusable    *focusable);
 G_END_DECLS
 
 #endif /* _MX_FOCUS_MANAGER_H */

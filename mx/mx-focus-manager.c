@@ -40,7 +40,8 @@ struct _MxFocusManagerPrivate
 
 enum
 {
-  PROP_STAGE = 1
+  PROP_STAGE = 1,
+  PROP_FOCUSED
 };
 
 static void
@@ -55,6 +56,10 @@ mx_focus_manager_get_property (GObject    *object,
     {
   case PROP_STAGE:
     g_value_set_object (value, priv->stage);
+    break;
+
+  case PROP_FOCUSED:
+    g_value_set_object (value, priv->focused);
     break;
 
     default:
@@ -110,6 +115,13 @@ mx_focus_manager_class_init (MxFocusManagerClass *klass)
                                "Top level container for focusables",
                                CLUTTER_TYPE_STAGE,
                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_STAGE, pspec);
+
+  pspec = g_param_spec_object ("focused",
+                               "Focused",
+                               "The object that currently has focus",
+                               CLUTTER_TYPE_STAGE,
+                               MX_PARAM_READABLE);
   g_object_class_install_property (object_class, PROP_STAGE, pspec);
 }
 
@@ -268,11 +280,50 @@ mx_focus_manager_set_stage (MxFocusManager *manager,
       g_signal_connect (priv->stage, "captured-event",
                         G_CALLBACK (mx_focus_manager_captured_event_cb),
                         manager);
-      g_debug ("capture installed");
 
       g_object_notify (G_OBJECT (manager), "stage");
     }
 
 }
 
+MxFocusable*
+mx_focus_manager_get_focused (MxFocusManager *manager)
+{
+  g_return_val_if_fail (MX_IS_FOCUS_MANAGER (manager), NULL);
+
+  return manager->priv->focused;
+}
+
+/**
+ * mx_focus_manager_push_focus:
+ * @manager: the focus manager
+ * @focused: the object to set focus on
+ *
+ * Note: the final focused object may not be the same as @focusable if
+ * @focusable does not accept focus directly.
+ */
+void
+mx_focus_manager_push_focus (MxFocusManager *manager,
+                             MxFocusable    *focusable)
+{
+  MxFocusManagerPrivate *priv;
+
+  g_return_if_fail (MX_IS_FOCUS_MANAGER (manager));
+  g_return_if_fail (MX_IS_FOCUSABLE (focusable));
+
+  priv = manager->priv;
+
+  if (priv->focused != focusable)
+    {
+      if (priv->focused)
+        {
+          /* notify the current focusable that focus is being moved */
+          mx_focusable_move_focus (priv->focused, MX_OUT, priv->focused);
+        }
+
+      priv->focused = mx_focusable_accept_focus (focusable);
+
+      g_object_notify (G_OBJECT (manager), "focused");
+    }
+}
 

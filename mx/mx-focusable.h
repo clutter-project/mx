@@ -45,6 +45,7 @@ typedef struct _MxFocusableIface MxFocusableIface;
 
 typedef enum
 {
+  MX_OUT,
   MX_UP,
   MX_DOWN,
   MX_LEFT,
