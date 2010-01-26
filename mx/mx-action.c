@@ -38,6 +38,7 @@ struct _MxActionPrivate
 {
   gchar   *name;
   gchar   *display_name;
+  gchar   *icon;
   gboolean active;
 };
 
@@ -47,6 +48,7 @@ enum
 
   PROP_NAME,
   PROP_DISPLAY_NAME,
+  PROP_ICON,
   PROP_ACTIVE
 };
 
@@ -77,6 +79,10 @@ mx_action_get_property (GObject    *object,
       g_value_set_string (value, mx_action_get_display_name (action));
       break;
 
+    case PROP_ICON:
+      g_value_set_string (value, mx_action_get_icon (action));
+      break;
+
     case PROP_ACTIVE:
       g_value_set_boolean (value, mx_action_get_active (action));
       break;
@@ -102,6 +108,10 @@ mx_action_set_property (GObject      *object,
 
     case PROP_DISPLAY_NAME:
       mx_action_set_display_name (action, g_value_get_string (value));
+      break;
+
+    case PROP_ICON:
+      mx_action_set_icon (action, g_value_get_string (value));
       break;
 
     case PROP_ACTIVE:
@@ -159,6 +169,21 @@ mx_action_class_init (MxActionClass *klass)
                                                         G_PARAM_STATIC_NAME |
                                                         G_PARAM_STATIC_NICK |
                                                         G_PARAM_STATIC_BLURB));
+
+  g_object_class_install_property (object_class,
+                                   PROP_DISPLAY_NAME,
+                                   g_param_spec_string ("icon",
+                                                        "Icon name",
+                                                        "Icon name or path to "
+                                                        "to be used if this "
+                                                        "action is displayed",
+                                                        NULL,
+                                                        G_PARAM_READWRITE |
+                                                        G_PARAM_STATIC_NAME |
+                                                        G_PARAM_STATIC_NICK |
+                                                        G_PARAM_STATIC_BLURB));
+
+
 
   g_object_class_install_property (object_class,
                                    PROP_ACTIVE,
@@ -332,6 +357,22 @@ mx_action_get_display_name (MxAction *action)
 }
 
 /**
+ * mx_action_get_icon:
+ * @action: A #MxAction
+ *
+ * Get the icon of the action
+ *
+ * Returns: icon of the action, owned by MxAction
+ */
+const gchar *
+mx_action_get_icon (MxAction *action)
+{
+  g_return_val_if_fail (MX_IS_ACTION (action), NULL);
+
+  return action->priv->icon;
+}
+
+/**
  * mx_action_set_display_name:
  * @action: A #MxAction
  * @name: new display name to set
@@ -358,3 +399,29 @@ mx_action_set_display_name (MxAction    *action,
     }
 }
 
+/**
+ * mx_action_set_icon:
+ * @action: A #MxAction
+ * @name: new icon to set
+ *
+ * The icon to be used in a visual representation of an action.
+ *
+ */
+void
+mx_action_set_icon (MxAction    *action,
+                    const gchar *icon)
+{
+  MxActionPrivate *priv;
+
+  g_return_if_fail (MX_IS_ACTION (action));
+
+  priv = action->priv;
+
+  if (g_strcmp0 (priv->icon, icon))
+    {
+      g_free (priv->icon);
+      priv->icon = g_strdup (icon);
+
+      g_object_notify (G_OBJECT (action), "icon");
+    }
+}
