@@ -333,6 +333,33 @@ mx_combo_box_button_press_event (ClutterActor       *actor,
   return FALSE;
 }
 
+static gboolean
+mx_combo_box_key_press_event (ClutterActor    *actor,
+                              ClutterKeyEvent *event)
+{
+  MxComboBoxPrivate *priv = MX_COMBO_BOX (actor)->priv;
+  gint n_items;
+
+  n_items = g_slist_length (priv->text_list);
+
+  switch (event->keyval)
+    {
+    case CLUTTER_Down:
+      mx_combo_box_set_index (MX_COMBO_BOX (actor),
+                              CLAMP (priv->index + 1, 0, n_items -1));
+      return TRUE;
+
+    case CLUTTER_Up:
+      mx_combo_box_set_index (MX_COMBO_BOX (actor),
+                              CLAMP (priv->index + 1, 0, n_items -1));
+      return TRUE;
+
+    default:
+      return FALSE;
+    }
+}
+
+
 static void
 mx_combo_box_style_changed (MxComboBox *combo)
 {
@@ -363,6 +390,7 @@ mx_combo_box_class_init (MxComboBoxClass *klass)
   actor_class->allocate = mx_combo_box_allocate;
 
   actor_class->button_press_event = mx_combo_box_button_press_event;
+  actor_class->key_press_event = mx_combo_box_key_press_event;
 
   pspec = g_param_spec_string ("title",
                                "Title",
