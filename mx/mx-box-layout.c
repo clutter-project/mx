@@ -448,6 +448,49 @@ mx_box_container_iface_init (ClutterContainerIface *iface)
 /*
  * focusable implementation
  */
+
+static void
+update_adjustments (MxBoxLayout *self,
+                    MxFocusable *focusable)
+{
+  MxBoxLayoutPrivate *priv = self->priv;
+  gdouble value, new_value, page_size;
+  ClutterActorBox box = { 0, };
+  clutter_actor_get_allocation_box (CLUTTER_ACTOR (focusable), &box);
+
+  if (priv->vadjustment)
+    {
+      mx_adjustment_get_values (priv->vadjustment,
+                                &value, NULL, NULL, NULL, NULL,
+                                &page_size);
+      if (box.y1 < value)
+        new_value = box.y1;
+      else if (box.y2 > value + page_size)
+        new_value = box.y2 - page_size;
+      else
+        new_value = value;
+      mx_adjustment_interpolate (priv->vadjustment,
+                                 new_value,
+                                 250, CLUTTER_EASE_OUT_CUBIC);
+    }
+
+  if (priv->hadjustment)
+    {
+      mx_adjustment_get_values (priv->hadjustment,
+                                &value, NULL, NULL, NULL, NULL,
+                                &page_size);
+      if (box.x1 < value)
+        new_value = box.x1;
+      else if (box.x2 > value + page_size)
+        new_value = box.x2 - page_size;
+      else
+        new_value = value;
+      mx_adjustment_interpolate (priv->hadjustment,
+                                 new_value,
+                                 250, CLUTTER_EASE_OUT_CUBIC);
+    }
+}
+
 static MxFocusable*
 mx_box_layout_move_focus (MxFocusable *focusable,
                           MxDirection  direction,
@@ -474,7 +517,10 @@ mx_box_layout_move_focus (MxFocusable *focusable,
               focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data));
 
               if (focused)
+                {
+                  update_adjustments (MX_BOX_LAYOUT (focusable), focused);
                   return focused;
+                }
             }
         }
 
@@ -492,7 +538,10 @@ mx_box_layout_move_focus (MxFocusable *focusable,
               focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data));
 
               if (focused)
+                {
+                  update_adjustments (MX_BOX_LAYOUT (focusable), focused);
                   return focused;
+                }
             }
         }
     }
@@ -516,7 +565,10 @@ mx_box_layout_accept_focus (MxFocusable *focusable)
           focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data));
 
           if (focused)
-            return focused;
+            {
+              update_adjustments (MX_BOX_LAYOUT (focusable), focused);
+              return focused;
+            }
         }
     }
 
