@@ -35,6 +35,8 @@ G_DEFINE_TYPE (MxPopup, mx_popup, MX_TYPE_FLOATING_WIDGET)
 #define POPUP_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_POPUP, MxPopupPrivate))
 
+#define SPACING 8
+
 typedef struct
 {
   MxAction *action;
@@ -571,6 +573,7 @@ mx_popup_add_action (MxPopup  *popup,
   /* TODO: Connect to notify signals in case action properties change */
   child.button = g_object_new (MX_TYPE_BOX_LAYOUT,
                                "reactive", TRUE,
+                               "spacing", SPACING,
                                NULL);
 
   if (mx_action_get_icon (action))
