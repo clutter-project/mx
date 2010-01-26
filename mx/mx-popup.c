@@ -28,6 +28,7 @@
 #include "mx-popup.h"
 #include "mx-label.h"
 #include "mx-button.h"
+#include "mx-box-layout.h"
 
 G_DEFINE_TYPE (MxPopup, mx_popup, MX_TYPE_FLOATING_WIDGET)
 
@@ -558,6 +559,8 @@ mx_popup_add_action (MxPopup  *popup,
                      MxAction *action)
 {
   MxPopupChild child;
+  ClutterActor *label;
+  ClutterActor *icon;
 
   g_return_if_fail (MX_IS_POPUP (popup));
   g_return_if_fail (MX_IS_ACTION (action));
@@ -566,10 +569,34 @@ mx_popup_add_action (MxPopup  *popup,
 
   child.action = g_object_ref_sink (action);
   /* TODO: Connect to notify signals in case action properties change */
-  child.button = g_object_new (MX_TYPE_LABEL,
-                               "text", mx_action_get_display_name (action),
+  child.button = g_object_new (MX_TYPE_BOX_LAYOUT,
                                "reactive", TRUE,
                                NULL);
+
+  if (mx_action_get_icon (action))
+    {
+      GError *error = NULL;
+
+      icon = clutter_texture_new_from_file (mx_action_get_icon (action),
+                                            &error);
+
+      if (error)
+        {
+          g_warning (G_STRLOC ": Error opening icon: %s",
+                     error->message);
+          g_clear_error (&error);
+        }
+      else
+        {
+          clutter_container_add_actor (CLUTTER_CONTAINER (child.button),
+                                       icon);
+        }
+    }
+
+  label = mx_label_new (mx_action_get_display_name (action));
+
+  clutter_container_add_actor (CLUTTER_CONTAINER (child.button),
+                               label);
 
   g_signal_connect (child.button, "button-release-event",
                     G_CALLBACK (mx_popup_button_release_cb), action);
