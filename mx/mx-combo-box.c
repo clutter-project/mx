@@ -34,7 +34,11 @@
 #include "mx-private.h"
 #include "mx-stylable.h"
 
-G_DEFINE_TYPE (MxComboBox, mx_combo_box, MX_TYPE_WIDGET)
+static void mx_focusable_iface_init (MxFocusableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE (MxComboBox, mx_combo_box, MX_TYPE_WIDGET,
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
+                                                mx_focusable_iface_init));
 
 #define COMBO_BOX_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_COMBO_BOX, MxComboBoxPrivate))
@@ -432,6 +436,36 @@ mx_combo_box_init (MxComboBox *self)
                     G_CALLBACK (mx_combo_box_style_changed), NULL);
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
+}
+
+static MxFocusable *
+mx_combo_box_accept_focus (MxFocusable *focusable)
+{
+  mx_stylable_set_style_pseudo_class (MX_STYLABLE (focusable), "focus");
+
+  clutter_actor_grab_key_focus (CLUTTER_ACTOR (focusable));
+
+  return focusable;
+}
+
+static MxFocusable *
+mx_combo_box_move_focus (MxFocusable *focusable,
+                         MxDirection  direction,
+                         MxFocusable *from)
+{
+  if (focusable == from)
+    {
+      mx_stylable_set_style_pseudo_class (MX_STYLABLE (focusable), "");
+    }
+
+  return NULL;
+}
+
+static void
+mx_focusable_iface_init (MxFocusableIface *iface)
+{
+  iface->accept_focus   = mx_combo_box_accept_focus;
+  iface->move_focus     = mx_combo_box_move_focus;
 }
 
 /**
