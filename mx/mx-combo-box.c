@@ -568,6 +568,35 @@ mx_combo_box_insert_text (MxComboBox  *box,
 }
 
 /**
+ * mx_combo_box_insert_text_with_icon:
+ * @box: A #MxComboBox
+ * @position: zero indexed position to insert the item at
+ * @text: name of the item
+ *
+ * Insert an item into the combo box list.
+ *
+ */
+void
+mx_combo_box_insert_text_with_icon (MxComboBox  *box,
+                                    gint         position,
+                                    const gchar *text,
+                                    const gchar *icon)
+{
+  MxAction *action;
+
+  g_return_if_fail (MX_IS_COMBO_BOX (box));
+
+  action = mx_action_new ();
+  mx_action_set_display_name (action, text);
+  mx_action_set_icon (action, icon);
+
+  box->priv->actions = g_slist_insert (box->priv->actions,
+                                       g_object_ref_sink (action),
+                                       position);
+  mx_combo_box_update_popup (box);
+}
+
+/**
  * mx_combo_box_append_text:
  * @box: A #MxComboBox
  * @text: name of the item
