@@ -46,7 +46,7 @@ G_DEFINE_TYPE_WITH_CODE (MxComboBox, mx_combo_box, MX_TYPE_WIDGET,
 struct _MxComboBoxPrivate
 {
   ClutterActor *label;
-  GSList       *text_list;
+  GSList       *actions;
   gfloat        clip_x;
   gfloat        clip_y;
   gint          index;
@@ -126,10 +126,10 @@ mx_combo_box_finalize (GObject *object)
 {
   MxComboBoxPrivate *priv = MX_COMBO_BOX (object)->priv;
 
-  if (priv->text_list)
+  if (priv->actions)
     {
-      g_slist_foreach (priv->text_list, (GFunc) g_free, NULL);
-      g_slist_free (priv->text_list);
+      g_slist_foreach (priv->actions, (GFunc) g_object_unref, NULL);
+      g_slist_free (priv->actions);
     }
 
   G_OBJECT_CLASS (mx_combo_box_parent_class)->finalize (object);
@@ -306,13 +306,12 @@ mx_combo_box_update_popup (MxComboBox *box)
 
   mx_popup_clear (popup);
 
-  for (index = 0, l = priv->text_list; l; l = g_slist_next (l), index++)
+  for (index = 0, l = priv->actions; l; l = g_slist_next (l), index++)
     {
       MxAction *action;
 
-      action = mx_action_new ();
+      action = (MxAction *)l->data;
       g_object_set_data ((GObject*) action, "index", GINT_TO_POINTER (index));
-      mx_action_set_display_name (action, (gchar*) l->data);
 
       mx_popup_add_action (popup, action);
     }
@@ -494,10 +493,16 @@ mx_combo_box_insert_text (MxComboBox  *box,
                           gint         position,
                           const gchar *text)
 {
+  MxAction *action;
+
   g_return_if_fail (MX_IS_COMBO_BOX (box));
 
-  box->priv->text_list = g_slist_insert (box->priv->text_list, g_strdup (text),
-                                         position);
+  action = mx_action_new ();
+  mx_action_set_display_name (action, text);
+
+  box->priv->actions = g_slist_insert (box->priv->actions,
+                                       g_object_ref_sink (action),
+                                       position);
   mx_combo_box_update_popup (box);
 }
 
@@ -513,11 +518,14 @@ void
 mx_combo_box_append_text (MxComboBox  *box,
                           const gchar *text)
 {
+  MxAction *action;
+
   g_return_if_fail (MX_IS_COMBO_BOX (box));
 
-  box->priv->text_list = g_slist_append (box->priv->text_list, g_strdup (text));
-  mx_combo_box_update_popup (box);
+  /* -1 pushes it at the end of the list */
+  mx_combo_box_insert_text (box, -1, text);
 }
+
 
 /**
  * mx_combo_box_prepend_text:
@@ -533,9 +541,7 @@ mx_combo_box_prepend_text (MxComboBox  *box,
 {
   g_return_if_fail (MX_IS_COMBO_BOX (box));
 
-  box->priv->text_list = g_slist_prepend (box->priv->text_list,
-                                          g_strdup (text));
-  mx_combo_box_update_popup (box);
+  mx_combo_box_insert_text (box, 0, text);
 }
 
 /**
@@ -555,9 +561,9 @@ mx_combo_box_remove_text (MxComboBox *box,
   g_return_if_fail (MX_IS_COMBO_BOX (box));
 
   /* find the item, free the string and remove it from the list */
-  item = g_slist_nth (box->priv->text_list, position);
-  g_free (item->data);
-  box->priv->text_list = g_slist_delete_link (box->priv->text_list, item);
+  item = g_slist_nth (box->priv->actions, position);
+  g_object_unref (G_OBJECT (item->data));
+  box->priv->actions = g_slist_delete_link (box->priv->actions, item);
   mx_combo_box_update_popup (box);
 }
 
@@ -614,7 +620,7 @@ mx_combo_box_set_index (MxComboBox *box,
 
   g_return_if_fail (MX_IS_COMBO_BOX (box));
 
-  item = g_slist_nth (box->priv->text_list, index);
+  item = g_slist_nth (box->priv->actions, index);
 
   if (!item)
     {
@@ -624,7 +630,8 @@ mx_combo_box_set_index (MxComboBox *box,
     }
 
   box->priv->index = index;
-  clutter_text_set_text ((ClutterText*) box->priv->label, item->data);
+  clutter_text_set_text ((ClutterText*) box->priv->label,
+                         mx_action_get_display_name (item->data));
 
   g_object_notify (G_OBJECT (box), "index");
   g_object_notify (G_OBJECT (box), "title");
