@@ -281,15 +281,8 @@ mx_combo_box_action_activated_cb (ClutterActor *popup,
 {
   gint index;
 
-  /* set the title */
-  clutter_text_set_text ((ClutterText*) box->priv->label,
-                         mx_action_get_display_name (action));
-  g_object_notify ((GObject*) box, "title");
-
   index = GPOINTER_TO_INT (g_object_get_data ((GObject*) action, "index"));
-  box->priv->index = index;
-  g_object_notify ((GObject*) box, "index");
-
+  mx_combo_box_set_index (box, index);
 }
 
 static void
