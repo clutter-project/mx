@@ -188,6 +188,14 @@ mx_texture_frame_paint (ClutterActor *self)
                               opacity, opacity, opacity, opacity);
   cogl_set_source (cogl_material);
 
+  /* The default filter can pull from adjacent pixels which is not what we
+   * want.
+   */
+  cogl_material_set_layer_filters (cogl_material,
+                                   0,
+                                   COGL_MATERIAL_FILTER_NEAREST,
+                                   COGL_MATERIAL_FILTER_NEAREST);
+
   {
     GLfloat rectangles[] =
     {
