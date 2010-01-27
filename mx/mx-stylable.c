@@ -747,9 +747,9 @@ mx_stylable_apply_clutter_text_attributes (MxStylable  *stylable,
   gchar *font_name = NULL;
   gint font_size = 0;
   MxFontWeight font_weight;
-  PangoAttribute *attr;
   PangoWeight weight;
-  PangoAttrList *attrs;
+  PangoFontDescription *descr;
+  gchar *descr_string;
 
   mx_stylable_get (stylable,
                    "color", &real_color,
@@ -758,21 +758,18 @@ mx_stylable_apply_clutter_text_attributes (MxStylable  *stylable,
                    "font-weight", &font_weight,
                    NULL);
 
-  /* ensure there is an attribute list */
-  attrs = clutter_text_get_attributes (text);
-  if (!attrs)
-    {
-      attrs = pango_attr_list_new ();
-      clutter_text_set_attributes (text, attrs);
-    }
+
+  /* Create a description, we will convert to a string and set on the
+   * ClutterText. When Clutter gets API to set the description directly this
+   * won't be necessary. */
+  descr = pango_font_description_new ();
 
   /* font name */
-  clutter_text_set_font_name (text, font_name);
+  pango_font_description_set_family (descr, font_name);
   g_free (font_name);
 
   /* font size */
-  attr = pango_attr_size_new_absolute (font_size * PANGO_SCALE);
-  pango_attr_list_change (attrs, attr);
+  pango_font_description_set_absolute_size (descr, font_size * PANGO_SCALE);
 
   /* font weight */
   switch (font_weight)
@@ -790,8 +787,12 @@ mx_stylable_apply_clutter_text_attributes (MxStylable  *stylable,
     weight = PANGO_WEIGHT_NORMAL;
     break;
     }
-  attr = pango_attr_weight_new (weight);
-  pango_attr_list_change (attrs, attr);
+  pango_font_description_set_weight (descr, weight);
+
+  descr_string = pango_font_description_to_string (descr);
+  clutter_text_set_font_name (text, descr_string);
+  g_free (descr_string);
+  pango_font_description_free (descr);
 
   /* font color */
   if (real_color)
