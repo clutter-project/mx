@@ -364,10 +364,6 @@ MxScrollView
 mx_scroll_view_new
 mx_scroll_view_get_hscroll_bar
 mx_scroll_view_get_vscroll_bar
-mx_scroll_view_get_column_size
-mx_scroll_view_set_column_size
-mx_scroll_view_get_row_size
-mx_scroll_view_set_row_size
 mx_scroll_view_set_mouse_scrolling
 mx_scroll_view_get_mouse_scrolling
 <SUBSECTION Standard>
