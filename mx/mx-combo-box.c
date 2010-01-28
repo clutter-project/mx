@@ -184,16 +184,9 @@ mx_combo_box_get_preferred_width (ClutterActor *actor,
   popup = (ClutterActor *) mx_widget_get_popup (MX_WIDGET (actor));
   if (popup)
     {
-      ClutterActorClass *actor_class;
-
       mx_widget_ensure_style ((MxWidget*) popup);
 
-      /* call the vfunc directly to prevent retrieving any cached value */
-      actor_class = CLUTTER_ACTOR_CLASS (G_OBJECT_GET_CLASS (popup));
-      actor_class->get_preferred_width (popup,
-                                        -1,
-                                        &min_label_w,
-                                        &nat_label_w);
+      clutter_actor_get_preferred_width (popup, -1, &min_label_w, &nat_label_w);
     }
   else
     {
@@ -246,8 +239,9 @@ mx_combo_box_allocate (ClutterActor          *actor,
   MxComboBoxPrivate *priv = MX_COMBO_BOX (actor)->priv;
   MxPadding padding;
   gfloat x, y, width, height;
-  gfloat min_label_h, nat_label_h, label_h;
+  gfloat min_label_h, nat_label_h, label_h, min_popup_h, nat_popup_h;
   ClutterActorBox childbox;
+  ClutterActor *popup;
 
   CLUTTER_ACTOR_CLASS (mx_combo_box_parent_class)->allocate (actor, box,
                                                              flags);
@@ -269,6 +263,15 @@ mx_combo_box_allocate (ClutterActor          *actor,
   childbox.x2 = (int)(x + width);
   childbox.y2 = (int)(childbox.y1 + label_h);
   clutter_actor_allocate (priv->label, &childbox, flags);
+
+  popup = (ClutterActor*) mx_widget_get_popup (MX_WIDGET (actor));
+  clutter_actor_get_preferred_height (popup, (box->x2 - box->x1), &min_popup_h,
+                                      &nat_popup_h);
+  childbox.x1 = 0;
+  childbox.y1 = (box->y2 - box->y1);
+  childbox.x2 = (box->x2 - box->x1);
+  childbox.y2 = childbox.y1 + nat_popup_h;
+  clutter_actor_allocate (popup, &childbox, flags);
 }
 
 static void
@@ -322,17 +325,13 @@ static gboolean
 mx_combo_box_button_press_event (ClutterActor       *actor,
                                  ClutterButtonEvent *event)
 {
-  gfloat width, height;
   ClutterActor *popup;
 
   popup = (ClutterActor *) mx_widget_get_popup (MX_WIDGET (actor));
   if (!popup)
     return FALSE;
 
-  clutter_actor_get_size (actor, &width, &height);
-  clutter_actor_set_width (popup, width);
-
-  mx_widget_show_popup (MX_WIDGET (actor), 0.0, height);
+  clutter_actor_show (popup);
 
   return FALSE;
 }
