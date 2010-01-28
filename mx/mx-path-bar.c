@@ -57,6 +57,25 @@ struct _MxPathBarPrivate
 };
 
 static void
+mx_path_bar_stylable_changed (MxStylable *stylable)
+{
+  GList *c;
+  MxPathBarPrivate *priv = MX_PATH_BAR (stylable)->priv;
+
+  /* FIXME: MxWidget bails out when it isn't mapped and emits the signal
+   *        later. We may want to do the same here.
+   */
+  g_signal_emit_by_name (stylable, "style-changed", 0);
+
+  /* Inform our private children */
+  for (c = priv->crumbs; c; c = c->next)
+    g_signal_emit_by_name (c->data, "style-changed", 0);
+
+  if (priv->editable)
+    g_signal_emit_by_name (priv->entry, "style-changed", 0);
+}
+
+static void
 mx_stylable_iface_init (MxStylableIface *iface)
 {
   static gboolean is_initialized = FALSE;
@@ -73,6 +92,8 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                 0, G_MAXINT, 0,
                                 G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_PATH_BAR, pspec);
+
+      iface->stylable_changed = mx_path_bar_stylable_changed;
     }
 }
 
@@ -473,6 +494,17 @@ mx_path_bar_crumb_clicked_cb (ClutterActor *crumb,
     }
 }
 
+static void
+mx_path_bar_reset_last_crumb (MxPathBar *bar)
+{
+  MxPathBarPrivate *priv = bar->priv;
+  ClutterActor *last_crumb =
+    g_list_nth_data (priv->crumbs, priv->current_level -1);
+
+  if (last_crumb)
+    clutter_actor_set_name (last_crumb, priv->editable ? NULL : "last");
+}
+
 gint
 mx_path_bar_push (MxPathBar *bar, const gchar *name)
 {
@@ -489,6 +521,22 @@ mx_path_bar_push (MxPathBar *bar, const gchar *name)
   clutter_actor_set_parent (crumb, CLUTTER_ACTOR (bar));
 
   priv->crumbs = g_list_insert (priv->crumbs, crumb, priv->current_level);
+
+  if (!priv->editable)
+    {
+      if (priv->current_level)
+        {
+          ClutterActor *old_last_crumb =
+            g_list_nth_data (priv->crumbs, priv->current_level - 1);
+
+          clutter_actor_set_name (old_last_crumb, NULL);
+          g_signal_emit_by_name (old_last_crumb, "style-changed", 0);
+        }
+
+      clutter_actor_set_name (crumb, "last");
+      g_signal_emit_by_name (crumb, "style-changed", 0);
+    }
+
   priv->current_level ++;
 
   g_signal_connect (crumb, "clicked",
@@ -535,7 +583,10 @@ mx_path_bar_pop (MxPathBar *bar)
                            mx_path_bar_pop_completed_cb, crumb,
                          NULL);
 
-  return --priv->current_level;
+  priv->current_level --;
+  mx_path_bar_reset_last_crumb (bar);
+
+  return priv->current_level;
 }
 
 gint
@@ -585,6 +636,8 @@ mx_path_bar_set_editable (MxPathBar *bar, gboolean editable)
       priv->entry = mx_entry_new ("");
       clutter_actor_set_parent (priv->entry, CLUTTER_ACTOR (bar));
     }
+
+  mx_path_bar_reset_last_crumb (bar);
 
   g_object_notify (G_OBJECT (bar), "editable");
   clutter_actor_queue_relayout (CLUTTER_ACTOR (bar));

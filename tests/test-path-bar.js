@@ -29,9 +29,11 @@ stage.title = "Test Path Bar"
 let vbox = new Mx.BoxLayout ();
 vbox.set_vertical (true);
 stage.add_actor (vbox);
+vbox.set_width (stage.width);
 
 let bar = new Mx.PathBar ();
 vbox.add_actor (bar);
+vbox.child_set_property (bar, "expand", true);
 
 let hbox = new Mx.BoxLayout ();
 vbox.add_actor (hbox);
