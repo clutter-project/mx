@@ -330,7 +330,7 @@ mx_combo_box_button_press_event (ClutterActor       *actor,
 
   mx_widget_show_popup (MX_WIDGET (actor), 0.0, height);
 
-  return FALSE;
+  return TRUE;
 }
 
 static void
