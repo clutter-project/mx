@@ -437,6 +437,24 @@ mx_popup_hide (ClutterActor *actor)
 }
 
 static void
+mx_popup_style_changed (MxPopup *popup)
+{
+  MxPopupPrivate *priv = popup->priv;
+  int i;
+
+  g_debug ("poop");
+
+  for (i = 0; i < priv->children->len; i++)
+    {
+      MxPopupChild *child;
+
+      child = &g_array_index (priv->children, MxPopupChild, i);
+
+      g_signal_emit_by_name (child->button, "style-changed", 0);
+    }
+}
+
+static void
 mx_popup_class_init (MxPopupClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -482,6 +500,9 @@ mx_popup_init (MxPopup *self)
   g_object_set (G_OBJECT (self),
                 "show-on-set-parent", FALSE,
                 NULL);
+
+  g_signal_connect (self, "style-changed", G_CALLBACK (mx_popup_style_changed),
+                    NULL);
 }
 
 /**
