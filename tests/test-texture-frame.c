@@ -33,7 +33,7 @@ main (int argc, char *argv[])
   stage = clutter_stage_get_default ();
   clutter_actor_set_size (stage, 500, 300);
 
-  texture = clutter_texture_new_from_file ("rounded-corner.png", &err);
+  texture = clutter_texture_new_from_file ("test-texture-frame.png", &err);
 
   if (err)
     {
@@ -41,7 +41,7 @@ main (int argc, char *argv[])
       return 1;
     }
 
-  frame = mx_texture_frame_new (CLUTTER_TEXTURE (texture), 25, 25, 25, 25);
+  frame = mx_texture_frame_new (CLUTTER_TEXTURE (texture), 10, 10, 10, 10);
   clutter_actor_set_position (frame, 50, 50);
   clutter_actor_set_size (frame, 400, 200);
 

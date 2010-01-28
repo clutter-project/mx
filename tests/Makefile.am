@@ -61,6 +61,7 @@ EXTRA_DIST = \
 	     style/lime-button.png \
 	     style/red-button.png \
 	     style/redhand.png \
-	     style/rounded-corner.png
+	     style/rounded-corner.png \
+	     test-texture-frame.png
 
 -include $(top_srcdir)/git.mk
