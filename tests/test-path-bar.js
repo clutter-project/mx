@@ -33,7 +33,8 @@ vbox.set_width (stage.width);
 
 let bar = new Mx.PathBar ();
 vbox.add_actor (bar);
-vbox.child_set_property (bar, "expand", true);
+vbox.child_set_property (bar, "x-align", 0);
+vbox.child_set_property (bar, "x-fill", false);
 
 let hbox = new Mx.BoxLayout ();
 vbox.add_actor (hbox);
@@ -60,6 +61,8 @@ pop_button.connect ("clicked",
 editable_button.connect ("clicked",
                          function (b) {
                            bar.editable = !bar.editable;
+                           vbox.child_set_property (bar, "expand", bar.editable);
+                           vbox.child_set_property (bar, "x-fill", bar.editable);
                          });
 
 stage.show ();

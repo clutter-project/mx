@@ -357,6 +357,11 @@ mx_path_bar_allocate (ClutterActor           *actor,
       else
         child_box.x2 = child_box.x1 + cnat_width;
 
+      /* If this is the last crumb, give it all extra space */
+      if (!priv->editable && !c->next &&
+          (box->x2 - box->x1 - padding.right) > (child_box.x2 - child_box.x1))
+        child_box.x2 = box->x2 - box->x1 - padding.right;
+
       clutter_actor_allocate (crumb, &child_box, flags);
       child_box.x1 = child_box.x2 - MIN (priv->overlap,
                                          (child_box.x2 - child_box.x1));
