@@ -71,6 +71,7 @@
 #include <mx/mx-version.h>
 #include <mx/mx-viewport.h>
 #include <mx/mx-widget.h>
+#include <mx/mx-window.h>
 
 #undef MX_H_INSIDE
 
