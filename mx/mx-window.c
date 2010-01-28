@@ -10,10 +10,13 @@
 #include <X11/cursorfont.h>
 
 static void clutter_container_iface_init (ClutterContainerIface *iface);
+static void mx_stylable_iface_init (MxStylableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxWindow, mx_window, CLUTTER_TYPE_STAGE,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
-                                                clutter_container_iface_init))
+                                                clutter_container_iface_init)
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
+                                                mx_stylable_iface_init))
 
 #define WINDOW_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_WINDOW, MxWindowPrivate))
@@ -24,6 +27,8 @@ struct _MxWindowPrivate
   guint has_toolbar   : 1;
   guint is_moving     : 1;
 
+  CoglHandle resize_grip;
+
   enum {NONE, NORTH, SOUTH, EAST, WEST} is_resizing;
 
   ClutterActor *toolbar;
@@ -32,7 +37,18 @@ struct _MxWindowPrivate
   guint drag_x_start;
   guint drag_y_start;
 
+  MxStyle *style;
+  gchar   *pseudo_class;
+  gchar   *style_class;
+
   MxFocusManager *focus_manager;
+};
+
+enum
+{
+  PROP_STYLE = 1,
+  PROP_STYLE_CLASS,
+  PROP_STYLE_PSEUDO_CLASS
 };
 
 /* clutter container iface implementation */
@@ -72,6 +88,103 @@ clutter_container_iface_init (ClutterContainerIface *iface)
   iface->foreach = mx_window_foreach;
 }
 
+/* stylable implementation */
+static void
+mx_window_set_style (MxStylable *stylable,
+                     MxStyle    *style)
+{
+  MxWindowPrivate *priv = MX_WINDOW (stylable)->priv;
+
+  if (priv->style)
+    g_object_unref (priv->style);
+
+  priv->style = style;
+}
+
+static MxStyle*
+mx_window_get_style (MxStylable *stylable)
+{
+  MxWindowPrivate *priv = MX_WINDOW (stylable)->priv;
+
+  if (!priv->style)
+    return priv->style = mx_style_get_default ();
+  else
+    return priv->style;
+}
+
+static void
+mx_window_set_style_class (MxStylable  *actor,
+                           const gchar *style_class)
+{
+  MxWindowPrivate *priv;
+
+  priv = MX_WINDOW (actor)->priv;
+
+  if (g_strcmp0 (style_class, priv->style_class))
+    {
+      g_free (priv->style_class);
+      priv->style_class = g_strdup (style_class);
+
+      mx_stylable_changed (actor);
+
+      g_object_notify (G_OBJECT (actor), "style-class");
+    }
+}
+
+static void
+mx_window_set_style_pseudo_class (MxStylable  *actor,
+                                   const gchar *pseudo_class)
+{
+  MxWindowPrivate *priv;
+
+  priv = MX_WINDOW (actor)->priv;
+
+  if (g_strcmp0 (pseudo_class, priv->pseudo_class))
+    {
+      g_free (priv->pseudo_class);
+      priv->pseudo_class = g_strdup (pseudo_class);
+
+      mx_stylable_changed (actor);
+
+      g_object_notify (G_OBJECT (actor), "style-pseudo-class");
+    }
+}
+
+static const gchar*
+mx_window_get_style_pseudo_class (MxStylable *actor)
+{
+  return ((MxWindow *) actor)->priv->pseudo_class;
+}
+
+
+static const gchar*
+mx_window_get_style_class (MxStylable *actor)
+{
+  return ((MxWindow *) actor)->priv->style_class;
+}
+
+
+
+static void
+mx_stylable_iface_init (MxStylableIface *iface)
+{
+  GParamSpec *pspec;
+
+  iface->get_style = mx_window_get_style;
+  iface->set_style = mx_window_set_style;
+  iface->set_style_class = mx_window_set_style_class;
+  iface->get_style_class = mx_window_get_style_class;
+  iface->set_style_pseudo_class = mx_window_set_style_pseudo_class;
+  iface->get_style_pseudo_class = mx_window_get_style_pseudo_class;
+
+  pspec = g_param_spec_boxed ("mx-resize-grip",
+                              "Resize Grip",
+                              "Resize grip used in the corner of the"
+                              " window to allow the user to resize.",
+                              MX_TYPE_BORDER_IMAGE,
+                              G_PARAM_READWRITE);
+  mx_stylable_iface_install_property (iface, MX_TYPE_WINDOW, pspec);
+}
 
 static void
 mx_window_get_property (GObject    *object,
@@ -79,8 +192,22 @@ mx_window_get_property (GObject    *object,
                         GValue     *value,
                         GParamSpec *pspec)
 {
+  MxWindowPrivate *priv = MX_WINDOW (object)->priv;
+
   switch (property_id)
     {
+  case PROP_STYLE:
+    g_value_set_object (value, priv->style);
+    break;
+
+  case PROP_STYLE_CLASS:
+    g_value_set_string (value, priv->style_class);
+    break;
+
+  case PROP_STYLE_PSEUDO_CLASS:
+    g_value_set_string (value, priv->pseudo_class);
+    break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -92,8 +219,23 @@ mx_window_set_property (GObject      *object,
                         const GValue *value,
                         GParamSpec   *pspec)
 {
+  MxStylable *win = MX_STYLABLE (object);
+
+
   switch (property_id)
     {
+  case PROP_STYLE:
+    mx_window_set_style (win, MX_STYLE (g_value_get_object (value)));
+    break;
+
+  case PROP_STYLE_CLASS:
+    mx_window_set_style_class (win, g_value_get_string (value));
+    break;
+
+  case PROP_STYLE_PSEUDO_CLASS:
+    mx_window_set_style_pseudo_class (win, g_value_get_string (value));
+    break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -108,6 +250,14 @@ mx_window_dispose (GObject *object)
 static void
 mx_window_finalize (GObject *object)
 {
+  MxWindowPrivate *priv = MX_WINDOW (object)->priv;
+
+  if (priv->resize_grip)
+    {
+      cogl_handle_unref (priv->resize_grip);
+      priv->resize_grip = NULL;
+    }
+
   G_OBJECT_CLASS (mx_window_parent_class)->finalize (object);
 }
 
@@ -209,6 +359,17 @@ mx_window_paint (ClutterActor *actor)
 
   cogl_rectangle (0, 1, 1, height - 1);
   cogl_rectangle (width - 1, 1, width, height - 1);
+
+  if (priv->resize_grip)
+    {
+      guint rheight, rwidth;
+
+      cogl_set_source_texture (priv->resize_grip);
+      rwidth = cogl_texture_get_width (priv->resize_grip);
+      rheight = cogl_texture_get_height (priv->resize_grip);
+      cogl_rectangle (width - rwidth - 1, height - rheight - 1,
+                      width - 1, height - 1);
+    }
 }
 
 static void
@@ -330,6 +491,8 @@ mx_window_motion_event (ClutterActor       *actor,
   Window win, root_win, root, child;
   Display *dpy;
   gfloat height, width;
+  static Cursor csoutheast;
+  guint rheight, rwidth;
 
   priv = MX_WINDOW (actor)->priv;
 
@@ -338,32 +501,21 @@ mx_window_motion_event (ClutterActor       *actor,
 
   clutter_actor_get_size (actor, &width, &height);
 
-#if 0
   /* resize */
-  static Cursor cwest, cnorthwest, cnorth, cnortheast, ceast, csoutheast, csouth, csouthwest;
-  cwest = XCreateFontCursor (dpy, XC_left_side);
-  cnorthwest = XCreateFontCursor (dpy, XC_top_left_corner);
-  cnorth = XCreateFontCursor (dpy, XC_top_side);
-  cnortheast = XCreateFontCursor (dpy, XC_top_right_corner);
-  ceast = XCreateFontCursor (dpy, XC_left_side);
-  csoutheast = XCreateFontCursor (dpy, XC_bottom_right_corner);
-  csouth = XCreateFontCursor (dpy, XC_bottom_side);
-  csouthwest = XCreateFontCursor (dpy, XC_bottom_left_corner);
 
   x = event->x;
   y = event->y;
 
-  if (x <= 4 && y <= height - 4)
-    XDefineCursor (dpy, win, cwest);
-  else if (x >= width - 4)
-    XDefineCursor (dpy, win, ceast);
-  else if (y >= height - 4)
-    XDefineCursor (dpy, win, csouth);
-  else if (y <= 4)
-    XDefineCursor (dpy, win, cnorth);
+  if (!csoutheast)
+    csoutheast = XCreateFontCursor (dpy, XC_bottom_right_corner);
+
+  rwidth = cogl_texture_get_width (priv->resize_grip);
+  rheight = cogl_texture_get_height (priv->resize_grip);
+
+  if (x > width - rwidth && y > height - rheight)
+    XDefineCursor (dpy, win, csoutheast);
   else
     XUndefineCursor (dpy, win);
-#endif
 
   /* drag */
   if (!priv->is_moving)
@@ -379,6 +531,40 @@ mx_window_motion_event (ClutterActor       *actor,
   XMoveWindow (dpy, win, MAX (0, x - offsetx), MAX (0, y - offsety));
 
   return TRUE;
+}
+
+static void
+style_changed_cb (MxWindow *window)
+{
+  MxWindowPrivate *priv = window->priv;
+  MxBorderImage *grip_filename;
+
+  if (priv->resize_grip)
+    {
+      cogl_handle_unref (priv->resize_grip);
+      priv->resize_grip = NULL;
+    }
+
+  mx_stylable_get (MX_STYLABLE (window), "mx-resize-grip", &grip_filename,
+                   NULL);
+
+
+  if (grip_filename)
+    {
+  g_debug ("resize: %s", grip_filename->uri);
+      priv->resize_grip = cogl_texture_new_from_file (grip_filename->uri,
+                                                      COGL_TEXTURE_NONE,
+                                                      COGL_PIXEL_FORMAT_ANY,
+                                                      NULL);
+      if (priv->resize_grip == COGL_INVALID_HANDLE)
+        {
+          priv->resize_grip = NULL;
+          g_debug ("could not load");
+        }
+
+      g_boxed_free (MX_TYPE_BORDER_IMAGE, grip_filename);
+
+    }
 }
 
 static void
@@ -402,6 +588,13 @@ mx_window_class_init (MxWindowClass *klass)
   actor_class->button_press_event = mx_window_button_press_event;
   actor_class->button_release_event = mx_window_button_release_event;
   actor_class->motion_event = mx_window_motion_event;
+
+  /* stylable interface properties */
+  g_object_class_override_property (object_class, PROP_STYLE, "style");
+  g_object_class_override_property (object_class, PROP_STYLE_CLASS,
+                                    "style-class");
+  g_object_class_override_property (object_class, PROP_STYLE_PSEUDO_CLASS,
+                                    "style-pseudo-class");
 }
 
 static void
@@ -417,6 +610,13 @@ mx_window_init (MxWindow *self)
   priv->has_toolbar = TRUE;
 
   priv->focus_manager = mx_focus_manager_new (CLUTTER_STAGE (self));
+
+  priv->style = mx_style_get_default ();
+
+  g_signal_connect (priv->style, "changed",
+                    G_CALLBACK (style_changed_cb), NULL);
+
+  style_changed_cb (self);
 }
 
 MxWindow *
