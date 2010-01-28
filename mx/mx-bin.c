@@ -47,6 +47,7 @@
 struct _MxBinPrivate
 {
   ClutterActor *child;
+  gboolean      child_has_space;
 
   MxAlign       x_align;
   MxAlign       y_align;
@@ -190,8 +191,8 @@ mx_bin_paint (ClutterActor *self)
   /* allow MxWidget to paint the background */
   CLUTTER_ACTOR_CLASS (mx_bin_parent_class)->paint (self);
 
-  /* the pain our child */
-  if (priv->child)
+  /* then paint our child */
+  if (priv->child && priv->child_has_space)
     clutter_actor_paint (priv->child);
 }
 
@@ -244,6 +245,17 @@ mx_bin_allocate_child (MxBin                 *bin,
 
       if (available_height < 0)
         available_height = 0;
+
+      /* If we have no available space, just bail out. We'll skip
+       * drawing the child.
+       */
+      if (available_width == 0 || available_height == 0)
+        {
+          priv->child_has_space = FALSE;
+          return;
+        }
+      else
+        priv->child_has_space = TRUE;
 
       if (priv->x_fill)
         {
