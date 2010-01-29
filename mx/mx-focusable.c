@@ -71,6 +71,12 @@ mx_focusable_move_focus (MxFocusable *focusable,
       actor = CLUTTER_ACTOR (focusable);
       parent = clutter_actor_get_parent (actor);
 
+      /* the parent will only have knowledge of its direct children
+       * that are focusable.
+       */
+      if (MX_IS_FOCUSABLE (actor))
+        from = MX_FOCUSABLE (actor);
+
       while (parent)
         {
           if (MX_IS_FOCUSABLE (parent))
