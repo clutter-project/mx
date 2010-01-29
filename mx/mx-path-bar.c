@@ -75,7 +75,7 @@ mx_path_bar_stylable_changed (MxStylable *stylable)
   for (c = priv->crumbs; c; c = c->next)
     g_signal_emit_by_name (c->data, "style-changed", 0);
 
-  if (priv->editable)
+  if (priv->entry)
     g_signal_emit_by_name (priv->entry, "style-changed", 0);
 }
 
@@ -323,7 +323,7 @@ mx_path_bar_get_preferred_width (ClutterActor *actor,
         }
     }
 
-  if (priv->editable)
+  if (priv->entry)
     {
       gfloat emin_width, enat_width;
 
@@ -379,7 +379,7 @@ mx_path_bar_get_preferred_height (ClutterActor *actor,
         nat_height = cnat_height;
     }
 
-  if (priv->editable)
+  if (priv->entry)
     {
       gfloat emin_height, enat_height;
 
@@ -465,7 +465,7 @@ mx_path_bar_allocate (ClutterActor           *actor,
         child_box.x2 = child_box.x1 + cnat_width;
 
       /* If this is the last crumb, give it all extra space */
-      if (!priv->editable && !c->next &&
+      if (!priv->entry && !c->next &&
           (box->x2 - box->x1 - padding.right) > (child_box.x2 - child_box.x1))
         child_box.x2 = box->x2 - box->x1 - padding.right;
 
@@ -493,7 +493,7 @@ mx_path_bar_map (ClutterActor *actor)
   for (c = priv->crumbs; c; c = c->next)
     clutter_actor_map (CLUTTER_ACTOR (c->data));
 
-  if (priv->editable)
+  if (priv->entry)
     clutter_actor_map (priv->entry);
 }
 
@@ -508,7 +508,7 @@ mx_path_bar_unmap (ClutterActor *actor)
   for (c = priv->crumbs; c; c = c->next)
     clutter_actor_unmap (CLUTTER_ACTOR (c->data));
 
-  if (priv->editable)
+  if (priv->entry)
     clutter_actor_unmap (priv->entry);
 }
 
@@ -520,7 +520,7 @@ mx_path_bar_paint (ClutterActor *actor)
 
   CLUTTER_ACTOR_CLASS (mx_path_bar_parent_class)->paint (actor);
 
-  if (priv->editable)
+  if (priv->entry)
     clutter_actor_paint (priv->entry);
 
   for (c = g_list_last (priv->crumbs); c; c = c->prev)
@@ -635,7 +635,7 @@ mx_path_bar_push (MxPathBar *bar, const gchar *name)
 
   priv->crumbs = g_list_insert (priv->crumbs, crumb, priv->current_level);
 
-  if (!priv->editable)
+  if (!priv->entry)
     {
       if (priv->current_level)
         {
@@ -725,6 +725,18 @@ mx_path_bar_get_editable (MxPathBar *bar)
   return bar->priv->editable;
 }
 
+static void
+mx_path_bar_entry_faded_cb (ClutterAnimation *animation,
+                            MxPathBar        *bar)
+{
+  MxPathBarPrivate *priv = bar->priv;
+
+  clutter_actor_unparent (priv->entry);
+  priv->entry = NULL;
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (bar));
+}
+
 void
 mx_path_bar_set_editable (MxPathBar *bar, gboolean editable)
 {
@@ -739,13 +751,31 @@ mx_path_bar_set_editable (MxPathBar *bar, gboolean editable)
   priv->editable = editable;
   if (!editable)
     {
-      clutter_actor_unparent (priv->entry);
-      priv->entry = NULL;
+      clutter_actor_animate (priv->entry, CLUTTER_EASE_OUT_QUAD, 150,
+                             "opacity", 0x00,
+                             "signal-after::completed",
+                               mx_path_bar_entry_faded_cb, bar,
+                             NULL);
     }
   else
     {
-      priv->entry = mx_entry_new ("");
-      clutter_actor_set_parent (priv->entry, CLUTTER_ACTOR (bar));
+      if (priv->entry)
+        {
+          ClutterAnimation *anim = clutter_actor_get_animation (priv->entry);
+          g_signal_handlers_disconnect_by_func (anim,
+                                                mx_path_bar_entry_faded_cb,
+                                                bar);
+        }
+      else
+        {
+          priv->entry = mx_entry_new ("");
+          clutter_actor_set_parent (priv->entry, CLUTTER_ACTOR (bar));
+          if (CLUTTER_ACTOR_IS_VISIBLE (priv->entry))
+            clutter_actor_set_opacity (priv->entry, 0x00);
+        }
+
+      clutter_actor_animate (priv->entry, CLUTTER_EASE_OUT_QUAD, 150,
+                             "opacity", 0xff, NULL);
     }
 
   mx_path_bar_reset_last_crumb (bar);
