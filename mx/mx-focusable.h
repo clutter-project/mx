@@ -54,11 +54,18 @@ typedef enum
   MX_PREVIOUS
 } MxDirection;
 
+typedef enum
+{
+  MX_FIRST,
+  MX_LAST
+} MxFocusHint;
+
 struct _MxFocusableIface
 {
   GObjectClass parent_class;
 
-  MxFocusable* (*accept_focus) (MxFocusable *focusable);
+  MxFocusable* (*accept_focus) (MxFocusable *focusable,
+                                MxFocusHint  hint);
   MxFocusable* (*move_focus)   (MxFocusable *focusable,
                                 MxDirection  direction,
                                 MxFocusable *from);
@@ -69,7 +76,8 @@ GType mx_focusable_get_type (void) G_GNUC_CONST;
 MxFocusable* mx_focusable_move_focus   (MxFocusable *focusable,
                                         MxDirection  direction,
                                         MxFocusable *from);
-MxFocusable* mx_focusable_accept_focus (MxFocusable *focusable);
+MxFocusable* mx_focusable_accept_focus (MxFocusable *focusable,
+                                        MxFocusHint  hint);
 
 G_END_DECLS
 

@@ -96,7 +96,7 @@ mx_focusable_move_focus (MxFocusable *focusable,
 }
 
 MxFocusable *
-mx_focusable_accept_focus (MxFocusable *focusable)
+mx_focusable_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 {
   MxFocusableIface *iface;
 
@@ -105,7 +105,7 @@ mx_focusable_accept_focus (MxFocusable *focusable)
   iface = MX_FOCUSABLE_GET_INTERFACE (focusable);
 
   if (iface->accept_focus)
-    return iface->accept_focus (focusable);
+    return iface->accept_focus (focusable, hint);
   else
     return NULL;
 }

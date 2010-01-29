@@ -162,7 +162,7 @@ mx_focus_manager_start_focus (MxFocusManager *manager)
 
   if (focusable)
     {
-      priv->focused = mx_focusable_accept_focus (focusable);
+      priv->focused = mx_focusable_accept_focus (focusable, MX_FIRST);
     }
 }
 
@@ -201,7 +201,8 @@ mx_focus_manager_captured_event_cb (ClutterStage   *stage,
           return TRUE;
         }
       else
-        priv->focused = mx_focusable_accept_focus (MX_FOCUSABLE (actor));
+        priv->focused = mx_focusable_accept_focus (MX_FOCUSABLE (actor),
+                                                   MX_FIRST);
 
       return TRUE;
     }
@@ -321,7 +322,7 @@ mx_focus_manager_push_focus (MxFocusManager *manager,
           mx_focusable_move_focus (priv->focused, MX_OUT, priv->focused);
         }
 
-      priv->focused = mx_focusable_accept_focus (focusable);
+      priv->focused = mx_focusable_accept_focus (focusable, MX_FIRST);
 
       g_object_notify (G_OBJECT (manager), "focused");
     }

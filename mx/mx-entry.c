@@ -249,7 +249,7 @@ mx_stylable_iface_init (MxStylableIface *iface)
 }
 
 static MxFocusable*
-mx_entry_accept_focus (MxFocusable *focusable)
+mx_entry_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 {
   clutter_actor_grab_key_focus (MX_ENTRY (focusable)->priv->entry);
 
