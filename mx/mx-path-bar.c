@@ -785,6 +785,43 @@ mx_path_bar_set_editable (MxPathBar *bar, gboolean editable)
 }
 
 const gchar *
+mx_path_bar_get_label (MxPathBar *bar, gint level)
+{
+  ClutterActor *crumb;
+  MxPathBarPrivate *priv;
+
+  g_return_val_if_fail (MX_IS_PATH_BAR (bar), NULL);
+  g_return_val_if_fail ((level > 0) && (level <= bar->priv->current_level),
+                        NULL);
+
+  priv = bar->priv;
+  crumb = (ClutterActor *)g_list_nth_data (priv->crumbs, level - 1);
+
+  if (crumb)
+    return mx_button_get_label (MX_BUTTON (crumb));
+  else
+    return NULL;
+}
+
+void
+mx_path_bar_set_label (MxPathBar   *bar,
+                       gint         level,
+                       const gchar *label)
+{
+  ClutterActor *crumb;
+  MxPathBarPrivate *priv;
+
+  g_return_if_fail (MX_IS_PATH_BAR (bar));
+  g_return_if_fail ((level > 0) && (level <= bar->priv->current_level));
+
+  priv = bar->priv;
+  crumb = (ClutterActor *)g_list_nth_data (priv->crumbs, level - 1);
+
+  if (crumb)
+    mx_button_set_label (MX_BUTTON (crumb), label);
+}
+
+const gchar *
 mx_path_bar_get_text (MxPathBar *bar)
 {
   g_return_val_if_fail (MX_IS_PATH_BAR (bar), NULL);

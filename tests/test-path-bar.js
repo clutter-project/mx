@@ -49,6 +49,9 @@ hbox.add_actor (pop_button);
 let editable_button = new Mx.Button ( {label: "Toggle editable"} );
 hbox.add_actor (editable_button);
 
+let rename_button = new Mx.Button ( {label: "Re-label 1st button"} );
+hbox.add_actor (rename_button);
+
 push_button.connect ("clicked",
                      function (b) {
                        bar.push ("Crumb" + (bar.level + 1));
@@ -65,6 +68,11 @@ editable_button.connect ("clicked",
                            vbox.child_set_property (bar, "expand", bar.editable);
                            vbox.child_set_property (bar, "x-fill", bar.editable);
                          });
+
+rename_button.connect ("clicked",
+                       function (b) {
+                         bar.set_label (1, bar.get_text ());
+                       });
 
 stage.show ();
 Clutter.main ();
