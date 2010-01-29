@@ -139,7 +139,7 @@ mx_focus_manager_weak_notify (MxFocusManager *manager,
 }
 
 static void
-mx_focus_manager_start_focus (MxFocusManager *manager)
+mx_focus_manager_start_focus (MxFocusManager *manager, MxFocusHint hint)
 {
   MxFocusManagerPrivate *priv = manager->priv;
   MxFocusable *focusable;
@@ -148,6 +148,9 @@ mx_focus_manager_start_focus (MxFocusManager *manager)
 
   children = clutter_container_get_children (CLUTTER_CONTAINER (priv->stage));
   focusable = NULL;
+
+  if (hint == MX_LAST)
+    children = g_list_reverse (children);
 
   for (l = children; l; l = g_list_next (l))
     {
@@ -162,7 +165,7 @@ mx_focus_manager_start_focus (MxFocusManager *manager)
 
   if (focusable)
     {
-      priv->focused = mx_focusable_accept_focus (focusable, MX_FIRST);
+      priv->focused = mx_focusable_accept_focus (focusable, hint);
     }
 }
 
@@ -174,6 +177,7 @@ mx_focus_manager_captured_event_cb (ClutterStage   *stage,
 {
   ClutterActor *actor;
   gboolean result;
+  MxFocusHint hint;
   MxDirection direction;
   MxFocusManagerPrivate *priv = manager->priv;
 
@@ -197,7 +201,7 @@ mx_focus_manager_captured_event_cb (ClutterStage   *stage,
       /* if we didn't find a focusable, try any children of the stage */
       if (!actor)
         {
-          mx_focus_manager_start_focus (manager);
+          mx_focus_manager_start_focus (manager, MX_FIRST);
           return TRUE;
         }
       else
@@ -212,16 +216,22 @@ mx_focus_manager_captured_event_cb (ClutterStage   *stage,
   case CLUTTER_Tab:
 
     if (event->key.modifier_state & CLUTTER_SHIFT_MASK)
-      direction = MX_PREVIOUS;
+      {
+        direction = MX_PREVIOUS;
+        hint = MX_LAST;
+      }
     else
-      direction = MX_NEXT;
+      {
+        direction = MX_NEXT;
+        hint = MX_FIRST;
+      }
 
     priv->focused = mx_focusable_move_focus (priv->focused, direction,
                                              priv->focused);
 
     /* if focusable is NULL, then we reached the end of the focus chain */
     if (!priv->focused)
-      mx_focus_manager_start_focus (manager);
+      mx_focus_manager_start_focus (manager, hint);
 
     break;
 /*
