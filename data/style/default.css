@@ -274,15 +274,15 @@ MxPathBarButton:active {
   padding: 10 24;
 }
 
-MxPathBarButton#last {
+MxPathBarButton.End {
   border-image: url('pathbar-button-last.png') 5;
 }
 
-MxPathBarButton#last:hover {
+MxPathBarButton.End:hover {
   border-image: url('pathbar-button-last-hover.png') 5;
 }
 
-MxPathBarButton#last:active {
+MxPathBarButton.End:active {
   border-image: url('pathbar-button-last-active.png') 5;
 }
 

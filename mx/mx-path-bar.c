@@ -507,7 +507,8 @@ mx_path_bar_reset_last_crumb (MxPathBar *bar)
     g_list_nth_data (priv->crumbs, priv->current_level -1);
 
   if (last_crumb)
-    clutter_actor_set_name (last_crumb, priv->editable ? NULL : "last");
+    mx_stylable_set_style_class (MX_STYLABLE (last_crumb),
+                                 priv->editable ? NULL : "End");
 }
 
 gint
@@ -534,12 +535,10 @@ mx_path_bar_push (MxPathBar *bar, const gchar *name)
           ClutterActor *old_last_crumb =
             g_list_nth_data (priv->crumbs, priv->current_level - 1);
 
-          clutter_actor_set_name (old_last_crumb, NULL);
-          g_signal_emit_by_name (old_last_crumb, "style-changed", 0);
+          mx_stylable_set_style_class (MX_STYLABLE (old_last_crumb), NULL);
         }
 
-      clutter_actor_set_name (crumb, "last");
-      g_signal_emit_by_name (crumb, "style-changed", 0);
+      mx_stylable_set_style_class (MX_STYLABLE (crumb), "End");
     }
 
   priv->current_level ++;
