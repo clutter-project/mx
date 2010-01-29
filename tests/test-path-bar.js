@@ -25,6 +25,7 @@ Clutter.init (0, null);
 
 let stage = Clutter.Stage.get_default ();
 stage.title = "Test Path Bar"
+let focus_man = new Mx.FocusManager ({stage: stage});
 
 let vbox = new Mx.BoxLayout ();
 vbox.set_vertical (true);

@@ -28,6 +28,7 @@
 #include "mx-path-bar.h"
 #include "mx-path-bar-button.h"
 #include "mx-stylable.h"
+#include "mx-focusable.h"
 
 enum
 {
@@ -38,10 +39,13 @@ enum
 };
 
 static void mx_stylable_iface_init (MxStylableIface *iface);
+static void mx_focusable_iface_init (MxFocusableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxPathBar, mx_path_bar, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
-                                                mx_stylable_iface_init))
+                                                mx_stylable_iface_init)
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
+                                                mx_focusable_iface_init))
 
 #define PATH_BAR_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_PATH_BAR, MxPathBarPrivate))
@@ -95,6 +99,109 @@ mx_stylable_iface_init (MxStylableIface *iface)
 
       iface->stylable_changed = mx_path_bar_stylable_changed;
     }
+}
+
+static MxFocusable *
+mx_path_bar_accept_focus (MxFocusable *focusable)
+{
+  MxFocusable *focus_widget;
+  MxPathBarPrivate *priv = MX_PATH_BAR (focusable)->priv;
+
+  if (!priv->editable && !priv->current_level)
+    return NULL;
+
+  if (priv->current_level)
+    focus_widget = MX_FOCUSABLE (priv->crumbs->data);
+  else
+    focus_widget = MX_FOCUSABLE (priv->entry);
+
+  return mx_focusable_accept_focus (focus_widget);
+}
+
+static MxFocusable *
+mx_path_bar_move_focus (MxFocusable *focusable,
+                        MxDirection  direction,
+                        MxFocusable *from)
+{
+  gint i;
+  GList *c, *last;
+  MxFocusable *focus_widget;
+  MxPathBarPrivate *priv = MX_PATH_BAR (focusable)->priv;
+
+  if (direction == MX_UP ||
+      direction == MX_DOWN ||
+      direction == MX_OUT)
+    return NULL;
+
+  last = NULL;
+  focus_widget = NULL;
+  for (i = 0, c = priv->crumbs;
+       c && (i < priv->current_level);
+       c = c->next, i++)
+    {
+      MxFocusable *crumb = c->data;
+
+      if (crumb == from)
+        {
+          switch (direction)
+            {
+            case MX_LEFT:
+            case MX_PREVIOUS:
+              if (!last)
+                return NULL;
+              focus_widget = (MxFocusable *)last->data;
+              break;
+
+            case MX_RIGHT:
+            case MX_NEXT:
+              if (c->next)
+                focus_widget = (MxFocusable *)c->next->data;
+              else if (priv->editable)
+                focus_widget = (MxFocusable *)priv->entry;
+              else
+                return NULL;
+              break;
+
+            default:
+              return NULL;
+            }
+        }
+      last = c;
+    }
+
+  if (from == (MxFocusable *)priv->entry)
+    {
+      switch (direction)
+        {
+        case MX_LEFT:
+        case MX_PREVIOUS:
+          if (!last)
+            return NULL;
+          else
+            focus_widget = (MxFocusable *)last->data;
+          break;
+
+        default:
+          return NULL;
+        }
+    }
+
+  if (!focus_widget)
+    {
+      if (!priv->editable)
+        return NULL;
+
+      focus_widget = (MxFocusable *)priv->entry;
+    }
+
+  return mx_focusable_accept_focus (focus_widget);
+}
+
+static void
+mx_focusable_iface_init (MxFocusableIface *iface)
+{
+  iface->accept_focus = mx_path_bar_accept_focus;
+  iface->move_focus = mx_path_bar_move_focus;
 }
 
 static void
