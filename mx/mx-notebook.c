@@ -344,7 +344,7 @@ mx_notebook_pick (ClutterActor       *actor,
     {
       ClutterActor *child = CLUTTER_ACTOR (l->data);
 
-      if (clutter_actor_should_pick_paint (child))
+      if (CLUTTER_ACTOR_IS_VISIBLE (child))
         clutter_actor_paint (child);
     }
 
