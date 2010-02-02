@@ -179,7 +179,49 @@ static void
 button_weak_notify (MxButtonGroup *group,
                     MxButton      *button)
 {
-  group->priv->children = g_slist_remove (group->priv->children, button);
+  MxButtonGroupPrivate *priv = group->priv;
+  GSList *l, *prev = NULL, *next = NULL;
+
+  for (l = priv->children; l; l = g_slist_next (l))
+    {
+      if ((MxButton *) l->data == button)
+        {
+
+          next = g_slist_next (l);
+          group->priv->children = g_slist_remove (priv->children,
+                                                  button);
+          break;
+        }
+      prev = l;
+    }
+
+  if (priv->active_button == button)
+    {
+      /* Try and select another button if the one we've removed is active.
+       * But we shouldn't do this in the case where we allow no active button.
+       */
+      if (priv->allow_no_active)
+        {
+          mx_button_group_set_active_button (group, NULL);
+        }
+      else if (prev)
+        {
+          mx_button_group_set_active_button (group, (MxButton *) prev->data);
+        }
+      else if (next)
+        {
+          mx_button_group_set_active_button (group, (MxButton *) next->data);
+        }
+      else if (priv->children)
+        {
+          mx_button_group_set_active_button (group,
+                                             (MxButton *) priv->children->data);
+        }
+      else
+        {
+          mx_button_group_set_active_button (group, NULL);
+        }
+    }
 }
 
 void
@@ -206,7 +248,7 @@ void
 mx_button_group_remove (MxButtonGroup   *group,
                         MxButton        *button)
 {
-  GSList *l;
+  GSList *l, *prev = NULL, *next;
   MxButtonGroupPrivate *priv;
   gboolean found;
 
@@ -224,10 +266,12 @@ mx_button_group_remove (MxButtonGroup   *group,
           found = TRUE;
           break;
         }
+      prev = l;
     }
   if (!found)
     return;
 
+  next = g_slist_next (l);
   priv->children = g_slist_remove (priv->children, button);
 
   g_signal_handlers_disconnect_by_func (button, button_checked_notify_cb,
@@ -236,6 +280,34 @@ mx_button_group_remove (MxButtonGroup   *group,
 
   g_object_weak_unref (G_OBJECT (button), (GWeakNotify) button_weak_notify,
                        group);
+
+  if (priv->active_button == button)
+    {
+      /* Try and select another button if the one we've removed is active.
+       * But we shouldn't do this in the case where we allow no active button.
+       */
+      if (priv->allow_no_active)
+        {
+          mx_button_group_set_active_button (group, NULL);
+        }
+      else if (prev)
+        {
+          mx_button_group_set_active_button (group, (MxButton *) prev->data);
+        }
+      else if (next)
+        {
+          mx_button_group_set_active_button (group, (MxButton *) next->data);
+        }
+      else if (priv->children)
+        {
+          mx_button_group_set_active_button (group,
+                                             (MxButton *) priv->children->data);
+        }
+      else
+        {
+          mx_button_group_set_active_button (group, NULL);
+        }
+    }
 }
 
 void
