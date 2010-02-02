@@ -85,6 +85,12 @@ ClutterActor *mx_combo_box_new (void);
 void mx_combo_box_insert_text  (MxComboBox  *box,
                                 gint         position,
                                 const gchar *text);
+
+void mx_combo_box_insert_text_with_icon (MxComboBox  *box,
+                                         gint         position,
+                                         const gchar *text,
+                                         const gchar *icon);
+
 void mx_combo_box_append_text  (MxComboBox  *box,
                                 const gchar *text);
 void mx_combo_box_prepend_text (MxComboBox  *box,
