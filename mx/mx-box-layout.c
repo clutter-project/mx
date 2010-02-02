@@ -343,7 +343,10 @@ mx_box_container_remove_actor (ClutterContainer *container,
   priv->children = g_list_delete_link (priv->children, item);
   clutter_actor_unparent (actor);
 
-  _mx_box_layout_start_animation (MX_BOX_LAYOUT (container));
+  if (priv->enable_animations)
+    _mx_box_layout_start_animation (MX_BOX_LAYOUT (container));
+  else
+    clutter_actor_queue_relayout ((ClutterActor *) container);
 
   g_signal_emit_by_name (container, "actor-removed", actor);
 
