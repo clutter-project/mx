@@ -34,8 +34,12 @@ struct _MxWindowPrivate
   ClutterActor *toolbar;
   ClutterActor *child;
 
-  guint drag_x_start;
-  guint drag_y_start;
+  gint  drag_x_start;
+  gint  drag_y_start;
+  gint  drag_win_x_start;
+  gint  drag_win_y_start;
+  guint drag_width_start;
+  guint drag_height_start;
 
   MxStyle *style;
   gchar   *pseudo_class;
@@ -382,6 +386,10 @@ mx_window_pick (ClutterActor       *actor,
 
   priv = MX_WINDOW (actor)->priv;
 
+  /* Don't pick while we're moving/resizing */
+  if (priv->is_moving)
+    return;
+
   clutter_actor_paint (priv->toolbar);
 
   if (priv->child)
@@ -432,36 +440,36 @@ static gboolean
 mx_window_button_press_event (ClutterActor       *actor,
                               ClutterButtonEvent *event)
 {
+  unsigned int width, height, border_width, depth, mask;
+  Window win, root, child;
+  int x, y, win_x, win_y;
   MxWindowPrivate *priv;
-  gfloat height, width;
-  gint x, y;
-
+  Display *dpy;
 
   priv = MX_WINDOW (actor)->priv;
-
   priv->is_moving = TRUE;
 
-  x = priv->drag_x_start = event->x;
-  y = priv->drag_y_start = event->y;
+  win = clutter_x11_get_stage_window (CLUTTER_STAGE (actor));
+  dpy = clutter_x11_get_default_display ();
 
-  clutter_actor_get_size (actor, &width, &height);
+  /* Get the initial width/height */
+  XGetGeometry (dpy, win, &root, &x, &y, &width, &height,
+                &border_width, &depth);
 
-#if 0
+  priv->drag_win_x_start = x;
+  priv->drag_win_y_start = y;
+  priv->drag_width_start = width;
+  priv->drag_height_start = height;
 
-  if (x <= 4 && y <= height - 4)
-    priv->is_resizing = WEST;
-  else if (x >= width - 4)
-    priv->is_resizing = EAST;
-  else if (y >= height - 4)
-    priv->is_resizing = SOUTH;
-  else if (y <= 4)
-    priv->is_resizing = NORTH;
-  else
-    priv->is_resizing = NONE;
+  /* Get the initial cursor position */
+  XQueryPointer (dpy, root, &root, &child, &x, &y, &win_x, &win_y, &mask);
 
-#endif
+  priv->drag_x_start = x;
+  priv->drag_y_start = y;
 
+  /* Disable motion events, we'll be using X */
   clutter_set_motion_events_enabled (FALSE);
+
   return TRUE;
 }
 
@@ -501,34 +509,64 @@ mx_window_motion_event (ClutterActor       *actor,
 
   clutter_actor_get_size (actor, &width, &height);
 
-  /* resize */
-
   x = event->x;
   y = event->y;
 
+  /* Create the resize cursor */
   if (!csoutheast)
     csoutheast = XCreateFontCursor (dpy, XC_bottom_right_corner);
 
   rwidth = cogl_texture_get_width (priv->resize_grip);
   rheight = cogl_texture_get_height (priv->resize_grip);
 
-  if (x > width - rwidth && y > height - rheight)
-    XDefineCursor (dpy, win, csoutheast);
-  else
-    XUndefineCursor (dpy, win);
-
-  /* drag */
+  /* Set the cursor if necessary */
   if (!priv->is_moving)
-    return FALSE;
+    {
+      if (x > width - rwidth && y > height - rheight)
+        {
+          XDefineCursor (dpy, win, csoutheast);
+          priv->is_resizing = TRUE;
+        }
+      else
+        {
+          XUndefineCursor (dpy, win);
+          priv->is_resizing = FALSE;
+        }
+      return FALSE;
+    }
 
+  /* Move/resize the window if we're dragging */
   offsetx = priv->drag_x_start;
   offsety = priv->drag_y_start;
-
 
   root_win = clutter_x11_get_root_window ();
   XQueryPointer (dpy, root_win, &root, &child, &x, &y, &winx, &winy, &mask);
 
-  XMoveWindow (dpy, win, MAX (0, x - offsetx), MAX (0, y - offsety));
+  if (priv->is_resizing)
+    {
+      int screen;
+      gfloat min_width, min_height;
+
+      clutter_actor_get_preferred_size (actor,
+                                        &min_width, &min_height,
+                                        NULL, NULL);
+
+      screen = DefaultScreen (dpy);
+      width = MIN (MAX (priv->drag_width_start + (x - priv->drag_x_start),
+                        (guint)min_width),
+                   DisplayWidth (dpy, screen) - priv->drag_win_x_start);
+      height = MIN (MAX (priv->drag_height_start + (y - priv->drag_y_start),
+                         (guint)min_height),
+                    DisplayHeight (dpy, screen) - priv->drag_win_y_start);
+
+      XMoveResizeWindow (dpy, win,
+                         priv->drag_win_x_start, priv->drag_win_y_start,
+                         width, height);
+    }
+  else
+    XMoveWindow (dpy, win,
+                 MAX (0, priv->drag_win_x_start + x - offsetx),
+                 MAX (0, priv->drag_win_y_start + y - offsety));
 
   return TRUE;
 }
