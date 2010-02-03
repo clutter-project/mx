@@ -32,6 +32,14 @@ dist_style_DATA = \
 		menu-item.png \
 		menu.png \
 		menu-toolbar.png \
+		pathbar-button.png \
+		pathbar-button-active.png \
+		pathbar-button-focus.png \
+		pathbar-button-hover.png \
+		pathbar-button-last.png \
+		pathbar-button-last-active.png \
+		pathbar-button-last-focus.png \
+		pathbar-button-last-hover.png \
 		progress-bar-background.png \
 		progress-bar-bar.png \
 		toggle-background-active.png \

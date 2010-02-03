@@ -38,6 +38,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-icon.h 			\
 	$(top_srcdir)/mx/mx-label.h 		\
 	$(top_srcdir)/mx/mx-notebook.h 		\
+	$(top_srcdir)/mx/mx-path-bar.h 		\
 	$(top_srcdir)/mx/mx-progress-bar.h		\
 	$(top_srcdir)/mx/mx-popup.h 		\
 	$(top_srcdir)/mx/mx-scroll-bar.h 		\
@@ -68,6 +69,7 @@ source_gtk_h = \
 
 source_h_priv = \
 	$(top_srcdir)/mx/mx-css.h		\
+	$(top_srcdir)/mx/mx-path-bar-button.h	\
 	$(top_srcdir)/mx/mx-progress-bar-fill.h	\
 	$(top_srcdir)/mx/mx-private.h		\
 	$(NULL)
@@ -98,6 +100,8 @@ source_c = \
 	$(top_srcdir)/mx/mx-list-view.c 		\
 	$(top_srcdir)/mx/mx-label.c 		\
 	$(top_srcdir)/mx/mx-notebook.c 		\
+	$(top_srcdir)/mx/mx-path-bar.c 		\
+	$(top_srcdir)/mx/mx-path-bar-button.c 	\
 	$(top_srcdir)/mx/mx-progress-bar.c		\
 	$(top_srcdir)/mx/mx-progress-bar-fill.c	\
 	$(top_srcdir)/mx/mx-popup.c			\

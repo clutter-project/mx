@@ -50,6 +50,7 @@
 #include <mx/mx-list-view.h>
 #include <mx/mx-label.h>
 #include <mx/mx-notebook.h>
+#include <mx/mx-path-bar.h>
 #include <mx/mx-popup.h>
 #include <mx/mx-progress-bar.h>
 #include <mx/mx-scroll-bar.h>
