@@ -149,7 +149,7 @@ main (int argc, char *argv[])
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), mainbox);
 
   /* create the toolbar */
-  toolbar = mx_window_get_toolbar (MX_WINDOW (stage));
+  toolbar = (ClutterActor *)mx_window_get_toolbar (MX_WINDOW (stage));
   mx_bin_set_alignment (MX_BIN (toolbar), MX_ALIGN_MIDDLE, MX_ALIGN_MIDDLE);
 
   combo = mx_combo_box_new ();
@@ -160,10 +160,9 @@ main (int argc, char *argv[])
 
   /* create the horizontal layout */
   hbox = mx_box_layout_new ();
-  clutter_actor_set_position (hbox, 12, 12);
 
-  /* add toolbar and hoizontal layout to main container */
-  clutter_container_add (CLUTTER_CONTAINER (mainbox), toolbar, hbox, NULL);
+  /* add horizontal layout to main container */
+  clutter_container_add (CLUTTER_CONTAINER (mainbox), hbox, NULL);
 
   /* create a vbox for the list of tests */
   vbox = mx_box_layout_new ();
