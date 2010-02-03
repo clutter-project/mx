@@ -254,6 +254,7 @@ MxAdjustmentPrivate
 <TITLE>MxTextureCache</TITLE>
 MxTextureCache
 mx_texture_cache_get_default
+mx_texture_cache_get_cogl_texture
 mx_texture_cache_get_texture
 mx_texture_cache_get_actor
 mx_texture_cache_get_size
