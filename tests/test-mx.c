@@ -183,6 +183,8 @@ main (int argc, char *argv[])
            (GCallback) entry_main, CLUTTER_CONTAINER (holder));
   add_tab (CLUTTER_CONTAINER (vbox), group, "Button", (GCallback) buttons_main,
            CLUTTER_CONTAINER (holder));
+  add_tab (CLUTTER_CONTAINER (vbox), group, "Button group",
+           (GCallback) button_group_main, CLUTTER_CONTAINER (holder));
   add_tab (CLUTTER_CONTAINER (vbox), group, "Combo Box",
            (GCallback) combo_box_main, CLUTTER_CONTAINER (holder));
   add_tab (CLUTTER_CONTAINER (vbox), group, "Progress Bar",
