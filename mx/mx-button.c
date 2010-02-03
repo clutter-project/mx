@@ -87,6 +87,8 @@ struct _MxButtonPrivate
   guint             is_toggle : 1;
 
   ClutterAnimation *animation;
+
+  ClutterActor *content_image;
 };
 
 static guint button_signals[LAST_SIGNAL] = { 0, };
@@ -117,6 +119,13 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                         "The background color of an actor",
                                         &bg_color,
                                         G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_BUTTON, pspec);
+
+      pspec = g_param_spec_boxed ("x-mx-content-image",
+                                   "Content Image",
+                                   "Image used as the button",
+                                   MX_TYPE_BORDER_IMAGE,
+                                   G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_BUTTON, pspec);
     }
 }
@@ -175,6 +184,12 @@ mx_button_dispose_old_bg (MxButton *button)
 {
   MxButtonPrivate *priv = button->priv;
 
+  if (priv->content_image)
+    {
+      clutter_actor_unparent (priv->content_image);
+      priv->content_image = NULL;
+    }
+
   if (priv->old_bg)
     {
       if (priv->old_bg_parented)
@@ -212,9 +227,38 @@ mx_button_style_changed (MxWidget *widget)
 {
   MxButton *button = MX_BUTTON (widget);
   MxButtonPrivate *priv = button->priv;
+  MxBorderImage *content_image = NULL;
 
   /* update the label styling */
   mx_button_update_label_style (button);
+
+  mx_stylable_get (MX_STYLABLE (widget), "x-mx-content-image", &content_image,
+                   NULL);
+
+  if (content_image)
+    {
+      GError *err = NULL;
+
+      if (priv->content_image)
+        {
+          clutter_actor_unparent (priv->content_image);
+        }
+
+      priv->content_image = clutter_texture_new_from_file (content_image->uri,
+                                                           &err);
+      clutter_actor_set_parent (priv->content_image, CLUTTER_ACTOR (widget));
+
+      if (err)
+        {
+          g_warning ("Could not load content image: %s", err->message);
+
+          g_error_free (err);
+        }
+
+      g_boxed_free (MX_TYPE_BORDER_IMAGE, content_image);
+
+      return;
+    }
 
   /* run a transition if applicable */
   if (priv->old_bg &&
@@ -471,6 +515,9 @@ mx_button_map (ClutterActor *self)
 
   CLUTTER_ACTOR_CLASS (mx_button_parent_class)->map (self);
 
+  if (priv->content_image)
+    clutter_actor_map (priv->content_image);
+
   if (priv->old_bg && priv->old_bg_parented)
     clutter_actor_map (priv->old_bg);
 }
@@ -482,22 +529,33 @@ mx_button_unmap (ClutterActor *self)
 
   CLUTTER_ACTOR_CLASS (mx_button_parent_class)->unmap (self);
 
+  if (priv->content_image)
+    clutter_actor_map (priv->content_image);
+
   if (priv->old_bg && priv->old_bg_parented)
     clutter_actor_unmap (priv->old_bg);
 }
 
 static void
 mx_button_paint_background (MxWidget           *widget,
-                           ClutterActor       *background,
-                           const ClutterColor *color)
+                            ClutterActor       *background,
+                            const ClutterColor *color)
 {
   MxButtonPrivate *priv;
+
+  priv = MX_BUTTON (widget)->priv;
+
+  if (priv->content_image)
+    {
+      clutter_actor_paint (priv->content_image);
+
+      return;
+    }
 
   MX_WIDGET_CLASS (mx_button_parent_class)->paint_background (widget,
                                                               background,
                                                               color);
 
-  priv = MX_BUTTON (widget)->priv;
 
   if (priv->old_bg && priv->old_bg_parented)
     clutter_actor_paint (priv->old_bg);
@@ -508,9 +566,76 @@ mx_button_allocate (ClutterActor           *actor,
                     const ClutterActorBox  *box,
                     ClutterAllocationFlags  flags)
 {
+  MxButtonPrivate *priv = MX_BUTTON (actor)->priv;
+
   CLUTTER_ACTOR_CLASS (mx_button_parent_class)->allocate (actor, box, flags);
 
+  if (priv->content_image)
+    {
+      ClutterActorBox childbox;
+
+      childbox.x1 = 0;
+      childbox.y1 = 0;
+      childbox.x2 = (box->x2 - box->x1);
+      childbox.y2 = (box->y2 - box->y1);
+
+      clutter_actor_allocate (priv->content_image, &childbox, flags);
+    }
+
   mx_bin_allocate_child (MX_BIN (actor), box, flags);
+}
+
+static void
+mx_button_get_preferred_width (ClutterActor *actor,
+                               gfloat        for_height,
+                               gfloat       *min_width,
+                               gfloat       *pref_width)
+{
+  MxButtonPrivate *priv = MX_BUTTON (actor)->priv;
+
+  if (priv->content_image)
+    {
+      clutter_actor_get_preferred_width (priv->content_image, for_height,
+                                         min_width, pref_width);
+      return;
+    }
+
+  CLUTTER_ACTOR_CLASS (mx_button_parent_class)->get_preferred_width (actor,
+                                                                     for_height,
+                                                                     min_width,
+                                                                     pref_width);
+}
+
+static void
+mx_button_get_preferred_height (ClutterActor *actor,
+                                gfloat        for_width,
+                                gfloat       *min_height,
+                                gfloat       *pref_height)
+{
+  MxButtonPrivate *priv = MX_BUTTON (actor)->priv;
+
+  if (priv->content_image)
+    {
+      clutter_actor_get_preferred_height (priv->content_image, for_width,
+                                          min_height, pref_height);
+      return;
+    }
+
+  CLUTTER_ACTOR_CLASS (mx_button_parent_class)->get_preferred_height (actor,
+                                                                      for_width,
+                                                                      min_height,
+                                                                      pref_height);
+}
+
+static void
+mx_button_paint (ClutterActor *actor)
+{
+  MxButtonPrivate *priv = MX_BUTTON (actor)->priv;
+
+  if (priv->content_image)
+    clutter_actor_paint (priv->content_image);
+
+  CLUTTER_ACTOR_CLASS (mx_button_parent_class)->paint (actor);
 }
 
 static void
@@ -534,6 +659,9 @@ mx_button_class_init (MxButtonClass *klass)
   actor_class->key_release_event = mx_button_key_release;
   actor_class->enter_event = mx_button_enter;
   actor_class->leave_event = mx_button_leave;
+  actor_class->get_preferred_width = mx_button_get_preferred_width;
+  actor_class->get_preferred_height = mx_button_get_preferred_height;
+  actor_class->paint = mx_button_paint;
 
   actor_class->map = mx_button_map;
   actor_class->unmap = mx_button_unmap;
