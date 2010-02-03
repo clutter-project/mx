@@ -442,8 +442,6 @@ mx_popup_style_changed (MxPopup *popup)
   MxPopupPrivate *priv = popup->priv;
   int i;
 
-  g_debug ("poop");
-
   for (i = 0; i < priv->children->len; i++)
     {
       MxPopupChild *child;
