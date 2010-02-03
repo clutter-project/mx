@@ -586,6 +586,7 @@ mx_bin_init (MxBin *bin)
 
   bin->priv->x_align = MX_ALIGN_MIDDLE;
   bin->priv->y_align = MX_ALIGN_MIDDLE;
+  bin->priv->child_has_space = TRUE;
 }
 
 /**
