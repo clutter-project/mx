@@ -85,6 +85,9 @@ ClutterTexture* mx_texture_cache_get_texture (MxTextureCache *self,
 ClutterActor*   mx_texture_cache_get_actor   (MxTextureCache *self,
                                               const gchar    *path);
 
+CoglHandle      mx_texture_cache_get_cogl_texture (MxTextureCache *self,
+                                                   const gchar    *path);
+
 gint            mx_texture_cache_get_size    (MxTextureCache *self);
 
 void mx_texture_cache_load_cache (MxTextureCache *self,

@@ -234,22 +234,21 @@ add_texture_to_cache (MxTextureCache     *self,
 /* NOTE: you should unref the returned texture when not needed */
 
 /**
- * mx_texture_cache_get_texture:
+ * mx_texture_cache_get_cogl_texture:
  * @self: A #MxTextureCache
- * @path: A path to a image file
+ * @path: A path to an image file
  *
- * Create a new ClutterTexture with the specified image. Adds the image to the
- * cache if the image had not been previously loaded. Subsequent calls with
- * the same image path will return a new ClutterTexture with the previously
- * loaded image.
+ * Create a #CoglHandle representing a texture of the specified image. Adds
+ * the image to the cache if the image had not been previously loaded.
+ * Subsequent calls with the same image path will return the #CoglHandle of
+ * the previously loaded image with an increased reference count.
  *
- * Returns: a newly created ClutterTexture
+ * Returns: a #CoglHandle to the cached texture
  */
-ClutterTexture*
-mx_texture_cache_get_texture (MxTextureCache *self,
-                              const gchar    *path)
+CoglHandle
+mx_texture_cache_get_cogl_texture (MxTextureCache *self,
+                                   const gchar    *path)
 {
-  ClutterActor *texture;
   CoglHandle *handle;
   MxTextureCachePrivate *priv;
   MxTextureCacheItem *item;
@@ -270,8 +269,20 @@ mx_texture_cache_get_texture (MxTextureCache *self,
        * sane option is to read it from disk and just don't cache it
        * at all.
        */
-      return CLUTTER_TEXTURE(clutter_texture_new_from_file(path, &err));
+      handle = cogl_texture_new_from_file (path,
+                                           COGL_TEXTURE_NONE,
+                                           COGL_PIXEL_FORMAT_ANY,
+                                           &err);
+
+      if (err)
+        {
+          g_warning ("Error loading texture: %s", err->message);
+          g_error_free (err);
+        }
+
+      return handle;
     }
+
   if (!item)
     {
       GError *err = NULL;
@@ -298,11 +309,43 @@ mx_texture_cache_get_texture (MxTextureCache *self,
       add_texture_to_cache (self, path, item);
     }
 
-  texture = clutter_texture_new ();
-  handle = clutter_texture_get_cogl_texture (CLUTTER_TEXTURE (item->ptr));
-  clutter_texture_set_cogl_texture ((ClutterTexture*) texture, handle);
+  return cogl_handle_ref (
+    clutter_texture_get_cogl_texture (CLUTTER_TEXTURE (item->ptr)));
+}
 
-  return (ClutterTexture*) texture;
+/**
+ * mx_texture_cache_get_texture:
+ * @self: A #MxTextureCache
+ * @path: A path to a image file
+ *
+ * Create a new ClutterTexture with the specified image. Adds the image to the
+ * cache if the image had not been previously loaded. Subsequent calls with
+ * the same image path will return a new ClutterTexture with the previously
+ * loaded image.
+ *
+ * Returns: a newly created ClutterTexture
+ */
+ClutterTexture*
+mx_texture_cache_get_texture (MxTextureCache *self,
+                              const gchar    *path)
+{
+  CoglHandle *handle;
+
+  g_return_val_if_fail (MX_IS_TEXTURE_CACHE (self), NULL);
+  g_return_val_if_fail (path != NULL, NULL);
+
+  handle = mx_texture_cache_get_cogl_texture (self, path);
+
+  if (handle)
+    {
+      ClutterActor *texture = clutter_texture_new ();
+      clutter_texture_set_cogl_texture ((ClutterTexture*) texture, handle);
+      cogl_handle_unref (handle);
+
+      return (ClutterTexture *)texture;
+    }
+  else
+    return NULL;
 }
 
 
