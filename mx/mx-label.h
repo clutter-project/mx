@@ -70,6 +70,11 @@ void                  mx_label_set_text         (MxLabel     *label,
                                                  const gchar *text);
 ClutterActor *        mx_label_get_clutter_text (MxLabel     *label);
 
+void    mx_label_set_x_align (MxLabel *label, MxAlign align);
+MxAlign mx_label_get_x_align (MxLabel *label);
+void    mx_label_set_y_align (MxLabel *label, MxAlign align);
+MxAlign mx_label_get_y_align (MxLabel *label);
+
 G_END_DECLS
 
 #endif /* __MX_LABEL_H__ */

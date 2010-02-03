@@ -51,7 +51,9 @@ enum
 {
   PROP_0,
 
-  PROP_LABEL
+  PROP_LABEL,
+  PROP_X_ALIGN,
+  PROP_Y_ALIGN
 };
 
 #define MX_LABEL_GET_PRIVATE(obj)     (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_LABEL, MxLabelPrivate))
@@ -59,6 +61,9 @@ enum
 struct _MxLabelPrivate
 {
   ClutterActor *label;
+
+  MxAlign x_align;
+  MxAlign y_align;
 };
 
 G_DEFINE_TYPE (MxLabel, mx_label, MX_TYPE_WIDGET);
@@ -75,6 +80,14 @@ mx_label_set_property (GObject      *gobject,
     {
     case PROP_LABEL:
       mx_label_set_text (label, g_value_get_string (value));
+      break;
+
+    case PROP_Y_ALIGN:
+      mx_label_set_y_align (label, g_value_get_enum (value));
+      break;
+
+    case PROP_X_ALIGN:
+      mx_label_set_x_align (label, g_value_get_enum (value));
       break;
 
     default:
@@ -94,7 +107,16 @@ mx_label_get_property (GObject    *gobject,
   switch (prop_id)
     {
     case PROP_LABEL:
-      g_value_set_string (value, clutter_text_get_text (CLUTTER_TEXT (priv->label)));
+      g_value_set_string (value,
+                          clutter_text_get_text (CLUTTER_TEXT (priv->label)));
+      break;
+
+    case PROP_X_ALIGN:
+      g_value_set_enum (value, priv->x_align);
+      break;
+
+    case PROP_Y_ALIGN:
+      g_value_set_enum (value, priv->y_align);
       break;
 
     default:
@@ -176,6 +198,8 @@ mx_label_allocate (ClutterActor          *actor,
   child_box.x2 = box->x2 - box->x1 - padding.right;
   child_box.y2 = box->y2 - box->y1 - padding.bottom;
 
+  mx_allocate_align_fill (priv->label, &child_box, priv->x_align,
+                          priv->y_align, FALSE, FALSE);
   clutter_actor_allocate (priv->label, &child_box, flags);
 }
 
@@ -251,6 +275,19 @@ mx_label_class_init (MxLabelClass *klass)
                                NULL, G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_LABEL, pspec);
 
+  pspec = g_param_spec_enum ("x-align",
+                             "X Align",
+                             "Horizontal position of the text layout",
+                             MX_TYPE_ALIGN, MX_ALIGN_START,
+                             MX_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_X_ALIGN, pspec);
+
+  pspec = g_param_spec_enum ("y-align",
+                             "Y Align",
+                             "Vertical position of the text layout",
+                             MX_TYPE_ALIGN, MX_ALIGN_START,
+                             MX_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_Y_ALIGN, pspec);
 }
 
 static void
@@ -343,4 +380,53 @@ mx_label_get_clutter_text (MxLabel *label)
   g_return_val_if_fail (MX_IS_LABEL (label), NULL);
 
   return label->priv->label;
+}
+
+void
+mx_label_set_x_align (MxLabel *label,
+                      MxAlign  align)
+{
+  g_return_if_fail (MX_IS_LABEL (label));
+
+
+  if (align != label->priv->x_align)
+    {
+      label->priv->x_align = align;
+
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (label));
+
+      g_object_notify (G_OBJECT (label), "x-align");
+    }
+}
+
+MxAlign
+mx_label_get_x_align (MxLabel *label)
+{
+  g_return_val_if_fail (MX_IS_LABEL (label), 0);
+
+  return label->priv->x_align;
+}
+void
+mx_label_set_y_align (MxLabel *label,
+                      MxAlign  align)
+{
+  g_return_if_fail (MX_IS_LABEL (label));
+
+
+  if (align != label->priv->y_align)
+    {
+      label->priv->y_align = align;
+
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (label));
+
+      g_object_notify (G_OBJECT (label), "y-align");
+    }
+}
+
+MxAlign
+mx_label_get_y_align (MxLabel *label)
+{
+  g_return_val_if_fail (MX_IS_LABEL (label), 0);
+
+  return label->priv->y_align;
 }
