@@ -333,7 +333,7 @@ mx_combo_box_button_press_event (ClutterActor       *actor,
 
   clutter_actor_show (popup);
 
-  return FALSE;
+  return TRUE;
 }
 
 static gboolean

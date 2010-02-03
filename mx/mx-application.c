@@ -25,6 +25,7 @@
 #include "mx-application.h"
 
 #include "mx-private.h"
+#include "mx-window.h"
 
 #include <glib/gi18n-lib.h>
 #include <clutter/x11/clutter-x11.h>
@@ -453,7 +454,7 @@ mx_application_default_create_window (MxApplication *application)
 {
   ClutterStage *stage;
 
-  stage = CLUTTER_STAGE (clutter_stage_new ());
+  stage = CLUTTER_STAGE (mx_window_new ());
 
   mx_application_add_window (application, stage);
 

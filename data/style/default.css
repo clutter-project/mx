@@ -3,6 +3,11 @@
   font-size: 13;
 }
 
+MxWindow
+{
+  mx-resize-grip: url('resize-grip.png');
+}
+
 MxButton
 {
   padding: 10;

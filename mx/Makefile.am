@@ -60,6 +60,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-utils.h                 \
 	$(top_srcdir)/mx/mx-viewport.h		\
 	$(top_srcdir)/mx/mx-widget.h		\
+	$(top_srcdir)/mx/mx-window.h		\
 	$(top_srcdir)/mx/mx-floating-widget.h \
 	$(NULL)
 
@@ -125,6 +126,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-utils.c 		\
 	$(top_srcdir)/mx/mx-viewport.c 		\
 	$(top_srcdir)/mx/mx-widget.c		\
+	$(top_srcdir)/mx/mx-window.c		\
 	$(top_srcdir)/mx/mx-floating-widget.c	\
 	$(NULL)
 
