@@ -81,7 +81,10 @@ mx_notebook_update_children (MxNotebook *book)
       if (CLUTTER_ACTOR_IS_VISIBLE (child))
         {
           clutter_actor_animate (child, CLUTTER_LINEAR, 250,
-                                 "opacity", 0, NULL);
+                                 "opacity", (guint8) 0,
+                                 "signal-swapped::completed",
+                                 clutter_actor_hide, child,
+                                 NULL);
         }
 
       i++;
@@ -341,7 +344,7 @@ mx_notebook_pick (ClutterActor       *actor,
     {
       ClutterActor *child = CLUTTER_ACTOR (l->data);
 
-      if (clutter_actor_should_pick_paint (child))
+      if (CLUTTER_ACTOR_IS_VISIBLE (child))
         clutter_actor_paint (child);
     }
 
