@@ -46,6 +46,10 @@ void mx_allocate_align_fill (ClutterActor    *child,
                              MxAlign          y_alignment,
                              gboolean         x_fill,
                              gboolean         y_fill);
+
+void mx_actor_box_clamp_to_pixels (ClutterActorBox *box);
+
+
 G_END_DECLS
 
 #endif /* __MX_UTILS_H__ */

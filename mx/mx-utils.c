@@ -262,3 +262,12 @@ mx_allocate_align_fill (ClutterActor    *child,
   *childbox = allocation;
 }
 
+
+void
+mx_actor_box_clamp_to_pixels (ClutterActorBox *box)
+{
+  box->x1 = (int) box->x1;
+  box->y1 = (int) box->y1;
+  box->x2 = (int) box->x2;
+  box->y2 = (int) box->y2;
+}
