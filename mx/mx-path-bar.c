@@ -103,7 +103,7 @@ mx_stylable_iface_init (MxStylableIface *iface)
 }
 
 static MxFocusable *
-mx_path_bar_accept_focus (MxFocusable *focusable)
+mx_path_bar_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 {
   MxFocusable *focus_widget;
   MxPathBarPrivate *priv = MX_PATH_BAR (focusable)->priv;
@@ -112,11 +112,23 @@ mx_path_bar_accept_focus (MxFocusable *focusable)
     return NULL;
 
   if (priv->current_level)
-    focus_widget = MX_FOCUSABLE (priv->crumbs->data);
+    {
+      if (hint == MX_LAST)
+        {
+          if (priv->editable)
+            focus_widget = MX_FOCUSABLE (priv->entry);
+          else
+            focus_widget =
+              MX_FOCUSABLE (g_list_nth_data (priv->crumbs,
+                                             priv->current_level - 1));
+        }
+      else
+        focus_widget = MX_FOCUSABLE (priv->crumbs->data);
+    }
   else
     focus_widget = MX_FOCUSABLE (priv->entry);
 
-  return mx_focusable_accept_focus (focus_widget);
+  return mx_focusable_accept_focus (focus_widget, hint);
 }
 
 static MxFocusable *
@@ -195,7 +207,7 @@ mx_path_bar_move_focus (MxFocusable *focusable,
       focus_widget = (MxFocusable *)priv->entry;
     }
 
-  return mx_focusable_accept_focus (focus_widget);
+  return mx_focusable_accept_focus (focus_widget, MX_FIRST);
 }
 
 static void
