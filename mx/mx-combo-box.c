@@ -438,7 +438,7 @@ mx_combo_box_init (MxComboBox *self)
 }
 
 static MxFocusable *
-mx_combo_box_accept_focus (MxFocusable *focusable)
+mx_combo_box_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 {
   mx_stylable_set_style_pseudo_class (MX_STYLABLE (focusable), "focus");
 

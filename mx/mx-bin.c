@@ -166,12 +166,12 @@ clutter_container_iface_init (ClutterContainerIface *iface)
 }
 
 static MxFocusable*
-mx_bin_accept_focus (MxFocusable *focusable)
+mx_bin_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 {
   MxBinPrivate *priv = MX_BIN (focusable)->priv;
 
   if (MX_IS_FOCUSABLE (priv->child))
-    return mx_focusable_accept_focus (MX_FOCUSABLE (priv->child));
+    return mx_focusable_accept_focus (MX_FOCUSABLE (priv->child), hint);
   else
     return NULL;
 }

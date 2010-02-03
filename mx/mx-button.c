@@ -122,7 +122,7 @@ mx_stylable_iface_init (MxStylableIface *iface)
 }
 
 static MxFocusable*
-mx_button_accept_focus (MxFocusable *focusable)
+mx_button_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 {
   /* FIXME: pretend hover is the same as focus for now */
   mx_stylable_set_style_pseudo_class (MX_STYLABLE (focusable), "hover");

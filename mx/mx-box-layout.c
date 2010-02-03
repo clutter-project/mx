@@ -517,7 +517,8 @@ mx_box_layout_move_focus (MxFocusable *focusable,
             {
               MxFocusable *focused;
 
-              focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data));
+              focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data),
+                                                   MX_FIRST);
 
               if (focused)
                 {
@@ -538,7 +539,8 @@ mx_box_layout_move_focus (MxFocusable *focusable,
             {
               MxFocusable *focused;
 
-              focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data));
+              focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data),
+                                                   MX_LAST);
 
               if (focused)
                 {
@@ -553,29 +555,45 @@ mx_box_layout_move_focus (MxFocusable *focusable,
 }
 
 static MxFocusable*
-mx_box_layout_accept_focus (MxFocusable *focusable)
+mx_box_layout_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 {
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (focusable)->priv;
-  GList* l;
+  MxFocusable *return_focusable;
+  GList* list, *l;
 
-  /* find the first focusable widget */
-  for (l = priv->children; l; l = g_list_next (l))
+  return_focusable = NULL;
+
+  /* find the first/last focusable widget */
+  switch (hint)
+    {
+    case MX_LAST:
+      list = g_list_reverse (g_list_copy (priv->children));
+      break;
+
+    default:
+    case MX_FIRST:
+      list = g_list_copy (priv->children);
+      break;
+    }
+
+  for (l = list; l; l = g_list_next (l))
     {
       if (MX_IS_FOCUSABLE (l->data))
         {
-          MxFocusable *focused = NULL;
+          return_focusable = mx_focusable_accept_focus (MX_FOCUSABLE (l->data),
+                                                        hint);
 
-          focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data));
-
-          if (focused)
+          if (return_focusable)
             {
-              update_adjustments (MX_BOX_LAYOUT (focusable), focused);
-              return focused;
+              update_adjustments (MX_BOX_LAYOUT (focusable), return_focusable);
+              break;
             }
         }
     }
 
-  return NULL;
+  g_list_free (list);
+
+  return return_focusable;
 }
 
 static void
