@@ -256,22 +256,22 @@ MxPathBar {
 }
 
 MxPathBar > MxEntry {
-  padding: 10 10 10 24;
+  padding: 8 10 8 24;
 }
 
 MxPathBarButton {
   border-image: url('pathbar-button.png') 4 19 3 3;
-  padding: 10 24;
+  padding: 8 24;
 }
 
 MxPathBarButton:hover {
   border-image: url('pathbar-button-hover.png') 4 19 3 3;
-  padding: 10 24;
+  padding: 8 24;
 }
 
 MxPathBarButton:active {
   border-image: url('pathbar-button-active.png') 4 19 3 3;
-  padding: 10 24;
+  padding: 8 24;
 }
 
 MxPathBarButton.End {
