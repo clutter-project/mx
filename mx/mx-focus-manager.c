@@ -169,20 +169,11 @@ mx_focus_manager_start_focus (MxFocusManager *manager, MxFocusHint hint)
     }
 }
 
-
 static gboolean
-mx_focus_manager_captured_event_cb (ClutterStage   *stage,
-                                    ClutterEvent   *event,
-                                    MxFocusManager *manager)
+mx_focus_manager_ensure_focused (MxFocusManager *manager, ClutterStage *stage)
 {
   ClutterActor *actor;
-  gboolean result;
-  MxFocusHint hint;
-  MxDirection direction;
   MxFocusManagerPrivate *priv = manager->priv;
-
-  if (event->type != CLUTTER_KEY_PRESS)
-    return FALSE;
 
   if (!priv->focused)
     {
@@ -200,20 +191,33 @@ mx_focus_manager_captured_event_cb (ClutterStage   *stage,
 
       /* if we didn't find a focusable, try any children of the stage */
       if (!actor)
-        {
-          mx_focus_manager_start_focus (manager, MX_FIRST);
-          return TRUE;
-        }
+        mx_focus_manager_start_focus (manager, MX_FIRST);
       else
         priv->focused = mx_focusable_accept_focus (MX_FOCUSABLE (actor),
                                                    MX_FIRST);
-
-      return TRUE;
     }
+
+  return (priv->focused) ? TRUE : FALSE;
+}
+
+static gboolean
+mx_focus_manager_captured_event_cb (ClutterStage   *stage,
+                                    ClutterEvent   *event,
+                                    MxFocusManager *manager)
+{
+  MxFocusHint hint;
+  MxDirection direction;
+  MxFocusManagerPrivate *priv = manager->priv;
+
+  if (event->type != CLUTTER_KEY_PRESS)
+    return FALSE;
 
   switch (event->key.keyval)
     {
   case CLUTTER_Tab:
+
+    if (!priv->focused)
+      return mx_focus_manager_ensure_focused (manager, stage);
 
     if (event->key.modifier_state & CLUTTER_SHIFT_MASK)
       {
@@ -233,7 +237,7 @@ mx_focus_manager_captured_event_cb (ClutterStage   *stage,
     if (!priv->focused)
       mx_focus_manager_start_focus (manager, hint);
 
-    break;
+    return TRUE;
 /*
   case CLUTTER_Right:
     if (!mx_focusable_move_focus (focusable, MX_RIGHT))
@@ -243,10 +247,8 @@ mx_focus_manager_captured_event_cb (ClutterStage   *stage,
     break;
 */
   default:
-    result = FALSE;
+      return FALSE;
     }
-
-  return result;
 }
 
 MxFocusManager *
