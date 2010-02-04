@@ -49,6 +49,9 @@ _rm_button_clicked_cb (MxButton *button,
 
   children = clutter_container_get_children (CLUTTER_CONTAINER (button_box));
 
+  if (!children)
+    return;
+
   actor = (ClutterActor *)g_list_last (children)->data;
   mx_button_group_remove (button_group,
                           (MxButton *)actor);
@@ -64,7 +67,9 @@ _destroy_button_clicked_cb (MxButton *button,
   MxButton *active_button;
 
   active_button = mx_button_group_get_active_button (button_group);
-  clutter_actor_destroy ((ClutterActor *) active_button);
+
+  if (active_button)
+    clutter_actor_destroy ((ClutterActor *) active_button);
 }
 
 static void
