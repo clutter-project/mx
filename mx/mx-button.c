@@ -246,7 +246,9 @@ mx_button_style_changed (MxWidget *widget)
 
       priv->content_image = clutter_texture_new_from_file (content_image->uri,
                                                            &err);
-      clutter_actor_set_parent (priv->content_image, CLUTTER_ACTOR (widget));
+
+      if (priv->content_image)
+        clutter_actor_set_parent (priv->content_image, CLUTTER_ACTOR (widget));
 
       if (err)
         {
