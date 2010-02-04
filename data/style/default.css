@@ -209,6 +209,40 @@ MxToolbar {
   padding: 6;
 }
 
+MxToolbar MxButton {
+  border-image: none;
+  padding: 2 4;
+}
+
+MxToolbar MxButton:hover {
+  border-image: url('toolbar-button-hover.png') 5;
+  padding: 2 4;
+}
+
+MxToolbar MxButton:active {
+  border-image: url('toolbar-button-hover.png') 5;
+  padding: 3 3 1 5;
+}
+
+MxToolbar MxButton#close-button {
+  x-mx-icon-name: stock_close-normal;
+  x-mx-icon-size: 48;
+}
+
+MxToolbar MxButton#close-button:hover {
+  x-mx-icon-name: stock_close-hover;
+  x-mx-icon-size: 48;
+}
+
+MxToolbar MxButton#close-button:active {
+  x-mx-icon-name: stock_close-active;
+  x-mx-icon-size: 48;
+}
+
+/* The following two rules would restore the old-style close-button
+ * styling (if the above three are commented out)
+ */
+/*
 MxToolbar MxButton#close-button {
   border-image: url('close.png') 0;
   padding: 51 57 0 0;
@@ -217,7 +251,7 @@ MxToolbar MxButton#close-button {
 MxToolbar MxButton#close-button:hover, MxToolbar MxButton#close-button:active {
   border-image: url('close-hover.png') 0;
   padding: 51 57 0 0;
-}
+}*/
 
 MxToolbar MxComboBox {
   color: #dadada;

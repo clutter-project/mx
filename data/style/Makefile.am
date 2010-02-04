@@ -46,6 +46,7 @@ dist_style_DATA = \
 		toggle-background-active.png \
 		toggle-background.png \
 		toggle-handle.png \
+		toolbar-button-hover.png \
 		tooltip-background.png
 
 -include $(top_srcdir)/git.mk
