@@ -127,6 +127,20 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                    MX_TYPE_BORDER_IMAGE,
                                    G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_BUTTON, pspec);
+
+      pspec = g_param_spec_string ("x-mx-icon-name",
+                                   "Icon name",
+                                   "Named icon to place inside the button",
+                                   NULL,
+                                   G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_BUTTON, pspec);
+
+      pspec = g_param_spec_int ("x-mx-icon-size",
+                                "Icon size",
+                                "Size to use for icon",
+                                1, G_MAXINT, 48,
+                                G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_BUTTON, pspec);
     }
 }
 
@@ -228,11 +242,16 @@ mx_button_style_changed (MxWidget *widget)
   MxButton *button = MX_BUTTON (widget);
   MxButtonPrivate *priv = button->priv;
   MxBorderImage *content_image = NULL;
+  gchar *icon_name = NULL;
+  gint icon_size = 48;
 
   /* update the label styling */
   mx_button_update_label_style (button);
 
-  mx_stylable_get (MX_STYLABLE (widget), "x-mx-content-image", &content_image,
+  mx_stylable_get (MX_STYLABLE (widget),
+                   "x-mx-content-image", &content_image,
+                   "x-mx-icon-name", &icon_name,
+                   "x-mx-icon-size", &icon_size,
                    NULL);
 
   if (content_image)
@@ -258,8 +277,25 @@ mx_button_style_changed (MxWidget *widget)
         }
 
       g_boxed_free (MX_TYPE_BORDER_IMAGE, content_image);
+      g_free (icon_name);
 
       return;
+    }
+
+  if (icon_name)
+    {
+      ClutterActor *icon = mx_bin_get_child (MX_BIN (widget));
+
+      if (!icon || !MX_IS_ICON (icon))
+        {
+          icon = mx_icon_new ();
+          mx_bin_set_child (MX_BIN (widget), icon);
+        }
+
+      mx_icon_set_size (MX_ICON (icon), icon_size);
+      mx_icon_set_name (MX_ICON (icon), icon_name);
+
+      g_free (icon_name);
     }
 
   /* run a transition if applicable */
