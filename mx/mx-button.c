@@ -636,8 +636,8 @@ mx_button_paint (ClutterActor *actor)
 
   if (priv->content_image)
     clutter_actor_paint (priv->content_image);
-
-  CLUTTER_ACTOR_CLASS (mx_button_parent_class)->paint (actor);
+  else
+    CLUTTER_ACTOR_CLASS (mx_button_parent_class)->paint (actor);
 }
 
 static void
