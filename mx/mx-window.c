@@ -674,7 +674,7 @@ mx_window_get_preferred_height (ClutterActor *self,
                                               -1,
                                               &child_min_height,
                                               NULL);
-          min_height = child_min_height;
+          min_height += child_min_height;
         }
 
       if (min_height_p)
