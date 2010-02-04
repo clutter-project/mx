@@ -663,7 +663,7 @@ mx_window_get_preferred_height (ClutterActor *self,
 
       if (priv->toolbar)
         clutter_actor_get_preferred_height (priv->toolbar,
-                                            -1,
+                                            for_width,
                                             &min_height,
                                             NULL);
 
@@ -671,7 +671,7 @@ mx_window_get_preferred_height (ClutterActor *self,
         {
           gfloat child_min_height;
           clutter_actor_get_preferred_height (priv->child,
-                                              -1,
+                                              for_width,
                                               &child_min_height,
                                               NULL);
           min_height += child_min_height;
