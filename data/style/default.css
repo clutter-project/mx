@@ -139,19 +139,19 @@ MxExpander:active {
 
 MxExpander > *#mx-expander-arrow-closed {
     padding: 0;
-    background-image: url('expander-arrow-up.png');
+    x-mx-content-image: url('expander-arrow-up.png');
 }
 
 MxExpander > *#mx-expander-arrow-closed:hover {
-    background-image: url('expander-arrow-up-hover.png');
+    x-mx-content-image: url('expander-arrow-up-hover.png');
 }
 
 MxExpander > *#mx-expander-arrow-open {
-    background-image: url('expander-arrow-down.png');
+    x-mx-content-image: url('expander-arrow-down.png');
 }
 
 MxExpander > *#mx-expander-arrow-open:hover {
-    background-image: url('expander-arrow-down-hover.png');
+    x-mx-content-image: url('expander-arrow-down-hover.png');
 }
 
 MxTooltip {

@@ -49,6 +49,8 @@ G_BEGIN_DECLS
 #define MX_ICON_GET_CLASS(obj) \
   (G_TYPE_INSTANCE_GET_CLASS ((obj), MX_TYPE_ICON, MxIconClass))
 
+typedef struct _MxIconPrivate       MxIconPrivate;
+
 /**
  * MxIcon:
  *
@@ -58,6 +60,8 @@ G_BEGIN_DECLS
 typedef struct {
   /*< private >*/
   MxWidget parent;
+
+  MxIconPrivate *priv;
 } MxIcon;
 
 typedef struct {
@@ -67,6 +71,13 @@ typedef struct {
 GType mx_icon_get_type (void);
 
 ClutterActor* mx_icon_new (void);
+
+const gchar *mx_icon_get_name (MxIcon *icon);
+void         mx_icon_set_name (MxIcon *icon, const gchar *icon_name);
+
+gint         mx_icon_get_size (MxIcon *icon);
+void         mx_icon_set_size (MxIcon *icon, gint size);
+
 
 G_END_DECLS
 
