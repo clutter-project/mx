@@ -26,10 +26,11 @@ struct _MxWindowPrivate
   guint is_fullscreen : 1;
   guint has_toolbar   : 1;
   guint is_moving     : 1;
+  guint is_resizing   : 1;
 
   CoglHandle resize_grip;
-
-  enum {NONE, NORTH, SOUTH, EAST, WEST} is_resizing;
+  gfloat     natural_width;
+  gfloat     natural_height;
 
   ClutterActor *toolbar;
   ClutterActor *child;
@@ -559,6 +560,16 @@ mx_window_motion_event (ClutterActor       *actor,
                          (guint)min_height),
                     DisplayHeight (dpy, screen) - priv->drag_win_y_start);
 
+      /* Set the natural width/height so ClutterStageX11 won't try to
+       * resize us back to our minimum size.
+       */
+      priv->natural_width = width;
+      priv->natural_height = height;
+
+      /* We could let clutter resize us by just calling relayout, but you
+       * get odd artifacts, I guess due to some synchronicity issue with
+       * allocation/backend stage resizing.
+       */
       XMoveResizeWindow (dpy, win,
                          priv->drag_win_x_start, priv->drag_win_y_start,
                          width, height);
@@ -611,11 +622,10 @@ mx_window_get_preferred_width (ClutterActor *self,
                                gfloat       *min_width_p,
                                gfloat       *nat_width_p)
 {
-  CLUTTER_ACTOR_CLASS (mx_window_parent_class)->
-    get_preferred_width (self, for_height, min_width_p, nat_width_p);
-
-  /* Reset the minimum width */
-  if (!clutter_stage_get_fullscreen (CLUTTER_STAGE (self)))
+  if (clutter_stage_get_fullscreen (CLUTTER_STAGE (self)))
+    CLUTTER_ACTOR_CLASS (mx_window_parent_class)->
+      get_preferred_width (self, for_height, min_width_p, nat_width_p);
+  else
     {
       gfloat min_width;
       MxWindowPrivate *priv = MX_WINDOW (self)->priv;
@@ -641,6 +651,14 @@ mx_window_get_preferred_width (ClutterActor *self,
 
       if (min_width_p)
         *min_width_p = min_width;
+
+      if (nat_width_p)
+        {
+          if (priv->natural_width)
+            *nat_width_p = priv->natural_width;
+          else
+            *nat_width_p = min_width;
+        }
     }
 }
 
@@ -650,11 +668,10 @@ mx_window_get_preferred_height (ClutterActor *self,
                                 gfloat       *min_height_p,
                                 gfloat       *nat_height_p)
 {
-  CLUTTER_ACTOR_CLASS (mx_window_parent_class)->
-    get_preferred_height (self, for_width, min_height_p, nat_height_p);
-
-  /* Reset the minimum height */
-  if (!clutter_stage_get_fullscreen (CLUTTER_STAGE (self)))
+  if (clutter_stage_get_fullscreen (CLUTTER_STAGE (self)))
+    CLUTTER_ACTOR_CLASS (mx_window_parent_class)->
+      get_preferred_height (self, for_width, min_height_p, nat_height_p);
+  else
     {
       gfloat min_height;
       MxWindowPrivate *priv = MX_WINDOW (self)->priv;
@@ -679,6 +696,14 @@ mx_window_get_preferred_height (ClutterActor *self,
 
       if (min_height_p)
         *min_height_p = min_height;
+
+      if (nat_height_p)
+        {
+          if (priv->natural_height)
+            *nat_height_p = priv->natural_height;
+          else
+            *nat_height_p = min_height;
+        }
     }
 }
 
