@@ -213,6 +213,29 @@ mx_icon_theme_icon_data_new (gint         size,
   return data;
 }
 
+static gboolean
+mx_icon_theme_equal_func (GThemedIcon *icon,
+                          GThemedIcon *search)
+{
+  gint i;
+
+  const gchar * const *names1 = g_themed_icon_get_names (icon);
+  const gchar * const *names2 = g_themed_icon_get_names (search);
+
+  for (i = 0; names1[i] && names2[i]; i++)
+    if (!g_str_equal (names1[i], names2[i]))
+      return FALSE;
+
+  return TRUE;
+}
+
+static guint
+mx_icon_theme_hash (GThemedIcon *icon)
+{
+  const gchar * const *names = g_themed_icon_get_names (icon);
+  return g_str_hash (names[0]);
+}
+
 static void
 mx_icon_theme_init (MxIconTheme *self)
 {
@@ -230,8 +253,8 @@ mx_icon_theme_init (MxIconTheme *self)
   path = g_build_filename (g_get_home_dir (), ".icons", NULL);
   priv->search_paths = g_list_prepend (priv->search_paths, path);
 
-  priv->icon_hash = g_hash_table_new_full (g_icon_hash,
-                                           (GEqualFunc)g_icon_equal,
+  priv->icon_hash = g_hash_table_new_full ((GHashFunc)mx_icon_theme_hash,
+                                           (GEqualFunc)mx_icon_theme_equal_func,
                                            g_object_unref,
                                            mx_icon_theme_icon_hash_free);
 
@@ -351,7 +374,8 @@ mx_icon_theme_set_theme (MxIconTheme *theme,
 static GList *
 mx_icon_theme_theme_load_icon (MxIconTheme *self,
                                GKeyFile    *theme_file,
-                               const gchar *icon)
+                               const gchar *icon,
+                               GIcon       *store_icon)
 {
   gchar *dirs;
   gchar *theme_name;
@@ -492,50 +516,118 @@ mx_icon_theme_theme_load_icon (MxIconTheme *self,
   if (data)
     {
       data = g_list_reverse (data);
-      g_hash_table_insert (priv->icon_hash,
-                           g_themed_icon_new_with_default_fallbacks (icon),
-                           data);
+      if (!store_icon)
+        store_icon = g_themed_icon_new_with_default_fallbacks (icon);
+      else
+        store_icon = g_object_ref (store_icon);
+
+      g_hash_table_insert (priv->icon_hash, store_icon, data);
     }
   g_free (theme_name);
 
   return data;
 }
 
-static const GList *
-mx_icon_theme_get_icons (MxIconTheme *theme,
-                         const gchar *icon_name)
+static GList *
+mx_icon_theme_load_icon (MxIconTheme *theme,
+                         const gchar *icon_name,
+                         GIcon       *store_icon)
 {
-  GIcon *icon;
   GList *data, *f;
   MxIconThemePrivate *priv = theme->priv;
-
-  icon = g_themed_icon_new_with_default_fallbacks (icon_name);
-  data = g_hash_table_lookup (priv->icon_hash, icon);
-  g_object_unref (icon);
-  if (data)
-    return data;
 
   /* Try the set theme */
   if (priv->theme_file &&
       (data = mx_icon_theme_theme_load_icon (theme, priv->theme_file,
-                                             icon_name)))
+                                             icon_name, store_icon)))
     return data;
 
   /* Try the inherited themes */
   for (f = priv->theme_fallbacks; f; f = f->next)
     {
       GKeyFile *theme_file = f->data;
-      if ((data = mx_icon_theme_theme_load_icon (theme, theme_file, icon_name)))
+      if ((data = mx_icon_theme_theme_load_icon (theme, theme_file, icon_name,
+                                                 store_icon)))
         return data;
     }
 
   /* Try the hicolor theme */
   if (priv->hicolor_file &&
       (data = mx_icon_theme_theme_load_icon (theme, priv->hicolor_file,
-                                             icon_name)))
+                                             icon_name, store_icon)))
     return data;
 
   return NULL;
+
+}
+
+static GList *
+mx_icon_theme_copy_data_list (GList *data)
+{
+  GList *d, *new_data = g_list_copy (data);
+  for (d = new_data; d; d = d->next)
+    {
+      MxIconData *icon_data;
+
+      d->data = g_memdup (d->data, sizeof (MxIconData));
+      icon_data = d->data;
+      icon_data->path = g_strdup (icon_data->path);
+    }
+  return new_data;
+}
+
+static GList *
+mx_icon_theme_get_icons (MxIconTheme *theme,
+                         const gchar *icon_name)
+{
+  gint i;
+  GIcon *icon;
+  GList *data;
+
+  const gchar * const *names = NULL;
+  MxIconThemePrivate *priv = theme->priv;
+
+  /* Load the icon, or a fallback */
+  icon = g_themed_icon_new_with_default_fallbacks (icon_name);
+  names = g_themed_icon_get_names (G_THEMED_ICON (icon));
+  if (!names)
+    {
+      g_object_unref (icon);
+      return NULL;
+    }
+
+  data = NULL;
+  for (i = 0; names[i]; i++)
+    {
+      /* See if we've loaded this before */
+      GIcon *single_icon = g_themed_icon_new (names[i]);
+      data = g_hash_table_lookup (priv->icon_hash, single_icon);
+      g_object_unref (single_icon);
+
+      /* Found in cache on first hit, break */
+      if (data && (i == 0))
+        break;
+
+      /* Found in cache after searching the disk, store again as a new icon */
+      if (data)
+        {
+          /* If we found this as a fallback, store it so we don't look on
+           * disk again.
+           */
+          data = mx_icon_theme_copy_data_list (data);
+          g_hash_table_insert (priv->icon_hash, g_object_ref (icon), data);
+
+          break;
+        }
+
+      /* Try to load from disk */
+      if ((data = mx_icon_theme_load_icon (theme, names[i], icon)))
+        break;
+    }
+
+  g_object_unref (icon);
+
+  return data;
 }
 
 static MxIconData *
@@ -544,7 +636,7 @@ mx_icon_theme_lookup_internal (MxIconTheme *theme,
                                gint         size)
 {
   MxIconData *best_match;
-  const GList *d, *data;
+  GList *d, *data;
   gint distance;
 
   data = mx_icon_theme_get_icons (theme, icon_name);
