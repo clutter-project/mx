@@ -299,6 +299,8 @@ mx_icon_unmap (ClutterActor *actor)
 static void
 mx_icon_class_init (MxIconClass *klass)
 {
+  GParamSpec *pspec;
+
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
 
@@ -314,6 +316,19 @@ mx_icon_class_init (MxIconClass *klass)
   actor_class->paint = mx_icon_paint;
   actor_class->map = mx_icon_map;
   actor_class->unmap = mx_icon_unmap;
+
+  pspec = g_param_spec_string ("icon-name",
+                               "Icon name",
+                               "An icon name",
+                               NULL, G_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_ICON_NAME, pspec);
+
+  pspec = g_param_spec_int ("icon-size",
+                            "Icon size",
+                            "Size of the icon",
+                            1, G_MAXINT, 48,
+                            G_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_ICON_SIZE, pspec);
 }
 
 static void
@@ -338,6 +353,8 @@ mx_icon_update (MxIcon *icon)
         mx_icon_theme_lookup_texture (theme, priv->icon_name, priv->icon_size);
       if (priv->icon_texture)
         clutter_actor_set_parent (priv->icon_texture, CLUTTER_ACTOR (icon));
+      else
+        g_warning ("Failed to lookup icon '%s'", priv->icon_name);
     }
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (icon));
