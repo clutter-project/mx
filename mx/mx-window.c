@@ -430,7 +430,7 @@ mx_window_allocate (ClutterActor           *actor,
       childbox.x1 = padding.left;
       childbox.y1 = toolbarbox.y2;
       childbox.x2 = (box->x2 - box->x1) - padding.right;
-      childbox.y2 = (box->y2 - box->y1) - toolbarbox.y2 - padding.bottom;
+      childbox.y2 = (box->y2 - box->y1) - padding.bottom;
       clutter_actor_allocate (priv->child, &childbox, flags);
     }
 
