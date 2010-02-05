@@ -259,6 +259,8 @@ mx_icon_theme_init (MxIconTheme *self)
                                            mx_icon_theme_icon_hash_free);
 
   priv->hicolor_file = mx_icon_theme_load_theme (self, "hicolor");
+  if (!priv->hicolor_file)
+    g_warning ("Error loading fallback icon theme");
 
   theme = g_getenv ("MX_ICON_THEME");
   if (!theme)
@@ -378,17 +380,9 @@ mx_icon_theme_theme_load_icon (MxIconTheme *self,
                                GIcon       *store_icon)
 {
   gchar *dirs;
-  gchar *theme_name;
 
   GList *data = NULL;
   MxIconThemePrivate *priv = self->priv;
-
-  theme_name = g_key_file_get_string (theme_file,
-                                      "Icon Theme",
-                                      "Name",
-                                      NULL);
-  if (!theme_name)
-    return NULL;
 
   dirs = g_key_file_get_string (theme_file,
                                 "Icon Theme",
@@ -469,7 +463,7 @@ mx_icon_theme_theme_load_icon (MxIconTheme *self,
               MxIconData *icon_data = NULL;
               const gchar *search_path = p->data;
               gchar *path = g_build_filename (search_path,
-                                              theme_name,
+                                              priv->theme,
                                               dir,
                                               NULL);
 
@@ -523,7 +517,6 @@ mx_icon_theme_theme_load_icon (MxIconTheme *self,
 
       g_hash_table_insert (priv->icon_hash, store_icon, data);
     }
-  g_free (theme_name);
 
   return data;
 }
