@@ -56,6 +56,17 @@ enum
   PROP_STYLE_PSEUDO_CLASS
 };
 
+static void
+mx_window_get_preferred_width (ClutterActor *self,
+                               gfloat        for_height,
+                               gfloat       *min_width_p,
+                               gfloat       *nat_width_p);
+static void
+mx_window_get_preferred_height (ClutterActor *self,
+                                gfloat        for_width,
+                                gfloat       *min_height_p,
+                                gfloat       *nat_height_p);
+
 /* clutter container iface implementation */
 static void
 mx_window_add (ClutterContainer *container,
@@ -548,9 +559,8 @@ mx_window_motion_event (ClutterActor       *actor,
       int screen;
       gfloat min_width, min_height;
 
-      clutter_actor_get_preferred_size (actor,
-                                        &min_width, &min_height,
-                                        NULL, NULL);
+      mx_window_get_preferred_width (actor, -1, &min_width, NULL);
+      mx_window_get_preferred_height (actor, -1, &min_height, NULL);
 
       screen = DefaultScreen (dpy);
       width = MIN (MAX (priv->drag_width_start + (x - priv->drag_x_start),
@@ -566,10 +576,6 @@ mx_window_motion_event (ClutterActor       *actor,
       priv->natural_width = width;
       priv->natural_height = height;
 
-      /* We could let clutter resize us by just calling relayout, but you
-       * get odd artifacts, I guess due to some synchronicity issue with
-       * allocation/backend stage resizing.
-       */
       XMoveResizeWindow (dpy, win,
                          priv->drag_win_x_start, priv->drag_win_y_start,
                          width, height);
