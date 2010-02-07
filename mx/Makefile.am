@@ -24,6 +24,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-button.h 		\
 	$(top_srcdir)/mx/mx-button-group.h 	\
 	$(top_srcdir)/mx/mx-deform-texture.h 	\
+	$(top_srcdir)/mx/mx-deform-cloth.h 	\
 	$(top_srcdir)/mx/mx-draggable.h 		\
 	$(top_srcdir)/mx/mx-droppable.h 		\
 	$(top_srcdir)/mx/mx-clipboard.h		\
@@ -89,6 +90,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-button.c 		\
 	$(top_srcdir)/mx/mx-button-group.c 	\
 	$(top_srcdir)/mx/mx-deform-texture.c 	\
+	$(top_srcdir)/mx/mx-deform-cloth.c 	\
 	$(top_srcdir)/mx/mx-draggable.c		\
 	$(top_srcdir)/mx/mx-droppable.c		\
 	$(top_srcdir)/mx/mx-clipboard.c 		\

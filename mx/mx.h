@@ -34,6 +34,7 @@
 #include <mx/mx-button-group.h>
 #include <mx/mx-combo-box.h>
 #include <mx/mx-deform-texture.h>
+#include <mx/mx-deform-cloth.h>
 #include <mx/mx-draggable.h>
 #include <mx/mx-droppable.h>
 #include <mx/mx-clipboard.h>
