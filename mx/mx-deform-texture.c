@@ -315,7 +315,7 @@ mx_deform_texture_get_preferred_width (ClutterActor *actor,
     }
 
   if (min_width_p)
-    *min_width_p = width;
+    *min_width_p = 0;
 
   if (for_height >= 0)
     width = for_height / height * width;
@@ -354,13 +354,28 @@ mx_deform_texture_get_preferred_height (ClutterActor *actor,
     }
 
   if (min_height_p)
-    *min_height_p = height;
+    *min_height_p = 0;
 
   if (for_width >= 0)
     height = for_width / width * height;
 
   if (natural_height_p)
     *natural_height_p = height;
+}
+
+static void
+mx_deform_texture_allocate (ClutterActor           *actor,
+                            const ClutterActorBox  *box,
+                            ClutterAllocationFlags  flags)
+{
+  MxDeformTexturePrivate *priv = MX_DEFORM_TEXTURE (actor)->priv;
+
+  /* The size has changed, so make sure we recalculate values */
+  priv->dirty = TRUE;
+
+  /* Chain up */
+  CLUTTER_ACTOR_CLASS (mx_deform_texture_parent_class)->
+    allocate (actor, box, flags);
 }
 
 static void
@@ -380,6 +395,7 @@ mx_deform_texture_class_init (MxDeformTextureClass *klass)
 
   actor_class->get_preferred_width = mx_deform_texture_get_preferred_width;
   actor_class->get_preferred_height = mx_deform_texture_get_preferred_height;
+  actor_class->allocate = mx_deform_texture_allocate;
   actor_class->paint = mx_deform_texture_paint;
 
   pspec = g_param_spec_int ("tiles-x",
@@ -520,6 +536,8 @@ mx_deform_texture_init_arrays (MxDeformTexture *self)
 
   priv->vbo = cogl_vertex_buffer_new ((priv->tiles_x + 1) *
                                       (priv->tiles_y + 1));
+
+  priv->dirty = TRUE;
 }
 
 static void
