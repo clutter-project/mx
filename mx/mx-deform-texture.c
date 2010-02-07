@@ -585,6 +585,54 @@ mx_deform_texture_get_textures (MxDeformTexture *texture,
 }
 
 void
+mx_deform_texture_set_from_files (MxDeformTexture *texture,
+                                  const gchar     *front_file,
+                                  const gchar     *back_file)
+{
+  CoglHandle front, back;
+
+  GError *error = NULL;
+  MxDeformTexturePrivate *priv = texture->priv;
+
+  if (front_file && *front_file)
+    {
+      front = cogl_texture_new_from_file (front_file,
+                                          COGL_TEXTURE_NO_SLICING,
+                                          COGL_PIXEL_FORMAT_ANY,
+                                          &error);
+      if (error)
+        {
+          g_warning ("Error loading front face file: %s", error->message);
+          g_error_free (error);
+        }
+    }
+  else
+    front = front_file ? NULL : priv->front_face;
+
+  if (back_file && *back_file)
+    {
+      back = cogl_texture_new_from_file (back_file,
+                                         COGL_TEXTURE_NO_SLICING,
+                                         COGL_PIXEL_FORMAT_ANY,
+                                         &error);
+      if (error)
+        {
+          g_warning ("Error loading back face file: %s", error->message);
+          g_error_free (error);
+        }
+    }
+  else
+    back = back_file ? NULL : priv->back_face;
+
+  mx_deform_texture_set_textures (texture, front, back);
+
+  if (front_file && *front_file)
+    cogl_handle_unref (front);
+  if (back_file && *back_file)
+    cogl_handle_unref (back);
+}
+
+void
 mx_deform_texture_get_resolution (MxDeformTexture *texture,
                                   gint            *tiles_x,
                                   gint            *tiles_y)
