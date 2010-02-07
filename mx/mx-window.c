@@ -29,8 +29,12 @@ struct _MxWindowPrivate
   guint is_resizing   : 1;
 
   CoglHandle resize_grip;
+#if CLUTTER_CHECK_VERSION(1,1,7)
+  gboolean   first_show;
+#else
   gfloat     natural_width;
   gfloat     natural_height;
+#endif
 
   ClutterActor *toolbar;
   ClutterActor *child;
@@ -55,17 +59,6 @@ enum
   PROP_STYLE_CLASS,
   PROP_STYLE_PSEUDO_CLASS
 };
-
-static void
-mx_window_get_preferred_width (ClutterActor *self,
-                               gfloat        for_height,
-                               gfloat       *min_width_p,
-                               gfloat       *nat_width_p);
-static void
-mx_window_get_preferred_height (ClutterActor *self,
-                                gfloat        for_width,
-                                gfloat       *min_height_p,
-                                gfloat       *nat_height_p);
 
 /* clutter container iface implementation */
 static void
@@ -280,6 +273,58 @@ mx_window_finalize (GObject *object)
 
 
 
+static void
+mx_window_get_minimum_size (MxWindow *self,
+                            gfloat   *width_p,
+                            gfloat   *height)
+{
+  gfloat width;
+  MxWindowPrivate *priv = self->priv;
+
+  width = 0;
+
+  if (priv->toolbar)
+    clutter_actor_get_preferred_width (priv->toolbar,
+                                       -1,
+                                       &width,
+                                       NULL);
+
+  if (priv->child)
+    {
+      gfloat child_min_width;
+      clutter_actor_get_preferred_width (priv->child,
+                                         -1,
+                                         &child_min_width,
+                                         NULL);
+      if (child_min_width > width)
+        width = child_min_width;
+    }
+
+  if (width_p)
+    *width_p = width;
+
+  if (height)
+    {
+      *height = 0;
+
+      if (priv->toolbar)
+        clutter_actor_get_preferred_height (priv->toolbar,
+                                            width,
+                                            height,
+                                            NULL);
+
+      if (priv->child)
+        {
+          gfloat child_min_height;
+          clutter_actor_get_preferred_height (priv->child,
+                                              width,
+                                              &child_min_height,
+                                              NULL);
+          *height += child_min_height;
+        }
+    }
+}
+
 typedef struct {
     unsigned long flags;
     unsigned long functions;
@@ -294,12 +339,14 @@ typedef PropMotifWmHints PropMwmHints;
 static void
 mx_window_map (ClutterActor *actor)
 {
+  MxWindow *window;
   MxWindowPrivate *priv;
   static Atom hint_atom = 0;
 
   CLUTTER_ACTOR_CLASS (mx_window_parent_class)->map (actor);
 
-  priv = MX_WINDOW (actor)->priv;
+  window = MX_WINDOW (actor);
+  priv = window->priv;
 
   clutter_actor_map (priv->toolbar);
 
@@ -335,7 +382,6 @@ mx_window_map (ClutterActor *actor)
       printf ("property changed\n");
 
     }
-
 }
 
 static void
@@ -415,12 +461,17 @@ mx_window_allocate (ClutterActor           *actor,
 {
   ClutterActorBox toolbarbox, childbox;
   MxPadding padding;
+  MxWindow *window;
   MxWindowPrivate *priv;
   gfloat height;
+#if CLUTTER_CHECK_VERSION(1,1,7)
+  gfloat width;
+#endif
 
   CLUTTER_ACTOR_CLASS (mx_window_parent_class)->allocate (actor, box, flags);
 
-  priv = MX_WINDOW (actor)->priv;
+  window = MX_WINDOW (actor);
+  priv = window->priv;
 
   if (0 /* full_screen */)
       padding.top = padding.right = padding.bottom = padding.left = 0;
@@ -446,6 +497,17 @@ mx_window_allocate (ClutterActor           *actor,
       clutter_actor_allocate (priv->child, &childbox, flags);
     }
 
+#if CLUTTER_CHECK_VERSION(1,1,7)
+  /* Update minimum size */
+  mx_window_get_minimum_size (window, &width, &height);
+  if (width < 1.0)
+    width = 1.0;
+  if (height < 1.0)
+    height = 1.0;
+  clutter_stage_set_minimum_size (CLUTTER_STAGE (window),
+                                  (guint)width,
+                                  (guint)height);
+#endif
 }
 
 static gboolean
@@ -507,6 +569,7 @@ mx_window_motion_event (ClutterActor       *actor,
   gint offsetx, offsety;
   gint x, y, winx, winy;
   guint mask;
+  MxWindow *window;
   MxWindowPrivate *priv;
   Window win, root_win, root, child;
   Display *dpy;
@@ -514,7 +577,8 @@ mx_window_motion_event (ClutterActor       *actor,
   static Cursor csoutheast;
   guint rheight, rwidth;
 
-  priv = MX_WINDOW (actor)->priv;
+  window = MX_WINDOW (actor);
+  priv = window->priv;
 
   win = clutter_x11_get_stage_window (CLUTTER_STAGE (actor));
   dpy = clutter_x11_get_default_display ();
@@ -559,8 +623,7 @@ mx_window_motion_event (ClutterActor       *actor,
       int screen;
       gfloat min_width, min_height;
 
-      mx_window_get_preferred_width (actor, -1, &min_width, NULL);
-      mx_window_get_preferred_height (actor, -1, &min_height, NULL);
+      mx_window_get_minimum_size (window, &min_width, &min_height);
 
       screen = DefaultScreen (dpy);
       width = MIN (MAX (priv->drag_width_start + (x - priv->drag_x_start),
@@ -570,6 +633,7 @@ mx_window_motion_event (ClutterActor       *actor,
                          (guint)min_height),
                     DisplayHeight (dpy, screen) - priv->drag_win_y_start);
 
+#if !CLUTTER_CHECK_VERSION(1,1,7)
       /* Set the natural width/height so ClutterStageX11 won't try to
        * resize us back to our minimum size.
        */
@@ -579,6 +643,9 @@ mx_window_motion_event (ClutterActor       *actor,
       XMoveResizeWindow (dpy, win,
                          priv->drag_win_x_start, priv->drag_win_y_start,
                          width, height);
+#else
+      clutter_actor_set_size (actor, width, height);
+#endif
     }
   else
     XMoveWindow (dpy, win,
@@ -622,6 +689,7 @@ style_changed_cb (MxWindow *window)
     }
 }
 
+#if !CLUTTER_CHECK_VERSION(1,1,7)
 static void
 mx_window_get_preferred_width (ClutterActor *self,
                                gfloat        for_height,
@@ -636,35 +704,11 @@ mx_window_get_preferred_width (ClutterActor *self,
       gfloat min_width;
       MxWindowPrivate *priv = MX_WINDOW (self)->priv;
 
-      min_width = 0;
-
-      if (priv->toolbar)
-        clutter_actor_get_preferred_width (priv->toolbar,
-                                           -1,
-                                           &min_width,
-                                           NULL);
-
-      if (priv->child)
-        {
-          gfloat child_min_width;
-          clutter_actor_get_preferred_width (priv->child,
-                                             -1,
-                                             &child_min_width,
-                                             NULL);
-          if (child_min_width > min_width)
-            min_width = child_min_width;
-        }
-
+      mx_window_get_minimum_size (MX_WINDOW (self), &min_width, NULL);
       if (min_width_p)
         *min_width_p = min_width;
-
       if (nat_width_p)
-        {
-          if (priv->natural_width)
-            *nat_width_p = priv->natural_width;
-          else
-            *nat_width_p = min_width;
-        }
+        *nat_width_p = priv->natural_width ? priv->natural_width : min_width;
     }
 }
 
@@ -682,36 +726,38 @@ mx_window_get_preferred_height (ClutterActor *self,
       gfloat min_height;
       MxWindowPrivate *priv = MX_WINDOW (self)->priv;
 
-      min_height = 0;
-
-      if (priv->toolbar)
-        clutter_actor_get_preferred_height (priv->toolbar,
-                                            for_width,
-                                            &min_height,
-                                            NULL);
-
-      if (priv->child)
-        {
-          gfloat child_min_height;
-          clutter_actor_get_preferred_height (priv->child,
-                                              for_width,
-                                              &child_min_height,
-                                              NULL);
-          min_height += child_min_height;
-        }
-
+      mx_window_get_minimum_size (MX_WINDOW (self), NULL, &min_height);
       if (min_height_p)
         *min_height_p = min_height;
-
       if (nat_height_p)
-        {
-          if (priv->natural_height)
-            *nat_height_p = priv->natural_height;
-          else
-            *nat_height_p = min_height;
-        }
+        *nat_height_p = priv->natural_height ?
+                          priv->natural_height : min_height;
     }
 }
+#else
+static void
+mx_window_show (ClutterActor *actor)
+{
+  MxWindow *window = MX_WINDOW (actor);
+  MxWindowPrivate *priv = window->priv;
+
+  if (priv->first_show)
+    {
+      gfloat width, height;
+
+      mx_window_get_minimum_size (window, &width, &height);
+
+      clutter_stage_set_minimum_size (CLUTTER_STAGE (window),
+                                      (guint)width,
+                                      (guint)height);
+      clutter_actor_set_size (actor, width, height);
+
+      priv->first_show = FALSE;
+    }
+
+  CLUTTER_ACTOR_CLASS (mx_window_parent_class)->show (actor);
+}
+#endif
 
 static void
 mx_window_class_init (MxWindowClass *klass)
@@ -734,8 +780,12 @@ mx_window_class_init (MxWindowClass *klass)
   actor_class->button_press_event = mx_window_button_press_event;
   actor_class->button_release_event = mx_window_button_release_event;
   actor_class->motion_event = mx_window_motion_event;
+#if !CLUTTER_CHECK_VERSION(1,1,7)
   actor_class->get_preferred_width = mx_window_get_preferred_width;
   actor_class->get_preferred_height = mx_window_get_preferred_height;
+#else
+  actor_class->show = mx_window_show;
+#endif
 
   /* stylable interface properties */
   g_object_class_override_property (object_class, PROP_STYLE, "style");
@@ -766,6 +816,9 @@ mx_window_init (MxWindow *self)
 
   style_changed_cb (self);
 
+#if CLUTTER_CHECK_VERSION(1,1,7)
+  priv->first_show = TRUE;
+#endif
   clutter_stage_set_user_resizable (CLUTTER_STAGE (self), TRUE);
 }
 
