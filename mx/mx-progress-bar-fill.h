@@ -55,6 +55,8 @@ G_BEGIN_DECLS
 typedef struct
 {
   MxWidget parent;
+
+  guint    height;
 } MxProgressBarFill;
 
 typedef struct

@@ -169,6 +169,7 @@ MxProgressBar {
 
 MxProgressBar MxProgressBarFill {
   border-image: url('progress-bar-bar.png') 2;
+  height: 16;
 }
 
 MxComboBox {

@@ -33,7 +33,7 @@ progress_bar_main (ClutterContainer *stage)
   clutter_animation_set_loop (animation, TRUE);
 
   clutter_container_add_actor (stage, progress_bar);
-  clutter_actor_set_size (progress_bar, 280, 75);
+  clutter_actor_set_width (progress_bar, 280);
   clutter_actor_set_position (progress_bar, 20, 20);
 }
 

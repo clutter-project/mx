@@ -181,6 +181,50 @@ mx_progress_bar_unmap (ClutterActor *actor)
 }
 
 static void
+mx_progress_bar_get_preferred_width (ClutterActor *actor,
+                                     gfloat        for_height,
+                                     gfloat       *min_width_p,
+                                     gfloat       *nat_width_p)
+{
+  MxPadding padding;
+  MxProgressBarPrivate *priv = MX_PROGRESS_BAR (actor)->priv;
+
+  clutter_actor_get_preferred_width (priv->fill,
+                                     for_height,
+                                     min_width_p,
+                                     nat_width_p);
+
+  mx_widget_get_padding (MX_WIDGET (actor), &padding);
+
+  if (min_width_p)
+    *min_width_p += padding.left + padding.right;
+  if (nat_width_p)
+    *nat_width_p += padding.left + padding.right;
+}
+
+static void
+mx_progress_bar_get_preferred_height (ClutterActor *actor,
+                                      gfloat        for_width,
+                                      gfloat       *min_height_p,
+                                      gfloat       *nat_height_p)
+{
+  MxPadding padding;
+  MxProgressBarPrivate *priv = MX_PROGRESS_BAR (actor)->priv;
+
+  clutter_actor_get_preferred_height (priv->fill,
+                                      for_width,
+                                      min_height_p,
+                                      nat_height_p);
+
+  mx_widget_get_padding (MX_WIDGET (actor), &padding);
+
+  if (min_height_p)
+    *min_height_p += padding.top + padding.bottom;
+  if (nat_height_p)
+    *nat_height_p += padding.top + padding.bottom;
+}
+
+static void
 mx_progress_bar_class_init (MxProgressBarClass *klass)
 {
   GParamSpec *pspec;
@@ -195,6 +239,8 @@ mx_progress_bar_class_init (MxProgressBarClass *klass)
   object_class->finalize = mx_progress_bar_finalize;
 
   actor_class->paint = mx_progress_bar_paint;
+  actor_class->get_preferred_width = mx_progress_bar_get_preferred_width;
+  actor_class->get_preferred_height = mx_progress_bar_get_preferred_height;
   actor_class->allocate = mx_progress_bar_allocate;
   actor_class->map = mx_progress_bar_map;
   actor_class->unmap = mx_progress_bar_unmap;

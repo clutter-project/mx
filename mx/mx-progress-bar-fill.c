@@ -23,39 +23,79 @@
  */
 
 #include "mx-progress-bar-fill.h"
+#include "mx-stylable.h"
+
+static void mx_stylable_iface_init (MxStylableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE (MxProgressBarFill, _mx_progress_bar_fill, MX_TYPE_WIDGET,
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
+                                                mx_stylable_iface_init))
 
 static void
-mx_progress_bar_fill_class_init (MxProgressBarFillClass *klass)
+mx_stylable_iface_init (MxStylableIface *iface)
 {
+  static gboolean is_initialized = FALSE;
+
+  if (!is_initialized)
+    {
+      GParamSpec *pspec;
+
+      is_initialized = TRUE;
+
+      pspec = g_param_spec_uint ("height",
+                                 "Height",
+                                 "Height of the bar, in px",
+                                 0, G_MAXUINT, 16,
+                                 G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface,
+                                          MX_TYPE_PROGRESS_BAR_FILL, pspec);
+    }
 }
 
 static void
-mx_progress_bar_fill_init (MxProgressBarFill *self)
+mx_progress_bar_fill_get_preferred_height (ClutterActor *actor,
+                                           gfloat        for_width,
+                                           gfloat       *min_height_p,
+                                           gfloat       *nat_height_p)
 {
+  MxProgressBarFill *self = MX_PROGRESS_BAR_FILL (actor);
+
+  if (min_height_p)
+    *min_height_p = (gfloat)self->height;
+  if (nat_height_p)
+    *nat_height_p = (gfloat)self->height;
 }
 
-/*
- * Define the type by hand instead of using G_DEFINE_TYPE() so the symbol can
- * be kept private to the library.
- */
-GType
-_mx_progress_bar_fill_get_type (void)
+static void
+_mx_progress_bar_fill_class_init (MxProgressBarFillClass *klass)
 {
-  static volatile gsize g_define_type_id__volatile = 0;
+  ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
 
-  if (g_once_init_enter (&g_define_type_id__volatile))
-  {
-    GType g_define_type_id =
-      g_type_register_static_simple (MX_TYPE_WIDGET,
-                                     g_intern_static_string ("MxProgressBarFill"),
-                                     sizeof (MxProgressBarFillClass),
-                                     (GClassInitFunc) mx_progress_bar_fill_class_init,
-                                     sizeof (MxProgressBarFill),
-                                     (GInstanceInitFunc) mx_progress_bar_fill_init,
-                                     (GTypeFlags) 0);
-    g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);
-  }
-  return g_define_type_id__volatile;
+  actor_class->get_preferred_height = mx_progress_bar_fill_get_preferred_height;
+}
+
+static void
+mx_progress_bar_fill_style_changed_cb (MxProgressBarFill *self)
+{
+  guint height;
+
+  mx_stylable_get (MX_STYLABLE (self),
+                   "height", &height,
+                   NULL);
+
+  if (self->height != height)
+    {
+      self->height = height;
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+    }
+}
+
+static void
+_mx_progress_bar_fill_init (MxProgressBarFill *self)
+{
+  self->height = 16;
+  g_signal_connect (self, "style-changed",
+                    G_CALLBACK (mx_progress_bar_fill_style_changed_cb), NULL);
 }
 
 ClutterActor *
