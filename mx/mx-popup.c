@@ -29,6 +29,7 @@
 #include "mx-label.h"
 #include "mx-button.h"
 #include "mx-box-layout.h"
+#include "mx-icon-theme.h"
 
 G_DEFINE_TYPE (MxPopup, mx_popup, MX_TYPE_FLOATING_WIDGET)
 
@@ -36,6 +37,7 @@ G_DEFINE_TYPE (MxPopup, mx_popup, MX_TYPE_FLOATING_WIDGET)
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_POPUP, MxPopupPrivate))
 
 #define SPACING 8
+#define DEFAULT_ICON_SIZE 16
 
 typedef struct
 {
@@ -562,7 +564,7 @@ mx_popup_add_action (MxPopup  *popup,
 {
   MxPopupChild child;
   ClutterActor *label;
-  ClutterActor *icon;
+  ClutterTexture *icon;
 
   g_return_if_fail (MX_IS_POPUP (popup));
   g_return_if_fail (MX_IS_ACTION (action));
@@ -578,21 +580,14 @@ mx_popup_add_action (MxPopup  *popup,
 
   if (mx_action_get_icon (action))
     {
-      GError *error = NULL;
+      icon = mx_icon_theme_lookup_texture (mx_icon_theme_get_default (),
+                                           mx_action_get_icon (action),
+                                           DEFAULT_ICON_SIZE);
 
-      icon = clutter_texture_new_from_file (mx_action_get_icon (action),
-                                            &error);
-
-      if (error)
-        {
-          g_warning (G_STRLOC ": Error opening icon: %s",
-                     error->message);
-          g_clear_error (&error);
-        }
-      else
+      if (icon)
         {
           clutter_container_add_actor (CLUTTER_CONTAINER (child.button),
-                                       icon);
+                                       (ClutterActor *)icon);
         }
     }
 
