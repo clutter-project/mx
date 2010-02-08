@@ -130,6 +130,27 @@ mx_deform_bowtie_deform (MxDeformTexture   *texture,
 }
 
 static void
+mx_deform_bowtie_back_face_notify (MxDeformTexture *self,
+                                   GParamSpec      *pspec)
+{
+  CoglHandle back_face;
+
+  mx_deform_texture_get_materials (self, NULL, &back_face);
+
+  if (back_face)
+    {
+      CoglMatrix matrix;
+      cogl_matrix_init_identity (&matrix);
+
+      /* Vflip */
+      cogl_matrix_scale (&matrix, 1.f, -1.f, 1.f);
+      cogl_matrix_translate (&matrix, 0.f, 1.f, 0.f);
+
+      cogl_material_set_layer_matrix (back_face, 0, &matrix);
+    }
+}
+
+static void
 mx_deform_bowtie_class_init (MxDeformBowtieClass *klass)
 {
   GParamSpec *pspec;
@@ -156,6 +177,8 @@ static void
 mx_deform_bowtie_init (MxDeformBowtie *self)
 {
   self->priv = DEFORM_BOWTIE_PRIVATE (self);
+  g_signal_connect (self, "notify::back-face",
+                    G_CALLBACK (mx_deform_bowtie_back_face_notify), NULL);
 }
 
 ClutterActor *
