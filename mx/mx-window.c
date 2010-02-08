@@ -743,13 +743,35 @@ mx_window_show (ClutterActor *actor)
 
   if (priv->first_show)
     {
-      gfloat width, height;
+      gfloat width, height, nat_width, nat_height;
+      gboolean width_set, height_set;
 
       mx_window_get_minimum_size (window, &width, &height);
 
+      if (width < 1.0)
+        width = 1.0;
+      if (height < 1.0)
+        height = 1.0;
       clutter_stage_set_minimum_size (CLUTTER_STAGE (window),
                                       (guint)width,
                                       (guint)height);
+
+      /* If the user has set a size on the window already,
+       * make sure to use it (but still enforce the
+       * minimum size).
+       */
+      g_object_get (G_OBJECT (window),
+                    "natural-width", &nat_width,
+                    "natural-width-set", &width_set,
+                    "natural-height", &nat_height,
+                    "natural-height-set", &height_set,
+                    NULL);
+
+      if (width_set && (nat_width > width))
+        width = nat_width;
+      if (height_set && (nat_height > height))
+        height = nat_height;
+
       clutter_actor_set_size (actor, width, height);
 
       priv->first_show = FALSE;
