@@ -1,3 +1,40 @@
+0.6.0
+=====
+
+Changes since 0.5.0:
+
+ * New MxWindow widget, now used by default in MxApplication
+ * New MxPathBar widget, implementing a bread-crumb UI
+ * New MxIconTheme class, to look up icons in icon themes
+ * Icon themes used in MxIcon and MxButton
+ * MxComboBox now supports icons in items
+ * New MxDeformTexture abstract class for custom deformed textures
+ * New MxDeformCloth, MxDeformBowtie, MxDeformPageTurn widgets, implementing
+   various deformation effects.
+ * Fixes to MxFocusable and MxFocusManager
+ * Focusable support added to MxComboBox
+ * Add -mx-content-image style property to specify an image for the appearance
+   of a button, including sizing.
+ * Add a text-layout-position property to MxEntry
+ * Plenty of other bug fixes
+
+ * Fixed bugs:
+    MB#9381 - [box-layout] Queue a relayout when removing a child
+    MB#9382 - [button-group] If the active button from a group is removed
+              activate another
+    MB#9288 - [texture-frame] Use the NEAREST filter on the CoglMaterial
+    MB#9146 - [entry] Emit notify signal when text of an entry changes.
+    MB#9287 - [stylable] Use PangoFontDescription to set the style on labels
+
+
+Many thanks to:
+
+  Bastian Winkler
+  Chris Lord
+  Evan Nemerson
+  Rob Bradford
+  Thomas Wood
+
 0.5.0
 =====
 
