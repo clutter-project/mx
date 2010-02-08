@@ -225,17 +225,17 @@ MxToolbar MxButton:active {
 }
 
 MxToolbar MxButton#close-button {
-  x-mx-icon-name: stock_close-normal;
+  x-mx-icon-name: window-close-normal;
   x-mx-icon-size: 48;
 }
 
 MxToolbar MxButton#close-button:hover {
-  x-mx-icon-name: stock_close-hover;
+  x-mx-icon-name: window-close-hover;
   x-mx-icon-size: 48;
 }
 
 MxToolbar MxButton#close-button:active {
-  x-mx-icon-name: stock_close-active;
+  x-mx-icon-name: window-close-active;
   x-mx-icon-size: 48;
 }
 
