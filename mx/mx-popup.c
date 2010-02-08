@@ -596,6 +596,10 @@ mx_popup_add_action (MxPopup  *popup,
   clutter_container_add_actor (CLUTTER_CONTAINER (child.button),
                                label);
 
+  clutter_container_child_set (CLUTTER_CONTAINER (child.button), label,
+                               "y-fill", FALSE,
+                               NULL);
+
   g_signal_connect (child.button, "button-release-event",
                     G_CALLBACK (mx_popup_button_release_cb), action);
   clutter_actor_set_parent (CLUTTER_ACTOR (child.button),
