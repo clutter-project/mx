@@ -588,6 +588,11 @@ mx_popup_add_action (MxPopup  *popup,
         {
           clutter_container_add_actor (CLUTTER_CONTAINER (child.button),
                                        (ClutterActor *)icon);
+          clutter_container_child_set (CLUTTER_CONTAINER (child.button),
+                                       (ClutterActor *)icon,
+                                       "y-fill", FALSE,
+                                       NULL);
+
         }
     }
 
