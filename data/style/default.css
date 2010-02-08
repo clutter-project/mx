@@ -182,14 +182,19 @@ MxPopup {
   border-image: url('menu.png') 2;
 }
 
-MxPopup > MxLabel {
+MxPopup > MxBoxLayout {
   padding: 3;
   border-image: none;
 }
 
-MxPopup > MxLabel:hover, MxPopup > MxLabel:active {
-  color: white;
+MxPopup > MxBoxLayout:hover,
+MxPopup > MxBoxLayout:active {
   border-image: url('menu-item.png') 2;
+}
+
+MxPopup > MxBoxLayout:hover > MxLabel,
+MxPopup > MxBoxLayout:active > MxLabel {
+  color: white;
 }
 
 MxToggle {
