@@ -29,7 +29,7 @@ struct _MxWindowPrivate
   guint is_resizing   : 1;
 
   CoglHandle resize_grip;
-#if CLUTTER_CHECK_VERSION(1,1,7)
+#if CLUTTER_CHECK_VERSION(1,1,8)
   gboolean   first_show;
 #else
   gfloat     natural_width;
@@ -464,7 +464,7 @@ mx_window_allocate (ClutterActor           *actor,
   MxWindow *window;
   MxWindowPrivate *priv;
   gfloat height;
-#if CLUTTER_CHECK_VERSION(1,1,7)
+#if CLUTTER_CHECK_VERSION(1,1,8)
   gfloat width;
 #endif
 
@@ -497,7 +497,7 @@ mx_window_allocate (ClutterActor           *actor,
       clutter_actor_allocate (priv->child, &childbox, flags);
     }
 
-#if CLUTTER_CHECK_VERSION(1,1,7)
+#if CLUTTER_CHECK_VERSION(1,1,8)
   /* Update minimum size */
   mx_window_get_minimum_size (window, &width, &height);
   if (width < 1.0)
@@ -633,7 +633,7 @@ mx_window_motion_event (ClutterActor       *actor,
                          (guint)min_height),
                     DisplayHeight (dpy, screen) - priv->drag_win_y_start);
 
-#if !CLUTTER_CHECK_VERSION(1,1,7)
+#if !CLUTTER_CHECK_VERSION(1,1,8)
       /* Set the natural width/height so ClutterStageX11 won't try to
        * resize us back to our minimum size.
        */
@@ -689,7 +689,7 @@ style_changed_cb (MxWindow *window)
     }
 }
 
-#if !CLUTTER_CHECK_VERSION(1,1,7)
+#if !CLUTTER_CHECK_VERSION(1,1,8)
 static void
 mx_window_get_preferred_width (ClutterActor *self,
                                gfloat        for_height,
@@ -802,7 +802,7 @@ mx_window_class_init (MxWindowClass *klass)
   actor_class->button_press_event = mx_window_button_press_event;
   actor_class->button_release_event = mx_window_button_release_event;
   actor_class->motion_event = mx_window_motion_event;
-#if !CLUTTER_CHECK_VERSION(1,1,7)
+#if !CLUTTER_CHECK_VERSION(1,1,8)
   actor_class->get_preferred_width = mx_window_get_preferred_width;
   actor_class->get_preferred_height = mx_window_get_preferred_height;
 #else
@@ -838,7 +838,7 @@ mx_window_init (MxWindow *self)
 
   style_changed_cb (self);
 
-#if CLUTTER_CHECK_VERSION(1,1,7)
+#if CLUTTER_CHECK_VERSION(1,1,8)
   priv->first_show = TRUE;
 #endif
   clutter_stage_set_user_resizable (CLUTTER_STAGE (self), TRUE);
