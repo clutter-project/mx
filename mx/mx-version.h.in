@@ -62,6 +62,6 @@
 #define MX_CHECK_VERSION(major,minor,micro)   \
         (MX_MAJOR_VERSION > (major) || \
          (MX_MAJOR_VERSION == (major) && MX_MINOR_VERSION > (minor)) || \
-         (MX_MAJOR_VERSION == (major) && NBRK_MINOR_VERSION == (minor) && MX_MICRO_VERSION >= (micro)))
+         (MX_MAJOR_VERSION == (major) && MX_MINOR_VERSION == (minor) && MX_MICRO_VERSION >= (micro)))
 
 #endif /* __MX_VERSION_H__ */
