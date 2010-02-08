@@ -290,7 +290,7 @@ mx_combo_box_allocate (ClutterActor          *actor,
   gfloat x, y, width, height;
   gfloat min_popup_h, nat_popup_h;
   gfloat min_label_h, nat_label_h, label_h, min_label_w, nat_label_w, label_w;
-  gfloat min_icon_h, nat_icon_h, icon_h, min_icon_w, nat_icon_w;
+  gfloat min_icon_h, nat_icon_h, icon_h, icon_w, min_icon_w, nat_icon_w;
   ClutterActorBox childbox;
   ClutterActor *popup;
 
@@ -316,10 +316,10 @@ mx_combo_box_allocate (ClutterActor          *actor,
                                         &nat_icon_w, &nat_icon_h);
 
       icon_h = CLAMP (nat_icon_h, min_icon_h, height);
-
+      icon_w = CLAMP (nat_icon_w, min_icon_w, (width - label_w - SPACING));
       childbox.x1 = (int)(x);
       childbox.y1 = (int)(y + (height / 2 - icon_h / 2));
-      childbox.x2 = (int)(x + (width - label_w - SPACING));
+      childbox.x2 = (int)(x + icon_w);
       childbox.y2 = (int)(childbox.y1 + icon_h);
 
       clutter_actor_allocate (priv->icon, &childbox, flags);
