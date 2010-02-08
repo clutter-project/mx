@@ -33,7 +33,7 @@ G_DEFINE_TYPE (MxDeformCloth, mx_deform_cloth, MX_TYPE_DEFORM_TEXTURE)
 
 struct _MxDeformClothPrivate
 {
-  gdouble rotation;
+  gdouble period;
   gdouble angle;
   gdouble radius;
   gdouble amplitude;
@@ -43,7 +43,7 @@ enum
 {
   PROP_0,
 
-  PROP_ROTATION,
+  PROP_PERIOD,
   PROP_ANGLE,
   PROP_RADIUS,
   PROP_AMPLITUDE
@@ -59,8 +59,8 @@ mx_deform_cloth_get_property (GObject    *object,
 
   switch (property_id)
     {
-    case PROP_ROTATION:
-      g_value_set_double (value, priv->rotation);
+    case PROP_PERIOD:
+      g_value_set_double (value, priv->period);
       break;
 
     case PROP_ANGLE:
@@ -92,12 +92,12 @@ mx_deform_cloth_set_property (GObject      *object,
 
   switch (property_id)
     {
-    case PROP_ROTATION:
+    case PROP_PERIOD:
       set_value = g_value_get_double (value);
-      if (priv->rotation != set_value)
+      if (priv->period != set_value)
         {
-          priv->rotation = set_value;
-          g_object_notify (object, "rotation");
+          priv->period = set_value;
+          g_object_notify (object, "period");
           mx_deform_texture_invalidate (texture);
         }
       break;
@@ -153,8 +153,8 @@ mx_deform_cloth_deform (MxDeformTexture   *texture,
    * the y-axis.
    */
 
-  cx = (1.f - priv->rotation) * width;
-  cy = (1.f - priv->rotation) * height;
+  cx = (1.f - priv->period) * width;
+  cy = (1.f - priv->period) * height;
 
   rx = ((vertex->x - cx) * cos (-priv->angle)) -
        ((vertex->y - cy) * sin (-priv->angle)) - priv->radius;
@@ -193,33 +193,33 @@ mx_deform_cloth_class_init (MxDeformClothClass *klass)
 
   deform_class->deform = mx_deform_cloth_deform;
 
-  pspec = g_param_spec_double ("rotation",
-                               "Rotation",
-                               "Effect rotation, in radians",
-                               0.0, G_PI * 2, 0.0,
+  pspec = g_param_spec_double ("period",
+                               "Period",
+                               "Effect period",
+                               0.0, G_MAXDOUBLE, 0.0,
                                MX_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_ROTATION, pspec);
+  g_object_class_install_property (object_class, PROP_PERIOD, pspec);
 
   pspec = g_param_spec_double ("angle",
                                "Angle",
-                               "Effect start angle",
+                               "Effect rotation angle",
                                0.0, G_PI * 2, 0.0,
                                MX_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_ROTATION, pspec);
+  g_object_class_install_property (object_class, PROP_ANGLE, pspec);
 
   pspec = g_param_spec_double ("radius",
                                "Radius",
                                "Cloth ripple radius",
                                G_MINDOUBLE, G_MAXDOUBLE, 32.0,
                                MX_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_ROTATION, pspec);
+  g_object_class_install_property (object_class, PROP_RADIUS, pspec);
 
   pspec = g_param_spec_double ("amplitude",
                                "Amplitude",
                                "Effect amplitude",
                                0.0, G_MAXDOUBLE, 1.0,
                                MX_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_ROTATION, pspec);
+  g_object_class_install_property (object_class, PROP_AMPLITUDE, pspec);
 }
 
 static void
