@@ -963,8 +963,8 @@ mx_table_calculate_row_heights (MxTable *table,
           if (rows[i].expand)
             n_expand++;
         }
-      pref_height += priv->col_spacing * (priv->n_rows - 1);
-      min_height += priv->col_spacing * (priv->n_rows - 1);
+      pref_height += priv->row_spacing * (priv->n_rows - 1);
+      min_height += priv->row_spacing * (priv->n_rows - 1);
 
       if (for_height <= min_height)
         {
