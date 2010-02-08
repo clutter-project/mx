@@ -198,6 +198,12 @@ mx_button_dispose_old_bg (MxButton *button)
 {
   MxButtonPrivate *priv = button->priv;
 
+  /* Temporary hack until a better solution comes about. Sometimes this
+   * function gets called by the mx_animation_completed call below after the
+   * object has been disposed.
+   */
+  g_return_if_fail (MX_IS_BUTTON (button));
+
   if (priv->content_image)
     {
       clutter_actor_unparent (priv->content_image);
