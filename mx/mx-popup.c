@@ -28,11 +28,16 @@
 #include "mx-popup.h"
 #include "mx-label.h"
 #include "mx-button.h"
+#include "mx-box-layout.h"
+#include "mx-icon-theme.h"
 
 G_DEFINE_TYPE (MxPopup, mx_popup, MX_TYPE_FLOATING_WIDGET)
 
 #define POPUP_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_POPUP, MxPopupPrivate))
+
+#define SPACING 8
+#define DEFAULT_ICON_SIZE 16
 
 typedef struct
 {
@@ -558,6 +563,8 @@ mx_popup_add_action (MxPopup  *popup,
                      MxAction *action)
 {
   MxPopupChild child;
+  ClutterActor *label;
+  ClutterTexture *icon;
 
   g_return_if_fail (MX_IS_POPUP (popup));
   g_return_if_fail (MX_IS_ACTION (action));
@@ -566,9 +573,31 @@ mx_popup_add_action (MxPopup  *popup,
 
   child.action = g_object_ref_sink (action);
   /* TODO: Connect to notify signals in case action properties change */
-  child.button = g_object_new (MX_TYPE_LABEL,
-                               "text", mx_action_get_display_name (action),
+  child.button = g_object_new (MX_TYPE_BOX_LAYOUT,
                                "reactive", TRUE,
+                               "spacing", SPACING,
+                               NULL);
+
+  if (mx_action_get_icon (action))
+    {
+      icon = mx_icon_theme_lookup_texture (mx_icon_theme_get_default (),
+                                           mx_action_get_icon (action),
+                                           DEFAULT_ICON_SIZE);
+
+      if (icon)
+        {
+          clutter_container_add_actor (CLUTTER_CONTAINER (child.button),
+                                       (ClutterActor *)icon);
+        }
+    }
+
+  label = mx_label_new (mx_action_get_display_name (action));
+
+  clutter_container_add_actor (CLUTTER_CONTAINER (child.button),
+                               label);
+
+  clutter_container_child_set (CLUTTER_CONTAINER (child.button), label,
+                               "y-fill", FALSE,
                                NULL);
 
   g_signal_connect (child.button, "button-release-event",

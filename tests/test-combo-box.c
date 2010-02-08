@@ -79,4 +79,17 @@ combo_box_main (ClutterContainer *stage)
                     combo);
 
   clutter_container_add (CLUTTER_CONTAINER (stage), combo, rectangle, NULL);
+
+  combo = mx_combo_box_new ();
+  clutter_actor_set_position (combo, 20, 40);
+
+  mx_combo_box_insert_text_with_icon (MX_COMBO_BOX (combo), 0, "Cloudy",
+                                      "weather-few-clouds");
+  mx_combo_box_insert_text_with_icon (MX_COMBO_BOX (combo), 0, "Clear",
+                                      "weather-clear");
+  mx_combo_box_insert_text_with_icon (MX_COMBO_BOX (combo), 0, "Snow",
+                                      "weather-snow");
+  mx_combo_box_insert_text_with_icon (MX_COMBO_BOX (combo), 0, "Overcast",
+                                      "weather-overcast");
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), combo);
 }

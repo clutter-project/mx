@@ -94,6 +94,10 @@ const gchar *mx_action_get_display_name (MxAction    *action);
 void         mx_action_set_display_name (MxAction    *action,
                                          const gchar *name);
 
+const gchar *mx_action_get_icon   (MxAction    *action);
+void         mx_action_set_icon   (MxAction    *action,
+                                   const gchar *icon);
+
 gboolean     mx_action_get_active (MxAction    *action);
 void         mx_action_set_active (MxAction    *action,
                                    gboolean     active);
