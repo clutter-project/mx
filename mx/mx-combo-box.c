@@ -62,6 +62,7 @@ enum
 };
 
 #define SPACING 8.0
+#define ICON_SIZE 16
 
 static void
 mx_combo_box_get_property (GObject    *object,
@@ -707,6 +708,7 @@ mx_combo_box_set_index (MxComboBox *box,
   MxComboBoxPrivate *priv;
   GSList *item;
   MxAction *action;
+  const gchar *icon_name;
 
   g_return_if_fail (MX_IS_COMBO_BOX (box));
 
@@ -732,19 +734,19 @@ mx_combo_box_set_index (MxComboBox *box,
       priv->icon = NULL;
     }
 
-  if (mx_action_get_icon (item->data))
+  icon_name = mx_action_get_icon (item->data);
+  if (icon_name)
     {
-      GError *error = NULL;
+      MxIconTheme *icon_theme;
 
-      priv->icon = clutter_texture_new_from_file (mx_action_get_icon (action),
-                                                  &error);
-      clutter_actor_set_parent (priv->icon, CLUTTER_ACTOR (box));
+      icon_theme = mx_icon_theme_get_default ();
+      priv->icon = (ClutterActor *)mx_icon_theme_lookup_texture (icon_theme,
+                                                                 icon_name,
+                                                                 ICON_SIZE);
 
-      if (error)
+      if (priv->icon)
         {
-          g_warning (G_STRLOC ": Error opening icon file: %s",
-                     error->message);
-          g_clear_error (&error);
+          clutter_actor_set_parent (priv->icon, CLUTTER_ACTOR (box));
         }
     }
 
