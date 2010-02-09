@@ -1237,7 +1237,8 @@ mx_widget_set_tooltip_text (MxWidget    *widget,
   else
     mx_widget_set_has_tooltip (widget, TRUE);
 
-  mx_tooltip_set_label (priv->tooltip, text);
+  if (priv->tooltip)
+    mx_tooltip_set_label (priv->tooltip, text);
 }
 
 /**
