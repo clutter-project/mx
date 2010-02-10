@@ -201,9 +201,9 @@ mx_focus_manager_ensure_focused (MxFocusManager *manager, ClutterStage *stage)
 }
 
 static gboolean
-mx_focus_manager_captured_event_cb (ClutterStage   *stage,
-                                    ClutterEvent   *event,
-                                    MxFocusManager *manager)
+mx_focus_manager_event_cb (ClutterStage   *stage,
+                           ClutterEvent   *event,
+                           MxFocusManager *manager)
 {
   MxFocusHint hint;
   MxDirection direction;
@@ -290,8 +290,8 @@ mx_focus_manager_set_stage (MxFocusManager *manager,
                          (GWeakNotify) mx_focus_manager_weak_notify,
                          manager);
 
-      g_signal_connect (priv->stage, "captured-event",
-                        G_CALLBACK (mx_focus_manager_captured_event_cb),
+      g_signal_connect (priv->stage, "event",
+                        G_CALLBACK (mx_focus_manager_event_cb),
                         manager);
 
       g_object_notify (G_OBJECT (manager), "stage");
