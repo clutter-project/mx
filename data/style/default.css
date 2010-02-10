@@ -272,16 +272,21 @@ MxToolbar MxPopup {
   padding: 12;
 }
 
-MxToolbar MxPopup > MxLabel {
+MxToolbar MxPopup > MxBoxLayout > MxLabel {
   font-size: 15;
   color: #dadada;
 }
 
-MxToolbar MxPopup > MxLabel:hover, MxToolbar MxPopup > MxLabel:active
+MxToolbar MxPopup > MxBoxLayout:hover,
+MxToolbar MxPopup > MxBoxLayout:active {
+  border-image: none;
+}
+
+MxToolbar MxPopup > MxBoxLayout:hover > MxLabel,
+MxToolbar MxPopup > MxBoxLayout:active > MxLabel
 {
   font-size: 15;
   color: #44b6e8;
-  border-image: none;
 }
 
 MxSlider {
