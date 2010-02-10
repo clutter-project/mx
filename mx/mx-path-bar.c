@@ -753,7 +753,7 @@ mx_path_bar_clear (MxPathBar *bar)
 {
   g_return_if_fail (MX_IS_PATH_BAR (bar));
 
-  while (bar->priv->crumbs)
+  while (bar->priv->current_level)
     mx_path_bar_pop (bar);
 }
 
