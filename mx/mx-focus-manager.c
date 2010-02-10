@@ -75,13 +75,8 @@ mx_focus_manager_set_property (GObject      *object,
                                const GValue *value,
                                GParamSpec   *pspec)
 {
-  MxFocusManager *manager = MX_FOCUS_MANAGER (object);
   switch (property_id)
     {
-  case PROP_STAGE:
-    mx_focus_manager_set_stage (manager, g_value_get_object (value));
-    break;
-
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -124,7 +119,7 @@ mx_focus_manager_class_init (MxFocusManagerClass *klass)
                                "Stage",
                                "Top level container for focusables",
                                CLUTTER_TYPE_STAGE,
-                               MX_PARAM_READWRITE);
+                               MX_PARAM_READABLE);
   g_object_class_install_property (object_class, PROP_STAGE, pspec);
 
   pspec = g_param_spec_object ("focused",
@@ -265,12 +260,6 @@ mx_focus_manager_event_cb (ClutterStage   *stage,
 }
 
 MxFocusManager *
-mx_focus_manager_new (ClutterStage *stage)
-{
-  return g_object_new (MX_TYPE_FOCUS_MANAGER, "stage", stage, NULL);
-}
-
-MxFocusManager *
 mx_focus_manager_get_for_stage (ClutterStage *stage)
 {
   MxFocusManager *manager;
@@ -307,40 +296,6 @@ mx_focus_manager_get_stage (MxFocusManager *manager)
   g_return_val_if_fail (MX_IS_FOCUS_MANAGER (manager), NULL);
 
   return CLUTTER_STAGE (manager->priv->stage);
-}
-
-void
-mx_focus_manager_set_stage (MxFocusManager *manager,
-                            ClutterStage   *stage)
-{
-  MxFocusManagerPrivate *priv;
-
-  g_return_if_fail (MX_IS_FOCUS_MANAGER (manager));
-  g_return_if_fail (CLUTTER_IS_STAGE (stage));
-
-  priv = manager->priv;
-
-  if (priv->stage != (ClutterActor *) stage)
-    {
-
-      if (priv->stage)
-        g_object_weak_unref (G_OBJECT (priv->stage),
-                             (GWeakNotify) mx_focus_manager_weak_notify,
-                             manager);
-
-      priv->stage = CLUTTER_ACTOR (stage);
-
-      g_object_weak_ref (G_OBJECT (priv->stage),
-                         (GWeakNotify) mx_focus_manager_weak_notify,
-                         manager);
-
-      g_signal_connect (priv->stage, "event",
-                        G_CALLBACK (mx_focus_manager_event_cb),
-                        manager);
-
-      g_object_notify (G_OBJECT (manager), "stage");
-    }
-
 }
 
 MxFocusable*
