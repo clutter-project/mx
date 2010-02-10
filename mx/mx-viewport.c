@@ -515,6 +515,8 @@ scrollable_get_adjustments (MxScrollable  *scrollable,
                                       adjustment,
                                       priv->vadjustment);
 
+          g_object_unref (adjustment);
+
           *hadjustment = adjustment;
         }
     }
@@ -540,6 +542,8 @@ scrollable_get_adjustments (MxScrollable  *scrollable,
           scrollable_set_adjustments (scrollable,
                                       priv->hadjustment,
                                       adjustment);
+
+          g_object_unref (adjustment);
 
           *vadjustment = adjustment;
         }
