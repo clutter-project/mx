@@ -344,10 +344,10 @@ mx_combo_box_allocate (ClutterActor          *actor,
   stage = clutter_actor_get_stage (actor);
   if (stage != NULL)
     {
-      gfloat x, y, stage_h, combo_h = box->y2 - box->y1;
+      gfloat trans_x, trans_y, stage_h, combo_h = box->y2 - box->y1;
 
       stage_h = clutter_actor_get_height (stage);
-      clutter_actor_get_transformed_position (actor, &x, &y);
+      clutter_actor_get_transformed_position (actor, &trans_x, &trans_y);
 
       if ( ((y + nat_popup_h + combo_h) > stage_h) &&
            (stage_h - combo_h) > 0 )
