@@ -125,9 +125,9 @@ mx_focus_manager_class_init (MxFocusManagerClass *klass)
   pspec = g_param_spec_object ("focused",
                                "Focused",
                                "The object that currently has focus",
-                               CLUTTER_TYPE_STAGE,
+                               CLUTTER_TYPE_ACTOR,
                                MX_PARAM_READABLE);
-  g_object_class_install_property (object_class, PROP_STAGE, pspec);
+  g_object_class_install_property (object_class, PROP_FOCUSED, pspec);
 
   focus_manager_quark = g_quark_from_static_string ("mx-focus-manager");
 }
