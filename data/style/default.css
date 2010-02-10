@@ -304,30 +304,36 @@ MxPathBar > MxEntry {
   padding: 8 10 8 24;
 }
 
-MxPathBarButton {
+MxPathBarButton,
+MxToolbar MxPathBarButton {
   border-image: url('pathbar-button.png') 4 19 3 3;
   padding: 8 24;
 }
 
-MxPathBarButton:hover {
+MxPathBarButton:hover,
+MxToolbar MxPathBarButton:hover {
   border-image: url('pathbar-button-hover.png') 4 19 3 3;
   padding: 8 24;
 }
 
-MxPathBarButton:active {
+MxPathBarButton:active,
+MxToolbar MxPathBarButton:active {
   border-image: url('pathbar-button-active.png') 4 19 3 3;
   padding: 8 24;
 }
 
-MxPathBarButton.End {
+MxPathBarButton.End,
+MxToolbar MxPathBarButton.End {
   border-image: url('pathbar-button-last.png') 5;
 }
 
-MxPathBarButton.End:hover {
+MxPathBarButton.End:hover,
+MxToolbar MxPathBarButton.End:hover {
   border-image: url('pathbar-button-last-hover.png') 5;
 }
 
-MxPathBarButton.End:active {
+MxPathBarButton.End:active,
+MxToolbar MxPathBarButton.End:active {
   border-image: url('pathbar-button-last-active.png') 5;
 }
 
