@@ -292,7 +292,7 @@ mx_combo_box_allocate (ClutterActor          *actor,
   gfloat min_label_h, nat_label_h, label_h, min_label_w, nat_label_w, label_w;
   gfloat min_icon_h, nat_icon_h, icon_h, icon_w, min_icon_w, nat_icon_w;
   ClutterActorBox childbox;
-  ClutterActor *popup;
+  ClutterActor *popup, *stage;
 
   CLUTTER_ACTOR_CLASS (mx_combo_box_parent_class)->allocate (actor, box,
                                                              flags);
@@ -336,9 +336,26 @@ mx_combo_box_allocate (ClutterActor          *actor,
   popup = (ClutterActor*) mx_widget_get_popup (MX_WIDGET (actor));
   clutter_actor_get_preferred_height (popup, (box->x2 - box->x1), &min_popup_h,
                                       &nat_popup_h);
+
   childbox.x1 = 0;
-  childbox.y1 = (box->y2 - box->y1);
   childbox.x2 = (box->x2 - box->x1);
+  childbox.y1 = (box->y2 - box->y1);
+
+  stage = clutter_actor_get_stage (actor);
+  if (stage != NULL)
+    {
+      gfloat x, y, stage_h, combo_h = box->y2 - box->y1;
+
+      stage_h = clutter_actor_get_height (stage);
+      clutter_actor_get_transformed_position (actor, &x, &y);
+
+      if ( ((y + nat_popup_h + combo_h) > stage_h) &&
+           (stage_h - combo_h) > 0 )
+        {
+          childbox.y1 = -nat_popup_h;
+        }
+    }
+
   childbox.y2 = childbox.y1 + nat_popup_h;
   clutter_actor_allocate (popup, &childbox, flags);
 }

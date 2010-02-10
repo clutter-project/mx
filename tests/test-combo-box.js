@@ -27,7 +27,7 @@ let stage = Clutter.Stage.get_default ();
 stage.title = "Test Combo Box";
 
 let combo = new Mx.ComboBox ();
-combo.set_position (10, 10);
+combo.set_position (10, 480 - 20);
 stage.add_actor (combo);
 combo.title = "London";
 
