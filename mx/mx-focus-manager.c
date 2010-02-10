@@ -31,6 +31,8 @@ G_DEFINE_TYPE (MxFocusManager, mx_focus_manager, G_TYPE_OBJECT)
 #define FOCUS_MANAGER_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_FOCUS_MANAGER, MxFocusManagerPrivate))
 
+static GQuark focus_manager_quark = 0;
+
 struct _MxFocusManagerPrivate
 {
   ClutterActor *stage;
@@ -88,6 +90,14 @@ mx_focus_manager_set_property (GObject      *object,
 static void
 mx_focus_manager_dispose (GObject *object)
 {
+  MxFocusManagerPrivate *priv = MX_FOCUS_MANAGER (object)->priv;
+
+  if (priv->stage)
+    {
+      g_object_set_qdata (G_OBJECT (priv->stage), focus_manager_quark, NULL);
+      priv->stage = NULL;
+    }
+
   G_OBJECT_CLASS (mx_focus_manager_parent_class)->dispose (object);
 }
 
@@ -123,6 +133,8 @@ mx_focus_manager_class_init (MxFocusManagerClass *klass)
                                CLUTTER_TYPE_STAGE,
                                MX_PARAM_READABLE);
   g_object_class_install_property (object_class, PROP_STAGE, pspec);
+
+  focus_manager_quark = g_quark_from_static_string ("mx-focus-manager");
 }
 
 static void
@@ -136,6 +148,7 @@ mx_focus_manager_weak_notify (MxFocusManager *manager,
                               ClutterStage   *stage)
 {
   manager->priv->stage = NULL;
+  g_object_unref (manager);
 }
 
 static void
@@ -255,6 +268,37 @@ MxFocusManager *
 mx_focus_manager_new (ClutterStage *stage)
 {
   return g_object_new (MX_TYPE_FOCUS_MANAGER, "stage", stage, NULL);
+}
+
+MxFocusManager *
+mx_focus_manager_get_for_stage (ClutterStage *stage)
+{
+  MxFocusManager *manager;
+
+  g_return_val_if_fail (CLUTTER_IS_STAGE (stage), NULL);
+
+  manager = g_object_get_qdata (G_OBJECT (stage), focus_manager_quark);
+
+  if (manager == NULL)
+    {
+      MxFocusManagerPrivate *priv;
+
+      manager = g_object_new (MX_TYPE_FOCUS_MANAGER, NULL);
+      priv = manager->priv;
+
+      priv->stage = CLUTTER_ACTOR (stage);
+
+      g_object_set_qdata (G_OBJECT (stage), focus_manager_quark, manager);
+      g_object_weak_ref (G_OBJECT (stage),
+                         (GWeakNotify) mx_focus_manager_weak_notify, manager);
+
+      g_signal_connect (G_OBJECT (stage), "event",
+                        G_CALLBACK (mx_focus_manager_event_cb),
+                        manager);
+      g_object_notify (G_OBJECT (manager), "stage");
+    }
+
+  return manager;
 }
 
 ClutterStage*
