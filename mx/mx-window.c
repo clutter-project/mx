@@ -957,7 +957,7 @@ mx_window_motion_event (ClutterActor       *actor,
 }
 
 static void
-style_changed_cb (MxWindow *window)
+style_changed_cb (MxStyle *style, MxWindow *window)
 {
   MxWindowPrivate *priv = window->priv;
   MxBorderImage *grip_filename;
@@ -1158,9 +1158,9 @@ mx_window_init (MxWindow *self)
   priv->style = mx_style_get_default ();
 
   g_signal_connect (priv->style, "changed",
-                    G_CALLBACK (style_changed_cb), NULL);
+                    G_CALLBACK (style_changed_cb), self);
 
-  style_changed_cb (self);
+  style_changed_cb (NULL, self);
 
   clutter_stage_set_user_resizable (CLUTTER_STAGE (self), TRUE);
 
