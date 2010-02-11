@@ -41,7 +41,7 @@
 #include "mx-texture-cache.h"
 #include "mx-marshal.h"
 #include "mx-private.h"
-#include "mx-subtexture.h"
+
 G_DEFINE_TYPE (MxTextureCache, mx_texture_cache, G_TYPE_OBJECT)
 
 #define TEXTURE_CACHE_PRIVATE(o) \
@@ -250,7 +250,6 @@ CoglHandle
 mx_texture_cache_get_cogl_texture (MxTextureCache *self,
                                    const gchar    *path)
 {
-  CoglHandle *handle;
   MxTextureCachePrivate *priv;
   MxTextureCacheItem *item;
 
@@ -262,28 +261,6 @@ mx_texture_cache_get_cogl_texture (MxTextureCache *self,
 
   item = g_hash_table_lookup (priv->cache, path);
 
-  if (item && item->posX != -1)
-    {
-      GError *err = NULL;
-      /*
-       * We have a cache hit, but it's for a partial texture. The only
-       * sane option is to read it from disk and just don't cache it
-       * at all.
-       */
-      handle = cogl_texture_new_from_file (path,
-                                           COGL_TEXTURE_NONE,
-                                           COGL_PIXEL_FORMAT_ANY,
-                                           &err);
-
-      if (err)
-        {
-          g_warning ("Error loading texture: %s", err->message);
-          g_error_free (err);
-        }
-
-      return handle;
-    }
-
   if (!item)
     {
       GError *err = NULL;
@@ -291,7 +268,9 @@ mx_texture_cache_get_cogl_texture (MxTextureCache *self,
       item = mx_texture_cache_item_new ();
       item->posX = -1;
       item->posY = -1;
-      item->ptr = clutter_texture_new_from_file (path, &err);
+      item->ptr = cogl_texture_new_from_file (path, COGL_TEXTURE_NONE,
+                                              COGL_PIXEL_FORMAT_ANY,
+                                              &err);
 
       if (!item->ptr)
         {
@@ -304,14 +283,13 @@ mx_texture_cache_get_cogl_texture (MxTextureCache *self,
           return NULL;
         }
 
-      clutter_texture_get_base_size (CLUTTER_TEXTURE (item->ptr),
-                                     &item->width, &item->height);
+      item->width = cogl_texture_get_width (item->ptr);
+      item->height = cogl_texture_get_height (item->ptr);
 
       add_texture_to_cache (self, path, item);
     }
 
-  return cogl_handle_ref (
-    clutter_texture_get_cogl_texture (CLUTTER_TEXTURE (item->ptr)));
+  return cogl_handle_ref (item->ptr);
 }
 
 /**
@@ -355,12 +333,8 @@ mx_texture_cache_get_texture (MxTextureCache *self,
  * @self: A #MxTextureCache
  * @path: A path to a image file
  *
- * Create a new ClutterSubTexture with the specified image. Adds the image to the
- * cache if the image had not been previously loaded. Subsequent calls with
- * the same image path will return a new ClutterTexture with the previously
- * loaded image.
- *
- * Use this function if all you need is an actor for drawing.
+ * This is a wrapper around mx_texture_cache_get_texture() which returns
+ * a ClutterActor.
  *
  * Returns: (transfer none): a newly created ClutterTexture
  */
@@ -368,52 +342,15 @@ ClutterActor*
 mx_texture_cache_get_actor (MxTextureCache *self,
                             const gchar    *path)
 {
-  MxTextureCachePrivate *priv;
-  MxTextureCacheItem *item;
-  GError *err = NULL;
+  ClutterTexture *tex;
 
   g_return_val_if_fail (MX_IS_TEXTURE_CACHE (self), NULL);
   g_return_val_if_fail (path != NULL, NULL);
 
-  priv = TEXTURE_CACHE_PRIVATE (self);
-
-
-  item = g_hash_table_lookup (priv->cache, path);
-
-  if (item)
-    {
-      int posX = item->posX;
-      int posY = item->posY;
-      if (posX == -1)
-        posX = 0;
-      if (posY == -1)
-        posY = 0;
-      return mx_subtexture_new (CLUTTER_TEXTURE (item->ptr), posX, posY,
-                                item->width, item->height);
-    }
-
-  item = mx_texture_cache_item_new ();
-  item->posX = -1;
-  item->posY = -1;
-  item->ptr = clutter_texture_new_from_file (path, &err);
-  clutter_texture_get_base_size (CLUTTER_TEXTURE (item->ptr),
-                                 &item->width, &item->height);
-
-  if (!item->ptr)
-    {
-      if (err)
-        {
-          g_warning ("Error loading image: %s", err->message);
-          g_error_free (err);
-        }
-
-      return NULL;
-    }
-
-  add_texture_to_cache (self, path, item);
-
-  return mx_subtexture_new (CLUTTER_TEXTURE (item->ptr), 0, 0, item->width,
-                            item->height);
+  if ((tex = mx_texture_cache_get_texture (self, path)))
+    return CLUTTER_ACTOR (tex);
+  else
+    return NULL;
 }
 
 void
@@ -423,8 +360,7 @@ mx_texture_cache_load_cache (MxTextureCache *self,
   FILE *file;
   MxTextureCacheItem *element, head;
   int ret;
-  ClutterActor *actor;
-  GError *error = NULL;
+  CoglHandle full_texture;
   MxTextureCachePrivate *priv;
 
   g_return_if_fail (MX_IS_TEXTURE_CACHE (self));
@@ -451,25 +387,14 @@ mx_texture_cache_load_cache (MxTextureCache *self,
       return;
     }
 
-  actor = clutter_texture_new_from_file (head.filename, &error);
+  full_texture = mx_texture_cache_get_cogl_texture (self, head.filename);
 
-  if (error)
+  if (full_texture == COGL_INVALID_HANDLE)
     {
-      g_critical (G_STRLOC ": Error opening cache image file: %s",
-                  error->message);
-      g_clear_error (&error);
+      g_critical (G_STRLOC ": Error opening cache image file");
       fclose (file);
       return;
     }
-
-  element = mx_texture_cache_item_new ();
-  element->posX = -1;
-  element->posY = -1;
-  element->ptr = actor;
-  strncpy (element->filename, head.filename, 256);
-  clutter_texture_get_base_size (CLUTTER_TEXTURE (element->ptr),
-                                 &element->width, &element->height);
-  g_hash_table_insert (priv->cache, element->filename, element);
 
   while (!feof (file))
     {
@@ -482,13 +407,16 @@ mx_texture_cache_load_cache (MxTextureCache *self,
           break;
         }
 
-      element->ptr = actor;
-
       if (g_hash_table_lookup (priv->cache, element->filename))
+        /* file is already in the cache.... */
+        mx_texture_cache_item_free (element);
+      else
         {
-          /* file is already in the cache.... */
-          mx_texture_cache_item_free (element);
-        } else {
+          element->ptr = cogl_texture_new_from_sub_texture (full_texture,
+                                                            element->posX,
+                                                            element->posY,
+                                                            element->width,
+                                                            element->height);
           g_hash_table_insert (priv->cache, element->filename, element);
         }
     }

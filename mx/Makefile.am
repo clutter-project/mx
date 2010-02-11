@@ -119,7 +119,6 @@ source_c = \
 	$(top_srcdir)/mx/mx-slider.c 		\
 	$(top_srcdir)/mx/mx-stylable.c 		\
 	$(top_srcdir)/mx/mx-style.c 		\
-	$(top_srcdir)/mx/mx-subtexture.c		\
 	$(top_srcdir)/mx/mx-table.c 		\
 	$(top_srcdir)/mx/mx-table-child.c 		\
 	$(top_srcdir)/mx/mx-texture-cache.c 	\
