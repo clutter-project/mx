@@ -698,6 +698,8 @@ mx_path_bar_push (MxPathBar *bar, const gchar *name)
                          NULL);
   clutter_actor_queue_relayout (CLUTTER_ACTOR (bar));
 
+  g_object_notify (G_OBJECT (bar), "level");
+
   return priv->current_level;
 }
 
@@ -736,6 +738,7 @@ mx_path_bar_pop (MxPathBar *bar)
 
   priv->current_level --;
   mx_path_bar_reset_last_crumb (bar);
+  g_object_notify (G_OBJECT (bar), "level");
 
   return priv->current_level;
 }
