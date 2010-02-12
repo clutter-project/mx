@@ -216,6 +216,19 @@ mx_label_paint (ClutterActor *actor)
 }
 
 static void
+mx_label_pick (ClutterActor *actor,
+               const ClutterColor *pick_color)
+{
+  MxLabelPrivate *priv = MX_LABEL (actor)->priv;
+  ClutterActorClass *parent_class;
+
+  parent_class = CLUTTER_ACTOR_CLASS (mx_label_parent_class);
+  parent_class->pick (actor, pick_color);
+
+  clutter_actor_paint (priv->label);
+}
+
+static void
 mx_label_map (ClutterActor *actor)
 {
   MxLabelPrivate *priv = MX_LABEL (actor)->priv;
@@ -263,6 +276,7 @@ mx_label_class_init (MxLabelClass *klass)
   gobject_class->dispose = mx_label_dispose;
 
   actor_class->paint = mx_label_paint;
+  actor_class->pick = mx_label_pick;
   actor_class->allocate = mx_label_allocate;
   actor_class->get_preferred_width = mx_label_get_preferred_width;
   actor_class->get_preferred_height = mx_label_get_preferred_height;
