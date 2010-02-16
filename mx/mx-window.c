@@ -3,6 +3,7 @@
 #include "mx-window.h"
 #include "mx-toolbar.h"
 #include "mx-focus-manager.h"
+#include "mx-private.h"
 #include <clutter/x11/clutter-x11.h>
 
 /* for pointer cursor support */
@@ -27,11 +28,12 @@ struct _MxWindowPrivate
   guint has_toolbar   : 1;
   guint is_moving     : 1;
   guint is_resizing   : 1;
+  guint small_screen  : 1;
 
   CoglHandle resize_grip;
-#if CLUTTER_CHECK_VERSION(1,1,8)
-  gboolean   first_show;
-#else
+  gfloat     last_width;
+  gfloat     last_height;
+#if !CLUTTER_CHECK_VERSION(1,1,8)
   gfloat     natural_width;
   gfloat     natural_height;
 #endif
@@ -57,7 +59,8 @@ enum
 {
   PROP_STYLE = 1,
   PROP_STYLE_CLASS,
-  PROP_STYLE_PSEUDO_CLASS
+  PROP_STYLE_PSEUDO_CLASS,
+  PROP_SMALL_SCREEN
 };
 
 /* clutter container iface implementation */
@@ -205,17 +208,21 @@ mx_window_get_property (GObject    *object,
 
   switch (property_id)
     {
-  case PROP_STYLE:
-    g_value_set_object (value, priv->style);
-    break;
+    case PROP_STYLE:
+      g_value_set_object (value, priv->style);
+      break;
 
-  case PROP_STYLE_CLASS:
-    g_value_set_string (value, priv->style_class);
-    break;
+    case PROP_STYLE_CLASS:
+      g_value_set_string (value, priv->style_class);
+      break;
 
-  case PROP_STYLE_PSEUDO_CLASS:
-    g_value_set_string (value, priv->pseudo_class);
-    break;
+    case PROP_STYLE_PSEUDO_CLASS:
+      g_value_set_string (value, priv->pseudo_class);
+      break;
+
+    case PROP_SMALL_SCREEN:
+      g_value_set_boolean (value, priv->small_screen);
+      break;
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -233,17 +240,22 @@ mx_window_set_property (GObject      *object,
 
   switch (property_id)
     {
-  case PROP_STYLE:
-    mx_window_set_style (win, MX_STYLE (g_value_get_object (value)));
-    break;
+    case PROP_STYLE:
+      mx_window_set_style (win, MX_STYLE (g_value_get_object (value)));
+      break;
 
-  case PROP_STYLE_CLASS:
-    mx_window_set_style_class (win, g_value_get_string (value));
-    break;
+    case PROP_STYLE_CLASS:
+      mx_window_set_style_class (win, g_value_get_string (value));
+      break;
 
-  case PROP_STYLE_PSEUDO_CLASS:
-    mx_window_set_style_pseudo_class (win, g_value_get_string (value));
-    break;
+    case PROP_STYLE_PSEUDO_CLASS:
+      mx_window_set_style_pseudo_class (win, g_value_get_string (value));
+      break;
+
+    case PROP_SMALL_SCREEN:
+      mx_window_set_small_screen (MX_WINDOW (object),
+                                  g_value_get_boolean (value));
+      break;
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -411,6 +423,10 @@ mx_window_paint (ClutterActor *actor)
 
   clutter_actor_paint (priv->toolbar);
 
+  /* If we're in small-screen mode, we don't want a frame or a resize handle */
+  if (priv->small_screen)
+    return;
+
   /* paint frame */
 
   clutter_actor_get_size (actor, &width, &height);
@@ -473,7 +489,8 @@ mx_window_allocate (ClutterActor           *actor,
   window = MX_WINDOW (actor);
   priv = window->priv;
 
-  if (0 /* full_screen */)
+  if (priv->small_screen ||
+      clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
       padding.top = padding.right = padding.bottom = padding.left = 0;
   else
       padding.top = padding.right = padding.bottom = padding.left = 1;
@@ -521,6 +538,11 @@ mx_window_button_press_event (ClutterActor       *actor,
   Display *dpy;
 
   priv = MX_WINDOW (actor)->priv;
+
+  /* Bail out early in small-screen mode */
+  if (priv->small_screen)
+    return FALSE;
+
   priv->is_moving = TRUE;
 
   win = clutter_x11_get_stage_window (CLUTTER_STAGE (actor));
@@ -555,6 +577,9 @@ mx_window_button_release_event (ClutterActor       *actor,
 
   priv = MX_WINDOW (actor)->priv;
 
+  if (priv->small_screen)
+    return FALSE;
+
   priv->is_moving = FALSE;
 
   clutter_set_motion_events_enabled (TRUE);
@@ -579,6 +604,9 @@ mx_window_motion_event (ClutterActor       *actor,
 
   window = MX_WINDOW (actor);
   priv = window->priv;
+
+  if (priv->small_screen)
+    return FALSE;
 
   win = clutter_x11_get_stage_window (CLUTTER_STAGE (actor));
   dpy = clutter_x11_get_default_display ();
@@ -736,54 +764,48 @@ mx_window_get_preferred_height (ClutterActor *self,
 }
 #else
 static void
-mx_window_show (ClutterActor *actor)
+mx_window_realize_cb (ClutterActor *actor)
 {
+  gfloat width, height, nat_width, nat_height;
+  gboolean width_set, height_set;
+
   MxWindow *window = MX_WINDOW (actor);
-  MxWindowPrivate *priv = window->priv;
 
-  if (priv->first_show)
-    {
-      gfloat width, height, nat_width, nat_height;
-      gboolean width_set, height_set;
+  mx_window_get_minimum_size (window, &width, &height);
 
-      mx_window_get_minimum_size (window, &width, &height);
+  if (width < 1.0)
+    width = 1.0;
+  if (height < 1.0)
+    height = 1.0;
+  clutter_stage_set_minimum_size (CLUTTER_STAGE (window),
+                                  (guint)width,
+                                  (guint)height);
 
-      if (width < 1.0)
-        width = 1.0;
-      if (height < 1.0)
-        height = 1.0;
-      clutter_stage_set_minimum_size (CLUTTER_STAGE (window),
-                                      (guint)width,
-                                      (guint)height);
+  /* If the user has set a size on the window already,
+   * make sure to use it (but still enforce the
+   * minimum size).
+   */
+  g_object_get (G_OBJECT (window),
+                "natural-width", &nat_width,
+                "natural-width-set", &width_set,
+                "natural-height", &nat_height,
+                "natural-height-set", &height_set,
+                NULL);
 
-      /* If the user has set a size on the window already,
-       * make sure to use it (but still enforce the
-       * minimum size).
-       */
-      g_object_get (G_OBJECT (window),
-                    "natural-width", &nat_width,
-                    "natural-width-set", &width_set,
-                    "natural-height", &nat_height,
-                    "natural-height-set", &height_set,
-                    NULL);
+  if (width_set && (nat_width > width))
+    width = nat_width;
+  if (height_set && (nat_height > height))
+    height = nat_height;
 
-      if (width_set && (nat_width > width))
-        width = nat_width;
-      if (height_set && (nat_height > height))
-        height = nat_height;
-
-      clutter_actor_set_size (actor, width, height);
-
-      priv->first_show = FALSE;
-    }
-
-  CLUTTER_ACTOR_CLASS (mx_window_parent_class)->show (actor);
+  clutter_actor_set_size (actor, width, height);
 }
 #endif
 
 static void
 mx_window_class_init (MxWindowClass *klass)
 {
+  GParamSpec *pspec;
+
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
 
@@ -805,8 +827,6 @@ mx_window_class_init (MxWindowClass *klass)
 #if !CLUTTER_CHECK_VERSION(1,1,8)
   actor_class->get_preferred_width = mx_window_get_preferred_width;
   actor_class->get_preferred_height = mx_window_get_preferred_height;
-#else
-  actor_class->show = mx_window_show;
 #endif
 
   /* stylable interface properties */
@@ -815,6 +835,15 @@ mx_window_class_init (MxWindowClass *klass)
                                     "style-class");
   g_object_class_override_property (object_class, PROP_STYLE_PSEUDO_CLASS,
                                     "style-pseudo-class");
+
+  pspec = g_param_spec_boolean ("small-screen",
+                                "Small screen",
+                                "Window should occupy the entire screen "
+                                "contents, without explicitly setting "
+                                "itself fullscreen.",
+                                FALSE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_SMALL_SCREEN, pspec);
 }
 
 static void
@@ -838,10 +867,15 @@ mx_window_init (MxWindow *self)
 
   style_changed_cb (self);
 
-#if CLUTTER_CHECK_VERSION(1,1,8)
-  priv->first_show = TRUE;
-#endif
   clutter_stage_set_user_resizable (CLUTTER_STAGE (self), TRUE);
+
+  g_signal_connect (self, "notify::fullscreen-set",
+                    G_CALLBACK (clutter_actor_queue_relayout), NULL);
+
+#if CLUTTER_CHECK_VERSION(1,1,8)
+  g_signal_connect (self, "realize",
+                    G_CALLBACK (mx_window_realize_cb), NULL);
+#endif
 }
 
 MxWindow *
@@ -946,4 +980,78 @@ mx_window_get_toolbar (MxWindow *window)
   g_return_val_if_fail (MX_IS_WINDOW (window), NULL);
 
   return (MxToolbar*) window->priv->toolbar;
+}
+
+gboolean
+mx_window_get_small_screen (MxWindow *window)
+{
+  g_return_val_if_fail (MX_IS_WINDOW (window), FALSE);
+
+  return window->priv->small_screen;
+}
+
+void
+mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
+{
+  MxWindowPrivate *priv;
+
+  g_return_if_fail (MX_IS_WINDOW (window));
+
+  priv = window->priv;
+
+  if (priv->small_screen != small_screen)
+    {
+      ClutterStage *stage = CLUTTER_STAGE (window);
+      Window win = clutter_x11_get_stage_window (stage);
+      Display *dpy = clutter_x11_get_default_display ();
+
+      priv->small_screen = small_screen;
+
+      /* In case we were in the middle of a move/resize */
+      if (priv->is_moving)
+        {
+          priv->is_moving = FALSE;
+          clutter_set_motion_events_enabled (TRUE);
+          if (priv->is_resizing)
+            {
+              XUndefineCursor (dpy, win);
+              priv->is_resizing = FALSE;
+            }
+        }
+
+      if (small_screen)
+        {
+          int screen, width, height;
+
+          screen = DefaultScreen (dpy);
+          width = DisplayWidth (dpy, screen);
+          height = DisplayHeight (dpy, screen);
+
+          clutter_actor_get_size (CLUTTER_ACTOR (window),
+                                  &priv->last_width,
+                                  &priv->last_height);
+
+          /* Move/size ourselves to the size of the screen. We could
+           * also set ourselves as not resizable, but a WM that respects
+           * our small-screen mode won't give the user controls to
+           * modify the window, and if it does, just let them.
+           */
+          XMoveResizeWindow (dpy, win, 0, 0, width, height);
+        }
+      else
+        {
+          /* This is the situation where resizing ourselves to the size of
+           * the screen caused the WM to fullscreen us. In this case, just
+           * set ourselves as un-fullscreened and we'll restore the size.
+           */
+          if (clutter_stage_get_fullscreen (stage))
+            clutter_stage_set_fullscreen (stage, FALSE);
+          else
+            clutter_actor_set_size (CLUTTER_ACTOR (window),
+                                    priv->last_width,
+                                    priv->last_height);
+        }
+
+      g_object_notify (G_OBJECT (window), "small-screen");
+    }
 }

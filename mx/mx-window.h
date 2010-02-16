@@ -58,6 +58,8 @@ MxToolbar* mx_window_get_toolbar     (MxWindow *window);
 gboolean   mx_window_get_has_toolbar (MxWindow *window);
 void       mx_window_set_has_toolbar (MxWindow *window, gboolean  toolbar);
 
+gboolean   mx_window_get_small_screen (MxWindow *window);
+void       mx_window_set_small_screen (MxWindow *window, gboolean small_screen);
 
 G_END_DECLS
 
