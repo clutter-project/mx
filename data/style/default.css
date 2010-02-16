@@ -306,25 +306,25 @@ MxPathBar {
 }
 
 MxPathBar > MxEntry {
-  padding: 8 10 8 24;
+  padding: 4 10 4 24;
 }
 
 MxPathBarButton,
 MxToolbar MxPathBarButton {
   border-image: url('pathbar-button.png') 4 19 3 3;
-  padding: 8 24;
+  padding: 4 24;
 }
 
 MxPathBarButton:hover,
 MxToolbar MxPathBarButton:hover {
   border-image: url('pathbar-button-hover.png') 4 19 3 3;
-  padding: 8 24;
+  padding: 4 24;
 }
 
 MxPathBarButton:active,
 MxToolbar MxPathBarButton:active {
   border-image: url('pathbar-button-active.png') 4 19 3 3;
-  padding: 8 24;
+  padding: 4 24;
 }
 
 MxPathBarButton.End,

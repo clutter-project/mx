@@ -26,6 +26,7 @@
 #endif
 
 #include "mx-path-bar-button.h"
+#include <math.h>
 
 G_DEFINE_TYPE (MxPathBarButton, mx_path_bar_button, MX_TYPE_BUTTON)
 
@@ -107,9 +108,9 @@ mx_path_bar_button_get_preferred_width (ClutterActor *actor,
     get_preferred_width (actor, for_height, min_width_p, nat_width_p);
 
   if (min_width_p)
-    *min_width_p *= priv->transition;
+    *min_width_p = ceilf ((*min_width_p) * priv->transition);
   if (nat_width_p)
-    *nat_width_p *= priv->transition;
+    *nat_width_p = ceilf ((*nat_width_p) * priv->transition);
 }
 
 static void
