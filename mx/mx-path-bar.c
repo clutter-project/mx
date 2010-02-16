@@ -476,7 +476,7 @@ mx_path_bar_allocate (ClutterActor           *actor,
    * squash actors if necessary
    */
   clutter_actor_get_preferred_width (actor,
-                                     box->y2 - box->y1,
+                                     child_box.y2 - child_box.y1,
                                      &min_width,
                                      &nat_width);
 
