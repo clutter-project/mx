@@ -36,6 +36,7 @@ enum
   PROP_0,
 
   PROP_EDITABLE,
+  PROP_CLEAR_ON_CHANGE,
   PROP_LEVEL
 };
 
@@ -58,6 +59,7 @@ struct _MxPathBarPrivate
   gint          overlap;
 
   gboolean      editable;
+  gboolean      clear_on_change;
   ClutterActor *entry;
 };
 
@@ -253,6 +255,10 @@ mx_path_bar_get_property (GObject    *object,
       g_value_set_int (value, mx_path_bar_get_level (self));
       break;
 
+    case PROP_CLEAR_ON_CHANGE:
+      g_value_set_boolean (value, mx_path_bar_get_clear_on_change (self));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -270,6 +276,10 @@ mx_path_bar_set_property (GObject      *object,
     {
     case PROP_EDITABLE:
       mx_path_bar_set_editable (self, g_value_get_boolean (value));
+      break;
+
+    case PROP_CLEAR_ON_CHANGE:
+      mx_path_bar_set_clear_on_change (self, g_value_get_boolean (value));
       break;
 
     default:
@@ -603,6 +613,13 @@ mx_path_bar_class_init (MxPathBarClass *klass)
                                 FALSE, G_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_EDITABLE, pspec);
 
+  pspec = g_param_spec_boolean ("clear-on-change",
+                                "Clear on level change",
+                                "Whether to clear the entry "
+                                "when changing levels",
+                                FALSE, G_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_CLEAR_ON_CHANGE, pspec);
+
   pspec = g_param_spec_int ("level",
                             "Level",
                             "Depth of the path bar",
@@ -634,7 +651,9 @@ mx_path_bar_crumb_clicked_cb (ClutterActor *crumb,
 
   MxPathBarPrivate *priv = self->priv;
 
-  mx_path_bar_set_text (self, "");
+  if (priv->clear_on_change)
+    mx_path_bar_set_text (self, "");
+
   for (c = priv->crumbs, i = 1; c; c = c->next, i++)
     {
       if (c->data == crumb)
@@ -668,7 +687,8 @@ mx_path_bar_push (MxPathBar *bar, const gchar *name)
 
   priv = bar->priv;
 
-  mx_path_bar_set_text (bar, "");
+  if (priv->clear_on_change)
+    mx_path_bar_set_text (bar, "");
 
   crumb = mx_path_bar_button_new (name);
   clutter_actor_set_parent (crumb, CLUTTER_ACTOR (bar));
@@ -724,7 +744,8 @@ mx_path_bar_pop (MxPathBar *bar)
 
   priv = bar->priv;
 
-  mx_path_bar_set_text (bar, "");
+  if (priv->clear_on_change)
+    mx_path_bar_set_text (bar, "");
 
   if (priv->current_level == 0)
     return 0;
@@ -892,4 +913,25 @@ mx_path_bar_get_entry (MxPathBar *bar)
   g_return_val_if_fail (MX_IS_PATH_BAR (bar), NULL);
 
   return (MxEntry *)bar->priv->entry;
+}
+
+gboolean
+mx_path_bar_get_clear_on_change (MxPathBar *bar)
+{
+  g_return_val_if_fail (MX_IS_PATH_BAR (bar), FALSE);
+
+  return bar->priv->clear_on_change;
+}
+
+void
+mx_path_bar_set_clear_on_change (MxPathBar *bar,
+                                 gboolean   clear_on_change)
+{
+  g_return_if_fail (MX_IS_PATH_BAR (bar));
+
+  if (bar->priv->clear_on_change != clear_on_change)
+    {
+      bar->priv->clear_on_change = clear_on_change;
+      g_object_notify (G_OBJECT (bar), "clear-on-change");
+    }
 }

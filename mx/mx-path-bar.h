@@ -85,6 +85,10 @@ void         mx_path_bar_clear        (MxPathBar *bar);
 gboolean     mx_path_bar_get_editable (MxPathBar *bar);
 void         mx_path_bar_set_editable (MxPathBar *bar, gboolean editable);
 
+gboolean     mx_path_bar_get_clear_on_change (MxPathBar *bar);
+void         mx_path_bar_set_clear_on_change (MxPathBar *bar,
+                                              gboolean clear_on_change);
+
 const gchar *mx_path_bar_get_label    (MxPathBar *bar, gint level);
 void         mx_path_bar_set_label    (MxPathBar *bar, gint level,
                                        const gchar *label);

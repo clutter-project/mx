@@ -32,7 +32,7 @@ vbox.set_vertical (true);
 stage.add_actor (vbox);
 vbox.set_width (stage.width);
 
-let bar = new Mx.PathBar ();
+let bar = new Mx.PathBar ({"clear-on-change": true});
 vbox.add_actor (bar);
 vbox.child_set_property (bar, "x-align", 0);
 vbox.child_set_property (bar, "x-fill", false);
