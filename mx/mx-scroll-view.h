@@ -68,8 +68,6 @@ GType mx_scroll_view_get_type (void) G_GNUC_CONST;
 
 ClutterActor *mx_scroll_view_new (void);
 
-ClutterActor *mx_scroll_view_get_hscroll_bar     (MxScrollView *scroll);
-ClutterActor *mx_scroll_view_get_vscroll_bar     (MxScrollView *scroll);
 
 void          mx_scroll_view_set_mouse_scrolling (MxScrollView *scroll,
                                                   gboolean      enabled);

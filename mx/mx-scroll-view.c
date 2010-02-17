@@ -92,8 +92,6 @@ struct _MxScrollViewPrivate
 enum {
   PROP_0,
 
-  PROP_HSCROLL,
-  PROP_VSCROLL,
   PROP_MOUSE_SCROLL,
   PROP_ENABLE_GESTURES
 };
@@ -108,12 +106,6 @@ mx_scroll_view_get_property (GObject    *object,
 
   switch (property_id)
     {
-    case PROP_HSCROLL:
-      g_value_set_object (value, priv->hscroll);
-      break;
-    case PROP_VSCROLL:
-      g_value_set_object (value, priv->vscroll);
-      break;
     case PROP_MOUSE_SCROLL:
       g_value_set_boolean (value, priv->mouse_scroll);
       break;
@@ -494,22 +486,6 @@ mx_scroll_view_class_init (MxScrollViewClass *klass)
   actor_class->allocate = mx_scroll_view_allocate;
   actor_class->scroll_event = mx_scroll_view_scroll_event;
 
-  g_object_class_install_property (object_class,
-                                   PROP_HSCROLL,
-                                   g_param_spec_object ("hscroll",
-                                                        "MxScrollBar",
-                                                        "Horizontal scroll indicator",
-                                                        MX_TYPE_SCROLL_BAR,
-                                                        G_PARAM_READABLE));
-
-  g_object_class_install_property (object_class,
-                                   PROP_VSCROLL,
-                                   g_param_spec_object ("vscroll",
-                                                        "MxScrollBar",
-                                                        "Vertical scroll indicator",
-                                                        MX_TYPE_SCROLL_BAR,
-                                                        G_PARAM_READABLE));
-
   pspec = g_param_spec_boolean ("enable-mouse-scrolling",
                                 "Enable Mouse Scrolling",
                                 "Enable automatic mouse wheel scrolling",
@@ -821,22 +797,6 @@ ClutterActor *
 mx_scroll_view_new (void)
 {
   return g_object_new (MX_TYPE_SCROLL_VIEW, NULL);
-}
-
-ClutterActor *
-mx_scroll_view_get_hscroll_bar (MxScrollView *scroll)
-{
-  g_return_val_if_fail (MX_IS_SCROLL_VIEW (scroll), NULL);
-
-  return scroll->priv->hscroll;
-}
-
-ClutterActor *
-mx_scroll_view_get_vscroll_bar (MxScrollView *scroll)
-{
-  g_return_val_if_fail (MX_IS_SCROLL_VIEW (scroll), NULL);
-
-  return scroll->priv->vscroll;
 }
 
 void
