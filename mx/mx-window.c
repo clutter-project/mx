@@ -418,8 +418,11 @@ mx_window_paint (ClutterActor *actor)
 
   clutter_actor_paint (priv->toolbar);
 
-  /* If we're in small-screen mode, we don't want a frame or a resize handle */
-  if (priv->small_screen)
+  /* If we're in small-screen or fullscreen mode, we don't want a frame
+   * or a resize handle.
+   */
+  if (priv->small_screen ||
+      clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
     return;
 
   /* paint frame */
@@ -534,8 +537,9 @@ mx_window_button_press_event (ClutterActor       *actor,
 
   priv = MX_WINDOW (actor)->priv;
 
-  /* Bail out early in small-screen mode */
-  if (priv->small_screen)
+  /* Bail out early in small-screen or fullscreen mode */
+  if (priv->small_screen ||
+      clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
     return FALSE;
 
   /* We're already moving/resizing */
@@ -617,7 +621,8 @@ mx_window_captured_event (ClutterActor *actor,
     {
     case CLUTTER_MOTION:
       /* Check if we're over the resize handle */
-      if ((priv->is_moving == -1) && !priv->small_screen)
+      if ((priv->is_moving == -1) && !priv->small_screen &&
+          !clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
         {
           gint x, y;
           Window win;
@@ -694,10 +699,11 @@ mx_window_motion_event (ClutterActor       *actor,
   window = MX_WINDOW (actor);
   priv = window->priv;
 
-  /* Ignore motion events while in small-screen mode and if they're not
-   * from our grabbed device.
+  /* Ignore motion events while in small-screen mode, fullscreen mode and
+   * if they're not from our grabbed device.
    */
   if ((priv->small_screen) ||
+      (clutter_stage_get_fullscreen (CLUTTER_STAGE (actor))) ||
       (clutter_input_device_get_device_id (event->device) != priv->is_moving))
     return FALSE;
 
@@ -1100,6 +1106,12 @@ mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
               priv->is_resizing = FALSE;
             }
         }
+
+      /* Get out of fullscreen mode if we're in fullscreen
+       * and switching to small-screen.
+       */
+      if (small_screen && clutter_stage_get_fullscreen (CLUTTER_STAGE (window)))
+        clutter_stage_set_fullscreen (CLUTTER_STAGE (window), FALSE);
 
       if (small_screen)
         {
