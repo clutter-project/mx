@@ -14,6 +14,7 @@ noinst_PROGRAMS = 		\
 	test-droppable		\
 	test-grid \
 	test-gtk		\
+	test-path-bar		\
 	test-table   		\
 	test-table-2            \
 	test-texture-frame 	\
@@ -51,6 +52,8 @@ test_draggable_SOURCES = test-draggable.c
 test_droppable_SOURCES = test-droppable.c
 
 test_box_layout_SOURCES = test-box-layout.c
+
+test_path_bar_SOURCES = test-path-bar.c
 
 EXTRA_DIST = \
 	     style/border-image-dark.png \
