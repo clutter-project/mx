@@ -26,9 +26,10 @@ struct _MxWindowPrivate
 {
   guint is_fullscreen : 1;
   guint has_toolbar   : 1;
-  guint is_moving     : 1;
   guint is_resizing   : 1;
   guint small_screen  : 1;
+
+  gint  is_moving;
 
   CoglHandle resize_grip;
   gfloat     last_width;
@@ -461,7 +462,7 @@ mx_window_pick (ClutterActor       *actor,
   priv = MX_WINDOW (actor)->priv;
 
   /* Don't pick while we're moving/resizing */
-  if (priv->is_moving)
+  if (priv->is_moving != -1)
     return;
 
   clutter_actor_paint (priv->toolbar);
@@ -543,7 +544,15 @@ mx_window_button_press_event (ClutterActor       *actor,
   if (priv->small_screen)
     return FALSE;
 
-  priv->is_moving = TRUE;
+  /* We're already moving/resizing */
+  if (priv->is_moving != -1)
+    return FALSE;
+
+  /* We only care about the first mouse button */
+  if (event->button != 1)
+    return FALSE;
+
+  priv->is_moving = clutter_input_device_get_device_id (event->device);
 
   win = clutter_x11_get_stage_window (CLUTTER_STAGE (actor));
   dpy = clutter_x11_get_default_display ();
@@ -563,28 +572,116 @@ mx_window_button_press_event (ClutterActor       *actor,
   priv->drag_x_start = x;
   priv->drag_y_start = y;
 
-  /* Disable motion events, we'll be using X */
+  /* Disable motion events on other actors */
   clutter_set_motion_events_enabled (FALSE);
 
+  /* Grab the mouse so that we receive the release if the cursor
+   * goes off-stage.
+   */
+  clutter_grab_pointer_for_device (actor, priv->is_moving);
+
   return TRUE;
+}
+
+static void
+mx_window_button_release (MxWindow *window)
+{
+  MxWindowPrivate *priv = window->priv;
+
+  if (priv->is_moving != -1)
+    {
+      clutter_ungrab_pointer_for_device (priv->is_moving);
+      clutter_set_motion_events_enabled (TRUE);
+      priv->is_moving = -1;
+    }
 }
 
 static gboolean
 mx_window_button_release_event (ClutterActor       *actor,
                                 ClutterButtonEvent *event)
 {
-  MxWindowPrivate *priv;
+  MxWindow *window = MX_WINDOW (actor);
+  MxWindowPrivate *priv = window->priv;
 
-  priv = MX_WINDOW (actor)->priv;
+  if ((clutter_input_device_get_device_id (event->device) == priv->is_moving) &&
+      (event->button == 1))
+    {
+      mx_window_button_release (window);
+      return TRUE;
+    }
 
-  if (priv->small_screen)
-    return FALSE;
+  return FALSE;
+}
 
-  priv->is_moving = FALSE;
+static gboolean
+mx_window_captured_event (ClutterActor *actor,
+                          ClutterEvent *event)
+{
+  MxWindowPrivate *priv = MX_WINDOW (actor)->priv;
 
-  clutter_set_motion_events_enabled (TRUE);
+  switch (event->type)
+    {
+    case CLUTTER_MOTION:
+      /* Check if we're over the resize handle */
+      if ((priv->is_moving == -1) && !priv->small_screen)
+        {
+          gint x, y;
+          Window win;
+          Display *dpy;
+          gfloat height, width;
+          guint rheight, rwidth;
 
-  return TRUE;
+          static Cursor csoutheast = 0;
+          ClutterMotionEvent *mevent = &event->motion;
+
+          win = clutter_x11_get_stage_window (CLUTTER_STAGE (actor));
+          dpy = clutter_x11_get_default_display ();
+
+          clutter_actor_get_size (actor, &width, &height);
+
+          x = mevent->x;
+          y = mevent->y;
+
+          /* Create the resize cursor */
+          if (!csoutheast)
+            csoutheast = XCreateFontCursor (dpy, XC_bottom_right_corner);
+
+          rwidth = cogl_texture_get_width (priv->resize_grip);
+          rheight = cogl_texture_get_height (priv->resize_grip);
+
+          /* Set the cursor if necessary */
+          if (x > width - rwidth && y > height - rheight)
+            {
+              if (!priv->is_resizing)
+                {
+                  XDefineCursor (dpy, win, csoutheast);
+                  priv->is_resizing = TRUE;
+                }
+              return TRUE;
+            }
+          else
+            {
+              if (priv->is_resizing)
+                {
+                  XUndefineCursor (dpy, win);
+                  priv->is_resizing = FALSE;
+                }
+              return FALSE;
+            }
+        }
+
+    case CLUTTER_BUTTON_PRESS:
+      /* We want resizing to happen even if there are active widgets
+       * underneath the resize-handle.
+       */
+      if (priv->is_resizing)
+        return mx_window_button_press_event (actor, &event->button);
+      else
+        return FALSE;
+
+    default:
+      return FALSE;
+    }
 }
 
 static gboolean
@@ -599,14 +696,26 @@ mx_window_motion_event (ClutterActor       *actor,
   Window win, root_win, root, child;
   Display *dpy;
   gfloat height, width;
-  static Cursor csoutheast;
-  guint rheight, rwidth;
 
   window = MX_WINDOW (actor);
   priv = window->priv;
 
-  if (priv->small_screen)
+  /* Ignore motion events while in small-screen mode and if they're not
+   * from our grabbed device.
+   */
+  if ((priv->small_screen) ||
+      (clutter_input_device_get_device_id (event->device) != priv->is_moving))
     return FALSE;
+
+  /* Check if the mouse button is still down - if the user releases the
+   * mouse button while outside of the stage (which can happen), we don't
+   * get the release event.
+   */
+  if (!(event->modifier_state & CLUTTER_BUTTON1_MASK))
+    {
+      mx_window_button_release (window);
+      return TRUE;
+    }
 
   win = clutter_x11_get_stage_window (CLUTTER_STAGE (actor));
   dpy = clutter_x11_get_default_display ();
@@ -615,29 +724,6 @@ mx_window_motion_event (ClutterActor       *actor,
 
   x = event->x;
   y = event->y;
-
-  /* Create the resize cursor */
-  if (!csoutheast)
-    csoutheast = XCreateFontCursor (dpy, XC_bottom_right_corner);
-
-  rwidth = cogl_texture_get_width (priv->resize_grip);
-  rheight = cogl_texture_get_height (priv->resize_grip);
-
-  /* Set the cursor if necessary */
-  if (!priv->is_moving)
-    {
-      if (x > width - rwidth && y > height - rheight)
-        {
-          XDefineCursor (dpy, win, csoutheast);
-          priv->is_resizing = TRUE;
-        }
-      else
-        {
-          XUndefineCursor (dpy, win);
-          priv->is_resizing = FALSE;
-        }
-      return FALSE;
-    }
 
   /* Move/resize the window if we're dragging */
   offsetx = priv->drag_x_start;
@@ -651,15 +737,14 @@ mx_window_motion_event (ClutterActor       *actor,
       int screen;
       gfloat min_width, min_height;
 
+      screen = DefaultScreen (dpy);
       mx_window_get_minimum_size (window, &min_width, &min_height);
 
-      screen = DefaultScreen (dpy);
-      width = MIN (MAX (priv->drag_width_start + (x - priv->drag_x_start),
-                        (guint)min_width),
-                   DisplayWidth (dpy, screen) - priv->drag_win_x_start);
-      height = MIN (MAX (priv->drag_height_start + (y - priv->drag_y_start),
-                         (guint)min_height),
-                    DisplayHeight (dpy, screen) - priv->drag_win_y_start);
+      x = MAX (priv->drag_width_start + (x - priv->drag_x_start), min_width);
+      y = MAX (priv->drag_height_start + (y - priv->drag_y_start), min_height);
+
+      width = MIN (x, DisplayWidth (dpy, screen) - priv->drag_win_x_start);
+      height = MIN (y, DisplayHeight (dpy, screen) - priv->drag_win_y_start);
 
 #if !CLUTTER_CHECK_VERSION(1,1,8)
       /* Set the natural width/height so ClutterStageX11 won't try to
@@ -823,6 +908,7 @@ mx_window_class_init (MxWindowClass *klass)
   actor_class->allocate = mx_window_allocate;
   actor_class->button_press_event = mx_window_button_press_event;
   actor_class->button_release_event = mx_window_button_release_event;
+  actor_class->captured_event = mx_window_captured_event;
   actor_class->motion_event = mx_window_motion_event;
 #if !CLUTTER_CHECK_VERSION(1,1,8)
   actor_class->get_preferred_width = mx_window_get_preferred_width;
@@ -852,6 +938,8 @@ mx_window_init (MxWindow *self)
   MxWindowPrivate *priv;
 
   priv = self->priv = WINDOW_PRIVATE (self);
+
+  priv->is_moving = -1;
 
   priv->toolbar = mx_toolbar_new ();
   clutter_actor_set_parent (priv->toolbar, CLUTTER_ACTOR (self));
@@ -1008,10 +1096,11 @@ mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
       priv->small_screen = small_screen;
 
       /* In case we were in the middle of a move/resize */
-      if (priv->is_moving)
+      if (priv->is_moving != -1)
         {
-          priv->is_moving = FALSE;
+          clutter_ungrab_pointer_for_device (priv->is_moving);
           clutter_set_motion_events_enabled (TRUE);
+          priv->is_moving = -1;
           if (priv->is_resizing)
             {
               XUndefineCursor (dpy, win);
