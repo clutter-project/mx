@@ -69,12 +69,15 @@ GType mx_scroll_view_get_type (void) G_GNUC_CONST;
 ClutterActor *mx_scroll_view_new (void);
 
 
-void          mx_scroll_view_set_mouse_scrolling (MxScrollView *scroll,
-                                                  gboolean      enabled);
-gboolean      mx_scroll_view_get_mouse_scrolling (MxScrollView *scroll);
-void          mx_scroll_view_set_enable_gestures (MxScrollView *scroll,
-                                                  gboolean      enabled);
-gboolean      mx_scroll_view_get_enable_gestures (MxScrollView *scroll);
+void           mx_scroll_view_set_mouse_scrolling (MxScrollView  *scroll,
+                                                   gboolean       enabled);
+gboolean       mx_scroll_view_get_mouse_scrolling (MxScrollView  *scroll);
+void           mx_scroll_view_set_enable_gestures (MxScrollView  *scroll,
+                                                   gboolean       enabled);
+gboolean       mx_scroll_view_get_enable_gestures (MxScrollView  *scroll);
+void           mx_scroll_view_set_scroll_policy   (MxScrollView  *scroll,
+                                                   MxScrollPolicy policy);
+MxScrollPolicy mx_scroll_view_get_scroll_policy   (MxScrollView  *scroll);
 
 G_END_DECLS
 

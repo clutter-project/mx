@@ -105,6 +105,14 @@ typedef enum
   MX_WEIGHT_LIGHTER
 } MxFontWeight;
 
+typedef enum
+{
+  MX_SCROLL_NONE,
+  MX_SCROLL_HORIZONTAL,
+  MX_SCROLL_VERTICAL,
+  MX_SCROLL_BOTH
+} MxScrollPolicy;
+
 G_END_DECLS
 
 #endif /* __MX_TYPES_H__ */

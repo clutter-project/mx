@@ -47,6 +47,7 @@
 #include "mx-scroll-bar.h"
 #include "mx-scrollable.h"
 #include "mx-stylable.h"
+#include "mx-enum-types.h"
 #include <clutter/clutter.h>
 
 #include "config.h"
@@ -83,6 +84,8 @@ struct _MxScrollViewPrivate
   guint         mouse_scroll : 1;
   guint         enable_gestures : 1;
 
+  MxScrollPolicy scroll_policy;
+
 #ifdef HAVE_CLUTTER_GESTURE
   ClutterGesture *gesture;
   ClutterAnimation *animation;
@@ -93,7 +96,8 @@ enum {
   PROP_0,
 
   PROP_MOUSE_SCROLL,
-  PROP_ENABLE_GESTURES
+  PROP_ENABLE_GESTURES,
+  PROP_SCROLL_POLICY
 };
 
 static void
@@ -109,9 +113,15 @@ mx_scroll_view_get_property (GObject    *object,
     case PROP_MOUSE_SCROLL:
       g_value_set_boolean (value, priv->mouse_scroll);
       break;
+
     case PROP_ENABLE_GESTURES:
       g_value_set_boolean (value, priv->enable_gestures);
       break;
+
+    case PROP_SCROLL_POLICY:
+      g_value_set_enum (value, priv->scroll_policy);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -133,6 +143,10 @@ mx_scroll_view_set_property (GObject      *object,
 
     case PROP_ENABLE_GESTURES:
       mx_scroll_view_set_enable_gestures (view, g_value_get_boolean (value));
+      break;
+
+    case PROP_SCROLL_POLICY:
+      mx_scroll_view_set_scroll_policy (view, g_value_get_enum (value));
       break;
 
     default:
@@ -219,7 +233,8 @@ mx_scroll_view_get_preferred_width (ClutterActor *actor,
                                     gfloat       *natural_width_p)
 {
   MxPadding padding;
-  guint xthickness;
+  gfloat child_min_w, child_nat_w;
+  gfloat vscroll_w;
 
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (actor)->priv;
 
@@ -227,34 +242,45 @@ mx_scroll_view_get_preferred_width (ClutterActor *actor,
     return;
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
-  mx_stylable_get (MX_STYLABLE (actor),
-                   "scrollbar-width", &xthickness,
-                   NULL);
 
   /* Our natural width is the natural width of the child */
   clutter_actor_get_preferred_width (priv->child,
                                      for_height,
-                                     NULL,
-                                     natural_width_p);
+                                     &child_min_w,
+                                     &child_nat_w);
 
   /* Add space for the scroll-bar if we can determine it will be necessary */
-  if ((for_height >= 0) && natural_width_p)
+  if (for_height >= 0)
     {
       gfloat natural_height;
 
       clutter_actor_get_preferred_height (priv->child, -1.0,
                                           NULL,
                                           &natural_height);
-      if (for_height < natural_height)
-        *natural_width_p += xthickness;
+      if (for_height >= natural_height)
+        vscroll_w = 0;
+      else
+        mx_stylable_get (MX_STYLABLE (actor), "scrollbar-width", &vscroll_w,
+                         NULL);
+    }
+
+  if (min_width_p)
+    {
+      *min_width_p = padding.left + padding.right + vscroll_w;
+
+      /* if the scroll policy is not set to always or horizontal, then the
+       * minimum size of the scroll view is the minimum size of the child */
+
+      if (!(priv->scroll_policy == MX_SCROLL_BOTH
+            || priv->scroll_policy == MX_SCROLL_HORIZONTAL))
+        {
+          *min_width_p += child_min_w;
+        }
     }
 
   /* Add space for padding */
-  if (min_width_p)
-    *min_width_p = padding.left + padding.right;
-
   if (natural_width_p)
-    *natural_width_p += padding.left + padding.right;
+    *natural_width_p = padding.left + padding.right + child_nat_w + vscroll_w;
 }
 
 static void
@@ -264,7 +290,8 @@ mx_scroll_view_get_preferred_height (ClutterActor *actor,
                                      gfloat       *natural_height_p)
 {
   MxPadding padding;
-  guint ythickness;
+  gfloat min_child_h, nat_child_h;
+  gfloat scroll_h;
 
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (actor)->priv;
 
@@ -272,34 +299,42 @@ mx_scroll_view_get_preferred_height (ClutterActor *actor,
     return;
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
-  mx_stylable_get (MX_STYLABLE (actor),
-                   "scrollbar-height", &ythickness,
-                   NULL);
 
   /* Our natural height is the natural height of the child */
   clutter_actor_get_preferred_height (priv->child,
                                       for_width,
-                                      NULL,
-                                      natural_height_p);
+                                      &min_child_h,
+                                      &nat_child_h);
 
   /* Add space for the scroll-bar if we can determine it will be necessary */
-  if ((for_width >= 0) && natural_height_p)
+  if (for_width >= 0)
     {
       gfloat natural_width;
 
       clutter_actor_get_preferred_width (priv->child, -1.0,
                                          NULL,
                                          &natural_width);
-      if (for_width < natural_width)
-        *natural_height_p += ythickness;
+      if (for_width >= natural_width)
+        scroll_h = 0;
+      else
+        mx_stylable_get (MX_STYLABLE (actor), "scrollbar-height", &scroll_h,
+                         NULL);
     }
 
   /* Add space for padding */
   if (min_height_p)
-    *min_height_p = padding.top + padding.bottom;
+    {
+      *min_height_p = padding.top + padding.bottom + scroll_h;
+
+      if (!(priv->scroll_policy == MX_SCROLL_BOTH
+            || priv->scroll_policy == MX_SCROLL_VERTICAL))
+        {
+          *min_height_p += min_child_h;
+        }
+    }
 
   if (natural_height_p)
-    *natural_height_p += padding.top + padding.bottom;
+    *natural_height_p = padding.top + nat_child_h + padding.bottom + scroll_h;
 }
 
 static void
@@ -501,6 +536,14 @@ mx_scroll_view_class_init (MxScrollViewClass *klass)
                                 FALSE,
                                 G_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_ENABLE_GESTURES, pspec);
+
+  pspec = g_param_spec_enum ("scroll-policy",
+                             "Scroll Policy",
+                             "The scroll policy",
+                             MX_TYPE_SCROLL_POLICY,
+                             MX_SCROLL_BOTH,
+                             G_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_SCROLL_POLICY, pspec);
 }
 
 static void
@@ -690,6 +733,8 @@ mx_scroll_view_init (MxScrollView *self)
   priv->hscroll = CLUTTER_ACTOR (mx_scroll_bar_new (NULL));
   priv->vscroll = g_object_new (MX_TYPE_SCROLL_BAR, "vertical", TRUE, NULL);
 
+  priv->scroll_policy = MX_SCROLL_BOTH;
+
   clutter_actor_set_parent (priv->hscroll, CLUTTER_ACTOR (self));
   clutter_actor_set_parent (priv->vscroll, CLUTTER_ACTOR (self));
 
@@ -872,3 +917,33 @@ mx_scroll_view_get_enable_gestures (MxScrollView *scroll)
 
   return scroll->priv->enable_gestures;
 }
+
+
+void
+mx_scroll_view_set_scroll_policy (MxScrollView  *scroll,
+                                  MxScrollPolicy policy)
+{
+  MxScrollViewPrivate *priv;
+
+  g_return_if_fail (MX_IS_SCROLL_VIEW (scroll));
+
+  priv = scroll->priv;
+
+  if (priv->scroll_policy != policy)
+    {
+      priv->scroll_policy = policy;
+
+      g_object_notify (G_OBJECT (scroll), "scroll-policy");
+
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (scroll));
+    }
+}
+
+MxScrollPolicy
+mx_scroll_view_get_scroll_policy (MxScrollView *scroll)
+{
+  g_return_val_if_fail (MX_IS_SCROLL_VIEW (scroll), 0);
+
+  return scroll->priv->scroll_policy;
+}
+
