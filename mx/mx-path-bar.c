@@ -489,6 +489,7 @@ mx_path_bar_allocate (ClutterActor           *actor,
       extra_space = box->x2 - box->x1 - min_width;
       if (extra_space < 0)
         extra_space = 0;
+      allocate_pref = FALSE;
     }
   else
     {
