@@ -84,6 +84,9 @@ struct _MxScrollViewPrivate
   guint         mouse_scroll : 1;
   guint         enable_gestures : 1;
 
+  guint         scrollbar_width;
+  guint         scrollbar_height;
+
   MxScrollPolicy scroll_policy;
 
 #ifdef HAVE_CLUTTER_GESTURE
@@ -260,8 +263,7 @@ mx_scroll_view_get_preferred_width (ClutterActor *actor,
       if (for_height >= natural_height)
         vscroll_w = 0;
       else
-        mx_stylable_get (MX_STYLABLE (actor), "scrollbar-width", &vscroll_w,
-                         NULL);
+        vscroll_w = priv->scrollbar_width;
     }
 
   if (min_width_p)
@@ -317,8 +319,7 @@ mx_scroll_view_get_preferred_height (ClutterActor *actor,
       if (for_width >= natural_width)
         scroll_h = 0;
       else
-        mx_stylable_get (MX_STYLABLE (actor), "scrollbar-height", &scroll_h,
-                         NULL);
+        scroll_h = priv->scrollbar_height;
     }
 
   /* Add space for padding */
@@ -367,12 +368,8 @@ mx_scroll_view_allocate (ClutterActor          *actor,
   avail_width = (box->x2 - box->x1) - padding.left - padding.right;
   avail_height = (box->y2 - box->y1) - padding.top - padding.bottom;
 
-  mx_stylable_get (MX_STYLABLE (actor),
-                   "scrollbar-width", &sb_width,
-                   "scrollbar-height", &sb_height,
-                   NULL);
-  sb_width = 28;
-  sb_height = 28;
+  sb_width = priv->scrollbar_width;
+  sb_height = priv->scrollbar_height;
 
   if (!CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll))
     sb_width = 0;
@@ -420,6 +417,11 @@ mx_scroll_view_style_changed (MxWidget *widget)
 
   mx_stylable_changed ((MxStylable *) priv->hscroll);
   mx_stylable_changed ((MxStylable *) priv->vscroll);
+
+  mx_stylable_get (MX_STYLABLE (widget),
+                   "scrollbar-width", &priv->scrollbar_width,
+                   "scrollbar-height", &priv->scrollbar_height,
+                   NULL);
 }
 
 static gboolean
