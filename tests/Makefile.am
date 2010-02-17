@@ -19,6 +19,7 @@ noinst_PROGRAMS = 		\
 	test-table-2            \
 	test-texture-frame 	\
 	test-views 		\
+	test-window 		\
 	test-box-layout		\
 	test-mx			\
 	$(NULL)
@@ -54,6 +55,8 @@ test_droppable_SOURCES = test-droppable.c
 test_box_layout_SOURCES = test-box-layout.c
 
 test_path_bar_SOURCES = test-path-bar.c
+
+test_window_SOURCES = test-window.c
 
 EXTRA_DIST = \
 	     style/border-image-dark.png \
