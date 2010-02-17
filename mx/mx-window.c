@@ -366,6 +366,7 @@ mx_window_map (ClutterActor *actor)
   if (priv->child)
     clutter_actor_map (priv->child);
 
+  /* Remove the window decorations */
   if (!hint_atom)
     {
       PropMotifWmHints new_hints = {0,};
@@ -380,8 +381,6 @@ mx_window_map (ClutterActor *actor)
 
       hints = &new_hints;
 
-
-
       hints->flags = 0x2;
       hints->functions = 0x0;
       hints->decorations = 0x0;
@@ -389,11 +388,6 @@ mx_window_map (ClutterActor *actor)
       XChangeProperty (dpy, win, hint_atom, hint_atom, 32, PropModeReplace,
                        (guchar*) hints,
                        sizeof(PropMotifWmHints)/ sizeof (long));
-
-      clutter_stage_set_user_resizable (CLUTTER_STAGE (actor), TRUE);
-
-      printf ("property changed\n");
-
     }
 }
 
@@ -786,7 +780,6 @@ style_changed_cb (MxWindow *window)
 
   if (grip_filename)
     {
-  g_debug ("resize: %s", grip_filename->uri);
       priv->resize_grip = cogl_texture_new_from_file (grip_filename->uri,
                                                       COGL_TEXTURE_NONE,
                                                       COGL_PIXEL_FORMAT_ANY,
@@ -794,7 +787,7 @@ style_changed_cb (MxWindow *window)
       if (priv->resize_grip == COGL_INVALID_HANDLE)
         {
           priv->resize_grip = NULL;
-          g_debug ("could not load");
+          g_warning ("Error loading resize grip image");
         }
 
       g_boxed_free (MX_TYPE_BORDER_IMAGE, grip_filename);
