@@ -880,9 +880,11 @@ mx_box_layout_allocate (ClutterActor          *actor,
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (actor)->priv;
   gfloat avail_width, avail_height, pref_width, pref_height;
   MxPadding padding = { 0, };
+  gboolean allocate_pref;
+  gfloat extra_space = 0;
   gfloat position = 0;
   GList *l;
-  gint n_expand_children, extra_space;
+  gint n_expand_children, n_children;
 
   CLUTTER_ACTOR_CLASS (mx_box_layout_parent_class)->allocate (actor, box,
                                                               flags);
@@ -890,6 +892,28 @@ mx_box_layout_allocate (ClutterActor          *actor,
   if (priv->children == NULL)
     return;
 
+  /* count the number of children with expand set to TRUE and the
+   * amount of visible children.
+   */
+  n_children = n_expand_children = 0;
+  for (l = priv->children; l; l = l->next)
+    {
+      gboolean expand;
+      clutter_container_child_get ((ClutterContainer *) actor,
+                                   (ClutterActor*) l->data,
+                                   "expand", &expand,
+                                   NULL);
+      if (CLUTTER_ACTOR_IS_VISIBLE (l->data))
+        {
+          n_children ++;
+          if (expand)
+            n_expand_children ++;
+        }
+    }
+
+  /* We have no visible children, so bail out */
+  if (n_children == 0)
+    return;
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
   avail_width  = box->x2 - box->x1
@@ -901,15 +925,33 @@ mx_box_layout_allocate (ClutterActor          *actor,
 
   if (priv->is_vertical)
     {
-      mx_box_layout_get_preferred_height (actor, avail_width, NULL,
-                                          &pref_height);
+      gfloat min_height;
+      mx_box_layout_get_preferred_height (actor, avail_width,
+                                          &min_height, &pref_height);
       pref_width = avail_width;
+
+      if (pref_height > box->y2 - box->y1)
+        {
+          allocate_pref = FALSE;
+          extra_space = avail_height - min_height;
+        }
+      else
+        allocate_pref = TRUE;
     }
   else
     {
-      mx_box_layout_get_preferred_width (actor, avail_height, NULL,
-                                         &pref_width);
+      gfloat min_width;
+      mx_box_layout_get_preferred_width (actor, avail_height,
+                                         &min_width, &pref_width);
       pref_height = avail_height;
+
+      if (pref_width > box->x2 - box->x1)
+        {
+          allocate_pref = FALSE;
+          extra_space = avail_width - min_width;
+        }
+      else
+        allocate_pref = TRUE;
     }
 
   /* update adjustments for scrolling */
@@ -983,34 +1025,22 @@ mx_box_layout_allocate (ClutterActor          *actor,
       mx_adjustment_set_value (priv->hadjustment, prev_value);
     }
 
-  /* count the number of children with expand set to TRUE */
-  n_expand_children = 0;
-  for (l = priv->children; l; l = l->next)
+  /* We're allocating our preferred size or higher, so calculate
+   * the extra space to give to expanded children.
+   */
+  if (allocate_pref)
     {
-      gboolean expand;
-      clutter_container_child_get ((ClutterContainer *) actor,
-                                   (ClutterActor*) l->data,
-                                   "expand", &expand,
-                                   NULL);
-      if (expand)
-        n_expand_children++;
-    }
+      if (n_expand_children > 0)
+        {
+          if (priv->is_vertical)
+            extra_space = (avail_height - pref_height) / n_expand_children;
+          else
+            extra_space = (avail_width - pref_width) / n_expand_children;
 
-  if (n_expand_children == 0)
-    {
-      extra_space = 0;
-      n_expand_children = 1;
-    }
-  else
-    {
-      if (priv->is_vertical)
-        extra_space = (avail_height - pref_height) / n_expand_children;
-      else
-        extra_space = (avail_width - pref_width) / n_expand_children;
-
-      /* don't shrink anything */
-      if (extra_space < 0)
-        extra_space = 0;
+          /* don't shrink anything */
+          if (extra_space < 0)
+            extra_space = 0;
+        }
     }
 
   if (priv->is_vertical)
@@ -1028,8 +1058,8 @@ mx_box_layout_allocate (ClutterActor          *actor,
        l = (priv->is_pack_start) ? l->prev : l->next)
     {
       ClutterActor *child = (ClutterActor*) l->data;
-      ClutterActorBox child_box;
-      gfloat child_nat;
+      ClutterActorBox child_box, old_child_box;
+      gfloat child_nat, child_min;
       gboolean xfill, yfill, expand;
       MxAlign xalign, yalign;
 
@@ -1047,33 +1077,66 @@ mx_box_layout_allocate (ClutterActor          *actor,
       if (priv->is_vertical)
         {
           clutter_actor_get_preferred_height (child, avail_width,
-                                              NULL, &child_nat);
+                                              &child_min, &child_nat);
 
           child_box.y1 = position;
-          if (expand)
-            child_box.y2 = position + child_nat + extra_space;
+
+          if (allocate_pref)
+            {
+              if (expand)
+                child_box.y2 = position + child_nat + (int)extra_space;
+              else
+                child_box.y2 = position + child_nat;
+            }
           else
-            child_box.y2 = position + child_nat;
+            {
+              child_box.y2 =
+                position + MIN (child_nat,
+                                child_min + (int)(extra_space / n_children));
+
+              n_children --;
+              if (extra_space >= (child_box.y2 - child_box.y1 - child_min))
+                extra_space -= child_box.y2 - child_box.y1 - child_min;
+              else
+                extra_space = 0;
+            }
+
           child_box.x1 = padding.left;
           child_box.x2 = avail_width + padding.left;
         }
       else
         {
-
           clutter_actor_get_preferred_width (child, avail_height,
-                                             NULL, &child_nat);
+                                             &child_min, &child_nat);
 
           child_box.x1 = position;
 
-          if (expand)
-            child_box.x2 = position + child_nat + extra_space;
+          if (allocate_pref)
+            {
+              if (expand)
+                child_box.x2 = position + child_nat + (int)extra_space;
+              else
+                child_box.x2 = position + child_nat;
+            }
           else
-            child_box.x2 = position + child_nat;
+            {
+              child_box.x2 =
+                position + MIN (child_nat,
+                                child_min + (int)(extra_space / n_children));
+
+              n_children --;
+              if (extra_space >= (child_box.x2 - child_box.x1 - child_min))
+                extra_space -= child_box.x2 - child_box.x1 - child_min;
+              else
+                extra_space = 0;
+            }
 
           child_box.y1 = padding.top;
           child_box.y2 = avail_height + padding.top;
         }
 
+      /* Adjust the box for alignment/fill */
+      old_child_box = child_box;
       mx_allocate_align_fill (child, &child_box, xalign, yalign, xfill, yfill);
 
       if (priv->is_animating)
@@ -1124,11 +1187,10 @@ mx_box_layout_allocate (ClutterActor          *actor,
           clutter_actor_allocate (child, copy, flags);
         }
 
-      if (expand)
-        position += (child_nat + priv->spacing + extra_space);
+      if (priv->is_vertical)
+        position += (old_child_box.y2 - old_child_box.y1) + priv->spacing;
       else
-        position += (child_nat + priv->spacing);
-
+        position += (old_child_box.x2 - old_child_box.x1) + priv->spacing;
     }
 }
 
