@@ -254,6 +254,7 @@ mx_scroll_view_get_preferred_width (ClutterActor *actor,
                                      &child_nat_w);
 
   /* Add space for the scroll-bar if we can determine it will be necessary */
+  vscroll_w = 0;
   if (for_height >= 0)
     {
       gfloat natural_height;
@@ -261,9 +262,7 @@ mx_scroll_view_get_preferred_width (ClutterActor *actor,
       clutter_actor_get_preferred_height (priv->child, -1.0,
                                           NULL,
                                           &natural_height);
-      if (for_height >= natural_height)
-        vscroll_w = 0;
-      else
+      if (for_height < natural_height)
         vscroll_w = priv->scrollbar_width;
     }
 
@@ -310,6 +309,7 @@ mx_scroll_view_get_preferred_height (ClutterActor *actor,
                                       &nat_child_h);
 
   /* Add space for the scroll-bar if we can determine it will be necessary */
+  scroll_h = 0;
   if (for_width >= 0)
     {
       gfloat natural_width;
@@ -317,9 +317,7 @@ mx_scroll_view_get_preferred_height (ClutterActor *actor,
       clutter_actor_get_preferred_width (priv->child, -1.0,
                                          NULL,
                                          &natural_width);
-      if (for_width >= natural_width)
-        scroll_h = 0;
-      else
+      if (for_width < natural_width)
         scroll_h = priv->scrollbar_height;
     }
 
