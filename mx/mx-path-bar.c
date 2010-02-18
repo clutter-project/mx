@@ -510,8 +510,19 @@ mx_path_bar_allocate (ClutterActor           *actor,
                                          &cnat_width);
 
       if (!allocate_pref)
-        child_box.x2 = child_box.x1 + cmin_width +
-                       extra_space / n_crumbs;
+        {
+          /* Allocate a fair share of extra space, but don't allocate
+           * over the natural width.
+           */
+          child_box.x2 = child_box.x1 +
+            MIN (cmin_width + extra_space / n_crumbs, cnat_width);
+
+          n_crumbs --;
+          if (extra_space >= (child_box.x2 - child_box.x1 - cmin_width))
+            extra_space -= (child_box.x2 - child_box.x1 - cmin_width);
+          else
+            extra_space = 0;
+        }
       else
         child_box.x2 = child_box.x1 + cnat_width;
 
