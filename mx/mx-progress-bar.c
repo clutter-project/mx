@@ -32,6 +32,7 @@
 #include "mx-progress-bar.h"
 #include "mx-progress-bar-fill.h"
 #include "mx-texture-frame.h"
+#include "mx-private.h"
 
 G_DEFINE_TYPE (MxProgressBar, mx_progress_bar, MX_TYPE_WIDGET)
 

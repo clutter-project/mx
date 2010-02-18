@@ -33,6 +33,8 @@
 #include "mx-icon-theme.h"
 #include "mx-stylable.h"
 
+#include "mx-private.h"
+
 enum
 {
   PROP_0,

@@ -48,6 +48,7 @@
 #include "mx-scrollable.h"
 #include "mx-stylable.h"
 #include "mx-enum-types.h"
+#include "mx-private.h"
 #include <clutter/clutter.h>
 
 #include "config.h"
