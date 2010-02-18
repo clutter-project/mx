@@ -10,6 +10,7 @@ INCLUDES = \
 	-I$(top_builddir)
 
 noinst_PROGRAMS = 		\
+	test-deform-texture	\
 	test-draggable		\
 	test-droppable		\
 	test-grid \
@@ -48,6 +49,8 @@ test_mx_SOURCES = test-mx.c \
 		  test-toggle.c \
 		  test-button-group.c \
 		  $(NULL)
+
+test_deform_texture_SOURCES = test-deform-texture.c
 
 test_draggable_SOURCES = test-draggable.c
 test_droppable_SOURCES = test-droppable.c
