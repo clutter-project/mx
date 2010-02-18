@@ -181,22 +181,37 @@ mx_window_get_style_class (MxStylable *actor)
 static void
 mx_stylable_iface_init (MxStylableIface *iface)
 {
-  GParamSpec *pspec;
+  static gboolean is_initialised = FALSE;
 
-  iface->get_style = mx_window_get_style;
-  iface->set_style = mx_window_set_style;
-  iface->set_style_class = mx_window_set_style_class;
-  iface->get_style_class = mx_window_get_style_class;
-  iface->set_style_pseudo_class = mx_window_set_style_pseudo_class;
-  iface->get_style_pseudo_class = mx_window_get_style_pseudo_class;
+  if (!is_initialised)
+    {
+      GParamSpec *pspec;
+      ClutterColor bg_color = { 0xff, 0xff, 0xff, 0x00 };
 
-  pspec = g_param_spec_boxed ("mx-resize-grip",
-                              "Resize Grip",
-                              "Resize grip used in the corner of the"
-                              " window to allow the user to resize.",
-                              MX_TYPE_BORDER_IMAGE,
-                              G_PARAM_READWRITE);
-  mx_stylable_iface_install_property (iface, MX_TYPE_WINDOW, pspec);
+      is_initialised = TRUE;
+
+      iface->get_style = mx_window_get_style;
+      iface->set_style = mx_window_set_style;
+      iface->set_style_class = mx_window_set_style_class;
+      iface->get_style_class = mx_window_get_style_class;
+      iface->set_style_pseudo_class = mx_window_set_style_pseudo_class;
+      iface->get_style_pseudo_class = mx_window_get_style_pseudo_class;
+
+      pspec = clutter_param_spec_color ("background-color",
+                                        "Background Color",
+                                        "The background color of the window",
+                                        &bg_color,
+                                        G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_WINDOW, pspec);
+
+      pspec = g_param_spec_boxed ("mx-resize-grip",
+                                  "Resize Grip",
+                                  "Resize grip used in the corner of the"
+                                  " window to allow the user to resize.",
+                                  MX_TYPE_BORDER_IMAGE,
+                                  G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_WINDOW, pspec);
+    }
 }
 
 static void
@@ -773,6 +788,7 @@ style_changed_cb (MxWindow *window)
 {
   MxWindowPrivate *priv = window->priv;
   MxBorderImage *grip_filename;
+  ClutterColor *color;
 
   if (priv->resize_grip)
     {
@@ -780,9 +796,16 @@ style_changed_cb (MxWindow *window)
       priv->resize_grip = NULL;
     }
 
-  mx_stylable_get (MX_STYLABLE (window), "mx-resize-grip", &grip_filename,
+  mx_stylable_get (MX_STYLABLE (window),
+                   "mx-resize-grip", &grip_filename,
+                   "background-color", &color,
                    NULL);
 
+  if (color)
+    {
+      clutter_stage_set_color (CLUTTER_STAGE (window), color);
+      clutter_color_free (color);
+    }
 
   if (grip_filename)
     {
