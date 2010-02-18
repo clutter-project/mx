@@ -35,15 +35,15 @@
 
 G_BEGIN_DECLS
 
-#define MX_TYPE_SCROLLABLE                (mx_scrollable_get_type ())
-#define MX_SCROLLABLE(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), MX_TYPE_SCROLLABLE, MxScrollable))
-#define MX_IS_SCROLLABLE(obj)             (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MX_TYPE_SCROLLABLE))
-#define MX_SCROLLABLE_GET_INTERFACE(inst) (G_TYPE_INSTANCE_GET_INTERFACE ((inst), MX_TYPE_SCROLLABLE, MxScrollableInterface))
+#define MX_TYPE_SCROLLABLE            (mx_scrollable_get_type ())
+#define MX_SCROLLABLE(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MX_TYPE_SCROLLABLE, MxScrollable))
+#define MX_IS_SCROLLABLE(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MX_TYPE_SCROLLABLE))
+#define MX_SCROLLABLE_GET_IFACE(inst) (G_TYPE_INSTANCE_GET_INTERFACE ((inst), MX_TYPE_SCROLLABLE, MxScrollableIface))
 
 typedef struct _MxScrollable MxScrollable; /* Dummy object */
-typedef struct _MxScrollableInterface MxScrollableInterface;
+typedef struct _MxScrollableIface MxScrollableIface;
 
-struct _MxScrollableInterface
+struct _MxScrollableIface
 {
   GTypeInterface parent;
 

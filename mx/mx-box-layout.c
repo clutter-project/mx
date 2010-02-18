@@ -57,7 +57,7 @@
 
 
 static void mx_box_container_iface_init (ClutterContainerIface *iface);
-static void mx_box_scrollable_interface_init (MxScrollableInterface *iface);
+static void mx_box_scrollable_interface_init (MxScrollableIface *iface);
 static void mx_box_focusable_iface_init (MxFocusableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxBoxLayout, mx_box_layout, MX_TYPE_WIDGET,
@@ -280,7 +280,7 @@ scrollable_get_adjustments (MxScrollable  *scrollable,
 
 
 static void
-mx_box_scrollable_interface_init (MxScrollableInterface *iface)
+mx_box_scrollable_interface_init (MxScrollableIface *iface)
 {
   iface->set_adjustments = scrollable_set_adjustments;
   iface->get_adjustments = scrollable_get_adjustments;

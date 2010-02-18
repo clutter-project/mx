@@ -57,7 +57,7 @@ mx_scrollable_get_type (void)
     {
       static const GTypeInfo info =
       {
-        sizeof (MxScrollableInterface),
+        sizeof (MxScrollableIface),
         mx_scrollable_base_init,          /* base_init */
         NULL,
       };
@@ -72,9 +72,9 @@ mx_scrollable_set_adjustments (MxScrollable *scrollable,
                                MxAdjustment *hadjustment,
                                MxAdjustment *vadjustment)
 {
-  MX_SCROLLABLE_GET_INTERFACE (scrollable)->set_adjustments (scrollable,
-                                                             hadjustment,
-                                                             vadjustment);
+  MX_SCROLLABLE_GET_IFACE (scrollable)->set_adjustments (scrollable,
+                                                         hadjustment,
+                                                         vadjustment);
 }
 
 void
@@ -82,7 +82,7 @@ mx_scrollable_get_adjustments (MxScrollable  *scrollable,
                                MxAdjustment **hadjustment,
                                MxAdjustment **vadjustment)
 {
-  MX_SCROLLABLE_GET_INTERFACE (scrollable)->get_adjustments (scrollable,
-                                                             hadjustment,
-                                                             vadjustment);
+  MX_SCROLLABLE_GET_IFACE (scrollable)->get_adjustments (scrollable,
+                                                         hadjustment,
+                                                         vadjustment);
 }

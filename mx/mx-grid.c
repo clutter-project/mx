@@ -165,7 +165,7 @@ mx_grid_do_allocate (ClutterActor          *self,
                      gfloat                *actual_width,
                      gfloat                *actual_height);
 
-static void scrollable_interface_init (MxScrollableInterface *iface);
+static void scrollable_interface_init (MxScrollableIface *iface);
 static void mx_box_focusable_iface_init (MxFocusableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxGrid, mx_grid,
@@ -413,7 +413,7 @@ scrollable_get_adjustments (MxScrollable  *scrollable,
 }
 
 static void
-scrollable_interface_init (MxScrollableInterface *iface)
+scrollable_interface_init (MxScrollableIface *iface)
 {
   iface->set_adjustments = scrollable_set_adjustments;
   iface->get_adjustments = scrollable_get_adjustments;

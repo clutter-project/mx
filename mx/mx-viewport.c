@@ -60,7 +60,7 @@
 #include "mx-private.h"
 #include "mx-bin.h"
 
-static void scrollable_interface_init (MxScrollableInterface *iface);
+static void scrollable_interface_init (MxScrollableIface *iface);
 
 static void scrollable_set_adjustments (MxScrollable *scrollable,
                                         MxAdjustment *hadjustment,
@@ -551,7 +551,7 @@ scrollable_get_adjustments (MxScrollable  *scrollable,
 }
 
 static void
-scrollable_interface_init (MxScrollableInterface *iface)
+scrollable_interface_init (MxScrollableIface *iface)
 {
   iface->set_adjustments = scrollable_set_adjustments;
   iface->get_adjustments = scrollable_get_adjustments;
