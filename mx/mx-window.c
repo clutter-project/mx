@@ -985,6 +985,8 @@ mx_window_init (MxWindow *self)
 #if CLUTTER_CHECK_VERSION(1,1,8)
   g_signal_connect (self, "realize",
                     G_CALLBACK (mx_window_realize_cb), NULL);
+
+  g_object_set (G_OBJECT (self), "use-alpha", TRUE, NULL);
 #endif
 }
 

@@ -18,6 +18,7 @@
  */
 
 #include <mx/mx.h>
+#include <clutter/x11/clutter-x11.h>
 
 static gint func = 0;
 
@@ -119,13 +120,16 @@ main (int argc, char *argv[])
   MxApplication *app;
   gfloat width, height;
   ClutterActor *stage, *texture;
-  ClutterColor stage_color = { 0xcc, 0xcc, 0xcc, 0xff };
+  ClutterColor stage_color = { 0xcc, 0xcc, 0xcc, 0xb0 };
 
   if (argc < 2)
     {
       printf ("Usage: %s <filename> [filename]\n", argv[0]);
       return 1;
     }
+
+  /* Enable argb visuals for coolness with compositors */
+  clutter_x11_set_use_argb_visual (TRUE);
 
   app = mx_application_new (&argc, &argv, "Test deformations", 0);
 
@@ -134,7 +138,7 @@ main (int argc, char *argv[])
   clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
 
   /* Set a size so we don't just get our minimum size on map */
-  clutter_actor_set_size (stage, 640, 480);
+  clutter_actor_set_size (stage, 480, 480);
 
   /* Create a page-turn deformation */
   texture = mx_deform_page_turn_new ();
