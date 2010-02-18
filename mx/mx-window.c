@@ -985,10 +985,25 @@ mx_window_set_child (MxWindow     *window,
   if (priv->child != actor)
     {
       if (priv->child)
-        clutter_actor_destroy (priv->child);
+        {
+          ClutterActor *old_child = priv->child;
 
-      priv->child = actor;
-      clutter_actor_set_parent (actor, CLUTTER_ACTOR (window));
+          g_object_ref (old_child);
+
+          priv->child = NULL;
+          clutter_actor_unparent (old_child);
+
+          g_signal_emit_by_name (window, "actor-removed", old_child);
+
+          g_object_unref (old_child);
+        }
+
+      if (actor)
+        {
+          priv->child = actor;
+          clutter_actor_set_parent (actor, CLUTTER_ACTOR (window));
+          g_signal_emit_by_name (window, "actor-added", priv->child);
+        }
     }
 
 }
