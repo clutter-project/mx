@@ -186,7 +186,7 @@ mx_stylable_iface_init (MxStylableIface *iface)
   if (!is_initialised)
     {
       GParamSpec *pspec;
-      ClutterColor bg_color = { 0xff, 0xff, 0xff, 0x00 };
+      ClutterColor bg_color = { 0xff, 0xff, 0xff, 0xff };
 
       is_initialised = TRUE;
 
