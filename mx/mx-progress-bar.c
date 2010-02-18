@@ -248,7 +248,7 @@ mx_progress_bar_class_init (MxProgressBarClass *klass)
   pspec = g_param_spec_double ("progress",
                                "Progress",
                                "Progress",
-                               0.0, 1.0, 0.0, G_PARAM_READWRITE);
+                               0.0, 1.0, 0.0, MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_PROGRESS, pspec);
 }
 

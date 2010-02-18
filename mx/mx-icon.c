@@ -320,14 +320,14 @@ mx_icon_class_init (MxIconClass *klass)
   pspec = g_param_spec_string ("icon-name",
                                "Icon name",
                                "An icon name",
-                               NULL, G_PARAM_READWRITE);
+                               NULL, MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_ICON_NAME, pspec);
 
   pspec = g_param_spec_int ("icon-size",
                             "Icon size",
                             "Size of the icon",
                             1, G_MAXINT, 48,
-                            G_PARAM_READWRITE);
+                            MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_ICON_SIZE, pspec);
 }
 

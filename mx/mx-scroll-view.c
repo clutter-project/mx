@@ -527,7 +527,7 @@ mx_scroll_view_class_init (MxScrollViewClass *klass)
                                 "Enable Mouse Scrolling",
                                 "Enable automatic mouse wheel scrolling",
                                 TRUE,
-                                G_PARAM_READWRITE);
+                                MX_PARAM_READWRITE);
   g_object_class_install_property (object_class,
                                    PROP_MOUSE_SCROLL,
                                    pspec);
@@ -536,7 +536,7 @@ mx_scroll_view_class_init (MxScrollViewClass *klass)
                                 "Enable Gestures",
                                 "Enable use of pointer gestures for scrolling",
                                 FALSE,
-                                G_PARAM_READWRITE);
+                                MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_ENABLE_GESTURES, pspec);
 
   pspec = g_param_spec_enum ("scroll-policy",
@@ -544,7 +544,7 @@ mx_scroll_view_class_init (MxScrollViewClass *klass)
                              "The scroll policy",
                              MX_TYPE_SCROLL_POLICY,
                              MX_SCROLL_BOTH,
-                             G_PARAM_READWRITE);
+                             MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_SCROLL_POLICY, pspec);
 }
 

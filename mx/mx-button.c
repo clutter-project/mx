@@ -716,20 +716,20 @@ mx_button_class_init (MxButtonClass *klass)
   pspec = g_param_spec_string ("label",
                                "Label",
                                "Label of the button",
-                               NULL, G_PARAM_READWRITE);
+                               NULL, MX_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_LABEL, pspec);
 
   pspec = g_param_spec_boolean ("toggle-mode",
                                 "Toggle Mode",
                                 "Enable or disable toggling",
-                                FALSE, G_PARAM_READWRITE);
+                                FALSE, MX_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_TOGGLE, pspec);
 
   pspec = g_param_spec_boolean ("checked",
                                 "Checked",
                                 "Indicates if a toggle button is \"on\""
                                 " or \"off\"",
-                                FALSE, G_PARAM_READWRITE);
+                                FALSE, MX_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_ACTIVE, pspec);
 
   /**
