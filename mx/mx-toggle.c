@@ -53,21 +53,27 @@ mx_toggle_background_get_preferred_width (ClutterActor *actor,
                                           gfloat       *pref_width_p)
 {
   ClutterActor *background;
+  gfloat pref_w;
 
   background = mx_widget_get_background_image (MX_WIDGET (actor));
 
   if (!background)
     {
-      if (*min_width_p)
-        min_width_p = 0;
-      if (*pref_width_p)
-        pref_width_p = 0;
+      if (min_width_p)
+        *min_width_p = 0;
+      if (pref_width_p)
+        *pref_width_p = 0;
 
       return;
     }
 
-  clutter_actor_get_preferred_width (background, for_height, min_width_p,
-                                     pref_width_p);
+  clutter_actor_get_preferred_width (background, for_height, NULL, &pref_w);
+
+  if (min_width_p)
+    *min_width_p = pref_w;
+
+  if (pref_width_p)
+    *pref_width_p = pref_w;
 }
 
 static void
@@ -77,21 +83,27 @@ mx_toggle_background_get_preferred_height (ClutterActor *actor,
                                            gfloat       *pref_height_p)
 {
   ClutterActor *background;
+  gfloat pref_h;
 
   background = mx_widget_get_background_image (MX_WIDGET (actor));
 
   if (!background)
     {
-      if (*min_height_p)
-        min_height_p = 0;
-      if (*pref_height_p)
-        pref_height_p = 0;
+      if (min_height_p)
+        *min_height_p = 0;
+      if (pref_height_p)
+        *pref_height_p = 0;
 
       return;
     }
 
-  clutter_actor_get_preferred_height (background, for_width, min_height_p,
-                                      pref_height_p);
+  clutter_actor_get_preferred_height (background, for_width, NULL, &pref_h);
+
+  if (min_height_p)
+    *min_height_p = pref_h;
+
+  if (pref_height_p)
+    *pref_height_p = pref_h;
 }
 
 
