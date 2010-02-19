@@ -10,20 +10,20 @@ MxWindow
 
 MxButton
 {
-  x-mx-border-image-transition-duration: 120;
+  -mx-border-image-transition-duration: 120;
   padding: 10;
   border-image: url("button.png") 10;
 }
 
 MxButton:hover
 {
-  x-mx-border-image-transition-duration: 0;
+  -mx-border-image-transition-duration: 0;
   border-image: url("button-hover.png") 10;
 }
 
 MxButton:active, MxButton:checked
 {
-  x-mx-border-image-transition-duration: 0;
+  -mx-border-image-transition-duration: 0;
   padding: 11 9 9 11;
   border-image: url("button-active.png") 10;
 }
@@ -142,19 +142,19 @@ MxExpander:active {
 
 MxExpander > *#mx-expander-arrow-closed {
     padding: 0;
-    x-mx-content-image: url('expander-arrow-up.png');
+    -mx-content-image: url('expander-arrow-up.png');
 }
 
 MxExpander > *#mx-expander-arrow-closed:hover {
-    x-mx-content-image: url('expander-arrow-up-hover.png');
+    -mx-content-image: url('expander-arrow-up-hover.png');
 }
 
 MxExpander > *#mx-expander-arrow-open {
-    x-mx-content-image: url('expander-arrow-down.png');
+    -mx-content-image: url('expander-arrow-down.png');
 }
 
 MxExpander > *#mx-expander-arrow-open:hover {
-    x-mx-content-image: url('expander-arrow-down-hover.png');
+    -mx-content-image: url('expander-arrow-down-hover.png');
 }
 
 MxTooltip {
@@ -234,18 +234,18 @@ MxToolbar MxButton:active {
 }
 
 MxToolbar MxButton#close-button {
-  x-mx-icon-name: window-close-normal;
-  x-mx-icon-size: 48;
+  -mx-icon-name: window-close-normal;
+  -mx-icon-size: 48;
 }
 
 MxToolbar MxButton#close-button:hover {
-  x-mx-icon-name: window-close-hover;
-  x-mx-icon-size: 48;
+  -mx-icon-name: window-close-hover;
+  -mx-icon-size: 48;
 }
 
 MxToolbar MxButton#close-button:active {
-  x-mx-icon-name: window-close-active;
-  x-mx-icon-size: 48;
+  -mx-icon-name: window-close-active;
+  -mx-icon-size: 48;
 }
 
 /* The following two rules would restore the old-style close-button

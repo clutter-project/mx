@@ -104,21 +104,37 @@ static GTokenType
 css_parse_key_value (GScanner *scanner, gchar **key, gchar **value)
 {
   GTokenType token;
+  gboolean start_with_dash = FALSE;
   gchar *id_first = scanner->config->cset_identifier_first;
   gchar *id_nth = scanner->config->cset_identifier_nth;
   guint scan_identifier_1char = scanner->config->scan_identifier_1char;
 
+  /* parse property name */
   token = g_scanner_get_next_token (scanner);
+
+  /* allow property names to start with '-' */
+  if (token == '-')
+    {
+      /* FIXME: this will now ignore whitepsace and comments, but this should
+       * not be allowed in the middle of a property name!
+       */
+      token = g_scanner_get_next_token (scanner);
+      start_with_dash = TRUE;
+    }
+
   if (token != G_TOKEN_IDENTIFIER)
     return G_TOKEN_IDENTIFIER;
-  *key = g_strdup (scanner->value.v_identifier);
+
+  if (start_with_dash)
+    *key = g_strconcat ("-", scanner->value.v_identifier, NULL);
+  else
+    *key = g_strdup (scanner->value.v_identifier);
 
   token = g_scanner_get_next_token (scanner);
   if (token != ':')
     return ':';
 
-  /* parse value */
-  /* set some options to be more forgiving */
+  /* value parsing options */
   scanner->config->cset_identifier_first = G_CSET_a_2_z "#_-0123456789"
     G_CSET_A_2_Z G_CSET_LATINS G_CSET_LATINC;
   scanner->config->cset_identifier_nth = scanner->config->cset_identifier_first;
@@ -126,7 +142,7 @@ css_parse_key_value (GScanner *scanner, gchar **key, gchar **value)
   scanner->config->char_2_token = FALSE;
   scanner->config->cset_skip_characters = "\n";
 
-
+  /* parse value */
   while (scanner->next_value.v_char != ';')
     {
       token = g_scanner_get_next_token (scanner);

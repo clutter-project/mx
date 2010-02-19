@@ -314,6 +314,23 @@ mx_style_transform_css_value (MxStyleSheetValue *css_value,
     }
 }
 
+static const gchar*
+mx_style_normalize_property_name (const gchar *name)
+{
+  /* gobject properties cannot start with a '-', but custom CSS properties
+   * must be prefixed with '-' + vendor identifier. Therefore, the custom
+   * style properties in mx are installed with "x-"
+   */
+
+  if (!name)
+    return NULL;
+
+  if (strstr (name, "x-mx") == name)
+    return &name[1];
+  else
+    return name;
+}
+
 /**
  * mx_style_get_property:
  * @style: the style data store object
@@ -347,7 +364,8 @@ mx_style_get_property (MxStyle    *style,
 
       properties = mx_style_sheet_get_properties (priv->stylesheet, stylable);
 
-      css_value = g_hash_table_lookup (properties, pspec->name);
+      css_value = g_hash_table_lookup (properties,
+                                       mx_style_normalize_property_name (pspec->name));
 
       if (!css_value)
         {
@@ -404,7 +422,8 @@ mx_style_get_valist (MxStyle     *style,
           gchar *error;
           MxStyleSheetValue *css_value;
 
-          css_value = g_hash_table_lookup (properties, name);
+          css_value = g_hash_table_lookup (properties,
+                                           mx_style_normalize_property_name (name));
 
           if (!css_value)
             {
