@@ -24,15 +24,27 @@ const Mx = imports.gi.Mx;
 let [app] = Mx.Application.new (0, null, "Test Small Screen", 0);
 let stage = app.create_window ();
 
-let button = new Mx.Button ({label: "Toggle small-screen mode"});
-button.connect ("clicked",
-                function (b) {
-                  stage.small_screen = !stage.small_screen;
+let hbox = new Mx.BoxLayout ({spacing: 8});
+let toggle = new Mx.Toggle ();
+let label = new Mx.Label ({text: "Small-screen mode"});
+toggle.active = stage.small_screen;
+
+toggle.connect ("notify::active",
+                function (t) {
+                  stage.small_screen = toggle.active;
                 });
 
-stage.set_size (400, 400);
+hbox.add_actor (toggle);
+hbox.add_actor (label);
+stage.add_actor (hbox);
 
-stage.add_actor (button);
+hbox.child_set_property (toggle, "expand", true);
+hbox.child_set_property (toggle, "x-fill", false);
+// Mx.Align.end == 2;
+// FIXME: Need to add the correct introspection data for this?
+hbox.child_set_property (toggle, "x-align", 2);
+hbox.child_set_property (label, "y-fill", false);
+hbox.child_set_property (label, "expand", true);
 
 stage.show ();
 app.run ();

@@ -47,15 +47,17 @@ GType mx_toggle_handle_get_type (void) G_GNUC_CONST;
 G_DEFINE_TYPE (MxToggleHandle, mx_toggle_handle, MX_TYPE_WIDGET)
 
 static void
-mx_toggle_background_get_preferred_width (ClutterActor *actor,
-                                          gfloat        for_height,
-                                          gfloat       *min_width_p,
-                                          gfloat       *pref_width_p)
+mx_toggle_get_preferred_width (ClutterActor *actor,
+                               gfloat        for_height,
+                               gfloat       *min_width_p,
+                               gfloat       *pref_width_p)
 {
   ClutterActor *background;
   gfloat pref_w;
 
-  background = mx_widget_get_background_image (MX_WIDGET (actor));
+  background = mx_widget_get_border_image (MX_WIDGET (actor));
+  if (!background)
+    background = mx_widget_get_background_image (MX_WIDGET (actor));
 
   if (!background)
     {
@@ -67,7 +69,7 @@ mx_toggle_background_get_preferred_width (ClutterActor *actor,
       return;
     }
 
-  clutter_actor_get_preferred_width (background, for_height, NULL, &pref_w);
+  clutter_actor_get_preferred_width (background, -1, NULL, &pref_w);
 
   if (min_width_p)
     *min_width_p = pref_w;
@@ -77,15 +79,17 @@ mx_toggle_background_get_preferred_width (ClutterActor *actor,
 }
 
 static void
-mx_toggle_background_get_preferred_height (ClutterActor *actor,
-                                           gfloat        for_width,
-                                           gfloat       *min_height_p,
-                                           gfloat       *pref_height_p)
+mx_toggle_get_preferred_height (ClutterActor *actor,
+                                gfloat        for_width,
+                                gfloat       *min_height_p,
+                                gfloat       *pref_height_p)
 {
   ClutterActor *background;
   gfloat pref_h;
 
-  background = mx_widget_get_background_image (MX_WIDGET (actor));
+  background = mx_widget_get_border_image (MX_WIDGET (actor));
+  if (!background)
+    background = mx_widget_get_background_image (MX_WIDGET (actor));
 
   if (!background)
     {
@@ -97,7 +101,7 @@ mx_toggle_background_get_preferred_height (ClutterActor *actor,
       return;
     }
 
-  clutter_actor_get_preferred_height (background, for_width, NULL, &pref_h);
+  clutter_actor_get_preferred_height (background, -1, NULL, &pref_h);
 
   if (min_height_p)
     *min_height_p = pref_h;
@@ -111,10 +115,6 @@ mx_toggle_background_get_preferred_height (ClutterActor *actor,
 static void
 mx_toggle_handle_class_init (MxToggleHandleClass *klass)
 {
-  ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-
-  actor_class->get_preferred_width = mx_toggle_background_get_preferred_width;
-  actor_class->get_preferred_height = mx_toggle_background_get_preferred_height;
 }
 
 static void
@@ -269,26 +269,42 @@ mx_toggle_allocate (ClutterActor          *actor,
 {
   MxTogglePrivate *priv = MX_TOGGLE (actor)->priv;
   ClutterActorBox handle_box, child_box;
-  gfloat handle_w, handle_h;
+  ClutterActor *background;
+  gfloat handle_w;
   gfloat toggle_pos;
 
   CLUTTER_ACTOR_CLASS (mx_toggle_parent_class)->allocate (actor, box, flags);
 
-  clutter_actor_get_preferred_width (priv->handle, -1, NULL, &handle_w);
-  clutter_actor_get_preferred_height (priv->handle, -1, NULL, &handle_h);
-
   mx_widget_get_available_area (MX_WIDGET (actor), box, &child_box);
 
+  /* background-image don't get stretched, so adjust the child box so that the
+   * handle appears in the correct place.
+   */
+  background = mx_widget_get_background_image (MX_WIDGET (actor));
+  if (background)
+    {
+      gfloat width;
+      MxPadding padding;
+
+      mx_widget_get_padding (MX_WIDGET (actor), &padding);
+      clutter_actor_get_preferred_width (background, -1, NULL, &width);
+      width -= padding.left + padding.right;
+
+      child_box.x1 += (child_box.x2 - child_box.x1) / 2.f;
+      child_box.x1 -= width / 2.f;
+      child_box.x2 = child_box.x1 + width;
+    }
+
+  handle_w = (int)((child_box.x2 - child_box.x1) / 2.f);
   toggle_pos = child_box.x2 - handle_w - child_box.x1;
   priv->slide_length = toggle_pos;
 
   toggle_pos = toggle_pos * priv->position;
 
-
   handle_box.x1 = (gint) (child_box.x1 + toggle_pos);
   handle_box.y1 = child_box.y1;
   handle_box.x2 = handle_box.x1 + handle_w;
-  handle_box.y2 = handle_box.y1 + handle_h;
+  handle_box.y2 = child_box.y2;
 
   clutter_actor_allocate (priv->handle, &handle_box, flags);
 }
@@ -386,8 +402,8 @@ mx_toggle_class_init (MxToggleClass *klass)
   actor_class->paint = mx_toggle_paint;
   actor_class->map = mx_toggle_map;
   actor_class->unmap = mx_toggle_unmap;
-  actor_class->get_preferred_width = mx_toggle_background_get_preferred_width;
-  actor_class->get_preferred_height = mx_toggle_background_get_preferred_height;
+  actor_class->get_preferred_width = mx_toggle_get_preferred_width;
+  actor_class->get_preferred_height = mx_toggle_get_preferred_height;
   actor_class->allocate = mx_toggle_allocate;
   actor_class->button_release_event = mx_toggle_button_release_event;
 

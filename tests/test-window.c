@@ -20,49 +20,75 @@
 #include <mx/mx.h>
 
 static void
-small_screen_cb (MxWindow *window)
+small_screen_cb (MxToggle   *toggle,
+                 GParamSpec *pspec,
+                 MxWindow   *window)
 {
-  mx_window_set_small_screen (window, !mx_window_get_small_screen (window));
+  mx_window_set_small_screen (window, mx_toggle_get_active (toggle));
 }
 
 static void
-fullscreen_cb (ClutterStage *stage)
+fullscreen_cb (MxToggle     *toggle,
+               GParamSpec   *pspec,
+               ClutterStage *stage)
 {
-  clutter_stage_set_fullscreen (stage, !clutter_stage_get_fullscreen (stage));
+  clutter_stage_set_fullscreen (stage, mx_toggle_get_active (toggle));
 }
 
 int
 main (int argc, char **argv)
 {
   MxApplication *app;
-  ClutterActor *stage, *button, *hbox;
+  ClutterActor *stage, *toggle, *label, *table;
 
   app = mx_application_new (&argc, &argv, "Test PathBar", 0);
 
   stage = (ClutterActor *)mx_application_create_window (app);
 
-  hbox = mx_box_layout_new ();
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage), hbox);
+  table = mx_table_new ();
+  mx_table_set_col_spacing (MX_TABLE (table), 8);
+  mx_table_set_row_spacing (MX_TABLE (table), 12);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), table);
 
-  button = mx_button_new_with_label ("Toggle small-screen mode");
-  g_signal_connect_swapped (button, "clicked",
-                            G_CALLBACK (small_screen_cb), stage);
-  clutter_container_add_actor (CLUTTER_CONTAINER (hbox), button);
-  clutter_container_child_set (CLUTTER_CONTAINER (hbox),
-                               button,
-                               "x-fill", FALSE,
-                               "y-fill", FALSE,
-                               NULL);
+  toggle = mx_toggle_new ();
+  label = mx_label_new ("Toggle small-screen mode");
+  g_signal_connect (toggle, "notify::active",
+                    G_CALLBACK (small_screen_cb), stage);
+  mx_table_add_actor_with_properties (MX_TABLE (table),
+                                      toggle,
+                                      0, 0,
+                                      "x-expand", TRUE,
+                                      "x-align", 1.0,
+                                      "x-fill", FALSE,
+                                      NULL);
+  mx_table_add_actor_with_properties (MX_TABLE (table),
+                                      label,
+                                      0, 1,
+                                      "x-expand", TRUE,
+                                      "x-align", 0.0,
+                                      "y-fill", FALSE,
+                                      "x-fill", FALSE,
+                                      NULL);
 
-  button = mx_button_new_with_label ("Toggle fullscreen mode");
-  g_signal_connect_swapped (button, "clicked",
-                            G_CALLBACK (fullscreen_cb), stage);
-  clutter_container_add_actor (CLUTTER_CONTAINER (hbox), button);
-  clutter_container_child_set (CLUTTER_CONTAINER (hbox),
-                               button,
-                               "x-fill", FALSE,
-                               "y-fill", FALSE,
-                               NULL);
+  toggle = mx_toggle_new ();
+  label = mx_label_new ("Toggle full-screen mode");
+  g_signal_connect (toggle, "notify::active",
+                    G_CALLBACK (fullscreen_cb), stage);
+  mx_table_add_actor_with_properties (MX_TABLE (table),
+                                      toggle,
+                                      1, 0,
+                                      "x-expand", TRUE,
+                                      "x-align", 1.0,
+                                      "x-fill", FALSE,
+                                      NULL);
+  mx_table_add_actor_with_properties (MX_TABLE (table),
+                                      label,
+                                      1, 1,
+                                      "x-expand", TRUE,
+                                      "x-align", 0.0,
+                                      "y-fill", FALSE,
+                                      "x-fill", FALSE,
+                                      NULL);
 
   clutter_actor_show (stage);
 
