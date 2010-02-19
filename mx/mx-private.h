@@ -53,4 +53,12 @@ void _mx_table_update_row_col (MxTable *table,
                                gint     row,
                                gint     col);
 
+enum
+{
+  MX_DEBUG_LAYOUT = 1,
+  MX_DEBUG_INSPECTOR = 2
+};
+
+gboolean _mx_debug (gint debug);
+
 #endif /* __MX_PRIVATE_H__ */

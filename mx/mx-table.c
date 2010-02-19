@@ -1309,6 +1309,41 @@ mx_table_paint (ClutterActor *self)
       if (CLUTTER_ACTOR_IS_VISIBLE (child))
         clutter_actor_paint (child);
     }
+
+  if (_mx_debug (MX_DEBUG_LAYOUT))
+    {
+      int i;
+      float width, height;
+      gfloat pos = 0;
+      DimensionData *rows, *cols;
+
+      rows = (DimensionData*) priv->rows->data;
+      cols = (DimensionData*) priv->columns->data;
+
+      clutter_actor_get_size (self, &width, &height);
+
+      cogl_set_source_color4f (0.0, 0.0, 1.0, 0.7);
+
+      for (i = 0; i < priv->n_rows; i++)
+        {
+          cogl_rectangle (0, pos, 10, pos + rows[i].final_size);
+
+          pos += rows[i].final_size + priv->row_spacing;
+        }
+
+
+      cogl_set_source_color4f (1.0, 0.0, 0.0, 0.7);
+
+      pos = 0;
+      for (i = 0; i < priv->n_rows; i++)
+        {
+          cogl_rectangle (pos, 0, pos + cols[i].final_size, 10);
+
+          pos += cols[i].final_size + priv->col_spacing;
+        }
+
+
+    }
 }
 
 static void
