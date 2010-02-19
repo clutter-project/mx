@@ -422,6 +422,15 @@ mx_style_get_valist (MxStyle     *style,
           gchar *error;
           MxStyleSheetValue *css_value;
 
+          if (!pspec)
+            {
+              g_critical ("No style property \"%s\" installed on object of"
+                          " type \"%s\".", name,
+                         G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (stylable)));
+
+              break;
+            }
+
           css_value = g_hash_table_lookup (properties,
                                            mx_style_normalize_property_name (name));
 
