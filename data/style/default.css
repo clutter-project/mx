@@ -5,7 +5,7 @@
 
 MxWindow
 {
-  mx-resize-grip: url('resize-grip.png');
+  -mx-resize-grip: url('resize-grip.png');
 }
 
 MxButton
@@ -53,8 +53,8 @@ MxScrollBar
 
 MxScrollView
 {
-  scrollbar-width: 28;
-  scrollbar-height: 28;
+  -mx-scrollbar-width: 28;
+  -mx-scrollbar-height: 28;
 }
 
 MxButton#backward-stepper
@@ -293,7 +293,7 @@ MxToolbar MxPopup > MxBoxLayout:active > MxLabel
 }
 
 MxSlider {
-  trough-height: 8;
+  -mx-trough-height: 8;
 }
 
 MxSlider *#trough-background {
@@ -305,7 +305,7 @@ MxSlider *#fill {
 }
 
 MxPathBar {
-  overlap: 19;
+  -mx-overlap: 19;
 }
 
 MxPathBar > MxEntry {

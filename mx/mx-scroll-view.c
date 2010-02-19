@@ -418,8 +418,8 @@ mx_scroll_view_style_changed (MxWidget *widget)
   mx_stylable_changed ((MxStylable *) priv->vscroll);
 
   mx_stylable_get (MX_STYLABLE (widget),
-                   "scrollbar-width", &priv->scrollbar_width,
-                   "scrollbar-height", &priv->scrollbar_height,
+                   "x-mx-scrollbar-width", &priv->scrollbar_width,
+                   "x-mx-scrollbar-height", &priv->scrollbar_height,
                    NULL);
 }
 
@@ -558,14 +558,14 @@ mx_stylable_iface_init (MxStylableIface *iface)
 
       is_initialized = TRUE;
 
-      pspec = g_param_spec_uint ("scrollbar-width",
+      pspec = g_param_spec_uint ("x-mx-scrollbar-width",
                                  "Vertical scroll-bar thickness",
                                  "Thickness of vertical scrollbar, in px",
                                  0, G_MAXUINT, 24,
                                  G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_SCROLL_VIEW, pspec);
 
-      pspec = g_param_spec_uint ("scrollbar-height",
+      pspec = g_param_spec_uint ("x-mx-scrollbar-height",
                                  "Horizontal scroll-bar thickness",
                                  "Thickness of horizontal scrollbar, in px",
                                  0, G_MAXUINT, 24,

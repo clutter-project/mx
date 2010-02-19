@@ -273,7 +273,7 @@ mx_stylable_iface_init (MxStylableIface *iface)
 
       /* if specified, this will be the allocated height of the trough.
        * By default, the height of the trough is the same as its parent. */
-      pspec = g_param_spec_int ("trough-height",
+      pspec = g_param_spec_int ("x-mx-trough-height",
                                 "Height of the trough",
                                 "Height of the trough, in px",
                                 -1, G_MAXINT, -1,
@@ -283,7 +283,7 @@ mx_stylable_iface_init (MxStylableIface *iface)
 
       /* FIXME: have a trough-width property too? */
 
-      pspec = g_param_spec_uint ("handle-width",
+      pspec = g_param_spec_uint ("x-mx-handle-width",
                                  "Handle width",
                                  "Width of the handle, in px",
                                  0, G_MAXUINT, DEFAULT_HANDLE_WIDTH,
@@ -291,7 +291,7 @@ mx_stylable_iface_init (MxStylableIface *iface)
       mx_stylable_iface_install_property (iface,
                                           MX_TYPE_SLIDER, pspec);
 
-      pspec = g_param_spec_uint ("handle-height",
+      pspec = g_param_spec_uint ("x-mx-handle-height",
                                  "Handle height",
                                  "Height of the handle, in px",
                                  0, G_MAXUINT, DEFAULT_HANDLE_HEIGHT,
@@ -649,9 +649,9 @@ mx_slider_style_changed_cb (MxSlider *self)
   MxSliderPrivate *priv = self->priv;
 
   mx_stylable_get (MX_STYLABLE (self),
-                   "trough-height", &trough_height,
-                   "handle-width",  &handle_width,
-                   "handle-height", &handle_height,
+                   "x-mx-trough-height", &trough_height,
+                   "x-mx-handle-width",  &handle_width,
+                   "x-mx-handle-height", &handle_height,
                    NULL);
 
   relayout = FALSE;

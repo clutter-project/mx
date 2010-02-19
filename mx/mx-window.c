@@ -205,7 +205,7 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                         G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_WINDOW, pspec);
 
-      pspec = g_param_spec_boxed ("mx-resize-grip",
+      pspec = g_param_spec_boxed ("x-mx-resize-grip",
                                   "Resize Grip",
                                   "Resize grip used in the corner of the"
                                   " window to allow the user to resize.",
@@ -856,7 +856,7 @@ style_changed_cb (MxWindow *window)
     }
 
   mx_stylable_get (MX_STYLABLE (window),
-                   "mx-resize-grip", &grip_filename,
+                   "x-mx-resize-grip", &grip_filename,
                    "background-color", &color,
                    NULL);
 

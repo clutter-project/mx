@@ -93,7 +93,7 @@ mx_stylable_iface_init (MxStylableIface *iface)
 
       is_initialized = TRUE;
 
-      pspec = g_param_spec_int ("overlap",
+      pspec = g_param_spec_int ("x-mx-overlap",
                                 "Overlap",
                                 "Overlap between buttons.",
                                 0, G_MAXINT, 0,
@@ -227,7 +227,7 @@ mx_path_bar_style_changed_cb (MxWidget *self)
   MxPathBarPrivate *priv = MX_PATH_BAR (self)->priv;
 
   mx_stylable_get (MX_STYLABLE (self),
-                   "overlap", &overlap,
+                   "x-mx-overlap", &overlap,
                    NULL);
 
   if (overlap != priv->overlap)
