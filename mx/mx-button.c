@@ -76,9 +76,6 @@ struct _MxButtonPrivate
 {
   gchar            *text;
 
-  ClutterActor     *old_bg;
-  gboolean          old_bg_parented; /* TRUE if we have adopted old_bg */
-
   guint8            old_opacity;
 
   guint             is_pressed : 1;
@@ -193,54 +190,6 @@ mx_button_update_label_style (MxButton *button)
                                              CLUTTER_TEXT (label));
 }
 
-static void
-mx_button_dispose_old_bg (MxButton *button)
-{
-  MxButtonPrivate *priv = button->priv;
-
-  /* Temporary hack until a better solution comes about. Sometimes this
-   * function gets called by the mx_animation_completed call below after the
-   * object has been disposed.
-   */
-  g_return_if_fail (MX_IS_BUTTON (button));
-
-  if (priv->content_image)
-    {
-      clutter_actor_unparent (priv->content_image);
-      priv->content_image = NULL;
-    }
-
-  if (priv->old_bg)
-    {
-      if (priv->old_bg_parented)
-        {
-          clutter_actor_unparent (priv->old_bg);
-          priv->old_bg_parented = FALSE;
-        }
-      g_object_unref (priv->old_bg);
-      priv->old_bg = NULL;
-    }
-}
-
-static void
-mx_button_stylable_changed (MxStylable *stylable)
-{
-  MxButton *button = MX_BUTTON (stylable);
-  ClutterActor *bg_image;
-
-  mx_button_dispose_old_bg (button);
-
-  bg_image = mx_widget_get_border_image ((MxWidget*) button);
-  if (bg_image)
-    button->priv->old_bg = g_object_ref (bg_image);
-}
-
-static void
-mx_animation_completed (ClutterAnimation *animation,
-                        MxButton         *button)
-{
-  mx_button_dispose_old_bg (button);
-}
 
 static void
 mx_button_style_changed (MxWidget *widget)
@@ -304,26 +253,7 @@ mx_button_style_changed (MxWidget *widget)
       g_free (icon_name);
     }
 
-  /* run a transition if applicable */
-  if (priv->old_bg &&
-      (!mx_stylable_get_style_pseudo_class (MX_STYLABLE (widget))))
-    {
-      ClutterAnimation *animation;
 
-      if (!clutter_actor_get_parent (priv->old_bg))
-        {
-          clutter_actor_set_parent (priv->old_bg, (ClutterActor*) widget);
-          priv->old_bg_parented = TRUE;
-        }
-
-      animation = clutter_actor_animate (priv->old_bg,
-                                         CLUTTER_LINEAR,
-                                         120,
-                                         "opacity", 0,
-                                         NULL);
-      g_signal_connect (animation, "completed",
-                        G_CALLBACK (mx_animation_completed), button);
-    }
 }
 
 
@@ -337,7 +267,7 @@ mx_button_push (MxButton           *button,
 
   button->priv->is_pressed = TRUE;
 
-  clutter_grab_pointer (CLUTTER_ACTOR (button));
+  //clutter_grab_pointer (CLUTTER_ACTOR (button));
 
   mx_stylable_set_style_pseudo_class (MX_STYLABLE (button), "active");
 
@@ -354,7 +284,7 @@ mx_button_pull (MxButton *button)
   if (!button->priv->is_pressed)
     return;
 
-  clutter_ungrab_pointer ();
+  //clutter_ungrab_pointer ();
 
   if (button->priv->is_toggle)
     {
@@ -466,7 +396,7 @@ mx_button_leave (ClutterActor         *actor,
 
   if (button->priv->is_pressed)
     {
-      clutter_ungrab_pointer ();
+      //clutter_ungrab_pointer ();
 
       button->priv->is_pressed = FALSE;
     }
@@ -547,8 +477,6 @@ mx_button_finalize (GObject *gobject)
 static void
 mx_button_dispose (GObject *gobject)
 {
-  mx_button_dispose_old_bg (MX_BUTTON (gobject));
-
   G_OBJECT_CLASS (mx_button_parent_class)->dispose (gobject);
 }
 
@@ -561,9 +489,6 @@ mx_button_map (ClutterActor *self)
 
   if (priv->content_image)
     clutter_actor_map (priv->content_image);
-
-  if (priv->old_bg && priv->old_bg_parented)
-    clutter_actor_map (priv->old_bg);
 }
 
 static void
@@ -575,9 +500,6 @@ mx_button_unmap (ClutterActor *self)
 
   if (priv->content_image)
     clutter_actor_map (priv->content_image);
-
-  if (priv->old_bg && priv->old_bg_parented)
-    clutter_actor_unmap (priv->old_bg);
 }
 
 static void
@@ -599,10 +521,6 @@ mx_button_paint_background (MxWidget           *widget,
   MX_WIDGET_CLASS (mx_button_parent_class)->paint_background (widget,
                                                               background,
                                                               color);
-
-
-  if (priv->old_bg && priv->old_bg_parented)
-    clutter_actor_paint (priv->old_bg);
 }
 
 static void
@@ -759,9 +677,6 @@ mx_button_init (MxButton *button)
 
   g_signal_connect (button, "style-changed",
                     G_CALLBACK (mx_button_style_changed), NULL);
-
-  g_signal_connect (button, "stylable-changed",
-                    G_CALLBACK (mx_button_stylable_changed), NULL);
 }
 
 /**

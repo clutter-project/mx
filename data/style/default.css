@@ -10,17 +10,20 @@ MxWindow
 
 MxButton
 {
+  x-mx-border-image-transition-duration: 120;
   padding: 10;
   border-image: url("button.png") 10;
 }
 
 MxButton:hover
 {
+  x-mx-border-image-transition-duration: 0;
   border-image: url("button-hover.png") 10;
 }
 
 MxButton:active, MxButton:checked
 {
+  x-mx-border-image-transition-duration: 0;
   padding: 11 9 9 11;
   border-image: url("button-active.png") 10;
 }

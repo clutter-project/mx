@@ -57,6 +57,7 @@ struct _MxWidgetPrivate
   gchar        *style_class;
 
   ClutterActor *border_image;
+  ClutterActor *old_border_image;
   ClutterActor *background_image;
   ClutterColor *bg_color;
 
@@ -203,6 +204,12 @@ mx_widget_dispose (GObject *gobject)
       priv->border_image = NULL;
     }
 
+  if (priv->old_border_image)
+    {
+      clutter_actor_unparent (priv->old_border_image);
+      priv->old_border_image = NULL;
+    }
+
   if (priv->background_image)
     {
       clutter_actor_unparent (priv->background_image);
@@ -281,6 +288,9 @@ mx_widget_allocate (ClutterActor          *actor,
       clutter_actor_allocate (CLUTTER_ACTOR (priv->border_image),
                               &frame_box,
                               flags);
+
+      if (priv->old_border_image)
+        clutter_actor_allocate (priv->old_border_image, &frame_box, flags);
     }
 
   if (priv->background_image)
@@ -380,6 +390,9 @@ mx_widget_real_paint_background (MxWidget           *self,
 
   if (background)
     clutter_actor_paint (background);
+
+  if (self->priv->old_border_image)
+    clutter_actor_paint (self->priv->old_border_image);
 }
 
 static void
@@ -474,6 +487,17 @@ mx_widget_unmap (ClutterActor *actor)
 }
 
 static void
+old_background_faded_cb (ClutterAnimation *animation,
+                         MxWidgetPrivate  *priv)
+{
+  if (priv->old_border_image)
+    {
+      clutter_actor_unparent (priv->old_border_image);
+      priv->old_border_image = NULL;
+    }
+}
+
+static void
 mx_widget_style_changed (MxStylable *self)
 {
   MxWidgetPrivate *priv = MX_WIDGET (self)->priv;
@@ -485,6 +509,7 @@ mx_widget_style_changed (MxStylable *self)
   gboolean relayout_needed = FALSE;
   gboolean has_changed = FALSE;
   ClutterColor *color;
+  guint duration;
 
   /* cache these values for use in the paint function */
   mx_stylable_get (self,
@@ -492,6 +517,7 @@ mx_widget_style_changed (MxStylable *self)
                    "background-image", &background_image,
                    "border-image", &border_image,
                    "padding", &padding,
+                   "x-mx-border-image-transition-duration", &duration,
                    NULL);
 
   if (color)
@@ -536,7 +562,25 @@ mx_widget_style_changed (MxStylable *self)
 
   if (priv->border_image)
     {
-      clutter_actor_unparent (priv->border_image);
+      if (duration == 0)
+        {
+          clutter_actor_unparent (priv->border_image);
+        }
+      else
+        {
+          if (priv->old_border_image)
+            clutter_actor_unparent (priv->old_border_image);
+
+          priv->old_border_image = priv->border_image;
+          clutter_actor_animate (priv->old_border_image,
+                                 CLUTTER_LINEAR,
+                                 duration,
+                                 "opacity", 0x0,
+                                 "signal::completed", old_background_faded_cb,
+                                 priv,
+                                 NULL);
+        }
+
       priv->border_image = NULL;
     }
 
@@ -1039,6 +1083,30 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                   MX_TYPE_PADDING,
                                   G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
+
+      pspec = g_param_spec_uint ("x-mx-border-image-transition-duration",
+                                 "background transition duration",
+                                 "Length of the cross fade when changing images"
+                                 " in milliseconds",
+                                 0, G_MAXUINT, 0,
+                                 G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
+
+      /*
+      pspec = g_param_spec_uint ("x-mx-transition-duration",
+                                 "transition duration",
+                                 "Length of transition in milliseconds",
+                                 0, G_MAXUINT, 0,
+                                 G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
+
+      pspec = g_param_spec_string ("x-mx-transition-property",
+                                   "transition property",
+                                   "Property to apply the transition too",
+                                   "",
+                                   G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
+      */
 
       iface->style_changed = mx_widget_style_changed;
       iface->stylable_changed = mx_widget_stylable_changed;
