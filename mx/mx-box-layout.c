@@ -930,7 +930,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
                                           &min_height, &pref_height);
       pref_width = avail_width;
 
-      if (pref_height > box->y2 - box->y1)
+      if (!priv->vadjustment && (pref_height > box->y2 - box->y1))
         {
           allocate_pref = FALSE;
           extra_space = avail_height - min_height;
@@ -945,7 +945,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
                                          &min_width, &pref_width);
       pref_height = avail_height;
 
-      if (pref_width > box->x2 - box->x1)
+      if (!priv->hadjustment && (pref_width > box->x2 - box->x1))
         {
           allocate_pref = FALSE;
           extra_space = avail_width - min_width;
