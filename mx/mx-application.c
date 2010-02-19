@@ -618,6 +618,19 @@ mx_application_window_map_cb (ClutterActor  *actor,
 }
 #endif
 
+/**
+ * mx_application_new:
+ * @argc: (inout): The number of arguments in argv.
+ * @argv: (array length=argc) (inout) (allow-none): A pointer to an array of
+ *   arguments
+ * @name: Unique application name.
+ * @flags: Application flags.
+ *
+ * Intialises everything needed to operate Clutter and use #MxApplication.
+ * See clutter_init().
+ *
+ * Return value: the #MxApplication singleton.
+ */
 MxApplication *
 mx_application_new (gint                *argc,
                     gchar             ***argv,
