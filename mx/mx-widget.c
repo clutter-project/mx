@@ -300,7 +300,9 @@ mx_widget_allocate (ClutterActor          *actor,
       };
       gfloat w, h;
 
-      clutter_actor_get_size (CLUTTER_ACTOR (priv->background_image), &w, &h);
+      clutter_actor_get_preferred_size (CLUTTER_ACTOR (priv->background_image),
+                                        NULL, NULL,
+                                        &w, &h);
 
       /* scale the background into the allocated bounds */
       if (w > frame_box.x2 || h > frame_box.y2)
