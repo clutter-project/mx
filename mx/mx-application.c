@@ -282,7 +282,7 @@ mx_application_constructed (GObject *object)
 #endif
 
   /* Add default 'raise' action */
-  if (!priv->is_proxy)
+  if (!priv->is_proxy && success)
     {
       MxAction *raise_action =
         mx_action_new_full ("Raise",
