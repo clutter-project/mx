@@ -1201,3 +1201,59 @@ mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
       g_object_notify (G_OBJECT (window), "small-screen");
     }
 }
+
+void
+mx_window_get_window_position (MxWindow *window, gint *x, gint *y)
+{
+  unsigned int width, height, border_width, depth;
+  Window win, root_win;
+  int win_x, win_y;
+  Display *dpy;
+
+  MxWindowPrivate *priv = window->priv;
+  ClutterStage *stage = CLUTTER_STAGE (window);
+
+  if (priv->small_screen || clutter_stage_get_fullscreen (stage))
+    {
+      if (x)
+        *x = 0;
+      if (y)
+        *y = 0;
+      return;
+    }
+
+  win = clutter_x11_get_stage_window (stage);
+  dpy = clutter_x11_get_default_display ();
+
+  XGetGeometry (dpy, win,
+                &root_win,
+                &win_x, &win_y,
+                &width, &height,
+                &border_width,
+                &depth);
+
+  if (x)
+    *x = win_x;
+  if (y)
+    *y = win_y;
+}
+
+void
+mx_window_set_window_position (MxWindow *window, gint x, gint y)
+{
+  Window win;
+  Display *dpy;
+
+  MxWindowPrivate *priv = window->priv;
+  ClutterStage *stage = CLUTTER_STAGE (window);
+
+  /* Don't try to move a full-screen/small-screen window */
+  if (priv->small_screen || clutter_stage_get_fullscreen (stage))
+    return;
+
+  win = clutter_x11_get_stage_window (stage);
+  dpy = clutter_x11_get_default_display ();
+
+  XMoveWindow (dpy, win, x, y);
+}
+
