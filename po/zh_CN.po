@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MX\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-16 16:46+0000\n"
+"POT-Creation-Date: 2010-02-22 22:54+0000\n"
 "PO-Revision-Date: 2009-07-25 10:33+0800\n"
 "Last-Translator: Zhu Yanhai <yanhai.zhu@linux.intel.com>\n"
 "Language-Team: zh_CN\n"
@@ -15,14 +15,14 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: mx/mx-gtk-light-switch.c:175
+#: mx/mx-gtk-light-switch.c:176
 msgid "Unavailable"
 msgstr "不可用"
 
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the MEDIUM VERTICAL BAR unicode character
 #. * instead
-#: mx/mx-gtk-light-switch.c:195 mx/mx-gtk-light-switch.c:269
+#: mx/mx-gtk-light-switch.c:196 mx/mx-gtk-light-switch.c:270
 msgid "On"
 msgstr "开"
 
@@ -30,64 +30,64 @@ msgstr "开"
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the WHITE CIRCLE U+25CB unicode character
 #. * instead
-#: mx/mx-gtk-light-switch.c:214 mx/mx-gtk-light-switch.c:267
+#: mx/mx-gtk-light-switch.c:215 mx/mx-gtk-light-switch.c:268
 msgid "Off"
 msgstr "关"
 
-#: mx/mx-utils.c:94
+#: mx/mx-utils.c:93
 msgid "Less than a minute ago"
 msgstr "一分钟内"
 
-#: mx/mx-utils.c:98
+#: mx/mx-utils.c:97
 msgid "A few minutes ago"
 msgstr "几分钟前"
 
-#: mx/mx-utils.c:102
+#: mx/mx-utils.c:101
 msgid "A couple of hours ago"
 msgstr "两小时前"
 
-#: mx/mx-utils.c:109
+#: mx/mx-utils.c:108
 msgid "Earlier today"
 msgstr "更早时候"
 
-#: mx/mx-utils.c:112
+#: mx/mx-utils.c:111
 msgid "Yesterday"
 msgstr "昨天"
 
-#: mx/mx-utils.c:120
+#: mx/mx-utils.c:119
 #, c-format
 msgid "On %A"
 msgstr "在 %A"
 
-#: mx/mx-utils.c:126
+#: mx/mx-utils.c:125
 msgid "Unknown"
 msgstr "未知"
 
-#: mx/mx-utils.c:133
+#: mx/mx-utils.c:132
 msgid "Last week"
 msgstr "上周"
 
-#: mx/mx-utils.c:136
+#: mx/mx-utils.c:135
 msgid "A couple of weeks ago"
 msgstr "两周前"
 
-#: mx/mx-utils.c:142
+#: mx/mx-utils.c:141
 msgid "This month"
 msgstr "本月"
 
 #. Now Jan., last used in Dec.
-#: mx/mx-utils.c:146
+#: mx/mx-utils.c:145
 msgid "Last month"
 msgstr "上月"
 
-#: mx/mx-utils.c:149
+#: mx/mx-utils.c:148
 msgid "This year"
 msgstr "今年"
 
-#: mx/mx-utils.c:152
+#: mx/mx-utils.c:151
 msgid "Last year"
 msgstr "去年"
 
-#: mx/mx-utils.c:154
+#: mx/mx-utils.c:153
 msgid "Ages ago"
 msgstr "几年前"

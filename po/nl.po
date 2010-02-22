@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-16 16:46+0000\n"
+"POT-Creation-Date: 2010-02-22 22:54+0000\n"
 "PO-Revision-Date: 2009-08-13 19:37+0100\n"
 "Last-Translator: Sibo Attema <sibo.attema@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,14 +15,14 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: mx/mx-gtk-light-switch.c:175
+#: mx/mx-gtk-light-switch.c:176
 msgid "Unavailable"
 msgstr "Niet beschikbaar"
 
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the MEDIUM VERTICAL BAR unicode character
 #. * instead
-#: mx/mx-gtk-light-switch.c:195 mx/mx-gtk-light-switch.c:269
+#: mx/mx-gtk-light-switch.c:196 mx/mx-gtk-light-switch.c:270
 msgid "On"
 msgstr "Aan"
 
@@ -30,64 +30,64 @@ msgstr "Aan"
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the WHITE CIRCLE U+25CB unicode character
 #. * instead
-#: mx/mx-gtk-light-switch.c:214 mx/mx-gtk-light-switch.c:267
+#: mx/mx-gtk-light-switch.c:215 mx/mx-gtk-light-switch.c:268
 msgid "Off"
 msgstr "Uit"
 
-#: mx/mx-utils.c:94
+#: mx/mx-utils.c:93
 msgid "Less than a minute ago"
 msgstr "Minder dan een minuut geleden"
 
-#: mx/mx-utils.c:98
+#: mx/mx-utils.c:97
 msgid "A few minutes ago"
 msgstr "Een paar minuten geleden"
 
-#: mx/mx-utils.c:102
+#: mx/mx-utils.c:101
 msgid "A couple of hours ago"
 msgstr "Een paar uur geleden"
 
-#: mx/mx-utils.c:109
+#: mx/mx-utils.c:108
 msgid "Earlier today"
 msgstr "Eerder vandaag"
 
-#: mx/mx-utils.c:112
+#: mx/mx-utils.c:111
 msgid "Yesterday"
 msgstr "Gisteren"
 
-#: mx/mx-utils.c:120
+#: mx/mx-utils.c:119
 #, c-format
 msgid "On %A"
 msgstr "Op %A"
 
-#: mx/mx-utils.c:126
+#: mx/mx-utils.c:125
 msgid "Unknown"
 msgstr "Onbekend"
 
-#: mx/mx-utils.c:133
+#: mx/mx-utils.c:132
 msgid "Last week"
 msgstr "Vorige week"
 
-#: mx/mx-utils.c:136
+#: mx/mx-utils.c:135
 msgid "A couple of weeks ago"
 msgstr "Een paar weken geleden"
 
-#: mx/mx-utils.c:142
+#: mx/mx-utils.c:141
 msgid "This month"
 msgstr "Deze maand"
 
 #. Now Jan., last used in Dec.
-#: mx/mx-utils.c:146
+#: mx/mx-utils.c:145
 msgid "Last month"
 msgstr "Vorige maand"
 
-#: mx/mx-utils.c:149
+#: mx/mx-utils.c:148
 msgid "This year"
 msgstr "Dit jaar"
 
-#: mx/mx-utils.c:152
+#: mx/mx-utils.c:151
 msgid "Last year"
 msgstr "Vorig jaar"
 
-#: mx/mx-utils.c:154
+#: mx/mx-utils.c:153
 msgid "Ages ago"
 msgstr "Lang lang geleden"

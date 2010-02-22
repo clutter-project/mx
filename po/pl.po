@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Moblin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-11-16 16:46+0000\n"
+"POT-Creation-Date: 2010-02-22 22:54+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Andrzej Zaborowski <andrew.zaborowski@intel.com>\n"
 "Language-Team: Moblin\n"
@@ -19,14 +19,14 @@ msgstr ""
 "X-Poedit-Language: Polish\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: mx/mx-gtk-light-switch.c:175
+#: mx/mx-gtk-light-switch.c:176
 msgid "Unavailable"
 msgstr "Niedostępne"
 
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the MEDIUM VERTICAL BAR unicode character
 #. * instead
-#: mx/mx-gtk-light-switch.c:195 mx/mx-gtk-light-switch.c:269
+#: mx/mx-gtk-light-switch.c:196 mx/mx-gtk-light-switch.c:270
 msgid "On"
 msgstr "Tak"
 
@@ -34,65 +34,65 @@ msgstr "Tak"
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the WHITE CIRCLE U+25CB unicode character
 #. * instead
-#: mx/mx-gtk-light-switch.c:214 mx/mx-gtk-light-switch.c:267
+#: mx/mx-gtk-light-switch.c:215 mx/mx-gtk-light-switch.c:268
 msgid "Off"
 msgstr "Nie"
 
-#: mx/mx-utils.c:94
+#: mx/mx-utils.c:93
 msgid "Less than a minute ago"
 msgstr "Mniej niż minutę temu"
 
-#: mx/mx-utils.c:98
+#: mx/mx-utils.c:97
 msgid "A few minutes ago"
 msgstr "Parę minut temu"
 
-#: mx/mx-utils.c:102
+#: mx/mx-utils.c:101
 msgid "A couple of hours ago"
 msgstr "Kilka godzin temu"
 
 # No good way to say "earlier today"
-#: mx/mx-utils.c:109
+#: mx/mx-utils.c:108
 msgid "Earlier today"
 msgstr "Kilkanaście godzin temu"
 
-#: mx/mx-utils.c:112
+#: mx/mx-utils.c:111
 msgid "Yesterday"
 msgstr "Wczoraj"
 
-#: mx/mx-utils.c:120
+#: mx/mx-utils.c:119
 #, c-format
 msgid "On %A"
 msgstr "Dnia %A"
 
-#: mx/mx-utils.c:126
+#: mx/mx-utils.c:125
 msgid "Unknown"
 msgstr "Nie sprecyzowano"
 
-#: mx/mx-utils.c:133
+#: mx/mx-utils.c:132
 msgid "Last week"
 msgstr "Zeszły tydzień"
 
-#: mx/mx-utils.c:136
+#: mx/mx-utils.c:135
 msgid "A couple of weeks ago"
 msgstr "Parę tygodni temu"
 
-#: mx/mx-utils.c:142
+#: mx/mx-utils.c:141
 msgid "This month"
 msgstr "W tym miesiącu"
 
 #. Now Jan., last used in Dec.
-#: mx/mx-utils.c:146
+#: mx/mx-utils.c:145
 msgid "Last month"
 msgstr "W zeszłym miesiącu"
 
-#: mx/mx-utils.c:149
+#: mx/mx-utils.c:148
 msgid "This year"
 msgstr "W tym roku"
 
-#: mx/mx-utils.c:152
+#: mx/mx-utils.c:151
 msgid "Last year"
 msgstr "W zeszłym roku"
 
-#: mx/mx-utils.c:154
+#: mx/mx-utils.c:153
 msgid "Ages ago"
 msgstr "Wieki temu"
