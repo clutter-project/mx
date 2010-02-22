@@ -1,3 +1,34 @@
+0.7.0
+=====
+
+Changes since 0.6.0:
+
+ * Fixes in resizable windows
+ * Improvements to path-bar
+ * Support allocating children less than their preferred size
+ * Use -mx prefix for custom CSS properties
+ * Fixed size and allocation of toggle switches
+ * Add -mx-border-image-transition-duration to control background cross fade
+ * Add a debug mode to MxTable to indicate column and rows
+ * Make the scrollable interface name more consistent with other interfaces
+
+ * Fixed bugs:
+
+   MB#9570 - [widget] Bug in mx_widget_set_tooltip_text
+   MB#9529 - [table] Calculate row_spacing correctly 
+   MB#9346 - Memory leak in widgets implementing MxScrollable
+   MB#9055 - Unable to set the popup location of MxComboBox
+   MB#9656 - [MxListView] Missing break statement in mx_list_view_set_property
+   MB#9641 - [scroll-view] Fix setting scrollbar size from CSS
+
+Many thanks to:
+
+  Bastian Winkler
+  Thomas Wood
+  Chris Lord
+  Rob Bradford
+  Evan Nemerson
+
 0.6.0
 =====
 
