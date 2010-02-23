@@ -149,7 +149,7 @@ AS_IF([test "x$with_clutter_gesture" != xno],
 
 AC_ARG_WITH([startup-notification],
             [AC_HELP_STRING([--without-startup-notification],
-                            [enable startup notification])],
+                            [disable startup notification])],
             [],
             [with_startup_notification=yes])
 
@@ -163,7 +163,7 @@ AS_IF([test "x$with_startup_notification" = xyes],
 
 AC_ARG_WITH([dbus],
             [AC_HELP_STRING([--without-dbus],
-                            [enable DBus support])],
+                            [disable DBus support])],
             [],
             [with_dbus=yes])
 
@@ -174,6 +174,24 @@ AS_IF([test "x$with_dbus" = xyes],
                         MX_REQUIRES="$MX_REQUIRES dbus-glib-1 >= 0.82"],
                         [AC_MSG_FAILURE([Could not find dbus-glib. Use --without-dbus to disable DBus support.])]]
       ))
+
+AC_ARG_WITH([glade],
+            [AC_HELP_STRING([--with-glade],
+                            [enable glade3 support])],
+            [with_glade=yes],
+            [])
+
+AS_IF([test "x$with_glade" = xyes],
+      [PKG_CHECK_EXISTS([gladeui-1.0 >= 3.4.5],
+                        [AC_DEFINE([HAVE_GLADE], [1],
+                                   [Define if Glade support is enabled])
+                        PKG_PROG_PKG_CONFIG()
+                        catalogdir=`${PKG_CONFIG} --variable=catalogdir gladeui-1.0`],
+                        [AC_MSG_FAILURE([Could not find gladeui-1.0 >= 3.4.5])]]
+      ))
+
+AM_CONDITIONAL(WITH_GLADE, test "x$with_glade" = xyes)
+AC_SUBST([catalogdir])
 
 dnl ***************************************************************************
 dnl Internationalization
@@ -201,6 +219,7 @@ AC_CONFIG_FILES([
         mx.pc
         mx-gtk.pc
         data/Makefile
+        data/glade/Makefile
         data/style/Makefile
         docs/Makefile
         docs/reference/Makefile

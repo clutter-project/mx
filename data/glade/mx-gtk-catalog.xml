@@ -1,0 +1,16 @@
+<glade-catalog name="mx-gtk" library="mx-gtk-1.0" depends="gtk+">
+  <book>mx-gtk</book>
+  <glade-widget-classes>
+    <glade-widget-class name="MxGtkFrame" generic-name="mx-gtk-frame" title="Frame" icon-name="widget-gtk-frame">
+    </glade-widget-class>
+
+    <glade-widget-class name="MxGtkLightSwitch" generic-name="mx-gtk-light-switch" title="Light-switch" icon-name="widget-gtk-togglebutton">
+    </glade-widget-class>
+  </glade-widget-classes>
+
+  <glade-widget-group name="widgets" title="Mx Gtk+ widgets">
+    <glade-widget-class-ref name="MxGtkFrame" />
+    <glade-widget-class-ref name="MxGtkLightSwitch" />
+  </glade-widget-group>
+</glade-catalog>
+
