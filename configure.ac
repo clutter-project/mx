@@ -183,10 +183,8 @@ AC_ARG_WITH([glade],
 
 AS_IF([test "x$with_glade" = xyes],
       [PKG_CHECK_EXISTS([gladeui-1.0 >= 3.4.5],
-                        [AC_DEFINE([HAVE_GLADE], [1],
-                                   [Define if Glade support is enabled])
-                        PKG_PROG_PKG_CONFIG()
-                        catalogdir=`${PKG_CONFIG} --variable=catalogdir gladeui-1.0`],
+                        [PKG_PROG_PKG_CONFIG()
+                         catalogdir=`${PKG_CONFIG} --variable=catalogdir gladeui-1.0`],
                         [AC_MSG_FAILURE([Could not find gladeui-1.0 >= 3.4.5])]]
       ))
 
