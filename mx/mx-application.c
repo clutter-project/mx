@@ -46,6 +46,18 @@ G_DEFINE_TYPE (MxApplication, mx_application, G_TYPE_OBJECT)
 #define APPLICATION_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_APPLICATION, MxApplicationPrivate))
 
+static gchar *mx_application_atoms[] =
+{
+  "_NET_SUPPORTING_WM_CHECK",
+  "_MOBLIN"
+};
+
+enum
+{
+  MX_ATOM_NET_SUPPORTING_WM_CHECK,
+  MX_ATOM_MOBLIN
+};
+
 struct _MxApplicationPrivate
 {
   GList              *windows;
@@ -66,6 +78,10 @@ struct _MxApplicationPrivate
 #endif
 
   GHashTable         *actions;
+
+  Atom                atoms[G_N_ELEMENTS(mx_application_atoms)];
+  Window             *wm_window;
+  gboolean            small_screen;
 };
 
 enum
@@ -86,6 +102,11 @@ enum
 static guint signals[LAST_SIGNAL] = { 0, };
 
 static MxApplication *app_singleton = NULL;
+
+static ClutterX11FilterReturn
+mx_application_x11_filter_func (XEvent       *xevent,
+                                ClutterEvent *cevent,
+                                gpointer      data);
 
 static GObject*
 mx_application_constructor (GType                  type,
@@ -410,6 +431,8 @@ mx_application_dispose (GObject *object)
 {
   MxApplicationPrivate *priv = MX_APPLICATION (object)->priv;
 
+  clutter_x11_remove_filter (mx_application_x11_filter_func, object);
+
 #ifdef HAVE_DBUS
   if (priv->proxy)
     {
@@ -445,6 +468,9 @@ mx_application_finalize (GObject *object)
 #endif
 
   g_free (priv->name);
+
+  if (priv->wm_window)
+    XFree (priv->wm_window);
 
   G_OBJECT_CLASS (mx_application_parent_class)->finalize (object);
 }
@@ -688,13 +714,196 @@ mx_application_quit (MxApplication *application)
   clutter_main_quit ();
 }
 
+static void
+mx_application_refresh_wm_props (MxApplication *self)
+{
+  unsigned long n_items, bytes_left;
+  unsigned char *return_string;
+  int return_format;
+  Atom return_type;
+  Display *dpy;
+  GList *w;
+
+  MxApplicationPrivate *priv = self->priv;
+
+  if (!priv->atoms[MX_ATOM_MOBLIN] ||
+      !priv->wm_window)
+    return;
+
+  dpy = clutter_x11_get_default_display ();
+
+  /* Get the Moblin WM properties string */
+  clutter_x11_trap_x_errors ();
+  return_string = NULL;
+  XGetWindowProperty (dpy, *priv->wm_window,
+                      priv->atoms[MX_ATOM_MOBLIN],
+                      0, 8192, False, XA_STRING,
+                      &return_type, &return_format,
+                      &n_items, &bytes_left, &return_string);
+  clutter_x11_untrap_x_errors ();
+
+  /* The _MOBLIN properties string is a list of 'key=value' pairs,
+   * delimited by colons.
+   */
+  if (return_string)
+    {
+      gchar *prop = g_strdelimit ((gchar *)return_string, ":", '\0');
+
+      priv->small_screen = FALSE;
+      while (*prop)
+        {
+          gchar *key = g_strdelimit (prop, "=", '\0');
+          gchar *value = key + strlen (key) + 1;
+
+          /* Check for session-type=small-screen - the only property
+           * we support, currently.
+           */
+          if (g_str_equal (key, "session-type") &&
+              g_str_equal (value, "small-screen"))
+            priv->small_screen = TRUE;
+
+          prop = value + strlen (value) + 1;
+        }
+
+      XFree (return_string);
+    }
+
+  for (w = priv->windows; w; w = w->next)
+    if (MX_IS_WINDOW (w->data))
+      mx_window_set_small_screen (MX_WINDOW (w->data), priv->small_screen);
+}
+
+static void
+mx_application_refresh_wm_window (MxApplication *self)
+{
+  unsigned long n_items, bytes_left;
+  int return_format;
+  Atom return_type;
+  Window root_win;
+  Display *dpy;
+
+  MxApplicationPrivate *priv = self->priv;
+
+  if (!priv->atoms[MX_ATOM_NET_SUPPORTING_WM_CHECK])
+    return;
+
+  root_win = clutter_x11_get_root_window ();
+  dpy = clutter_x11_get_default_display ();
+
+  if (priv->wm_window)
+    {
+      XFree (priv->wm_window);
+      priv->wm_window = NULL;
+    }
+
+  /* Get the WM window */
+  clutter_x11_trap_x_errors ();
+  XGetWindowProperty (dpy, root_win,
+                      priv->atoms[MX_ATOM_NET_SUPPORTING_WM_CHECK],
+                      0, 1, False, XA_WINDOW,
+                      &return_type, &return_format,
+                      &n_items, &bytes_left,
+                      (unsigned char **)(&priv->wm_window));
+  clutter_x11_untrap_x_errors ();
+
+  if (priv->wm_window && (*priv->wm_window == None))
+    {
+      XFree (priv->wm_window);
+      priv->wm_window = NULL;
+    }
+
+  if (priv->wm_window)
+    {
+      XWindowAttributes attr;
+
+      /* Add property-change notification */
+      if (XGetWindowAttributes (dpy, *priv->wm_window, &attr))
+        XSelectInput (dpy, *priv->wm_window,
+                      attr.your_event_mask | PropertyChangeMask);
+
+      /* Refresh the WM properties */
+      mx_application_refresh_wm_props (self);
+    }
+}
+
+static ClutterX11FilterReturn
+mx_application_x11_filter_func (XEvent       *xevent,
+                                ClutterEvent *cevent,
+                                gpointer      data)
+{
+  Window root_win;
+  MxApplication *self;
+  MxApplicationPrivate *priv;
+
+  self = data;
+  priv = self->priv;
+  root_win = clutter_x11_get_root_window ();
+
+  switch (xevent->type)
+    {
+    case PropertyNotify:
+      if (xevent->xproperty.window == root_win)
+        {
+          if (xevent->xproperty.atom ==
+              priv->atoms[MX_ATOM_NET_SUPPORTING_WM_CHECK])
+            mx_application_refresh_wm_window (self);
+        }
+      else if (priv->wm_window &&
+               (xevent->xproperty.window == *priv->wm_window))
+        {
+          if (xevent->xproperty.atom == priv->atoms[MX_ATOM_MOBLIN])
+            mx_application_refresh_wm_props (self);
+        }
+      break;
+
+    case DestroyNotify:
+      if (priv->wm_window &&
+          (xevent->xdestroywindow.window == *priv->wm_window))
+        {
+          XFree (priv->wm_window);
+          priv->wm_window = NULL;
+        }
+      break;
+    }
+
+  return CLUTTER_X11_FILTER_CONTINUE;
+}
+
+static void
+mx_application_init_wm (MxApplication *self)
+{
+  Display *dpy;
+  Window root_win;
+  XWindowAttributes attr;
+
+  MxApplicationPrivate *priv = self->priv;
+
+  dpy = clutter_x11_get_default_display ();
+
+  /* Create the relevant Atoms for reading WM properties */
+  XInternAtoms (dpy,
+                mx_application_atoms,
+                G_N_ELEMENTS (mx_application_atoms),
+                False,
+                priv->atoms);
+
+  /* Add X property change notifications to the event mask */
+  root_win = clutter_x11_get_root_window ();
+  if (XGetWindowAttributes (dpy, root_win, &attr))
+    XSelectInput (dpy, root_win, attr.your_event_mask | PropertyChangeMask);
+
+  /* Add our own events filter for property change/destroy notification */
+  clutter_x11_add_filter (mx_application_x11_filter_func, self);
+
+  /* Read the current properties */
+  mx_application_refresh_wm_window (self);
+}
+
 void
 mx_application_add_window (MxApplication *application,
                            ClutterStage  *window)
 {
-#ifdef HAVE_STARTUP_NOTIFICATION
   static gboolean first_window = TRUE;
-#endif
 
   MxApplicationPrivate *priv = application->priv;
 
@@ -705,16 +914,22 @@ mx_application_add_window (MxApplication *application,
   g_signal_connect (window, "destroy",
                     G_CALLBACK (mx_application_window_destroy_cb), application);
 
-#ifdef HAVE_STARTUP_NOTIFICATION
-  /* Use the first window of the application for startup notification */
+  /* Use the first window of the application for startup notification and
+   * initialising X11 property reading.
+   */
   if (first_window)
     {
+#ifdef HAVE_STARTUP_NOTIFICATION
       SnDisplay *display;
       Display *xdisplay;
       int screen;
+#endif
 
       first_window = FALSE;
 
+      mx_application_init_wm (application);
+
+#ifdef HAVE_STARTUP_NOTIFICATION
       if (priv->flags & MX_APPLICATION_CLUTTER_GTK)
         {
           g_error ("ClutterGtk not yet supported");
@@ -744,8 +959,10 @@ mx_application_add_window (MxApplication *application,
                               G_CALLBACK (mx_application_window_map_cb),
                               application);
         }
-    }
 #endif
+    }
+  else if (MX_IS_WINDOW (window))
+    mx_window_set_small_screen (MX_WINDOW (window), priv->small_screen);
 }
 
 void
