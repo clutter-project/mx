@@ -546,7 +546,7 @@ mx_combo_box_key_press_event (ClutterActor    *actor,
 
     case CLUTTER_Up:
       mx_combo_box_set_index (MX_COMBO_BOX (actor),
-                              CLAMP (priv->index + 1, 0, n_items -1));
+                              CLAMP (priv->index - 1, 0, n_items -1));
       return TRUE;
 
     default:
