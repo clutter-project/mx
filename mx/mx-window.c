@@ -1199,9 +1199,19 @@ mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
           if (clutter_stage_get_fullscreen (stage))
             clutter_stage_set_fullscreen (stage, FALSE);
           else
-            clutter_actor_set_size (CLUTTER_ACTOR (window),
-                                    priv->last_width,
-                                    priv->last_height);
+            {
+              /* If we started off in small-screen mode, our last size won't
+               * be known, so use the preferred size.
+               */
+              if (!priv->last_width && !priv->last_height)
+                mx_window_get_size (window,
+                                    NULL, NULL,
+                                    &priv->last_width, &priv->last_height);
+
+              clutter_actor_set_size (CLUTTER_ACTOR (window),
+                                      priv->last_width,
+                                      priv->last_height);
+            }
         }
 
       g_object_notify (G_OBJECT (window), "small-screen");
