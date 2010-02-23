@@ -1146,6 +1146,12 @@ mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
 
       priv->small_screen = small_screen;
 
+      /* If there's no window, we're not mapped yet - we'll resize
+       * on map.
+       */
+      if (win == None)
+        return;
+
       /* In case we were in the middle of a move/resize */
       if (priv->is_moving != -1)
         {
