@@ -114,7 +114,7 @@ AC_SUBST(MX_MAINTAINER_CFLAGS)
 
 dnl = Required Packages ====================================================
 
-MX_REQUIRES="clutter-1.0"
+MX_REQUIRES="clutter-x11-1.0"
 
 dnl = Optional Packages ====================================================
 
