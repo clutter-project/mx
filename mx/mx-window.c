@@ -1306,12 +1306,16 @@ void
 mx_window_get_window_position (MxWindow *window, gint *x, gint *y)
 {
   unsigned int width, height, border_width, depth;
+  MxWindowPrivate *priv;
   Window win, root_win;
+  ClutterStage *stage;
   int win_x, win_y;
   Display *dpy;
 
-  MxWindowPrivate *priv = window->priv;
-  ClutterStage *stage = CLUTTER_STAGE (window);
+  g_return_if_fail (MX_IS_WINDOW (window));
+
+  priv = window->priv;
+  stage = CLUTTER_STAGE (window);
 
   if (priv->small_screen || clutter_stage_get_fullscreen (stage))
     {
@@ -1343,9 +1347,13 @@ mx_window_set_window_position (MxWindow *window, gint x, gint y)
 {
   Window win;
   Display *dpy;
+  ClutterStage *stage;
+  MxWindowPrivate *priv;
 
-  MxWindowPrivate *priv = window->priv;
-  ClutterStage *stage = CLUTTER_STAGE (window);
+  g_return_if_fail (MX_IS_WINDOW (window));
+
+  priv = window->priv;
+  stage = CLUTTER_STAGE (window);
 
   /* Don't try to move a full-screen/small-screen window */
   if (priv->small_screen || clutter_stage_get_fullscreen (stage))
