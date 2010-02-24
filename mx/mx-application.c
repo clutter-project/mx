@@ -214,12 +214,14 @@ mx_application_constructed (GObject *object)
 {
   MxApplication *self = MX_APPLICATION (object);
   MxApplicationPrivate *priv = self->priv;
+  gboolean success = FALSE;
+
 #ifdef HAVE_DBUS
   GError *error = NULL;
 
   DBusGConnection *bus;
   guint32 request_status;
-  gboolean unique, success;
+  gboolean unique;
 
   if (!priv->service_name)
     {
@@ -240,7 +242,6 @@ mx_application_constructed (GObject *object)
                                            DBUS_INTERFACE_DBUS);
 
   unique = (priv->flags & MX_APPLICATION_SINGLE_INSTANCE) ? TRUE : FALSE;
-  success = FALSE;
 
   if (!org_freedesktop_DBus_request_name (priv->proxy,
                                           priv->service_name,
