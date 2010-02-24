@@ -6,7 +6,6 @@
 #include "mx-private.h"
 #include <clutter/x11/clutter-x11.h>
 
-/* for pointer cursor support */
 #include <X11/Xlib.h>
 #include <X11/cursorfont.h>
 
@@ -40,6 +39,8 @@ struct _MxWindowPrivate
   gfloat     natural_width;
   gfloat     natural_height;
 
+  gchar *icon_name;
+
   ClutterActor *toolbar;
   ClutterActor *child;
 
@@ -62,7 +63,8 @@ enum
   PROP_STYLE = 1,
   PROP_STYLE_CLASS,
   PROP_STYLE_PSEUDO_CLASS,
-  PROP_SMALL_SCREEN
+  PROP_SMALL_SCREEN,
+  PROP_ICON_NAME
 };
 
 /* clutter container iface implementation */
@@ -241,6 +243,10 @@ mx_window_get_property (GObject    *object,
       g_value_set_boolean (value, priv->small_screen);
       break;
 
+    case PROP_ICON_NAME:
+      g_value_set_string (value, priv->icon_name);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -274,6 +280,11 @@ mx_window_set_property (GObject      *object,
                                   g_value_get_boolean (value));
       break;
 
+    case PROP_ICON_NAME:
+      mx_window_set_icon_name (MX_WINDOW (object),
+                               g_value_get_string (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -295,6 +306,8 @@ mx_window_finalize (GObject *object)
       cogl_handle_unref (priv->resize_grip);
       priv->resize_grip = NULL;
     }
+
+  g_free (priv->icon_name);
 
   G_OBJECT_CLASS (mx_window_parent_class)->finalize (object);
 }
@@ -386,15 +399,101 @@ typedef struct {
     unsigned long status;
 } PropMotifWmHints;
 
-typedef PropMotifWmHints PropMwmHints;
+static void
+mx_window_set_wm_hints (MxWindow *window)
+{
+  const gchar *icon_name;
+  Display *dpy;
+  Window win;
 
+  static Atom motif_wm_hints_atom = None;
+  static Atom net_wm_icon = None;
+
+  MxWindowPrivate *priv = window->priv;
+
+  dpy = clutter_x11_get_default_display ();
+  win = clutter_x11_get_stage_window (CLUTTER_STAGE (window));
+
+  if (win == None)
+    return;
+
+  if (!motif_wm_hints_atom)
+    motif_wm_hints_atom = XInternAtom (dpy, "_MOTIF_WM_HINTS", False);
+
+  /* Remove/add the window decorations */
+  if (motif_wm_hints_atom)
+    {
+      PropMotifWmHints new_hints = {0,};
+      PropMotifWmHints *hints;
+
+      hints = &new_hints;
+
+      hints->flags = 0x2;
+      hints->functions = 0x0;
+      hints->decorations = priv->has_toolbar ? 0x0 : 0x1;
+
+      XChangeProperty (dpy, win, motif_wm_hints_atom, motif_wm_hints_atom,
+                       32, PropModeReplace, (guchar*) hints,
+                       sizeof(PropMotifWmHints)/ sizeof (long));
+    }
+
+  if (!net_wm_icon)
+    net_wm_icon = XInternAtom (dpy, "_NET_WM_ICON", False);
+
+  /* Set the window icon */
+  icon_name = priv->icon_name ? priv->icon_name : g_get_prgname ();
+  if (icon_name && net_wm_icon)
+    {
+      guint width, height;
+      CoglHandle texture;
+      guchar *data;
+      gint size;
+
+      /* Lookup icon for program name */
+      texture = mx_icon_theme_lookup (mx_icon_theme_get_default (),
+                                      icon_name, 32);
+      if (!texture)
+        return;
+
+      /* Get window icon size */
+      width = cogl_texture_get_width (texture);
+      height = cogl_texture_get_height (texture);
+      size = cogl_texture_get_data (texture,
+                                    COGL_PIXEL_FORMAT_ARGB_8888,
+                                    width * 4,
+                                    NULL);
+      if (!size)
+        {
+          g_warning ("Unable to get texture data in "
+                     "correct format for window icon");
+          cogl_handle_unref (texture);
+          return;
+        }
+
+      /* Get the window icon */
+      data = g_malloc (size + (sizeof (int) * 2));
+      ((int *)data)[0] = width;
+      ((int *)data)[1] = height;
+      cogl_texture_get_data (texture,
+                             COGL_PIXEL_FORMAT_ARGB_8888,
+                             width * 4,
+                             data + (sizeof (int) * 2));
+      cogl_handle_unref (texture);
+
+      /* Set the property */
+      XChangeProperty (dpy, win, net_wm_icon, XA_CARDINAL,
+                       32, PropModeReplace, data,
+                       (width * height) + 2);
+
+      g_free (data);
+    }
+}
 
 static void
 mx_window_map (ClutterActor *actor)
 {
   MxWindow *window;
   MxWindowPrivate *priv;
-  static Atom hint_atom = 0;
 
   CLUTTER_ACTOR_CLASS (mx_window_parent_class)->map (actor);
 
@@ -406,29 +505,7 @@ mx_window_map (ClutterActor *actor)
   if (priv->child)
     clutter_actor_map (priv->child);
 
-  /* Remove the window decorations */
-  if (!hint_atom)
-    {
-      PropMotifWmHints new_hints = {0,};
-      PropMotifWmHints *hints;
-      Display *dpy;
-      Window win;
-
-      dpy = clutter_x11_get_default_display ();
-      win = clutter_x11_get_stage_window (CLUTTER_STAGE (actor));
-
-      hint_atom = XInternAtom (dpy, "_MOTIF_WM_HINTS", 0);
-
-      hints = &new_hints;
-
-      hints->flags = 0x2;
-      hints->functions = 0x0;
-      hints->decorations = 0x0;
-
-      XChangeProperty (dpy, win, hint_atom, hint_atom, 32, PropModeReplace,
-                       (guchar*) hints,
-                       sizeof(PropMotifWmHints)/ sizeof (long));
-    }
+  mx_window_set_wm_hints (window);
 }
 
 static void
@@ -994,6 +1071,13 @@ mx_window_class_init (MxWindowClass *klass)
                                 FALSE,
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_SMALL_SCREEN, pspec);
+
+  pspec = g_param_spec_string ("icon-name",
+                               "Icon name",
+                               "Icon name to use for the window icon.",
+                               NULL,
+                               MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_ICON_NAME, pspec);
 }
 
 static void
@@ -1273,3 +1357,31 @@ mx_window_set_window_position (MxWindow *window, gint x, gint y)
   XMoveWindow (dpy, win, x, y);
 }
 
+void
+mx_window_set_icon_name (MxWindow *window, const gchar *icon_name)
+{
+  MxWindowPrivate *priv;
+
+  g_return_if_fail (MX_IS_WINDOW (window));
+
+  priv = window->priv;
+
+  if (priv->icon_name && icon_name && g_str_equal (priv->icon_name, icon_name))
+    return;
+  if (!priv->icon_name && !icon_name)
+    return;
+
+  g_free (priv->icon_name);
+  priv->icon_name = g_strdup (icon_name);
+
+  g_object_notify (G_OBJECT (window), "icon-name");
+
+  mx_window_set_wm_hints (window);
+}
+
+const gchar *
+mx_window_get_icon_name (MxWindow *window)
+{
+  g_return_val_if_fail (MX_IS_WINDOW (window), NULL);
+  return window->priv->icon_name;
+}

@@ -64,6 +64,9 @@ void       mx_window_set_small_screen (MxWindow *window, gboolean small_screen);
 void       mx_window_get_window_position (MxWindow *window, gint *x, gint *y);
 void       mx_window_set_window_position (MxWindow *window, gint  x, gint  y);
 
+void         mx_window_set_icon_name (MxWindow *window, const gchar *icon_name);
+const gchar *mx_window_get_icon_name (MxWindow *window);
+
 G_END_DECLS
 
 #endif /* _MX_WINDOW_H */

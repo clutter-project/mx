@@ -44,6 +44,7 @@ main (int argc, char **argv)
   app = mx_application_new (&argc, &argv, "Test PathBar", 0);
 
   stage = (ClutterActor *)mx_application_create_window (app);
+  mx_window_set_icon_name (MX_WINDOW (stage), "window-new");
 
   clutter_actor_set_size (stage, 480, 320);
 
