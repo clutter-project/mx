@@ -63,6 +63,7 @@ enum
   PROP_STYLE = 1,
   PROP_STYLE_CLASS,
   PROP_STYLE_PSEUDO_CLASS,
+  PROP_HAS_TOOLBAR,
   PROP_SMALL_SCREEN,
   PROP_ICON_NAME
 };
@@ -239,6 +240,10 @@ mx_window_get_property (GObject    *object,
       g_value_set_string (value, priv->pseudo_class);
       break;
 
+    case PROP_HAS_TOOLBAR:
+      g_value_set_boolean (value, priv->has_toolbar);
+      break;
+
     case PROP_SMALL_SCREEN:
       g_value_set_boolean (value, priv->small_screen);
       break;
@@ -273,6 +278,11 @@ mx_window_set_property (GObject      *object,
 
     case PROP_STYLE_PSEUDO_CLASS:
       mx_window_set_style_pseudo_class (win, g_value_get_string (value));
+      break;
+
+    case PROP_HAS_TOOLBAR:
+      mx_window_set_has_toolbar (MX_WINDOW (object),
+                                 g_value_get_boolean (value));
       break;
 
     case PROP_SMALL_SCREEN:
@@ -579,7 +589,8 @@ mx_window_pick (ClutterActor       *actor,
   if (priv->is_moving != -1)
     return;
 
-  clutter_actor_paint (priv->toolbar);
+  if (priv->has_toolbar)
+    clutter_actor_paint (priv->toolbar);
 
   if (priv->child)
     clutter_actor_paint (priv->child);
@@ -601,21 +612,29 @@ mx_window_allocate (ClutterActor           *actor,
   window = MX_WINDOW (actor);
   priv = window->priv;
 
-  if (priv->small_screen ||
+  if (!priv->has_toolbar || priv->small_screen ||
       clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
       padding.top = padding.right = padding.bottom = padding.left = 0;
   else
       padding.top = padding.right = padding.bottom = padding.left = 1;
 
-  clutter_actor_get_preferred_height (priv->toolbar, (box->x2 - box->x1), NULL,
-                                      &toolbar_height);
+  if (priv->has_toolbar)
+    {
+      clutter_actor_get_preferred_height (priv->toolbar, (box->x2 - box->x1), NULL,
+                                          &toolbar_height);
 
-  toolbarbox.x1 = padding.left;
-  toolbarbox.y1 = padding.top;
-  toolbarbox.x2 = (box->x2 - box->x1) - padding.right;
-  toolbarbox.y2 = toolbarbox.y1 + toolbar_height;
+      toolbarbox.x1 = padding.left;
+      toolbarbox.y1 = padding.top;
+      toolbarbox.x2 = (box->x2 - box->x1) - padding.right;
+      toolbarbox.y2 = toolbarbox.y1 + toolbar_height;
 
-  clutter_actor_allocate (priv->toolbar, &toolbarbox, flags);
+      clutter_actor_allocate (priv->toolbar, &toolbarbox, flags);
+    }
+  else
+    {
+      toolbarbox.y2 = padding.top;
+      toolbar_height = 0;
+    }
 
   if (priv->child)
     {
@@ -1063,6 +1082,13 @@ mx_window_class_init (MxWindowClass *klass)
   g_object_class_override_property (object_class, PROP_STYLE_PSEUDO_CLASS,
                                     "style-pseudo-class");
 
+  pspec = g_param_spec_boolean ("has-toolbar",
+                                "Has toolbar",
+                                "Window should have a toolbar.",
+                                TRUE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_HAS_TOOLBAR, pspec);
+
   pspec = g_param_spec_boolean ("small-screen",
                                 "Small screen",
                                 "Window should occupy the entire screen "
@@ -1170,22 +1196,27 @@ void
 mx_window_set_has_toolbar (MxWindow *window,
                            gboolean  toolbar)
 {
+  MxWindowPrivate *priv;
+
   g_return_if_fail (MX_IS_WINDOW (window));
+
+  priv = window->priv;
 
   if (window->priv->has_toolbar != toolbar)
     {
       window->priv->has_toolbar = toolbar;
 
       if (!toolbar)
-        {
-          // hide toolbar and add window decorations
-        }
+        clutter_actor_hide (priv->toolbar);
       else
-        {
-          // show toolbar and hide window decorations
-        }
+        clutter_actor_show (priv->toolbar);
 
-      //g_object_notify (window, "toolbar");
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (window));
+
+      g_object_notify (G_OBJECT (window), "has-toolbar");
+
+      /* Remove/add window decorations */
+      mx_window_set_wm_hints (window);
     }
 }
 
