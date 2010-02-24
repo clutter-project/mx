@@ -20,6 +20,7 @@
  *
  */
 
+#include <stdlib.h>
 #include <string.h>
 #include <gio/gio.h>
 #include "mx-icon-theme.h"
@@ -59,6 +60,7 @@ struct _MxIconThemePrivate
 {
   GList      *search_paths;
   GHashTable *icon_hash;
+  GHashTable *theme_path_hash;
 
   gchar      *theme;
   GKeyFile   *theme_file;
@@ -110,6 +112,7 @@ mx_icon_theme_finalize (GObject *object)
 
   mx_icon_theme_set_search_paths (self, NULL);
   g_hash_table_unref (priv->icon_hash);
+  g_hash_table_unref (priv->theme_path_hash);
   g_free (priv->theme);
 
   if (priv->theme_file)
@@ -160,16 +163,18 @@ mx_icon_theme_load_theme (MxIconTheme *self, const gchar *name)
   key_file = g_key_file_new ();
   for (p = priv->search_paths; p; p = p->next)
     {
-      gboolean success;
-
       const gchar *path = p->data;
       gchar *key_path = g_build_filename (path, name, "index.theme", NULL);
-
-      success = g_key_file_load_from_file (key_file, key_path, 0, NULL);
+      gboolean success = g_key_file_load_from_file (key_file, key_path, 0, NULL);
       g_free (key_path);
 
       if (success)
-        return key_file;
+        {
+          g_hash_table_insert (priv->theme_path_hash,
+                               key_file,
+                               g_strdup (name));
+          return key_file;
+        }
     }
 
   g_key_file_free (key_file);
@@ -258,6 +263,11 @@ mx_icon_theme_init (MxIconTheme *self)
                                            g_object_unref,
                                            mx_icon_theme_icon_hash_free);
 
+  priv->theme_path_hash = g_hash_table_new_full (g_direct_hash,
+                                                 g_str_equal,
+                                                 NULL,
+                                                 g_free);
+
   priv->hicolor_file = mx_icon_theme_load_theme (self, "hicolor");
   if (!priv->hicolor_file)
     g_warning ("Error loading fallback icon theme");
@@ -325,10 +335,14 @@ mx_icon_theme_set_theme (MxIconTheme *theme,
   g_free (priv->theme);
 
   if (priv->theme_file)
-    g_key_file_free (priv->theme_file);
+    {
+      g_hash_table_remove (priv->theme_path_hash, priv->theme_file);
+      g_key_file_free (priv->theme_file);
+    }
 
   while (priv->theme_fallbacks)
     {
+      g_hash_table_remove (priv->theme_path_hash, priv->theme_fallbacks->data);
       g_key_file_free ((GKeyFile *)priv->theme_fallbacks->data);
       priv->theme_fallbacks = g_list_delete_link (priv->theme_fallbacks,
                                                   priv->theme_fallbacks);
@@ -373,6 +387,42 @@ mx_icon_theme_set_theme (MxIconTheme *theme,
     }
 }
 
+static void
+mx_icon_theme_collect_dirs (GString     *string,
+                            const gchar *path,
+                            const gchar *root)
+{
+  GDir *dir;
+  gchar *full_path;
+  const gchar *file;
+
+  full_path = g_build_filename (root, path, NULL);
+  dir = g_dir_open (full_path, 0, NULL);
+  g_free (full_path);
+
+  if (!dir)
+    return;
+
+  while ((file = g_dir_read_name (dir)))
+    {
+      gchar *new_dir = g_build_filename (root, path, file, NULL);
+      gboolean result = g_file_test (new_dir, G_FILE_TEST_IS_DIR);
+
+      g_free (new_dir);
+
+      if (result)
+        {
+          gchar *rel_dir = g_build_filename (path, file, NULL);
+          g_string_append (string, rel_dir);
+          g_string_append (string, ",");
+
+          mx_icon_theme_collect_dirs (string, rel_dir, root);
+          g_free (rel_dir);
+        }
+    }
+  g_dir_close (dir);
+}
+
 static GList *
 mx_icon_theme_theme_load_icon (MxIconTheme *self,
                                GKeyFile    *theme_file,
@@ -380,6 +430,7 @@ mx_icon_theme_theme_load_icon (MxIconTheme *self,
                                GIcon       *store_icon)
 {
   gchar *dirs;
+  const gchar *theme;
 
   GList *data = NULL;
   MxIconThemePrivate *priv = self->priv;
@@ -388,6 +439,34 @@ mx_icon_theme_theme_load_icon (MxIconTheme *self,
                                 "Icon Theme",
                                 "Directories",
                                 NULL);
+  theme = g_hash_table_lookup (priv->theme_path_hash, theme_file);
+
+  if (!dirs)
+    {
+      GList *p;
+      GString *string;
+
+      /* Icon theme hasn't specified directories, so recurse and
+       * collect all of them.
+       */
+      string = g_string_new ("");
+
+      for (p = priv->search_paths; p; p = p->next)
+        {
+          const gchar *search_path = p->data;
+          gchar *path = g_build_filename (search_path,
+                                          theme,
+                                          NULL);
+          mx_icon_theme_collect_dirs (string, "", path);
+          g_free (path);
+        }
+
+      /* Chop off the trailing comma */
+      g_string_truncate (string, string->len - 1);
+
+      dirs = string->str;
+      g_string_free (string, FALSE);
+    }
 
   if (dirs)
     {
@@ -412,7 +491,12 @@ mx_icon_theme_theme_load_icon (MxIconTheme *self,
                                          "Size",
                                          NULL);
           if (!size)
-            continue;
+            {
+              /* Try to get size from dir name */
+              size = atoi (dir);
+              if (!size)
+                continue;
+            }
 
           type_string = g_key_file_get_string (theme_file,
                                                dir,
@@ -463,7 +547,7 @@ mx_icon_theme_theme_load_icon (MxIconTheme *self,
               MxIconData *icon_data = NULL;
               const gchar *search_path = p->data;
               gchar *path = g_build_filename (search_path,
-                                              priv->theme,
+                                              theme,
                                               dir,
                                               NULL);
 
