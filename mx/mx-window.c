@@ -338,8 +338,9 @@ mx_window_get_size (MxWindow *self,
 
   pref_width = width = 0;
 
-  has_border = (priv->small_screen ||
-                clutter_stage_get_fullscreen (CLUTTER_STAGE (self)));
+  has_border = priv->has_toolbar &&
+               !(priv->small_screen ||
+                 clutter_stage_get_fullscreen (CLUTTER_STAGE (self)));
 
   if (priv->toolbar)
     clutter_actor_get_preferred_width (priv->toolbar,
@@ -545,10 +546,10 @@ mx_window_paint (ClutterActor *actor)
 
   clutter_actor_paint (priv->toolbar);
 
-  /* If we're in small-screen or fullscreen mode, we don't want a frame
-   * or a resize handle.
+  /* If we're in small-screen or fullscreen mode, or we don't have the toolbar,
+   * we don't want a frame or a resize handle.
    */
-  if (priv->small_screen ||
+  if (!priv->has_toolbar || priv->small_screen ||
       clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
     return;
 
@@ -707,8 +708,8 @@ mx_window_button_press_event (ClutterActor       *actor,
 
   priv = MX_WINDOW (actor)->priv;
 
-  /* Bail out early in small-screen or fullscreen mode */
-  if (priv->small_screen ||
+  /* Bail out early in no-toolbar, small-screen or fullscreen mode */
+  if (!priv->has_toolbar || priv->small_screen ||
       clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
     return FALSE;
 
@@ -791,7 +792,7 @@ mx_window_captured_event (ClutterActor *actor,
     {
     case CLUTTER_MOTION:
       /* Check if we're over the resize handle */
-      if ((priv->is_moving == -1) && !priv->small_screen &&
+      if ((priv->is_moving == -1) && priv->has_toolbar && !priv->small_screen &&
           !clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
         {
           gint x, y;
@@ -869,10 +870,11 @@ mx_window_motion_event (ClutterActor       *actor,
   window = MX_WINDOW (actor);
   priv = window->priv;
 
-  /* Ignore motion events while in small-screen mode, fullscreen mode and
-   * if they're not from our grabbed device.
+  /* Ignore motion events while in small-screen mode, fullscreen mode,
+   * if we have no toolbar, or if they're not from our grabbed device.
    */
-  if ((priv->small_screen) ||
+  if ((!priv->has_toolbar) ||
+      (priv->small_screen) ||
       (clutter_stage_get_fullscreen (CLUTTER_STAGE (actor))) ||
       (clutter_input_device_get_device_id (event->device) != priv->is_moving))
     return FALSE;
