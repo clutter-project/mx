@@ -4,7 +4,9 @@ dist_style_DATA = \
 		button-hover.png \
 		button.png \
 		combobox.png \
+		combobox-marker.png \
 		combobox-toolbar.png \
+		combobox-toolbar-marker.png \
 		close.png \
 		close-hover.png \
 		default.css \

@@ -176,8 +176,9 @@ MxProgressBar MxProgressBarFill {
 }
 
 MxComboBox {
-  padding: 5 38 5 5;
+  padding: 5 11 5 5;
   border-image: url('combobox.png') 4 32 4 4;
+  -mx-marker-image: url('combobox-marker.png');
 }
 
 MxPopup {
@@ -265,7 +266,8 @@ MxToolbar MxButton#close-button:hover, MxToolbar MxButton#close-button:active {
 MxToolbar MxComboBox {
   color: #dadada;
   border-image: url('combobox-toolbar.png') 4 32 4 4;
-  padding: 12 38 12 14;
+  -mx-marker-image: url('combobox-toolbar-marker.png');
+  padding: 12 14;
   font-size: 15;
 }
 

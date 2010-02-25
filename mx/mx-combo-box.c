@@ -35,10 +35,13 @@
 #include "mx-stylable.h"
 
 static void mx_focusable_iface_init (MxFocusableIface *iface);
+static void mx_stylable_iface_init (MxStylableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxComboBox, mx_combo_box, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
-                                                mx_focusable_iface_init));
+                                                mx_focusable_iface_init)
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
+                                                mx_stylable_iface_init))
 
 #define COMBO_BOX_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_COMBO_BOX, MxComboBoxPrivate))
@@ -47,10 +50,13 @@ struct _MxComboBoxPrivate
 {
   ClutterActor *label;
   ClutterActor *icon;
+  ClutterActor *marker;
   GSList       *actions;
   gfloat        clip_x;
   gfloat        clip_y;
   gint          index;
+  gint          icon_size;
+  gint          spacing;
 };
 
 enum
@@ -61,8 +67,42 @@ enum
   PROP_INDEX
 };
 
-#define SPACING 8.0
-#define ICON_SIZE 16
+static void
+mx_stylable_iface_init (MxStylableIface *iface)
+{
+  static gboolean is_initialised = FALSE;
+
+  if (!is_initialised)
+    {
+      GParamSpec *pspec;
+
+      is_initialised = TRUE;
+
+      pspec = g_param_spec_boxed ("x-mx-marker-image",
+                                  "Marker image",
+                                  "Marker image used to denote that a "
+                                  "combo-box expands on click.",
+                                  MX_TYPE_BORDER_IMAGE,
+                                  G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_COMBO_BOX, pspec);
+
+      pspec = g_param_spec_int ("x-mx-icon-size",
+                                "Icon size",
+                                "Icons size to use for icons inside the "
+                                "combo-box.",
+                                0, G_MAXINT, 16,
+                                G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_COMBO_BOX, pspec);
+
+      pspec = g_param_spec_int ("x-mx-spacing",
+                                "Spacing",
+                                "Spacing to use between elements inside the "
+                                "combo-box.",
+                                0, G_MAXINT, 8,
+                                G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_COMBO_BOX, pspec);
+    }
+}
 
 static void
 mx_combo_box_get_property (GObject    *object,
@@ -128,6 +168,12 @@ mx_combo_box_dispose (GObject *object)
       priv->icon = NULL;
     }
 
+  if (priv->marker)
+    {
+      clutter_actor_destroy (priv->marker);
+      priv->marker = NULL;
+    }
+
   G_OBJECT_CLASS (mx_combo_box_parent_class)->dispose (object);
 }
 
@@ -156,6 +202,9 @@ mx_combo_box_map (ClutterActor *actor)
 
   if (priv->icon)
     clutter_actor_map (priv->icon);
+
+  if (priv->marker)
+    clutter_actor_map (priv->marker);
 }
 
 static void
@@ -169,6 +218,9 @@ mx_combo_box_unmap (ClutterActor *actor)
 
   if (priv->icon)
     clutter_actor_unmap (priv->icon);
+
+  if (priv->marker)
+    clutter_actor_unmap (priv->marker);
 }
 
 static void
@@ -182,6 +234,9 @@ mx_combo_box_paint (ClutterActor *actor)
 
   if (priv->icon)
     clutter_actor_paint (priv->icon);
+
+  if (priv->marker)
+    clutter_actor_paint (priv->marker);
 }
 
 static void
@@ -190,11 +245,14 @@ mx_combo_box_get_preferred_width (ClutterActor *actor,
                                   gfloat       *min_width_p,
                                   gfloat       *natural_height_p)
 {
-  MxComboBoxPrivate *priv = MX_COMBO_BOX (actor)->priv;
   gfloat height;
-  gfloat min_label_w, nat_label_w;
-  gfloat min_icon_w = 0, nat_icon_w = 0;
   gfloat min_w, nat_w;
+  gfloat min_label_w, nat_label_w;
+
+  gfloat min_icon_w = 0, nat_icon_w = 0;
+  gfloat min_popup_w = 0, nat_popup_w = 0;
+  gfloat min_marker_w = 0, nat_marker_w = 0;
+  MxComboBoxPrivate *priv = MX_COMBO_BOX (actor)->priv;
 
   MxPadding padding;
   ClutterActor *popup;
@@ -207,29 +265,42 @@ mx_combo_box_get_preferred_width (ClutterActor *actor,
   if (popup)
     {
       mx_widget_ensure_style ((MxWidget*) popup);
-
-      clutter_actor_get_preferred_width (popup, -1, &min_w, &nat_w);
+      clutter_actor_get_preferred_width (popup, -1, &min_popup_w, &nat_popup_w);
     }
-  else
+
+  clutter_actor_get_preferred_width (priv->label,
+                                     height,
+                                     &min_label_w,
+                                     &nat_label_w);
+
+  min_w = min_label_w;
+  nat_w = nat_label_w;
+
+  if (priv->icon)
     {
-      clutter_actor_get_preferred_width (priv->label,
+      clutter_actor_get_preferred_width (priv->icon,
                                          height,
-                                         &min_label_w,
-                                         &nat_label_w);
+                                         &min_icon_w,
+                                         &nat_icon_w);
 
-      min_w = min_label_w;
-      nat_w = nat_label_w;
+      min_w += min_icon_w + priv->spacing;
+      nat_w += nat_icon_w + priv->spacing;
+    }
 
-      if (priv->icon)
-        {
-          clutter_actor_get_preferred_width (priv->icon,
-                                             height,
-                                             &min_icon_w,
-                                             &nat_icon_w);
+  if (min_popup_w > min_w)
+    min_w = min_popup_w;
+  if (nat_popup_w > nat_w)
+    nat_w = nat_popup_w;
 
-          min_w += min_icon_w + SPACING;
-          nat_w += nat_icon_w + SPACING;
-        }
+  if (priv->marker)
+    {
+      clutter_actor_get_preferred_width (priv->marker,
+                                         height,
+                                         &min_marker_w,
+                                         &nat_marker_w);
+
+      min_w += min_marker_w + priv->spacing;
+      nat_w += nat_marker_w + priv->spacing;
     }
 
   if (min_width_p)
@@ -237,7 +308,6 @@ mx_combo_box_get_preferred_width (ClutterActor *actor,
 
   if (natural_height_p)
     *natural_height_p = padding.left + padding.right + nat_w;
-
 }
 
 static void
@@ -250,6 +320,7 @@ mx_combo_box_get_preferred_height (ClutterActor *actor,
   gfloat width;
   gfloat min_label_h, nat_label_h;
   gfloat min_icon_h = 0, nat_icon_h = 0;
+  gfloat min_marker_h = 0, nat_marker_h = 0;
   gfloat min_h, nat_h;
   MxPadding padding;
 
@@ -258,20 +329,28 @@ mx_combo_box_get_preferred_height (ClutterActor *actor,
   width = for_width - padding.left - padding.right;
 
   clutter_actor_get_preferred_height (priv->label,
-                                      width,
+                                      -1,
                                       &min_label_h,
                                       &nat_label_h);
 
   if (priv->icon)
     {
       clutter_actor_get_preferred_height (priv->icon,
-                                          width,
+                                          -1,
                                           &min_icon_h,
                                           &nat_icon_h);
     }
 
-  min_h = MAX (min_icon_h, min_label_h);
-  nat_h = MAX (nat_icon_h, nat_label_h);
+  if (priv->marker)
+    {
+      clutter_actor_get_preferred_height (priv->marker,
+                                          -1,
+                                          &min_marker_h,
+                                          &nat_marker_h);
+    }
+
+  min_h = MAX (MAX (min_icon_h, min_label_h), min_marker_h);
+  nat_h = MAX (MAX (nat_icon_h, nat_label_h), nat_marker_h);
 
   if (min_height_p)
     *min_height_p = padding.top + padding.bottom + min_h;
@@ -289,8 +368,9 @@ mx_combo_box_allocate (ClutterActor          *actor,
   MxPadding padding;
   gfloat x, y, width, height;
   gfloat min_popup_h, nat_popup_h;
-  gfloat min_label_h, nat_label_h, label_h, min_label_w, nat_label_w, label_w;
-  gfloat min_icon_h, nat_icon_h, icon_h, icon_w, min_icon_w, nat_icon_w;
+  gfloat label_h;
+  gfloat nat_icon_h, icon_h, icon_w;
+  gfloat nat_marker_h, marker_h, marker_w;
   ClutterActorBox childbox;
   ClutterActor *popup, *stage;
 
@@ -304,32 +384,66 @@ mx_combo_box_allocate (ClutterActor          *actor,
   width = box->x2 - box->x1 - padding.left - padding.right;
   height = box->y2 - box->y1 - padding.top - padding.bottom;
 
-  clutter_actor_get_preferred_size (priv->label, &min_label_w, &min_label_h,
-                                    &nat_label_w, &nat_label_h);
-  label_h = CLAMP (nat_label_h, min_label_h, height);
-  label_w = CLAMP (nat_label_w, min_label_w, width);
+  icon_w = marker_w = 0;
 
   if (priv->icon)
     {
       /* Allocate the icon, if there is one, the space not used by the text */
-      clutter_actor_get_preferred_size (priv->icon, &min_icon_w, &min_icon_h,
-                                        &nat_icon_w, &nat_icon_h);
+      clutter_actor_get_preferred_height (priv->icon, -1, NULL, &nat_icon_h);
 
-      icon_h = CLAMP (nat_icon_h, min_icon_h, height);
-      icon_w = CLAMP (nat_icon_w, min_icon_w, (width - label_w - SPACING));
+      if (height >= nat_icon_h)
+        {
+          icon_h = nat_icon_h;
+          clutter_actor_get_preferred_width (priv->icon, -1, NULL, &icon_w);
+        }
+      else
+        {
+          icon_h = height;
+          clutter_actor_get_preferred_width (priv->icon, icon_h, NULL, &icon_w);
+        }
+
       childbox.x1 = (int)(x);
-      childbox.y1 = (int)(y + (height / 2 - icon_h / 2));
+      childbox.y1 = (int)(y + (height - icon_h) / 2);
       childbox.x2 = (int)(x + icon_w);
       childbox.y2 = (int)(childbox.y1 + icon_h);
 
       clutter_actor_allocate (priv->icon, &childbox, flags);
 
-      x = childbox.x2 + SPACING;
+      icon_w += priv->spacing;
     }
 
-  childbox.x1 = (int)(x);
+  if (priv->marker)
+    {
+      clutter_actor_get_preferred_height (priv->marker, -1,
+                                          NULL, &nat_marker_h);
+
+      if (height >= nat_marker_h)
+        {
+          marker_h = nat_marker_h;
+          clutter_actor_get_preferred_width (priv->marker, -1, NULL, &marker_w);
+        }
+      else
+        {
+          marker_h = height;
+          clutter_actor_get_preferred_width (priv->marker, marker_h,
+                                             NULL, &marker_w);
+        }
+
+      childbox.x2 = (int)(x + width);
+      childbox.x1 = (int)(childbox.x2 - marker_w);
+      childbox.y1 = (int)(y + (height - marker_h) / 2);
+      childbox.y2 = (int)(childbox.y1 + marker_h);
+
+      clutter_actor_allocate (priv->marker, &childbox, flags);
+
+      marker_w += priv->spacing;
+    }
+
+  clutter_actor_get_preferred_height (priv->label, -1, NULL, &label_h);
+
+  childbox.x1 = (int)(x + icon_w);
   childbox.y1 = (int)(y + (height / 2 - label_h / 2));
-  childbox.x2 = (int)(x + label_w);
+  childbox.x2 = (int)(x + width - marker_w);
   childbox.y2 = (int)(childbox.y1 + label_h);
   clutter_actor_allocate (priv->label, &childbox, flags);
 
@@ -444,8 +558,44 @@ mx_combo_box_key_press_event (ClutterActor    *actor,
 static void
 mx_combo_box_style_changed (MxComboBox *combo)
 {
+  MxBorderImage *marker_filename;
+  gint spacing, icon_size;
+
+  MxComboBoxPrivate *priv = combo->priv;
+
+  mx_stylable_get (MX_STYLABLE (combo),
+                   "x-mx-spacing", &spacing,
+                   "x-mx-icon-size", &icon_size,
+                   "x-mx-marker-image", &marker_filename,
+                   NULL);
+
+  if (spacing != priv->spacing)
+    priv->spacing = spacing;
+
+  if (icon_size != priv->icon_size)
+    priv->icon_size = icon_size;
+
+  if (priv->marker)
+    {
+      clutter_actor_destroy (priv->marker);
+      priv->marker = NULL;
+    }
+
+  if (marker_filename)
+    {
+      MxTextureCache *cache = mx_texture_cache_get_default ();
+      priv->marker = (ClutterActor *)
+        mx_texture_cache_get_texture (cache, marker_filename->uri);
+      if (priv->marker)
+        clutter_actor_set_parent (priv->marker, CLUTTER_ACTOR (combo));
+
+      g_boxed_free (MX_TYPE_BORDER_IMAGE, marker_filename);
+    }
+
   mx_stylable_apply_clutter_text_attributes (MX_STYLABLE (combo),
                                              CLUTTER_TEXT (combo->priv->label));
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (combo));
 }
 
 static void
@@ -498,6 +648,8 @@ mx_combo_box_init (MxComboBox *self)
 
   priv = self->priv = COMBO_BOX_PRIVATE (self);
 
+  priv->spacing = 8;
+  priv->icon_size = 16;
 
   priv->label = clutter_text_new ();
   clutter_actor_set_parent (priv->label, (ClutterActor*) self);
@@ -757,9 +909,8 @@ mx_combo_box_set_index (MxComboBox *box,
       MxIconTheme *icon_theme;
 
       icon_theme = mx_icon_theme_get_default ();
-      priv->icon = (ClutterActor *)mx_icon_theme_lookup_texture (icon_theme,
-                                                                 icon_name,
-                                                                 ICON_SIZE);
+      priv->icon = (ClutterActor *)
+        mx_icon_theme_lookup_texture (icon_theme, icon_name, priv->icon_size);
 
       if (priv->icon)
         {
