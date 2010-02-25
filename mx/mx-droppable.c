@@ -141,7 +141,7 @@ on_stage_capture (ClutterActor *actor,
                          draggable);
         }
     }
-  else if (event->type == CLUTTER_BUTTON_RELEASE)
+  else if (event->type == CLUTTER_BUTTON_RELEASE && context->last_target)
     {
       gfloat drop_x, drop_y;
       gboolean res;
