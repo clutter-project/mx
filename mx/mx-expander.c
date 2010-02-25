@@ -387,13 +387,11 @@ mx_expander_allocate (ClutterActor          *actor,
   MxPadding padding;
   gfloat label_w, label_h;
   gfloat child_h, child_w;
-  ClutterActorClass *parent_parent;
   gfloat available_w, available_h, min_w, min_h, full_h, arrow_h, arrow_w;
   ClutterRequestMode request;
 
-  /* skip MxBin allocate */
-  parent_parent = g_type_class_peek_parent (mx_expander_parent_class);
-  parent_parent->allocate (actor, box, flags);
+  /* chain up to store allocation */
+  CLUTTER_ACTOR_CLASS (mx_expander_parent_class)->allocate (actor, box, flags);
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
