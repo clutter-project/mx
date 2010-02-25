@@ -102,6 +102,8 @@ mx_box_layout_set_pack_start
 mx_box_layout_get_pack_start
 mx_box_layout_set_spacing
 mx_box_layout_get_spacing
+mx_box_layout_add_actor
+mx_box_layout_add_actor_with_properties
 <SUBSECTION Standard>
 MX_BOX_LAYOUT
 MX_IS_BOX_LAYOUT

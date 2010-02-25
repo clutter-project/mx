@@ -49,6 +49,10 @@
  * </figure>
  */
 
+#include <stdarg.h>
+#include <string.h>
+#include <gobject/gvaluecollector.h>
+
 #include "mx-box-layout.h"
 
 #include "mx-private.h"
@@ -1588,4 +1592,159 @@ mx_box_layout_get_enable_animations (MxBoxLayout *box)
   return box->priv->enable_animations;
 }
 
+static inline void
+mx_box_layout_set_property_valist (MxBoxLayout  *box,
+                                   ClutterActor *actor,
+                                   const gchar  *first_property,
+                                   va_list       var_args)
+{
+  ClutterContainer *container = CLUTTER_CONTAINER (box);
+  ClutterChildMeta *meta;
+  GObjectClass *klass;
+  const gchar *pname;
 
+  meta = clutter_container_get_child_meta (container, actor);
+  g_assert (meta);
+
+  klass = G_OBJECT_GET_CLASS (meta);
+
+  pname = first_property;
+  while (pname)
+    {
+      GValue value = { 0, };
+      GParamSpec *pspec;
+      gchar *error;
+
+      pspec = g_object_class_find_property (klass, pname);
+      if (pspec == NULL)
+        {
+          g_warning ("%s: the layout property '%s' for MxBoxLayout "
+                     "(meta type '%s') does not exist",
+                     G_STRLOC,
+                     pname,
+                     G_OBJECT_TYPE_NAME (meta));
+          break;
+        }
+
+      if (!(pspec->flags & G_PARAM_WRITABLE))
+        {
+          g_warning ("%s: the layout property '%s' for MxBoxLayout "
+                     "(meta type '%s') is not writable",
+                     G_STRLOC,
+                     pspec->name,
+                     G_OBJECT_TYPE_NAME (meta));
+          break;
+        }
+
+      g_value_init (&value, G_PARAM_SPEC_VALUE_TYPE (pspec));
+      G_VALUE_COLLECT (&value, var_args, 0, &error);
+      if (error)
+        {
+          g_warning ("%s: %s", G_STRLOC, error);
+          g_free (error);
+          break;
+        }
+
+      clutter_container_child_set_property (container,
+                                            actor,
+                                            pspec->name, &value);
+      g_value_unset (&value);
+
+      pname = va_arg (var_args, gchar*);
+    }
+}
+
+static void
+mx_box_layout_create_child_meta (MxBoxLayout  *box,
+                                 ClutterActor *actor)
+{
+  ClutterContainer *container = CLUTTER_CONTAINER (box);
+  ClutterContainerIface *iface = CLUTTER_CONTAINER_GET_IFACE (container);
+
+  g_assert (g_type_is_a (iface->child_meta_type, MX_TYPE_BOX_LAYOUT_CHILD));
+
+  if (G_LIKELY (iface->create_child_meta))
+      iface->create_child_meta (container, actor);
+}
+
+/**
+ * mx_box_layout_add_actor:
+ * @box: a #MxBoxLayout
+ * @actor: the #ClutterActor actor to add to the box layout
+ * @position: the position where to insert the actor
+ *
+ * Inserts @actor at @position in @box.
+ */
+void
+mx_box_layout_add_actor (MxBoxLayout  *box,
+                         ClutterActor *actor,
+                         gint          position)
+{
+  MxBoxLayoutPrivate *priv;
+
+  g_return_if_fail (MX_IS_BOX_LAYOUT (box));
+  g_return_if_fail (CLUTTER_IS_ACTOR (actor));
+
+  priv = box->priv;
+
+  /* this is really mx_box_container_add_actor() with a different insert() */
+  priv->children = g_list_insert (priv->children,
+                                  actor,
+                                  position);
+  mx_box_layout_create_child_meta (box, actor);
+  clutter_actor_set_parent (actor, (ClutterActor*) box);
+
+  if (priv->enable_animations)
+    {
+      _mx_box_layout_start_animation (box);
+
+      if (priv->timeline)
+        {
+          /* fade in the new actor when there is room */
+          clutter_actor_set_opacity (actor, 0);
+          g_signal_connect_swapped (priv->timeline, "completed",
+                                    G_CALLBACK (fade_in_actor), actor);
+        }
+    }
+  else
+    {
+      clutter_actor_queue_relayout ((ClutterActor *) box);
+    }
+
+  g_signal_emit_by_name (box, "actor-added", actor);
+
+}
+
+/**
+ * mx_box_layout_add_at:
+ * @box: a #MxBoxLayout
+ * @actor: the #ClutterActor actor to add to the box layout
+ * @position: the position where to insert the actor
+ * @first_property_name: name of the first property to set
+ * @...: value for the first property, followed optionally by more name/value
+ *       pairs terminated with NULL.
+ *
+ * Inserts @actor at @position in the layout @box. You can set some layout
+ * properties on the child at the same time.
+ *
+ * If @position is negative, or is larger than the number of actors in the
+ * layout, the new actor is added on to the end of the list.
+ */
+void
+mx_box_layout_add_actor_with_properties (MxBoxLayout  *box,
+                                         ClutterActor *actor,
+                                         gint          position,
+                                         const char   *first_property,
+                                         ...)
+{
+  va_list var_args;
+
+  mx_box_layout_add_actor (box, actor, position);
+
+  if (first_property == NULL || *first_property == '\0')
+    return;
+
+  va_start (var_args, first_property);
+  mx_box_layout_set_property_valist (box, actor, first_property, var_args);
+  va_end (var_args);
+}
