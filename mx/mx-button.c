@@ -215,7 +215,7 @@ mx_button_style_changed (MxWidget *widget)
 
       if (priv->content_image)
         {
-          clutter_actor_destroy (priv->content_image);
+          clutter_actor_unparent (priv->content_image);
         }
 
       priv->content_image = clutter_texture_new_from_file (content_image->uri,
@@ -493,7 +493,7 @@ mx_button_dispose (GObject *gobject)
 
   if (priv->content_image)
     {
-      clutter_actor_destroy (priv->content_image);
+      clutter_actor_unparent (priv->content_image);
       priv->content_image = NULL;
     }
 
