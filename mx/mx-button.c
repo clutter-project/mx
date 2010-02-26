@@ -215,7 +215,7 @@ mx_button_style_changed (MxWidget *widget)
 
       if (priv->content_image)
         {
-          clutter_actor_unparent (priv->content_image);
+          clutter_actor_destroy (priv->content_image);
         }
 
       priv->content_image = clutter_texture_new_from_file (content_image->uri,
@@ -489,6 +489,14 @@ mx_button_finalize (GObject *gobject)
 static void
 mx_button_dispose (GObject *gobject)
 {
+  MxButtonPrivate *priv = MX_BUTTON (gobject)->priv;
+
+  if (priv->content_image)
+    {
+      clutter_actor_destroy (priv->content_image);
+      priv->content_image = NULL;
+    }
+
   G_OBJECT_CLASS (mx_button_parent_class)->dispose (gobject);
 }
 
@@ -511,7 +519,7 @@ mx_button_unmap (ClutterActor *self)
   CLUTTER_ACTOR_CLASS (mx_button_parent_class)->unmap (self);
 
   if (priv->content_image)
-    clutter_actor_map (priv->content_image);
+    clutter_actor_unmap (priv->content_image);
 }
 
 static void
