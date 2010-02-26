@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-22 22:54+0000\n"
+"POT-Creation-Date: 2010-02-26 12:45+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Loïc Dufresne de Virel <loic.dufresne.de.virel@intel.com>\n"
 "Language-Team: lpdufres <loic.dufresne.de.virel@intel.com>\n"
@@ -12,14 +12,14 @@ msgstr ""
 "X-Poedit-Language: French\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: mx/mx-gtk-light-switch.c:176
+#: mx/mx-gtk-light-switch.c:232
 msgid "Unavailable"
 msgstr "Indisponible"
 
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the MEDIUM VERTICAL BAR unicode character
 #. * instead
-#: mx/mx-gtk-light-switch.c:196 mx/mx-gtk-light-switch.c:270
+#: mx/mx-gtk-light-switch.c:252 mx/mx-gtk-light-switch.c:326
 msgid "On"
 msgstr "Activé"
 
@@ -27,7 +27,7 @@ msgstr "Activé"
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the WHITE CIRCLE U+25CB unicode character
 #. * instead
-#: mx/mx-gtk-light-switch.c:215 mx/mx-gtk-light-switch.c:268
+#: mx/mx-gtk-light-switch.c:271 mx/mx-gtk-light-switch.c:324
 msgid "Off"
 msgstr "Désactivé"
 

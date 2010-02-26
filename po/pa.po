@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MX.Moblin2-UI.mx\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-22 22:54+0000\n"
+"POT-Creation-Date: 2010-02-26 12:45+0000\n"
 "PO-Revision-Date: 2009-08-07 07:14+0530\n"
 "Last-Translator: A S Alam <aalam@users.sf.net>\n"
 "Language-Team: Punjabi Users <punjabi-users@lists.sf.net>\n"
@@ -16,14 +16,14 @@ msgstr ""
 "X-Generator: Lokalize 0.3\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-#: mx/mx-gtk-light-switch.c:176
+#: mx/mx-gtk-light-switch.c:232
 msgid "Unavailable"
 msgstr "ਨਾ-ਉਪਲੱਬਧ"
 
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the MEDIUM VERTICAL BAR unicode character
 #. * instead
-#: mx/mx-gtk-light-switch.c:196 mx/mx-gtk-light-switch.c:270
+#: mx/mx-gtk-light-switch.c:252 mx/mx-gtk-light-switch.c:326
 msgid "On"
 msgstr "ਚਾਲੂ"
 
@@ -31,7 +31,7 @@ msgstr "ਚਾਲੂ"
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the WHITE CIRCLE U+25CB unicode character
 #. * instead
-#: mx/mx-gtk-light-switch.c:215 mx/mx-gtk-light-switch.c:268
+#: mx/mx-gtk-light-switch.c:271 mx/mx-gtk-light-switch.c:324
 msgid "Off"
 msgstr "ਬੰਦ"
 

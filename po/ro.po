@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mx\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-22 22:54+0000\n"
+"POT-Creation-Date: 2010-02-26 12:45+0000\n"
 "PO-Revision-Date: 2009-09-15 15:05+0200\n"
 "Last-Translator: Cosmin Bordeianu <elloxar@gmail.com>\n"
 "Language-Team: Moblin Romania <live@moblin.ro>\n"
@@ -18,14 +18,14 @@ msgstr ""
 "X-Poedit-Country: ROMANIA\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: mx/mx-gtk-light-switch.c:176
+#: mx/mx-gtk-light-switch.c:232
 msgid "Unavailable"
 msgstr "Indisponibil"
 
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the MEDIUM VERTICAL BAR unicode character
 #. * instead
-#: mx/mx-gtk-light-switch.c:196 mx/mx-gtk-light-switch.c:270
+#: mx/mx-gtk-light-switch.c:252 mx/mx-gtk-light-switch.c:326
 msgid "On"
 msgstr "On"
 
@@ -33,7 +33,7 @@ msgstr "On"
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the WHITE CIRCLE U+25CB unicode character
 #. * instead
-#: mx/mx-gtk-light-switch.c:215 mx/mx-gtk-light-switch.c:268
+#: mx/mx-gtk-light-switch.c:271 mx/mx-gtk-light-switch.c:324
 msgid "Off"
 msgstr "Off"
 

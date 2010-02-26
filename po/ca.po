@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mx 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-22 22:54+0000\n"
+"POT-Creation-Date: 2010-02-26 12:45+0000\n"
 "PO-Revision-Date: 2009-08-16 18:28+0200\n"
 "Last-Translator: Gil Forcada <gilforcada@guifi.net>\n"
 "Language-Team: Catalan <tradgnome@softcatala.org>\n"
@@ -15,14 +15,14 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: mx/mx-gtk-light-switch.c:176
+#: mx/mx-gtk-light-switch.c:232
 msgid "Unavailable"
 msgstr "No disponible"
 
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the MEDIUM VERTICAL BAR unicode character
 #. * instead
-#: mx/mx-gtk-light-switch.c:196 mx/mx-gtk-light-switch.c:270
+#: mx/mx-gtk-light-switch.c:252 mx/mx-gtk-light-switch.c:326
 msgid "On"
 msgstr "Actiu"
 
@@ -30,7 +30,7 @@ msgstr "Actiu"
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the WHITE CIRCLE U+25CB unicode character
 #. * instead
-#: mx/mx-gtk-light-switch.c:215 mx/mx-gtk-light-switch.c:268
+#: mx/mx-gtk-light-switch.c:271 mx/mx-gtk-light-switch.c:324
 msgid "Off"
 msgstr "Apagat"
 
