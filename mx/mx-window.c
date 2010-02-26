@@ -7,6 +7,7 @@
 #include <clutter/x11/clutter-x11.h>
 
 #include <X11/Xlib.h>
+#include <X11/extensions/Xrandr.h>
 #include <X11/cursorfont.h>
 
 static void clutter_container_iface_init (ClutterContainerIface *iface);
@@ -658,11 +659,16 @@ mx_window_allocate (ClutterActor           *actor,
 
       if (priv->small_screen)
         {
-          int screen = clutter_x11_get_default_screen ();
+          XRRScreenResources *res;
+
+          res = XRRGetScreenResourcesCurrent (dpy, win);
+
           XMoveResizeWindow (dpy, win,
                              0, 0,
-                             DisplayWidth (dpy, screen),
-                             DisplayHeight (dpy, screen));
+                             res->modes[res->nmode].width,
+                             res->modes[res->nmode].height);
+
+          XRRFreeScreenResources (res);
         }
       else if (!clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
         {
@@ -906,17 +912,21 @@ mx_window_motion_event (ClutterActor       *actor,
 
   if (priv->is_resizing)
     {
-      int screen;
+      XRRScreenResources *res;
       gfloat min_width, min_height;
 
-      screen = clutter_x11_get_default_screen ();
       mx_window_get_size (window, &min_width, &min_height, NULL, NULL);
 
       x = MAX (priv->drag_width_start + (x - priv->drag_x_start), min_width);
       y = MAX (priv->drag_height_start + (y - priv->drag_y_start), min_height);
 
-      width = MIN (x, DisplayWidth (dpy, screen) - priv->drag_win_x_start);
-      height = MIN (y, DisplayHeight (dpy, screen) - priv->drag_win_y_start);
+      res = XRRGetScreenResourcesCurrent (dpy, win);
+      width = res->modes[res->nmode].width;
+      height = res->modes[res->nmode].height;
+      XRRFreeScreenResources (res);
+
+      width = MIN (x, width - priv->drag_win_x_start);
+      height = MIN (y, height - priv->drag_win_y_start);
 
 #if !CLUTTER_CHECK_VERSION(1,1,8)
       /* Set the natural width/height so ClutterStageX11 won't try to
@@ -1109,6 +1119,21 @@ mx_window_class_init (MxWindowClass *klass)
 }
 
 static void
+mx_window_fullscreen_set_cb (MxWindow *self)
+{
+  MxWindowPrivate *priv = self->priv;
+
+  /* If we're in small-screen mode, make sure the size gets reset
+   * correctly.
+   */
+  if (!clutter_stage_get_fullscreen (CLUTTER_STAGE (self)) &&
+      priv->small_screen)
+    priv->has_mapped = FALSE;
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+}
+
+static void
 mx_window_init (MxWindow *self)
 {
   MxWindowPrivate *priv;
@@ -1134,7 +1159,7 @@ mx_window_init (MxWindow *self)
   clutter_stage_set_user_resizable (CLUTTER_STAGE (self), TRUE);
 
   g_signal_connect (self, "notify::fullscreen-set",
-                    G_CALLBACK (clutter_actor_queue_relayout), NULL);
+                    G_CALLBACK (mx_window_fullscreen_set_cb), NULL);
   g_signal_connect (self, "realize",
                     G_CALLBACK (mx_window_realize_cb), NULL);
 
@@ -1282,53 +1307,43 @@ mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
             }
         }
 
-      /* Get out of fullscreen mode if we're in fullscreen
-       * and switching to small-screen.
-       */
-      if (small_screen && clutter_stage_get_fullscreen (CLUTTER_STAGE (window)))
-        clutter_stage_set_fullscreen (CLUTTER_STAGE (window), FALSE);
-
       if (small_screen)
         {
-          int screen, width, height;
+          if (!clutter_stage_get_fullscreen (CLUTTER_STAGE (window)))
+            {
+              int width, height;
+              XRRScreenResources *res;
 
-          screen = clutter_x11_get_default_screen ();
-          width = DisplayWidth (dpy, screen);
-          height = DisplayHeight (dpy, screen);
+              clutter_actor_get_size (CLUTTER_ACTOR (window),
+                                      &priv->last_width,
+                                      &priv->last_height);
 
-          clutter_actor_get_size (CLUTTER_ACTOR (window),
-                                  &priv->last_width,
-                                  &priv->last_height);
+              /* Move/size ourselves to the size of the screen. We could
+               * also set ourselves as not resizable, but a WM that respects
+               * our small-screen mode won't give the user controls to
+               * modify the window, and if it does, just let them.
+               */
+              res = XRRGetScreenResourcesCurrent (dpy, win);
+              width = res->modes[res->nmode].width;
+              height = res->modes[res->nmode].height;
+              XRRFreeScreenResources (res);
 
-          /* Move/size ourselves to the size of the screen. We could
-           * also set ourselves as not resizable, but a WM that respects
-           * our small-screen mode won't give the user controls to
-           * modify the window, and if it does, just let them.
-           */
-          XMoveResizeWindow (dpy, win, 0, 0, width, height);
+              XMoveResizeWindow (dpy, win, 0, 0, width, height);
+            }
         }
       else
         {
-          /* This is the situation where resizing ourselves to the size of
-           * the screen caused the WM to fullscreen us. In this case, just
-           * set ourselves as un-fullscreened and we'll restore the size.
+          /* If we started off in small-screen mode, our last size won't
+           * be known, so use the preferred size.
            */
-          if (clutter_stage_get_fullscreen (stage))
-            clutter_stage_set_fullscreen (stage, FALSE);
-          else
-            {
-              /* If we started off in small-screen mode, our last size won't
-               * be known, so use the preferred size.
-               */
-              if (!priv->last_width && !priv->last_height)
-                mx_window_get_size (window,
-                                    NULL, NULL,
-                                    &priv->last_width, &priv->last_height);
+          if (!priv->last_width && !priv->last_height)
+            mx_window_get_size (window,
+                                NULL, NULL,
+                                &priv->last_width, &priv->last_height);
 
-              clutter_actor_set_size (CLUTTER_ACTOR (window),
-                                      priv->last_width,
-                                      priv->last_height);
-            }
+          clutter_actor_set_size (CLUTTER_ACTOR (window),
+                                  priv->last_width,
+                                  priv->last_height);
         }
 
       g_object_notify (G_OBJECT (window), "small-screen");
