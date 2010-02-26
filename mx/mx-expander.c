@@ -1,7 +1,7 @@
 /*
  * mx-expander.c: Expander Widget
  *
- * Copyright 2009 Intel Corporation.
+ * Copyright 2009, 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -217,13 +217,10 @@ new_frame (ClutterTimeline *timeline,
 }
 
 static void
-mx_expander_toggle_expanded (MxExpander *expander)
+mx_expander_update (MxExpander *expander)
 {
   MxExpanderPrivate *priv = expander->priv;
   ClutterActor *child;
-
-  priv->expanded = !priv->expanded;
-  g_object_notify ((GObject *) expander, "expanded");
 
   if (priv->expanded)
     {
@@ -265,7 +262,9 @@ static gboolean
 mx_expander_button_release (ClutterActor       *actor,
                             ClutterButtonEvent *event)
 {
-  mx_expander_toggle_expanded (MX_EXPANDER (actor));
+  MxExpander *expander = MX_EXPANDER (actor);
+
+  mx_expander_set_expanded (expander, !expander->priv->expanded);
 
   return FALSE;
 }
@@ -755,7 +754,11 @@ mx_expander_set_expanded (MxExpander *expander,
 
   if (expander->priv->expanded != expanded)
     {
-      mx_expander_toggle_expanded (expander);
+      expander->priv->expanded = expanded;
+
+      mx_expander_update (expander);
+
+      g_object_notify (G_OBJECT (expander), "expanded");
     }
 }
 
