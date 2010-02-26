@@ -647,6 +647,12 @@ mx_window_allocate (ClutterActor           *actor,
       clutter_actor_allocate (priv->child, &childbox, flags);
     }
 
+  /* Return if we're fullscreen, messing with the window size
+   * in fullscreen mode can cause odd race conditions.
+   */
+  if (clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
+    return;
+
   if (!priv->has_mapped)
     {
       Window win;
@@ -670,7 +676,7 @@ mx_window_allocate (ClutterActor           *actor,
 
           XRRFreeScreenResources (res);
         }
-      else if (!clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
+      else
         {
           /* Set the initial size of the window - if the user has set
            * a dimension, it will be used, otherwise the preferred size
