@@ -42,7 +42,7 @@
 #include "mx-tooltip.h"
 #include "mx-enum-types.h"
 
-#define LONG_PRESS_TIMOUT 500
+#define LONG_PRESS_TIMEOUT 500
 
 /*
  * Forward declaration for sake of MxWidgetChild
@@ -766,7 +766,7 @@ mx_widget_long_press_query (MxWidget           *widget,
                  event->y, MX_LONG_PRESS_QUERY, &query_result);
 
   if (query_result)
-    priv->long_press_source = g_timeout_add (LONG_PRESS_TIMOUT,
+    priv->long_press_source = g_timeout_add (LONG_PRESS_TIMEOUT,
                                              (GSourceFunc) mx_widget_emit_long_press,
                                              widget);
 }
