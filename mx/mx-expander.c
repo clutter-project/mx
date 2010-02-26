@@ -508,53 +508,19 @@ mx_expander_unmap (ClutterActor *actor)
 }
 
 static void
-mx_expander_style_changed (MxWidget *widget)
+mx_expander_style_changed (MxStylable *stylable)
 {
-  MxExpander *expander = MX_EXPANDER (widget);
+  MxExpander *expander = MX_EXPANDER (stylable);
   MxExpanderPrivate *priv = expander->priv;
   const gchar *pseudo_class;
-  ClutterColor *color = NULL;
-  gchar *font_name;
-  gchar *font_string;
-  gint font_size;
 
-  pseudo_class = mx_stylable_get_style_pseudo_class (MX_STYLABLE (widget));
+  pseudo_class = mx_stylable_get_style_pseudo_class (stylable);
 
   mx_stylable_set_style_pseudo_class (MX_STYLABLE (expander->priv->arrow),
-                                    pseudo_class);
+                                      pseudo_class);
 
-
-  mx_stylable_get (MX_STYLABLE (widget),
-                   "color", &color,
-                   "font-family", &font_name,
-                   "font-size", &font_size,
-                   NULL);
-
-  if (color)
-    {
-      clutter_text_set_color (CLUTTER_TEXT (priv->label), color);
-      clutter_color_free (color);
-    }
-
-  if (font_name || font_size)
-    {
-      if (font_name && font_size)
-        {
-          font_string = g_strdup_printf ("%s %dpx", font_name, font_size);
-          g_free (font_name);
-        }
-      else
-        {
-          if (font_size)
-            font_string = g_strdup_printf ("%dpx", font_size);
-          else
-            font_string = font_name;
-        }
-
-      clutter_text_set_font_name (CLUTTER_TEXT (priv->label), font_string);
-      g_free (font_string);
-    }
-
+  mx_stylable_apply_clutter_text_attributes (stylable,
+                                             CLUTTER_TEXT (priv->label));
 }
 
 static gboolean
