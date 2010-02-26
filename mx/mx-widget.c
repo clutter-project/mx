@@ -206,6 +206,8 @@ mx_widget_dispose (GObject *gobject)
 
   if (priv->old_border_image)
     {
+      g_object_remove_weak_pointer (G_OBJECT (priv->old_border_image),
+                                    (gpointer)&priv->old_border_image);
       clutter_actor_unparent (priv->old_border_image);
       priv->old_border_image = NULL;
     }
@@ -458,6 +460,9 @@ mx_widget_map (ClutterActor *actor)
   if (priv->border_image)
     clutter_actor_map (priv->border_image);
 
+  if (priv->old_border_image)
+    clutter_actor_map (priv->old_border_image);
+
   if (priv->background_image)
     clutter_actor_map (priv->background_image);
 
@@ -478,6 +483,9 @@ mx_widget_unmap (ClutterActor *actor)
   if (priv->border_image)
     clutter_actor_unmap (priv->border_image);
 
+  if (priv->old_border_image)
+    clutter_actor_unmap (CLUTTER_ACTOR (priv->old_border_image));
+
   if (priv->background_image)
     clutter_actor_unmap (priv->background_image);
 
@@ -489,14 +497,9 @@ mx_widget_unmap (ClutterActor *actor)
 }
 
 static void
-old_background_faded_cb (ClutterAnimation *animation,
-                         MxWidgetPrivate  *priv)
+old_background_faded_cb (ClutterAnimation *animation, ClutterActor *self)
 {
-  if (priv->old_border_image)
-    {
-      clutter_actor_unparent (priv->old_border_image);
-      priv->old_border_image = NULL;
-    }
+  clutter_actor_unparent (self);
 }
 
 static void
@@ -571,15 +574,22 @@ mx_widget_style_changed (MxStylable *self)
       else
         {
           if (priv->old_border_image)
-            clutter_actor_unparent (priv->old_border_image);
+            {
+              g_object_remove_weak_pointer (G_OBJECT (priv->old_border_image),
+                                            (gpointer)&priv->old_border_image);
+              clutter_actor_unparent (priv->old_border_image);
+            }
 
           priv->old_border_image = priv->border_image;
+          g_object_add_weak_pointer (G_OBJECT (priv->old_border_image),
+                                     (gpointer)&priv->old_border_image);
           clutter_actor_animate (priv->old_border_image,
                                  CLUTTER_LINEAR,
                                  duration,
                                  "opacity", 0x0,
-                                 "signal::completed", old_background_faded_cb,
-                                 priv,
+                                 "signal-after::completed",
+                                   old_background_faded_cb,
+                                   priv->old_border_image,
                                  NULL);
         }
 
