@@ -85,7 +85,7 @@ struct _MxExpanderPrivate {
   ClutterAlpha    *alpha;
   gdouble          progress;
 
-  gboolean         expanded : 1;
+  guint            expanded : 1;
 };
 
 static guint expander_signals[LAST_SIGNAL] = { 0, };
