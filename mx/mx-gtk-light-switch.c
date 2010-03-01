@@ -87,6 +87,11 @@ struct _MxGtkLightSwitchPrivate {
   gint     offset; /* offset of the mouse to slider when dragging */
 };
 
+/* MEDIUM VERTICAL BAR U+2759 */
+#define ON_STRING "\342\235\231"
+  /* WHITE CIRCLE U+25CB */
+#define OFF_STRING "\342\227\213"
+
 static void
 mx_gtk_light_switch_set_property (GObject      *object,
                                   guint         prop_id,
@@ -246,10 +251,7 @@ draw (GtkWidget *lightswitch,
   g_object_unref (context);
   pango_layout_set_font_description (layout,
                                      style->font_desc);
-  /* TRANSLATORS: If this string takes more than four or five characters in
-   * your language, please use the MEDIUM VERTICAL BAR unicode character
-   * instead */
-  pango_layout_set_text (layout, _("On"), -1);
+  pango_layout_set_text (layout, ON_STRING, -1);
   pango_layout_get_size (layout,
                          &label_width,
                          &label_height);
@@ -264,11 +266,8 @@ draw (GtkWidget *lightswitch,
                     (priv->switch_height
                      - (label_height / PANGO_SCALE)) / 2,
                     layout);
-  /* Draw the second label; "Off" */
-  /* TRANSLATORS: If this string takes more than four or five characters in
-   * your language, please use the WHITE CIRCLE U+25CB unicode character
-   * instead */
-  pango_layout_set_text (layout, _("Off"), -1);
+
+  pango_layout_set_text (layout, OFF_STRING, -1);
   pango_layout_get_size (layout,
                          &label_width,
                          &label_height);
@@ -321,9 +320,9 @@ mx_gtk_light_switch_style_set (GtkWidget *lightswitch,
   gint on_width, on_height;
 
   layout = gtk_widget_create_pango_layout (GTK_WIDGET (lightswitch), NULL);
-  pango_layout_set_text (layout, _("Off"), -1);
+  pango_layout_set_text (layout, OFF_STRING, -1);
   pango_layout_get_pixel_size (layout, &off_width, &off_height);
-  pango_layout_set_text (layout, _("On"), -1);
+  pango_layout_set_text (layout, ON_STRING, -1);
   pango_layout_get_pixel_size (layout, &on_width, &on_height);
   g_object_unref (layout);
 
