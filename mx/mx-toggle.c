@@ -383,6 +383,26 @@ mx_toggle_handle_motion_event (ClutterActor       *actor,
   return TRUE;
 }
 
+static gboolean
+mx_toggle_button_press_event (ClutterActor       *actor,
+                              ClutterButtonEvent *event)
+{
+  return TRUE;
+}
+
+static gboolean
+mx_toggle_leave_event (ClutterActor         *actor,
+                       ClutterCrossingEvent *event)
+{
+  return FALSE;
+}
+
+static gboolean
+mx_toggle_enter_event (ClutterActor         *actor,
+                       ClutterCrossingEvent *event)
+{
+  return FALSE;
+}
 
 static void
 mx_toggle_class_init (MxToggleClass *klass)
@@ -406,6 +426,10 @@ mx_toggle_class_init (MxToggleClass *klass)
   actor_class->get_preferred_height = mx_toggle_get_preferred_height;
   actor_class->allocate = mx_toggle_allocate;
   actor_class->button_release_event = mx_toggle_button_release_event;
+
+  actor_class->button_press_event = mx_toggle_button_press_event;
+  actor_class->leave_event = mx_toggle_leave_event;
+  actor_class->enter_event = mx_toggle_enter_event;
 
   pspec = g_param_spec_boolean ("active",
                                 "Active",
@@ -504,6 +528,12 @@ mx_toggle_set_active (MxToggle *toggle,
       clutter_timeline_start (timeline);
 
       priv->active = active;
+
+      if (active)
+        mx_stylable_set_style_pseudo_class (MX_STYLABLE (toggle), "checked");
+      else
+        mx_stylable_set_style_pseudo_class (MX_STYLABLE (toggle), NULL);
+
 
       g_object_notify (G_OBJECT (toggle), "active");
     }
