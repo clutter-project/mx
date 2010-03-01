@@ -58,8 +58,8 @@ enum
   PROP_0,
 
   PROP_LABEL,
-  PROP_TOGGLE,
-  PROP_ACTIVE
+  PROP_TOGGLE_MODE,
+  PROP_CHECKED
 };
 
 enum
@@ -437,10 +437,10 @@ mx_button_set_property (GObject      *gobject,
     case PROP_LABEL:
       mx_button_set_label (button, g_value_get_string (value));
       break;
-    case PROP_TOGGLE:
+    case PROP_TOGGLE_MODE:
       mx_button_set_toggle_mode (button, g_value_get_boolean (value));
       break;
-    case PROP_ACTIVE:
+    case PROP_CHECKED:
       mx_button_set_checked (button, g_value_get_boolean (value));
       break;
 
@@ -463,10 +463,10 @@ mx_button_get_property (GObject    *gobject,
     case PROP_LABEL:
       g_value_set_string (value, priv->text);
       break;
-    case PROP_TOGGLE:
+    case PROP_TOGGLE_MODE:
       g_value_set_boolean (value, priv->is_toggle);
       break;
-    case PROP_ACTIVE:
+    case PROP_CHECKED:
       g_value_set_boolean (value, priv->is_checked);
       break;
 
@@ -661,14 +661,14 @@ mx_button_class_init (MxButtonClass *klass)
                                 "Toggle Mode",
                                 "Enable or disable toggling",
                                 FALSE, MX_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class, PROP_TOGGLE, pspec);
+  g_object_class_install_property (gobject_class, PROP_TOGGLE_MODE, pspec);
 
   pspec = g_param_spec_boolean ("checked",
                                 "Checked",
                                 "Indicates if a toggle button is \"on\""
                                 " or \"off\"",
                                 FALSE, MX_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class, PROP_ACTIVE, pspec);
+  g_object_class_install_property (gobject_class, PROP_CHECKED, pspec);
 
   /**
    * MxButton::clicked:
