@@ -14,6 +14,8 @@ static void clutter_container_iface_init (ClutterContainerIface *iface);
 static void mx_stylable_iface_init (MxStylableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxWindow, mx_window, CLUTTER_TYPE_STAGE,
+                         G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
+                                                clutter_container_iface_init)
                          G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
                                                 mx_stylable_iface_init))
 
@@ -66,6 +68,43 @@ enum
   PROP_SMALL_SCREEN,
   PROP_ICON_NAME
 };
+
+/* clutter container iface implementation */
+static void
+mx_window_add (ClutterContainer *container,
+               ClutterActor     *actor)
+{
+  mx_window_set_child (MX_WINDOW (container), actor);
+}
+
+static void
+mx_window_remove (ClutterContainer *container,
+                  ClutterActor     *actor)
+{
+  MxWindowPrivate *priv = MX_WINDOW (container)->priv;
+
+  if (priv->child == actor)
+    mx_window_set_child (MX_WINDOW (container), NULL);
+}
+
+static void
+mx_window_foreach (ClutterContainer *container,
+                   ClutterCallback   callback,
+                   gpointer          user_data)
+{
+  MxWindowPrivate *priv = MX_WINDOW (container)->priv;
+
+  if (priv->child)
+    callback (priv->child, user_data);
+}
+
+static void
+clutter_container_iface_init (ClutterContainerIface *iface)
+{
+  iface->add = mx_window_add;
+  iface->remove = mx_window_remove;
+  iface->foreach = mx_window_foreach;
+}
 
 /* stylable implementation */
 static void
@@ -265,14 +304,6 @@ mx_window_set_property (GObject      *object,
 static void
 mx_window_dispose (GObject *object)
 {
-  MxWindowPrivate *priv = MX_WINDOW (object)->priv;
-
-  if (priv->child)
-    {
-      clutter_actor_unparent (priv->child);
-      priv->child = NULL;
-    }
-
   G_OBJECT_CLASS (mx_window_parent_class)->dispose (object);
 }
 

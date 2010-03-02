@@ -133,8 +133,7 @@ add_tab (ClutterContainer *box,
 int
 main (int argc, char *argv[])
 {
-  ClutterActor *vbox, *hbox, *holder, *mainbox, *toolbar, *combo;
-  MxWindow *window;
+  ClutterActor *stage, *vbox, *hbox, *holder, *mainbox, *toolbar, *combo;
   MxAction *prev, *next;
   MxButtonGroup *group;
   MxApplication *application;
@@ -142,15 +141,15 @@ main (int argc, char *argv[])
   application = mx_application_new (&argc, &argv, "Test Mx",
                                     MX_APPLICATION_SINGLE_INSTANCE);
 
-  window = MX_WINDOW (mx_application_create_window (application));
+  stage = (ClutterActor*) mx_application_create_window (application);
 
   mainbox = mx_box_layout_new ();
   clutter_actor_set_size (mainbox, 800, 600);
   mx_box_layout_set_vertical (MX_BOX_LAYOUT (mainbox), TRUE);
-  mx_window_set_child (window, mainbox);
+  clutter_container_add_actor (CLUTTER_CONTAINER (stage), mainbox);
 
   /* create the toolbar */
-  toolbar = (ClutterActor *)mx_window_get_toolbar (window);
+  toolbar = (ClutterActor *)mx_window_get_toolbar (MX_WINDOW (stage));
   mx_bin_set_alignment (MX_BIN (toolbar), MX_ALIGN_MIDDLE, MX_ALIGN_MIDDLE);
 
   combo = mx_combo_box_new ();
@@ -217,7 +216,7 @@ main (int argc, char *argv[])
   mx_application_add_action (application, prev);
   mx_application_add_action (application, next);
 
-  clutter_actor_show (CLUTTER_ACTOR (window));
+  clutter_actor_show (stage);
 
   mx_application_run (application);
 
