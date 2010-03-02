@@ -699,6 +699,9 @@ mx_box_layout_dispose (GObject *object)
 {
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (object)->priv;
 
+  /* cleanup any running animation */
+  _mx_box_layout_finish_animation (MX_BOX_LAYOUT (object));
+
   /* destroy the children
    * clutter_actor_destroy() will call clutter_container_remove() which will
    * remove the children from the internal list
