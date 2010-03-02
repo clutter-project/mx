@@ -42,6 +42,11 @@ struct _MxDeformTexturePrivate
   CoglHandle          front_face;
   CoglHandle          back_face;
 
+  ClutterActor       *front_actor;
+  ClutterActor       *back_actor;
+  CoglHandle          front_fbo;
+  CoglHandle          back_fbo;
+
   gboolean            dirty;
 };
 
@@ -161,6 +166,30 @@ mx_deform_texture_dispose (GObject *object)
       priv->back_face = NULL;
     }
 
+  if (priv->front_actor)
+    {
+      clutter_actor_unparent (priv->front_actor);
+      priv->front_actor = NULL;
+    }
+
+  if (priv->front_fbo)
+    {
+      cogl_handle_unref (priv->front_fbo);
+      priv->front_fbo = NULL;
+    }
+
+  if (priv->back_fbo)
+    {
+      cogl_handle_unref (priv->back_fbo);
+      priv->back_fbo = NULL;
+    }
+
+  if (priv->back_actor)
+    {
+      clutter_actor_unparent (priv->back_actor);
+      priv->back_actor = NULL;
+    }
+
   G_OBJECT_CLASS (mx_deform_texture_parent_class)->dispose (object);
 }
 
@@ -168,6 +197,105 @@ static void
 mx_deform_texture_finalize (GObject *object)
 {
   G_OBJECT_CLASS (mx_deform_texture_parent_class)->finalize (object);
+}
+
+static void
+mx_deform_texture_offscreen_buffer (ClutterActor  *actor,
+                                    CoglHandle    *material,
+                                    CoglHandle    *fbo)
+{
+  CoglMatrix matrix;
+  CoglHandle texture;
+  ClutterActor *stage;
+  gfloat width, height, z_camera;
+  ClutterPerspective perspective;
+
+  clutter_actor_get_size (actor, &width, &height);
+
+  /* Check our texture is the correct size */
+  texture = NULL;
+  if (*material)
+    {
+      const GList *layers = cogl_material_get_layers (*material);
+      texture = cogl_material_layer_get_texture ((CoglHandle)layers->data);
+
+      if ((cogl_texture_get_width (texture) != (guint)width) ||
+          (cogl_texture_get_height (texture) != (guint)height))
+        {
+          cogl_handle_unref (*material);
+          *material = NULL;
+        }
+    }
+
+  /* Create the texture if necessary */
+  if (!(*material))
+    {
+      texture = cogl_texture_new_with_size ((guint)width,
+                                            (guint)height,
+                                            COGL_TEXTURE_NO_SLICING |
+                                            COGL_TEXTURE_NO_ATLAS,
+                                            COGL_PIXEL_FORMAT_ANY);
+      *material = cogl_material_new ();
+      cogl_material_set_layer (*material, 0, texture);
+      cogl_handle_unref (texture);
+
+      /* Recreated the texture, get rid of the fbo */
+      if (*fbo)
+        {
+          cogl_handle_unref (*fbo);
+          *fbo = NULL;
+        }
+    }
+
+  if (!texture)
+    {
+      g_debug ("Unable to create texture for actor");
+      return;
+    }
+
+  /* Create fbo if necessary */
+  if (!(*fbo))
+    *fbo = cogl_offscreen_new_to_texture (texture);
+
+  if (!(*fbo))
+    {
+      g_debug ("Unable to create fbo for actor");
+      return;
+    }
+
+  /* Start drawing */
+  cogl_push_framebuffer (*fbo);
+
+  /* Setup the viewport (code derived from Clutter) */
+  /* FIXME: This code will eventually be a public function in Clutter,
+   *        so replace this when it is.
+   */
+  cogl_push_matrix ();
+  stage = clutter_actor_get_stage (actor);
+  clutter_stage_get_perspective (CLUTTER_STAGE (stage), &perspective);
+
+  cogl_set_viewport (0, 0, (int)width, (int)height);
+  cogl_perspective (perspective.fovy,
+                    perspective.aspect,
+                    perspective.z_near,
+                    perspective.z_far);
+
+  cogl_get_projection_matrix (&matrix);
+  z_camera = 0.5 * matrix.xx;
+
+  cogl_matrix_init_identity (&matrix);
+  cogl_matrix_translate (&matrix, -0.5f, -0.5f, -z_camera);
+  cogl_matrix_scale (&matrix, 1.f / width, -1.f / height, 1.f / width);
+  cogl_matrix_translate (&matrix, 0.f, -1.f * height, 0.f);
+
+  cogl_set_modelview_matrix (&matrix);
+
+  /* Draw actor */
+  clutter_actor_paint (actor);
+
+  /* Restore state */
+  cogl_pop_matrix ();
+  cogl_pop_framebuffer ();
 }
 
 static void
@@ -250,6 +378,15 @@ mx_deform_texture_paint (ClutterActor *actor)
     cogl_set_backface_culling_enabled (TRUE);
   else if (!priv->back_face && cull)
     cogl_set_backface_culling_enabled (FALSE);
+
+  if (priv->front_actor)
+    mx_deform_texture_offscreen_buffer (priv->front_actor,
+                                        &priv->front_face,
+                                        &priv->front_fbo);
+  if (priv->back_actor)
+    mx_deform_texture_offscreen_buffer (priv->back_actor,
+                                        &priv->back_face,
+                                        &priv->back_fbo);
 
   if (priv->front_face)
     {
@@ -386,6 +523,40 @@ mx_deform_texture_allocate (ClutterActor           *actor,
   /* Chain up */
   CLUTTER_ACTOR_CLASS (mx_deform_texture_parent_class)->
     allocate (actor, box, flags);
+
+  if (priv->front_actor)
+    clutter_actor_allocate_preferred_size (priv->front_actor, flags);
+
+  if (priv->back_actor)
+    clutter_actor_allocate_preferred_size (priv->back_actor, flags);
+}
+
+static void
+mx_deform_texture_map (ClutterActor *actor)
+{
+  MxDeformTexturePrivate *priv = MX_DEFORM_TEXTURE (actor)->priv;
+
+  CLUTTER_ACTOR_CLASS (mx_deform_texture_parent_class)->map (actor);
+
+  if (priv->front_actor)
+    clutter_actor_map (priv->front_actor);
+
+  if (priv->back_actor)
+    clutter_actor_map (priv->back_actor);
+}
+
+static void
+mx_deform_texture_unmap (ClutterActor *actor)
+{
+  MxDeformTexturePrivate *priv = MX_DEFORM_TEXTURE (actor)->priv;
+
+  if (priv->front_actor)
+    clutter_actor_unmap (priv->front_actor);
+
+  if (priv->back_actor)
+    clutter_actor_unmap (priv->back_actor);
+
+  CLUTTER_ACTOR_CLASS (mx_deform_texture_parent_class)->unmap (actor);
 }
 
 static void
@@ -407,6 +578,8 @@ mx_deform_texture_class_init (MxDeformTextureClass *klass)
   actor_class->get_preferred_height = mx_deform_texture_get_preferred_height;
   actor_class->allocate = mx_deform_texture_allocate;
   actor_class->paint = mx_deform_texture_paint;
+  actor_class->map = mx_deform_texture_map;
+  actor_class->unmap = mx_deform_texture_unmap;
 
   pspec = g_param_spec_int ("tiles-x",
                             "Horizontal tiles",
@@ -568,6 +741,10 @@ mx_deform_texture_set_materials (MxDeformTexture *texture,
   CoglHandle old_handle;
   MxDeformTexturePrivate *priv = texture->priv;
 
+  /* Remove actor sources */
+  if (front_face || back_face)
+    mx_deform_texture_set_actors (texture, NULL, NULL);
+
   old_handle = priv->front_face;
   priv->front_face = front_face ? cogl_handle_ref (front_face) : NULL;
   if (old_handle)
@@ -597,6 +774,79 @@ mx_deform_texture_get_materials (MxDeformTexture *texture,
     *back_face = priv->back_face;
 }
 
+/**
+ * mx_deform_texture_set_actors:
+ * @front_actor: (allow-none): Actor to use for the front-face.
+ * @back_actor: (allow-none): Actor to use for the back-face.
+ *
+ * Set actors to use as the sources of a deformation effect. Actors
+ * must not be parented.
+ */
+void
+mx_deform_texture_set_actors (MxDeformTexture *texture,
+                              ClutterActor    *front_actor,
+                              ClutterActor    *back_actor)
+{
+  MxDeformTexturePrivate *priv = texture->priv;
+
+  /* Remove material sources */
+  if (front_actor || back_actor)
+    mx_deform_texture_set_materials (texture, NULL, NULL);
+
+  if (priv->front_actor)
+    {
+      clutter_actor_unparent (priv->front_actor);
+      priv->front_actor = NULL;
+    }
+
+  if (priv->front_fbo)
+    {
+      cogl_handle_unref (priv->front_fbo);
+      priv->front_fbo = NULL;
+    }
+
+  if (front_actor)
+    {
+      priv->front_actor = front_actor;
+      clutter_actor_set_parent (front_actor, CLUTTER_ACTOR (texture));
+    }
+
+  if (priv->back_actor)
+    {
+      clutter_actor_unparent (priv->back_actor);
+      priv->back_actor = NULL;
+    }
+
+  if (priv->back_fbo)
+    {
+      cogl_handle_unref (priv->back_fbo);
+      priv->back_fbo = NULL;
+    }
+
+  if (back_actor)
+    {
+      priv->back_actor = back_actor;
+      clutter_actor_set_parent (back_actor, CLUTTER_ACTOR (texture));
+    }
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (texture));
+}
+
+void
+mx_deform_texture_get_actors (MxDeformTexture  *texture,
+                              ClutterActor    **front_actor,
+                              ClutterActor    **back_actor)
+{
+}
+
+/**
+ * mx_deform_texture_set_actors:
+ * @front_file: (allow-none): File-name to use for the front-face.
+ * @back_file: (allow-none): File-name to use for the back-face.
+ *
+ * Set textures to use as the sources of a deformation effect. Textures
+ * will be loaded from the files at the given paths.
+ */
 void
 mx_deform_texture_set_from_files (MxDeformTexture *texture,
                                   const gchar     *front_file,

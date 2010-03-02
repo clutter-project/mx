@@ -95,6 +95,14 @@ void mx_deform_texture_get_materials (MxDeformTexture *texture,
                                       CoglHandle      *front_face,
                                       CoglHandle      *back_face);
 
+void mx_deform_texture_set_actors (MxDeformTexture *texture,
+                                   ClutterActor    *front_actor,
+                                   ClutterActor    *back_actor);
+
+void mx_deform_texture_get_actors (MxDeformTexture  *texture,
+                                   ClutterActor    **front_actor,
+                                   ClutterActor    **back_actor);
+
 void mx_deform_texture_set_from_files (MxDeformTexture *texture,
                                        const gchar     *front_file,
                                        const gchar     *back_file);
