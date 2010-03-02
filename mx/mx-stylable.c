@@ -344,12 +344,12 @@ mx_stylable_iface_install_property (MxStylableIface *iface,
 /**
  * mx_stylable_list_properties:
  * @stylable: a #MxStylable
- * @n_props: return location for the number of properties, or %NULL
+ * @n_props: (out): return location for the number of properties, or %NULL
  *
  * Retrieves all the #GParamSpec<!-- -->s installed by @stylable.
  *
- * Return value: an array of #GParamSpec<!-- -->s. Free it with
- *   g_free() when done.
+ * Return value: (transfer container) (array length=n_props): an array
+ *  of #GParamSpec<!-- -->s. Free it with  g_free() when done.
  */
 GParamSpec **
 mx_stylable_list_properties (MxStylable *stylable,
@@ -377,8 +377,8 @@ mx_stylable_list_properties (MxStylable *stylable,
  * Finds the #GParamSpec installed by @stylable for the property
  * with @property_name.
  *
- * Return value: a #GParamSpec for the given property, or %NULL if
- *   no property with that name was found
+ * Return value: (transfer none): a #GParamSpec for the given property,
+ *   or %NULL if no property with that name was found
  */
 GParamSpec *
 mx_stylable_find_property (MxStylable  *stylable,
@@ -420,7 +420,7 @@ mx_stylable_get_property_internal (MxStylable *stylable,
  * mx_stylable_get_property:
  * @stylable: a #MxStylable
  * @property_name: the name of the property
- * @value: return location for an empty #GValue
+ * @value: (out): return location for an empty #GValue
  *
  * Retrieves the value of @property_name for @stylable, and puts it
  * into @value.
@@ -521,7 +521,7 @@ mx_stylable_get (MxStylable  *stylable,
  * mx_stylable_get_default_value:
  * @stylable: a #MxStylable
  * @property_name: name of the property to query
- * @value_out: return location for the default value
+ * @value_out: (out): return location for the default value
  *
  * Query @stylable for the default value of property @property_name and
  * fill @value_out with the result.
@@ -566,7 +566,7 @@ mx_stylable_get_default_value (MxStylable  *stylable,
  * Retrieves the #MxStyle used by @stylable. This function does not
  * alter the reference count of the returned object.
  *
- * Return value: a #MxStyle
+ * Return value: (transfer none): a #MxStyle
  */
 MxStyle *
 mx_stylable_get_style (MxStylable *stylable)

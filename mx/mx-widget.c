@@ -1185,7 +1185,7 @@ mx_widget_ensure_style (MxWidget *widget)
  * "border-image" CSS property. This function should normally only be used
  * by subclasses.
  *
- * Returns: #ClutterActor
+ * Returns: (transfer none): #ClutterActor
  */
 ClutterActor *
 mx_widget_get_border_image (MxWidget *actor)
@@ -1202,7 +1202,7 @@ mx_widget_get_border_image (MxWidget *actor)
  * "background-image" CSS property. This function should normally only be used
  * by subclasses.
  *
- * Returns: a #ClutterActor
+ * Returns: (transfer none): a #ClutterActor
  */
 ClutterActor *
 mx_widget_get_background_image (MxWidget *actor)

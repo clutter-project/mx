@@ -170,7 +170,7 @@ mx_texture_cache_init (MxTextureCache *self)
  * Returns the default texture cache. This is owned by Mx and should not be
  * unreferenced or freed.
  *
- * Returns: a MxTextureCache
+ * Returns: (transfer none): a MxTextureCache
  */
 MxTextureCache*
 mx_texture_cache_get_default (void)
@@ -324,7 +324,7 @@ mx_texture_cache_get_cogl_texture (MxTextureCache *self,
  * the same image path will return a new ClutterTexture with the previously
  * loaded image.
  *
- * Returns: a newly created ClutterTexture
+ * Returns: (transfer none): a newly created ClutterTexture
  */
 ClutterTexture*
 mx_texture_cache_get_texture (MxTextureCache *self,
@@ -362,7 +362,7 @@ mx_texture_cache_get_texture (MxTextureCache *self,
  *
  * Use this function if all you need is an actor for drawing.
  *
- * Returns: a newly created ClutterTexture
+ * Returns: (transfer none): a newly created ClutterTexture
  */
 ClutterActor*
 mx_texture_cache_get_actor (MxTextureCache *self,

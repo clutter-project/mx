@@ -1060,6 +1060,15 @@ mx_scroll_bar_set_adjustment (MxScrollBar  *bar,
     }
 }
 
+/**
+ * mx_scroll_bar_get_adjustment:
+ * @bar: a #MxScrollbar
+ *
+ * Gets the adjustment object that stores the current position
+ * of the scrollbar.
+ *
+ * Return value: (transfer none): the adjustment
+ */
 MxAdjustment *
 mx_scroll_bar_get_adjustment (MxScrollBar *bar)
 {

@@ -510,7 +510,7 @@ mx_texture_frame_new (ClutterTexture *texture,
  *
  * Return the texture used by the #MxTextureFrame
  *
- * Returns: a #ClutterTexture owned by the #MxTextureFrame
+ * Returns: (transfer none): a #ClutterTexture owned by the #MxTextureFrame
  */
 ClutterTexture *
 mx_texture_frame_get_parent_texture (MxTextureFrame *frame)

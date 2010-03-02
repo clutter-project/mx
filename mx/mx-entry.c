@@ -1071,8 +1071,8 @@ mx_entry_set_text (MxEntry     *entry,
  *
  * Retrieve the internal #ClutterText so that extra parameters can be set
  *
- * Returns: the #ClutterText used by #MxEntry. The entry is owned by the
- * #MxEntry and should not be unref'ed by the application.
+ * Returns: (transfer none): ethe #ClutterText used by #MxEntry. The entry is
+ * owned by the #MxEntry and should not be unref'ed by the application.
  */
 ClutterActor*
 mx_entry_get_clutter_text (MxEntry *entry)

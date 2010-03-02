@@ -90,7 +90,7 @@ typedef void (*MxClipboardCallbackFunc) (MxClipboard *clipboard,
 
 GType mx_clipboard_get_type (void);
 
-MxClipboard* mx_clipboard_get_default ();
+MxClipboard* mx_clipboard_get_default (void);
 
 void mx_clipboard_get_text (MxClipboard             *clipboard,
                             MxClipboardCallbackFunc  callback,

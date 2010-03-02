@@ -240,8 +240,8 @@ mx_style_new (void)
  * Return the default MxStyle object. This includes the current theme (if
  * any).
  *
- * Returns: a #MxStyle object. This must not be freed or unref'd by
- * applications
+ * Returns: (transfer none): a #MxStyle object. This must not be freed or
+ * unref'd by applications
  */
 MxStyle *
 mx_style_get_default (void)
@@ -337,7 +337,7 @@ mx_style_normalize_property_name (const gchar *name)
  * @style: the style data store object
  * @stylable: a stylable to retreive the data for
  * @pspec: a #GParamSpec describing the property required
- * @value: a #GValue to place the return value in
+ * @value: (out): a #GValue to place the return value in
  *
  * Requests the property described in @pspec for the specified stylable
  */

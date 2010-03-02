@@ -840,6 +840,14 @@ clutter_container_iface_init (ClutterContainerIface *iface)
   iface->foreach_with_internals = mx_scroll_view_foreach_with_internals;
 }
 
+/**
+ * mx_scroll_view_get_hscroll_bar:
+ * @scroll: a #MxScrollView
+ *
+ * Gets the horizontal scrollbar of the scrollbiew
+ *
+ * Return value: (transfer none): the horizontal #MxScrollbar
+ */
 ClutterActor *
 mx_scroll_view_new (void)
 {

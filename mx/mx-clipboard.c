@@ -292,11 +292,11 @@ mx_clipboard_x11_event_filter (XEvent          *xev,
  *
  * Get the global #MxClipboard object that represents the clipboard.
  *
- * Returns: a #MxClipboard owned by Mx and must not be unrefferenced or
- * freed.
+ * Returns: (transfer none): a #MxClipboard owned by Mx and must not be
+ * unrefferenced or freed.
  */
 MxClipboard*
-mx_clipboard_get_default ()
+mx_clipboard_get_default (void)
 {
   static MxClipboard *default_clipboard = NULL;
 

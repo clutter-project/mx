@@ -458,7 +458,7 @@ mx_subtexture_new (ClutterTexture *texture,
  *
  * Return the texture used by the #MxSubtexture
  *
- * Returns: a #ClutterTexture owned by the #MxSubtexture
+ * Returns: (transfer none): a #ClutterTexture owned by the #MxSubtexture
  */
 ClutterTexture *
 mx_subtexture_get_parent_texture (MxSubtexture *frame)
