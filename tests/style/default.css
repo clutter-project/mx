@@ -1,4 +1,7 @@
-
+MxBoxLayout {
+  background-color: black;
+  padding: 10;
+}
 MxLabel {
   color: red;
   background-color: yellow;
