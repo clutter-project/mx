@@ -51,7 +51,7 @@ main (int argc, char **argv)
   table = mx_table_new ();
   mx_table_set_col_spacing (MX_TABLE (table), 8);
   mx_table_set_row_spacing (MX_TABLE (table), 12);
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage), table);
+  mx_window_set_child (MX_WINDOW (stage), table);
 
   toggle = mx_toggle_new ();
   label = mx_label_new ("Toggle small-screen mode");
