@@ -958,6 +958,9 @@ mx_box_layout_allocate (ClutterActor          *actor,
         allocate_pref = TRUE;
     }
 
+   pref_width -= padding.left + padding.right;
+   pref_height -= padding.top + padding.bottom;
+
   /* update adjustments for scrolling */
   if (priv->vadjustment)
     {
