@@ -56,6 +56,8 @@ struct _MxWindowPrivate
   gchar   *pseudo_class;
   gchar   *style_class;
 
+  ClutterActor *draggable;
+
   MxFocusManager *focus_manager;
 };
 
@@ -74,7 +76,27 @@ static void
 mx_window_add (ClutterContainer *container,
                ClutterActor     *actor)
 {
-  mx_window_set_child (MX_WINDOW (container), actor);
+  MxWindowPrivate *priv = MX_WINDOW (container)->priv;
+
+  if (CLUTTER_IS_CLONE (actor))
+    {
+      ClutterActor *source = clutter_clone_get_source ((ClutterClone *)actor);
+
+      if (MX_IS_DRAGGABLE (source))
+        {
+          clutter_actor_set_parent (actor, CLUTTER_ACTOR (container));
+          priv->draggable = actor;
+        }
+    }
+  else if (MX_IS_DRAGGABLE (actor))
+    {
+      clutter_actor_set_parent (actor, CLUTTER_ACTOR (container));
+      priv->draggable = actor;
+    }
+  else
+    {
+      mx_window_set_child (MX_WINDOW (container), actor);
+    }
 }
 
 static void
@@ -85,6 +107,12 @@ mx_window_remove (ClutterContainer *container,
 
   if (priv->child == actor)
     mx_window_set_child (MX_WINDOW (container), NULL);
+
+  if (priv->draggable == actor)
+    {
+      clutter_actor_unparent (actor);
+      priv->draggable = NULL;
+    }
 }
 
 static void
@@ -517,6 +545,9 @@ mx_window_map (ClutterActor *actor)
   if (priv->child)
     clutter_actor_map (priv->child);
 
+  if (priv->draggable)
+    clutter_actor_map (priv->draggable);
+
   mx_window_set_wm_hints (window);
 }
 
@@ -528,6 +559,9 @@ mx_window_unmap (ClutterActor *actor)
   priv = MX_WINDOW (actor)->priv;
 
   clutter_actor_unmap (priv->toolbar);
+
+  if (priv->draggable)
+    clutter_actor_unmap (priv->draggable);
 
   CLUTTER_ACTOR_CLASS (mx_window_parent_class)->unmap (actor);
 }
@@ -546,6 +580,9 @@ mx_window_paint (ClutterActor *actor)
     clutter_actor_paint (priv->child);
 
   clutter_actor_paint (priv->toolbar);
+
+  if (priv->draggable)
+    clutter_actor_paint (priv->draggable);
 
   /* If we're in small-screen or fullscreen mode, or we don't have the toolbar,
    * we don't want a frame or a resize handle.
@@ -646,6 +683,9 @@ mx_window_allocate (ClutterActor           *actor,
       childbox.y2 = (box->y2 - box->y1) - padding.bottom;
       clutter_actor_allocate (priv->child, &childbox, flags);
     }
+
+  if (priv->draggable)
+    clutter_actor_allocate_preferred_size (priv->draggable, flags);
 
   /* Return if we're fullscreen, messing with the window size
    * in fullscreen mode can cause odd race conditions.
