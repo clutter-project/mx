@@ -137,8 +137,10 @@ main (int argc, char *argv[])
   ClutterActor *stage, *texture;
   ClutterColor stage_color = { 0xcc, 0xcc, 0xcc, 0xb0 };
 
+#if CLUTTER_CHECK_VERSION(1,2,0)
   /* Enable argb visuals for coolness with compositors */
   clutter_x11_set_use_argb_visual (TRUE);
+#endif
 
   app = mx_application_new (&argc, &argv, "Test deformations", 0);
 
