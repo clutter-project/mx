@@ -1158,6 +1158,13 @@ mx_widget_init (MxWidget *actor)
 
 }
 
+static void
+mx_widget_ensure_child_style (ClutterActor *actor)
+{
+  if (MX_IS_STYLABLE (actor))
+    mx_widget_ensure_style (MX_STYLABLE (actor));
+}
+
 /**
  * mx_widget_ensure_style:
  * @widget: A #MxWidget
@@ -1170,9 +1177,14 @@ mx_widget_ensure_style (MxWidget *widget)
 {
   g_return_if_fail (MX_IS_WIDGET (widget));
 
-  if (widget->priv->is_style_dirty)
+  g_signal_emit_by_name (widget, "style-changed", 0);
+
+  if (CLUTTER_IS_CONTAINER (widget))
     {
-      g_signal_emit_by_name (widget, "style-changed", 0);
+      /* notify our children that their parent stylable has changed */
+      clutter_container_foreach ((ClutterContainer *) widget,
+                                 mx_widget_ensure_child_style,
+                                 NULL);
     }
 }
 
