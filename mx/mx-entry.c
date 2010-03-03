@@ -79,8 +79,9 @@ enum
 {
   PROP_0,
 
-  PROP_ENTRY,
-  PROP_HINT,
+  PROP_CLUTTER_TEXT,
+  PROP_HINT_TEXT,
+  PROP_TEXT,
   PROP_PASSWORD_CHAR
 };
 
@@ -136,12 +137,12 @@ mx_entry_set_property (GObject      *gobject,
 
   switch (prop_id)
     {
-    case PROP_ENTRY:
-      mx_entry_set_text (entry, g_value_get_string (value));
+    case PROP_HINT_TEXT:
+      mx_entry_set_hint_text (entry, g_value_get_string (value));
       break;
 
-    case PROP_HINT:
-      mx_entry_set_hint_text (entry, g_value_get_string (value));
+    case PROP_TEXT:
+      mx_entry_set_text (entry, g_value_get_string (value));
       break;
 
     case PROP_PASSWORD_CHAR:
@@ -164,12 +165,17 @@ mx_entry_get_property (GObject    *gobject,
 
   switch (prop_id)
     {
-    case PROP_ENTRY:
-      g_value_set_string (value, clutter_text_get_text (CLUTTER_TEXT (priv->entry)));
+    case PROP_CLUTTER_TEXT:
+      g_value_set_object (value, priv->entry);
       break;
 
-    case PROP_HINT:
+    case PROP_HINT_TEXT:
       g_value_set_string (value, priv->hint);
+      break;
+
+    case PROP_TEXT:
+      g_value_set_string (value,
+                          clutter_text_get_text (CLUTTER_TEXT (priv->entry)));
       break;
 
     case PROP_PASSWORD_CHAR:
@@ -800,18 +806,25 @@ mx_entry_class_init (MxEntryClass *klass)
   actor_class->key_press_event = mx_entry_key_press_event;
   actor_class->key_focus_in = mx_entry_key_focus_in;
 
-  pspec = g_param_spec_string ("text",
-                               "Text",
-                               "Text of the entry",
-                               NULL, G_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class, PROP_ENTRY, pspec);
+  pspec = g_param_spec_object ("clutter-text",
+			       "Clutter Text",
+			       "Internal ClutterText actor",
+			       CLUTTER_TYPE_TEXT,
+			       G_PARAM_READABLE);
+  g_object_class_install_property (gobject_class, PROP_CLUTTER_TEXT, pspec);
 
   pspec = g_param_spec_string ("hint-text",
                                "Hint Text",
                                "Text to display when the entry is not focused "
                                "and the text property is empty",
                                NULL, G_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class, PROP_ENTRY, pspec);
+  g_object_class_install_property (gobject_class, PROP_HINT_TEXT, pspec);
+
+  pspec = g_param_spec_string ("text",
+                               "Text",
+                               "Text of the entry",
+                               NULL, G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_TEXT, pspec);
 
   pspec = g_param_spec_unichar ("password-char",
                                 "Password Character",
@@ -1071,7 +1084,7 @@ mx_entry_set_text (MxEntry     *entry,
  *
  * Retrieve the internal #ClutterText so that extra parameters can be set
  *
- * Returns: (transfer none): ethe #ClutterText used by #MxEntry. The entry is
+ * Returns: (transfer none): the #ClutterText used by #MxEntry. The entry is
  * owned by the #MxEntry and should not be unref'ed by the application.
  */
 ClutterActor*

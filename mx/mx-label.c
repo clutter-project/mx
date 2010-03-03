@@ -52,7 +52,8 @@ enum
 {
   PROP_0,
 
-  PROP_LABEL,
+  PROP_CLUTTER_TEXT,
+  PROP_TEXT,
   PROP_X_ALIGN,
   PROP_Y_ALIGN
 };
@@ -79,7 +80,7 @@ mx_label_set_property (GObject      *gobject,
 
   switch (prop_id)
     {
-    case PROP_LABEL:
+    case PROP_TEXT:
       mx_label_set_text (label, g_value_get_string (value));
       break;
 
@@ -107,7 +108,11 @@ mx_label_get_property (GObject    *gobject,
 
   switch (prop_id)
     {
-    case PROP_LABEL:
+    case PROP_CLUTTER_TEXT:
+      g_value_set_object (value, priv->label);
+      break;
+
+    case PROP_TEXT:
       g_value_set_string (value,
                           clutter_text_get_text (CLUTTER_TEXT (priv->label)));
       break;
@@ -284,11 +289,18 @@ mx_label_class_init (MxLabelClass *klass)
   actor_class->map = mx_label_map;
   actor_class->unmap = mx_label_unmap;
 
+  pspec = g_param_spec_object ("clutter-text",
+                               "Clutter Text",
+                               "Internal ClutterText actor",
+                               CLUTTER_TYPE_TEXT,
+                               G_PARAM_READABLE);
+  g_object_class_install_property (gobject_class, PROP_CLUTTER_TEXT, pspec);
+
   pspec = g_param_spec_string ("text",
                                "Text",
                                "Text of the label",
                                NULL, MX_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class, PROP_LABEL, pspec);
+  g_object_class_install_property (gobject_class, PROP_TEXT, pspec);
 
   pspec = g_param_spec_enum ("x-align",
                              "X Align",
