@@ -221,6 +221,7 @@ mx_deform_texture_finalize (GObject *object)
   G_OBJECT_CLASS (mx_deform_texture_parent_class)->finalize (object);
 }
 
+#if CLUTTER_CHECK_VERSION(1,2,0)
 static void
 mx_deform_texture_offscreen_buffer (ClutterActor  *actor,
                                     CoglHandle    *material,
@@ -340,6 +341,7 @@ mx_deform_texture_offscreen_buffer (ClutterActor  *actor,
   cogl_pop_matrix ();
   cogl_pop_framebuffer ();
 }
+#endif
 
 static void
 mx_deform_texture_paint (ClutterActor *actor)
@@ -412,6 +414,7 @@ mx_deform_texture_paint (ClutterActor *actor)
       priv->dirty = FALSE;
     }
 
+#if CLUTTER_CHECK_VERSION(1,2,0)
   /* Update FBOs if necessary */
   if (priv->front_actor)
     mx_deform_texture_offscreen_buffer (priv->front_actor,
@@ -425,6 +428,7 @@ mx_deform_texture_paint (ClutterActor *actor)
                                         &priv->back_fbo,
                                         G_OBJECT (self),
                                         "back-face");
+#endif
 
   depth = cogl_get_depth_test_enabled ();
   if (!depth)
@@ -837,6 +841,7 @@ mx_deform_texture_set_materials (MxDeformTexture *texture,
 {
   MxDeformTexturePrivate *priv = texture->priv;
 
+#if CLUTTER_CHECK_VERSION(1,2,0)
   /* Remove actor sources */
   if (front_face || back_face)
     {
@@ -857,6 +862,7 @@ mx_deform_texture_set_materials (MxDeformTexture *texture,
 
       mx_deform_texture_set_actors (texture, front_actor, back_actor);
     }
+#endif
 
   if (front_face != priv->front_face)
     {
@@ -903,6 +909,7 @@ mx_deform_texture_set_actors (MxDeformTexture *texture,
                               ClutterActor    *front_actor,
                               ClutterActor    *back_actor)
 {
+#if CLUTTER_CHECK_VERSION(1,2,0)
   MxDeformTexturePrivate *priv = texture->priv;
 
   /* Remove material sources */
@@ -960,6 +967,19 @@ mx_deform_texture_set_actors (MxDeformTexture *texture,
     }
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (texture));
+#else
+  if (front_actor)
+    {
+      g_object_ref_sink (front_actor);
+      g_object_unref (front_actor);
+    }
+  if (back_actor)
+    {
+      g_object_ref_sink (back_actor);
+      g_object_unref (back_actor);
+    }
+  g_warning ("Deforming actors requires Clutter 1.2.0");
+#endif
 }
 
 void
