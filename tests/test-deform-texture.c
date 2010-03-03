@@ -25,7 +25,7 @@ static gint func = 0;
 static ClutterActor *
 replace_deformation (ClutterActor *texture, GType type)
 {
-  ClutterActor *new_texture, *parent;
+  ClutterActor *new_texture, *parent, *front_actor, *back_actor;
   CoglHandle front, back;
   gint x, y;
 
@@ -33,11 +33,26 @@ replace_deformation (ClutterActor *texture, GType type)
   mx_deform_texture_get_materials (MX_DEFORM_TEXTURE (texture),
                                    &front,
                                    &back);
+  mx_deform_texture_get_actors (MX_DEFORM_TEXTURE (texture),
+                                &front_actor,
+                                &back_actor);
+  if (front_actor)
+    g_object_ref (front_actor);
+  if (back_actor)
+    g_object_ref (back_actor);
+  mx_deform_texture_set_actors (MX_DEFORM_TEXTURE (texture), NULL, NULL);
 
   new_texture = g_object_new (type, NULL);
   mx_deform_texture_set_materials (MX_DEFORM_TEXTURE (new_texture),
                                    front,
                                    back);
+  mx_deform_texture_set_actors (MX_DEFORM_TEXTURE (new_texture),
+                                front_actor,
+                                back_actor);
+  if (front_actor)
+    g_object_unref (front_actor);
+  if (back_actor)
+    g_object_unref (back_actor);
 
   mx_deform_texture_get_resolution (MX_DEFORM_TEXTURE (texture), &x, &y);
   mx_deform_texture_set_resolution (MX_DEFORM_TEXTURE (new_texture), x, y);
@@ -122,12 +137,6 @@ main (int argc, char *argv[])
   ClutterActor *stage, *texture;
   ClutterColor stage_color = { 0xcc, 0xcc, 0xcc, 0xb0 };
 
-  if (argc < 2)
-    {
-      printf ("Usage: %s <filename> [filename]\n", argv[0]);
-      return 1;
-    }
-
   /* Enable argb visuals for coolness with compositors */
   clutter_x11_set_use_argb_visual (TRUE);
 
@@ -143,8 +152,15 @@ main (int argc, char *argv[])
   /* Create a page-turn deformation */
   texture = mx_deform_page_turn_new ();
   mx_deform_texture_set_from_files (MX_DEFORM_TEXTURE (texture),
-                                    argv[1],
+                                    (argc > 1) ? argv[1] : NULL,
                                     (argc > 2) ? argv[2] : NULL);
+  mx_deform_texture_set_actors (MX_DEFORM_TEXTURE (texture),
+                                (argc < 2) ?
+                                  mx_button_new_with_label ("Front face") :
+                                  NULL,
+                                (argc < 3) ?
+                                  mx_button_new_with_label ("Back face") :
+                                  NULL);
 
   /* Make the subdivision size a bit higher than default so it looks nicer */
   clutter_actor_get_preferred_size (texture, NULL, NULL, &width, &height);
