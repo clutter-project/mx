@@ -732,7 +732,7 @@ mx_window_allocate (ClutterActor           *actor,
           XResizeWindow (dpy, win, width, height);
         }
     }
-#if CLUTTER_CHECK_VERSION(1,1,8)
+#if CLUTTER_CHECK_VERSION(1,2,0)
   else
     {
       /* Update minimum size */
@@ -974,7 +974,7 @@ mx_window_motion_event (ClutterActor       *actor,
       width = MIN (x, width - priv->drag_win_x_start);
       height = MIN (y, height - priv->drag_win_y_start);
 
-#if !CLUTTER_CHECK_VERSION(1,1,8)
+#if !CLUTTER_CHECK_VERSION(1,2,0)
       /* Set the natural width/height so ClutterStageX11 won't try to
        * resize us back to our minimum size.
        */
@@ -1037,7 +1037,7 @@ style_changed_cb (MxStyle *style, MxWindow *window)
     }
 }
 
-#if !CLUTTER_CHECK_VERSION(1,1,8)
+#if !CLUTTER_CHECK_VERSION(1,2,0)
 static void
 mx_window_get_preferred_width (ClutterActor *self,
                                gfloat        for_height,
@@ -1128,7 +1128,7 @@ mx_window_class_init (MxWindowClass *klass)
   actor_class->button_release_event = mx_window_button_release_event;
   actor_class->captured_event = mx_window_captured_event;
   actor_class->motion_event = mx_window_motion_event;
-#if !CLUTTER_CHECK_VERSION(1,1,8)
+#if !CLUTTER_CHECK_VERSION(1,2,0)
   actor_class->get_preferred_width = mx_window_get_preferred_width;
   actor_class->get_preferred_height = mx_window_get_preferred_height;
 #endif
@@ -1209,7 +1209,7 @@ mx_window_init (MxWindow *self)
   g_signal_connect (self, "realize",
                     G_CALLBACK (mx_window_realize_cb), NULL);
 
-#if CLUTTER_CHECK_VERSION(1,1,8)
+#if CLUTTER_CHECK_VERSION(1,2,0)
   g_object_set (G_OBJECT (self), "use-alpha", TRUE, NULL);
 #endif
 }
