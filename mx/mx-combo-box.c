@@ -265,7 +265,6 @@ mx_combo_box_get_preferred_width (ClutterActor *actor,
   popup = (ClutterActor *) mx_widget_get_popup (MX_WIDGET (actor));
   if (popup)
     {
-      mx_widget_ensure_style ((MxWidget*) popup);
       clutter_actor_get_preferred_width (popup, -1, &min_popup_w, &nat_popup_w);
     }
 
@@ -595,6 +594,8 @@ mx_combo_box_style_changed (MxComboBox *combo)
 
   mx_stylable_apply_clutter_text_attributes (MX_STYLABLE (combo),
                                              CLUTTER_TEXT (combo->priv->label));
+
+  mx_widget_ensure_style (MX_WIDGET (mx_widget_get_popup (MX_WIDGET (combo))));
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (combo));
 }
