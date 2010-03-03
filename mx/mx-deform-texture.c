@@ -206,9 +206,7 @@ mx_deform_texture_offscreen_buffer (ClutterActor  *actor,
 {
   CoglMatrix matrix;
   CoglHandle texture;
-  ClutterActor *stage;
-  gfloat width, height, z_camera;
-  ClutterPerspective perspective;
+  gfloat width, height;
 
   clutter_actor_get_size (actor, &width, &height);
 
@@ -227,14 +225,22 @@ mx_deform_texture_offscreen_buffer (ClutterActor  *actor,
         }
     }
 
+#define TEST_STUFF
+
   /* Create the texture if necessary */
   if (!(*material))
     {
-      texture = cogl_texture_new_with_size ((guint)width,
-                                            (guint)height,
-                                            COGL_TEXTURE_NO_SLICING |
-                                            COGL_TEXTURE_NO_ATLAS,
-                                            COGL_PIXEL_FORMAT_ANY);
+#ifdef TEST_STUFF
+      texture = cogl_texture_new_from_file ("redhand.png",
+                                            COGL_TEXTURE_NO_SLICING,
+                                            COGL_PIXEL_FORMAT_RGB_888,
+                                            NULL);
+#else
+      texture = cogl_texture_new_with_size ((guint)400,
+                                            (guint)400,
+                                            COGL_TEXTURE_NO_SLICING,
+                                            COGL_PIXEL_FORMAT_RGBA_8888);
+#endif
       *material = cogl_material_new ();
       cogl_material_set_layer (*material, 0, texture);
       cogl_handle_unref (texture);
@@ -255,43 +261,58 @@ mx_deform_texture_offscreen_buffer (ClutterActor  *actor,
 
   /* Create fbo if necessary */
   if (!(*fbo))
-    *fbo = cogl_offscreen_new_to_texture (texture);
-
-  if (!(*fbo))
     {
-      g_debug ("Unable to create fbo for actor");
-      return;
+      gfloat z_camera;
+      ClutterActor *stage;
+      ClutterPerspective perspective;
+
+      *fbo = cogl_offscreen_new_to_texture (texture);
+      if (!(*fbo))
+        {
+          g_debug ("Unable to create fbo for actor");
+          return;
+        }
+
+      /* Setup the viewport (code derived from Clutter) */
+      /* FIXME: This code will eventually be a public function in Clutter,
+       *        so replace this when it is.
+       */
+      cogl_push_framebuffer (*fbo);
+
+      stage = clutter_actor_get_stage (actor);
+      clutter_stage_get_perspective (CLUTTER_STAGE (stage), &perspective);
+      clutter_actor_get_size (stage, &width, &height);
+
+      cogl_set_viewport (0, 0, (int)width, (int)height);
+      cogl_perspective (perspective.fovy,
+                        perspective.aspect,
+                        perspective.z_near,
+                        perspective.z_far);
+
+      cogl_get_projection_matrix (&matrix);
+      z_camera = 0.5 * matrix.xx;
+
+      cogl_matrix_init_identity (&matrix);
+      cogl_matrix_translate (&matrix, -0.5f, -0.5f, -z_camera);
+      cogl_matrix_scale (&matrix, 1.f / width, -1.f / height, 1.f / width);
+      cogl_matrix_translate (&matrix, 0.f, -1.f * height, 0.f);
+
+      cogl_set_modelview_matrix (&matrix);
+
+      cogl_pop_framebuffer ();
     }
 
   /* Start drawing */
   cogl_push_framebuffer (*fbo);
-
-  /* Setup the viewport (code derived from Clutter) */
-  /* FIXME: This code will eventually be a public function in Clutter,
-   *        so replace this when it is.
-   */
   cogl_push_matrix ();
-  stage = clutter_actor_get_stage (actor);
-  clutter_stage_get_perspective (CLUTTER_STAGE (stage), &perspective);
-
-  cogl_set_viewport (0, 0, (int)width, (int)height);
-  cogl_perspective (perspective.fovy,
-                    perspective.aspect,
-                    perspective.z_near,
-                    perspective.z_far);
-
-  cogl_get_projection_matrix (&matrix);
-  z_camera = 0.5 * matrix.xx;
-
-  cogl_matrix_init_identity (&matrix);
-  cogl_matrix_translate (&matrix, -0.5f, -0.5f, -z_camera);
-  cogl_matrix_scale (&matrix, 1.f / width, -1.f / height, 1.f / width);
-  cogl_matrix_translate (&matrix, 0.f, -1.f * height, 0.f);
-
-  cogl_set_modelview_matrix (&matrix);
 
   /* Draw actor */
+#ifdef TEST_STUFF
+  cogl_set_source_color4ub (0xff, 0, 0, 0xff);
+  cogl_rectangle (0, 0, 100, 100);
+#else
   clutter_actor_paint (actor);
+#endif
 
   /* Restore state */
   cogl_pop_matrix ();
@@ -373,12 +394,6 @@ mx_deform_texture_paint (ClutterActor *actor)
   if (!depth)
     cogl_set_depth_test_enabled (TRUE);
 
-  cull = cogl_get_backface_culling_enabled ();
-  if (priv->back_face && !cull)
-    cogl_set_backface_culling_enabled (TRUE);
-  else if (!priv->back_face && cull)
-    cogl_set_backface_culling_enabled (FALSE);
-
   if (priv->front_actor)
     mx_deform_texture_offscreen_buffer (priv->front_actor,
                                         &priv->front_face,
@@ -387,6 +402,12 @@ mx_deform_texture_paint (ClutterActor *actor)
     mx_deform_texture_offscreen_buffer (priv->back_actor,
                                         &priv->back_face,
                                         &priv->back_fbo);
+
+  cull = cogl_get_backface_culling_enabled ();
+  if (priv->back_face && !cull)
+    cogl_set_backface_culling_enabled (TRUE);
+  else if (!priv->back_face && cull)
+    cogl_set_backface_culling_enabled (FALSE);
 
   if (priv->front_face)
     {
