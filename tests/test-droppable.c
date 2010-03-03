@@ -199,7 +199,7 @@ droppable_group_class_init (DroppableGroupClass *klass)
 
   g_object_class_override_property (gobject_class,
                                     DROP_PROP_ENABLED,
-                                    "enabled");
+                                    "drop-enabled");
 }
 
 static void
@@ -449,7 +449,7 @@ draggable_rectangle_class_init (DraggableRectangleClass *klass)
                                     "containment-area");
   g_object_class_override_property (gobject_class,
                                     DRAG_PROP_ENABLED,
-                                    "enabled");
+                                    "drag-enabled");
   g_object_class_override_property (gobject_class,
                                     DRAG_PROP_ACTOR,
                                     "actor");

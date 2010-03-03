@@ -334,7 +334,7 @@ draggable_rectangle_class_init (DraggableRectangleClass *klass)
                                     "containment-area");
   g_object_class_override_property (gobject_class,
                                     PROP_ENABLED,
-                                    "enabled");
+                                    "drag-enabled");
   g_object_class_override_property (gobject_class,
                                     PROP_ACTOR,
                                     "drag-actor");

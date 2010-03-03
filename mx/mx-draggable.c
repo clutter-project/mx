@@ -377,7 +377,7 @@ mx_draggable_real_enable (MxDraggable *draggable)
                     "button-press-event", G_CALLBACK (on_draggable_press),
                     context);
 
-  g_object_notify (G_OBJECT (draggable), "enabled");
+  g_object_notify (G_OBJECT (draggable), "drag-enabled");
 }
 
 static void
@@ -402,7 +402,7 @@ mx_draggable_real_disable (MxDraggable *draggable)
 
   g_object_set_qdata (G_OBJECT (draggable), quark_draggable_context, NULL);
 
-  g_object_notify (G_OBJECT (draggable), "enabled");
+  g_object_notify (G_OBJECT (draggable), "drag-enabled");
 }
 
 static void
@@ -421,8 +421,8 @@ mx_draggable_base_init (gpointer g_iface)
       quark_draggable_context =
         g_quark_from_static_string ("mx-draggable-context");
 
-      pspec = g_param_spec_boolean ("enabled",
-                                    "Enabled",
+      pspec = g_param_spec_boolean ("drag-enabled",
+                                    "Drag Enabled",
                                     "Whether the Draggable is enabled",
                                     TRUE,
                                     MX_PARAM_READWRITE);
@@ -690,7 +690,7 @@ mx_draggable_is_enabled (MxDraggable *draggable)
 
   g_return_val_if_fail (MX_IS_DRAGGABLE (draggable), FALSE);
 
-  g_object_get (G_OBJECT (draggable), "enabled", &retval, NULL);
+  g_object_get (G_OBJECT (draggable), "drag-enabled", &retval, NULL);
 
   return retval;
 }

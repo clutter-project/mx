@@ -286,8 +286,8 @@ mx_droppable_base_init (gpointer g_iface)
       quark_drop_context =
         g_quark_from_static_string ("mx-droppable-context");
 
-      pspec = g_param_spec_boolean ("enabled",
-                                    "Enabled",
+      pspec = g_param_spec_boolean ("drop-enabled",
+                                    "Drop Enabled",
                                     "Whether the Droppable is enabled",
                                     FALSE,
                                     MX_PARAM_READWRITE);
@@ -379,7 +379,7 @@ mx_droppable_is_enabled (MxDroppable *droppable)
 
   g_return_val_if_fail (MX_IS_DROPPABLE (droppable), FALSE);
 
-  g_object_get (G_OBJECT (droppable), "enabled", &retval, NULL);
+  g_object_get (G_OBJECT (droppable), "drop-enabled", &retval, NULL);
 
   return retval;
 }
