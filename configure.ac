@@ -194,13 +194,17 @@ AC_SUBST([catalogdir])
 dnl ***************************************************************************
 dnl Internationalization
 dnl ***************************************************************************
+AS_ALL_LINGUAS
+IT_PROG_INTLTOOL([0.35.0])
+
 GETTEXT_PACKAGE="mx-$MX_API_VERSION"
 AC_SUBST(GETTEXT_PACKAGE)
-AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [GETTEXT package name])
-ALL_LINGUAS="`grep -v '^#' "$srcdir/po/LINGUAS" | tr '\n' ' '`"
-AM_GLIB_GNU_GETTEXT
+AC_DEFINE_UNQUOTED([GETTEXT_PACKAGE],
+                   ["$GETTEXT_PACKAGE"],
+                   [Gettext domain name])
 GLIB_DEFINE_LOCALEDIR(LOCALEDIR)
-# IT_PROG_INTLTOOL([0.35.0])
+AM_GLIB_GNU_GETTEXT
+
 
 AM_PROG_LIBTOOL
 
@@ -212,7 +216,7 @@ GTK_DOC_CHECK([1.9])
 
 GOBJECT_INTROSPECTION_CHECK([0.6.4])
 
-AC_CONFIG_FILES([
+AC_OUTPUT([
         Makefile
         mx.pc
         mx-gtk.pc
@@ -229,4 +233,3 @@ AC_CONFIG_FILES([
         tests/Makefile
 ])
 
-AC_OUTPUT

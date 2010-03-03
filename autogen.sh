@@ -6,6 +6,16 @@ test -z "$srcdir" && srcdir=.
 olddir=`pwd`
 cd $srcdir
 
+
+
+INTLTOOLIZE=`which intltoolize`
+if test -z $INTLTOOLIZE; then
+        echo "*** No intltoolize found ***"
+        exit 1
+else
+        intltoolize --force --copy --automake || exit $?
+fi
+
 GTKDOCIZE=`which gtkdocize`
 if test -z $GTKDOCIZE; then
         echo "*** No gtk-doc support ***"
@@ -18,14 +28,6 @@ else
         sed -e 's#) --mode=link#) --tag=CC --mode=link#' gtk-doc.make \
           > gtk-doc.temp \
                 && mv gtk-doc.temp gtk-doc.make
-fi
-
-GLIB_GETTEXTIZE=`which glib-gettextize`
-if test -z $GLIB_GETTEXTIZE; then
-        echo "*** No glib-gettextize ***"
-        exit 1
-else
-        glib-gettextize -f || exit $?
 fi
 
 AUTORECONF=`which autoreconf`
