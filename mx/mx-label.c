@@ -398,7 +398,7 @@ mx_label_set_text (MxLabel     *label,
  *
  * Retrieve the internal #ClutterText so that extra parameters can be set
  *
- * Returns: (transfer none): ethe #ClutterText used by #MxLabel. The label
+ * Returns: (transfer none): the #ClutterText used by #MxLabel. The label
  * is owned by the #MxLabel and should not be unref'ed by the application.
  */
 ClutterActor*
