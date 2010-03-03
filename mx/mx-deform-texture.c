@@ -57,7 +57,9 @@ enum
   PROP_TILES_X,
   PROP_TILES_Y,
   PROP_FRONT_FACE,
-  PROP_BACK_FACE
+  PROP_BACK_FACE,
+  PROP_FRONT_ACTOR,
+  PROP_BACK_ACTOR
 };
 
 static void
@@ -81,6 +83,14 @@ mx_deform_texture_get_property (GObject *object, guint property_id, GValue *valu
 
     case PROP_BACK_FACE:
       g_value_set_pointer (value, priv->back_face);
+      break;
+
+    case PROP_FRONT_ACTOR:
+      g_value_set_object (value, priv->front_actor);
+      break;
+
+    case PROP_BACK_ACTOR:
+      g_value_set_object (value, priv->back_actor);
       break;
 
     default:
@@ -118,6 +128,18 @@ mx_deform_texture_set_property (GObject *object, guint property_id, const GValue
       mx_deform_texture_set_materials (texture,
                                        priv->front_face,
                                        (CoglHandle)g_value_get_pointer (value));
+      break;
+
+    case PROP_FRONT_ACTOR:
+      mx_deform_texture_set_actors (texture,
+                                    (ClutterActor *)g_value_get_object (value),
+                                    priv->back_actor);
+      break;
+
+    case PROP_BACK_ACTOR:
+      mx_deform_texture_set_actors (texture,
+                                    priv->front_actor,
+                                    (ClutterActor *)g_value_get_object (value));
       break;
 
     default:
@@ -172,6 +194,12 @@ mx_deform_texture_dispose (GObject *object)
       priv->front_actor = NULL;
     }
 
+  if (priv->back_actor)
+    {
+      clutter_actor_unparent (priv->back_actor);
+      priv->back_actor = NULL;
+    }
+
   if (priv->front_fbo)
     {
       cogl_handle_unref (priv->front_fbo);
@@ -182,12 +210,6 @@ mx_deform_texture_dispose (GObject *object)
     {
       cogl_handle_unref (priv->back_fbo);
       priv->back_fbo = NULL;
-    }
-
-  if (priv->back_actor)
-    {
-      clutter_actor_unparent (priv->back_actor);
-      priv->back_actor = NULL;
     }
 
   G_OBJECT_CLASS (mx_deform_texture_parent_class)->dispose (object);
@@ -202,11 +224,14 @@ mx_deform_texture_finalize (GObject *object)
 static void
 mx_deform_texture_offscreen_buffer (ClutterActor  *actor,
                                     CoglHandle    *material,
-                                    CoglHandle    *fbo)
+                                    CoglHandle    *fbo,
+                                    GObject       *object,
+                                    const gchar   *notify)
 {
   CoglMatrix matrix;
   CoglHandle texture;
   gfloat width, height;
+  CoglColor zero_colour;
 
   clutter_actor_get_size (actor, &width, &height);
 
@@ -225,25 +250,22 @@ mx_deform_texture_offscreen_buffer (ClutterActor  *actor,
         }
     }
 
-#define TEST_STUFF
-
   /* Create the texture if necessary */
   if (!(*material))
     {
-#ifdef TEST_STUFF
-      texture = cogl_texture_new_from_file ("redhand.png",
+      texture = cogl_texture_new_with_size ((guint)width,
+                                            (guint)height,
                                             COGL_TEXTURE_NO_SLICING,
-                                            COGL_PIXEL_FORMAT_RGB_888,
-                                            NULL);
-#else
-      texture = cogl_texture_new_with_size ((guint)400,
-                                            (guint)400,
-                                            COGL_TEXTURE_NO_SLICING,
-                                            COGL_PIXEL_FORMAT_RGBA_8888);
-#endif
+                                            COGL_PIXEL_FORMAT_RGBA_8888_PRE);
       *material = cogl_material_new ();
-      cogl_material_set_layer (*material, 0, texture);
-      cogl_handle_unref (texture);
+
+      if (texture)
+        {
+          cogl_material_set_layer (*material, 0, texture);
+          cogl_handle_unref (texture);
+          if (object && notify)
+            g_object_notify (object, notify);
+        }
 
       /* Recreated the texture, get rid of the fbo */
       if (*fbo)
@@ -307,12 +329,12 @@ mx_deform_texture_offscreen_buffer (ClutterActor  *actor,
   cogl_push_matrix ();
 
   /* Draw actor */
-#ifdef TEST_STUFF
-  cogl_set_source_color4ub (0xff, 0, 0, 0xff);
-  cogl_rectangle (0, 0, 100, 100);
-#else
+  cogl_color_set_from_4ub (&zero_colour, 0x00, 0x00, 0x00, 0x00);
+  cogl_clear (&zero_colour,
+              COGL_BUFFER_BIT_COLOR |
+              COGL_BUFFER_BIT_STENCIL |
+              COGL_BUFFER_BIT_DEPTH);
   clutter_actor_paint (actor);
-#endif
 
   /* Restore state */
   cogl_pop_matrix ();
@@ -390,18 +412,23 @@ mx_deform_texture_paint (ClutterActor *actor)
       priv->dirty = FALSE;
     }
 
-  depth = cogl_get_depth_test_enabled ();
-  if (!depth)
-    cogl_set_depth_test_enabled (TRUE);
-
+  /* Update FBOs if necessary */
   if (priv->front_actor)
     mx_deform_texture_offscreen_buffer (priv->front_actor,
                                         &priv->front_face,
-                                        &priv->front_fbo);
+                                        &priv->front_fbo,
+                                        G_OBJECT (self),
+                                        "front-face");
   if (priv->back_actor)
     mx_deform_texture_offscreen_buffer (priv->back_actor,
                                         &priv->back_face,
-                                        &priv->back_fbo);
+                                        &priv->back_fbo,
+                                        G_OBJECT (self),
+                                        "back-face");
+
+  depth = cogl_get_depth_test_enabled ();
+  if (!depth)
+    cogl_set_depth_test_enabled (TRUE);
 
   cull = cogl_get_backface_culling_enabled ();
   if (priv->back_face && !cull)
@@ -451,40 +478,55 @@ mx_deform_texture_get_preferred_width (ClutterActor *actor,
 {
   CoglHandle layer;
   gfloat width, height;
+
   MxDeformTexturePrivate *priv = MX_DEFORM_TEXTURE (actor)->priv;
 
-  if (priv->front_face)
-    layer =
-      g_list_nth_data ((GList *)cogl_material_get_layers (priv->front_face), 0);
-  else if (priv->back_face)
-    layer =
-      g_list_nth_data ((GList *)cogl_material_get_layers (priv->back_face), 0);
-  else
-    layer = NULL;
-
-  if (layer && (layer = cogl_material_layer_get_texture (layer)))
+  if (priv->front_actor || priv->back_actor)
     {
-      width = cogl_texture_get_width (layer);
-      height = cogl_texture_get_height (layer);
+      clutter_actor_get_preferred_width (priv->front_actor ?
+                                           priv->front_actor :
+                                           priv->back_actor,
+                                         for_height,
+                                         min_width_p,
+                                         natural_width_p);
     }
   else
     {
+      if (priv->front_face)
+        layer =
+          g_list_nth_data ((GList *)cogl_material_get_layers (priv->front_face),
+                           0);
+      else if (priv->back_face)
+        layer =
+          g_list_nth_data ((GList *)cogl_material_get_layers (priv->back_face),
+                           0);
+      else
+        layer = NULL;
+
+      if (layer && (layer = cogl_material_layer_get_texture (layer)))
+        {
+          width = cogl_texture_get_width (layer);
+          height = cogl_texture_get_height (layer);
+        }
+      else
+        {
+          if (min_width_p)
+            *min_width_p = 0;
+          if (natural_width_p)
+            *natural_width_p = 0;
+
+          return;
+        }
+
       if (min_width_p)
         *min_width_p = 0;
+
+      if (for_height >= 0)
+        width = for_height / height * width;
+
       if (natural_width_p)
-        *natural_width_p = 0;
-
-      return;
+        *natural_width_p = width;
     }
-
-  if (min_width_p)
-    *min_width_p = 0;
-
-  if (for_height >= 0)
-    width = for_height / height * width;
-
-  if (natural_width_p)
-    *natural_width_p = width;
 }
 
 static void
@@ -497,38 +539,52 @@ mx_deform_texture_get_preferred_height (ClutterActor *actor,
   gfloat width, height;
   MxDeformTexturePrivate *priv = MX_DEFORM_TEXTURE (actor)->priv;
 
-  if (priv->front_face)
-    layer =
-      g_list_nth_data ((GList *)cogl_material_get_layers (priv->front_face), 0);
-  else if (priv->back_face)
-    layer =
-      g_list_nth_data ((GList *)cogl_material_get_layers (priv->back_face), 0);
-  else
-    layer = NULL;
-
-  if (layer && (layer = cogl_material_layer_get_texture (layer)))
+  if (priv->front_actor || priv->back_actor)
     {
-      width = cogl_texture_get_width (layer);
-      height = cogl_texture_get_height (layer);
+      clutter_actor_get_preferred_height (priv->front_actor ?
+                                            priv->front_actor :
+                                            priv->back_actor,
+                                          for_width,
+                                          min_height_p,
+                                          natural_height_p);
     }
   else
     {
+      if (priv->front_face)
+        layer =
+          g_list_nth_data ((GList *)cogl_material_get_layers (priv->front_face),
+                           0);
+      else if (priv->back_face)
+        layer =
+          g_list_nth_data ((GList *)cogl_material_get_layers (priv->back_face),
+                           0);
+      else
+        layer = NULL;
+
+      if (layer && (layer = cogl_material_layer_get_texture (layer)))
+        {
+          width = cogl_texture_get_width (layer);
+          height = cogl_texture_get_height (layer);
+        }
+      else
+        {
+          if (min_height_p)
+            *min_height_p = 0;
+          if (natural_height_p)
+            *natural_height_p = 0;
+
+          return;
+        }
+
       if (min_height_p)
         *min_height_p = 0;
+
+      if (for_width >= 0)
+        height = for_width / width * height;
+
       if (natural_height_p)
-        *natural_height_p = 0;
-
-      return;
+        *natural_height_p = height;
     }
-
-  if (min_height_p)
-    *min_height_p = 0;
-
-  if (for_width >= 0)
-    height = for_width / width * height;
-
-  if (natural_height_p)
-    *natural_height_p = height;
 }
 
 static void
@@ -641,6 +697,26 @@ mx_deform_texture_class_init (MxDeformTextureClass *klass)
                                 G_PARAM_STATIC_NICK |
                                 G_PARAM_STATIC_BLURB);
   g_object_class_install_property (object_class, PROP_BACK_FACE, pspec);
+
+  pspec = g_param_spec_object ("front-actor",
+                               "Front-face actor",
+                               "ClutterActor to use for the front-face.",
+                               CLUTTER_TYPE_ACTOR,
+                               G_PARAM_READWRITE |
+                               G_PARAM_STATIC_NAME |
+                               G_PARAM_STATIC_NICK |
+                               G_PARAM_STATIC_BLURB);
+  g_object_class_install_property (object_class, PROP_FRONT_ACTOR, pspec);
+
+  pspec = g_param_spec_object ("back-actor",
+                               "Back-face actor",
+                               "ClutterActor to use for the back-face.",
+                               CLUTTER_TYPE_ACTOR,
+                               G_PARAM_READWRITE |
+                               G_PARAM_STATIC_NAME |
+                               G_PARAM_STATIC_NICK |
+                               G_PARAM_STATIC_BLURB);
+  g_object_class_install_property (object_class, PROP_BACK_ACTOR, pspec);
 }
 
 static void
@@ -759,25 +835,44 @@ mx_deform_texture_set_materials (MxDeformTexture *texture,
                                  CoglHandle       front_face,
                                  CoglHandle       back_face)
 {
-  CoglHandle old_handle;
   MxDeformTexturePrivate *priv = texture->priv;
 
   /* Remove actor sources */
   if (front_face || back_face)
-    mx_deform_texture_set_actors (texture, NULL, NULL);
+    {
+      ClutterActor *front_actor, *back_actor;
 
-  old_handle = priv->front_face;
-  priv->front_face = front_face ? cogl_handle_ref (front_face) : NULL;
-  if (old_handle)
-    cogl_handle_unref (old_handle);
+      /* If we're setting the same face that was there before, maintain
+       * whatever actor may have been there before too.
+       */
+      if (front_face != priv->front_face)
+        front_actor = NULL;
+      else
+        front_actor = priv->front_actor;
 
-  old_handle = priv->back_face;
-  priv->back_face = back_face ? cogl_handle_ref (back_face) : NULL;
-  if (old_handle)
-    cogl_handle_unref (old_handle);
+      if (back_face != priv->back_face)
+        back_actor = NULL;
+      else
+        back_actor = priv->back_actor;
 
-  g_object_notify (G_OBJECT (texture), "front-face");
-  g_object_notify (G_OBJECT (texture), "back-face");
+      mx_deform_texture_set_actors (texture, front_actor, back_actor);
+    }
+
+  if (front_face != priv->front_face)
+    {
+      if (priv->front_face)
+        cogl_handle_unref (priv->front_face);
+      priv->front_face = front_face ? cogl_handle_ref (front_face) : NULL;
+      g_object_notify (G_OBJECT (texture), "front-face");
+    }
+
+  if (back_face != priv->back_face)
+    {
+      if (priv->back_face)
+        cogl_handle_unref (priv->back_face);
+      priv->back_face = back_face ? cogl_handle_ref (back_face) : NULL;
+      g_object_notify (G_OBJECT (texture), "back-face");
+    }
 
   clutter_actor_queue_redraw (CLUTTER_ACTOR (texture));
 }
@@ -812,42 +907,56 @@ mx_deform_texture_set_actors (MxDeformTexture *texture,
 
   /* Remove material sources */
   if (front_actor || back_actor)
-    mx_deform_texture_set_materials (texture, NULL, NULL);
+    mx_deform_texture_set_materials (texture,
+                                     (front_actor != priv->front_actor) ?
+                                       NULL : priv->front_face,
+                                     (back_actor != priv->back_actor) ?
+                                       NULL : priv->back_face);
 
-  if (priv->front_actor)
+  if (front_actor != priv->front_actor)
     {
-      clutter_actor_unparent (priv->front_actor);
-      priv->front_actor = NULL;
+      if (priv->front_actor)
+        {
+          clutter_actor_unparent (priv->front_actor);
+          priv->front_actor = NULL;
+        }
+
+      if (priv->front_fbo)
+        {
+          cogl_handle_unref (priv->front_fbo);
+          priv->front_fbo = NULL;
+        }
+
+      if (front_actor)
+        {
+          priv->front_actor = front_actor;
+          clutter_actor_set_parent (front_actor, CLUTTER_ACTOR (texture));
+        }
+
+      g_object_notify (G_OBJECT (texture), "front-actor");
     }
 
-  if (priv->front_fbo)
+  if (back_actor != priv->back_actor)
     {
-      cogl_handle_unref (priv->front_fbo);
-      priv->front_fbo = NULL;
-    }
+      if (priv->back_actor)
+        {
+          clutter_actor_unparent (priv->back_actor);
+          priv->back_actor = NULL;
+        }
 
-  if (front_actor)
-    {
-      priv->front_actor = front_actor;
-      clutter_actor_set_parent (front_actor, CLUTTER_ACTOR (texture));
-    }
+      if (priv->back_fbo)
+        {
+          cogl_handle_unref (priv->back_fbo);
+          priv->back_fbo = NULL;
+        }
 
-  if (priv->back_actor)
-    {
-      clutter_actor_unparent (priv->back_actor);
-      priv->back_actor = NULL;
-    }
+      if (back_actor)
+        {
+          priv->back_actor = back_actor;
+          clutter_actor_set_parent (back_actor, CLUTTER_ACTOR (texture));
+        }
 
-  if (priv->back_fbo)
-    {
-      cogl_handle_unref (priv->back_fbo);
-      priv->back_fbo = NULL;
-    }
-
-  if (back_actor)
-    {
-      priv->back_actor = back_actor;
-      clutter_actor_set_parent (back_actor, CLUTTER_ACTOR (texture));
+      g_object_notify (G_OBJECT (texture), "back-actor");
     }
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (texture));
@@ -858,6 +967,12 @@ mx_deform_texture_get_actors (MxDeformTexture  *texture,
                               ClutterActor    **front_actor,
                               ClutterActor    **back_actor)
 {
+  MxDeformTexturePrivate *priv = texture->priv;
+
+  if (front_actor)
+    *front_actor = priv->front_actor;
+  if (back_actor)
+    *back_actor = priv->back_actor;
 }
 
 /**
