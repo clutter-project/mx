@@ -68,8 +68,6 @@ struct _MxStylableIface
   void (* style_notify)     (MxStylable *stylable,
                              GParamSpec *pspec);
   void (* style_changed)    (MxStylable *stylable);
-
-  void (* stylable_changed) (MxStylable *stylable);
 };
 
 GType        mx_stylable_get_type               (void) G_GNUC_CONST;
@@ -100,7 +98,6 @@ gboolean     mx_stylable_get_default_value      (MxStylable      *stylable,
                                                  const gchar       *property_name,
                                                  GValue            *value_out);
 
-void mx_stylable_changed (MxStylable *stylable);
 
 G_CONST_RETURN gchar* mx_stylable_get_style_class (MxStylable  *stylable);
 void                  mx_stylable_set_style_class (MxStylable  *stylable,
@@ -109,6 +106,9 @@ void                  mx_stylable_set_style_class (MxStylable  *stylable,
 G_CONST_RETURN gchar* mx_stylable_get_style_pseudo_class (MxStylable  *stylable);
 void                  mx_stylable_set_style_pseudo_class (MxStylable  *stylable,
                                                           const gchar *pseudo_class);
+
+void mx_stylable_style_changed (MxStylable *stylable);
+void mx_stylable_connect_change_notifiers (MxStylable *stylable);
 
 /* utilities */
 void mx_stylable_apply_clutter_text_attributes (MxStylable  *stylable,

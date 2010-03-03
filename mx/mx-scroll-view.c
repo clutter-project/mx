@@ -415,8 +415,8 @@ mx_scroll_view_style_changed (MxWidget *widget)
 {
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (widget)->priv;
 
-  mx_stylable_changed ((MxStylable *) priv->hscroll);
-  mx_stylable_changed ((MxStylable *) priv->vscroll);
+  mx_stylable_style_changed ((MxStylable *) priv->hscroll);
+  mx_stylable_style_changed ((MxStylable *) priv->vscroll);
 
   mx_stylable_get (MX_STYLABLE (widget),
                    "x-mx-scrollbar-width", &priv->scrollbar_width,

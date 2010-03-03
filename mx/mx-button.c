@@ -784,8 +784,6 @@ mx_button_set_label (MxButton    *button,
       mx_bin_set_child ((MxBin*) button, label);
     }
 
-  mx_stylable_changed ((MxStylable*) button);
-
   g_object_notify (G_OBJECT (button), "label");
 }
 

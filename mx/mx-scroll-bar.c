@@ -425,10 +425,10 @@ mx_scroll_bar_style_changed (MxWidget *widget)
 {
   MxScrollBarPrivate *priv = MX_SCROLL_BAR (widget)->priv;
 
-  mx_stylable_changed ((MxStylable *) priv->bw_stepper);
-  mx_stylable_changed ((MxStylable *) priv->fw_stepper);
-  mx_stylable_changed ((MxStylable *) priv->trough);
-  mx_stylable_changed ((MxStylable *) priv->handle);
+  mx_stylable_style_changed ((MxStylable *) priv->bw_stepper);
+  mx_stylable_style_changed ((MxStylable *) priv->fw_stepper);
+  mx_stylable_style_changed ((MxStylable *) priv->trough);
+  mx_stylable_style_changed ((MxStylable *) priv->handle);
 
 }
 
