@@ -452,7 +452,7 @@ draggable_rectangle_class_init (DraggableRectangleClass *klass)
                                     "drag-enabled");
   g_object_class_override_property (gobject_class,
                                     DRAG_PROP_ACTOR,
-                                    "actor");
+                                    "drag-actor");
 }
 
 static void
