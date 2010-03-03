@@ -454,7 +454,7 @@ mx_popup_style_changed (MxPopup *popup)
 
       child = &g_array_index (priv->children, MxPopupChild, i);
 
-      g_signal_emit_by_name (child->button, "style-changed", 0);
+      mx_widget_ensure_style (child->button);
     }
 }
 
