@@ -1,4 +1,4 @@
 # List of source files containing translatable strings.
-
+mx/mx-application.c
 mx/mx-gtk-light-switch.c
 mx/mx-utils.c
