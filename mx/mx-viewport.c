@@ -221,42 +221,6 @@ mx_viewport_dispose (GObject *gobject)
   G_OBJECT_CLASS (mx_viewport_parent_class)->dispose (gobject);
 }
 
-static ClutterActor *
-get_child_and_natural_size (MxViewport *self,
-                            gfloat     *natural_width,
-                            gfloat     *natural_height)
-{
-  /* MxBin is a single-child container,
-   * let it grow as big as it wants. */
-  ClutterActor *child;
-  ClutterRequestMode mode;
-
-  child = mx_bin_get_child (MX_BIN (self));
-  if (child)
-    {
-
-      g_object_get (G_OBJECT (child), "request-mode", &mode, NULL);
-      if (mode == CLUTTER_REQUEST_HEIGHT_FOR_WIDTH)
-        {
-          clutter_actor_get_preferred_width (child, -1, NULL,
-                                             natural_width);
-          clutter_actor_get_preferred_height (child, *natural_width, NULL,
-                                              natural_height);
-        }
-      else
-        {
-          clutter_actor_get_preferred_height (child, -1, NULL,
-                                              natural_height);
-          clutter_actor_get_preferred_width (child, *natural_height, NULL,
-                                             natural_width);
-        }
-
-      return child;
-    }
-
-  return NULL;
-}
-
 static void
 mx_viewport_paint (ClutterActor *self)
 {
@@ -287,33 +251,30 @@ mx_viewport_allocate (ClutterActor          *self,
 {
   MxViewportPrivate *priv = MX_VIEWPORT (self)->priv;
   ClutterActor *child;
-  ClutterActorBox natural_box;
   gfloat natural_width, natural_height;
   gfloat available_width, available_height;
 
   /* Chain up. */
-  CLUTTER_ACTOR_CLASS (mx_viewport_parent_class)->
-  allocate (self, box, flags);
+  CLUTTER_ACTOR_CLASS (mx_viewport_parent_class)-> allocate (self, box, flags);
 
   available_width = box->x2 - box->x1;
   available_height = box->y2 - box->y1;
 
-  natural_box.x1 = 0;
-  natural_box.y1 = 0;
+  child = mx_bin_get_child (MX_BIN (self));
 
-  if (NULL != (child = get_child_and_natural_size (MX_VIEWPORT (self),
-                                                   &natural_width,
-                                                   &natural_height)))
+  if (child)
     {
-      natural_box.x2 = natural_width;
-      natural_box.y2 = natural_height;
-      clutter_actor_allocate (child, &natural_box, flags);
+      clutter_actor_allocate_preferred_size (child, flags);
+      clutter_actor_get_preferred_size (child, NULL, NULL, &natural_width,
+                                        &natural_height);
     }
   else
     {
-      natural_box.x2 = available_width;
-      natural_box.y2 = available_height;
+      natural_height = 0;
+      natural_width = 0;
     }
+
+
 
   /* Refresh adjustments */
   if (priv->sync_adjustments)
