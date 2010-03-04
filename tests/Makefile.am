@@ -9,20 +9,21 @@ INCLUDES = \
 	-I$(top_srcdir) \
 	-I$(top_builddir)
 
-noinst_PROGRAMS = 		\
-	test-deform-texture	\
-	test-draggable		\
-	test-droppable		\
-	test-grid \
-	test-gtk		\
-	test-path-bar		\
-	test-table   		\
-	test-table-2            \
-	test-texture-frame 	\
-	test-views 		\
-	test-window 		\
-	test-box-layout		\
-	test-mx			\
+noinst_PROGRAMS = 			\
+	test-deform-texture		\
+	test-deform-texture-interactive	\
+	test-draggable			\
+	test-droppable			\
+	test-grid 			\
+	test-gtk			\
+	test-path-bar			\
+	test-table   			\
+	test-table-2            	\
+	test-texture-frame 		\
+	test-views 			\
+	test-window 			\
+	test-box-layout			\
+	test-mx				\
 	$(NULL)
 
 test_table_SOURCES = test-table.c
@@ -51,6 +52,8 @@ test_mx_SOURCES = test-mx.c \
 		  $(NULL)
 
 test_deform_texture_SOURCES = test-deform-texture.c
+test_deform_texture_interactive_SOURCES = test-deform-texture-interactive.c
+
 
 test_draggable_SOURCES = test-draggable.c
 test_droppable_SOURCES = test-droppable.c
