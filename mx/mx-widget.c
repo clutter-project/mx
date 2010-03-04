@@ -1159,10 +1159,11 @@ mx_widget_init (MxWidget *actor)
 }
 
 static void
-mx_widget_ensure_child_style (ClutterActor *actor)
+mx_widget_ensure_child_style (ClutterActor *actor,
+                              gpointer      data)
 {
   if (MX_IS_STYLABLE (actor))
-    mx_widget_ensure_style (MX_STYLABLE (actor));
+    mx_widget_ensure_style (MX_WIDGET (actor));
 }
 
 /**
