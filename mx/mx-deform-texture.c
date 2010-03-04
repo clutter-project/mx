@@ -241,9 +241,12 @@ mx_deform_texture_offscreen_buffer (ClutterActor  *actor,
   if (*material)
     {
       const GList *layers = cogl_material_get_layers (*material);
-      texture = cogl_material_layer_get_texture ((CoglHandle)layers->data);
 
-      if ((cogl_texture_get_width (texture) != (guint)width) ||
+      if (layers)
+        texture = cogl_material_layer_get_texture ((CoglHandle)layers->data);
+
+      if (!texture ||
+          (cogl_texture_get_width (texture) != (guint)width) ||
           (cogl_texture_get_height (texture) != (guint)height))
         {
           cogl_handle_unref (*material);
@@ -278,7 +281,7 @@ mx_deform_texture_offscreen_buffer (ClutterActor  *actor,
 
   if (!texture)
     {
-      g_debug ("Unable to create texture for actor");
+      g_warning (G_STRLOC ": Unable to create texture for actor");
       return;
     }
 
@@ -292,7 +295,7 @@ mx_deform_texture_offscreen_buffer (ClutterActor  *actor,
       *fbo = cogl_offscreen_new_to_texture (texture);
       if (!(*fbo))
         {
-          g_debug ("Unable to create fbo for actor");
+          g_warning (G_STRLOC ": Unable to create offscreen buffer for actor");
           return;
         }
 
@@ -596,6 +599,7 @@ mx_deform_texture_allocate (ClutterActor           *actor,
                             const ClutterActorBox  *box,
                             ClutterAllocationFlags  flags)
 {
+  ClutterActorBox child_box;
   MxDeformTexturePrivate *priv = MX_DEFORM_TEXTURE (actor)->priv;
 
   /* The size has changed, so make sure we recalculate values */
@@ -605,11 +609,16 @@ mx_deform_texture_allocate (ClutterActor           *actor,
   CLUTTER_ACTOR_CLASS (mx_deform_texture_parent_class)->
     allocate (actor, box, flags);
 
+  child_box.x1 = 0;
+  child_box.y1 = 0;
+  child_box.x2 = box->x2 - box->x1;
+  child_box.y2 = box->y2 - box->y1;
+
   if (priv->front_actor)
-    clutter_actor_allocate_preferred_size (priv->front_actor, flags);
+    clutter_actor_allocate (priv->front_actor, &child_box, flags);
 
   if (priv->back_actor)
-    clutter_actor_allocate_preferred_size (priv->back_actor, flags);
+    clutter_actor_allocate (priv->back_actor, &child_box, flags);
 }
 
 static void
