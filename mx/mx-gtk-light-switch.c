@@ -93,6 +93,8 @@ struct _MxGtkLightSwitchPrivate {
   /* WHITE CIRCLE U+25CB */
 #define OFF_STRING "\342\227\213"
 
+#define UNAVAILABLE_STRING _("Unavailable")
+
 static void
 mx_gtk_light_switch_set_property (GObject      *object,
                                   guint         prop_id,
@@ -235,7 +237,7 @@ draw (GtkWidget *lightswitch,
       g_object_unref (context);
 
       pango_layout_set_font_description (layout, style->font_desc);
-      pango_layout_set_text (layout, _("Unavailable"), -1);
+      pango_layout_set_text (layout, UNAVAILABLE_STRING, -1);
       pango_layout_get_size (layout, &label_width, &label_height);
       gtk_paint_layout (style, lightswitch->window, state_type, FALSE,
                         NULL, lightswitch, "lighswitch-label",
@@ -317,22 +319,16 @@ mx_gtk_light_switch_style_set (GtkWidget *lightswitch,
   MxGtkLightSwitchPrivate *priv = MX_GTK_LIGHT_SWITCH_GET_PRIVATE (lightswitch);
   PangoLayout *layout;
   gint label_width, label_height;
-  gint off_width, off_height;
-  gint on_width, on_height;
 
   layout = gtk_widget_create_pango_layout (GTK_WIDGET (lightswitch), NULL);
-  pango_layout_set_text (layout, OFF_STRING, -1);
-  pango_layout_get_pixel_size (layout, &off_width, &off_height);
-  pango_layout_set_text (layout, ON_STRING, -1);
-  pango_layout_get_pixel_size (layout, &on_width, &on_height);
+  pango_layout_set_text (layout, UNAVAILABLE_STRING, -1);
+  pango_layout_get_pixel_size (layout, &label_width, &label_height);
   g_object_unref (layout);
 
-  label_width = MAX (off_width, on_width);
-  label_height = MAX (off_height, on_height);
-
-  priv->trough_width = MAX (label_width * 5, 80);
+  /* MxToggle is 105x39, so make sure light-switch is at least this size */
+  priv->trough_width = MAX (103, label_width);
   priv->switch_width = (priv->trough_width / 2) * 1.1;
-  priv->switch_height = (label_height * 2) * 1.1;
+  priv->switch_height = MAX (39, label_height);
 }
 
 static gboolean
