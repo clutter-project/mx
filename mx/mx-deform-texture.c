@@ -359,12 +359,9 @@ mx_deform_texture_paint (ClutterActor *actor)
     {
       guint opacity;
       gfloat width, height;
-      ClutterActorBox box;
 
       opacity = clutter_actor_get_paint_opacity (actor);
-      clutter_actor_get_allocation_box (actor, &box);
-      width = box.x2 - box.x1;
-      height = box.y2 - box.y1;
+      clutter_actor_get_size (actor, &width, &height);
 
       for (i = 0; i <= priv->tiles_y; i++)
         {
