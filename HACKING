@@ -35,10 +35,10 @@ Committing
 Mx is currently managed in a git repository. Git has a special format for
 commit messages; the first line of the message is a brief (less than 72
 characters) explanation of the commit. Where appropriate, the short commit
-message should be preceded by a "tag" enclosed in square brackets. This should
-either be the class name affected by the commit, or the application binary
-name. If your patch affects multiple classes or applications, consider whether
-the patch can be broken into smaller commits.
+message should be preceded by a "tag", consisting of a word followed by a
+semicolon. This should either be the lower case class name affected by the
+commit, or the application binary name. If your patch affects multiple classes
+or applications, consider whether the patch can be broken into smaller commits.
 
 The short log message is followed by a blank line and then a paragraph that
 details the reasons for the commit and explains the changes. Sometimes it is
@@ -48,7 +48,7 @@ rather than the rule.
 For example:
 
 -------------------------------------------------------------------------------
-[tag] a brief short description
+tag: a brief short description
 
 A longer description outlining the changes and why they where introduced.
 This should be concise, but not too brief.
