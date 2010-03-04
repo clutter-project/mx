@@ -902,16 +902,23 @@ mx_box_layout_allocate (ClutterActor          *actor,
   n_children = n_expand_children = 0;
   for (l = priv->children; l; l = l->next)
     {
-      gboolean expand;
-      clutter_container_child_get ((ClutterContainer *) actor,
-                                   (ClutterActor*) l->data,
-                                   "expand", &expand,
-                                   NULL);
-      if (CLUTTER_ACTOR_IS_VISIBLE (l->data))
+      ClutterActor *child;
+
+      child = (ClutterActor*) l->data;
+
+      if (CLUTTER_ACTOR_IS_VISIBLE (child))
         {
-          n_children ++;
+          gboolean expand;
+
+          clutter_container_child_get ((ClutterContainer *) actor,
+                                       child,
+                                       "expand", &expand,
+                                       NULL);
+          n_children++;
+
           if (expand)
-            n_expand_children ++;
+            n_expand_children++;
+
         }
     }
 
