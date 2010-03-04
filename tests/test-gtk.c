@@ -33,7 +33,7 @@ _toggle_cb (GtkToggleButton *toggle,
 int
 main (int argc, char **argv)
 {
-  GtkWidget *window, *vbox, *frame, *swtch, *toggle;
+  GtkWidget *window, *vbox, *frame, *swtch, *swtch2, *toggle, *vbox2;
   gboolean is_active = FALSE;
 
   gtk_init (&argc, &argv);
@@ -54,9 +54,18 @@ main (int argc, char **argv)
   gtk_box_pack_start (GTK_BOX (vbox), frame, TRUE, TRUE, 10);
   gtk_frame_set_label (GTK_FRAME (frame), "Frame Title");
 
+  vbox2 = gtk_vbox_new (FALSE, 12);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox2), 10);
+  gtk_container_add (GTK_CONTAINER (frame), vbox2);
+
   swtch = mx_gtk_light_switch_new ();
   mx_gtk_light_switch_set_active (MX_GTK_LIGHT_SWITCH (swtch), is_active);
-  gtk_container_add (GTK_CONTAINER (frame), swtch);
+  gtk_container_add (GTK_CONTAINER (vbox2), swtch);
+
+  swtch2 = mx_gtk_light_switch_new ();
+  gtk_widget_set_sensitive (swtch2, FALSE);
+  mx_gtk_light_switch_set_active (MX_GTK_LIGHT_SWITCH (swtch2), is_active);
+  gtk_container_add (GTK_CONTAINER (vbox2), swtch2);
 
   frame = gtk_alignment_new (0, 0, 0, 0);
   gtk_alignment_set_padding (GTK_ALIGNMENT (frame), 10, 10, 10, 10);
