@@ -1,0 +1,82 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-03-03 10:46+0000\n"
+"PO-Revision-Date: 2010-03-06 22:24+0200\n"
+"Last-Translator: Yuri Nazarenko <yuri.nazarenko@gmail.com>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n!=1;\n"
+"X-Poedit-Language: Russian\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: ../mx/mx-gtk-light-switch.c:238
+msgid "Unavailable"
+msgstr "Недоступно"
+
+#: ../mx/mx-utils.c:94
+msgid "Less than a minute ago"
+msgstr "Меньше минуты назад"
+
+#: ../mx/mx-utils.c:98
+msgid "A few minutes ago"
+msgstr "Несколько минут назад"
+
+#: ../mx/mx-utils.c:102
+msgid "A couple of hours ago"
+msgstr "Пару часов назад"
+
+#: ../mx/mx-utils.c:109
+msgid "Earlier today"
+msgstr "Ранее сегодня"
+
+#: ../mx/mx-utils.c:112
+msgid "Yesterday"
+msgstr "Вчера"
+
+#: ../mx/mx-utils.c:120
+#, c-format
+msgid "On %A"
+msgstr "В %A"
+
+#: ../mx/mx-utils.c:126
+msgid "Unknown"
+msgstr "Неизвестно"
+
+#: ../mx/mx-utils.c:133
+msgid "Last week"
+msgstr "На прошлой неделе"
+
+#: ../mx/mx-utils.c:136
+msgid "A couple of weeks ago"
+msgstr "Пару недель назад"
+
+#: ../mx/mx-utils.c:142
+msgid "This month"
+msgstr "В этом месяце"
+
+#. Now Jan., last used in Dec.
+#: ../mx/mx-utils.c:146
+msgid "Last month"
+msgstr "В прошлом месяце"
+
+#: ../mx/mx-utils.c:149
+msgid "This year"
+msgstr "В этом году"
+
+#: ../mx/mx-utils.c:152
+msgid "Last year"
+msgstr "В прошлом году"
+
+#: ../mx/mx-utils.c:154
+msgid "Ages ago"
+msgstr "Очень давно"
+
