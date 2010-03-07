@@ -408,6 +408,7 @@ mx_offscreen_update (MxOffscreen *offscreen)
   if (!priv->child)
     return;
 
+#if CLUTTER_CHECK_VERSION(1,2,0)
   clutter_actor_get_size (priv->child, &width, &height);
 
   /* Check our texture is the correct size */
@@ -494,5 +495,14 @@ mx_offscreen_update (MxOffscreen *offscreen)
   /* Restore state */
   cogl_pop_matrix ();
   cogl_pop_framebuffer ();
+#else
+  static gboolean warned = FALSE;
+  if (warned)
+    {
+      g_warning ("Clutter 1.2.0 is required for the offscreen actor. Consider "
+                 "using clutter_texture_new_from_actor() instead.");
+      warned = TRUE;
+    }
+#endif
 }
 
