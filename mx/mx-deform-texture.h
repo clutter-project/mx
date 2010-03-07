@@ -87,25 +87,13 @@ void mx_deform_texture_set_resolution (MxDeformTexture *texture,
                                        gint             tiles_x,
                                        gint             tiles_y);
 
-void mx_deform_texture_set_materials (MxDeformTexture *texture,
-                                      CoglHandle       front_face,
-                                      CoglHandle       back_face);
+void mx_deform_texture_set_textures (MxDeformTexture *texture,
+                                     ClutterTexture  *front,
+                                     ClutterTexture  *back);
 
-void mx_deform_texture_get_materials (MxDeformTexture *texture,
-                                      CoglHandle      *front_face,
-                                      CoglHandle      *back_face);
-
-void mx_deform_texture_set_actors (MxDeformTexture *texture,
-                                   ClutterActor    *front_actor,
-                                   ClutterActor    *back_actor);
-
-void mx_deform_texture_get_actors (MxDeformTexture  *texture,
-                                   ClutterActor    **front_actor,
-                                   ClutterActor    **back_actor);
-
-void mx_deform_texture_set_from_files (MxDeformTexture *texture,
-                                       const gchar     *front_file,
-                                       const gchar     *back_file);
+void mx_deform_texture_get_textures (MxDeformTexture  *texture,
+                                     ClutterTexture  **front,
+                                     ClutterTexture  **back);
 
 void mx_deform_texture_invalidate (MxDeformTexture *texture);
 

@@ -55,7 +55,7 @@ main (int argc, char *argv[])
 {
   MxApplication *app;
   gfloat width, height;
-  ClutterActor *stage, *table, *slider, *label, *texture;
+  ClutterActor *stage, *table, *slider, *label, *texture, *front, *back;
   ClutterColor stage_color = { 0xcc, 0xcc, 0xcc, 0xb0 };
 
 #if CLUTTER_CHECK_VERSION(1,2,0)
@@ -74,16 +74,31 @@ main (int argc, char *argv[])
 
   /* Create a page-turn deformation */
   texture = mx_deform_page_turn_new ();
-  mx_deform_texture_set_from_files (MX_DEFORM_TEXTURE (texture),
-                                    (argc > 1) ? argv[1] : NULL,
-                                    (argc > 2) ? argv[2] : NULL);
-  mx_deform_texture_set_actors (MX_DEFORM_TEXTURE (texture),
-                                (argc < 2) ?
-                                  mx_button_new_with_label ("Front face") :
-                                  NULL,
-                                (argc < 3) ?
-                                  mx_button_new_with_label ("Back face") :
-                                  NULL);
+  if (argc > 1)
+    {
+      front = clutter_texture_new_from_file (argv[1], NULL);
+    }
+  else
+    {
+      front = mx_offscreen_new ();
+      mx_offscreen_set_child (MX_OFFSCREEN (front),
+                              mx_button_new_with_label ("Front face"));
+    }
+
+  if (argc > 2)
+    {
+      back = clutter_texture_new_from_file (argv[2], NULL);
+    }
+  else
+    {
+      back = mx_offscreen_new ();
+      mx_offscreen_set_child (MX_OFFSCREEN (back),
+                              mx_button_new_with_label ("Back face"));
+    }
+
+  mx_deform_texture_set_textures (MX_DEFORM_TEXTURE (texture),
+                                  (ClutterTexture *)front,
+                                  (ClutterTexture *)back);
 
   properties_info[0].texture = texture;
   properties_info[1].texture = texture;
