@@ -283,6 +283,15 @@ mx_offscreen_unmap (ClutterActor *actor)
 }
 
 static void
+mx_offscreen_real_paint_child (MxOffscreen *self)
+{
+  MxOffscreenPrivate *priv = self->priv;
+
+  if (priv->child)
+    clutter_actor_paint (priv->child);
+}
+
+static void
 mx_offscreen_class_init (MxOffscreenClass *klass)
 {
   GParamSpec *pspec;
@@ -306,6 +315,8 @@ mx_offscreen_class_init (MxOffscreenClass *klass)
   actor_class->unmap = mx_offscreen_unmap;
   actor_class->destroy = mx_offscreen_destroy;
 
+  klass->paint_child = mx_offscreen_real_paint_child;
+
   pspec = g_param_spec_object ("child",
                                "Child",
                                "Child actor of the offscreen texture.",
@@ -321,10 +332,81 @@ mx_offscreen_class_init (MxOffscreenClass *klass)
   g_object_class_install_property (object_class, PROP_PICK_CHILD, pspec);
 }
 
+#if CLUTTER_CHECK_VERSION(1,2,0)
+static void
+mx_offscreen_cogl_texture_notify (MxOffscreen *self)
+{
+  CoglMatrix matrix;
+  ClutterActor *stage;
+  ClutterPerspective perspective;
+  gfloat z_camera, width, height, tex_width, tex_height;
+
+  MxOffscreenPrivate *priv = self->priv;
+  CoglHandle texture =
+    clutter_texture_get_cogl_texture (CLUTTER_TEXTURE (self));
+
+  /* Recreated the texture, get rid of the fbo */
+  if (priv->fbo)
+    {
+      cogl_handle_unref (priv->fbo);
+      priv->fbo = NULL;
+    }
+
+  if (!texture)
+    return;
+
+  /* Create fbo */
+  priv->fbo = cogl_offscreen_new_to_texture (texture);
+  if (!priv->fbo)
+    {
+      g_warning (G_STRLOC ": Unable to create offscreen buffer for actor");
+      return;
+    }
+
+  /* Setup the viewport (code derived from Clutter) */
+  /* FIXME: This code will eventually be a public function in Clutter,
+   *        so replace this when it is.
+   */
+  cogl_push_framebuffer (priv->fbo);
+
+  stage = clutter_actor_get_stage (priv->child);
+  clutter_stage_get_perspective (CLUTTER_STAGE (stage), &perspective);
+
+  clutter_actor_get_size (stage, &width, &height);
+  tex_width = cogl_texture_get_width (texture);
+  tex_height = cogl_texture_get_height (texture);
+  width /= width / tex_width;
+  height /= height / tex_height;
+
+  cogl_set_viewport (0, 0, tex_width, tex_height);
+  cogl_perspective (perspective.fovy,
+                    perspective.aspect,
+                    perspective.z_near,
+                    perspective.z_far);
+
+  cogl_get_projection_matrix (&matrix);
+  z_camera = 0.5 * matrix.xx;
+
+  cogl_matrix_init_identity (&matrix);
+  cogl_matrix_translate (&matrix, -0.5f, -0.5f, -z_camera);
+  cogl_matrix_scale (&matrix, 1.f / width, -1.f / height, 1.f / width);
+  cogl_matrix_translate (&matrix, 0.f, -1.f * height, 0.f);
+
+  cogl_set_modelview_matrix (&matrix);
+
+  cogl_pop_framebuffer ();
+}
+#endif
+
 static void
 mx_offscreen_init (MxOffscreen *self)
 {
   self->priv = OFFSCREEN_PRIVATE (self);
+
+#if CLUTTER_CHECK_VERSION(1,2,0)
+  g_signal_connect (self, "notify::cogl-texture",
+                    G_CALLBACK (mx_offscreen_cogl_texture_notify), NULL);
+#endif
 }
 
 ClutterActor *
@@ -398,8 +480,8 @@ mx_offscreen_get_pick_child (MxOffscreen *offscreen)
 void
 mx_offscreen_update (MxOffscreen *offscreen)
 {
-  CoglMatrix matrix;
   CoglHandle texture;
+  gboolean sync_size;
   gfloat width, height;
   CoglColor zero_colour;
 
@@ -410,11 +492,13 @@ mx_offscreen_update (MxOffscreen *offscreen)
 
 #if CLUTTER_CHECK_VERSION(1,2,0)
   clutter_actor_get_size (priv->child, &width, &height);
+  sync_size = clutter_texture_get_sync_size (CLUTTER_TEXTURE (offscreen));
 
   /* Check our texture is the correct size */
   texture = clutter_texture_get_cogl_texture (CLUTTER_TEXTURE (offscreen));
-  if ((cogl_texture_get_width (texture) != (guint)width) ||
-      (cogl_texture_get_height (texture) != (guint)height))
+  if (!texture ||
+      (sync_size && ((cogl_texture_get_width (texture) != (guint)width) ||
+                     (cogl_texture_get_height (texture) != (guint)height))))
     {
       texture = cogl_texture_new_with_size ((guint)width,
                                             (guint)height,
@@ -422,13 +506,6 @@ mx_offscreen_update (MxOffscreen *offscreen)
                                             COGL_PIXEL_FORMAT_RGBA_8888_PRE);
       clutter_texture_set_cogl_texture (CLUTTER_TEXTURE (offscreen), texture);
       cogl_handle_unref (texture);
-
-      /* Recreated the texture, get rid of the fbo */
-      if (priv->fbo)
-        {
-          cogl_handle_unref (priv->fbo);
-          priv->fbo = NULL;
-        }
     }
 
   if (!texture)
@@ -437,47 +514,11 @@ mx_offscreen_update (MxOffscreen *offscreen)
       return;
     }
 
-  /* Create fbo if necessary */
+  /* Check if fbo creation was successful */
   if (!priv->fbo)
     {
-      gfloat z_camera;
-      ClutterActor *stage;
-      ClutterPerspective perspective;
-
-      priv->fbo = cogl_offscreen_new_to_texture (texture);
-      if (!priv->fbo)
-        {
-          g_warning (G_STRLOC ": Unable to create offscreen buffer for actor");
-          return;
-        }
-
-      /* Setup the viewport (code derived from Clutter) */
-      /* FIXME: This code will eventually be a public function in Clutter,
-       *        so replace this when it is.
-       */
-      cogl_push_framebuffer (priv->fbo);
-
-      stage = clutter_actor_get_stage (priv->child);
-      clutter_stage_get_perspective (CLUTTER_STAGE (stage), &perspective);
-      clutter_actor_get_size (stage, &width, &height);
-
-      cogl_set_viewport (0, 0, (int)width, (int)height);
-      cogl_perspective (perspective.fovy,
-                        perspective.aspect,
-                        perspective.z_near,
-                        perspective.z_far);
-
-      cogl_get_projection_matrix (&matrix);
-      z_camera = 0.5 * matrix.xx;
-
-      cogl_matrix_init_identity (&matrix);
-      cogl_matrix_translate (&matrix, -0.5f, -0.5f, -z_camera);
-      cogl_matrix_scale (&matrix, 1.f / width, -1.f / height, 1.f / width);
-      cogl_matrix_translate (&matrix, 0.f, -1.f * height, 0.f);
-
-      cogl_set_modelview_matrix (&matrix);
-
-      cogl_pop_framebuffer ();
+      g_warning (G_STRLOC ": Unable to create offscreen buffer for actor");
+      return;
     }
 
   /* Start drawing */
@@ -490,7 +531,7 @@ mx_offscreen_update (MxOffscreen *offscreen)
               COGL_BUFFER_BIT_COLOR |
               COGL_BUFFER_BIT_STENCIL |
               COGL_BUFFER_BIT_DEPTH);
-  clutter_actor_paint (priv->child);
+  MX_OFFSCREEN_GET_CLASS (offscreen)->paint_child (offscreen);
 
   /* Restore state */
   cogl_pop_matrix ();

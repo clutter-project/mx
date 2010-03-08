@@ -69,6 +69,9 @@ struct _MxOffscreen
 struct _MxOffscreenClass
 {
   ClutterTextureClass parent_class;
+
+  /* vfuncs */
+  void (* paint_child) (MxOffscreen *self);
 };
 
 GType mx_offscreen_get_type (void) G_GNUC_CONST;
