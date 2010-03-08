@@ -62,6 +62,8 @@ test_box_layout_SOURCES = test-box-layout.c
 
 test_path_bar_SOURCES = test-path-bar.c
 
+test_shaders_SOURCES = test-shaders.c
+
 test_window_SOURCES = test-window.c
 
 EXTRA_DIST = \

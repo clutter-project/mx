@@ -84,6 +84,9 @@ ClutterActor *mx_offscreen_get_child (MxOffscreen *offscreen);
 void mx_offscreen_set_pick_child (MxOffscreen *offscreen, gboolean pick);
 gboolean mx_offscreen_get_pick_child (MxOffscreen *offscreen);
 
+void mx_offscreen_set_cogl_program (MxOffscreen *offscreen, CoglHandle program);
+CoglHandle mx_offscreen_get_cogl_program (MxOffscreen *offscreen);
+
 void mx_offscreen_update (MxOffscreen *offscreen);
 
 G_END_DECLS

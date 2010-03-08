@@ -39,6 +39,7 @@ struct _MxOffscreenPrivate
   gboolean      pick_child;
 
   CoglHandle    fbo;
+  CoglHandle    program;
 };
 
 enum
@@ -46,7 +47,8 @@ enum
   PROP_0,
 
   PROP_CHILD,
-  PROP_PICK_CHILD
+  PROP_PICK_CHILD,
+  PROP_COGL_PROGRAM
 };
 
 
@@ -104,6 +106,10 @@ mx_offscreen_get_property (GObject    *object,
       g_value_set_boolean (value, mx_offscreen_get_pick_child (self));
       break;
 
+    case PROP_COGL_PROGRAM:
+      g_value_set_pointer (value, mx_offscreen_get_cogl_program (self));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -125,6 +131,11 @@ mx_offscreen_set_property (GObject      *object,
 
     case PROP_PICK_CHILD:
       mx_offscreen_set_pick_child (self, g_value_get_boolean (value));
+      break;
+
+    case PROP_COGL_PROGRAM:
+      mx_offscreen_set_cogl_program (self,
+                                     (CoglHandle)g_value_get_pointer (value));
       break;
 
     default:
@@ -156,6 +167,12 @@ mx_offscreen_dispose (GObject *object)
     {
       cogl_handle_unref (priv->fbo);
       priv->fbo = NULL;
+    }
+
+  if (priv->program)
+    {
+      cogl_handle_unref (priv->program);
+      priv->program = NULL;
     }
 
   G_OBJECT_CLASS (mx_offscreen_parent_class)->dispose (object);
@@ -248,7 +265,13 @@ mx_offscreen_paint (ClutterActor *actor)
 
   mx_offscreen_update (self);
 
+  if (priv->program)
+    cogl_program_use (priv->program);
+
   CLUTTER_ACTOR_CLASS (mx_offscreen_parent_class)->paint (actor);
+
+  if (priv->program)
+    cogl_program_use (COGL_INVALID_HANDLE);
 }
 
 static void
@@ -330,6 +353,12 @@ mx_offscreen_class_init (MxOffscreenClass *klass)
                                 FALSE,
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_PICK_CHILD, pspec);
+
+  pspec = g_param_spec_pointer ("cogl-program",
+                                "Cogl program",
+                                "Cogl program to use when rendering texture.",
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_COGL_PROGRAM, pspec);
 }
 
 #if CLUTTER_CHECK_VERSION(1,2,0)
@@ -475,6 +504,39 @@ mx_offscreen_get_pick_child (MxOffscreen *offscreen)
 {
   g_return_val_if_fail (MX_IS_OFFSCREEN (offscreen), FALSE);
   return offscreen->priv->pick_child;
+}
+
+void
+mx_offscreen_set_cogl_program (MxOffscreen *offscreen, CoglHandle program)
+{
+  MxOffscreenPrivate *priv;
+
+  g_return_if_fail (MX_IS_OFFSCREEN (offscreen));
+
+  priv = offscreen->priv;
+
+  if (program == priv->program)
+    return;
+
+  if (priv->program)
+    {
+      cogl_handle_unref (priv->program);
+      priv->program = NULL;
+    }
+
+  if (program)
+    priv->program = cogl_handle_ref (program);
+
+  g_object_notify (G_OBJECT (offscreen), "cogl-program");
+
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (offscreen));
+}
+
+CoglHandle
+mx_offscreen_get_cogl_program (MxOffscreen *offscreen)
+{
+  g_return_val_if_fail (MX_IS_OFFSCREEN (offscreen), COGL_INVALID_HANDLE);
+  return offscreen->priv->program;
 }
 
 void
