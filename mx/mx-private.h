@@ -54,6 +54,10 @@ void _mx_table_update_row_col (MxTable *table,
                                gint     row,
                                gint     col);
 
+void _mx_draggable_get_drag_position (MxDraggable *draggable,
+                                      gint        *x,
+                                      gint        *y);
+
 enum
 {
   MX_DEBUG_LAYOUT = 1,

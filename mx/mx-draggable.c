@@ -708,3 +708,21 @@ mx_draggable_is_enabled (MxDraggable *draggable)
 
   return retval;
 }
+
+void
+_mx_draggable_get_drag_position (MxDraggable *draggable,
+                                 gint        *x,
+                                 gint        *y)
+{
+  DragContext *context;
+
+  context = g_object_get_qdata (G_OBJECT (draggable), quark_draggable_context);
+  if (G_UNLIKELY (context != NULL))
+    return;
+
+  if (x)
+    *x = context->last_x;
+  if (y)
+    *y = context->last_y;
+}
+
