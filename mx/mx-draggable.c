@@ -104,15 +104,8 @@ draggable_release (DragContext        *context,
 
   stage = clutter_actor_get_stage (CLUTTER_ACTOR (context->draggable));
 
-  if (context->axis != MX_Y_AXIS)
-    context->last_x = actor_x;
-  else
-    context->last_x = context->press_x;
-
-  if (context->axis != MX_X_AXIS)
-    context->last_y = actor_y;
-  else
-    context->last_y = context->press_y;
+  context->last_x = actor_x;
+  context->last_y = actor_y;
 
   context->in_drag = FALSE;
 
@@ -159,15 +152,8 @@ draggable_motion (DragContext        *context,
   if (!res)
     return FALSE;
 
-  if (context->axis != MX_Y_AXIS)
-    context->last_x = actor_x;
-  else
-    context->last_x = context->press_x;
-
-  if (context->axis != MX_X_AXIS)
-    context->last_y = actor_y;
-  else
-    context->last_y = context->press_y;
+  context->last_x = actor_x;
+  context->last_y = actor_y;
 
   delta_x = delta_y = 0;
 
@@ -708,21 +694,3 @@ mx_draggable_is_enabled (MxDraggable *draggable)
 
   return retval;
 }
-
-void
-_mx_draggable_get_drag_position (MxDraggable *draggable,
-                                 gint        *x,
-                                 gint        *y)
-{
-  DragContext *context;
-
-  context = g_object_get_qdata (G_OBJECT (draggable), quark_draggable_context);
-  if (G_UNLIKELY (context != NULL))
-    return;
-
-  if (x)
-    *x = context->last_x;
-  if (y)
-    *y = context->last_y;
-}
-

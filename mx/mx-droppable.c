@@ -64,7 +64,7 @@ on_stage_capture (ClutterActor *actor,
   MxDroppable *droppable;
   MxDraggable *draggable;
   ClutterActor *target;
-  gint x, y;
+  gfloat event_x, event_y;
   gboolean draggable_reactive;
 
   if (!(event->type == CLUTTER_MOTION ||
@@ -75,20 +75,20 @@ on_stage_capture (ClutterActor *actor,
   if (G_UNLIKELY (draggable == NULL))
     return FALSE;
 
-  /* get the actor currently under the draggable; we set the draggable
+  /* get the actor currently under the cursor; we set the draggable
    * unreactive so that it does not intefere with get_actor_at_pos();
    * the paint that get_actor_at_pos() performs is in the back buffer
    * so the hide/show cycle will not be visible on screen
    */
-  _mx_draggable_get_drag_position (draggable, &x, &y);
+  clutter_event_get_coords (event, &event_x, &event_y);
 
   draggable_reactive = clutter_actor_get_reactive (CLUTTER_ACTOR (draggable));
   clutter_actor_set_reactive (CLUTTER_ACTOR (draggable), FALSE);
 
   target = clutter_stage_get_actor_at_pos (CLUTTER_STAGE (actor),
                                            CLUTTER_PICK_REACTIVE,
-                                           x,
-                                           y);
+                                           event_x,
+                                           event_y);
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (draggable), draggable_reactive);
 
@@ -152,7 +152,7 @@ on_stage_capture (ClutterActor *actor,
 
       drop_x = drop_y = 0;
       res = clutter_actor_transform_stage_point (last_target,
-                                                 x, y,
+                                                 event_x, event_y,
                                                  &drop_x, &drop_y);
       if (!res)
         return FALSE;
