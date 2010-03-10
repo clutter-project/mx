@@ -104,8 +104,15 @@ draggable_release (DragContext        *context,
 
   stage = clutter_actor_get_stage (CLUTTER_ACTOR (context->draggable));
 
-  context->last_x = actor_x;
-  context->last_y = actor_y;
+  if (context->axis != MX_Y_AXIS)
+    context->last_x = actor_x;
+  else
+    context->last_x = context->press_x;
+
+  if (context->axis != MX_X_AXIS)
+    context->last_y = actor_y;
+  else
+    context->last_y = context->press_y;
 
   context->in_drag = FALSE;
 
@@ -152,8 +159,15 @@ draggable_motion (DragContext        *context,
   if (!res)
     return FALSE;
 
-  context->last_x = actor_x;
-  context->last_y = actor_y;
+  if (context->axis != MX_Y_AXIS)
+    context->last_x = actor_x;
+  else
+    context->last_x = context->press_x;
+
+  if (context->axis != MX_X_AXIS)
+    context->last_y = actor_y;
+  else
+    context->last_y = context->press_y;
 
   delta_x = delta_y = 0;
 
