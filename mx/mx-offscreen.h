@@ -87,6 +87,10 @@ gboolean mx_offscreen_get_pick_child (MxOffscreen *offscreen);
 void mx_offscreen_set_cogl_program (MxOffscreen *offscreen, CoglHandle program);
 CoglHandle mx_offscreen_get_cogl_program (MxOffscreen *offscreen);
 
+void mx_offscreen_set_auto_update (MxOffscreen *offscreen,
+                                   gboolean auto_update);
+gboolean mx_offscreen_get_auto_update (MxOffscreen *offscreen);
+
 void mx_offscreen_update (MxOffscreen *offscreen);
 
 G_END_DECLS

@@ -37,6 +37,7 @@ struct _MxOffscreenPrivate
 {
   ClutterActor *child;
   gboolean      pick_child;
+  gboolean      auto_update;
 
   CoglHandle    fbo;
   CoglHandle    program;
@@ -48,7 +49,8 @@ enum
 
   PROP_CHILD,
   PROP_PICK_CHILD,
-  PROP_COGL_PROGRAM
+  PROP_COGL_PROGRAM,
+  PROP_AUTO_UPDATE
 };
 
 
@@ -110,6 +112,10 @@ mx_offscreen_get_property (GObject    *object,
       g_value_set_pointer (value, mx_offscreen_get_cogl_program (self));
       break;
 
+    case PROP_AUTO_UPDATE:
+      g_value_set_boolean (value, mx_offscreen_get_auto_update (self));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -136,6 +142,10 @@ mx_offscreen_set_property (GObject      *object,
     case PROP_COGL_PROGRAM:
       mx_offscreen_set_cogl_program (self,
                                      (CoglHandle)g_value_get_pointer (value));
+      break;
+
+    case PROP_AUTO_UPDATE:
+      mx_offscreen_set_auto_update (self, g_value_get_boolean (value));
       break;
 
     default:
@@ -263,7 +273,8 @@ mx_offscreen_paint (ClutterActor *actor)
   if (!priv->child)
     return;
 
-  mx_offscreen_update (self);
+  if (priv->auto_update)
+    mx_offscreen_update (self);
 
   if (priv->program)
     cogl_program_use (priv->program);
@@ -359,6 +370,14 @@ mx_offscreen_class_init (MxOffscreenClass *klass)
                                 "Cogl program to use when rendering texture.",
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_COGL_PROGRAM, pspec);
+
+  pspec = g_param_spec_boolean ("auto-update",
+                                "Auto update",
+                                "Update child actor automatically "
+                                "when painting.",
+                                TRUE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_AUTO_UPDATE, pspec);
 }
 
 #if CLUTTER_CHECK_VERSION(1,2,0)
@@ -430,7 +449,9 @@ mx_offscreen_cogl_texture_notify (MxOffscreen *self)
 static void
 mx_offscreen_init (MxOffscreen *self)
 {
-  self->priv = OFFSCREEN_PRIVATE (self);
+  MxOffscreenPrivate *priv = self->priv = OFFSCREEN_PRIVATE (self);
+
+  priv->auto_update = TRUE;
 
 #if CLUTTER_CHECK_VERSION(1,2,0)
   g_signal_connect (self, "notify::cogl-texture",
@@ -537,6 +558,29 @@ mx_offscreen_get_cogl_program (MxOffscreen *offscreen)
 {
   g_return_val_if_fail (MX_IS_OFFSCREEN (offscreen), COGL_INVALID_HANDLE);
   return offscreen->priv->program;
+}
+
+void
+mx_offscreen_set_auto_update (MxOffscreen *offscreen, gboolean auto_update)
+{
+  MxOffscreenPrivate *priv;
+
+  g_return_if_fail (MX_IS_OFFSCREEN (offscreen));
+
+  priv = offscreen->priv;
+
+  if (priv->auto_update != auto_update)
+    {
+      priv->auto_update = auto_update;
+      g_object_notify (G_OBJECT (offscreen), "auto-update");
+    }
+}
+
+gboolean
+mx_offscreen_get_auto_update (MxOffscreen *offscreen)
+{
+  g_return_val_if_fail (MX_IS_OFFSCREEN (offscreen), FALSE);
+  return offscreen->priv->auto_update;
 }
 
 void
