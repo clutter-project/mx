@@ -152,7 +152,7 @@ mx_gtk_frame_paint (GtkWidget    *widget,
   cairo_clip (cairo);
 
   /* initialise the background */
-  gdk_cairo_set_source_color (cairo, &style->bg[GTK_WIDGET_STATE (widget)]);
+  gdk_cairo_set_source_color (cairo, &style->bg[gtk_widget_get_state (widget)]);
   cairo_rectangle (cairo, widget->allocation.x, widget->allocation.y,
                    widget->allocation.width, widget->allocation.height);
   cairo_fill (cairo);
@@ -182,7 +182,7 @@ mx_gtk_frame_expose (GtkWidget      *widget,
 {
   GtkWidgetClass *grand_parent;
 
-  if (GTK_WIDGET_DRAWABLE (widget))
+  if (gtk_widget_is_drawable (widget))
     {
       mx_gtk_frame_paint (widget, &event->area);
 
@@ -257,7 +257,7 @@ mx_gtk_frame_size_allocate (GtkWidget     *widget,
   child_allocation.width = allocation->width - 2 * xmargin;
   child_allocation.height = allocation->height - 2 * ymargin - title_allocation.height;
 
-  if (GTK_WIDGET_MAPPED (widget) &&
+  if (gtk_widget_get_mapped (widget) &&
       (child_allocation.x != frame->child_allocation.x ||
        child_allocation.y != frame->child_allocation.y ||
        child_allocation.width != frame->child_allocation.width ||
@@ -266,7 +266,7 @@ mx_gtk_frame_size_allocate (GtkWidget     *widget,
       gdk_window_invalidate_rect (widget->window, &widget->allocation, FALSE);
     }
 
-  if (bin->child && GTK_WIDGET_VISIBLE (bin->child))
+  if (bin->child && gtk_widget_get_visible (bin->child))
     {
       gtk_widget_size_allocate (bin->child, &child_allocation);
     }

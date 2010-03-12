@@ -211,7 +211,7 @@ draw (GtkWidget *lightswitch,
 
   priv = MX_GTK_LIGHT_SWITCH_GET_PRIVATE (lightswitch);
   style = lightswitch->style;
-  state_type = GTK_WIDGET_STATE (lightswitch);
+  state_type = gtk_widget_get_state (lightswitch);
 
   on_label_x = (priv->trough_width / 5) * 0.75;
   off_label_x = (priv->trough_width / 8) * 5;
@@ -289,7 +289,7 @@ draw (GtkWidget *lightswitch,
   /* draw the switch itself */
   gtk_paint_box (style,
                  lightswitch->window,
-                 GTK_WIDGET_STATE (lightswitch),
+                 gtk_widget_get_state (lightswitch),
                  GTK_SHADOW_OUT,
                  NULL,
                  NULL,
