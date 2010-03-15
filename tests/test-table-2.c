@@ -38,7 +38,7 @@ main (int     argc,
   clutter_actor_set_size (stage, 640, 1000);
 
   table = mx_table_new ();
-  mx_table_set_col_spacing (MX_TABLE (table), 10);
+  mx_table_set_column_spacing (MX_TABLE (table), 10);
   clutter_actor_set_position (table, 50, 50);
   clutter_actor_set_width (table, 300);
   clutter_container_add (CLUTTER_CONTAINER (stage), table, NULL);

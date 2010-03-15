@@ -614,9 +614,9 @@ MX_ITEM_FACTORY_GET_IFACE
 <TITLE>MxTable</TITLE>
 MxTable
 mx_table_new
-mx_table_set_col_spacing
+mx_table_set_column_spacing
 mx_table_set_row_spacing
-mx_table_get_col_spacing
+mx_table_get_column_spacing
 mx_table_get_row_spacing
 mx_table_add_actor
 mx_table_add_actor_with_properties

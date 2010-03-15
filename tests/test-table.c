@@ -140,7 +140,7 @@ main (int argc, char *argv[])
   clutter_stage_set_user_resizable (CLUTTER_STAGE (stage), TRUE);
 
   table = mx_table_new ();
-  mx_table_set_col_spacing (MX_TABLE (table), 10);
+  mx_table_set_column_spacing (MX_TABLE (table), 10);
   mx_table_set_row_spacing (MX_TABLE (table), 10);
 
 

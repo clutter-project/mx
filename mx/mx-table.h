@@ -68,16 +68,24 @@ GType mx_table_get_type (void) G_GNUC_CONST;
 
 ClutterActor *mx_table_new (void);
 
-void mx_table_set_col_spacing (MxTable      *table,
-                               gint          spacing);
-void mx_table_set_row_spacing (MxTable      *table,
-                               gint          spacing);
-gint mx_table_get_col_spacing (MxTable      *table);
-gint mx_table_get_row_spacing (MxTable      *table);
-void mx_table_add_actor       (MxTable      *table,
-                               ClutterActor *actor,
-                               gint          row,
-                               gint          column);
+#ifndef MX_DISABLE_DEPRECATED
+G_GNUC_DEPRECATED void mx_table_set_col_spacing (MxTable *table,
+                                                 gint     spacing);
+G_GNUC_DEPRECATED gint mx_table_get_col_spacing (MxTable *table);
+#endif
+
+void mx_table_set_column_spacing (MxTable      *table,
+                                  gint          spacing);
+gint mx_table_get_column_spacing (MxTable      *table);
+
+void mx_table_set_row_spacing    (MxTable      *table,
+                                  gint          spacing);
+gint mx_table_get_row_spacing    (MxTable      *table);
+
+void mx_table_add_actor          (MxTable      *table,
+                                  ClutterActor *actor,
+                                  gint          row,
+                                  gint          column);
 
 void mx_table_add_actor_with_properties (MxTable      *table,
                                          ClutterActor *actor,
