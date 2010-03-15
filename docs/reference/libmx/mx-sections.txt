@@ -472,6 +472,10 @@ MxTextureFramePrivate
 <FILE>mx-table-child</FILE>
 <TITLE>MxTableChild</TITLE>
 MxTableChild
+mx_table_child_get_column
+mx_table_child_set_column
+mx_table_child_get_row
+mx_table_child_set_row
 mx_table_child_get_column_span
 mx_table_child_set_column_span
 mx_table_child_get_row_span

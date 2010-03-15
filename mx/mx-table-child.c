@@ -810,3 +810,106 @@ mx_table_child_set_y_align (MxTable      *table,
   clutter_actor_queue_relayout (child);
 }
 
+/**
+ * mx_table_child_get_column:
+ * @table: an #MxTable
+ * @child: a #ClutterActor
+ *
+ * Get the column of the child.
+ *
+ * Returns: the column of the child
+ */
+gint
+mx_table_child_get_column (MxTable      *table,
+                        ClutterActor *child)
+{
+  MxTableChild *meta;
+
+  g_return_val_if_fail (MX_IS_TABLE (table), -1);
+  g_return_val_if_fail (CLUTTER_IS_ACTOR (child), -1);
+
+  meta = get_child_meta (table, child);
+
+  return meta->col;
+}
+
+/**
+ * mx_table_child_set_column:
+ * @table: a #MxTable
+ * @child: a #ClutterActor
+ * @col: the column of the child
+ *
+ * Set the column of the child
+ */
+void
+mx_table_child_set_column (MxTable      *table,
+                           ClutterActor *child,
+                           gint          col)
+{
+  MxTableChild *meta;
+
+  g_return_if_fail (MX_IS_TABLE (table));
+  g_return_if_fail (CLUTTER_IS_ACTOR (child));
+
+  meta = get_child_meta (table, child);
+
+  if (meta->col == col)
+    return;
+
+  meta->col = col;
+
+  _mx_table_update_row_col (table, -1, meta->col);
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
+}
+
+/**
+ * mx_table_child_get_row:
+ * @table: an #MxTable
+ * @child: a #ClutterActor
+ *
+ * Get the column of the child.
+ *
+ * Returns: the column of the child
+ */
+gint
+mx_table_child_get_row (MxTable      *table,
+                        ClutterActor *child)
+{
+  MxTableChild *meta;
+
+  g_return_val_if_fail (MX_IS_TABLE (table), -1);
+  g_return_val_if_fail (CLUTTER_IS_ACTOR (child), -1);
+
+  meta = get_child_meta (table, child);
+
+  return meta->row;
+}
+
+/**
+ * mx_table_child_set_row:
+ * @table: a #MxTable
+ * @child: a #ClutterActor
+ * @row: the row of the child
+ *
+ * Set the row of the child
+ */
+void
+mx_table_child_set_row (MxTable      *table,
+                        ClutterActor *child,
+                        gint          row)
+{
+  MxTableChild *meta;
+
+  g_return_if_fail (MX_IS_TABLE (table));
+  g_return_if_fail (CLUTTER_IS_ACTOR (child));
+
+  meta = get_child_meta (table, child);
+
+  if (meta->row == row)
+    return;
+
+  meta->row = row;
+
+  _mx_table_update_row_col (table, meta->row, -1);
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
+}
