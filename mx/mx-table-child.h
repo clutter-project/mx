@@ -77,11 +77,20 @@ struct _MxTableChildClass
 
 GType mx_table_child_get_type (void) G_GNUC_CONST;
 
-gint     mx_table_child_get_col_span        (MxTable      *table,
+#ifndef MX_DISABLE_DEPRECATED
+G_GNUC_DEPRECATED gint mx_table_child_get_col_span (MxTable      *table,
+                                                    ClutterActor *child);
+G_GNUC_DEPRECATED void mx_table_child_set_col_span (MxTable      *table,
+                                                    ClutterActor *child,
+                                                    gint          span);
+#endif
+
+gint     mx_table_child_get_column_span     (MxTable      *table,
                                              ClutterActor *child);
-void     mx_table_child_set_col_span        (MxTable      *table,
+void     mx_table_child_set_column_span     (MxTable      *table,
                                              ClutterActor *child,
                                              gint          span);
+
 gint     mx_table_child_get_row_span        (MxTable      *table,
                                              ClutterActor *child);
 void     mx_table_child_set_row_span        (MxTable      *table,

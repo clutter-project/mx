@@ -172,7 +172,7 @@ main (int argc, char *argv[])
   mx_table_add_actor (MX_TABLE (table), button10, -1, 0);
   mx_table_child_set_row_span (MX_TABLE (table), button1, 2);
   mx_table_child_set_row_span (MX_TABLE (table), button7, 2);
-  mx_table_child_set_col_span (MX_TABLE (table), button4, 2);
+  mx_table_child_set_column_span (MX_TABLE (table), button4, 2);
 
 
   clutter_actor_set_size (button1, 100, 100);
