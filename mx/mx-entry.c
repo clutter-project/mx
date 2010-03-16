@@ -994,6 +994,20 @@ mx_entry_init (MxEntry *entry)
 
 /**
  * mx_entry_new:
+ *
+ * Create a new #MxEntry
+ *
+ * Returns: a new #MxEntry
+ */
+ClutterActor *
+mx_entry_new (void)
+{
+  return g_object_new (MX_TYPE_ENTRY, NULL);
+}
+
+
+/**
+ * mx_entry_new_with_text:
  * @text: text to set the entry to
  *
  * Create a new #MxEntry with the specified entry
@@ -1001,11 +1015,10 @@ mx_entry_init (MxEntry *entry)
  * Returns: a new #MxEntry
  */
 ClutterActor *
-mx_entry_new (const gchar *text)
+mx_entry_new_with_text (const gchar *text)
 {
   MxWidget *entry;
 
-  /* add the entry to the stage, but don't allow it to be visible */
   entry = g_object_new (MX_TYPE_ENTRY,
                         "text", text,
                         NULL);

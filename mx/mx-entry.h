@@ -69,7 +69,8 @@ struct _MxEntryClass
 
 GType mx_entry_get_type (void) G_GNUC_CONST;
 
-ClutterActor         *mx_entry_new              (const gchar *text);
+ClutterActor         *mx_entry_new              (void);
+ClutterActor         *mx_entry_new_with_text    (const gchar *text);
 G_CONST_RETURN gchar *mx_entry_get_text         (MxEntry     *entry);
 void                  mx_entry_set_text         (MxEntry     *entry,
                                                  const gchar *text);
