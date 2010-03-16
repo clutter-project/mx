@@ -1016,8 +1016,28 @@ mx_scroll_bar_init (MxScrollBar *self)
                     G_CALLBACK (mx_scroll_bar_notify_reactive), NULL);
 }
 
+/**
+ * mx_scroll_bar_new:
+ *
+ * Create a new #MxScrollBar
+ *
+ * Returns: a new #MxScrollBar
+ */
 ClutterActor *
-mx_scroll_bar_new (MxAdjustment *adjustment)
+mx_scroll_bar_new (void)
+{
+  return g_object_new (MX_TYPE_SCROLL_BAR, NULL);
+}
+
+/**
+ * mx_scroll_bar_new_with_adjustment:
+ *
+ * Create a new #MxScrollBar with the given adjustment set
+ *
+ * Returns: a new #MxScrollBar
+ */
+ClutterActor *
+mx_scroll_bar_new_with_adjustment (MxAdjustment *adjustment)
 {
   return g_object_new (MX_TYPE_SCROLL_BAR,
                        "adjustment", adjustment,

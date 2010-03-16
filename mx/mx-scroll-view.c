@@ -732,7 +732,7 @@ mx_scroll_view_init (MxScrollView *self)
 {
   MxScrollViewPrivate *priv = self->priv = SCROLL_VIEW_PRIVATE (self);
 
-  priv->hscroll = CLUTTER_ACTOR (mx_scroll_bar_new (NULL));
+  priv->hscroll = mx_scroll_bar_new ();
   priv->vscroll = g_object_new (MX_TYPE_SCROLL_BAR, "vertical", TRUE, NULL);
 
   priv->scroll_policy = MX_SCROLL_BOTH;
