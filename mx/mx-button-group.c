@@ -35,7 +35,7 @@ struct _MxButtonGroupPrivate
   MxButton *active_button;
   GSList *children;
 
-  gboolean allow_no_active : 1;
+  guint allow_no_active : 1;
 };
 
 enum

@@ -62,9 +62,9 @@ struct _MxWidgetPrivate
   ClutterActor *background_image;
   ClutterColor *bg_color;
 
-  gboolean      has_tooltip : 1;
-  gboolean      is_style_dirty : 1;
-  gboolean      is_hovered : 1;
+  guint         has_tooltip : 1;
+  guint         is_style_dirty : 1;
+  guint         is_hovered : 1;
 
   MxTooltip    *tooltip;
   MxPopup      *popup;
