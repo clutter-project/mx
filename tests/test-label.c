@@ -36,7 +36,7 @@ label_main (ClutterContainer *stage)
       g_warning ("%s", err->message);
     }
 
-  label = mx_label_new ("Hello World!");
+  label = mx_label_new_with_text ("Hello World!");
   clutter_actor_set_position (label, 50, 50);
   mx_stylable_set_style (MX_STYLABLE (label), style);
 
