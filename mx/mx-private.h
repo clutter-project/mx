@@ -41,6 +41,23 @@ G_BEGIN_DECLS
 
 G_END_DECLS
 
+struct _MxTableChild
+{
+  ClutterChildMeta parent_instance;
+
+  gint col;
+  gint row;
+  gint col_span;
+  gint row_span;
+  gdouble x_align;
+  gdouble y_align;
+  guint x_expand : 1;
+  guint y_expand : 1;
+  guint x_fill : 1;
+  guint y_fill : 1;
+};
+
+
 ClutterActor *_mx_widget_get_dnd_clone (MxWidget *widget);
 
 void _mx_box_layout_start_animation (MxBoxLayout *box);

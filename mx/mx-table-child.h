@@ -46,30 +46,6 @@ G_BEGIN_DECLS
 typedef struct _MxTableChild         MxTableChild;
 typedef struct _MxTableChildClass    MxTableChildClass;
 
-/**
- * MxTableChild:
- *
- * The contents of the this structure are private and should only be accessed
- * through the public API.
- */
-struct _MxTableChild
-{
-  /*< private >*/
-  ClutterChildMeta parent_instance;
-
-  gint col;
-  gint row;
-  gint col_span;
-  gint row_span;
-  gdouble x_align;
-  gdouble y_align;
-  guint x_expand : 1;
-  guint y_expand : 1;
-  guint x_fill : 1;
-  guint y_fill : 1;
-};
-
-
 struct _MxTableChildClass
 {
   ClutterChildMetaClass parent_class;
