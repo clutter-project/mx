@@ -867,9 +867,9 @@ mx_table_child_set_column (MxTable      *table,
  * @table: an #MxTable
  * @child: a #ClutterActor
  *
- * Get the column of the child.
+ * Get the row of the child.
  *
- * Returns: the column of the child
+ * Returns: the row of the child
  */
 gint
 mx_table_child_get_row (MxTable      *table,
