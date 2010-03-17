@@ -2,7 +2,7 @@
 /*
  * mx-box-layout.h: box layout actor
  *
- * Copyright 2009 Intel Corporation.
+ * Copyright 2009, 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -81,9 +81,15 @@ GType mx_box_layout_get_type (void);
 
 ClutterActor *mx_box_layout_new (void);
 
-void          mx_box_layout_set_vertical   (MxBoxLayout *box,
-                                            gboolean     vertical);
-gboolean      mx_box_layout_get_vertical   (MxBoxLayout *box);
+#ifndef MX_DISABLE_DEPRECATED
+G_GNUC_DEPRECATED void     mx_box_layout_set_vertical   (MxBoxLayout *box,
+                                                         gboolean     vertical);
+G_GNUC_DEPRECATED gboolean mx_box_layout_get_vertical   (MxBoxLayout *box);
+#endif
+
+void          mx_box_layout_set_orientation (MxBoxLayout *box,
+                                             MxOrientation orientation);
+MxOrientation mx_box_layout_get_orientation (MxBoxLayout *box);
 
 void          mx_box_layout_set_pack_start (MxBoxLayout *box,
                                             gboolean     pack_start);

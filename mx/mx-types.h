@@ -1,6 +1,6 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 /*
- * Copyright 2009 Intel Corporation.
+ * Copyright 2009, 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -113,6 +113,12 @@ typedef enum
   MX_SCROLL_VERTICAL,
   MX_SCROLL_BOTH
 } MxScrollPolicy;
+
+typedef enum
+{
+  MX_HORIZONTAL,
+  MX_VERTICAL
+} MxOrientation;
 
 G_END_DECLS
 
