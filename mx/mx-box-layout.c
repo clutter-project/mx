@@ -237,12 +237,7 @@ scrollable_get_adjustments (MxScrollable  *scrollable,
           /* create an initial adjustment. this is filled with correct values
            * as soon as allocate() is called */
 
-          adjustment = mx_adjustment_new (0.0,
-                                          0.0,
-                                          1.0,
-                                          1.0,
-                                          1.0,
-                                          1.0);
+          adjustment = mx_adjustment_new ();
 
           scrollable_set_adjustments (scrollable,
                                       adjustment,
@@ -265,12 +260,7 @@ scrollable_get_adjustments (MxScrollable  *scrollable,
           /* create an initial adjustment. this is filled with correct values
            * as soon as allocate() is called */
 
-          adjustment = mx_adjustment_new (0.0,
-                                          0.0,
-                                          1.0,
-                                          1.0,
-                                          1.0,
-                                          1.0);
+          adjustment = mx_adjustment_new ();
 
           scrollable_set_adjustments (scrollable,
                                       priv->hadjustment,

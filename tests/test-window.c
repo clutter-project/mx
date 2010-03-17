@@ -54,7 +54,7 @@ main (int argc, char **argv)
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), table);
 
   toggle = mx_toggle_new ();
-  label = mx_label_new ("Toggle small-screen mode");
+  label = mx_label_new_with_text ("Toggle small-screen mode");
   g_signal_connect (toggle, "notify::active",
                     G_CALLBACK (small_screen_cb), stage);
   mx_table_add_actor_with_properties (MX_TABLE (table),
@@ -74,7 +74,7 @@ main (int argc, char **argv)
                                       NULL);
 
   toggle = mx_toggle_new ();
-  label = mx_label_new ("Toggle full-screen mode");
+  label = mx_label_new_with_text ("Toggle full-screen mode");
   g_signal_connect (toggle, "notify::active",
                     G_CALLBACK (fullscreen_cb), stage);
   mx_table_add_actor_with_properties (MX_TABLE (table),

@@ -433,7 +433,8 @@ mx_texture_frame_class_init (MxTextureFrameClass *klass)
                               "Left offset",
                               0, G_MAXFLOAT,
                               0,
-                              MX_PARAM_READWRITE);
+                              MX_PARAM_READWRITE |
+                              G_PARAM_CONSTRUCT);
   g_object_class_install_property (gobject_class, PROP_LEFT, pspec);
 
   pspec = g_param_spec_float ("top",
@@ -441,7 +442,8 @@ mx_texture_frame_class_init (MxTextureFrameClass *klass)
                               "Top offset",
                               0, G_MAXFLOAT,
                               0,
-                              MX_PARAM_READWRITE);
+                              MX_PARAM_READWRITE |
+                              G_PARAM_CONSTRUCT);
   g_object_class_install_property (gobject_class, PROP_TOP, pspec);
 
   pspec = g_param_spec_float ("bottom",
@@ -449,7 +451,8 @@ mx_texture_frame_class_init (MxTextureFrameClass *klass)
                               "Bottom offset",
                               0, G_MAXFLOAT,
                               0,
-                              MX_PARAM_READWRITE);
+                              MX_PARAM_READWRITE |
+                              G_PARAM_CONSTRUCT);
   g_object_class_install_property (gobject_class, PROP_BOTTOM, pspec);
 
   pspec = g_param_spec_float ("right",
@@ -457,7 +460,8 @@ mx_texture_frame_class_init (MxTextureFrameClass *klass)
                               "Right offset",
                               0, G_MAXFLOAT,
                               0,
-                              MX_PARAM_READWRITE);
+                              MX_PARAM_READWRITE |
+                              G_PARAM_CONSTRUCT);
   g_object_class_install_property (gobject_class, PROP_RIGHT, pspec);
 }
 

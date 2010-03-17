@@ -119,9 +119,9 @@ main (int argc, char *argv[])
                                       "col-span", 3,
                                       NULL);
 
-  label = mx_label_new ("Period");
+  label = mx_label_new_with_text ("Period");
   slider = mx_slider_new ();
-  properties_info[0].value_label = mx_label_new ("0.0");
+  properties_info[0].value_label = mx_label_new_with_text ("0.0");
   clutter_actor_set_width (slider, 200);
   g_signal_connect (slider, "notify::progress",
                     G_CALLBACK (on_progress_changed), &properties_info[0]);
@@ -153,9 +153,9 @@ main (int argc, char *argv[])
                                       "x-fill", FALSE,
                                       NULL);
 
-  label = mx_label_new ("Angle");
+  label = mx_label_new_with_text ("Angle");
   slider = mx_slider_new ();
-  properties_info[1].value_label = mx_label_new ("0.00");
+  properties_info[1].value_label = mx_label_new_with_text ("0.00");
   clutter_actor_set_width (slider, 200);
   g_signal_connect (slider, "notify::progress",
                     G_CALLBACK (on_progress_changed), &properties_info[1]);
@@ -188,9 +188,9 @@ main (int argc, char *argv[])
                                       "x-fill", FALSE,
                                       NULL);
 
-  label = mx_label_new ("Radius");
+  label = mx_label_new_with_text ("Radius");
   slider = mx_slider_new ();
-  properties_info[2].value_label = mx_label_new ("24.00");
+  properties_info[2].value_label = mx_label_new_with_text ("24.00");
   clutter_actor_set_width (slider, 200);
   mx_slider_set_progress (MX_SLIDER (slider), 0.24);
   g_signal_connect (slider, "notify::progress",

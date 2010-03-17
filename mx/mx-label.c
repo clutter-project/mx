@@ -336,6 +336,19 @@ mx_label_init (MxLabel *label)
 
 /**
  * mx_label_new:
+ *
+ * Create a new #MxLabel
+ *
+ * Returns: a new #MxLabel
+ */
+ClutterActor *
+mx_label_new (void)
+{
+  return g_object_new (MX_TYPE_LABEL, NULL);
+}
+
+/**
+ * mx_label_new_with_text:
  * @text: text to set the label to
  *
  * Create a new #MxLabel with the specified label
@@ -343,7 +356,7 @@ mx_label_init (MxLabel *label)
  * Returns: a new #MxLabel
  */
 ClutterActor *
-mx_label_new (const gchar *text)
+mx_label_new_with_text (const gchar *text)
 {
   if (text == NULL || *text == '\0')
     return g_object_new (MX_TYPE_LABEL, NULL);

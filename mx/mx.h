@@ -66,7 +66,6 @@
 #include <mx/mx-slider.h>
 #include <mx/mx-stylable.h>
 #include <mx/mx-style.h>
-#include <mx/mx-subtexture.h>
 #include <mx/mx-table.h>
 #include <mx/mx-table-child.h>
 #include <mx/mx-texture-cache.h>

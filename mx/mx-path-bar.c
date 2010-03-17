@@ -844,7 +844,7 @@ mx_path_bar_set_editable (MxPathBar *bar, gboolean editable)
         }
       else
         {
-          priv->entry = mx_entry_new ("");
+          priv->entry = mx_entry_new ();
           clutter_actor_set_parent (priv->entry, CLUTTER_ACTOR (bar));
           if (CLUTTER_ACTOR_IS_VISIBLE (priv->entry))
             clutter_actor_set_opacity (priv->entry, 0x00);

@@ -597,7 +597,7 @@ mx_popup_add_action (MxPopup  *popup,
         }
     }
 
-  label = mx_label_new (mx_action_get_display_name (action));
+  label = mx_label_new_with_text (mx_action_get_display_name (action));
 
   clutter_container_add_actor (CLUTTER_CONTAINER (child.button),
                                label);

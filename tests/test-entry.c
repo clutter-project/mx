@@ -52,7 +52,7 @@ entry_main (ClutterContainer *stage)
 {
   ClutterActor *entry, *button, *clear_button;
 
-  entry = mx_entry_new ("Hello World!");
+  entry = mx_entry_new_with_text ("Hello World!");
   clutter_actor_set_position (entry, 20, 20);
   clutter_actor_set_width (entry, 150);
 
@@ -61,7 +61,7 @@ entry_main (ClutterContainer *stage)
   clutter_stage_set_key_focus (CLUTTER_STAGE (clutter_actor_get_stage (entry)),
                                mx_entry_get_clutter_text (MX_ENTRY (entry)));
 
-  entry = mx_entry_new ("");
+  entry = mx_entry_new ();
   clutter_actor_set_position (entry, 20, 70);
 
   clutter_container_add_actor (stage, entry);
@@ -87,7 +87,7 @@ entry_main (ClutterContainer *stage)
   clutter_container_add (stage, button, clear_button, NULL);
 
 
-  entry = mx_entry_new ("");
+  entry = mx_entry_new ();
   clutter_actor_set_position (entry, 20, 170);
   clutter_container_add_actor (stage, entry);
 
@@ -101,7 +101,7 @@ entry_main (ClutterContainer *stage)
   g_signal_connect (entry, "secondary-icon-clicked",
                     G_CALLBACK (print_notice), "secondary icon clicked\n");
 
-  entry = mx_entry_new ("");
+  entry = mx_entry_new ();
   clutter_actor_set_position (entry, 20, 220);
   clutter_container_add_actor (stage, entry);
 
