@@ -411,12 +411,12 @@ mx_scroll_view_allocate (ClutterActor          *actor,
 }
 
 static void
-mx_scroll_view_style_changed (MxWidget *widget)
+mx_scroll_view_style_changed (MxWidget *widget, MxStyleChangedFlags flags)
 {
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (widget)->priv;
 
-  mx_stylable_style_changed ((MxStylable *) priv->hscroll);
-  mx_stylable_style_changed ((MxStylable *) priv->vscroll);
+  mx_stylable_style_changed (MX_STYLABLE (priv->hscroll), flags);
+  mx_stylable_style_changed (MX_STYLABLE (priv->vscroll), flags);
 
   mx_stylable_get (MX_STYLABLE (widget),
                    "x-mx-scrollbar-width", &priv->scrollbar_width,

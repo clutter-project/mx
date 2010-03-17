@@ -31,6 +31,7 @@
 #include "mx-button.h"
 #include "mx-box-layout.h"
 #include "mx-icon-theme.h"
+#include "mx-stylable.h"
 
 G_DEFINE_TYPE (MxPopup, mx_popup, MX_TYPE_FLOATING_WIDGET)
 
@@ -443,12 +444,10 @@ mx_popup_hide (ClutterActor *actor)
 }
 
 static void
-mx_popup_style_changed (MxPopup *popup)
+mx_popup_style_changed (MxPopup *popup, MxStyleChangedFlags flags)
 {
   MxPopupPrivate *priv = popup->priv;
   int i;
-
-g_debug ("popup style changed ");
 
   for (i = 0; i < priv->children->len; i++)
     {
@@ -456,7 +455,7 @@ g_debug ("popup style changed ");
 
       child = &g_array_index (priv->children, MxPopupChild, i);
 
-      mx_stylable_ensure_style (child->button);
+      mx_stylable_style_changed (MX_STYLABLE (child->button), flags);
     }
 }
 

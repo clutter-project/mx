@@ -556,7 +556,7 @@ mx_combo_box_key_press_event (ClutterActor    *actor,
 
 
 static void
-mx_combo_box_style_changed (MxComboBox *combo)
+mx_combo_box_style_changed (MxComboBox *combo, MxStyleChangedFlags flags)
 {
   MxBorderImage *marker_filename;
   gint spacing, icon_size;
@@ -596,7 +596,8 @@ mx_combo_box_style_changed (MxComboBox *combo)
                                              CLUTTER_TEXT (combo->priv->label));
 
   /* make sure the popup is also up-to-date */
-  mx_widget_ensure_style (mx_widget_get_popup (combo));
+  mx_stylable_style_changed (MX_STYLABLE (mx_widget_get_popup (combo)),
+                             flags | MX_STYLE_CHANGED_ENSURE);
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (combo));
 }

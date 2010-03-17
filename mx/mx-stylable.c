@@ -153,8 +153,8 @@ mx_stylable_base_init (gpointer g_iface)
                   G_SIGNAL_RUN_FIRST,
                   G_STRUCT_OFFSET (MxStylableIface, style_changed),
                   NULL, NULL,
-                  _mx_marshal_VOID__VOID,
-                  G_TYPE_NONE, 0);
+                  _mx_marshal_VOID__ENUM,
+                  G_TYPE_NONE, 1, MX_TYPE_STYLE_CHANGED_FLAGS);
 
   stylable_signals[STYLE_NOTIFY] =
     g_signal_new (I_("style-notify"),
@@ -715,7 +715,7 @@ mx_stylable_set_style_class (MxStylable  *stylable,
 static void
 mx_stylable_property_changed_notify (MxStylable *stylable)
 {
-  mx_stylable_style_changed (stylable);
+  mx_stylable_style_changed (stylable, MX_STYLE_CHANGED_NONE);
 }
 
 static void
@@ -727,32 +727,33 @@ mx_stylable_parent_set_notify (ClutterActor *actor,
   /* check the actor has a new parent */
   if (new_parent)
     {
-      mx_stylable_style_changed (MX_STYLABLE (actor));
+      mx_stylable_style_changed (MX_STYLABLE (actor), MX_STYLE_CHANGED_NONE);
     }
 }
 
-static void mx_stylable_style_changed_internal (MxStylable *stylable,
-                                                gboolean    force_update);
+static void mx_stylable_style_changed_internal (MxStylable          *stylable,
+                                                MxStyleChangedFlags  flags);
 
 static void
 mx_stylable_child_notify (ClutterActor *actor,
-                          gpointer      force_update)
+                          gpointer      flags)
 {
   if (MX_IS_STYLABLE (actor))
     mx_stylable_style_changed_internal (MX_STYLABLE (actor),
-                                        GPOINTER_TO_INT (force_update));
+                                        GPOINTER_TO_INT (flags));
 }
 
 static void
-mx_stylable_style_changed_internal (MxStylable *stylable,
-                                    gboolean    force_update)
+mx_stylable_style_changed_internal (MxStylable          *stylable,
+                                    MxStyleChangedFlags  flags)
 {
 
-  /* don't update stylables until they are mapped */
-  if (!CLUTTER_ACTOR_IS_MAPPED (CLUTTER_ACTOR (stylable)) && !force_update)
+  /* don't update stylables until they are mapped (unless ensure is set) */
+  if (!CLUTTER_ACTOR_IS_MAPPED (CLUTTER_ACTOR (stylable)) &&
+      !(flags & MX_STYLE_CHANGED_ENSURE))
     return;
 
-  g_signal_emit (stylable, stylable_signals[STYLE_CHANGED], 0, NULL);
+  g_signal_emit (stylable, stylable_signals[STYLE_CHANGED], 0, flags);
 
   /* propagate the style-changed signal to children, since their style may
    * depend on one or more properties of the parent */
@@ -762,13 +763,14 @@ mx_stylable_style_changed_internal (MxStylable *stylable,
       /* notify our children that their parent stylable has changed */
       clutter_container_foreach ((ClutterContainer *) stylable,
                                  mx_stylable_child_notify,
-                                 GINT_TO_POINTER (force_update));
+                                 GINT_TO_POINTER (flags));
     }
 }
 
 /**
  * mx_stylable_style_changed:
  * @stylable: an MxStylable
+ * @flags: flags that control the style changing
  *
  * Emit the "style-changed" signal on @stylable to notify it that one or more
  * of the style properties has changed.
@@ -779,26 +781,9 @@ mx_stylable_style_changed_internal (MxStylable *stylable,
  *
  */
 void
-mx_stylable_style_changed (MxStylable *stylable)
+mx_stylable_style_changed (MxStylable *stylable, MxStyleChangedFlags flags)
 {
-  /* this is the normal style-change mechanism. The style-changed signal
-   * can be optimised in certain circumstances, so force_update is FALSE. */
-  mx_stylable_style_changed_internal (stylable, FALSE);
-}
-
-/**
- * mx_stylable_ensure_style:
- * @stylable: an MxStylable
- *
- * Make sure the style information for @stylable is up to date. This is done
- * by avoiding optimisations, such as not updating the style when @stylable is
- * not mapped.
- */
-void
-mx_stylable_ensure_style (MxStylable *stylable)
-{
-  /* force propagation of the style-changed signal */
-  mx_stylable_style_changed_internal (stylable, TRUE);
+  mx_stylable_style_changed_internal (stylable, flags);
 }
 
 void

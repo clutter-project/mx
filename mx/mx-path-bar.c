@@ -199,7 +199,7 @@ mx_focusable_iface_init (MxFocusableIface *iface)
 }
 
 static void
-mx_path_bar_style_changed_cb (MxWidget *self)
+mx_path_bar_style_changed_cb (MxWidget *self, MxStyleChangedFlags flags)
 {
   MxPathBarPrivate *priv = MX_PATH_BAR (self)->priv;
   gint overlap;
@@ -217,10 +217,10 @@ mx_path_bar_style_changed_cb (MxWidget *self)
 
   /* Inform our private children */
   for (c = priv->crumbs; c; c = c->next)
-    mx_stylable_style_changed (MX_STYLABLE (c->data));
+    mx_stylable_style_changed (MX_STYLABLE (c->data), flags);
 
   if (priv->entry)
-    mx_stylable_style_changed (MX_STYLABLE (priv->entry));
+    mx_stylable_style_changed (MX_STYLABLE (priv->entry), flags);
 }
 
 static void

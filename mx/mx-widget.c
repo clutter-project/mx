@@ -438,7 +438,8 @@ mx_widget_map (ClutterActor *actor)
 
   CLUTTER_ACTOR_CLASS (mx_widget_parent_class)->map (actor);
 
-  mx_widget_ensure_style ((MxWidget*) actor);
+  if (priv->is_style_dirty)
+    mx_stylable_style_changed (MX_STYLABLE (actor), 0);
 
   if (priv->border_image)
     clutter_actor_map (priv->border_image);
@@ -486,7 +487,7 @@ old_background_faded_cb (ClutterAnimation *animation, ClutterActor *self)
 }
 
 static void
-mx_widget_style_changed (MxStylable *self)
+mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
 {
   MxWidgetPrivate *priv = MX_WIDGET (self)->priv;
   MxBorderImage *border_image = NULL, *background_image = NULL;
@@ -1081,6 +1082,7 @@ mx_widget_init (MxWidget *actor)
   mx_stylable_connect_change_notifiers (MX_STYLABLE (actor));
 }
 
+#ifndef MX_DISABLE_DEPRECATED
 /**
  * mx_widget_ensure_style:
  * @widget: A #MxWidget
@@ -1093,12 +1095,13 @@ mx_widget_ensure_style (MxWidget *widget)
 {
   g_return_if_fail (MX_IS_WIDGET (widget));
 
-  //g_warning ("%s is deprecated, use mx_stylable_ensure_style instead",
-  //           __FUNCTION__);
+  g_warning ("mx_widget_ensure_style is deprecated."
+             " Use mx_stylable_style_changed with the"
+             " MX_STYLE_CHANGED_ENSURE flag instead.");
 
-  mx_stylable_ensure_style (MX_STYLABLE (widget));
+  mx_stylable_style_changed (MX_STYLABLE (widget), MX_STYLE_CHANGED_ENSURE);
 }
-
+#endif
 
 /**
  * mx_widget_get_border_image:

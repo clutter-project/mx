@@ -45,6 +45,19 @@ G_BEGIN_DECLS
 
 /* MxStylableIface is defined in mx-style.h */
 
+/**
+ * MxStyleChangedFlags:
+ * @MX_STYLE_CHANGED_NONE: No flag set
+ * @MX_STYLE_CHANGED_ENSURE: Whether to force propogation of the style-changed
+ *   signal, regardless of the state of the stylable object.
+ *
+ */
+typedef enum
+{
+  MX_STYLE_CHANGED_NONE   = 0,
+  MX_STYLE_CHANGED_ENSURE = 1 << 1,
+} MxStyleChangedFlags;
+
 struct _MxStylableIface
 {
   GTypeInterface g_iface;
@@ -67,7 +80,7 @@ struct _MxStylableIface
   /* signals, not vfuncs */
   void (* style_notify)     (MxStylable *stylable,
                              GParamSpec *pspec);
-  void (* style_changed)    (MxStylable *stylable);
+  void (* style_changed)    (MxStylable *stylable, MxStyleChangedFlags flags);
 };
 
 GType        mx_stylable_get_type               (void) G_GNUC_CONST;
@@ -107,7 +120,7 @@ G_CONST_RETURN gchar* mx_stylable_get_style_pseudo_class (MxStylable  *stylable)
 void                  mx_stylable_set_style_pseudo_class (MxStylable  *stylable,
                                                           const gchar *pseudo_class);
 
-void mx_stylable_style_changed (MxStylable *stylable);
+void mx_stylable_style_changed (MxStylable *stylable, MxStyleChangedFlags flags);
 void mx_stylable_connect_change_notifiers (MxStylable *stylable);
 
 /* utilities */
