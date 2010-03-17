@@ -48,14 +48,14 @@ G_BEGIN_DECLS
 /**
  * MxStyleChangedFlags:
  * @MX_STYLE_CHANGED_NONE: No flag set
- * @MX_STYLE_CHANGED_ENSURE: Whether to force propogation of the style-changed
+ * @MX_STYLE_CHANGED_FORCE: Whether to force propogation of the style-changed
  *   signal, regardless of the state of the stylable object.
  *
  */
 typedef enum
 {
   MX_STYLE_CHANGED_NONE   = 0,
-  MX_STYLE_CHANGED_ENSURE = 1 << 1,
+  MX_STYLE_CHANGED_FORCE = 1 << 1,
 } MxStyleChangedFlags;
 
 struct _MxStylableIface

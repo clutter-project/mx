@@ -750,7 +750,7 @@ mx_stylable_style_changed_internal (MxStylable          *stylable,
 
   /* don't update stylables until they are mapped (unless ensure is set) */
   if (!CLUTTER_ACTOR_IS_MAPPED (CLUTTER_ACTOR (stylable)) &&
-      !(flags & MX_STYLE_CHANGED_ENSURE))
+      !(flags & MX_STYLE_CHANGED_FORCE))
     return;
 
   g_signal_emit (stylable, stylable_signals[STYLE_CHANGED], 0, flags);

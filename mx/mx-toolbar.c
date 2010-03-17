@@ -415,7 +415,7 @@ mx_toolbar_set_has_close_button (MxToolbar *toolbar,
           g_signal_connect (priv->close_button, "clicked",
                             G_CALLBACK (close_button_click_cb), toolbar);
           mx_stylable_style_changed (MX_STYLABLE (priv->close_button),
-                                     MX_STYLE_CHANGED_ENSURE);
+                                     MX_STYLE_CHANGED_FORCE);
         }
 
       clutter_actor_queue_relayout (CLUTTER_ACTOR (toolbar));

@@ -1094,9 +1094,9 @@ mx_widget_ensure_style (MxWidget *widget)
 
   g_warning ("mx_widget_ensure_style is deprecated."
              " Use mx_stylable_style_changed with the"
-             " MX_STYLE_CHANGED_ENSURE flag instead.");
+             " MX_STYLE_CHANGED_FORCE flag instead.");
 
-  mx_stylable_style_changed (MX_STYLABLE (widget), MX_STYLE_CHANGED_ENSURE);
+  mx_stylable_style_changed (MX_STYLABLE (widget), MX_STYLE_CHANGED_FORCE);
 }
 #endif
 

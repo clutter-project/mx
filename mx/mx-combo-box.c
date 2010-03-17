@@ -597,7 +597,7 @@ mx_combo_box_style_changed (MxComboBox *combo, MxStyleChangedFlags flags)
 
   /* make sure the popup is also up-to-date */
   mx_stylable_style_changed (MX_STYLABLE (mx_widget_get_popup (combo)),
-                             flags | MX_STYLE_CHANGED_ENSURE);
+                             flags | MX_STYLE_CHANGED_FORCE);
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (combo));
 }

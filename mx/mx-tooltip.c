@@ -512,7 +512,7 @@ mx_tooltip_update_position (MxTooltip *tooltip)
 
   /* we need to have a style in case there are padding values to take into
    * account when calculating width/height */
-  mx_stylable_style_changed (MX_STYLABLE (tooltip), MX_STYLE_CHANGED_ENSURE);
+  mx_stylable_style_changed (MX_STYLABLE (tooltip), MX_STYLE_CHANGED_FORCE);
 
   /* find out the tooltip's size */
   clutter_actor_get_size ((ClutterActor*) tooltip, &tooltip_w, &tooltip_h);
