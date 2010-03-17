@@ -493,7 +493,11 @@ mx_application_default_create_window (MxApplication *application)
 static void
 mx_application_default_raise (MxApplication *application)
 {
+  Window window;
+  Display *display;
+  guint32 timestamp;
   ClutterStage *stage;
+  XClientMessageEvent xclient;
 
   MxApplicationPrivate *priv = application->priv;
 
@@ -502,54 +506,41 @@ mx_application_default_raise (MxApplication *application)
 
   stage = (ClutterStage *)g_list_last (priv->windows)->data;
 
-  if (priv->flags & MX_APPLICATION_CLUTTER_GTK)
-    {
-      g_error ("ClutterGtk not yet supported");
-      return;
-    }
-  else
-    {
-      Window window;
-      Display *display;
-      guint32 timestamp;
-      XClientMessageEvent xclient;
+  /* As with all these arcane, poorly documented X11 things, learnt
+   * how to do this from reading GTK/GDK code.
+   */
+  display = clutter_x11_get_default_display ();
+  window = clutter_x11_get_stage_window (stage);
+  XRaiseWindow (display, window);
 
-      /* As with all these arcane, poorly documented X11 things, learnt
-       * how to do this from reading GTK/GDK code.
-       */
-      display = clutter_x11_get_default_display ();
-      window = clutter_x11_get_stage_window (stage);
-      XRaiseWindow (display, window);
+  /* These two calls may not be necessary */
+  timestamp = 0x7FFFFFFF;
+  XChangeProperty (display,
+                   window,
+                   XInternAtom (display, "_NET_WM_USER_TIME", False),
+                   XA_CARDINAL,
+                   32,
+                   PropModeReplace,
+                   (guchar *)&timestamp,
+                   1);
+  XMapWindow (display, window);
 
-      /* These two calls may not be necessary */
-      timestamp = 0x7FFFFFFF;
-      XChangeProperty (display,
-                       window,
-                       XInternAtom (display, "_NET_WM_USER_TIME", False),
-                       XA_CARDINAL,
-                       32,
-                       PropModeReplace,
-                       (guchar *)&timestamp,
-                       1);
-      XMapWindow (display, window);
+  memset (&xclient, 0, sizeof (xclient));
+  xclient.type = ClientMessage;
+  xclient.window = window;
+  xclient.message_type = XInternAtom (display, "_NET_ACTIVE_WINDOW", False);
+  xclient.format = 32;
+  xclient.data.l[0] = 1;
+  xclient.data.l[1] = timestamp;
+  xclient.data.l[2] = None;
+  xclient.data.l[3] = 0;
+  xclient.data.l[4] = 0;
 
-      memset (&xclient, 0, sizeof (xclient));
-      xclient.type = ClientMessage;
-      xclient.window = window;
-      xclient.message_type = XInternAtom (display, "_NET_ACTIVE_WINDOW", False);
-      xclient.format = 32;
-      xclient.data.l[0] = 1;
-      xclient.data.l[1] = timestamp;
-      xclient.data.l[2] = None;
-      xclient.data.l[3] = 0;
-      xclient.data.l[4] = 0;
-
-      XSendEvent (display,
-                  clutter_x11_get_root_window (),
-                  False,
-                  SubstructureRedirectMask | SubstructureNotifyMask,
-                  (XEvent *)&xclient);
-    }
+  XSendEvent (display,
+              clutter_x11_get_root_window (),
+              False,
+              SubstructureRedirectMask | SubstructureNotifyMask,
+              (XEvent *)&xclient);
 }
 
 
@@ -667,13 +658,7 @@ mx_application_new (gint                *argc,
   MxApplication *app;
 
   /* initialise clutter and the type system */
-  if (flags & MX_APPLICATION_CLUTTER_GTK)
-    {
-      g_error ("ClutterGtk not yet supported");
-      return NULL;
-    }
-  else
-    clutter_init (argc, argv);
+  clutter_init (argc, argv);
 
   mx_set_locale ();
 
@@ -931,16 +916,8 @@ mx_application_add_window (MxApplication *application,
       mx_application_init_wm (application);
 
 #ifdef HAVE_STARTUP_NOTIFICATION
-      if (priv->flags & MX_APPLICATION_CLUTTER_GTK)
-        {
-          g_error ("ClutterGtk not yet supported");
-          return;
-        }
-      else
-        {
-          xdisplay = clutter_x11_get_default_display ();
-          screen = clutter_x11_get_default_screen ();
-        }
+      xdisplay = clutter_x11_get_default_display ();
+      screen = clutter_x11_get_default_screen ();
 
       if (g_getenv ("LIBSN_SYNC"))
         XSynchronize (xdisplay, True);

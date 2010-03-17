@@ -78,7 +78,6 @@ typedef enum
 {
   MX_APPLICATION_SINGLE_INSTANCE = 1,
   MX_APPLICATION_KEEP_ALIVE      = 1 << 2,
-  MX_APPLICATION_CLUTTER_GTK     = 1 << 3
 } MxApplicationFlags;
 
 
