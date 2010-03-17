@@ -46,7 +46,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-notebook.h 		\
 	$(top_srcdir)/mx/mx-path-bar.h 		\
 	$(top_srcdir)/mx/mx-progress-bar.h		\
-	$(top_srcdir)/mx/mx-popup.h 		\
+	$(top_srcdir)/mx/mx-menu.h 		\
 	$(top_srcdir)/mx/mx-scroll-bar.h 		\
 	$(top_srcdir)/mx/mx-scroll-view.h 		\
 	$(top_srcdir)/mx/mx-scrollable.h 		\
@@ -117,7 +117,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-path-bar-button.c 	\
 	$(top_srcdir)/mx/mx-progress-bar.c		\
 	$(top_srcdir)/mx/mx-progress-bar-fill.c	\
-	$(top_srcdir)/mx/mx-popup.c			\
+	$(top_srcdir)/mx/mx-menu.c			\
 	$(top_srcdir)/mx/mx-scroll-bar.c 		\
 	$(top_srcdir)/mx/mx-scroll-view.c		\
 	$(top_srcdir)/mx/mx-scrollable.c 		\
