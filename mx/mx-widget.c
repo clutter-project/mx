@@ -438,9 +438,6 @@ mx_widget_map (ClutterActor *actor)
 
   CLUTTER_ACTOR_CLASS (mx_widget_parent_class)->map (actor);
 
-  if (priv->is_style_dirty)
-    mx_stylable_style_changed (MX_STYLABLE (actor), 0);
-
   if (priv->border_image)
     clutter_actor_map (priv->border_image);
 
