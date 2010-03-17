@@ -78,7 +78,7 @@ _no_active_toggled_cb (MxButton   *button,
                        gpointer    userdata)
 {
   mx_button_group_set_allow_no_active (button_group,
-                                       mx_button_get_checked (button));
+                                       mx_button_get_toggled (button));
 }
 
 void
@@ -106,9 +106,9 @@ button_group_main (ClutterContainer *stage)
 
   button = mx_button_new_with_label ("Allow no active");
   mx_button_set_toggle_mode ((MxButton *) button, TRUE);
-  g_signal_connect (button, "notify::checked",
+  g_signal_connect (button, "notify::toggled",
                     (GCallback) _no_active_toggled_cb, NULL);
-  mx_button_set_checked ((MxButton *)button,
+  mx_button_set_toggled ((MxButton *)button,
                          mx_button_group_get_allow_no_active (button_group));
   clutter_container_add_actor (CLUTTER_CONTAINER (control_box), button);
 

@@ -32,7 +32,7 @@ show_page (MxButton         *button,
   GList *children;
   TestMxCallback callback;
 
-  if (!mx_button_get_checked (button))
+  if (!mx_button_get_toggled (button))
     return;
 
   children = clutter_container_get_children (holder);
@@ -124,7 +124,7 @@ add_tab (ClutterContainer *box,
   if (callback)
     {
       g_object_set_data (G_OBJECT (button), "callback", callback);
-      g_signal_connect (button, "notify::checked",
+      g_signal_connect (button, "notify::toggled",
                         G_CALLBACK (show_page), holder);
     }
 

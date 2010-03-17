@@ -60,7 +60,7 @@ enum
 
   PROP_LABEL,
   PROP_TOGGLE_MODE,
-  PROP_CHECKED
+  PROP_TOGGLED
 };
 
 enum
@@ -81,8 +81,8 @@ struct _MxButtonPrivate
 
   guint             is_pressed : 1;
   guint             is_hover : 1;
-  guint             is_checked : 1;
   guint             is_toggle : 1;
+  guint             is_toggled : 1;
 
   ClutterAnimation *animation;
 
@@ -301,7 +301,7 @@ mx_button_pull (MxButton *button)
 
   if (button->priv->is_toggle)
     {
-      mx_button_set_checked (button, !button->priv->is_checked);
+      mx_button_set_toggled (button, !button->priv->is_toggled);
     }
 
   button->priv->is_pressed = FALSE;
@@ -310,7 +310,7 @@ mx_button_pull (MxButton *button)
 
   mx_widget_long_press_cancel (widget);
 
-  if (priv->is_checked)
+  if (priv->is_toggled)
     mx_stylable_set_style_pseudo_class (MX_STYLABLE (button), "checked");
   else if (!priv->is_hover)
     mx_stylable_set_style_pseudo_class (MX_STYLABLE (button), NULL);
@@ -384,7 +384,7 @@ mx_button_enter (ClutterActor         *actor,
   if (event->source != actor)
     return FALSE;
 
-  if (!button->priv->is_checked)
+  if (!button->priv->is_toggled)
     mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "hover");
 
   button->priv->is_hover = 1;
@@ -414,7 +414,7 @@ mx_button_leave (ClutterActor         *actor,
       button->priv->is_pressed = FALSE;
     }
 
-  if (button->priv->is_checked)
+  if (button->priv->is_toggled)
     mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "checked");
   else
     mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), NULL);
@@ -441,8 +441,8 @@ mx_button_set_property (GObject      *gobject,
     case PROP_TOGGLE_MODE:
       mx_button_set_toggle_mode (button, g_value_get_boolean (value));
       break;
-    case PROP_CHECKED:
-      mx_button_set_checked (button, g_value_get_boolean (value));
+    case PROP_TOGGLED:
+      mx_button_set_toggled (button, g_value_get_boolean (value));
       break;
 
     default:
@@ -467,8 +467,8 @@ mx_button_get_property (GObject    *gobject,
     case PROP_TOGGLE_MODE:
       g_value_set_boolean (value, priv->is_toggle);
       break;
-    case PROP_CHECKED:
-      g_value_set_boolean (value, priv->is_checked);
+    case PROP_TOGGLED:
+      g_value_set_boolean (value, priv->is_toggled);
       break;
 
     default:
@@ -664,12 +664,12 @@ mx_button_class_init (MxButtonClass *klass)
                                 FALSE, MX_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_TOGGLE_MODE, pspec);
 
-  pspec = g_param_spec_boolean ("checked",
-                                "Checked",
+  pspec = g_param_spec_boolean ("toggled",
+                                "Toggled",
                                 "Indicates if a toggle button is \"on\""
                                 " or \"off\"",
                                 FALSE, MX_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class, PROP_CHECKED, pspec);
+  g_object_class_install_property (gobject_class, PROP_TOGGLED, pspec);
 
   /**
    * MxButton::clicked:
@@ -825,40 +825,61 @@ mx_button_set_toggle_mode (MxButton *button,
 }
 
 /**
- * mx_button_get_checked:
+ * mx_button_get_toggled:
  * @button: a #MxButton
  *
  * Get the state of the button that is in toggle mode.
  *
- * Returns: #TRUE if the button is checked, or #FALSE if not
+ * Returns: #TRUE if the button is toggled, or #FALSE if not
  */
+#ifndef MX_DISABLE_DEPRECATED
 gboolean
 mx_button_get_checked (MxButton *button)
 {
+  g_warning ("mx_button_get_checked is deprecated."
+             " Use mx_button_get_toggled instead.");
+
+  return mx_button_get_toggled (button);
+}
+#endif
+gboolean
+mx_button_get_toggled (MxButton *button)
+{
   g_return_val_if_fail (MX_IS_BUTTON (button), FALSE);
 
-  return button->priv->is_checked;
+  return button->priv->is_toggled;
 }
 
 /**
- * mx_button_set_checked:
+ * mx_button_set_toggled:
  * @button: a #Mxbutton
  * @checked: #TRUE or #FALSE
  *
- * Sets the pressed state of the button. This is only really useful if the
+ * Sets the toggled state of the button. This is only really useful if the
  * button has #toggle-mode mode set to #TRUE.
  */
+#ifndef MX_DISABLE_DEPRECATED
 void
 mx_button_set_checked (MxButton *button,
                        gboolean  checked)
 {
+  g_warning ("mx_button_set_checked is deprecated."
+             " Use mx_button_set_toggled instead.");
+
+  mx_button_set_toggled (button, checked);
+}
+#endif
+void
+mx_button_set_toggled (MxButton *button,
+                       gboolean  toggled)
+{
   g_return_if_fail (MX_IS_BUTTON (button));
 
-  if (button->priv->is_checked != checked)
+  if (button->priv->is_toggled != toggled)
     {
-      button->priv->is_checked = checked;
+      button->priv->is_toggled = toggled;
 
-      if (checked)
+      if (toggled)
         mx_stylable_set_style_pseudo_class (MX_STYLABLE (button), "checked");
       else
       if (button->priv->is_hover)
@@ -866,6 +887,6 @@ mx_button_set_checked (MxButton *button,
       else
         mx_stylable_set_style_pseudo_class (MX_STYLABLE (button), NULL);
 
-      g_object_notify (G_OBJECT (button), "checked");
+      g_object_notify (G_OBJECT (button), "toggled");
     }
 }

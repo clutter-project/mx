@@ -154,11 +154,11 @@ mx_button_group_new (void)
 }
 
 static void
-button_checked_notify_cb (MxButton      *button,
+button_toggled_notify_cb (MxButton      *button,
                           GParamSpec    *pspec,
                           MxButtonGroup *group)
 {
-  if (mx_button_get_checked (button))
+  if (mx_button_get_toggled (button))
     mx_button_group_set_active_button (group, button);
   else
     mx_button_group_set_active_button (group, NULL);
@@ -233,8 +233,8 @@ mx_button_group_add (MxButtonGroup   *group,
 
   group->priv->children = g_slist_prepend (group->priv->children, button);
 
-  g_signal_connect (button, "notify::checked",
-                    G_CALLBACK (button_checked_notify_cb), group);
+  g_signal_connect (button, "notify::toggled",
+                    G_CALLBACK (button_toggled_notify_cb), group);
   g_signal_connect (button, "button-press-event",
                     G_CALLBACK (button_click_intercept), group);
   g_signal_connect (button, "button-release-event",
@@ -274,7 +274,7 @@ mx_button_group_remove (MxButtonGroup   *group,
   next = g_slist_next (l);
   priv->children = g_slist_remove (priv->children, button);
 
-  g_signal_handlers_disconnect_by_func (button, button_checked_notify_cb,
+  g_signal_handlers_disconnect_by_func (button, button_toggled_notify_cb,
                                         group);
   g_signal_handlers_disconnect_by_func (button, button_click_intercept, group);
 
@@ -335,10 +335,10 @@ mx_button_group_set_active_button (MxButtonGroup *group,
     return;
 
   if (priv->active_button)
-    mx_button_set_checked (priv->active_button, FALSE);
+    mx_button_set_toggled (priv->active_button, FALSE);
 
   if (button)
-    mx_button_set_checked (button, TRUE);
+    mx_button_set_toggled (button, TRUE);
 
   priv->active_button = button;
 
