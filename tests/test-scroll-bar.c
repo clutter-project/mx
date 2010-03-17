@@ -1,6 +1,6 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 /*
- * Copyright 2009 Intel Corporation.
+ * Copyright 2009, 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -66,7 +66,7 @@ scroll_bar_main (ClutterContainer *stage)
   ClutterActor *scroll;
   MxAdjustment  *adjustment;
 
-  adjustment = mx_adjustment_new (50., 0., 100., 1., 10., 10.);
+  adjustment = mx_adjustment_new_with_values (50., 0., 100., 1., 10., 10.);
   g_signal_connect (adjustment, "notify::value", 
                     G_CALLBACK (changed_cb), NULL);  
 

@@ -3,7 +3,7 @@
  * mx-adjustment.c: Adjustment object
  *
  * Copyright (C) 2008 OpenedHand
- * Copyright (c) 2009 Intel Corporation.
+ * Copyright (c) 2009, 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -389,12 +389,18 @@ mx_adjustment_init (MxAdjustment *self)
 }
 
 MxAdjustment *
-mx_adjustment_new (gdouble value,
-                   gdouble lower,
-                   gdouble upper,
-                   gdouble step_increment,
-                   gdouble page_increment,
-                   gdouble page_size)
+mx_adjustment_new (void)
+{
+  return g_object_new (MX_TYPE_ADJUSTMENT, NULL);
+}
+
+MxAdjustment *
+mx_adjustment_new_with_values (gdouble value,
+                               gdouble lower,
+                               gdouble upper,
+                               gdouble step_increment,
+                               gdouble page_increment,
+                               gdouble page_size)
 {
   return g_object_new (MX_TYPE_ADJUSTMENT,
                        "value", value,

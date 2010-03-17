@@ -3,7 +3,7 @@
  * mx-adjustment.h: Adjustment object
  *
  * Copyright 2008 OpenedHand
- * Copyright 2009 Intel Corporation.
+ * Copyright 2009, 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -78,32 +78,33 @@ struct _MxAdjustmentClass
 
 GType mx_adjustment_get_type (void) G_GNUC_CONST;
 
-MxAdjustment *mx_adjustment_new         (gdouble       value,
-                                         gdouble       lower,
-                                         gdouble       upper,
-                                         gdouble       step_increment,
-                                         gdouble       page_increment,
-                                         gdouble       page_size);
-gdouble       mx_adjustment_get_value   (MxAdjustment *adjustment);
-void          mx_adjustment_set_value   (MxAdjustment *adjustment,
-                                         gdouble       value);
-void          mx_adjustment_clamp_page  (MxAdjustment *adjustment,
-                                         gdouble       lower,
-                                         gdouble       upper);
-void          mx_adjustment_set_values  (MxAdjustment *adjustment,
-                                         gdouble       value,
-                                         gdouble       lower,
-                                         gdouble       upper,
-                                         gdouble       step_increment,
-                                         gdouble       page_increment,
-                                         gdouble       page_size);
-void          mx_adjustment_get_values  (MxAdjustment *adjustment,
-                                         gdouble      *value,
-                                         gdouble      *lower,
-                                         gdouble      *upper,
-                                         gdouble      *step_increment,
-                                         gdouble      *page_increment,
-                                         gdouble      *page_size);
+MxAdjustment *mx_adjustment_new             (void);
+MxAdjustment *mx_adjustment_new_with_values (gdouble       value,
+                                             gdouble       lower,
+                                             gdouble       upper,
+                                             gdouble       step_increment,
+                                             gdouble       page_increment,
+                                             gdouble       page_size);
+gdouble       mx_adjustment_get_value       (MxAdjustment *adjustment);
+void          mx_adjustment_set_value       (MxAdjustment *adjustment,
+                                             gdouble       value);
+void          mx_adjustment_clamp_page      (MxAdjustment *adjustment,
+                                             gdouble       lower,
+                                             gdouble       upper);
+void          mx_adjustment_set_values      (MxAdjustment *adjustment,
+                                             gdouble       value,
+                                             gdouble       lower,
+                                             gdouble       upper,
+                                             gdouble       step_increment,
+                                             gdouble       page_increment,
+                                             gdouble       page_size);
+void          mx_adjustment_get_values      (MxAdjustment *adjustment,
+                                             gdouble      *value,
+                                             gdouble      *lower,
+                                             gdouble      *upper,
+                                             gdouble      *step_increment,
+                                             gdouble      *page_increment,
+                                             gdouble      *page_size);
 
 void          mx_adjustment_interpolate          (MxAdjustment *adjustment,
                                                   gdouble       value,

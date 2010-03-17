@@ -3,7 +3,7 @@
  * mx-viewport.c: Viewport actor
  *
  * Copyright 2008 OpenedHand
- * Copyright 2009 Intel Corporation.
+ * Copyright 2009, 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -466,12 +466,7 @@ scrollable_get_adjustments (MxScrollable  *scrollable,
           /* create an initial adjustment. this is filled with correct values
            * as soon as allocate() is called */
 
-          adjustment = mx_adjustment_new (0.0,
-                                          0.0,
-                                          1.0,
-                                          1.0,
-                                          1.0,
-                                          1.0);
+          adjustment = mx_adjustment_new ();
 
           scrollable_set_adjustments (scrollable,
                                       adjustment,
@@ -494,12 +489,7 @@ scrollable_get_adjustments (MxScrollable  *scrollable,
           /* create an initial adjustment. this is filled with correct values
            * as soon as allocate() is called */
 
-          adjustment = mx_adjustment_new (0.0,
-                                          0.0,
-                                          1.0,
-                                          1.0,
-                                          1.0,
-                                          1.0);
+          adjustment = mx_adjustment_new ();
 
           scrollable_set_adjustments (scrollable,
                                       priv->hadjustment,
