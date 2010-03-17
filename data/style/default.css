@@ -181,23 +181,23 @@ MxComboBox {
   -mx-marker-image: url('combobox-marker.png');
 }
 
-MxPopup {
+MxMenu {
   padding: 3;
   border-image: url('menu.png') 2;
 }
 
-MxPopup > MxBoxLayout {
+MxMenu > MxBoxLayout {
   padding: 3;
   border-image: none;
 }
 
-MxPopup > MxBoxLayout:hover,
-MxPopup > MxBoxLayout:active {
+MxMenu > MxBoxLayout:hover,
+MxMenu > MxBoxLayout:active {
   border-image: url('menu-item.png') 2;
 }
 
-MxPopup > MxBoxLayout:hover > MxLabel,
-MxPopup > MxBoxLayout:active > MxLabel {
+MxMenu > MxBoxLayout:hover > MxLabel,
+MxMenu > MxBoxLayout:active > MxLabel {
   color: white;
 }
 
@@ -271,24 +271,24 @@ MxToolbar MxComboBox {
   font-size: 15;
 }
 
-MxToolbar MxPopup {
+MxToolbar MxMenu {
   font-size: 15;
   border-image: url('menu-toolbar.png') 4 4 7 4;
   padding: 12;
 }
 
-MxToolbar MxPopup > MxBoxLayout > MxLabel {
+MxToolbar MxMenu > MxBoxLayout > MxLabel {
   font-size: 15;
   color: #dadada;
 }
 
-MxToolbar MxPopup > MxBoxLayout:hover,
-MxToolbar MxPopup > MxBoxLayout:active {
+MxToolbar MxMenu > MxBoxLayout:hover,
+MxToolbar MxMenu > MxBoxLayout:active {
   border-image: none;
 }
 
-MxToolbar MxPopup > MxBoxLayout:hover > MxLabel,
-MxToolbar MxPopup > MxBoxLayout:active > MxLabel
+MxToolbar MxMenu > MxBoxLayout:hover > MxLabel,
+MxToolbar MxMenu > MxBoxLayout:active > MxLabel
 {
   font-size: 15;
   color: #44b6e8;

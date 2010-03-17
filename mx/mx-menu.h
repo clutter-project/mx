@@ -1,6 +1,6 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 /*
- * mx-popup.c: popup menu class
+ * mx-menu.c: menu class
  *
  * Copyright (c) 2009, Intel Corporation.
  *
@@ -22,73 +22,76 @@
 #error "Only <mx/mx.h> can be included directly.h"
 #endif
 
-#ifndef _MX_POPUP_H
-#define _MX_POPUP_H
+#ifndef _MX_MENU_H
+#define _MX_MENU_H
 
 #include "mx-floating-widget.h"
 #include "mx-action.h"
 
 G_BEGIN_DECLS
 
-#define MX_TYPE_POPUP mx_popup_get_type()
+#define MX_TYPE_MENU mx_menu_get_type()
 
-#define MX_POPUP(obj) \
+#define MX_MENU(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-  MX_TYPE_POPUP, MxPopup))
+  MX_TYPE_MENU, MxMenu))
 
-#define MX_POPUP_CLASS(klass) \
+#define MX_MENU_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_CAST ((klass), \
-  MX_TYPE_POPUP, MxPopupClass))
+  MX_TYPE_MENU, MxMenuClass))
 
-#define MX_IS_POPUP(obj) \
+#define MX_IS_MENU(obj) \
   (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
-  MX_TYPE_POPUP))
+  MX_TYPE_MENU))
 
-#define MX_IS_POPUP_CLASS(klass) \
+#define MX_IS_MENU_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_TYPE ((klass), \
-  MX_TYPE_POPUP))
+  MX_TYPE_MENU))
 
-#define MX_POPUP_GET_CLASS(obj) \
+#define MX_MENU_GET_CLASS(obj) \
   (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-  MX_TYPE_POPUP, MxPopupClass))
+  MX_TYPE_MENU, MxMenuClass))
 
 /* The following is defined in mx-widget.h to avoid recursion */
-/* typedef struct _MxPopup MxPopup; */
-typedef struct _MxPopupClass MxPopupClass;
-typedef struct _MxPopupPrivate MxPopupPrivate;
+/* typedef struct _MxMenu MxMenu; */
+typedef struct _MxMenuClass MxMenuClass;
+typedef struct _MxMenuPrivate MxMenuPrivate;
 
 /**
- * MxPopup:
+ * MxMenu:
  *
  * The contents of this structure are private and should only be accessed
  * through the public API.
  */
-struct _MxPopup
+struct _MxMenu
 {
   /*< private >*/
   MxFloatingWidget parent;
 
-  MxPopupPrivate *priv;
+  MxMenuPrivate *priv;
 };
 
-struct _MxPopupClass
+struct _MxMenuClass
 {
   MxFloatingWidgetClass parent_class;
 
-  void (*action_activated) (MxPopup  *popup,
+  void (*action_activated) (MxMenu   *menu,
                             MxAction *action);
 };
 
-GType mx_popup_get_type (void);
+GType mx_menu_get_type (void);
 
-ClutterActor *mx_popup_new           (void);
+ClutterActor *mx_menu_new           (void);
 
-void          mx_popup_add_action    (MxPopup  *popup,
-                                      MxAction *action);
-void          mx_popup_remove_action (MxPopup  *popup,
-                                      MxAction *action);
-void          mx_popup_clear         (MxPopup  *popup);
+void          mx_menu_add_action         (MxMenu   *menu,
+                                          MxAction *action);
+void          mx_menu_remove_action      (MxMenu   *menu,
+                                          MxAction *action);
+void          mx_menu_clear              (MxMenu   *menu);
+void          mx_menu_show_with_position (MxMenu *menu,
+                                          gfloat  x,
+                                          gfloat  y);
 
 G_END_DECLS
 
-#endif /* _MX_POPUP_H */
+#endif /* _MX_MENU_H */

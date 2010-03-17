@@ -58,7 +58,7 @@
 #include <mx/mx-notebook.h>
 #include <mx/mx-offscreen.h>
 #include <mx/mx-path-bar.h>
-#include <mx/mx-popup.h>
+#include <mx/mx-menu.h>
 #include <mx/mx-progress-bar.h>
 #include <mx/mx-scroll-bar.h>
 #include <mx/mx-scroll-view.h>

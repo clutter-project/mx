@@ -1,6 +1,6 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 /*
- * mx-popup.c: popup menu class
+ * mx-menu.c: menu class
  *
  * Copyright (c) 2009, Intel Corporation.
  *
@@ -19,23 +19,22 @@
  */
 
 /**
- * SECTION:mx-popup
- * @short_description: a popup actor representing a list of user actions
+ * SECTION:mx-menu
+ * @short_description: a menu actor representing a list of user actions
  *
- * #MxPopup displays a list of user actions, defined by a list of
- * #MxAction<!-- -->s. The popup list will appear above all other actors.
+ * #MxMenu displays a list of user actions, defined by a list of
+ * #MxAction<!-- -->s. The menu list will appear above all other actors.
  */
 
-#include "mx-popup.h"
+#include "mx-menu.h"
 #include "mx-label.h"
-#include "mx-button.h"
 #include "mx-box-layout.h"
 #include "mx-icon-theme.h"
 
-G_DEFINE_TYPE (MxPopup, mx_popup, MX_TYPE_FLOATING_WIDGET)
+G_DEFINE_TYPE (MxMenu, mx_menu, MX_TYPE_FLOATING_WIDGET)
 
-#define POPUP_PRIVATE(o) \
-  (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_POPUP, MxPopupPrivate))
+#define MENU_PRIVATE(o) \
+  (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_MENU, MxMenuPrivate))
 
 #define SPACING 8
 #define DEFAULT_ICON_SIZE 16
@@ -43,14 +42,13 @@ G_DEFINE_TYPE (MxPopup, mx_popup, MX_TYPE_FLOATING_WIDGET)
 typedef struct
 {
   MxAction *action;
-  MxWidget *button;
-} MxPopupChild;
+  MxWidget *box;
+} MxMenuChild;
 
-struct _MxPopupPrivate
+struct _MxMenuPrivate
 {
   GArray  *children;
   gboolean transition_out;
-
 
   ClutterActor *stage;
   gulong captured_event_handler;
@@ -65,15 +63,15 @@ enum
 
 static guint signals[LAST_SIGNAL] = { 0, };
 
-static gboolean mx_popup_captured_event_handler (ClutterActor *actor,
-                                                 ClutterEvent *event,
-                                                 ClutterActor *popup);
+static gboolean mx_menu_captured_event_handler (ClutterActor *actor,
+                                                ClutterEvent *event,
+                                                ClutterActor *menu);
 
 static void
-mx_popup_get_property (GObject    *object,
-                       guint       property_id,
-                       GValue     *value,
-                       GParamSpec *pspec)
+mx_menu_get_property (GObject    *object,
+                      guint       property_id,
+                      GValue     *value,
+                      GParamSpec *pspec)
 {
   switch (property_id)
     {
@@ -83,10 +81,10 @@ mx_popup_get_property (GObject    *object,
 }
 
 static void
-mx_popup_set_property (GObject      *object,
-                       guint         property_id,
-                       const GValue *value,
-                       GParamSpec   *pspec)
+mx_menu_set_property (GObject      *object,
+                      guint         property_id,
+                      const GValue *value,
+                      GParamSpec   *pspec)
 {
   switch (property_id)
     {
@@ -96,15 +94,15 @@ mx_popup_set_property (GObject      *object,
 }
 
 static void
-mx_popup_free_action_at (MxPopup *popup,
-                         gint     index,
-                         gboolean remove_action)
+mx_menu_free_action_at (MxMenu   *menu,
+                        gint      index,
+                        gboolean  remove_action)
 {
-  MxPopupPrivate *priv = popup->priv;
-  MxPopupChild *child = &g_array_index (priv->children, MxPopupChild,
+  MxMenuPrivate *priv = menu->priv;
+  MxMenuChild *child = &g_array_index (priv->children, MxMenuChild,
                                         index);
 
-  clutter_actor_unparent (CLUTTER_ACTOR (child->button));
+  clutter_actor_unparent (CLUTTER_ACTOR (child->box));
   g_object_unref (child->action);
 
   if (remove_action)
@@ -112,41 +110,41 @@ mx_popup_free_action_at (MxPopup *popup,
 }
 
 static void
-mx_popup_dispose (GObject *object)
+mx_menu_dispose (GObject *object)
 {
-  MxPopup *popup = MX_POPUP (object);
-  MxPopupPrivate *priv = popup->priv;
+  MxMenu *menu = MX_MENU (object);
+  MxMenuPrivate *priv = menu->priv;
 
   if (priv->children)
     {
       gint i;
       for (i = 0; i < priv->children->len; i++)
-        mx_popup_free_action_at (popup, i, FALSE);
+        mx_menu_free_action_at (menu, i, FALSE);
       g_array_free (priv->children, TRUE);
       priv->children = NULL;
     }
 
 
-  G_OBJECT_CLASS (mx_popup_parent_class)->dispose (object);
+  G_OBJECT_CLASS (mx_menu_parent_class)->dispose (object);
 }
 
 static void
-mx_popup_finalize (GObject *object)
+mx_menu_finalize (GObject *object)
 {
-  G_OBJECT_CLASS (mx_popup_parent_class)->finalize (object);
+  G_OBJECT_CLASS (mx_menu_parent_class)->finalize (object);
 }
 
 static void
-mx_popup_get_preferred_width (ClutterActor *actor,
-                              gfloat        for_height,
-                              gfloat       *min_width_p,
-                              gfloat       *natural_width_p)
+mx_menu_get_preferred_width (ClutterActor *actor,
+                             gfloat        for_height,
+                             gfloat       *min_width_p,
+                             gfloat       *natural_width_p)
 {
   gint i;
   MxPadding padding;
   gfloat min_width, nat_width;
 
-  MxPopupPrivate *priv = MX_POPUP (actor)->priv;
+  MxMenuPrivate *priv = MX_MENU (actor)->priv;
 
   /* Add padding and the size of the widest child */
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
@@ -154,11 +152,11 @@ mx_popup_get_preferred_width (ClutterActor *actor,
   for (i = 0; i < priv->children->len; i++)
     {
       gfloat child_min_width, child_nat_width;
-      MxPopupChild *child;
+      MxMenuChild *child;
 
-      child = &g_array_index (priv->children, MxPopupChild, i);
+      child = &g_array_index (priv->children, MxMenuChild, i);
 
-      clutter_actor_get_preferred_width (CLUTTER_ACTOR (child->button),
+      clutter_actor_get_preferred_width (CLUTTER_ACTOR (child->box),
                                          for_height,
                                          &child_min_width,
                                          &child_nat_width);
@@ -176,16 +174,16 @@ mx_popup_get_preferred_width (ClutterActor *actor,
 }
 
 static void
-mx_popup_get_preferred_height (ClutterActor *actor,
-                               gfloat        for_width,
-                               gfloat       *min_height_p,
-                               gfloat       *natural_height_p)
+mx_menu_get_preferred_height (ClutterActor *actor,
+                              gfloat        for_width,
+                              gfloat       *min_height_p,
+                              gfloat       *natural_height_p)
 {
   gint i;
   MxPadding padding;
   gfloat min_height, nat_height;
 
-  MxPopupPrivate *priv = MX_POPUP (actor)->priv;
+  MxMenuPrivate *priv = MX_MENU (actor)->priv;
 
   /* Add padding and the cumulative height of the children */
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
@@ -194,10 +192,10 @@ mx_popup_get_preferred_height (ClutterActor *actor,
     {
       gfloat child_min_height, child_nat_height;
 
-      MxPopupChild *child = &g_array_index (priv->children, MxPopupChild,
+      MxMenuChild *child = &g_array_index (priv->children, MxMenuChild,
                                             i);
 
-      clutter_actor_get_preferred_height (CLUTTER_ACTOR (child->button),
+      clutter_actor_get_preferred_height (CLUTTER_ACTOR (child->box),
                                           for_width,
                                           &child_min_height,
                                           &child_nat_height);
@@ -213,14 +211,14 @@ mx_popup_get_preferred_height (ClutterActor *actor,
 }
 
 static void
-mx_popup_allocate (ClutterActor          *actor,
-                   const ClutterActorBox *box,
-                   ClutterAllocationFlags flags)
+mx_menu_allocate (ClutterActor           *actor,
+                  const ClutterActorBox  *box,
+                  ClutterAllocationFlags  flags)
 {
   gint i;
   MxPadding padding;
   ClutterActorBox child_box;
-  MxPopupPrivate *priv = MX_POPUP (actor)->priv;
+  MxMenuPrivate *priv = MX_MENU (actor)->priv;
 
   /* Allocate children */
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
@@ -231,85 +229,85 @@ mx_popup_allocate (ClutterActor          *actor,
     {
       gfloat natural_height;
 
-      MxPopupChild *child = &g_array_index (priv->children, MxPopupChild,
+      MxMenuChild *child = &g_array_index (priv->children, MxMenuChild,
                                             i);
 
-      clutter_actor_get_preferred_height (CLUTTER_ACTOR (child->button),
+      clutter_actor_get_preferred_height (CLUTTER_ACTOR (child->box),
                                           child_box.x2 - child_box.x1,
                                           NULL,
                                           &natural_height);
       child_box.y2 = child_box.y1 + natural_height;
 
-      clutter_actor_allocate (CLUTTER_ACTOR (child->button), &child_box, flags);
+      clutter_actor_allocate (CLUTTER_ACTOR (child->box), &child_box, flags);
 
       child_box.y1 = child_box.y2 + 1;
     }
 
   /* Chain up and allocate background */
-  CLUTTER_ACTOR_CLASS (mx_popup_parent_class)->allocate (actor, box, flags);
+  CLUTTER_ACTOR_CLASS (mx_menu_parent_class)->allocate (actor, box, flags);
 }
 
 static void
-mx_popup_floating_paint (ClutterActor *popup)
+mx_menu_floating_paint (ClutterActor *menu)
 {
   gint i;
-  MxPopupPrivate *priv = MX_POPUP (popup)->priv;
+  MxMenuPrivate *priv = MX_MENU (menu)->priv;
 
   /* Chain up to get background */
-  MX_FLOATING_WIDGET_CLASS (mx_popup_parent_class)->floating_paint (popup);
+  MX_FLOATING_WIDGET_CLASS (mx_menu_parent_class)->floating_paint (menu);
 
   /* Paint children */
   for (i = 0; i < priv->children->len; i++)
     {
-      MxPopupChild *child = &g_array_index (priv->children, MxPopupChild,
+      MxMenuChild *child = &g_array_index (priv->children, MxMenuChild,
                                             i);
-      clutter_actor_paint (CLUTTER_ACTOR (child->button));
+      clutter_actor_paint (CLUTTER_ACTOR (child->box));
     }
 }
 
 static void
-mx_popup_floating_pick (ClutterActor       *popup,
-                        const ClutterColor *color)
+mx_menu_floating_pick (ClutterActor       *menu,
+                       const ClutterColor *color)
 {
   gint i;
-  MxPopupPrivate *priv = MX_POPUP (popup)->priv;
+  MxMenuPrivate *priv = MX_MENU (menu)->priv;
 
   /* chain up to get bounding rectangle */
 
-  MX_FLOATING_WIDGET_CLASS (mx_popup_parent_class)->floating_pick (popup, color);
+  MX_FLOATING_WIDGET_CLASS (mx_menu_parent_class)->floating_pick (menu, color);
 
   /* pick children */
   for (i = 0; i < priv->children->len; i++)
     {
-      MxPopupChild *child = &g_array_index (priv->children, MxPopupChild, i);
+      MxMenuChild *child = &g_array_index (priv->children, MxMenuChild, i);
 
-      if (clutter_actor_should_pick_paint (CLUTTER_ACTOR (child->button)))
+      if (clutter_actor_should_pick_paint (CLUTTER_ACTOR (child->box)))
         {
-          clutter_actor_paint (CLUTTER_ACTOR (child->button));
+          clutter_actor_paint (CLUTTER_ACTOR (child->box));
         }
     }
 }
 
 static void
-stage_weak_notify (MxPopup      *popup,
+stage_weak_notify (MxMenu       *menu,
                    ClutterStage *stage)
 {
-  popup->priv->stage = NULL;
+  menu->priv->stage = NULL;
 }
 
 static void
-mx_popup_map (ClutterActor *actor)
+mx_menu_map (ClutterActor *actor)
 {
   gint i;
-  MxPopupPrivate *priv = MX_POPUP (actor)->priv;
+  MxMenuPrivate *priv = MX_MENU (actor)->priv;
 
-  CLUTTER_ACTOR_CLASS (mx_popup_parent_class)->map (actor);
+  CLUTTER_ACTOR_CLASS (mx_menu_parent_class)->map (actor);
 
   for (i = 0; i < priv->children->len; i++)
     {
-      MxPopupChild *child = &g_array_index (priv->children, MxPopupChild,
+      MxMenuChild *child = &g_array_index (priv->children, MxMenuChild,
                                             i);
-      clutter_actor_map (CLUTTER_ACTOR (child->button));
+      clutter_actor_map (CLUTTER_ACTOR (child->box));
     }
 
   /* set up a capture so we can close the menu if the user clicks outside it */
@@ -320,23 +318,23 @@ mx_popup_map (ClutterActor *actor)
   priv->captured_event_handler =
     g_signal_connect (priv->stage,
                       "captured-event",
-                      G_CALLBACK (mx_popup_captured_event_handler),
+                      G_CALLBACK (mx_menu_captured_event_handler),
                       actor);
 }
 
 static void
-mx_popup_unmap (ClutterActor *actor)
+mx_menu_unmap (ClutterActor *actor)
 {
   gint i;
-  MxPopupPrivate *priv = MX_POPUP (actor)->priv;
+  MxMenuPrivate *priv = MX_MENU (actor)->priv;
 
-  CLUTTER_ACTOR_CLASS (mx_popup_parent_class)->unmap (actor);
+  CLUTTER_ACTOR_CLASS (mx_menu_parent_class)->unmap (actor);
 
   for (i = 0; i < priv->children->len; i++)
     {
-      MxPopupChild *child = &g_array_index (priv->children, MxPopupChild,
+      MxMenuChild *child = &g_array_index (priv->children, MxMenuChild,
                                             i);
-      clutter_actor_unmap (CLUTTER_ACTOR (child->button));
+      clutter_actor_unmap (CLUTTER_ACTOR (child->box));
     }
 
   if (priv->stage)
@@ -352,8 +350,8 @@ mx_popup_unmap (ClutterActor *actor)
 }
 
 static gboolean
-mx_popup_event (ClutterActor *actor,
-                ClutterEvent *event)
+mx_menu_event (ClutterActor *actor,
+               ClutterEvent *event)
 {
   /* We swallow mouse events so that they don't fall through to whatever's
    * beneath us.
@@ -371,46 +369,46 @@ mx_popup_event (ClutterActor *actor,
 }
 
 static gboolean
-mx_popup_captured_event_handler (ClutterActor *actor,
-                                 ClutterEvent *event,
-                                 ClutterActor *popup)
+mx_menu_captured_event_handler (ClutterActor *actor,
+                                ClutterEvent *event,
+                                ClutterActor *menu)
 {
   int i;
   ClutterActor *source;
-  MxPopupPrivate *priv = MX_POPUP (popup)->priv;
+  MxMenuPrivate *priv = MX_MENU (menu)->priv;
 
-  /* allow the event to continue if it is applied to the popup or any of its
+  /* allow the event to continue if it is applied to the menu or any of its
    * children
    */
   source = clutter_event_get_source (event);
-  if (source == popup)
+  if (source == menu)
     return FALSE;
   for (i = 0; i < priv->children->len; i++)
     {
-      MxPopupChild *child;
+      MxMenuChild *child;
 
-      child = &g_array_index (priv->children, MxPopupChild, i);
+      child = &g_array_index (priv->children, MxMenuChild, i);
 
-      if (source == (ClutterActor*) child->button)
+      if (source == (ClutterActor*) child->box)
         return FALSE;
     }
 
   /* hide the menu if the user clicks outside the menu */
   if (event->type == CLUTTER_BUTTON_PRESS)
     {
-      if (clutter_actor_get_animation (popup))
+      if (clutter_actor_get_animation (menu))
         {
-          clutter_animation_completed (clutter_actor_get_animation (popup));
+          clutter_animation_completed (clutter_actor_get_animation (menu));
 
           return FALSE;
         }
 
 
-      clutter_actor_set_reactive (popup, FALSE);
-      clutter_actor_animate (popup, CLUTTER_LINEAR, 250,
+      clutter_actor_set_reactive (menu, FALSE);
+      clutter_actor_animate (menu, CLUTTER_LINEAR, 250,
                              "opacity", (guchar) 0,
                              "signal-swapped::completed", clutter_actor_hide,
-                             popup,
+                             menu,
                              NULL);
     }
 
@@ -419,7 +417,7 @@ mx_popup_captured_event_handler (ClutterActor *actor,
 }
 
 static void
-mx_popup_show (ClutterActor *actor)
+mx_menu_show (ClutterActor *actor)
 {
   ClutterAnimation *animation = NULL;
 
@@ -433,151 +431,151 @@ mx_popup_show (ClutterActor *actor)
   clutter_actor_set_opacity (actor, 0xff);
 
   /* chain up to run show after re-setting properties above */
-  CLUTTER_ACTOR_CLASS (mx_popup_parent_class)->show (actor);
+  CLUTTER_ACTOR_CLASS (mx_menu_parent_class)->show (actor);
 }
 
 static void
-mx_popup_hide (ClutterActor *actor)
+mx_menu_hide (ClutterActor *actor)
 {
-  CLUTTER_ACTOR_CLASS (mx_popup_parent_class)->hide (actor);
+  CLUTTER_ACTOR_CLASS (mx_menu_parent_class)->hide (actor);
 }
 
 static void
-mx_popup_style_changed (MxPopup *popup)
+mx_menu_style_changed (MxMenu *menu)
 {
-  MxPopupPrivate *priv = popup->priv;
+  MxMenuPrivate *priv = menu->priv;
   int i;
 
   for (i = 0; i < priv->children->len; i++)
     {
-      MxPopupChild *child;
+      MxMenuChild *child;
 
-      child = &g_array_index (priv->children, MxPopupChild, i);
+      child = &g_array_index (priv->children, MxMenuChild, i);
 
-      mx_widget_ensure_style (child->button);
+      mx_widget_ensure_style (child->box);
     }
 }
 
 static void
-mx_popup_class_init (MxPopupClass *klass)
+mx_menu_class_init (MxMenuClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
   MxFloatingWidgetClass *float_class = MX_FLOATING_WIDGET_CLASS (klass);
 
-  g_type_class_add_private (klass, sizeof (MxPopupPrivate));
+  g_type_class_add_private (klass, sizeof (MxMenuPrivate));
 
-  object_class->get_property = mx_popup_get_property;
-  object_class->set_property = mx_popup_set_property;
-  object_class->dispose = mx_popup_dispose;
-  object_class->finalize = mx_popup_finalize;
+  object_class->get_property = mx_menu_get_property;
+  object_class->set_property = mx_menu_set_property;
+  object_class->dispose = mx_menu_dispose;
+  object_class->finalize = mx_menu_finalize;
 
-  actor_class->show = mx_popup_show;
-  actor_class->hide = mx_popup_hide;
-  actor_class->get_preferred_width = mx_popup_get_preferred_width;
-  actor_class->get_preferred_height = mx_popup_get_preferred_height;
-  actor_class->allocate = mx_popup_allocate;
-  actor_class->map = mx_popup_map;
-  actor_class->unmap = mx_popup_unmap;
-  actor_class->event = mx_popup_event;
+  actor_class->show = mx_menu_show;
+  actor_class->hide = mx_menu_hide;
+  actor_class->get_preferred_width = mx_menu_get_preferred_width;
+  actor_class->get_preferred_height = mx_menu_get_preferred_height;
+  actor_class->allocate = mx_menu_allocate;
+  actor_class->map = mx_menu_map;
+  actor_class->unmap = mx_menu_unmap;
+  actor_class->event = mx_menu_event;
 
-  float_class->floating_paint = mx_popup_floating_paint;
-  float_class->floating_pick = mx_popup_floating_pick;
+  float_class->floating_paint = mx_menu_floating_paint;
+  float_class->floating_pick = mx_menu_floating_pick;
 
   signals[ACTION_ACTIVATED] =
     g_signal_new ("action-activated",
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
-                  G_STRUCT_OFFSET (MxPopupClass, action_activated),
+                  G_STRUCT_OFFSET (MxMenuClass, action_activated),
                   NULL, NULL,
                   g_cclosure_marshal_VOID__OBJECT,
                   G_TYPE_NONE, 1, MX_TYPE_ACTION);
 }
 
 static void
-mx_popup_init (MxPopup *self)
+mx_menu_init (MxMenu *self)
 {
-  MxPopupPrivate *priv = self->priv = POPUP_PRIVATE (self);
+  MxMenuPrivate *priv = self->priv = MENU_PRIVATE (self);
 
-  priv->children = g_array_new (FALSE, FALSE, sizeof (MxPopupChild));
+  priv->children = g_array_new (FALSE, FALSE, sizeof (MxMenuChild));
 
   g_object_set (G_OBJECT (self),
                 "show-on-set-parent", FALSE,
                 NULL);
 
-  g_signal_connect (self, "style-changed", G_CALLBACK (mx_popup_style_changed),
+  g_signal_connect (self, "style-changed", G_CALLBACK (mx_menu_style_changed),
                     NULL);
 }
 
 /**
- * mx_popup_new:
+ * mx_menu_new:
  *
- * Create a new #MxPopup
+ * Create a new #MxMenu
  *
- * Returns: a newly allocated #MxPopup
+ * Returns: a newly allocated #MxMenu
  */
 ClutterActor *
-mx_popup_new (void)
+mx_menu_new (void)
 {
-  return g_object_new (MX_TYPE_POPUP, NULL);
+  return g_object_new (MX_TYPE_MENU, NULL);
 }
 
 static void
-mx_popup_button_release_cb (MxButton     *button,
-                            ClutterEvent *event,
-                            MxAction     *action)
+mx_menu_button_release_cb (MxBoxLayout  *box,
+                           ClutterEvent *event,
+                           MxAction     *action)
 {
-  MxPopup *popup;
+  MxMenu *menu;
 
-  popup = MX_POPUP (clutter_actor_get_parent (CLUTTER_ACTOR (button)));
+  menu = MX_MENU (clutter_actor_get_parent (CLUTTER_ACTOR (box)));
 
-  /* set the popup unreactive to prevent other items being hilighted */
-  clutter_actor_set_reactive ((ClutterActor*) popup, FALSE);
+  /* set the menu unreactive to prevent other items being hilighted */
+  clutter_actor_set_reactive ((ClutterActor*) menu, FALSE);
 
 
-  g_object_ref (popup);
+  g_object_ref (menu);
   g_object_ref (action);
 
-  g_signal_emit (popup, signals[ACTION_ACTIVATED], 0, action);
+  g_signal_emit (menu, signals[ACTION_ACTIVATED], 0, action);
   g_signal_emit_by_name (action, "activated");
 
-  clutter_actor_animate (CLUTTER_ACTOR (popup), CLUTTER_LINEAR, 250,
+  clutter_actor_animate (CLUTTER_ACTOR (menu), CLUTTER_LINEAR, 250,
                          "opacity", (guchar) 0,
-                         "signal-swapped::completed", clutter_actor_hide, popup,
+                         "signal-swapped::completed", clutter_actor_hide, menu,
                          NULL);
 
   g_object_unref (action);
-  g_object_unref (popup);
+  g_object_unref (menu);
 
 }
 
 /**
- * mx_popup_add_action:
- * @popup: A #MxPopup
+ * mx_menu_add_action:
+ * @menu: A #MxMenu
  * @action: A #MxAction
  *
- * Append @action to @popup.
+ * Append @action to @menu.
  *
  */
 void
-mx_popup_add_action (MxPopup  *popup,
-                     MxAction *action)
+mx_menu_add_action (MxMenu   *menu,
+                    MxAction *action)
 {
-  MxPopupChild child;
+  MxMenuChild child;
   ClutterActor *label;
   ClutterTexture *icon;
 
-  g_return_if_fail (MX_IS_POPUP (popup));
+  g_return_if_fail (MX_IS_MENU (menu));
   g_return_if_fail (MX_IS_ACTION (action));
 
-  MxPopupPrivate *priv = popup->priv;
+  MxMenuPrivate *priv = menu->priv;
 
   child.action = g_object_ref_sink (action);
   /* TODO: Connect to notify signals in case action properties change */
-  child.button = g_object_new (MX_TYPE_BOX_LAYOUT,
-                               "reactive", TRUE,
-                               "spacing", SPACING,
-                               NULL);
+  child.box = g_object_new (MX_TYPE_BOX_LAYOUT,
+                            "reactive", TRUE,
+                            "spacing", SPACING,
+                            NULL);
 
   if (mx_action_get_icon (action))
     {
@@ -587,9 +585,9 @@ mx_popup_add_action (MxPopup  *popup,
 
       if (icon)
         {
-          clutter_container_add_actor (CLUTTER_CONTAINER (child.button),
+          clutter_container_add_actor (CLUTTER_CONTAINER (child.box),
                                        (ClutterActor *)icon);
-          clutter_container_child_set (CLUTTER_CONTAINER (child.button),
+          clutter_container_child_set (CLUTTER_CONTAINER (child.box),
                                        (ClutterActor *)icon,
                                        "y-fill", FALSE,
                                        NULL);
@@ -599,77 +597,96 @@ mx_popup_add_action (MxPopup  *popup,
 
   label = mx_label_new_with_text (mx_action_get_display_name (action));
 
-  clutter_container_add_actor (CLUTTER_CONTAINER (child.button),
-                               label);
+  clutter_container_add_actor (CLUTTER_CONTAINER (child.box), label);
 
-  clutter_container_child_set (CLUTTER_CONTAINER (child.button), label,
+  clutter_container_child_set (CLUTTER_CONTAINER (child.box), label,
                                "y-fill", FALSE,
                                NULL);
 
-  g_signal_connect (child.button, "button-release-event",
-                    G_CALLBACK (mx_popup_button_release_cb), action);
-  clutter_actor_set_parent (CLUTTER_ACTOR (child.button),
-                            CLUTTER_ACTOR (popup));
+  g_signal_connect (child.box, "button-release-event",
+                    G_CALLBACK (mx_menu_button_release_cb), action);
+  clutter_actor_set_parent (CLUTTER_ACTOR (child.box),
+                            CLUTTER_ACTOR (menu));
 
   g_array_append_val (priv->children, child);
 
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (popup));
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (menu));
 }
 
 /**
- * mx_popup_remove_action:
- * @popup: A #MxPopup
+ * mx_menu_remove_action:
+ * @menu: A #MxMenu
  * @action: A #MxAction
  *
- * Remove @action from @popup.
+ * Remove @action from @menu.
  *
  */
 void
-mx_popup_remove_action (MxPopup  *popup,
-                        MxAction *action)
+mx_menu_remove_action (MxMenu   *menu,
+                       MxAction *action)
 {
   gint i;
 
-  g_return_if_fail (MX_IS_POPUP (popup));
+  g_return_if_fail (MX_IS_MENU (menu));
   g_return_if_fail (MX_IS_ACTION (action));
 
-  MxPopupPrivate *priv = popup->priv;
+  MxMenuPrivate *priv = menu->priv;
 
   for (i = 0; i < priv->children->len; i++)
     {
-      MxPopupChild *child = &g_array_index (priv->children, MxPopupChild,
+      MxMenuChild *child = &g_array_index (priv->children, MxMenuChild,
                                             i);
 
       if (child->action == action)
         {
-          mx_popup_free_action_at (popup, i, TRUE);
+          mx_menu_free_action_at (menu, i, TRUE);
           break;
         }
     }
 }
 
 /**
- * mx_popup_clear:
- * @popup: A #MxPopup
+ * mx_menu_clear:
+ * @menu: A #MxMenu
  *
- * Remove all the actions from @popup.
+ * Remove all the actions from @menu.
  *
  */
 void
-mx_popup_clear (MxPopup *popup)
+mx_menu_clear (MxMenu *menu)
 {
   gint i;
 
-  g_return_if_fail (MX_IS_POPUP (popup));
+  g_return_if_fail (MX_IS_MENU (menu));
 
-  MxPopupPrivate *priv = popup->priv;
+  MxMenuPrivate *priv = menu->priv;
 
   if (!priv->children->len)
     return;
 
   for (i = 0; i < priv->children->len; i++)
-    mx_popup_free_action_at (popup, i, FALSE);
+    mx_menu_free_action_at (menu, i, FALSE);
 
   g_array_remove_range (priv->children, 0, priv->children->len);
+}
+
+/**
+ * mx_menu_show_with_position:
+ * @menu: A #MxMenu
+ * @x: X position
+ * @y: Y position
+ *
+ * Moves the menu to the specified position and shows it.
+ *
+ */
+void
+mx_menu_show_with_position (MxMenu *menu,
+                            gfloat  x,
+                            gfloat  y)
+{
+  g_return_if_fail (MX_IS_MENU (menu));
+
+  clutter_actor_set_position (CLUTTER_ACTOR (menu), x, y);
+  clutter_actor_show (CLUTTER_ACTOR (menu));
 }
 
