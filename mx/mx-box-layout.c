@@ -1451,6 +1451,7 @@ mx_box_layout_new (void)
  * Set the orientation of the box layout.
  *
  */
+#ifndef MX_DISABLE_DEPRECATED
 void
 mx_box_layout_set_vertical (MxBoxLayout *box,
                             gboolean     vertical)
@@ -1463,6 +1464,7 @@ mx_box_layout_set_vertical (MxBoxLayout *box,
   else
     mx_box_layout_set_orientation (box, MX_HORIZONTAL);
 }
+#endif
 void
 mx_box_layout_set_orientation (MxBoxLayout *box,
                                MxOrientation orientation)
@@ -1487,6 +1489,7 @@ mx_box_layout_set_orientation (MxBoxLayout *box,
  *
  * Returns: the orientation of the layout
  */
+#ifndef MX_DISABLE_DEPRECATED
 gboolean
 mx_box_layout_get_vertical (MxBoxLayout *box)
 {
@@ -1495,6 +1498,7 @@ mx_box_layout_get_vertical (MxBoxLayout *box)
 
   return (box->priv->orientation == MX_VERTICAL);
 }
+#endif
 MxOrientation
 mx_box_layout_get_orientation (MxBoxLayout *box)
 {

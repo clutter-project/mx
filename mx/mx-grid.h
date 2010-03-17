@@ -2,7 +2,7 @@
 /*
  * mx-grid.h: Reflowing grid layout container for mx.
  *
- * Copyright 2008, 2009 Intel Corporation.
+ * Copyright 2008, 2009, 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -90,9 +90,15 @@ gboolean       mx_grid_get_homogenous_rows    (MxGrid   *self);
 void           mx_grid_set_homogenous_columns (MxGrid   *self,
                                                gboolean  value);
 gboolean       mx_grid_get_homogenous_columns (MxGrid   *self);
-void           mx_grid_set_vertical           (MxGrid   *self,
-                                               gboolean  value);
-gboolean       mx_grid_get_vertical           (MxGrid   *self);
+#ifndef MX_DISABLE_DEPRECATED
+G_GNUC_DEPRECATED void     mx_grid_set_vertical (MxGrid   *self,
+                                                 gboolean  value);
+G_GNUC_DEPRECATED gboolean mx_grid_get_vertical (MxGrid   *self);
+#endif
+void           mx_grid_set_orientation        (MxGrid        *grid,
+                                               MxOrientation  orietnation);
+MxOrientation  mx_grid_get_orientation        (MxGrid        *grid);
+
 void           mx_grid_set_row_spacing        (MxGrid   *self,
                                                gfloat    value);
 gfloat         mx_grid_get_row_spacing        (MxGrid   *self);
