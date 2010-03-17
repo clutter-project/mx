@@ -30,6 +30,7 @@
 #include "mx-label.h"
 #include "mx-box-layout.h"
 #include "mx-icon-theme.h"
+#include "mx-stylable.h"
 
 G_DEFINE_TYPE (MxMenu, mx_menu, MX_TYPE_FLOATING_WIDGET)
 
@@ -441,7 +442,8 @@ mx_menu_hide (ClutterActor *actor)
 }
 
 static void
-mx_menu_style_changed (MxMenu *menu)
+mx_menu_style_changed (MxMenu              *menu,
+                       MxStyleChangedFlags  flags)
 {
   MxMenuPrivate *priv = menu->priv;
   int i;
@@ -452,7 +454,7 @@ mx_menu_style_changed (MxMenu *menu)
 
       child = &g_array_index (priv->children, MxMenuChild, i);
 
-      mx_widget_ensure_style (child->box);
+      mx_stylable_style_changed (MX_STYLABLE (child->box), flags);
     }
 }
 

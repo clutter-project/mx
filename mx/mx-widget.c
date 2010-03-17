@@ -432,31 +432,11 @@ mx_widget_pick (ClutterActor *self, const ClutterColor *color)
 }
 
 static void
-mx_widget_parent_set (ClutterActor *widget,
-                      ClutterActor *old_parent)
-{
-  ClutterActorClass *parent_class;
-  ClutterActor *new_parent;
-
-  parent_class = CLUTTER_ACTOR_CLASS (mx_widget_parent_class);
-  if (parent_class->parent_set)
-    parent_class->parent_set (widget, old_parent);
-
-  new_parent = clutter_actor_get_parent (widget);
-
-  /* don't send the style changed signal if we no longer have a parent actor */
-  if (new_parent)
-    mx_stylable_changed ((MxStylable*) widget);
-}
-
-static void
 mx_widget_map (ClutterActor *actor)
 {
   MxWidgetPrivate *priv = MX_WIDGET (actor)->priv;
 
   CLUTTER_ACTOR_CLASS (mx_widget_parent_class)->map (actor);
-
-  mx_widget_ensure_style ((MxWidget*) actor);
 
   if (priv->border_image)
     clutter_actor_map (priv->border_image);
@@ -504,7 +484,7 @@ old_background_faded_cb (ClutterAnimation *animation, ClutterActor *self)
 }
 
 static void
-mx_widget_style_changed (MxStylable *self)
+mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
 {
   MxWidgetPrivate *priv = MX_WIDGET (self)->priv;
   MxBorderImage *border_image = NULL, *background_image = NULL;
@@ -679,36 +659,6 @@ mx_widget_style_changed (MxStylable *self)
   priv->is_style_dirty = FALSE;
 }
 
-static void
-mx_widget_stylable_child_notify (ClutterActor *actor,
-                                 gpointer      user_data)
-{
-  if (MX_IS_STYLABLE (actor))
-    mx_stylable_changed ((MxStylable*) actor);
-}
-
-static void
-mx_widget_stylable_changed (MxStylable *stylable)
-{
-
-  MX_WIDGET (stylable)->priv->is_style_dirty = TRUE;
-
-  /* update the style only if we are mapped */
-  if (!CLUTTER_ACTOR_IS_MAPPED ((ClutterActor *) stylable))
-    return;
-
-  g_signal_emit_by_name (stylable, "style-changed", 0);
-
-
-  if (CLUTTER_IS_CONTAINER (stylable))
-    {
-      /* notify our children that their parent stylable has changed */
-      clutter_container_foreach ((ClutterContainer *) stylable,
-                                 mx_widget_stylable_child_notify,
-                                 NULL);
-    }
-}
-
 static gboolean
 mx_widget_enter (ClutterActor         *actor,
                  ClutterCrossingEvent *event)
@@ -869,7 +819,6 @@ mx_widget_class_init (MxWidgetClass *klass)
   actor_class->allocate = mx_widget_allocate;
   actor_class->paint = mx_widget_paint;
   actor_class->pick = mx_widget_pick;
-  actor_class->parent_set = mx_widget_parent_set;
   actor_class->map = mx_widget_map;
   actor_class->unmap = mx_widget_unmap;
 
@@ -946,14 +895,6 @@ mx_widget_get_style (MxStylable *stylable)
 }
 
 static void
-mx_style_changed_cb (MxStyle    *style,
-                     MxStylable *stylable)
-{
-  mx_stylable_changed (stylable);
-}
-
-
-static void
 mx_widget_set_style (MxStylable *stylable,
                      MxStyle    *style)
 {
@@ -963,11 +904,6 @@ mx_widget_set_style (MxStylable *stylable,
     g_object_unref (priv->style);
 
   priv->style = g_object_ref_sink (style);
-
-  g_signal_connect (priv->style,
-                    "changed",
-                    G_CALLBACK (mx_style_changed_cb),
-                    stylable);
 }
 
 static void
@@ -984,8 +920,6 @@ _mx_widget_set_style_class (MxStylable  *actor,
     {
       g_free (priv->style_class);
       priv->style_class = g_strdup (style_class);
-
-      mx_stylable_changed (actor);
 
       g_object_notify (G_OBJECT (actor), "style-class");
     }
@@ -1005,8 +939,6 @@ _mx_stylable_set_style_pseudo_class (MxStylable  *actor,
     {
       g_free (priv->pseudo_class);
       priv->pseudo_class = g_strdup (pseudo_class);
-
-      mx_stylable_changed (actor);
 
       g_object_notify (G_OBJECT (actor), "style-pseudo-class");
     }
@@ -1122,7 +1054,6 @@ mx_stylable_iface_init (MxStylableIface *iface)
       */
 
       iface->style_changed = mx_widget_style_changed;
-      iface->stylable_changed = mx_widget_stylable_changed;
 
       iface->get_style = mx_widget_get_style;
       iface->set_style = mx_widget_set_style;
@@ -1134,15 +1065,6 @@ mx_stylable_iface_init (MxStylableIface *iface)
     }
 }
 
-
-static void
-mx_widget_name_notify (MxWidget   *widget,
-                       GParamSpec *pspec,
-                       gpointer    data)
-{
-  mx_stylable_changed ((MxStylable*) widget);
-}
-
 static void
 mx_widget_init (MxWidget *actor)
 {
@@ -1150,22 +1072,14 @@ mx_widget_init (MxWidget *actor)
 
   actor->priv = priv = MX_WIDGET_GET_PRIVATE (actor);
 
-  /* connect style changed */
-  g_signal_connect (actor, "notify::name", G_CALLBACK (mx_widget_name_notify), NULL);
-
   /* set the default style */
   mx_widget_set_style (MX_STYLABLE (actor), mx_style_get_default ());
 
+  /* connect the notifiers for the stylable */
+  mx_stylable_connect_change_notifiers (MX_STYLABLE (actor));
 }
 
-static void
-mx_widget_ensure_child_style (ClutterActor *actor,
-                              gpointer      data)
-{
-  if (MX_IS_STYLABLE (actor))
-    mx_widget_ensure_style (MX_WIDGET (actor));
-}
-
+#ifndef MX_DISABLE_DEPRECATED
 /**
  * mx_widget_ensure_style:
  * @widget: A #MxWidget
@@ -1178,17 +1092,13 @@ mx_widget_ensure_style (MxWidget *widget)
 {
   g_return_if_fail (MX_IS_WIDGET (widget));
 
-  g_signal_emit_by_name (widget, "style-changed", 0);
+  g_warning ("mx_widget_ensure_style is deprecated."
+             " Use mx_stylable_style_changed with the"
+             " MX_STYLE_CHANGED_FORCE flag instead.");
 
-  if (CLUTTER_IS_CONTAINER (widget))
-    {
-      /* notify our children that their parent stylable has changed */
-      clutter_container_foreach ((ClutterContainer *) widget,
-                                 mx_widget_ensure_child_style,
-                                 NULL);
-    }
+  mx_stylable_style_changed (MX_STYLABLE (widget), MX_STYLE_CHANGED_FORCE);
 }
-
+#endif
 
 /**
  * mx_widget_get_border_image:

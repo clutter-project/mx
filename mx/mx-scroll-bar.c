@@ -402,14 +402,14 @@ mx_scroll_bar_allocate (ClutterActor          *actor,
 }
 
 static void
-mx_scroll_bar_style_changed (MxWidget *widget)
+mx_scroll_bar_style_changed (MxWidget *widget, MxStyleChangedFlags flags)
 {
   MxScrollBarPrivate *priv = MX_SCROLL_BAR (widget)->priv;
 
-  mx_stylable_changed ((MxStylable *) priv->bw_stepper);
-  mx_stylable_changed ((MxStylable *) priv->fw_stepper);
-  mx_stylable_changed ((MxStylable *) priv->trough);
-  mx_stylable_changed ((MxStylable *) priv->handle);
+  mx_stylable_style_changed ((MxStylable *) priv->bw_stepper, flags);
+  mx_stylable_style_changed ((MxStylable *) priv->fw_stepper, flags);
+  mx_stylable_style_changed ((MxStylable *) priv->trough, flags);
+  mx_stylable_style_changed ((MxStylable *) priv->handle, flags);
 
 }
 

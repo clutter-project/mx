@@ -64,25 +64,6 @@ struct _MxPathBarPrivate
 };
 
 static void
-mx_path_bar_stylable_changed (MxStylable *stylable)
-{
-  GList *c;
-  MxPathBarPrivate *priv = MX_PATH_BAR (stylable)->priv;
-
-  /* FIXME: MxWidget bails out when it isn't mapped and emits the signal
-   *        later. We may want to do the same here.
-   */
-  g_signal_emit_by_name (stylable, "style-changed", 0);
-
-  /* Inform our private children */
-  for (c = priv->crumbs; c; c = c->next)
-    g_signal_emit_by_name (c->data, "style-changed", 0);
-
-  if (priv->entry)
-    g_signal_emit_by_name (priv->entry, "style-changed", 0);
-}
-
-static void
 mx_stylable_iface_init (MxStylableIface *iface)
 {
   static gboolean is_initialized = FALSE;
@@ -99,8 +80,6 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                 0, G_MAXINT, 0,
                                 G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_PATH_BAR, pspec);
-
-      iface->stylable_changed = mx_path_bar_stylable_changed;
     }
 }
 
@@ -220,11 +199,11 @@ mx_focusable_iface_init (MxFocusableIface *iface)
 }
 
 static void
-mx_path_bar_style_changed_cb (MxWidget *self)
+mx_path_bar_style_changed_cb (MxWidget *self, MxStyleChangedFlags flags)
 {
-  gint overlap;
-
   MxPathBarPrivate *priv = MX_PATH_BAR (self)->priv;
+  gint overlap;
+  GList *c;
 
   mx_stylable_get (MX_STYLABLE (self),
                    "x-mx-overlap", &overlap,
@@ -235,6 +214,13 @@ mx_path_bar_style_changed_cb (MxWidget *self)
       priv->overlap = overlap;
       clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
     }
+
+  /* Inform our private children */
+  for (c = priv->crumbs; c; c = c->next)
+    mx_stylable_style_changed (MX_STYLABLE (c->data), flags);
+
+  if (priv->entry)
+    mx_stylable_style_changed (MX_STYLABLE (priv->entry), flags);
 }
 
 static void

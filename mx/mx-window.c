@@ -171,8 +171,6 @@ mx_window_set_style_class (MxStylable  *actor,
       g_free (priv->style_class);
       priv->style_class = g_strdup (style_class);
 
-      mx_stylable_changed (actor);
-
       g_object_notify (G_OBJECT (actor), "style-class");
     }
 }
@@ -189,8 +187,6 @@ mx_window_set_style_pseudo_class (MxStylable  *actor,
     {
       g_free (priv->pseudo_class);
       priv->pseudo_class = g_strdup (pseudo_class);
-
-      mx_stylable_changed (actor);
 
       g_object_notify (G_OBJECT (actor), "style-pseudo-class");
     }
@@ -1212,6 +1208,9 @@ mx_window_init (MxWindow *self)
 #if CLUTTER_CHECK_VERSION(1,2,0)
   g_object_set (G_OBJECT (self), "use-alpha", TRUE, NULL);
 #endif
+
+  /* connect the notifiers for the stylable */
+  mx_stylable_connect_change_notifiers (MX_STYLABLE (self));
 }
 
 MxWindow *

@@ -153,24 +153,8 @@ mx_stylable_base_init (gpointer g_iface)
                   G_SIGNAL_RUN_FIRST,
                   G_STRUCT_OFFSET (MxStylableIface, style_changed),
                   NULL, NULL,
-                  _mx_marshal_VOID__VOID,
-                  G_TYPE_NONE, 0);
-
-  /**
-   * MxStylable::stylable-changed:
-   * @actor: the actor that received the signal
-   *
-   * The ::changed signal is emitted each time any of the properties of the
-   * stylable has changed.
-   */
-  stylable_signals[CHANGED] =
-    g_signal_new (I_("stylable-changed"),
-                  iface_type,
-                  G_SIGNAL_RUN_LAST,
-                  G_STRUCT_OFFSET (MxStylableIface, stylable_changed),
-                  NULL, NULL,
-                  _mx_marshal_VOID__VOID,
-                  G_TYPE_NONE, 0);
+                  _mx_marshal_VOID__ENUM,
+                  G_TYPE_NONE, 1, MX_TYPE_STYLE_CHANGED_FLAGS);
 
   stylable_signals[STYLE_NOTIFY] =
     g_signal_new (I_("style-notify"),
@@ -626,18 +610,6 @@ mx_stylable_set_style (MxStylable *stylable,
 }
 
 /**
- * mx_stylable_changed:
- * @stylable: A #MxStylable
- *
- * Emit the "stylable-changed" signal on @stylable
- */
-void
-mx_stylable_changed (MxStylable *stylable)
-{
-  g_signal_emit (stylable, stylable_signals[CHANGED], 0, NULL);
-}
-
-/**
  * mx_stylable_get_style_pseudo_class:
  * @stylable: a #MxStylable
  *
@@ -738,6 +710,105 @@ mx_stylable_set_style_class (MxStylable  *stylable,
     g_warning ("MxStylable of type '%s' does not implement"
                " set_style_class()",
                g_type_name (G_OBJECT_TYPE (stylable)));
+}
+
+static void
+mx_stylable_property_changed_notify (MxStylable *stylable)
+{
+  mx_stylable_style_changed (stylable, MX_STYLE_CHANGED_NONE);
+}
+
+static void
+mx_stylable_parent_set_notify (ClutterActor *actor,
+                               ClutterActor *old_parent)
+{
+  ClutterActor *new_parent = clutter_actor_get_parent (actor);
+
+  /* check the actor has a new parent */
+  if (new_parent)
+    {
+      mx_stylable_style_changed (MX_STYLABLE (actor), MX_STYLE_CHANGED_NONE);
+    }
+}
+
+static void mx_stylable_style_changed_internal (MxStylable          *stylable,
+                                                MxStyleChangedFlags  flags);
+
+static void
+mx_stylable_child_notify (ClutterActor *actor,
+                          gpointer      flags)
+{
+  if (MX_IS_STYLABLE (actor))
+    mx_stylable_style_changed_internal (MX_STYLABLE (actor),
+                                        GPOINTER_TO_INT (flags));
+}
+
+static void
+mx_stylable_style_changed_internal (MxStylable          *stylable,
+                                    MxStyleChangedFlags  flags)
+{
+
+  /* don't update stylables until they are mapped (unless ensure is set) */
+  if (!CLUTTER_ACTOR_IS_MAPPED (CLUTTER_ACTOR (stylable)) &&
+      !(flags & MX_STYLE_CHANGED_FORCE))
+    return;
+
+  g_signal_emit (stylable, stylable_signals[STYLE_CHANGED], 0, flags);
+
+  /* propagate the style-changed signal to children, since their style may
+   * depend on one or more properties of the parent */
+
+  if (CLUTTER_IS_CONTAINER (stylable))
+    {
+      /* notify our children that their parent stylable has changed */
+      clutter_container_foreach ((ClutterContainer *) stylable,
+                                 mx_stylable_child_notify,
+                                 GINT_TO_POINTER (flags));
+    }
+}
+
+/**
+ * mx_stylable_style_changed:
+ * @stylable: an MxStylable
+ * @flags: flags that control the style changing
+ *
+ * Emit the "style-changed" signal on @stylable to notify it that one or more
+ * of the style properties has changed.
+ *
+ * If @stylable is a #ClutterContainer then the "style-changed" notification is
+ * propagated to it's children, since their style may depend on one or more
+ * properties of the parent.
+ *
+ */
+void
+mx_stylable_style_changed (MxStylable *stylable, MxStyleChangedFlags flags)
+{
+  mx_stylable_style_changed_internal (stylable, flags);
+}
+
+void
+mx_stylable_connect_change_notifiers (MxStylable *stylable)
+{
+  g_return_if_fail (CLUTTER_IS_ACTOR (stylable));
+
+  g_return_if_fail (MX_IS_STYLABLE (stylable));
+
+  /* ClutterActor signals */
+  g_signal_connect (stylable, "notify::name",
+                    G_CALLBACK (mx_stylable_property_changed_notify), NULL);
+  g_signal_connect (stylable, "parent-set",
+                    G_CALLBACK (mx_stylable_parent_set_notify), NULL);
+
+  /* style-changed is blocked until the actor is mapped, so style-changed
+   * needs to be sent as soon as the actor is mapped */
+  g_signal_connect (stylable, "notify::mapped",
+                    G_CALLBACK (mx_stylable_property_changed_notify), NULL);
+
+  /* MxStylable notifiers */
+  g_signal_connect (stylable, "notify::style-class",
+                    G_CALLBACK (mx_stylable_property_changed_notify), NULL);
+  g_signal_connect (stylable, "notify::style-pseudo-class",
+                    G_CALLBACK (mx_stylable_property_changed_notify), NULL);
 }
 
 void
