@@ -80,7 +80,7 @@ struct _MxScrollBarPrivate
   gboolean          stepper_forward;
   guint             stepper_source_id;
 
-  gboolean          vertical;
+  MxOrientation     orientation;
 };
 
 enum
@@ -88,7 +88,7 @@ enum
   PROP_0,
 
   PROP_ADJUSTMENT,
-  PROP_VERTICAL
+  PROP_ORIENTATION
 };
 
 enum
@@ -120,8 +120,8 @@ mx_scroll_bar_get_property (GObject    *gobject,
       g_value_set_object (value, priv->adjustment);
       break;
 
-    case PROP_VERTICAL:
-      g_value_set_boolean (value, priv->vertical);
+    case PROP_ORIENTATION:
+      g_value_set_enum (value, priv->orientation);
       break;
 
     default:
@@ -144,27 +144,8 @@ mx_scroll_bar_set_property (GObject      *gobject,
       mx_scroll_bar_set_adjustment (bar, g_value_get_object (value));
       break;
 
-    case PROP_VERTICAL:
-      bar->priv->vertical = g_value_get_boolean (value);
-      if (bar->priv->vertical)
-        {
-          clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->bw_stepper),
-                                  "up-stepper");
-          clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->fw_stepper),
-                                  "down-stepper");
-          clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->handle),
-                                  "vhandle");
-        }
-      else
-        {
-          clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->fw_stepper),
-                                  "forward-stepper");
-          clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->bw_stepper),
-                                  "backward-stepper");
-          clutter_actor_set_name (CLUTTER_ACTOR (bar->priv->handle),
-                                  "hhandle");
-        }
-      clutter_actor_queue_relayout ((ClutterActor*) gobject);
+    case PROP_ORIENTATION:
+      mx_scroll_bar_set_orientation (bar, g_value_get_enum (value));
       break;
 
     default:
@@ -297,7 +278,7 @@ mx_scroll_bar_allocate (ClutterActor          *actor,
   width = (box->x2 - box->x1) - padding.left - padding.right;
   height = (box->y2 - box->y1) - padding.top - padding.bottom;
 
-  if (priv->vertical)
+  if (priv->orientation == MX_VERTICAL)
     {
       stepper_size = width;
 
@@ -383,7 +364,7 @@ mx_scroll_bar_allocate (ClutterActor          *actor,
       else
         position = (value - lower) / (upper - lower - page_size);
 
-      if (priv->vertical)
+      if (priv->orientation == MX_VERTICAL)
         {
           avail_size = height - stepper_size * 2;
           handle_size = increment * avail_size;
@@ -539,12 +520,13 @@ mx_scroll_bar_class_init (MxScrollBarClass *klass)
                                       MX_TYPE_ADJUSTMENT,
                                       MX_PARAM_READWRITE));
 
-  pspec = g_param_spec_boolean ("vertical",
-                                "Vertical Orientation",
-                                "Vertical Orientation",
-                                FALSE,
-                                MX_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_VERTICAL, pspec);
+  pspec = g_param_spec_enum ("orientation",
+                             "Orientation",
+                             "The orientation of the scrollbar",
+                             MX_TYPE_ORIENTATION,
+                             MX_HORIZONTAL,
+                             MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_ORIENTATION, pspec);
 
   signals[SCROLL_START] =
     g_signal_new ("scroll-start",
@@ -609,7 +591,7 @@ move_slider (MxScrollBar *bar,
   if (!clutter_actor_transform_stage_point (priv->trough, x, y, &ux, &uy))
     return;
 
-  if (priv->vertical)
+  if (priv->orientation == MX_VERTICAL)
     size = clutter_actor_get_height (priv->trough)
            - clutter_actor_get_height (priv->handle);
   else
@@ -619,7 +601,7 @@ move_slider (MxScrollBar *bar,
   if (size == 0)
     return;
 
-  if (priv->vertical)
+  if (priv->orientation == MX_VERTICAL)
     pos = uy - priv->y_origin;
   else
     pos = ux - priv->x_origin;
@@ -762,7 +744,7 @@ trough_paging_cb (MxScrollBar *self)
                             &value, NULL, NULL,
                             NULL, &page_increment, NULL);
 
-  if (self->priv->vertical)
+  if (self->priv->orientation == MX_VERTICAL)
     handle_pos = clutter_actor_get_y (self->priv->handle);
   else
     handle_pos = clutter_actor_get_x (self->priv->handle);
@@ -772,7 +754,7 @@ trough_paging_cb (MxScrollBar *self)
                                        self->priv->move_y,
                                        &tx, &ty);
 
-  if (self->priv->vertical)
+  if (self->priv->orientation == MX_VERTICAL)
     event_pos = ty;
   else
     event_pos = tx;
@@ -1077,3 +1059,51 @@ mx_scroll_bar_get_adjustment (MxScrollBar *bar)
   return bar->priv->adjustment;
 }
 
+
+MxOrientation
+mx_scroll_bar_get_orientation (MxScrollBar *bar)
+{
+  g_return_val_if_fail (MX_IS_SCROLL_BAR (bar), MX_HORIZONTAL);
+
+  return bar->priv->orientation;
+}
+
+void
+mx_scroll_bar_set_orientation (MxScrollBar   *bar,
+                               MxOrientation  orientation)
+{
+  MxScrollBarPrivate *priv;
+
+  g_return_if_fail (MX_IS_SCROLL_BAR (bar));
+
+  priv = bar->priv;
+
+  if (orientation != priv->orientation)
+    {
+
+      priv->orientation = orientation;
+
+      if (bar->priv->orientation)
+        {
+          clutter_actor_set_name (CLUTTER_ACTOR (priv->bw_stepper),
+                                  "up-stepper");
+          clutter_actor_set_name (CLUTTER_ACTOR (priv->fw_stepper),
+                                  "down-stepper");
+          clutter_actor_set_name (CLUTTER_ACTOR (priv->handle),
+                                  "vhandle");
+        }
+      else
+        {
+          clutter_actor_set_name (CLUTTER_ACTOR (priv->fw_stepper),
+                                  "forward-stepper");
+          clutter_actor_set_name (CLUTTER_ACTOR (priv->bw_stepper),
+                                  "backward-stepper");
+          clutter_actor_set_name (CLUTTER_ACTOR (priv->handle),
+                                  "hhandle");
+        }
+
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (bar));
+
+      g_object_notify (G_OBJECT (bar), "orientation");
+    }
+}
