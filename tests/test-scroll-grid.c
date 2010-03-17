@@ -1,6 +1,6 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 /*
- * Copyright 2009 Intel Corporation.
+ * Copyright 2009, 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -23,7 +23,7 @@ static void
 swap_orientation (ClutterActor *button,
                   MxGrid     *grid)
 {
-  mx_grid_set_vertical (grid, !mx_grid_get_vertical (grid));
+  mx_grid_set_orientation (grid, !mx_grid_get_orientation (grid));
 }
 
 static void

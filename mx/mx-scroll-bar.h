@@ -3,7 +3,7 @@
  * mx-scroll-bar.h: Scroll bar actor
  *
  * Copyright 2008 OpenedHand
- * Copyright 2009 Intel Corporation.
+ * Copyright 2009, 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -77,6 +77,10 @@ ClutterActor *mx_scroll_bar_new (MxAdjustment *adjustment);
 void          mx_scroll_bar_set_adjustment (MxScrollBar  *bar,
                                             MxAdjustment *adjustment);
 MxAdjustment *mx_scroll_bar_get_adjustment (MxScrollBar  *bar);
+
+void          mx_scroll_bar_set_orientation (MxScrollBar   *bar,
+                                             MxOrientation  orientation);
+MxOrientation mx_scroll_bar_get_orientation (MxScrollBar   *bar);
 
 G_END_DECLS
 

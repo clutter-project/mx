@@ -3,7 +3,7 @@
  * mx-scroll-view.h: Container with scroll-bars
  *
  * Copyright 2008 OpenedHand
- * Copyright 2009 Intel Corporation.
+ * Copyright 2009, 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -733,7 +733,9 @@ mx_scroll_view_init (MxScrollView *self)
   MxScrollViewPrivate *priv = self->priv = SCROLL_VIEW_PRIVATE (self);
 
   priv->hscroll = CLUTTER_ACTOR (mx_scroll_bar_new (NULL));
-  priv->vscroll = g_object_new (MX_TYPE_SCROLL_BAR, "vertical", TRUE, NULL);
+  priv->vscroll = g_object_new (MX_TYPE_SCROLL_BAR,
+                                "orientation", MX_VERTICAL,
+                                NULL);
 
   priv->scroll_policy = MX_SCROLL_BOTH;
 

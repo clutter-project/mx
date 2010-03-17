@@ -1,6 +1,6 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 /*
- * Copyright 2009 Intel Corporation.
+ * Copyright 2009, 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -130,8 +130,8 @@ key_release_cb (ClutterActor    *actor,
 
   if (event->keyval == 'v')
     {
-      mx_box_layout_set_vertical (box,
-                                    !mx_box_layout_get_vertical (box));
+      mx_box_layout_set_orientation (box,
+                                     !mx_box_layout_get_orientation (box));
     }
 
   if (event->keyval == 'p')

@@ -145,7 +145,7 @@ main (int argc, char *argv[])
 
   mainbox = mx_box_layout_new ();
   clutter_actor_set_size (mainbox, 800, 600);
-  mx_box_layout_set_vertical (MX_BOX_LAYOUT (mainbox), TRUE);
+  mx_box_layout_set_orientation (MX_BOX_LAYOUT (mainbox), MX_VERTICAL);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), mainbox);
 
   /* create the toolbar */
@@ -166,7 +166,7 @@ main (int argc, char *argv[])
 
   /* create a vbox for the list of tests */
   vbox = mx_box_layout_new ();
-  mx_box_layout_set_vertical (MX_BOX_LAYOUT (vbox), TRUE);
+  mx_box_layout_set_orientation (MX_BOX_LAYOUT (vbox), MX_VERTICAL);
   clutter_container_add_actor (CLUTTER_CONTAINER (hbox), vbox);
 
   /* create a place holder for the tests */
