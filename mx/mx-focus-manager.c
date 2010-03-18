@@ -31,6 +31,8 @@ G_DEFINE_TYPE (MxFocusManager, mx_focus_manager, G_TYPE_OBJECT)
 #define FOCUS_MANAGER_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_FOCUS_MANAGER, MxFocusManagerPrivate))
 
+static GQuark focus_manager_quark = 0;
+
 struct _MxFocusManagerPrivate
 {
   ClutterActor *stage;
@@ -73,13 +75,8 @@ mx_focus_manager_set_property (GObject      *object,
                                const GValue *value,
                                GParamSpec   *pspec)
 {
-  MxFocusManager *manager = MX_FOCUS_MANAGER (object);
   switch (property_id)
     {
-  case PROP_STAGE:
-    mx_focus_manager_set_stage (manager, g_value_get_object (value));
-    break;
-
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -88,6 +85,14 @@ mx_focus_manager_set_property (GObject      *object,
 static void
 mx_focus_manager_dispose (GObject *object)
 {
+  MxFocusManagerPrivate *priv = MX_FOCUS_MANAGER (object)->priv;
+
+  if (priv->stage)
+    {
+      g_object_set_qdata (G_OBJECT (priv->stage), focus_manager_quark, NULL);
+      priv->stage = NULL;
+    }
+
   G_OBJECT_CLASS (mx_focus_manager_parent_class)->dispose (object);
 }
 
@@ -114,15 +119,17 @@ mx_focus_manager_class_init (MxFocusManagerClass *klass)
                                "Stage",
                                "Top level container for focusables",
                                CLUTTER_TYPE_STAGE,
-                               MX_PARAM_READWRITE);
+                               MX_PARAM_READABLE);
   g_object_class_install_property (object_class, PROP_STAGE, pspec);
 
   pspec = g_param_spec_object ("focused",
                                "Focused",
                                "The object that currently has focus",
-                               CLUTTER_TYPE_STAGE,
+                               CLUTTER_TYPE_ACTOR,
                                MX_PARAM_READABLE);
-  g_object_class_install_property (object_class, PROP_STAGE, pspec);
+  g_object_class_install_property (object_class, PROP_FOCUSED, pspec);
+
+  focus_manager_quark = g_quark_from_static_string ("mx-focus-manager");
 }
 
 static void
@@ -136,6 +143,7 @@ mx_focus_manager_weak_notify (MxFocusManager *manager,
                               ClutterStage   *stage)
 {
   manager->priv->stage = NULL;
+  g_object_unref (manager);
 }
 
 static void
@@ -195,18 +203,22 @@ mx_focus_manager_ensure_focused (MxFocusManager *manager, ClutterStage *stage)
       else
         priv->focused = mx_focusable_accept_focus (MX_FOCUSABLE (actor),
                                                    MX_FIRST);
+
+      if (priv->focused)
+        g_object_notify (G_OBJECT (manager), "focused");
     }
 
   return (priv->focused) ? TRUE : FALSE;
 }
 
 static gboolean
-mx_focus_manager_captured_event_cb (ClutterStage   *stage,
-                                    ClutterEvent   *event,
-                                    MxFocusManager *manager)
+mx_focus_manager_event_cb (ClutterStage   *stage,
+                           ClutterEvent   *event,
+                           MxFocusManager *manager)
 {
   MxFocusHint hint;
   MxDirection direction;
+  MxFocusable *old_focus;
   MxFocusManagerPrivate *priv = manager->priv;
 
   if (event->type != CLUTTER_KEY_PRESS)
@@ -230,12 +242,16 @@ mx_focus_manager_captured_event_cb (ClutterStage   *stage,
         hint = MX_FIRST;
       }
 
+    old_focus = priv->focused;
     priv->focused = mx_focusable_move_focus (priv->focused, direction,
                                              priv->focused);
 
     /* if focusable is NULL, then we reached the end of the focus chain */
     if (!priv->focused)
       mx_focus_manager_start_focus (manager, hint);
+
+    if (priv->focused != old_focus)
+      g_object_notify (G_OBJECT (manager), "focused");
 
     return TRUE;
 /*
@@ -252,9 +268,34 @@ mx_focus_manager_captured_event_cb (ClutterStage   *stage,
 }
 
 MxFocusManager *
-mx_focus_manager_new (ClutterStage *stage)
+mx_focus_manager_get_for_stage (ClutterStage *stage)
 {
-  return g_object_new (MX_TYPE_FOCUS_MANAGER, "stage", stage, NULL);
+  MxFocusManager *manager;
+
+  g_return_val_if_fail (CLUTTER_IS_STAGE (stage), NULL);
+
+  manager = g_object_get_qdata (G_OBJECT (stage), focus_manager_quark);
+
+  if (manager == NULL)
+    {
+      MxFocusManagerPrivate *priv;
+
+      manager = g_object_new (MX_TYPE_FOCUS_MANAGER, NULL);
+      priv = manager->priv;
+
+      priv->stage = CLUTTER_ACTOR (stage);
+
+      g_object_set_qdata (G_OBJECT (stage), focus_manager_quark, manager);
+      g_object_weak_ref (G_OBJECT (stage),
+                         (GWeakNotify) mx_focus_manager_weak_notify, manager);
+
+      g_signal_connect (G_OBJECT (stage), "event",
+                        G_CALLBACK (mx_focus_manager_event_cb),
+                        manager);
+      g_object_notify (G_OBJECT (manager), "stage");
+    }
+
+  return manager;
 }
 
 ClutterStage*
@@ -263,40 +304,6 @@ mx_focus_manager_get_stage (MxFocusManager *manager)
   g_return_val_if_fail (MX_IS_FOCUS_MANAGER (manager), NULL);
 
   return CLUTTER_STAGE (manager->priv->stage);
-}
-
-void
-mx_focus_manager_set_stage (MxFocusManager *manager,
-                            ClutterStage   *stage)
-{
-  MxFocusManagerPrivate *priv;
-
-  g_return_if_fail (MX_IS_FOCUS_MANAGER (manager));
-  g_return_if_fail (CLUTTER_IS_STAGE (stage));
-
-  priv = manager->priv;
-
-  if (priv->stage != (ClutterActor *) stage)
-    {
-
-      if (priv->stage)
-        g_object_weak_unref (G_OBJECT (priv->stage),
-                             (GWeakNotify) mx_focus_manager_weak_notify,
-                             manager);
-
-      priv->stage = CLUTTER_ACTOR (stage);
-
-      g_object_weak_ref (G_OBJECT (priv->stage),
-                         (GWeakNotify) mx_focus_manager_weak_notify,
-                         manager);
-
-      g_signal_connect (priv->stage, "captured-event",
-                        G_CALLBACK (mx_focus_manager_captured_event_cb),
-                        manager);
-
-      g_object_notify (G_OBJECT (manager), "stage");
-    }
-
 }
 
 MxFocusable*

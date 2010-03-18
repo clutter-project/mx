@@ -1189,7 +1189,7 @@ mx_window_init (MxWindow *self)
 
   priv->has_toolbar = TRUE;
 
-  priv->focus_manager = mx_focus_manager_new (CLUTTER_STAGE (self));
+  priv->focus_manager = mx_focus_manager_get_for_stage (CLUTTER_STAGE (self));
 
   priv->style = mx_style_get_default ();
 

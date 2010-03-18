@@ -74,11 +74,10 @@ struct _MxFocusManagerClass
 
 GType mx_focus_manager_get_type (void) G_GNUC_CONST;
 
-MxFocusManager *mx_focus_manager_new (ClutterStage *stage);
+MxFocusManager *mx_focus_manager_get_for_stage (ClutterStage *stage);
+
 
 ClutterStage* mx_focus_manager_get_stage (MxFocusManager *manager);
-void          mx_focus_manager_set_stage (MxFocusManager *manager,
-                                          ClutterStage   *stage);
 
 MxFocusable* mx_focus_manager_get_focused (MxFocusManager *manager);
 
