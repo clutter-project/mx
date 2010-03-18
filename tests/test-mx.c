@@ -154,7 +154,7 @@ main (int argc, char *argv[])
 
   combo = mx_combo_box_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (toolbar), combo);
-  mx_combo_box_set_title (MX_COMBO_BOX (combo), "Select");
+  mx_combo_box_set_active_text (MX_COMBO_BOX (combo), "Select");
   mx_combo_box_append_text (MX_COMBO_BOX (combo), "Hello");
   mx_combo_box_append_text (MX_COMBO_BOX (combo), "World");
 

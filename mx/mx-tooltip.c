@@ -52,7 +52,7 @@ enum
 {
   PROP_0,
 
-  PROP_LABEL,
+  PROP_TEXT,
   PROP_TIP_AREA
 };
 
@@ -81,8 +81,8 @@ mx_tooltip_set_property (GObject      *gobject,
 
   switch (prop_id)
     {
-    case PROP_LABEL:
-      mx_tooltip_set_label (tooltip, g_value_get_string (value));
+    case PROP_TEXT:
+      mx_tooltip_set_text (tooltip, g_value_get_string (value));
       break;
 
     case PROP_TIP_AREA:
@@ -104,7 +104,7 @@ mx_tooltip_get_property (GObject    *gobject,
 
   switch (prop_id)
     {
-    case PROP_LABEL:
+    case PROP_TEXT:
       g_value_set_string (value, clutter_text_get_text (CLUTTER_TEXT (priv->label)));
       break;
 
@@ -452,11 +452,11 @@ mx_tooltip_class_init (MxTooltipClass *klass)
 
   floating_class->floating_paint = mx_tooltip_paint;
 
-  pspec = g_param_spec_string ("label",
-                               "Label",
-                               "Label of the tooltip",
+  pspec = g_param_spec_string ("text",
+                               "Text",
+                               "Text of the tooltip",
                                NULL, G_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class, PROP_LABEL, pspec);
+  g_object_class_install_property (gobject_class, PROP_TEXT, pspec);
 
   pspec = g_param_spec_boxed ("tip-area",
                               "Tip Area",
@@ -573,15 +573,26 @@ mx_tooltip_update_position (MxTooltip *tooltip)
 }
 
 /**
- * mx_tooltip_get_label:
+ * mx_tooltip_get_text:
  * @tooltip: a #MxTooltip
  *
  * Get the text displayed on the tooltip
  *
  * Returns: the text for the tooltip. This must not be freed by the application
  */
+#ifndef MX_DISABLE_DEPRECATED
 G_CONST_RETURN gchar *
 mx_tooltip_get_label (MxTooltip *tooltip)
+{
+  g_warning ("mx_tooltip_get_label is deprecated."
+             " Use mx_tooltip_get_label instead");
+
+  return clutter_text_get_text (CLUTTER_TEXT (tooltip->priv->label));
+}
+#endif
+
+G_CONST_RETURN gchar *
+mx_tooltip_get_text (MxTooltip *tooltip)
 {
   g_return_val_if_fail (MX_IS_TOOLTIP (tooltip), NULL);
 
@@ -589,15 +600,25 @@ mx_tooltip_get_label (MxTooltip *tooltip)
 }
 
 /**
- * mx_tooltip_set_label:
+ * mx_tooltip_set_text:
  * @tooltip: a #MxTooltip
  * @text: text to set the label to
  *
  * Sets the text displayed on the tooltip
  */
+#ifndef MX_DISABLE_DEPRECATED
 void
 mx_tooltip_set_label (MxTooltip   *tooltip,
                       const gchar *text)
+{
+  g_warning ("mx_tooltip_set_label is deprecated."
+             " Use mx_tooltip_set_text instead.");
+  mx_tooltip_set_text (tooltip, text);
+}
+#endif
+void
+mx_tooltip_set_text (MxTooltip   *tooltip,
+                     const gchar *text)
 {
   MxTooltipPrivate *priv;
 
@@ -607,7 +628,7 @@ mx_tooltip_set_label (MxTooltip   *tooltip,
 
   clutter_text_set_text (CLUTTER_TEXT (priv->label), text);
 
-  g_object_notify (G_OBJECT (tooltip), "label");
+  g_object_notify (G_OBJECT (tooltip), "text");
 }
 
 /**

@@ -99,13 +99,19 @@ void mx_combo_box_prepend_text (MxComboBox  *box,
 void mx_combo_box_remove_text  (MxComboBox  *box,
                                 gint         position);
 
-void         mx_combo_box_set_title (MxComboBox  *box,
-                                     const gchar *title);
-const gchar* mx_combo_box_get_title (MxComboBox  *box);
+#ifndef MX_DISABLE_DEPRECATED
+G_GNUC_DEPRECATED void         mx_combo_box_set_title (MxComboBox  *box,
+                                                       const gchar *title);
+G_GNUC_DEPRECATED const gchar* mx_combo_box_get_title (MxComboBox  *box);
+#endif
 
-void       mx_combo_box_set_index (MxComboBox *box,
-                                   gint        index);
-const gint mx_combo_box_get_index (MxComboBox *box);
+void         mx_combo_box_set_active_text (MxComboBox  *box,
+                                           const gchar *text);
+const gchar* mx_combo_box_get_active_text (MxComboBox  *box);
+
+void         mx_combo_box_set_index       (MxComboBox *box,
+                                           gint        index);
+const gint   mx_combo_box_get_index       (MxComboBox *box);
 
 G_END_DECLS
 
