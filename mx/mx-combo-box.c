@@ -832,7 +832,7 @@ mx_combo_box_remove_text (MxComboBox *box,
 /**
  * mx_combo_box_set_active_text:
  * @box: A #MxComboBox
- * @title: text to display
+ * @text: text to display
  *
  * Set the text displayed in the combo box
  *
@@ -851,12 +851,12 @@ mx_combo_box_set_title (MxComboBox  *box,
 
 void
 mx_combo_box_set_active_text (MxComboBox  *box,
-                              const gchar *title)
+                              const gchar *text)
 {
   g_return_if_fail (MX_IS_COMBO_BOX (box));
 
   box->priv->index = -1;
-  clutter_text_set_text ((ClutterText*) box->priv->label, title);
+  clutter_text_set_text ((ClutterText*) box->priv->label, text);
 
   g_object_notify (G_OBJECT (box), "index");
   g_object_notify (G_OBJECT (box), "active-text");
