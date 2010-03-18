@@ -203,6 +203,9 @@ mx_focus_manager_ensure_focused (MxFocusManager *manager, ClutterStage *stage)
       else
         priv->focused = mx_focusable_accept_focus (MX_FOCUSABLE (actor),
                                                    MX_FIRST);
+
+      if (priv->focused)
+        g_object_notify (G_OBJECT (manager), "focused");
     }
 
   return (priv->focused) ? TRUE : FALSE;
@@ -215,6 +218,7 @@ mx_focus_manager_event_cb (ClutterStage   *stage,
 {
   MxFocusHint hint;
   MxDirection direction;
+  MxFocusable *old_focus;
   MxFocusManagerPrivate *priv = manager->priv;
 
   if (event->type != CLUTTER_KEY_PRESS)
@@ -238,12 +242,16 @@ mx_focus_manager_event_cb (ClutterStage   *stage,
         hint = MX_FIRST;
       }
 
+    old_focus = priv->focused;
     priv->focused = mx_focusable_move_focus (priv->focused, direction,
                                              priv->focused);
 
     /* if focusable is NULL, then we reached the end of the focus chain */
     if (!priv->focused)
       mx_focus_manager_start_focus (manager, hint);
+
+    if (priv->focused != old_focus)
+      g_object_notify (G_OBJECT (manager), "focused");
 
     return TRUE;
 /*
