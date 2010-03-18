@@ -194,7 +194,7 @@ mx_offscreen_finalize (GObject *object)
   G_OBJECT_CLASS (mx_offscreen_parent_class)->finalize (object);
 }
 
-void
+static void
 mx_offscreen_get_preferred_width (ClutterActor *actor,
                                   gfloat        for_height,
                                   gfloat       *min_width_p,
@@ -218,7 +218,7 @@ mx_offscreen_get_preferred_width (ClutterActor *actor,
     }
 }
 
-void
+static void
 mx_offscreen_get_preferred_height (ClutterActor *actor,
                                    gfloat        for_width,
                                    gfloat       *min_height_p,
@@ -242,7 +242,7 @@ mx_offscreen_get_preferred_height (ClutterActor *actor,
     }
 }
 
-void
+static void
 mx_offscreen_allocate (ClutterActor           *actor,
                        const ClutterActorBox  *box,
                        ClutterAllocationFlags  flags)

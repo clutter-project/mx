@@ -1180,7 +1180,7 @@ mx_widget_set_tooltip_text (MxWidget    *widget,
   priv = widget->priv;
 
   if (priv->tooltip)
-    old_text = mx_tooltip_get_label (priv->tooltip);
+    old_text = mx_tooltip_get_text (priv->tooltip);
   else
     old_text = NULL;
 
