@@ -389,7 +389,7 @@ mx_button_enter (ClutterActor         *actor,
 
   button->priv->is_hover = 1;
 
-  if (mx_widget_get_has_tooltip (widget))
+  if (mx_widget_get_tooltip_text (widget))
     mx_widget_show_tooltip (widget);
 
   return FALSE;
@@ -419,7 +419,7 @@ mx_button_leave (ClutterActor         *actor,
   else
     mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), NULL);
 
-  if (mx_widget_get_has_tooltip (widget))
+  if (mx_widget_get_tooltip_text (widget))
     mx_widget_hide_tooltip (widget);
 
   return FALSE;

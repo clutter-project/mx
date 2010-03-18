@@ -93,9 +93,6 @@ GType mx_widget_get_type (void) G_GNUC_CONST;
 G_GNUC_DEPRECATED void mx_widget_ensure_style (MxWidget *widget);
 #endif
 
-void         mx_widget_set_has_tooltip  (MxWidget    *widget,
-                                         gboolean     has_tooltip);
-gboolean     mx_widget_get_has_tooltip  (MxWidget    *widget);
 void         mx_widget_set_tooltip_text (MxWidget    *widget,
                                          const gchar *text);
 const gchar* mx_widget_get_tooltip_text (MxWidget    *widget);

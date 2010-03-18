@@ -62,7 +62,6 @@ struct _MxWidgetPrivate
   ClutterActor *background_image;
   ClutterColor *bg_color;
 
-  guint         has_tooltip : 1;
   guint         is_hovered : 1;
 
   MxTooltip    *tooltip;
@@ -90,7 +89,6 @@ enum
   PROP_STYLE_CLASS,
   PROP_STYLE_PSEUDO_CLASS,
 
-  PROP_HAS_TOOLTIP,
   PROP_TOOLTIP_TEXT
 };
 
@@ -135,10 +133,6 @@ mx_widget_set_property (GObject      *gobject,
       mx_stylable_set_style_class (MX_STYLABLE (actor), g_value_get_string (value));
       break;
 
-    case PROP_HAS_TOOLTIP:
-      mx_widget_set_has_tooltip (actor, g_value_get_boolean (value));
-      break;
-
     case PROP_TOOLTIP_TEXT:
       mx_widget_set_tooltip_text (actor, g_value_get_string (value));
       break;
@@ -170,10 +164,6 @@ mx_widget_get_property (GObject    *gobject,
 
     case PROP_STYLE_CLASS:
       g_value_set_string (value, priv->style_class);
-      break;
-
-    case PROP_HAS_TOOLTIP:
-      g_value_set_boolean (value, priv->has_tooltip);
       break;
 
     case PROP_TOOLTIP_TEXT:
@@ -669,7 +659,7 @@ mx_widget_enter (ClutterActor         *actor,
   mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "hover");
   priv->is_hovered = TRUE;
 
-  if (priv->has_tooltip)
+  if (priv->tooltip)
     mx_widget_show_tooltip (widget);
 
   return FALSE;
@@ -688,7 +678,7 @@ mx_widget_leave (ClutterActor         *actor,
   mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "");
   priv->is_hovered = FALSE;
 
-  if (priv->has_tooltip)
+  if (priv->tooltip)
     mx_tooltip_hide (priv->tooltip);
 
   return FALSE;
@@ -834,22 +824,6 @@ mx_widget_class_init (MxWidgetClass *klass)
                                     "style-class");
   g_object_class_override_property (gobject_class, PROP_STYLE_PSEUDO_CLASS,
                                     "style-pseudo-class");
-
-  /**
-   * MxWidget:has-tooltip:
-   *
-   * Determines whether the widget has a tooltip. If set to TRUE, causes the
-   * widget to monitor enter and leave events (i.e. sets the widget reactive).
-   */
-  pspec = g_param_spec_boolean ("has-tooltip",
-                                "Has Tooltip",
-                                "Determines whether the widget has a tooltip",
-                                FALSE,
-                                MX_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class,
-                                   PROP_HAS_TOOLTIP,
-                                   pspec);
-
 
   /**
    * MxWidget:tooltip-text:
@@ -1150,19 +1124,7 @@ mx_widget_get_padding (MxWidget  *widget,
   *padding = widget->priv->padding;
 }
 
-/**
- * mx_widget_set_has_tooltip:
- * @widget: A #MxWidget
- * @has_tooltip: #TRUE if the widget should display a tooltip
- *
- * Enables tooltip support on the #MxWidget.
- *
- * Note that setting has-tooltip to #TRUE will cause the widget to be set
- * reactive. If you no longer need tooltip support and do not need the widget
- * to be reactive, you need to set ClutterActor::reactive to FALSE.
- *
- */
-void
+static void
 mx_widget_set_has_tooltip (MxWidget *widget,
                            gboolean  has_tooltip)
 {
@@ -1174,8 +1136,6 @@ mx_widget_set_has_tooltip (MxWidget *widget,
   actor = CLUTTER_ACTOR (widget);
 
   priv = widget->priv;
-
-  priv->has_tooltip = has_tooltip;
 
   if (has_tooltip)
     {
@@ -1198,29 +1158,14 @@ mx_widget_set_has_tooltip (MxWidget *widget,
 }
 
 /**
- * mx_widget_get_has_tooltip:
- * @widget: A #MxWidget
- *
- * Returns the current value of the has-tooltip property. See
- * mx_tooltip_set_has_tooltip() for more information.
- *
- * Returns: current value of has-tooltip on @widget
- */
-gboolean
-mx_widget_get_has_tooltip (MxWidget *widget)
-{
-  g_return_val_if_fail (MX_IS_WIDGET (widget), FALSE);
-
-  return widget->priv->has_tooltip;
-}
-
-/**
  * mx_widget_set_tooltip_text:
  * @widget: A #MxWidget
  * @text: text to set as the tooltip
  *
- * Set the tooltip text of the widget. This will set MxWidget::has-tooltip to
- * #TRUE. A value of #NULL will unset the tooltip and set has-tooltip to #FALSE.
+ * Set the tooltip text of the widget. Note that setting tooltip text will cause
+ * the widget to be set reactive. If you no longer need tooltips and you do not
+ * need the widget to be reactive, you must set ClutterActor::reactive to
+ * %FALSE.
  *
  */
 void
@@ -1228,10 +1173,21 @@ mx_widget_set_tooltip_text (MxWidget    *widget,
                             const gchar *text)
 {
   MxWidgetPrivate *priv;
+  const gchar *old_text;
 
   g_return_if_fail (MX_IS_WIDGET (widget));
 
   priv = widget->priv;
+
+  if (priv->tooltip)
+    old_text = mx_tooltip_get_label (priv->tooltip);
+  else
+    old_text = NULL;
+
+  /* Don't do anything if the text hasn't changed */
+  if ((text == old_text) ||
+      (text && old_text && g_str_equal (text, old_text)))
+    return;
 
   if (text == NULL)
     mx_widget_set_has_tooltip (widget, FALSE);
@@ -1240,6 +1196,8 @@ mx_widget_set_tooltip_text (MxWidget    *widget,
 
   if (priv->tooltip)
     mx_tooltip_set_text (priv->tooltip, text);
+
+  g_object_notify (G_OBJECT (widget), "tooltip-text");
 }
 
 /**
@@ -1258,7 +1216,7 @@ mx_widget_get_tooltip_text (MxWidget *widget)
   g_return_val_if_fail (MX_IS_WIDGET (widget), NULL);
   priv = widget->priv;
 
-  if (!priv->has_tooltip)
+  if (!priv->tooltip)
     return NULL;
 
   return mx_tooltip_get_text (widget->priv->tooltip);
