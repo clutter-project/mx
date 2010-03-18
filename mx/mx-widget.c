@@ -63,7 +63,6 @@ struct _MxWidgetPrivate
   ClutterColor *bg_color;
 
   guint         has_tooltip : 1;
-  guint         is_style_dirty : 1;
   guint         is_hovered : 1;
 
   MxTooltip    *tooltip;
@@ -655,8 +654,6 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
       else
         clutter_actor_queue_redraw ((ClutterActor *) self);
     }
-
-  priv->is_style_dirty = FALSE;
 }
 
 static gboolean
