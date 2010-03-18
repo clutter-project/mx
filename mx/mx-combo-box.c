@@ -64,7 +64,7 @@ enum
 {
   PROP_0,
 
-  PROP_TITLE,
+  PROP_ACTIVE_TEXT,
   PROP_INDEX
 };
 
@@ -115,7 +115,7 @@ mx_combo_box_get_property (GObject    *object,
 
   switch (property_id)
     {
-    case PROP_TITLE:
+    case PROP_ACTIVE_TEXT:
       g_value_set_string (value,
                           clutter_text_get_text ((ClutterText*) priv->label));
       break;
@@ -139,8 +139,8 @@ mx_combo_box_set_property (GObject      *object,
 
   switch (property_id)
     {
-    case PROP_TITLE:
-      mx_combo_box_set_title (combo, g_value_get_string (value));
+    case PROP_ACTIVE_TEXT:
+      mx_combo_box_set_active_text (combo, g_value_get_string (value));
       break;
 
     case PROP_INDEX:
@@ -627,13 +627,13 @@ mx_combo_box_class_init (MxComboBoxClass *klass)
   actor_class->button_press_event = mx_combo_box_button_press_event;
   actor_class->key_press_event = mx_combo_box_key_press_event;
 
-  pspec = g_param_spec_string ("title",
-                               "Title",
+  pspec = g_param_spec_string ("active-text",
+                               "Active Text",
                                "Text currently displayed in the combo box"
                                " button",
                                "",
                                MX_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_TITLE, pspec);
+  g_object_class_install_property (object_class, PROP_ACTIVE_TEXT, pspec);
 
   pspec = g_param_spec_int ("index",
                             "Index",
@@ -830,16 +830,28 @@ mx_combo_box_remove_text (MxComboBox *box,
 }
 
 /**
- * mx_combo_box_set_title:
+ * mx_combo_box_set_active_text:
  * @box: A #MxComboBox
  * @title: text to display
  *
  * Set the text displayed in the combo box
  *
  */
+#ifndef MX_DISABLE_DEPRECATED
 void
 mx_combo_box_set_title (MxComboBox  *box,
                         const gchar *title)
+{
+  g_warning ("mx_combo_box_set_title is deprecated."
+             " Use mx_combo_box_set_active_text instead");
+
+  mx_combo_box_set_active_text (box, title);
+}
+#endif
+
+void
+mx_combo_box_set_active_text (MxComboBox  *box,
+                              const gchar *title)
 {
   g_return_if_fail (MX_IS_COMBO_BOX (box));
 
@@ -847,19 +859,30 @@ mx_combo_box_set_title (MxComboBox  *box,
   clutter_text_set_text ((ClutterText*) box->priv->label, title);
 
   g_object_notify (G_OBJECT (box), "index");
-  g_object_notify (G_OBJECT (box), "title");
+  g_object_notify (G_OBJECT (box), "active-text");
 }
 
+
 /**
- * mx_combo_box_get_title:
+ * mx_combo_box_get_active_text:
  * @box: A #MxComboBox
  *
  * Get the text displayed in the combo box
  *
  * Returns: the text string, owned by the combo box
  */
+#ifndef MX_DISABLE_DEPRECATED
 const gchar*
 mx_combo_box_get_title (MxComboBox *box)
+{
+  g_warning ("mx_combo_box_get_title is deprecated."
+             " Use mx_combo_box_get_title instead.");
+  return mx_combo_box_get_active_text (box);
+}
+#endif
+
+const gchar*
+mx_combo_box_get_active_text (MxComboBox *box)
 {
   g_return_val_if_fail (MX_IS_COMBO_BOX (box), NULL);
 
@@ -923,7 +946,7 @@ mx_combo_box_set_index (MxComboBox *box,
     }
 
   g_object_notify (G_OBJECT (box), "index");
-  g_object_notify (G_OBJECT (box), "title");
+  g_object_notify (G_OBJECT (box), "active-text");
 }
 
 /**

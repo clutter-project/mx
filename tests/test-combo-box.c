@@ -22,7 +22,7 @@
 static void
 title_changed_cb (MxComboBox *box)
 {
-  printf ("title now: %s\n", mx_combo_box_get_title (box));
+  printf ("title now: %s\n", mx_combo_box_get_active_text (box));
 }
 
 static void
@@ -38,7 +38,7 @@ stage_key_press_cb (ClutterActor *actor,
 {
   if (event->keyval == 'r')
     {
-      mx_combo_box_set_title (box, "London");
+      mx_combo_box_set_active_text (box, "London");
     }
 
   if (event->keyval >= '0' && event->keyval <= '9')
@@ -69,7 +69,7 @@ combo_box_main (ClutterContainer *stage)
   mx_combo_box_append_text (MX_COMBO_BOX (combo), "Leicester Square");
   mx_combo_box_append_text (MX_COMBO_BOX (combo), "Coventry Street");
   mx_combo_box_append_text (MX_COMBO_BOX (combo), "Piccadilly");
-  mx_combo_box_set_title (MX_COMBO_BOX (combo), "London");
+  mx_combo_box_set_active_text (MX_COMBO_BOX (combo), "London");
 
   g_signal_connect (combo, "notify::title", G_CALLBACK (title_changed_cb),
                     NULL);
