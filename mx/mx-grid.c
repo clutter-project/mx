@@ -205,8 +205,6 @@ struct _MxGridPrivate
 
   MxAdjustment *hadjustment;
   MxAdjustment *vadjustment;
-
-  gboolean      allocate_hidden;
 };
 
 enum
@@ -223,7 +221,6 @@ enum
   PROP_HADJUST,
   PROP_VADJUST,
   PROP_MAX_STRIDE,
-  PROP_ALLOCATE_HIDDEN
 };
 
 struct _MxGridActorData
@@ -233,66 +230,12 @@ struct _MxGridActorData
   gfloat   pref_width, pref_height;
 };
 
-static void
-ensure_children_are_visible (MxGrid *grid)
-{
-  MxGridPrivate *priv = grid->priv;
-  GList *child_item;
-  gfloat x, y;
-  ClutterActorBox grid_b;
-
-  if (priv->hadjustment)
-    x = mx_adjustment_get_value (priv->hadjustment);
-  else
-    x = 0;
-
-  if (priv->vadjustment)
-    y = mx_adjustment_get_value (priv->vadjustment);
-  else
-    y = 0;
-
-  clutter_actor_get_allocation_box ((ClutterActor *) grid, &grid_b);
-  grid_b.x2 = (grid_b.x2 - grid_b.x1) + x;
-  grid_b.x1 = 0;
-  grid_b.y2 = (grid_b.y2 - grid_b.y1) + y;
-  grid_b.y1 = 0;
-
-  for (child_item = priv->list;
-       child_item != NULL;
-       child_item = child_item->next)
-    {
-      ClutterActor *child = child_item->data;
-      ClutterActorBox child_b;
-
-      g_assert (child != NULL);
-
-      /* check if the child is "on screen" */
-      clutter_actor_get_allocation_box (child, &child_b);
-
-      if ((child_b.x1 < grid_b.x2)
-          && (child_b.x2 > grid_b.x1)
-          && (child_b.y1 < grid_b.y2)
-          && (child_b.y2 > grid_b.y1))
-        {
-          clutter_actor_show (child);
-        } else {
-          clutter_actor_hide (child);
-        }
-    }
-}
-
 /* scrollable interface */
 static void
 adjustment_value_notify_cb (MxAdjustment *adjustment,
                             GParamSpec   *pspec,
                             MxGrid       *grid)
 {
-  MxGridPrivate *priv = grid->priv;
-
-  /* Mark children as visible if they are inside the visible area */
-  if (priv->allocate_hidden)
-    ensure_children_are_visible (grid);
-
   clutter_actor_queue_redraw (CLUTTER_ACTOR (grid));
 }
 
@@ -540,16 +483,6 @@ mx_grid_class_init (MxGridClass *klass)
   g_object_class_override_property (gobject_class,
                                     PROP_VADJUST,
                                     "vadjustment");
-
-  pspec = g_param_spec_boolean ("allocate-hidden",
-                                "Allocate children that are not visible",
-                                "This flag determines whether hidden children"
-                                " should be treated allocated or whether they"
-                                " should be skipped from the allocation and"
-                                " treated as if they are not present",
-                                FALSE,
-                                G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-  g_object_class_install_property (gobject_class, PROP_ALLOCATE_HIDDEN, pspec);
 }
 
 static void
@@ -734,11 +667,6 @@ mx_grid_init (MxGrid *self)
                              g_direct_equal,
                              NULL,
                              mx_grid_free_actor_data);
-
-  /* allocate_hidden defaults to FALSE. This is the original MxGrid
-   * behaviour
-   */
-  priv->allocate_hidden = FALSE;
 }
 
 static void
@@ -1012,10 +940,6 @@ mx_grid_set_property (GObject      *object,
     case PROP_MAX_STRIDE:
       mx_grid_set_max_stride (grid, g_value_get_int (value));
       break;
-    case PROP_ALLOCATE_HIDDEN:
-      priv->allocate_hidden = g_value_get_boolean (value);
-      clutter_actor_queue_relayout ((ClutterActor *) object);
-      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -1071,9 +995,6 @@ mx_grid_get_property (GObject    *object,
       break;
     case PROP_MAX_STRIDE:
       g_value_set_int (value, mx_grid_get_max_stride (grid));
-      break;
-    case PROP_ALLOCATE_HIDDEN:
-      g_value_set_boolean (value, priv->allocate_hidden);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -1139,9 +1060,6 @@ mx_grid_real_remove (ClutterContainer *container,
       clutter_actor_queue_relayout (CLUTTER_ACTOR (layout));
 
       g_signal_emit_by_name (container, "actor-removed", actor);
-
-      if (!priv->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (actor))
-        clutter_actor_queue_redraw (CLUTTER_ACTOR (layout));
     }
   priv->list = g_list_remove (priv->list, actor);
 
@@ -1569,7 +1487,7 @@ mx_grid_do_allocate (ClutterActor          *self,
           gfloat natural_width;
           gfloat natural_height;
 
-          if (!priv->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+          if (!CLUTTER_ACTOR_IS_VISIBLE (child))
             continue;
 
           /* each child will get as much space as they require */
@@ -1597,7 +1515,7 @@ mx_grid_do_allocate (ClutterActor          *self,
       gfloat natural_a;
       gfloat natural_b;
 
-      if (!priv->allocate_hidden && !CLUTTER_ACTOR_IS_VISIBLE (child))
+      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
         continue;
 
       /* each child will get as much space as they require */
@@ -1808,11 +1726,6 @@ mx_grid_allocate (ClutterActor          *self,
                        FALSE,
                        NULL,
                        NULL);
-
-  if (priv->allocate_hidden)
-    {
-      ensure_children_are_visible ((MxGrid *) self);
-    }
 }
 
 

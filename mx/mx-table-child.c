@@ -58,7 +58,6 @@ enum {
   CHILD_PROP_Y_ALIGN,
   CHILD_PROP_X_FILL,
   CHILD_PROP_Y_FILL,
-  CHILD_PROP_ALLOCATE_HIDDEN,
 };
 
 G_DEFINE_TYPE (MxTableChild, mx_table_child, CLUTTER_TYPE_CHILD_META);
@@ -315,15 +314,6 @@ mx_table_child_class_init (MxTableChildClass *klass)
                                 MX_PARAM_READWRITE);
 
   g_object_class_install_property (gobject_class, CHILD_PROP_Y_FILL, pspec);
-
-  pspec = g_param_spec_boolean ("allocate-hidden",
-                                "Allocate Hidden",
-                                "Whether the child should be allocate even "
-                                "if it is hidden",
-                                TRUE,
-                                MX_PARAM_READWRITE);
-
-  g_object_class_install_property (gobject_class, CHILD_PROP_ALLOCATE_HIDDEN, pspec);
 }
 
 static void
