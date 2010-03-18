@@ -106,7 +106,7 @@ G_GNUC_DEPRECATED const gchar* mx_combo_box_get_title (MxComboBox  *box);
 #endif
 
 void         mx_combo_box_set_active_text (MxComboBox  *box,
-                                           const gchar *title);
+                                           const gchar *text);
 const gchar* mx_combo_box_get_active_text (MxComboBox  *box);
 
 void         mx_combo_box_set_index       (MxComboBox *box,
