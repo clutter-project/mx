@@ -885,7 +885,7 @@ mx_scroll_view_set_enable_mouse_scrolling (MxScrollView *scroll,
       if (enabled)
         clutter_actor_set_reactive ((ClutterActor *) scroll, TRUE);
 
-      g_object_notify (scroll, "enable-mouse-scrolling");
+      g_object_notify (G_OBJECT (scroll), "enable-mouse-scrolling");
     }
 }
 
