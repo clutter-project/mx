@@ -20,7 +20,7 @@ mx_label_get_type
 mx_list_view_get_type
 mx_notebook_get_type
 mx_padding_get_type
-mx_popup_get_type
+mx_menu_get_type
 mx_progress_bar_get_type
 mx_scroll_bar_get_type
 mx_scroll_view_get_type
