@@ -4,7 +4,7 @@
 #define _MX_WINDOW_H
 
 #include <glib-object.h>
-#include <mx/mx.h>
+#include <mx/mx-toolbar.h>
 
 G_BEGIN_DECLS
 
@@ -66,6 +66,8 @@ void       mx_window_set_window_position (MxWindow *window, gint  x, gint  y);
 
 void         mx_window_set_icon_name (MxWindow *window, const gchar *icon_name);
 const gchar *mx_window_get_icon_name (MxWindow *window);
+
+ClutterStage *mx_window_get_clutter_stage (MxWindow *window);
 
 G_END_DECLS
 

@@ -25,7 +25,8 @@ const grey = new Clutter.Color(); grey.from_string ("grey");
 Clutter.init (0, null);
 let app = new Mx.Application ({"application-name": "Test deformations"});
 
-let stage = app.create_window ();
+let win = app.create_window ();
+let stage = win.get_clutter_stage ();
 stage.set_color (grey);
 stage.set_size (400, 500);
 

@@ -38,13 +38,15 @@ fullscreen_cb (MxToggle     *toggle,
 int
 main (int argc, char **argv)
 {
+  MxWindow *window;
   MxApplication *app;
   ClutterActor *stage, *toggle, *label, *table;
 
   app = mx_application_new (&argc, &argv, "Test PathBar", 0);
 
-  stage = (ClutterActor *)mx_application_create_window (app);
-  mx_window_set_icon_name (MX_WINDOW (stage), "window-new");
+  window = mx_application_create_window (app);
+  stage = (ClutterActor *)mx_window_get_clutter_stage (window);
+  mx_window_set_icon_name (window, "window-new");
 
   clutter_actor_set_size (stage, 480, 320);
 

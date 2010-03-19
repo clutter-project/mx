@@ -22,7 +22,8 @@ const Clutter = imports.gi.Clutter;
 const Mx = imports.gi.Mx;
 
 let [app] = Mx.Application.new (0, null, "Test Small Screen", 0);
-let stage = app.create_window ();
+let win = app.create_window ();
+let stage = win.get_clutter_stage ();
 
 let hbox = new Mx.BoxLayout ({spacing: 8});
 let toggle = new Mx.Toggle ();

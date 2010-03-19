@@ -58,12 +58,14 @@ relabel_cb (MxPathBar *bar)
 int
 main (int argc, char **argv)
 {
+  MxWindow *window;
   MxApplication *app;
   ClutterActor *stage, *bar, *button, *hbox;
 
   app = mx_application_new (&argc, &argv, "Test PathBar", 0);
 
-  stage = (ClutterActor *)mx_application_create_window (app);
+  window = mx_application_create_window (app);
+  stage = (ClutterActor *)mx_window_get_clutter_stage (window);
 
   bar = mx_path_bar_new ();
   mx_path_bar_set_clear_on_change (MX_PATH_BAR (bar), TRUE);
@@ -102,7 +104,7 @@ main (int argc, char **argv)
     }
   else
     {
-      MxToolbar *toolbar = mx_window_get_toolbar (MX_WINDOW (stage));
+      MxToolbar *toolbar = mx_window_get_toolbar (window);
       clutter_container_add_actor (CLUTTER_CONTAINER (toolbar), bar);
       clutter_container_add_actor (CLUTTER_CONTAINER (stage), hbox);
     }

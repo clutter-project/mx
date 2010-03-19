@@ -1486,3 +1486,12 @@ mx_window_get_icon_name (MxWindow *window)
   g_return_val_if_fail (MX_IS_WINDOW (window), NULL);
   return window->priv->icon_name;
 }
+
+ClutterStage *
+mx_window_get_clutter_stage (MxWindow *window)
+{
+  g_return_val_if_fail (MX_IS_WINDOW (window), NULL);
+
+  return CLUTTER_STAGE (window);
+}
+

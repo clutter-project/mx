@@ -53,6 +53,7 @@ on_progress_changed (MxSlider     *slider,
 int
 main (int argc, char *argv[])
 {
+  MxWindow *window;
   MxApplication *app;
   gfloat width, height;
   ClutterActor *stage, *table, *slider, *label, *texture, *front, *back;
@@ -65,7 +66,8 @@ main (int argc, char *argv[])
 
   app = mx_application_new (&argc, &argv, "Pimp My Page Turn", 0);
 
-  stage = (ClutterActor *)mx_application_create_window (app);
+  window = mx_application_create_window (app);
+  stage = (ClutterActor *)mx_window_get_clutter_stage (window);
 
   clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
 
