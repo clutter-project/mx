@@ -39,7 +39,7 @@ G_BEGIN_DECLS
         (G_PARAM_READABLE | G_PARAM_WRITABLE | \
          G_PARAM_STATIC_NICK | G_PARAM_STATIC_NAME | G_PARAM_STATIC_BLURB)
 
-G_END_DECLS
+#define MX_ALIGN_TO_FLOAT(x) ((x == MX_ALIGN_START) ? 0.0 : (x == MX_ALIGN_MIDDLE) ? 0.5 : 1.0)
 
 struct _MxTableChild
 {
@@ -78,5 +78,8 @@ enum
 };
 
 gboolean _mx_debug (gint debug);
+
+G_END_DECLS
+
 
 #endif /* __MX_PRIVATE_H__ */

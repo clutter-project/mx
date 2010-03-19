@@ -110,12 +110,20 @@ gfloat         mx_grid_get_row_spacing        (MxGrid   *self);
 void           mx_grid_set_column_spacing     (MxGrid   *self,
                                                gfloat    value);
 gfloat         mx_grid_get_column_spacing     (MxGrid   *self);
-void           mx_grid_set_valign             (MxGrid   *self,
+#ifndef MX_DISABLE_DEPRECATED
+G_GNUC_DEPRECATED void    mx_grid_set_valign  (MxGrid   *self,
                                                gdouble   value);
-gdouble        mx_grid_get_valign             (MxGrid   *self);
-void           mx_grid_set_halign             (MxGrid   *self,
+G_GNUC_DEPRECATED gdouble mx_grid_get_valign  (MxGrid   *self);
+G_GNUC_DEPRECATED void    mx_grid_set_halign  (MxGrid   *self,
                                                gdouble   value);
-gdouble        mx_grid_get_halign             (MxGrid   *self);
+G_GNUC_DEPRECATED gdouble mx_grid_get_halign  (MxGrid   *self);
+#endif
+void           mx_grid_set_child_y_align      (MxGrid   *self,
+                                               MxAlign   value);
+MxAlign        mx_grid_get_child_y_align      (MxGrid   *self);
+void           mx_grid_set_child_x_align      (MxGrid   *self,
+                                               MxAlign   value);
+MxAlign        mx_grid_get_child_x_align      (MxGrid   *self);
 
 void mx_grid_set_max_stride (MxGrid *self,
                              gint    value);

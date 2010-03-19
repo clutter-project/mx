@@ -204,8 +204,8 @@ main (int argc, char **argv)
 						{ 0xd0, 0xd0, 0xff, 0xff});
 
   data.layout =g_object_new (MX_TYPE_GRID,
-                             "valign", 0.5,
-                             "halign", 0.5,
+                             "child-x-align", MX_ALIGN_MIDDLE,
+                             "child-y-align", MX_ALIGN_MIDDLE,
                              "row-spacing", 5.0f,
                              "column-spacing", 5.0f,
                              NULL);
@@ -226,8 +226,8 @@ main (int argc, char **argv)
       boolean_toggle    (G_OBJECT(data.layout), "orientation",        "columns"),
       boolean_toggle    (G_OBJECT(data.layout), "homogenous-columns", "homogenous columns"),
       boolean_toggle    (G_OBJECT(data.layout), "homogenous-rows",    "homogenous rows"),
-      normalized_slider (G_OBJECT(data.layout), "valign",             "valign"),
-      normalized_slider (G_OBJECT(data.layout), "halign",             "halign"),
+     // boolean_toggle    (G_OBJECT(data.layout), "child-x-align",    "child-x-align"),
+     // boolean_toggle    (G_OBJECT(data.layout), "child-y-align",    "child-y-align"),
       units_slider      (G_OBJECT(data.layout), "column-spacing",         "column-gap"),
       units_slider      (G_OBJECT(data.layout), "row-spacing",            "row-gap"),
       NULL);
@@ -297,7 +297,7 @@ main (int argc, char **argv)
                                          "x", 500.0f,
                                          "y", 5.0f,
                                          "max-stride", 1,
-                                         "halign", 0.5,
+                                         "child-x-align", MX_ALIGN_MIDDLE,
                                          "homogenous-columns", TRUE,
                                          NULL);
     clutter_container_add (CLUTTER_CONTAINER (data.stage), layout, NULL);
@@ -321,7 +321,7 @@ main (int argc, char **argv)
     ClutterActor *layout = g_object_new (MX_TYPE_GRID,
                                          "x",       60.0f,
                                          "y",       420.0f,
-                                         "valign",  1.0,
+                                         "child-y-align",  MX_ALIGN_END,
                                          "max-stride", 1,
                                          "column-spacing", 4.0f,
                                          NULL);
