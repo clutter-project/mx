@@ -88,9 +88,11 @@ MxAdjustment *mx_adjustment_new_with_values (gdouble       value,
 gdouble       mx_adjustment_get_value       (MxAdjustment *adjustment);
 void          mx_adjustment_set_value       (MxAdjustment *adjustment,
                                              gdouble       value);
+#if 0
 void          mx_adjustment_clamp_page      (MxAdjustment *adjustment,
                                              gdouble       lower,
                                              gdouble       upper);
+#endif
 void          mx_adjustment_set_values      (MxAdjustment *adjustment,
                                              gdouble       value,
                                              gdouble       lower,

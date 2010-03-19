@@ -113,6 +113,9 @@ static gboolean mx_adjustment_set_page_increment (MxAdjustment *adjustment,
                                                   gdouble       page);
 static gboolean mx_adjustment_set_page_size      (MxAdjustment *adjustment,
                                                   gdouble       size);
+static void mx_adjustment_clamp_page (MxAdjustment *adjustment,
+                                      gdouble       lower,
+                                      gdouble       upper);
 
 static void
 mx_adjustment_constructed (GObject *object)
@@ -531,7 +534,7 @@ mx_adjustment_set_value (MxAdjustment *adjustment,
     }
 }
 
-void
+static void
 mx_adjustment_clamp_page (MxAdjustment *adjustment,
                           gdouble       lower,
                           gdouble       upper)
