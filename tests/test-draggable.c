@@ -371,7 +371,7 @@ main (int argc, char *argv[])
   clutter_actor_set_position (draggable, 350, 100);
   clutter_actor_set_reactive (draggable, TRUE);
   clutter_actor_set_name (draggable, "h-handle");
-  mx_draggable_set_axis (MX_DRAGGABLE (draggable), MX_X_AXIS);
+  mx_draggable_set_axis (MX_DRAGGABLE (draggable), MX_DRAG_AXIS_X);
   mx_draggable_enable (MX_DRAGGABLE (draggable));
 
   draggable = g_object_new (DRAGGABLE_TYPE_RECTANGLE, NULL);
@@ -381,7 +381,7 @@ main (int argc, char *argv[])
   clutter_actor_set_position (draggable, 350, 300);
   clutter_actor_set_reactive (draggable, TRUE);
   clutter_actor_set_name (draggable, "v-handle");
-  mx_draggable_set_axis (MX_DRAGGABLE (draggable), MX_Y_AXIS);
+  mx_draggable_set_axis (MX_DRAGGABLE (draggable), MX_DRAG_AXIS_Y);
   mx_draggable_enable (MX_DRAGGABLE (draggable));
 
   clutter_actor_show_all (stage);

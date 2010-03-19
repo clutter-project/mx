@@ -43,9 +43,9 @@ typedef struct _MxDraggable           MxDraggable; /* dummy typedef */
 typedef struct _MxDraggableIface      MxDraggableIface;
 
 typedef enum {
-  MX_NO_AXIS,
-  MX_X_AXIS,
-  MX_Y_AXIS
+  MX_DRAG_AXIS_NONE,
+  MX_DRAG_AXIS_X,
+  MX_DRAG_AXIS_Y
 } MxDragAxis;
 
 typedef enum {

@@ -164,7 +164,7 @@ draggable_motion (DragContext        *context,
     }
   else
     {
-      if (context->axis == MX_X_AXIS)
+      if (context->axis == MX_DRAG_AXIS_X)
         delta_x = context->last_x - context->press_x;
       else
         delta_y = context->last_y - context->press_y;
@@ -458,7 +458,7 @@ mx_draggable_base_init (gpointer g_iface)
                                  "The axis along which the dragging "
                                  "should be performed",
                                  MX_TYPE_DRAG_AXIS,
-                                 0,
+                                 MX_DRAG_AXIS_NONE,
                                  MX_PARAM_READWRITE);
       g_object_interface_install_property (g_iface, pspec);
 
