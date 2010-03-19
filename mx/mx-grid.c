@@ -190,7 +190,7 @@ struct _MxGridPrivate
 
   gboolean      homogenous_rows;
   gboolean      homogenous_columns;
-  gboolean      end_align;
+  MxAlign       line_alignment;
   gfloat        column_spacing, row_spacing;
   gdouble       valign, halign;
 
@@ -216,7 +216,7 @@ enum
   PROP_COLUMN_SPACING,
   PROP_VALIGN,
   PROP_HALIGN,
-  PROP_END_ALIGN,
+  PROP_LINE_ALIGNMENT,
   PROP_ORIENTATION,
   PROP_HADJUST,
   PROP_VADJUST,
@@ -442,12 +442,13 @@ mx_grid_class_init (MxGridClass *klass)
                              G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
   g_object_class_install_property (gobject_class, PROP_ORIENTATION, pspec);
 
-  pspec = g_param_spec_boolean ("end-align",
-                                "end-align",
-                                "Right/bottom aligned rows/columns",
-                                FALSE,
-                                G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
-  g_object_class_install_property (gobject_class, PROP_END_ALIGN, pspec);
+  pspec = g_param_spec_enum ("line-alignment",
+                             "Line Alignment",
+                             "Alignment of rows/columns",
+                             MX_TYPE_ALIGN,
+                             MX_ALIGN_START,
+                             G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
+  g_object_class_install_property (gobject_class, PROP_LINE_ALIGNMENT, pspec);
 
 
   pspec = g_param_spec_double ("valign",
@@ -697,21 +698,43 @@ mx_grid_finalize (GObject *object)
   G_OBJECT_CLASS (mx_grid_parent_class)->finalize (object);
 }
 
-
+#ifndef MX_DISABLE_DEPRECATED
 void
-mx_grid_set_end_align (MxGrid  *self,
+mx_grid_set_end_align (MxGrid *self,
                        gboolean value)
 {
-  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  priv->end_align = value;
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+  g_warning ("mx_grid_set_end_align has been deprecated."
+             " Use mx_grid_set_line_alignment instead.");
+
+  mx_grid_set_line_alignment (self,
+                              (value) ? MX_ALIGN_END : MX_ALIGN_START);
 }
 
 gboolean
 mx_grid_get_end_align (MxGrid *self)
 {
+  g_warning ("mx_grid_get_end_align has been deprecated."
+             " Use mx_grid_get_line_alignment instead.");
+  return (mx_grid_get_line_alignment (self) == MX_ALIGN_END);
+}
+#endif
+
+
+/* XXX: this does not yet support MX_ALIGN_MIDDLE */
+void
+mx_grid_set_line_alignment (MxGrid  *self,
+                            MxAlign  value)
+{
   MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  return priv->end_align;
+  priv->line_alignment = value;
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+}
+
+gboolean
+mx_grid_get_line_alignment (MxGrid *self)
+{
+  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
+  return priv->line_alignment;
 }
 
 void
@@ -903,8 +926,8 @@ mx_grid_set_property (GObject      *object,
 
   switch (prop_id)
     {
-    case PROP_END_ALIGN:
-      mx_grid_set_end_align (grid, g_value_get_boolean (value));
+    case PROP_LINE_ALIGNMENT:
+      mx_grid_set_line_alignment (grid, g_value_get_enum (value));
       break;
     case PROP_HOMOGENOUS_ROWS:
       mx_grid_set_homogenous_rows (grid, g_value_get_boolean (value));
@@ -967,8 +990,8 @@ mx_grid_get_property (GObject    *object,
     case PROP_HOMOGENOUS_COLUMNS:
       g_value_set_boolean (value, mx_grid_get_homogenous_columns (grid));
       break;
-    case PROP_END_ALIGN:
-      g_value_set_boolean (value, mx_grid_get_end_align (grid));
+    case PROP_LINE_ALIGNMENT:
+      g_value_set_enum (value, mx_grid_get_line_alignment (grid));
       break;
     case PROP_ORIENTATION:
       g_value_set_enum (value, mx_grid_get_orientation (grid));
@@ -1545,7 +1568,7 @@ mx_grid_do_allocate (ClutterActor          *self,
           current_stride = 1;
         }
 
-      if (priv->end_align &&
+      if (priv->line_alignment &&
           priv->first_of_batch)
         {
           current_a = compute_row_start (iter, current_a, priv);

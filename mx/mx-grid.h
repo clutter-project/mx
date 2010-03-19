@@ -81,9 +81,14 @@ struct _MxGrid
 GType mx_grid_get_type (void) G_GNUC_CONST;
 
 ClutterActor  *mx_grid_new                    (void);
-void           mx_grid_set_end_align          (MxGrid   *self,
-                                               gboolean  value);
-gboolean       mx_grid_get_end_align          (MxGrid   *self);
+#ifndef MX_DISABLE_DEPRECATED
+G_GNUC_DEPRECATED void     mx_grid_set_end_align (MxGrid   *self,
+                                                  gboolean  value);
+G_GNUC_DEPRECATED gboolean mx_grid_get_end_align (MxGrid   *self);
+#endif
+void           mx_grid_set_line_alignment     (MxGrid   *self,
+                                               MxAlign  value);
+gboolean       mx_grid_get_line_alignment     (MxGrid   *self);
 void           mx_grid_set_homogenous_rows    (MxGrid   *self,
                                                gboolean  value);
 gboolean       mx_grid_get_homogenous_rows    (MxGrid   *self);

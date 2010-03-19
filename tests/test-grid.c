@@ -222,7 +222,7 @@ main (int argc, char **argv)
 
     clutter_container_add (CLUTTER_CONTAINER (vbox),
       clutter_text_new_with_text ("Sans 20px", "MxGrid properties:"),
-      boolean_toggle    (G_OBJECT(data.layout), "end-align",          "end-align"),
+      boolean_toggle    (G_OBJECT(data.layout), "line-alignment", "line-alignment"),
       boolean_toggle    (G_OBJECT(data.layout), "orientation",        "columns"),
       boolean_toggle    (G_OBJECT(data.layout), "homogenous-columns", "homogenous columns"),
       boolean_toggle    (G_OBJECT(data.layout), "homogenous-rows",    "homogenous rows"),
