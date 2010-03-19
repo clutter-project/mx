@@ -182,7 +182,7 @@ mx_list_view_init (MxListView *list_view)
 {
   list_view->priv = LIST_VIEW_PRIVATE (list_view);
 
-  mx_box_layout_set_orientation (MX_BOX_LAYOUT (list_view), MX_VERTICAL);
+  mx_box_layout_set_orientation (MX_BOX_LAYOUT (list_view), MX_ORIENTATION_VERTICAL);
 }
 
 

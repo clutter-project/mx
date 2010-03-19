@@ -278,7 +278,7 @@ mx_scroll_bar_allocate (ClutterActor          *actor,
   width = (box->x2 - box->x1) - padding.left - padding.right;
   height = (box->y2 - box->y1) - padding.top - padding.bottom;
 
-  if (priv->orientation == MX_VERTICAL)
+  if (priv->orientation == MX_ORIENTATION_VERTICAL)
     {
       stepper_size = width;
 
@@ -364,7 +364,7 @@ mx_scroll_bar_allocate (ClutterActor          *actor,
       else
         position = (value - lower) / (upper - lower - page_size);
 
-      if (priv->orientation == MX_VERTICAL)
+      if (priv->orientation == MX_ORIENTATION_VERTICAL)
         {
           avail_size = height - stepper_size * 2;
           handle_size = increment * avail_size;
@@ -524,7 +524,7 @@ mx_scroll_bar_class_init (MxScrollBarClass *klass)
                              "Orientation",
                              "The orientation of the scrollbar",
                              MX_TYPE_ORIENTATION,
-                             MX_HORIZONTAL,
+                             MX_ORIENTATION_HORIZONTAL,
                              MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_ORIENTATION, pspec);
 
@@ -591,7 +591,7 @@ move_slider (MxScrollBar *bar,
   if (!clutter_actor_transform_stage_point (priv->trough, x, y, &ux, &uy))
     return;
 
-  if (priv->orientation == MX_VERTICAL)
+  if (priv->orientation == MX_ORIENTATION_VERTICAL)
     size = clutter_actor_get_height (priv->trough)
            - clutter_actor_get_height (priv->handle);
   else
@@ -601,7 +601,7 @@ move_slider (MxScrollBar *bar,
   if (size == 0)
     return;
 
-  if (priv->orientation == MX_VERTICAL)
+  if (priv->orientation == MX_ORIENTATION_VERTICAL)
     pos = uy - priv->y_origin;
   else
     pos = ux - priv->x_origin;
@@ -744,7 +744,7 @@ trough_paging_cb (MxScrollBar *self)
                             &value, NULL, NULL,
                             NULL, &page_increment, NULL);
 
-  if (self->priv->orientation == MX_VERTICAL)
+  if (self->priv->orientation == MX_ORIENTATION_VERTICAL)
     handle_pos = clutter_actor_get_y (self->priv->handle);
   else
     handle_pos = clutter_actor_get_x (self->priv->handle);
@@ -754,7 +754,7 @@ trough_paging_cb (MxScrollBar *self)
                                        self->priv->move_y,
                                        &tx, &ty);
 
-  if (self->priv->orientation == MX_VERTICAL)
+  if (self->priv->orientation == MX_ORIENTATION_VERTICAL)
     event_pos = ty;
   else
     event_pos = tx;
@@ -1083,7 +1083,7 @@ mx_scroll_bar_get_adjustment (MxScrollBar *bar)
 MxOrientation
 mx_scroll_bar_get_orientation (MxScrollBar *bar)
 {
-  g_return_val_if_fail (MX_IS_SCROLL_BAR (bar), MX_HORIZONTAL);
+  g_return_val_if_fail (MX_IS_SCROLL_BAR (bar), MX_ORIENTATION_HORIZONTAL);
 
   return bar->priv->orientation;
 }

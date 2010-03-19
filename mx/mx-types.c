@@ -10,20 +10,20 @@ mx_font_weight_set_from_string (GValue      *dest,
 {
   if (!src)
     {
-      g_value_set_enum (dest, MX_WEIGHT_NORMAL);
+      g_value_set_enum (dest, MX_FONT_WEIGHT_NORMAL);
       return;
     }
 
   if (!strcmp (src, "bold"))
-    g_value_set_enum (dest, MX_WEIGHT_BOLD);
+    g_value_set_enum (dest, MX_FONT_WEIGHT_BOLD);
   else if (!strcmp (src, "normal"))
-    g_value_set_enum (dest, MX_WEIGHT_NORMAL);
+    g_value_set_enum (dest, MX_FONT_WEIGHT_NORMAL);
   else if (!strcmp (src, "lighter"))
-    g_value_set_enum (dest, MX_WEIGHT_LIGHTER);
+    g_value_set_enum (dest, MX_FONT_WEIGHT_LIGHTER);
   else if (!strcmp (src, "bolder"))
-    g_value_set_enum (dest, MX_WEIGHT_BOLDER);
+    g_value_set_enum (dest, MX_FONT_WEIGHT_BOLDER);
   else
-    g_value_set_enum (dest, MX_WEIGHT_NORMAL);
+    g_value_set_enum (dest, MX_FONT_WEIGHT_NORMAL);
 }
 
 static gpointer

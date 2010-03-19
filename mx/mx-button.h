@@ -82,9 +82,14 @@ ClutterActor         *mx_button_new_with_label  (const gchar *text);
 G_CONST_RETURN gchar *mx_button_get_label       (MxButton    *button);
 void                  mx_button_set_label       (MxButton    *button,
                                                  const gchar *text);
-void                  mx_button_set_toggle_mode (MxButton    *button,
+#ifndef MX_DISABLE_DEPRECATED
+G_GNUC_DEPRECATED void mx_button_set_toggle_mode (MxButton    *button,
+                                                  gboolean     toggle);
+G_GNUC_DEPRECATED gboolean mx_button_get_toggle_mode (MxButton    *button);
+#endif
+void                  mx_button_set_is_toggle   (MxButton    *button,
                                                  gboolean     toggle);
-gboolean              mx_button_get_toggle_mode (MxButton    *button);
+gboolean              mx_button_get_is_toggle   (MxButton    *button);
 void                  mx_button_set_toggled     (MxButton    *button,
                                                  gboolean     toggled);
 gboolean              mx_button_get_toggled     (MxButton    *button);

@@ -497,7 +497,7 @@ mx_combo_box_update_menu (MxComboBox *box)
   if (!menu)
     return;
 
-  mx_menu_clear (menu);
+  mx_menu_remove_all (menu);
 
   for (index = 0, l = priv->actions; l; l = g_slist_next (l), index++)
     {

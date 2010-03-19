@@ -43,17 +43,21 @@ typedef struct _MxDraggable           MxDraggable; /* dummy typedef */
 typedef struct _MxDraggableIface      MxDraggableIface;
 
 typedef enum {
-  MX_NO_AXIS,
-  MX_X_AXIS,
-  MX_Y_AXIS
+  MX_DRAG_AXIS_NONE,
+  MX_DRAG_AXIS_X,
+  MX_DRAG_AXIS_Y
 } MxDragAxis;
 
+#if 0
+/*
 typedef enum {
   MX_DISABLE_CONTAINMENT,
   MX_CONTAIN_IN_STAGE,
   MX_CONTAIN_IN_PARENT,
   MX_CONTAIN_IN_AREA
 } MxDragContainment;
+*/
+#endif
 
 /**
  * MxDraggableIface:
@@ -100,7 +104,7 @@ MxDragAxis        mx_draggable_get_axis             (MxDraggable       *draggabl
 void              mx_draggable_set_drag_threshold   (MxDraggable       *draggable,
                                                      guint              threshold);
 guint             mx_draggable_get_drag_threshold   (MxDraggable       *draggable);
-
+#if 0
 void              mx_draggable_set_containment_type (MxDraggable       *draggable,
                                                      MxDragContainment  containment);
 MxDragContainment mx_draggable_get_containment_type (MxDraggable       *draggable);
@@ -114,7 +118,7 @@ void              mx_draggable_get_containment_area (MxDraggable       *draggabl
                                                      gfloat            *y_1,
                                                      gfloat            *x_2,
                                                      gfloat            *y_2);
-
+#endif
 void              mx_draggable_set_drag_actor       (MxDraggable       *draggable,
                                                      ClutterActor      *actor);
 ClutterActor *    mx_draggable_get_drag_actor       (MxDraggable       *draggable);

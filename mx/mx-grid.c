@@ -58,7 +58,7 @@
  * <figure id="mx-grid">
  *   <title>MxGrid flowing across multiple rows</title>
  *   <para>An #MxGrid containing 9 child actors; 
- *   #MxGrid:orientation is set to the default (MX_HORIZONTAL, 
+ *   #MxGrid:orientation is set to the default (MX_ORIENTATION_HORIZONTAL, 
  *   i.e. lay out horizontally first); #MxGrid:max_stride has not been set 
  *   (so there's no maximum row size); #MxGrid:column_spacing and #MxGrid:row_spacing have
  *   been set so that there is spacing between cells vertically and horizontally.</para>
@@ -78,7 +78,7 @@
  *   how the "odd" rectangle is on the end of a row, rather than at the 
  *   bottom of a column. This is because preference 
  *   is being given to packing onto the end of rows, rather than columns, 
- *   because #MxGrid:orientation is set to MX_HORIZONTAL. Even though 
+ *   because #MxGrid:orientation is set to MX_ORIENTATION_HORIZONTAL. Even though 
  *   there is room for the rectangle at the bottom of the column, the 
  *   layout prefers to place children onto the end of a row if there is room.</para>
  *   <graphic fileref="MxGrid-2rows-row-major.png" format="PNG"/>
@@ -87,7 +87,7 @@
  * <figure id="mx-grid-two-columns">
  *   <title>MxGrid flowing into two columns</title>
  *   <para>The same #MxGrid 9 children with #MxGrid:orientation set to
- *   MX_VERTICAL. This time, the layout wraps onto two columns rather than two
+ *   MX_ORIENTATION_VERTICAL. This time, the layout wraps onto two columns rather than two
  *   rows. Even though there is room on the end of the rows for the children,
  *   the preference is for them to be placed on the bottom of columns, or into
  *   new columns, before being added to rows.</para>
@@ -102,6 +102,7 @@
 #include "mx-stylable.h"
 #include "mx-focusable.h"
 #include "mx-enum-types.h"
+#include "mx-private.h"
 
 typedef struct _MxGridActorData MxGridActorData;
 
@@ -190,9 +191,10 @@ struct _MxGridPrivate
 
   gboolean      homogenous_rows;
   gboolean      homogenous_columns;
-  gboolean      end_align;
+  MxAlign       line_alignment;
   gfloat        column_spacing, row_spacing;
-  gdouble       valign, halign;
+  MxAlign       child_x_align;
+  MxAlign       child_y_align;
 
   MxOrientation orientation;
 
@@ -214,9 +216,9 @@ enum
   PROP_HOMOGENOUS_COLUMNS,
   PROP_ROW_SPACING,
   PROP_COLUMN_SPACING,
-  PROP_VALIGN,
-  PROP_HALIGN,
-  PROP_END_ALIGN,
+  PROP_CHILD_X_ALIGN,
+  PROP_CHILD_Y_ALIGN,
+  PROP_LINE_ALIGNMENT,
   PROP_ORIENTATION,
   PROP_HADJUST,
   PROP_VADJUST,
@@ -438,39 +440,40 @@ mx_grid_class_init (MxGridClass *klass)
                              "Pack children vertically (in columns), "
                              "instead of horizontally (in rows)",
                              MX_TYPE_ORIENTATION,
-                             MX_HORIZONTAL,
+                             MX_ORIENTATION_HORIZONTAL,
                              G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
   g_object_class_install_property (gobject_class, PROP_ORIENTATION, pspec);
 
-  pspec = g_param_spec_boolean ("end-align",
-                                "end-align",
-                                "Right/bottom aligned rows/columns",
-                                FALSE,
-                                G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
-  g_object_class_install_property (gobject_class, PROP_END_ALIGN, pspec);
+  pspec = g_param_spec_enum ("line-alignment",
+                             "Line Alignment",
+                             "Alignment of rows/columns",
+                             MX_TYPE_ALIGN,
+                             MX_ALIGN_START,
+                             G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
+  g_object_class_install_property (gobject_class, PROP_LINE_ALIGNMENT, pspec);
 
 
-  pspec = g_param_spec_double ("valign",
-                               "Vertical align",
-                               "Vertical alignment of items within cells",
-                               0.0, 1.0, 0.0,
-                               G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
-  g_object_class_install_property (gobject_class,PROP_VALIGN, pspec);
+  pspec = g_param_spec_enum ("child-y-align",
+                             "Vertical align",
+                             "Vertical alignment of items within cells",
+                             MX_TYPE_ALIGN, MX_ALIGN_START,
+                             G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
+  g_object_class_install_property (gobject_class,PROP_CHILD_Y_ALIGN, pspec);
 
-  pspec = g_param_spec_double ("halign",
-                               "Horizontal align",
-                               "Horizontal alignment of items within cells",
-                               0.0, 1.0, 0.0,
-                               G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
-  g_object_class_install_property (gobject_class, PROP_HALIGN, pspec);
+  pspec = g_param_spec_enum ("child-x-align",
+                             "Horizontal align",
+                             "Horizontal alignment of items within cells",
+                             MX_TYPE_ALIGN, MX_ALIGN_START,
+                             G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
+  g_object_class_install_property (gobject_class, PROP_CHILD_X_ALIGN, pspec);
 
   pspec = g_param_spec_int ("max-stride",
                             "Maximum stride",
                             "Maximum number of rows or columns, depending"
                             " on orientation. For example, if max-stride is set"
-                            " to 3 with orientation MX_HORIZONTAL, there will"
+                            " to 3 with orientation MX_ORIENTATION_HORIZONTAL, there will"
                             " be a maximum of 3 children in a row; if"
-                            " orientation is MX_VERTICAL, there will be a"
+                            " orientation is MX_ORIENTATION_VERTICAL, there will be a"
                             " maximum of 3 children in a column",
                             0, G_MAXINT, 0,
                             G_PARAM_READWRITE|G_PARAM_CONSTRUCT);
@@ -697,21 +700,43 @@ mx_grid_finalize (GObject *object)
   G_OBJECT_CLASS (mx_grid_parent_class)->finalize (object);
 }
 
-
+#ifndef MX_DISABLE_DEPRECATED
 void
-mx_grid_set_end_align (MxGrid  *self,
-                       gboolean value)
+mx_grid_set_end_align (MxGrid   *self,
+                       gboolean  value)
 {
-  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  priv->end_align = value;
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+  g_warning ("mx_grid_set_end_align has been deprecated."
+             " Use mx_grid_set_line_alignment instead.");
+
+  mx_grid_set_line_alignment (self,
+                              (value) ? MX_ALIGN_END : MX_ALIGN_START);
 }
 
 gboolean
 mx_grid_get_end_align (MxGrid *self)
 {
+  g_warning ("mx_grid_get_end_align has been deprecated."
+             " Use mx_grid_get_line_alignment instead.");
+  return (mx_grid_get_line_alignment (self) == MX_ALIGN_END);
+}
+#endif
+
+
+/* XXX: this does not yet support MX_ALIGN_MIDDLE */
+void
+mx_grid_set_line_alignment (MxGrid  *self,
+                            MxAlign  value)
+{
   MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  return priv->end_align;
+  priv->line_alignment = value;
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+}
+
+gboolean
+mx_grid_get_line_alignment (MxGrid *self)
+{
+  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
+  return priv->line_alignment;
 }
 
 void
@@ -759,9 +784,9 @@ mx_grid_set_vertical (MxGrid  *self,
              " instead.");
 
   if (value)
-    mx_grid_set_orientation (self, MX_VERTICAL);
+    mx_grid_set_orientation (self, MX_ORIENTATION_VERTICAL);
   else
-    mx_grid_set_orientation (self, MX_HORIZONTAL);
+    mx_grid_set_orientation (self, MX_ORIENTATION_HORIZONTAL);
 }
 #endif
 
@@ -790,13 +815,13 @@ mx_grid_get_vertical (MxGrid *self)
   MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
   g_warning ("mx_grid_get_vertical is deprecated. Use mx_grid_get_orientation"
              " instead");
-  return (priv->orientation == MX_VERTICAL);
+  return (priv->orientation == MX_ORIENTATION_VERTICAL);
 }
 #endif
 MxOrientation
 mx_grid_get_orientation (MxGrid *grid)
 {
-  g_return_val_if_fail (MX_IS_GRID (grid), MX_HORIZONTAL);
+  g_return_val_if_fail (MX_IS_GRID (grid), MX_ORIENTATION_HORIZONTAL);
 
   return grid->priv->orientation;
 }
@@ -835,40 +860,89 @@ mx_grid_get_row_spacing (MxGrid *self)
   return priv->row_spacing;
 }
 
-
+#ifndef MX_DISABLE_DEPRECATED
 void
 mx_grid_set_valign (MxGrid *self,
                     gdouble value)
 {
-  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  priv->valign = value;
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+  g_warning ("mx_grid_set_valign is deprecated."
+             " Use mx_grid_set_child_y_align");
+
+  if (value < 1.0/3.0)
+    mx_grid_set_child_y_align (self, MX_ALIGN_START);
+  else if (value > 2.0/3.0)
+    mx_grid_set_child_y_align (self, MX_ALIGN_END);
+  else
+    mx_grid_set_child_y_align (self, MX_ALIGN_MIDDLE);
 }
 
 gdouble
 mx_grid_get_valign (MxGrid *self)
 {
+  g_warning ("mx_grid_get_valign is deprecated."
+             " Use mx_grid_get_child_y_align");
+
+  return MX_ALIGN_TO_FLOAT (mx_grid_get_child_y_align (self));
+}
+#endif
+
+void
+mx_grid_set_child_y_align (MxGrid  *self,
+                           MxAlign  value)
+{
   MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  return priv->valign;
+  priv->child_y_align = value;
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
 }
 
 
+MxAlign
+mx_grid_get_child_y_align (MxGrid *self)
+{
+  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
+  return priv->child_y_align;
+}
 
+#ifndef MX_DISABLE_DEPRECATED
 void
 mx_grid_set_halign (MxGrid *self,
                     gdouble value)
-
 {
-  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  priv->halign = value;
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+  g_warning ("mx_grid_set_halign is deprecated."
+             " Use mx_grid_set_child_x_align");
+
+  if (value < 1.0/3.0)
+    mx_grid_set_child_x_align (self, MX_ALIGN_START);
+  else if (value > 2.0/3.0)
+    mx_grid_set_child_x_align (self, MX_ALIGN_END);
+  else
+    mx_grid_set_child_x_align (self, MX_ALIGN_MIDDLE);
 }
 
 gdouble
 mx_grid_get_halign (MxGrid *self)
 {
+  g_warning ("mx_grid_get_halign is deprecated."
+             " Use mx_grid_get_child_x_align");
+
+  return MX_ALIGN_TO_FLOAT (mx_grid_get_child_x_align (self));
+}
+#endif
+void
+mx_grid_set_child_x_align (MxGrid  *self,
+                           MxAlign  value)
+
+{
   MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  return priv->halign;
+  priv->child_x_align = value;
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+}
+
+MxAlign
+mx_grid_get_child_x_align (MxGrid *self)
+{
+  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
+  return priv->child_x_align;
 }
 
 void
@@ -903,8 +977,8 @@ mx_grid_set_property (GObject      *object,
 
   switch (prop_id)
     {
-    case PROP_END_ALIGN:
-      mx_grid_set_end_align (grid, g_value_get_boolean (value));
+    case PROP_LINE_ALIGNMENT:
+      mx_grid_set_line_alignment (grid, g_value_get_enum (value));
       break;
     case PROP_HOMOGENOUS_ROWS:
       mx_grid_set_homogenous_rows (grid, g_value_get_boolean (value));
@@ -921,11 +995,11 @@ mx_grid_set_property (GObject      *object,
     case PROP_ROW_SPACING:
       mx_grid_set_row_spacing (grid, g_value_get_float (value));
       break;
-    case PROP_VALIGN:
-      mx_grid_set_valign (grid, g_value_get_double (value));
+    case PROP_CHILD_X_ALIGN:
+      mx_grid_set_child_x_align (grid, g_value_get_enum (value));
       break;
-    case PROP_HALIGN:
-      mx_grid_set_halign (grid, g_value_get_double (value));
+    case PROP_CHILD_Y_ALIGN:
+      mx_grid_set_child_y_align (grid, g_value_get_enum (value));
       break;
     case PROP_HADJUST:
       scrollable_set_adjustments (MX_SCROLLABLE (object),
@@ -967,8 +1041,8 @@ mx_grid_get_property (GObject    *object,
     case PROP_HOMOGENOUS_COLUMNS:
       g_value_set_boolean (value, mx_grid_get_homogenous_columns (grid));
       break;
-    case PROP_END_ALIGN:
-      g_value_set_boolean (value, mx_grid_get_end_align (grid));
+    case PROP_LINE_ALIGNMENT:
+      g_value_set_enum (value, mx_grid_get_line_alignment (grid));
       break;
     case PROP_ORIENTATION:
       g_value_set_enum (value, mx_grid_get_orientation (grid));
@@ -979,11 +1053,11 @@ mx_grid_get_property (GObject    *object,
     case PROP_ROW_SPACING:
       g_value_set_float (value, mx_grid_get_row_spacing (grid));
       break;
-    case PROP_VALIGN:
-      g_value_set_double (value, mx_grid_get_valign (grid));
+    case PROP_CHILD_X_ALIGN:
+      g_value_set_enum (value, mx_grid_get_child_x_align (grid));
       break;
-    case PROP_HALIGN:
-      g_value_set_double (value, mx_grid_get_halign (grid));
+    case PROP_CHILD_Y_ALIGN:
+      g_value_set_enum (value, mx_grid_get_child_y_align (grid));
       break;
     case PROP_HADJUST:
       scrollable_get_adjustments (MX_SCROLLABLE (grid), &adjustment, NULL);
@@ -1310,7 +1384,7 @@ compute_row_height (GList         *siblings,
   gboolean homogenous_b;
   gfloat gap;
 
-  if (priv->orientation == MX_VERTICAL)
+  if (priv->orientation == MX_ORIENTATION_VERTICAL)
     {
       homogenous_b = priv->homogenous_columns;
       homogenous_a = priv->homogenous_rows;
@@ -1333,7 +1407,7 @@ compute_row_height (GList         *siblings,
                                         NULL, NULL,
                                         &natural_width, &natural_height);
 
-      if (priv->orientation == MX_VERTICAL)
+      if (priv->orientation == MX_ORIENTATION_VERTICAL)
         {
           gfloat temp = natural_height;
           natural_height = natural_width;
@@ -1373,7 +1447,7 @@ compute_row_start (GList         *siblings,
   gboolean homogenous_b;
   gfloat gap;
 
-  if (priv->orientation == MX_VERTICAL)
+  if (priv->orientation == MX_ORIENTATION_VERTICAL)
     {
       homogenous_b = priv->homogenous_columns;
       homogenous_a = priv->homogenous_rows;
@@ -1397,7 +1471,7 @@ compute_row_start (GList         *siblings,
                                         &natural_width, &natural_height);
 
 
-      if (priv->orientation == MX_VERTICAL)
+      if (priv->orientation == MX_ORIENTATION_VERTICAL)
         natural_width = natural_height;
 
       /* if the primary axis is homogenous, each additional item is the same width */
@@ -1452,13 +1526,13 @@ mx_grid_do_allocate (ClutterActor          *self,
 
   GList *iter;
 
-  if (priv->orientation == MX_VERTICAL)
+  if (priv->orientation == MX_ORIENTATION_VERTICAL)
     {
       priv->a_wrap = box->y2 - box->y1 - padding.top - padding.bottom;
       homogenous_b = priv->homogenous_columns;
       homogenous_a = priv->homogenous_rows;
-      aalign = priv->valign;
-      balign = priv->halign;
+      aalign = MX_ALIGN_TO_FLOAT (priv->child_y_align);
+      balign = MX_ALIGN_TO_FLOAT (priv->child_x_align);
       agap          = priv->row_spacing;
       bgap          = priv->column_spacing;
     }
@@ -1467,8 +1541,8 @@ mx_grid_do_allocate (ClutterActor          *self,
       priv->a_wrap = box->x2 - box->x1 - padding.left - padding.right;
       homogenous_a = priv->homogenous_columns;
       homogenous_b = priv->homogenous_rows;
-      aalign = priv->halign;
-      balign = priv->valign;
+      aalign = MX_ALIGN_TO_FLOAT (priv->child_x_align);
+      balign = MX_ALIGN_TO_FLOAT (priv->child_y_align);
       agap          = priv->column_spacing;
       bgap          = priv->row_spacing;
     }
@@ -1501,7 +1575,7 @@ mx_grid_do_allocate (ClutterActor          *self,
         }
     }
 
-  if (priv->orientation == MX_VERTICAL)
+  if (priv->orientation == MX_ORIENTATION_VERTICAL)
     {
       gfloat temp = priv->max_extent_a;
       priv->max_extent_a = priv->max_extent_b;
@@ -1524,7 +1598,7 @@ mx_grid_do_allocate (ClutterActor          *self,
                                         &natural_a, &natural_b);
 
       /* swap axes around if column is major */
-      if (priv->orientation == MX_VERTICAL)
+      if (priv->orientation == MX_ORIENTATION_VERTICAL)
         {
           gfloat temp = natural_a;
           natural_a = natural_b;
@@ -1545,7 +1619,7 @@ mx_grid_do_allocate (ClutterActor          *self,
           current_stride = 1;
         }
 
-      if (priv->end_align &&
+      if (priv->line_alignment &&
           priv->first_of_batch)
         {
           current_a = compute_row_start (iter, current_a, priv);
@@ -1585,7 +1659,7 @@ mx_grid_do_allocate (ClutterActor          *self,
         child_box.y2 = child_box.y1 + natural_b;
 
 
-        if (priv->orientation == MX_VERTICAL)
+        if (priv->orientation == MX_ORIENTATION_VERTICAL)
           {
             gfloat temp = child_box.x1;
             child_box.x1 = child_box.y1;
@@ -1646,7 +1720,7 @@ mx_grid_allocate (ClutterActor          *self,
 
 
   /* only update vadjustment - we don't really want horizontal scrolling */
-  if (priv->vadjustment && priv->orientation == MX_HORIZONTAL)
+  if (priv->vadjustment && priv->orientation == MX_ORIENTATION_HORIZONTAL)
     {
       gdouble prev_value;
       gfloat height;
@@ -1682,7 +1756,7 @@ mx_grid_allocate (ClutterActor          *self,
       prev_value = mx_adjustment_get_value (priv->vadjustment);
       mx_adjustment_set_value (priv->vadjustment, prev_value);
     }
-  if (priv->hadjustment && priv->orientation == MX_VERTICAL)
+  if (priv->hadjustment && priv->orientation == MX_ORIENTATION_VERTICAL)
     {
       gdouble prev_value;
       gfloat width;

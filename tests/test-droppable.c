@@ -237,8 +237,9 @@ struct _DraggableRectangle
   guint threshold;
 
   MxDragAxis axis;
-
+#if 0
   MxDragContainment containment;
+#endif
   ClutterActorBox area;
 
   guint is_enabled : 1;
@@ -255,8 +256,10 @@ enum
 
   DRAG_PROP_DRAG_THRESHOLD,
   DRAG_PROP_AXIS,
+#if 0
   DRAG_PROP_CONTAINMENT_TYPE,
   DRAG_PROP_CONTAINMENT_AREA,
+#endif
   DRAG_PROP_ENABLED,
   DRAG_PROP_ACTOR,
 };
@@ -353,6 +356,7 @@ draggable_rectangle_set_property (GObject      *gobject,
       rect->axis = g_value_get_enum (value);
       break;
 
+#if 0
     case DRAG_PROP_CONTAINMENT_TYPE:
       rect->containment = g_value_get_enum (value);
       break;
@@ -367,6 +371,7 @@ draggable_rectangle_set_property (GObject      *gobject,
           memset (&rect->area, 0, sizeof (ClutterActorBox));
       }
       break;
+#endif
 
     case DRAG_PROP_ENABLED:
       rect->is_enabled = g_value_get_boolean (value);
@@ -403,6 +408,7 @@ draggable_rectangle_get_property (GObject    *gobject,
       g_value_set_enum (value, rect->axis);
       break;
 
+#if 0
     case DRAG_PROP_CONTAINMENT_TYPE:
       g_value_set_enum (value, rect->containment);
       break;
@@ -410,6 +416,7 @@ draggable_rectangle_get_property (GObject    *gobject,
     case DRAG_PROP_CONTAINMENT_AREA:
       g_value_set_boxed (value, &rect->area);
       break;
+#endif
 
     case DRAG_PROP_ENABLED:
       g_value_set_boolean (value, rect->is_enabled);
@@ -441,12 +448,14 @@ draggable_rectangle_class_init (DraggableRectangleClass *klass)
   g_object_class_override_property (gobject_class,
                                     DRAG_PROP_AXIS,
                                     "axis");
+#if 0
   g_object_class_override_property (gobject_class,
                                     DRAG_PROP_CONTAINMENT_TYPE,
                                     "containment-type");
   g_object_class_override_property (gobject_class,
                                     DRAG_PROP_CONTAINMENT_AREA,
                                     "containment-area");
+#endif
   g_object_class_override_property (gobject_class,
                                     DRAG_PROP_ENABLED,
                                     "drag-enabled");
@@ -460,7 +469,9 @@ draggable_rectangle_init (DraggableRectangle *self)
 {
   self->threshold = 0;
   self->axis = 0;
+#if 0
   self->containment = MX_DISABLE_CONTAINMENT;
+#endif
   self->is_enabled = FALSE;
 }
 

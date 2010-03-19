@@ -53,7 +53,7 @@ buttons_main (ClutterContainer *stage)
                     "toggle");
   g_signal_connect (button, "long-press", G_CALLBACK (button_long_press_cb),
                     NULL);
-  mx_button_set_toggle_mode (MX_BUTTON (button), TRUE);
+  mx_button_set_is_toggle (MX_BUTTON (button), TRUE);
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), button);
   clutter_actor_set_position (button, 100, 100);
 }

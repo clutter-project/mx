@@ -43,8 +43,10 @@ struct _DragContext
 
   MxDragAxis          axis;
 
+#if 0
   MxDragContainment   containment;
   ClutterActorBox    *containment_area;
+#endif
 
   gfloat              press_x;
   gfloat              press_y;
@@ -164,7 +166,7 @@ draggable_motion (DragContext        *context,
     }
   else
     {
-      if (context->axis == MX_X_AXIS)
+      if (context->axis == MX_DRAG_AXIS_X)
         delta_x = context->last_x - context->press_x;
       else
         delta_y = context->last_y - context->press_y;
@@ -269,8 +271,10 @@ on_draggable_press (ClutterActor       *actor,
   g_object_get (G_OBJECT (draggable),
                 "drag-threshold", &context->threshold,
                 "axis", &context->axis,
+#if 0
                 "containment-type", &context->containment,
                 "containment-area", &context->containment_area,
+#endif
                 "drag-actor", &context->actor,
                 NULL);
 
@@ -321,9 +325,10 @@ drag_context_free (gpointer data)
           g_object_unref (G_OBJECT (context->actor));
           context->actor = NULL;
         }
-
+#if 0
       if (context->containment_area)
         g_boxed_free (CLUTTER_TYPE_ACTOR_BOX, context->containment_area);
+#endif
 
       g_slice_free (DragContext, context);
     }
@@ -339,8 +344,10 @@ drag_context_create (MxDraggable *draggable)
   context->draggable = draggable;
   context->threshold = 0;
   context->axis = 0;
+#if 0
   context->containment = MX_DISABLE_CONTAINMENT;
   context->containment_area = NULL;
+#endif
   context->in_drag = FALSE;
   context->emit_delayed_press = FALSE;
   context->stage = NULL;
@@ -437,6 +444,7 @@ mx_draggable_base_init (gpointer g_iface)
                                  MX_PARAM_READWRITE);
       g_object_interface_install_property (g_iface, pspec);
 
+#if 0
       pspec = g_param_spec_enum ("containment-type",
                                  "Containment Type",
                                  "The type of containment to be used",
@@ -452,13 +460,14 @@ mx_draggable_base_init (gpointer g_iface)
                                   CLUTTER_TYPE_ACTOR_BOX,
                                   MX_PARAM_READWRITE);
       g_object_interface_install_property (g_iface, pspec);
+#endif
 
       pspec = g_param_spec_enum ("axis",
                                  "Axis",
                                  "The axis along which the dragging "
                                  "should be performed",
                                  MX_TYPE_DRAG_AXIS,
-                                 0,
+                                 MX_DRAG_AXIS_NONE,
                                  MX_PARAM_READWRITE);
       g_object_interface_install_property (g_iface, pspec);
 
@@ -574,7 +583,7 @@ mx_draggable_get_drag_threshold (MxDraggable *draggable)
 
   return retval;
 }
-
+#if 0
 void
 mx_draggable_set_containment_type (MxDraggable      *draggable,
                                    MxDragContainment containment)
@@ -645,6 +654,7 @@ mx_draggable_get_containment_area (MxDraggable *draggable,
 
   g_boxed_free (CLUTTER_TYPE_ACTOR_BOX, box);
 }
+#endif
 
 void
 mx_draggable_set_drag_actor (MxDraggable  *draggable,
