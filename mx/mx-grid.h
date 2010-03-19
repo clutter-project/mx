@@ -96,7 +96,7 @@ G_GNUC_DEPRECATED void     mx_grid_set_vertical (MxGrid   *self,
 G_GNUC_DEPRECATED gboolean mx_grid_get_vertical (MxGrid   *self);
 #endif
 void           mx_grid_set_orientation        (MxGrid        *grid,
-                                               MxOrientation  orietnation);
+                                               MxOrientation  orientation);
 MxOrientation  mx_grid_get_orientation        (MxGrid        *grid);
 
 void           mx_grid_set_row_spacing        (MxGrid   *self,
