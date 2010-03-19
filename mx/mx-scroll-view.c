@@ -735,7 +735,7 @@ mx_scroll_view_init (MxScrollView *self)
 
   priv->hscroll = mx_scroll_bar_new ();
   priv->vscroll = g_object_new (MX_TYPE_SCROLL_BAR,
-                                "orientation", MX_VERTICAL,
+                                "orientation", MX_ORIENTATION_VERTICAL,
                                 NULL);
 
   priv->scroll_policy = MX_SCROLL_BOTH;

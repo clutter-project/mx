@@ -214,7 +214,7 @@ main (int argc, char **argv)
   { /* add controls */
     ClutterActor *vbox = g_object_new (MX_TYPE_GRID,
                              "row-spacing", 5.0f,
-                             "orientation", MX_VERTICAL,
+                             "orientation", MX_ORIENTATION_VERTICAL,
                              "x", 60.0f,
                              "y", 60.0f,
                              NULL);
@@ -311,7 +311,7 @@ main (int argc, char **argv)
                                          "x",      60.0f,
                                          "y",      5.0f,
                                          "max-stride", 1,
-                                         "orientation", MX_VERTICAL,
+                                         "orientation", MX_ORIENTATION_VERTICAL,
                                          NULL);
     clutter_container_add (CLUTTER_CONTAINER (data.stage), layout, NULL);
     fill_container (layout);

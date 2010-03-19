@@ -116,8 +116,8 @@ typedef enum
 
 typedef enum
 {
-  MX_HORIZONTAL,
-  MX_VERTICAL
+  MX_ORIENTATION_HORIZONTAL,
+  MX_ORIENTATION_VERTICAL
 } MxOrientation;
 
 G_END_DECLS

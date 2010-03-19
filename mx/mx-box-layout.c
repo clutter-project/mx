@@ -36,7 +36,7 @@
  *   <title>Box layout with horizontal flow</title>
  *   <para>The image shows an #MxBoxLayout with the
  *   #MxBoxLayout:orientation property set to
- *   #MX_HORIZONTAL.</para>
+ *   #MX_ORIENTATION_HORIZONTAL.</para>
  *   <graphic fileref="MxBoxLayout-horizontal.png" format="PNG"/>
  * </figure>
  *
@@ -44,7 +44,7 @@
  *   <title>Box layout with vertical flow</title>
  *   <para>The image shows an #MxBoxLayout with the
  *   #MxBoxLayout:orientation property set to
- *   #MX_VERTICAL.</para>
+ *   #MX_ORIENTATION_VERTICAL.</para>
  *   <graphic fileref="MxBoxLayout-vertical.png" format="PNG"/>
  * </figure>
  */
@@ -751,7 +751,7 @@ mx_box_layout_get_preferred_width (ClutterActor *actor,
 
       n_children++;
 
-      if (priv->orientation == MX_HORIZONTAL)
+      if (priv->orientation == MX_ORIENTATION_HORIZONTAL)
         child_for_height = for_height;
       else
         child_for_height = -1;
@@ -761,7 +761,7 @@ mx_box_layout_get_preferred_width (ClutterActor *actor,
                                          &child_min,
                                          &child_nat);
 
-      if (priv->orientation == MX_VERTICAL)
+      if (priv->orientation == MX_ORIENTATION_VERTICAL)
         {
           if (min_width_p)
             *min_width_p = MAX (child_min, *min_width_p);
@@ -781,7 +781,7 @@ mx_box_layout_get_preferred_width (ClutterActor *actor,
     }
 
 
-  if (priv->orientation == MX_HORIZONTAL && n_children > 1)
+  if (priv->orientation == MX_ORIENTATION_HORIZONTAL && n_children > 1)
     {
       if (min_width_p)
         *min_width_p += priv->spacing * (n_children - 1);
@@ -828,7 +828,7 @@ mx_box_layout_get_preferred_height (ClutterActor *actor,
 
       n_children++;
 
-      if (priv->orientation == MX_VERTICAL)
+      if (priv->orientation == MX_ORIENTATION_VERTICAL)
         child_for_width = for_width;
       else
         child_for_width = -1;
@@ -838,7 +838,7 @@ mx_box_layout_get_preferred_height (ClutterActor *actor,
                                           &child_min,
                                           &child_nat);
 
-      if (priv->orientation == MX_HORIZONTAL)
+      if (priv->orientation == MX_ORIENTATION_HORIZONTAL)
         {
           if (min_height_p)
             *min_height_p = MAX (child_min, *min_height_p);
@@ -856,7 +856,7 @@ mx_box_layout_get_preferred_height (ClutterActor *actor,
         }
     }
 
-  if (priv->orientation == MX_VERTICAL && n_children > 1)
+  if (priv->orientation == MX_ORIENTATION_VERTICAL && n_children > 1)
     {
       if (min_height_p)
         *min_height_p += priv->spacing * (n_children - 1);
@@ -930,7 +930,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
                  - padding.top
                  - padding.bottom;
 
-  if (priv->orientation == MX_VERTICAL)
+  if (priv->orientation == MX_ORIENTATION_VERTICAL)
     {
       gfloat min_height;
       mx_box_layout_get_preferred_height (actor, avail_width,
@@ -973,7 +973,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
        * In the case where all your children are the same size, this
        * will probably provide the desired behaviour.
        */
-      if (priv->children && priv->orientation == MX_VERTICAL)
+      if (priv->children && priv->orientation == MX_ORIENTATION_VERTICAL)
         {
           gfloat child_height;
           ClutterActor *first_child = (ClutterActor *)priv->children->data;
@@ -1006,7 +1006,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
     {
       gdouble prev_value, step_inc, page_inc;
 
-      if (priv->children && priv->orientation == MX_HORIZONTAL)
+      if (priv->children && priv->orientation == MX_ORIENTATION_HORIZONTAL)
         {
           gfloat child_width;
           ClutterActor *first_child = (ClutterActor *)priv->children->data;
@@ -1042,7 +1042,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
     {
       if (n_expand_children > 0)
         {
-          if (priv->orientation == MX_VERTICAL)
+          if (priv->orientation == MX_ORIENTATION_VERTICAL)
             extra_space = (avail_height - pref_height) / n_expand_children;
           else
             extra_space = (avail_width - pref_width) / n_expand_children;
@@ -1053,7 +1053,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
         }
     }
 
-  if (priv->orientation == MX_VERTICAL)
+  if (priv->orientation == MX_ORIENTATION_VERTICAL)
     position = padding.top;
   else
     position = padding.left;
@@ -1077,7 +1077,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
                                    "expand", &expand,
                                    NULL);
 
-      if (priv->orientation == MX_VERTICAL)
+      if (priv->orientation == MX_ORIENTATION_VERTICAL)
         {
           clutter_actor_get_preferred_height (child, avail_width,
                                               &child_min, &child_nat);
@@ -1190,7 +1190,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
           clutter_actor_allocate (child, copy, flags);
         }
 
-      if (priv->orientation == MX_VERTICAL)
+      if (priv->orientation == MX_ORIENTATION_VERTICAL)
         position += (old_child_box.y2 - old_child_box.y1) + priv->spacing;
       else
         position += (old_child_box.x2 - old_child_box.x1) + priv->spacing;
@@ -1345,7 +1345,7 @@ mx_box_layout_class_init (MxBoxLayoutClass *klass)
                              "Orientation",
                              "Orientation of the layout",
                              MX_TYPE_ORIENTATION,
-                             MX_HORIZONTAL,
+                             MX_ORIENTATION_HORIZONTAL,
                              MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_ORIENTATION, pspec);
 
@@ -1425,9 +1425,9 @@ mx_box_layout_set_vertical (MxBoxLayout *box,
              " Use mx_box_layout_set_orientation instead.");
 
   if (vertical)
-    mx_box_layout_set_orientation (box, MX_VERTICAL);
+    mx_box_layout_set_orientation (box, MX_ORIENTATION_VERTICAL);
   else
-    mx_box_layout_set_orientation (box, MX_HORIZONTAL);
+    mx_box_layout_set_orientation (box, MX_ORIENTATION_HORIZONTAL);
 }
 #endif
 void
@@ -1461,7 +1461,7 @@ mx_box_layout_get_vertical (MxBoxLayout *box)
   g_warning ("mx_box_layout_get_vertical is deprecated."
              " Use mx_box_layout_get_orientation instead.");
 
-  return (box->priv->orientation == MX_VERTICAL);
+  return (box->priv->orientation == MX_ORIENTATION_VERTICAL);
 }
 #endif
 MxOrientation

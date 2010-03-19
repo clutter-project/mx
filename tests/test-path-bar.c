@@ -94,7 +94,7 @@ main (int argc, char **argv)
   if (argc > 1 && g_str_equal (argv[1], "-a"))
     {
       ClutterActor *vbox = mx_box_layout_new ();
-      mx_box_layout_set_orientation (MX_BOX_LAYOUT (vbox), MX_VERTICAL);
+      mx_box_layout_set_orientation (MX_BOX_LAYOUT (vbox), MX_ORIENTATION_VERTICAL);
       clutter_container_add_actor (CLUTTER_CONTAINER (vbox), bar);
       clutter_container_add_actor (CLUTTER_CONTAINER (vbox), hbox);
       clutter_container_add_actor (CLUTTER_CONTAINER (stage), vbox);
