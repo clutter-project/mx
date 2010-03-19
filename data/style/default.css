@@ -3,9 +3,9 @@
   font-size: 13;
 }
 
-MxWindow
+MxIcon.ResizeGrip
 {
-  -mx-resize-grip: url('resize-grip.png');
+  -mx-content-image: url('resize-grip.png');
 }
 
 MxButton

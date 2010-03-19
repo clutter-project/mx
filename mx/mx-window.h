@@ -36,19 +36,22 @@ typedef struct _MxWindowPrivate MxWindowPrivate;
 
 struct _MxWindow
 {
-  ClutterStage parent;
+  GObject parent;
 
   MxWindowPrivate *priv;
 };
 
 struct _MxWindowClass
 {
-  ClutterStageClass parent_class;
+  GObjectClass parent_class;
+
+  void (*destroy) (MxWindow *window);
 };
 
 GType mx_window_get_type (void) G_GNUC_CONST;
 
 MxWindow *mx_window_new (void);
+MxWindow *mx_window_new_with_clutter_stage (ClutterStage *stage);
 
 ClutterActor* mx_window_get_child (MxWindow *window);
 void          mx_window_set_child (MxWindow *window, ClutterActor *actor);
