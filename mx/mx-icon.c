@@ -107,11 +107,11 @@ mx_icon_set_property (GObject      *gobject,
   switch (prop_id)
     {
     case PROP_ICON_NAME:
-      mx_icon_set_name (icon, g_value_get_string (value));
+      mx_icon_set_icon_name (icon, g_value_get_string (value));
       break;
 
     case PROP_ICON_SIZE:
-      mx_icon_set_size (icon, g_value_get_int (value));
+      mx_icon_set_icon_size (icon, g_value_get_int (value));
       break;
 
     default:
@@ -131,11 +131,11 @@ mx_icon_get_property (GObject    *gobject,
   switch (prop_id)
     {
     case PROP_ICON_NAME:
-      g_value_set_string (value, mx_icon_get_name (icon));
+      g_value_set_string (value, mx_icon_get_icon_name (icon));
       break;
 
     case PROP_ICON_SIZE:
-      g_value_set_int (value, mx_icon_get_size (icon));
+      g_value_set_int (value, mx_icon_get_icon_size (icon));
       break;
 
     default:
@@ -458,16 +458,37 @@ mx_icon_new (void)
   return g_object_new (MX_TYPE_ICON, NULL);
 }
 
-const gchar *
+#ifndef MX_DISABLE_DEPRECATED
+const gchar*
 mx_icon_get_name (MxIcon *icon)
+{
+  g_warning ("mx_icon_get_name is deprecated."
+             " Use mx_icon_get_icon_name instead");
+  return mx_icon_get_icon_name (icon);
+}
+#endif
+
+const gchar *
+mx_icon_get_icon_name (MxIcon *icon)
 {
   g_return_val_if_fail (MX_IS_ICON (icon), NULL);
 
   return icon->priv->icon_name;
 }
 
+#ifndef MX_DISABLE_DEPRECATED
 void
-mx_icon_set_name (MxIcon *icon, const gchar *icon_name)
+mx_icon_set_name (MxIcon      *icon,
+                  const gchar *icon_name)
+{
+  g_warning ("mx_icon_set_name is deprecated."
+             " Use mx_icon_set_icon_name instead.");
+  mx_icon_set_icon_name (icon, icon_name);
+}
+#endif
+void
+mx_icon_set_icon_name (MxIcon      *icon,
+                       const gchar *icon_name)
 {
   MxIconPrivate *priv;
 
@@ -489,16 +510,35 @@ mx_icon_set_name (MxIcon *icon, const gchar *icon_name)
   g_object_notify (G_OBJECT (icon), "icon-name");
 }
 
+#ifndef MX_DISABLE_DEPRECATED
 gint
 mx_icon_get_size (MxIcon *icon)
+{
+  g_warning ("mx_icon_get_size is deprecated."
+             " Use mx_icon_get_icon_size instead.");
+  return mx_icon_get_icon_size (icon);
+}
+#endif
+gint
+mx_icon_get_icon_size (MxIcon *icon)
 {
   g_return_val_if_fail (MX_IS_ICON (icon), -1);
 
   return icon->priv->icon_size;
 }
-
+#ifndef MX_DISABLE_DEPRECATED
 void
-mx_icon_set_size (MxIcon *icon, gint size)
+mx_icon_set_size (MxIcon *icon,
+                  gint    size)
+{
+  g_warning ("mx_icon_set_size is deprecated."
+             " Use mx_icon_set_icon_size instead.");
+  mx_icon_set_icon_size (icon, size);
+}
+#endif
+void
+mx_icon_set_icon_size (MxIcon *icon,
+                       gint    size)
 {
   MxIconPrivate *priv;
 

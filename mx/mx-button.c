@@ -260,8 +260,8 @@ mx_button_style_changed (MxWidget *widget)
           mx_bin_set_child (MX_BIN (widget), icon);
         }
 
-      mx_icon_set_size (MX_ICON (icon), icon_size);
-      mx_icon_set_name (MX_ICON (icon), icon_name);
+      mx_icon_set_icon_size (MX_ICON (icon), icon_size);
+      mx_icon_set_icon_name (MX_ICON (icon), icon_name);
 
       g_free (icon_name);
     }

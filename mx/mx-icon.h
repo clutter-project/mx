@@ -2,7 +2,7 @@
 /*
  * mx-icon.h: icon widget
  *
- * Copyright 2009 Intel Corporation.
+ * Copyright 2009, 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -73,11 +73,20 @@ GType mx_icon_get_type (void);
 
 ClutterActor* mx_icon_new (void);
 
-const gchar *mx_icon_get_name (MxIcon *icon);
-void         mx_icon_set_name (MxIcon *icon, const gchar *icon_name);
+#ifndef MX_DISABLE_DEPRECATED
+G_GNUC_DEPRECATED const gchar *mx_icon_get_name (MxIcon *icon);
+G_GNUC_DEPRECATED void         mx_icon_set_name (MxIcon *icon, const gchar *icon_name);
 
-gint         mx_icon_get_size (MxIcon *icon);
-void         mx_icon_set_size (MxIcon *icon, gint size);
+G_GNUC_DEPRECATED gint         mx_icon_get_size (MxIcon *icon);
+G_GNUC_DEPRECATED void         mx_icon_set_size (MxIcon *icon, gint size);
+#endif
+
+
+const gchar *mx_icon_get_icon_name (MxIcon *icon);
+void         mx_icon_set_icon_name (MxIcon *icon, const gchar *icon_name);
+
+gint         mx_icon_get_icon_size (MxIcon *icon);
+void         mx_icon_set_icon_size (MxIcon *icon, gint size);
 
 
 G_END_DECLS
