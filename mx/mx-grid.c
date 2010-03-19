@@ -1052,10 +1052,10 @@ mx_grid_get_property (GObject    *object,
       g_value_set_float (value, mx_grid_get_row_spacing (grid));
       break;
     case PROP_CHILD_X_ALIGN:
-      g_value_set_double (value, mx_grid_get_child_x_align (grid));
+      g_value_set_enum (value, mx_grid_get_child_x_align (grid));
       break;
     case PROP_CHILD_Y_ALIGN:
-      g_value_set_double (value, mx_grid_get_child_y_align (grid));
+      g_value_set_enum (value, mx_grid_get_child_y_align (grid));
       break;
     case PROP_HADJUST:
       scrollable_get_adjustments (MX_SCROLLABLE (grid), &adjustment, NULL);
