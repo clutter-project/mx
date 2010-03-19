@@ -572,7 +572,7 @@ mx_texture_frame_set_parent_texture (MxTextureFrame *frame,
 }
 
 /**
- * mx_texture_frame_set_frame:
+ * mx_texture_frame_set_border_values:
  * @frame: A #MxTextureFrame
  * @top: width of the top slice
  * @right: width of the right slice
@@ -583,6 +583,7 @@ mx_texture_frame_set_parent_texture (MxTextureFrame *frame,
  * widths from the edge of the frame.
  *
  */
+#ifndef MX_DISABLE_DEPRECATED
 void
 mx_texture_frame_set_frame (MxTextureFrame *frame,
                             gfloat          top,
@@ -590,13 +591,25 @@ mx_texture_frame_set_frame (MxTextureFrame *frame,
                             gfloat          bottom,
                             gfloat          left)
 {
+  g_warning ("mx_texture_frame_set_frame is deprecated."
+             " Use mx_texture_frame_set_border_values instead.");
+  mx_texture_frame_set_border_values (frame, top, right, bottom, left);
+}
+#endif
+void
+mx_texture_frame_set_border_values (MxTextureFrame *frame,
+                                    gfloat          top,
+                                    gfloat          right,
+                                    gfloat          bottom,
+                                    gfloat          left)
+{
   g_return_if_fail (MX_IS_TEXTURE_FRAME (frame));
 
   mx_texture_frame_set_frame_internal (frame, top, right, bottom, left);
 }
 
 /**
- * mx_texture_frame_get_frame:
+ * mx_texture_frame_get_border_values:
  * @frame: A #MxTextureFrame
  * @top: width of the top slice
  * @right: width of the right slice
@@ -606,12 +619,25 @@ mx_texture_frame_set_frame (MxTextureFrame *frame,
  * Retrieve the current slice lines from the specified frame.
  *
  */
+#ifndef MX_DISABLE_DEPRECATED
 void
 mx_texture_frame_get_frame (MxTextureFrame *frame,
                             gfloat         *top,
                             gfloat         *right,
                             gfloat         *bottom,
                             gfloat         *left)
+{
+  g_warning ("mx_texture_frame_get_frame is deprecated."
+             " Use mx_texture_frame_get_border_values instead.");
+  mx_texture_frame_get_border_values (frame, top, right, bottom, left);
+}
+#endif
+void
+mx_texture_frame_get_border_values (MxTextureFrame *frame,
+                                    gfloat         *top,
+                                    gfloat         *right,
+                                    gfloat         *bottom,
+                                    gfloat         *left)
 {
   MxTextureFramePrivate *priv;
 
