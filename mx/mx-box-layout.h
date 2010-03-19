@@ -91,10 +91,6 @@ void          mx_box_layout_set_orientation (MxBoxLayout *box,
                                              MxOrientation orientation);
 MxOrientation mx_box_layout_get_orientation (MxBoxLayout *box);
 
-void          mx_box_layout_set_pack_start (MxBoxLayout *box,
-                                            gboolean     pack_start);
-gboolean      mx_box_layout_get_pack_start (MxBoxLayout *box);
-
 void          mx_box_layout_set_spacing    (MxBoxLayout *box,
                                             guint        spacing);
 guint         mx_box_layout_get_spacing    (MxBoxLayout *box);

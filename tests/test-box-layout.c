@@ -134,12 +134,6 @@ key_release_cb (ClutterActor    *actor,
                                      !mx_box_layout_get_orientation (box));
     }
 
-  if (event->keyval == 'p')
-    {
-      mx_box_layout_set_pack_start (box,
-                                      !mx_box_layout_get_pack_start (box));
-    }
-
   if (event->keyval == '=')
     {
       add_actor ((ClutterContainer*) box);

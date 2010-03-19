@@ -80,7 +80,6 @@ enum {
   PROP_0,
 
   PROP_ORIENTATION,
-  PROP_PACK_START,
   PROP_SPACING,
 
   PROP_HADJUST,
@@ -94,8 +93,6 @@ struct _MxBoxLayoutPrivate
   GList        *children;
 
   guint         spacing;
-
-  guint         is_pack_start : 1;
 
   MxAdjustment *hadjustment;
   MxAdjustment *vadjustment;
@@ -619,10 +616,6 @@ mx_box_layout_get_property (GObject    *object,
       g_value_set_enum (value, priv->orientation);
       break;
 
-    case PROP_PACK_START:
-      g_value_set_boolean (value, priv->is_pack_start);
-      break;
-
     case PROP_SPACING:
       g_value_set_uint (value, priv->spacing);
       break;
@@ -658,10 +651,6 @@ mx_box_layout_set_property (GObject      *object,
     {
     case PROP_ORIENTATION:
       mx_box_layout_set_orientation (box, g_value_get_enum (value));
-      break;
-
-    case PROP_PACK_START:
-      mx_box_layout_set_pack_start (box, g_value_get_boolean (value));
       break;
 
     case PROP_SPACING:
@@ -1069,14 +1058,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
   else
     position = padding.left;
 
-  if (priv->is_pack_start)
-    l = g_list_last (priv->children);
-  else
-    l = priv->children;
-
-  for (l = (priv->is_pack_start) ? g_list_last (priv->children) : priv->children;
-       l;
-       l = (priv->is_pack_start) ? l->prev : l->next)
+  for (l = priv->children; l; l = l->next)
     {
       ClutterActor *child = (ClutterActor*) l->data;
       ClutterActorBox child_box, old_child_box;
@@ -1367,13 +1349,6 @@ mx_box_layout_class_init (MxBoxLayoutClass *klass)
                              MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_ORIENTATION, pspec);
 
-  pspec = g_param_spec_boolean ("pack-start",
-                                "Pack Start",
-                                "Whether to pack items at the start of the box",
-                                FALSE,
-                                MX_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_PACK_START, pspec);
-
   pspec = g_param_spec_uint ("spacing",
                              "Spacing",
                              "Spacing between children",
@@ -1495,45 +1470,6 @@ mx_box_layout_get_orientation (MxBoxLayout *box)
   g_return_val_if_fail (MX_IS_BOX_LAYOUT (box), FALSE);
 
   return box->priv->orientation;
-}
-
-/**
- * mx_box_layout_set_pack_start:
- * @box: A #MxBoxLayout
- * @pack_start: #TRUE if the layout should use pack-start
- *
- * Set the value of the #MxBoxLayout:pack-start property.
- *
- */
-void
-mx_box_layout_set_pack_start (MxBoxLayout *box,
-                              gboolean     pack_start)
-{
-  g_return_if_fail (MX_IS_BOX_LAYOUT (box));
-
-  if (box->priv->is_pack_start != pack_start)
-    {
-      box->priv->is_pack_start = pack_start;
-      clutter_actor_queue_relayout ((ClutterActor*) box);
-
-      g_object_notify (G_OBJECT (box), "pack-start");
-    }
-}
-
-/**
- * mx_box_layout_get_pack_start:
- * @box: A #MxBoxLayout
- *
- * Get the value of the #MxBoxLayout:pack-start property.
- *
- * Returns: #TRUE if pack-start is enabled
- */
-gboolean
-mx_box_layout_get_pack_start (MxBoxLayout *box)
-{
-  g_return_val_if_fail (MX_IS_BOX_LAYOUT (box), FALSE);
-
-  return box->priv->is_pack_start;
 }
 
 /**
