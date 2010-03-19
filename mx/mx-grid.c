@@ -868,11 +868,12 @@ mx_grid_set_valign (MxGrid *self,
   g_warning ("mx_grid_set_valign is deprecated."
              " Use mx_grid_set_child_y_align");
 
-  if (value > 0.0)
+  if (value < 1.0/3.0)
+    mx_grid_set_child_y_align (self, MX_ALIGN_START);
+  else if (value > 2.0/3.0)
     mx_grid_set_child_y_align (self, MX_ALIGN_END);
   else
-    mx_grid_set_child_y_align (self, MX_ALIGN_START);
-
+    mx_grid_set_child_y_align (self, MX_ALIGN_MIDDLE);
 }
 
 gdouble
@@ -910,11 +911,12 @@ mx_grid_set_halign (MxGrid *self,
   g_warning ("mx_grid_set_halign is deprecated."
              " Use mx_grid_set_child_x_align");
 
-  if (value > 0.0)
+  if (value < 1.0/3.0)
+    mx_grid_set_child_x_align (self, MX_ALIGN_START);
+  else if (value > 2.0/3.0)
     mx_grid_set_child_x_align (self, MX_ALIGN_END);
   else
-    mx_grid_set_child_x_align (self, MX_ALIGN_START);
-
+    mx_grid_set_child_x_align (self, MX_ALIGN_MIDDLE);
 }
 
 gdouble
