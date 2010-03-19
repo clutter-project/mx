@@ -1,3 +1,56 @@
+0.8.0
+=====
+
+Changes since 0.7.0:
+
+ * API Review completed. Lots of API has been renamed, removed or added.
+   Please see the ChangeLog or commit log for full details.
+ * Add deform textures, allowing arbitrary deformations on textures
+   MxDeformTexture, MxDeformPageTurn, MxDeformCloth and MxDeformBowtie
+ * Add MxOffscreen actor, to draw textures offscreen.
+
+ * Fixed bugs:
+   MB#10194 - Use the right values when setting :y-fill property
+   MB#9527  - table-child: Add accessors for :row and :col
+   MB#10054 - gtk-light-switch: adjust size request
+   MB#6158  - viewport: simplify the viewport allocate
+   MB#9936  - box-layout: Add mx_box_layout_add_actor(_with_position) functions
+   MB#9998  - popup: call ensure style on the children
+   MB#6313  - Add clutter-text properties to MxEntry and MxLabel
+   MB#9978  - [droppable] Don't hide the draggable before picking
+   MB#6159  - Add GObject Introspection annotations
+   MB#6308  - [box-layout] Adjust amount we need to expand for padding
+   MB#6467  - Add emacs mode-lines
+   MB#6504  - [button] Fix property enumeration names
+   MB#9917  - [expander] do not pass NULL to the foreach callback
+   MB#9680  - [label] Implement "pick" in MxLabel
+   MB#9842  - [button] print a warnings when using -mx-content-image with some
+              properties
+
+Updated translations:
+
+  Russian file. (Leila)
+  Chinese (Taiwan) (zh_TW) translation (zerng07)
+  Indonesian (id) translation (andika)
+  Swedish (sv) translation (A Olsson)
+
+
+Many thanks to:
+
+  Adrien Bustany
+  Bastian Winkler
+  Chris Lord
+  Damien Lespiau
+  Elliot Smith
+  Emmanuele Bassi
+  Hylke Bons
+  Jussi Kukkonen
+  Owen W. Taylor
+  Rob Bradford
+  Ross Burton
+  Thomas Wood
+
+
 0.7.0
 =====
 
