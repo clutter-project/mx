@@ -24,6 +24,7 @@
 
 #include <clutter/clutter.h>
 #include <mx/mx-action.h>
+#include <mx/mx-window.h>
 
 G_BEGIN_DECLS
 
@@ -65,8 +66,8 @@ struct _MxApplicationClass
   GObjectClass parent_class;
 
   /* vfuncs */
-  ClutterStage* (*create_window)   (MxApplication *app);
-  void          (*raise)           (MxApplication *app);
+  MxWindow* (*create_window)   (MxApplication *app);
+  void      (*raise)           (MxApplication *app);
 
   /* signals */
   void          (*actions_changed) (MxApplication *app);
@@ -88,12 +89,12 @@ MxApplication* mx_application_new (gint                 *argc,
 void           mx_application_run  (MxApplication      *application);
 void           mx_application_quit (MxApplication      *application);
 
-ClutterStage* mx_application_create_window (MxApplication *app);
+MxWindow * mx_application_create_window (MxApplication *app);
 
 void                  mx_application_add_window    (MxApplication *application,
-                                                    ClutterStage  *window);
+                                                    MxWindow      *window);
 void                  mx_application_remove_window (MxApplication *application,
-                                                    ClutterStage  *window);
+                                                    MxWindow      *window);
 
 G_CONST_RETURN GList* mx_application_get_windows   (MxApplication *application);
 

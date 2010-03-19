@@ -4,7 +4,7 @@
 #define _MX_WINDOW_H
 
 #include <glib-object.h>
-#include <mx/mx.h>
+#include <mx/mx-toolbar.h>
 
 G_BEGIN_DECLS
 
@@ -36,19 +36,22 @@ typedef struct _MxWindowPrivate MxWindowPrivate;
 
 struct _MxWindow
 {
-  ClutterStage parent;
+  GObject parent;
 
   MxWindowPrivate *priv;
 };
 
 struct _MxWindowClass
 {
-  ClutterStageClass parent_class;
+  GObjectClass parent_class;
+
+  void (*destroy) (MxWindow *window);
 };
 
 GType mx_window_get_type (void) G_GNUC_CONST;
 
 MxWindow *mx_window_new (void);
+MxWindow *mx_window_new_with_clutter_stage (ClutterStage *stage);
 
 ClutterActor* mx_window_get_child (MxWindow *window);
 void          mx_window_set_child (MxWindow *window, ClutterActor *actor);
@@ -66,6 +69,8 @@ void       mx_window_set_window_position (MxWindow *window, gint  x, gint  y);
 
 void         mx_window_set_icon_name (MxWindow *window, const gchar *icon_name);
 const gchar *mx_window_get_icon_name (MxWindow *window);
+
+ClutterStage *mx_window_get_clutter_stage (MxWindow *window);
 
 G_END_DECLS
 

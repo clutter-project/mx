@@ -25,7 +25,8 @@ const grey = new Clutter.Color(); grey.from_string ("grey");
 Clutter.init (0, null);
 let app = new Mx.Application ({"application-name": "Test deformations"});
 
-let stage = app.create_window ();
+let win = app.create_window ();
+let stage = win.get_clutter_stage ();
 stage.set_color (grey);
 stage.set_size (400, 500);
 
@@ -41,7 +42,7 @@ deform.animatev (Clutter.AnimationMode.LINEAR, 10000,
                  ["period"],
                  [1.0]);
 
-stage.add_actor (deform);
+win.set_child (deform);
 
 stage.show ();
 app.run ();

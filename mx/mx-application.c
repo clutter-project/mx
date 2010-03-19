@@ -476,18 +476,20 @@ mx_application_finalize (GObject *object)
   G_OBJECT_CLASS (mx_application_parent_class)->finalize (object);
 }
 
-static ClutterStage *
+static MxWindow *
 mx_application_default_create_window (MxApplication *application)
 {
+  MxWindow *window;
   ClutterStage *stage;
 
-  stage = CLUTTER_STAGE (mx_window_new ());
+  window = mx_window_new ();
+  stage = mx_window_get_clutter_stage (window);
 
-  mx_application_add_window (application, stage);
+  mx_application_add_window (application, window);
 
   clutter_stage_set_title (stage, application->priv->name);
 
-  return stage;
+  return window;
 }
 
 static void
@@ -504,7 +506,8 @@ mx_application_default_raise (MxApplication *application)
   if (!priv->windows)
     return;
 
-  stage = (ClutterStage *)g_list_last (priv->windows)->data;
+  stage =
+    mx_window_get_clutter_stage ((MxWindow *)g_list_last (priv->windows)->data);
 
   /* As with all these arcane, poorly documented X11 things, learnt
    * how to do this from reading GTK/GDK code.
@@ -598,10 +601,10 @@ mx_application_init (MxApplication *self)
 }
 
 static void
-mx_application_window_destroy_cb (ClutterActor  *actor,
+mx_application_window_destroy_cb (MxWindow      *window,
                                   MxApplication *application)
 {
-  mx_application_remove_window (application, CLUTTER_STAGE (actor));
+  mx_application_remove_window (application, window);
 
   if (!(application->priv->flags & MX_APPLICATION_KEEP_ALIVE)
       && !(application->priv->windows))
@@ -885,16 +888,27 @@ mx_application_init_wm (MxApplication *self)
   mx_application_refresh_wm_window (self);
 }
 
+/**
+ * mx_application_add_window:
+ * @application: The #MxApplication
+ * @window: (transfer full): The #MxWindow to add to the application
+ *
+ * Adds a window to the list of windows associated with @application. If this
+ * is the first window, it will be treated as the primary window and used for
+ * startup notification.
+ *
+ * This function does not take a reference on @window.
+ */
 void
 mx_application_add_window (MxApplication *application,
-                           ClutterStage  *window)
+                           MxWindow      *window)
 {
   static gboolean first_window = TRUE;
 
   MxApplicationPrivate *priv = application->priv;
 
   g_return_if_fail (MX_IS_APPLICATION (application));
-  g_return_if_fail (CLUTTER_IS_STAGE (window));
+  g_return_if_fail (MX_IS_WINDOW (window));
 
   priv->windows = g_list_prepend (application->priv->windows, window);
   g_signal_connect (window, "destroy",
@@ -906,6 +920,7 @@ mx_application_add_window (MxApplication *application,
   if (first_window)
     {
 #ifdef HAVE_STARTUP_NOTIFICATION
+      ClutterStage *stage;
       SnDisplay *display;
       Display *xdisplay;
       int screen;
@@ -918,6 +933,7 @@ mx_application_add_window (MxApplication *application,
 #ifdef HAVE_STARTUP_NOTIFICATION
       xdisplay = clutter_x11_get_default_display ();
       screen = clutter_x11_get_default_screen ();
+      stage = mx_window_get_clutter_stage (window);
 
       if (g_getenv ("LIBSN_SYNC"))
         XSynchronize (xdisplay, True);
@@ -928,29 +944,29 @@ mx_application_add_window (MxApplication *application,
 
       if (priv->sn_context)
         {
-          if (CLUTTER_ACTOR_IS_MAPPED (window))
-            mx_application_window_map_cb (CLUTTER_ACTOR (window),
+          if (CLUTTER_ACTOR_IS_MAPPED (stage))
+            mx_application_window_map_cb (CLUTTER_ACTOR (stage),
                                           NULL,
                                           application);
           else
-            g_signal_connect (window, "notify::mapped",
+            g_signal_connect (stage, "notify::mapped",
                               G_CALLBACK (mx_application_window_map_cb),
                               application);
         }
 #endif
     }
-  else if (MX_IS_WINDOW (window))
-    mx_window_set_small_screen (MX_WINDOW (window), priv->small_screen);
+  else
+    mx_window_set_small_screen (window, priv->small_screen);
 }
 
 void
 mx_application_remove_window (MxApplication *application,
-                              ClutterStage  *window)
+                              MxWindow      *window)
 {
   GList *link;
 
   g_return_if_fail (MX_IS_APPLICATION (application));
-  g_return_if_fail (CLUTTER_IS_STAGE (window));
+  g_return_if_fail (MX_IS_WINDOW (window));
 
   link = g_list_find (application->priv->windows, window);
 
@@ -961,7 +977,7 @@ mx_application_remove_window (MxApplication *application,
       return;
     }
 
-  clutter_actor_destroy (CLUTTER_ACTOR (link->data));
+  g_object_unref (G_OBJECT (link->data));
 
   application->priv->windows = g_list_delete_link (application->priv->windows,
                                                    link);
@@ -974,8 +990,8 @@ mx_application_remove_window (MxApplication *application,
  *
  * Retrieves all windows added to @application.
  *
- * Return value: (element-type ClutterStage) (transfer none): a list
- *   of #ClutterStage<!-- -->s. The returned list is owned by
+ * Return value: (element-type MxWindow) (transfer none): a list
+ *   of #MxWindow<!-- -->s. The returned list is owned by
  *   @application and must not be altered.
  */
 G_CONST_RETURN GList*
@@ -986,7 +1002,15 @@ mx_application_get_windows (MxApplication *application)
   return application->priv->windows;
 }
 
-ClutterStage *
+/**
+ * mx_application_create_window:
+ * @application: The #MxApplication
+ *
+ * Creates a window and associates it with the application.
+ *
+ * Return value: (transfer none): An #MxWindow.
+ */
+MxWindow *
 mx_application_create_window (MxApplication *application)
 {
   g_return_val_if_fail (MX_IS_APPLICATION (application), NULL);
