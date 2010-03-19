@@ -178,8 +178,8 @@ main (int argc, char *argv[])
   clutter_actor_get_preferred_size (texture, NULL, NULL, &width, &height);
   mx_deform_texture_set_resolution (MX_DEFORM_TEXTURE (texture), 64, 64);
 
-  /* Add it to the stage */
-  clutter_container_add (CLUTTER_CONTAINER (stage), texture, NULL);
+  /* Add it to the window */
+  mx_window_set_child (window, texture);
 
   /* Start animation */
   clutter_actor_animate (texture, CLUTTER_EASE_IN_OUT_SINE, 5000,

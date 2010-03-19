@@ -37,7 +37,7 @@ toggle.connect ("notify::active",
 
 hbox.add_actor (toggle);
 hbox.add_actor (label);
-stage.add_actor (hbox);
+win.set_child (hbox);
 
 hbox.child_set_property (toggle, "expand", true);
 hbox.child_set_property (toggle, "x-fill", false);

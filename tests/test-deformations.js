@@ -42,7 +42,7 @@ deform.animatev (Clutter.AnimationMode.LINEAR, 10000,
                  ["period"],
                  [1.0]);
 
-stage.add_actor (deform);
+win.set_child (deform);
 
 stage.show ();
 app.run ();

@@ -225,8 +225,8 @@ main (int argc, char *argv[])
                                       "y-fill", FALSE,
                                       "x-fill", FALSE,
                                       NULL);
-  /* Add the table to the stage */
-  clutter_container_add (CLUTTER_CONTAINER (stage), table, NULL);
+  /* Add the table to the window */
+  mx_window_set_child (window, table);
 
   /* Begin */
   clutter_actor_show (stage);

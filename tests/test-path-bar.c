@@ -99,14 +99,14 @@ main (int argc, char **argv)
       mx_box_layout_set_orientation (MX_BOX_LAYOUT (vbox), MX_VERTICAL);
       clutter_container_add_actor (CLUTTER_CONTAINER (vbox), bar);
       clutter_container_add_actor (CLUTTER_CONTAINER (vbox), hbox);
-      clutter_container_add_actor (CLUTTER_CONTAINER (stage), vbox);
+      mx_window_set_child (window, vbox);
       mx_path_bar_set_editable (MX_PATH_BAR (bar), TRUE);
     }
   else
     {
       MxToolbar *toolbar = mx_window_get_toolbar (window);
       clutter_container_add_actor (CLUTTER_CONTAINER (toolbar), bar);
-      clutter_container_add_actor (CLUTTER_CONTAINER (stage), hbox);
+      mx_window_set_child (window, hbox);
     }
 
   clutter_actor_show (stage);

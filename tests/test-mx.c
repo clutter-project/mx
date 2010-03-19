@@ -148,7 +148,7 @@ main (int argc, char *argv[])
   mainbox = mx_box_layout_new ();
   clutter_actor_set_size (mainbox, 800, 600);
   mx_box_layout_set_orientation (MX_BOX_LAYOUT (mainbox), MX_VERTICAL);
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage), mainbox);
+  mx_window_set_child (window, mainbox);
 
   /* create the toolbar */
   toolbar = (ClutterActor *)mx_window_get_toolbar (window);
