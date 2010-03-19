@@ -648,14 +648,23 @@ mx_menu_remove_action (MxMenu   *menu,
 }
 
 /**
- * mx_menu_clear:
+ * mx_menu_remove_all:
  * @menu: A #MxMenu
  *
  * Remove all the actions from @menu.
  *
  */
+#ifndef MX_DISABLE_DEPRECATED
 void
 mx_menu_clear (MxMenu *menu)
+{
+  g_warning ("mx_menu_clear is deprecated."
+             " Use mx_menu_remove_all instead.");
+  mx_menu_remove_all (menu);
+}
+#endif
+void
+mx_menu_remove_all (MxMenu *menu)
 {
   gint i;
 
