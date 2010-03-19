@@ -59,7 +59,7 @@ enum
   PROP_0,
 
   PROP_LABEL,
-  PROP_TOGGLE_MODE,
+  PROP_IS_TOGGLE,
   PROP_TOGGLED
 };
 
@@ -438,8 +438,8 @@ mx_button_set_property (GObject      *gobject,
     case PROP_LABEL:
       mx_button_set_label (button, g_value_get_string (value));
       break;
-    case PROP_TOGGLE_MODE:
-      mx_button_set_toggle_mode (button, g_value_get_boolean (value));
+    case PROP_IS_TOGGLE:
+      mx_button_set_is_toggle (button, g_value_get_boolean (value));
       break;
     case PROP_TOGGLED:
       mx_button_set_toggled (button, g_value_get_boolean (value));
@@ -464,7 +464,7 @@ mx_button_get_property (GObject    *gobject,
     case PROP_LABEL:
       g_value_set_string (value, priv->text);
       break;
-    case PROP_TOGGLE_MODE:
+    case PROP_IS_TOGGLE:
       g_value_set_boolean (value, priv->is_toggle);
       break;
     case PROP_TOGGLED:
@@ -658,11 +658,11 @@ mx_button_class_init (MxButtonClass *klass)
                                NULL, MX_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_LABEL, pspec);
 
-  pspec = g_param_spec_boolean ("toggle-mode",
-                                "Toggle Mode",
+  pspec = g_param_spec_boolean ("is-toggle",
+                                "Is Toggle",
                                 "Enable or disable toggling",
                                 FALSE, MX_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class, PROP_TOGGLE_MODE, pspec);
+  g_object_class_install_property (gobject_class, PROP_IS_TOGGLE, pspec);
 
   pspec = g_param_spec_boolean ("toggled",
                                 "Toggled",
@@ -788,15 +788,24 @@ mx_button_set_label (MxButton    *button,
 }
 
 /**
- * mx_button_get_toggle_mode:
+ * mx_button_get_is_toggle:
  * @button: a #MxButton
  *
  * Get the toggle mode status of the button.
  *
  * Returns: #TRUE if toggle mode is set, otherwise #FALSE
  */
+#ifndef MX_DISABLE_DEPRECATED
 gboolean
 mx_button_get_toggle_mode (MxButton *button)
+{
+  g_warning ("mx_button_get_toggle_mode is deprecated."
+             " Use mx_button_get_is_toggle instead.");
+  return mx_button_get_is_toggle (button);
+}
+#endif
+gboolean
+mx_button_get_is_toggle (MxButton *button)
 {
   g_return_val_if_fail (MX_IS_BUTTON (button), FALSE);
 
@@ -804,22 +813,32 @@ mx_button_get_toggle_mode (MxButton *button)
 }
 
 /**
- * mx_button_set_toggle_mode:
+ * mx_button_set_is_toggle:
  * @button: a #Mxbutton
  * @toggle: #TRUE or #FALSE
  *
  * Enables or disables toggle mode for the button. In toggle mode, the active
  * state will be "toggled" when the user clicks the button.
  */
+#ifndef MX_DISABLE_DEPRECATED
 void
 mx_button_set_toggle_mode (MxButton *button,
                            gboolean  toggle)
+{
+  g_warning ("mx_button_set_toggle_mode is deprecated."
+             " Use mx_button_set_is_toggle instead.");
+  mx_button_set_is_toggle (button, toggle);
+}
+#endif
+void
+mx_button_set_is_toggle (MxButton *button,
+                         gboolean  toggle)
 {
   g_return_if_fail (MX_IS_BUTTON (button));
 
   button->priv->is_toggle = toggle;
 
-  g_object_notify (G_OBJECT (button), "toggle-mode");
+  g_object_notify (G_OBJECT (button), "is-toggle");
 }
 
 /**

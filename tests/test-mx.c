@@ -116,7 +116,7 @@ add_tab (ClutterContainer *box,
   ClutterActor *button;
 
   button = mx_button_new_with_label (name);
-  mx_button_set_toggle_mode (MX_BUTTON (button), TRUE);
+  mx_button_set_is_toggle (MX_BUTTON (button), TRUE);
 
   clutter_container_add_actor (box, button);
   mx_button_group_add (group, MX_BUTTON (button));

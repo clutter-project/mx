@@ -34,7 +34,7 @@ _add_button_clicked_cb (MxButton *add_button,
   button = mx_button_new_with_label (button_str);
   g_free (button_str);
   g_list_free (children);
-  mx_button_set_toggle_mode ((MxButton *) button, TRUE);
+  mx_button_set_is_toggle ((MxButton *) button, TRUE);
   clutter_container_add_actor (CLUTTER_CONTAINER (button_box),
                                button);
   mx_button_group_add (button_group, (MxButton *) button);
@@ -105,7 +105,7 @@ button_group_main (ClutterContainer *stage)
   clutter_container_add_actor (CLUTTER_CONTAINER (control_box), button);
 
   button = mx_button_new_with_label ("Allow no active");
-  mx_button_set_toggle_mode ((MxButton *) button, TRUE);
+  mx_button_set_is_toggle ((MxButton *) button, TRUE);
   g_signal_connect (button, "notify::toggled",
                     (GCallback) _no_active_toggled_cb, NULL);
   mx_button_set_toggled ((MxButton *)button,
