@@ -49,7 +49,9 @@
 enum
 {
   STYLE_CHANGED,
+#if 0
   STYLE_NOTIFY,
+#endif
   CHANGED,
 
   LAST_SIGNAL
@@ -69,12 +71,15 @@ mx_stylable_notify_dispatcher (GObject     *gobject,
                                guint        n_pspecs,
                                GParamSpec **pspecs)
 {
+#if 0
   guint i;
 
   for (i = 0; i < n_pspecs; i++)
     g_signal_emit (gobject, stylable_signals[STYLE_NOTIFY],
                    g_quark_from_string (pspecs[i]->name),
                    pspecs[i]);
+#endif
+
 }
 
 static void
@@ -156,6 +161,7 @@ mx_stylable_base_init (gpointer g_iface)
                   _mx_marshal_VOID__ENUM,
                   G_TYPE_NONE, 1, MX_TYPE_STYLE_CHANGED_FLAGS);
 
+#if 0
   stylable_signals[STYLE_NOTIFY] =
     g_signal_new (I_("style-notify"),
                   iface_type,
@@ -166,6 +172,7 @@ mx_stylable_base_init (gpointer g_iface)
                   _mx_marshal_VOID__PARAM,
                   G_TYPE_NONE, 1,
                   G_TYPE_PARAM);
+#endif
 }
 
 GType
@@ -189,6 +196,7 @@ mx_stylable_get_type (void)
   return our_type;
 }
 
+#if 0
 void
 mx_stylable_freeze_notify (MxStylable *stylable)
 {
@@ -253,6 +261,7 @@ mx_stylable_notify (MxStylable  *stylable,
 
   g_object_unref (stylable);
 }
+#endif
 
 /**
  * mx_stylable_iface_install_property:

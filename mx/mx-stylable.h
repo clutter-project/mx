@@ -78,8 +78,10 @@ struct _MxStylableIface
   /* context virtual functions */
 
   /* signals, not vfuncs */
+#if 0
   void (* style_notify)     (MxStylable *stylable,
                              GParamSpec *pspec);
+#endif
   void (* style_changed)    (MxStylable *stylable, MxStyleChangedFlags flags);
 };
 
@@ -89,10 +91,12 @@ void         mx_stylable_iface_install_property (MxStylableIface *iface,
                                                  GType              owner_type,
                                                  GParamSpec        *pspec);
 
+#if 0
 void         mx_stylable_freeze_notify          (MxStylable      *stylable);
 void         mx_stylable_notify                 (MxStylable      *stylable,
                                                  const gchar       *property_name);
 void         mx_stylable_thaw_notify            (MxStylable      *stylable);
+#endif
 GParamSpec **mx_stylable_list_properties        (MxStylable      *stylable,
                                                  guint             *n_props);
 GParamSpec * mx_stylable_find_property          (MxStylable      *stylable,
