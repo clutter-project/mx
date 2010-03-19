@@ -357,9 +357,13 @@ mx_viewport_class_init (MxViewportClass *klass)
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_SYNC_ADJUST, pspec);
 
-  g_object_class_override_property (gobject_class, PROP_HADJUST, "hadjustment");
+  g_object_class_override_property (gobject_class,
+                                    PROP_HADJUST,
+                                    "horizontal-adjustment");
 
-  g_object_class_override_property (gobject_class, PROP_VADJUST, "vadjustment");
+  g_object_class_override_property (gobject_class,
+                                    PROP_VADJUST,
+                                    "vertical-adjustment");
 }
 
 static void

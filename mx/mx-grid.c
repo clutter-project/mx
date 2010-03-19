@@ -481,11 +481,11 @@ mx_grid_class_init (MxGridClass *klass)
 
   g_object_class_override_property (gobject_class,
                                     PROP_HADJUST,
-                                    "hadjustment");
+                                    "horizontal-adjustment");
 
   g_object_class_override_property (gobject_class,
                                     PROP_VADJUST,
-                                    "vadjustment");
+                                    "vertical-adjustment");
 }
 
 static void

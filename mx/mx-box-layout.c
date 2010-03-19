@@ -1367,11 +1367,11 @@ mx_box_layout_class_init (MxBoxLayoutClass *klass)
   /* MxScrollable properties */
   g_object_class_override_property (object_class,
                                     PROP_HADJUST,
-                                    "hadjustment");
+                                    "horizontal-adjustment");
 
   g_object_class_override_property (object_class,
                                     PROP_VADJUST,
-                                    "vadjustment");
+                                    "vertical-adjustment");
 
 }
 

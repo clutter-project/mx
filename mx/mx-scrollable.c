@@ -24,6 +24,7 @@
  */
 
 #include "mx-scrollable.h"
+#include "mx-private.h"
 
 static void
 mx_scrollable_base_init (gpointer g_iface)
@@ -32,19 +33,20 @@ mx_scrollable_base_init (gpointer g_iface)
 
   if (!initialized)
     {
-      g_object_interface_install_property (g_iface,
-                                           g_param_spec_object ("hadjustment",
-                                                                "MxAdjustment",
-                                                                "Horizontal adjustment",
-                                                                MX_TYPE_ADJUSTMENT,
-                                                                G_PARAM_READWRITE));
+      GParamSpec *pspec;
+      pspec = g_param_spec_object ("horizontal-adjustment",
+                                   "Horizontal adjustment",
+                                   "The MxAdjustment for horizontal scrolling.",
+                                   MX_TYPE_ADJUSTMENT,
+                                   MX_PARAM_READWRITE);
+      g_object_interface_install_property (g_iface, pspec);
 
-      g_object_interface_install_property (g_iface,
-                                           g_param_spec_object ("vadjustment",
-                                                                "MxAdjustment",
-                                                                "Vertical adjustment",
-                                                                MX_TYPE_ADJUSTMENT,
-                                                                G_PARAM_READWRITE));
+      pspec = g_param_spec_object ("vertical-adjustment",
+                                   "Vertical adjustment",
+                                   "The MxAdjustment for vertical scrolling.",
+                                   MX_TYPE_ADJUSTMENT,
+                                   MX_PARAM_READWRITE);
+      g_object_interface_install_property (g_iface, pspec);
 
       initialized = TRUE;
     }
