@@ -275,8 +275,8 @@ mx_scroll_view_get_preferred_width (ClutterActor *actor,
       /* if the scroll policy is not set to always or horizontal, then the
        * minimum size of the scroll view is the minimum size of the child */
 
-      if (!(priv->scroll_policy == MX_SCROLL_BOTH
-            || priv->scroll_policy == MX_SCROLL_HORIZONTAL))
+      if (!(priv->scroll_policy == MX_SCROLL_POLICY_BOTH
+            || priv->scroll_policy == MX_SCROLL_POLICY_HORIZONTAL))
         {
           *min_width_p += child_min_w;
         }
@@ -328,8 +328,8 @@ mx_scroll_view_get_preferred_height (ClutterActor *actor,
     {
       *min_height_p = padding.top + padding.bottom + scroll_h;
 
-      if (!(priv->scroll_policy == MX_SCROLL_BOTH
-            || priv->scroll_policy == MX_SCROLL_VERTICAL))
+      if (!(priv->scroll_policy == MX_SCROLL_POLICY_BOTH
+            || priv->scroll_policy == MX_SCROLL_POLICY_VERTICAL))
         {
           *min_height_p += min_child_h;
         }
@@ -544,7 +544,7 @@ mx_scroll_view_class_init (MxScrollViewClass *klass)
                              "Scroll Policy",
                              "The scroll policy",
                              MX_TYPE_SCROLL_POLICY,
-                             MX_SCROLL_BOTH,
+                             MX_SCROLL_POLICY_BOTH,
                              MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_SCROLL_POLICY, pspec);
 }
@@ -738,7 +738,7 @@ mx_scroll_view_init (MxScrollView *self)
                                 "orientation", MX_ORIENTATION_VERTICAL,
                                 NULL);
 
-  priv->scroll_policy = MX_SCROLL_BOTH;
+  priv->scroll_policy = MX_SCROLL_POLICY_BOTH;
 
   clutter_actor_set_parent (priv->hscroll, CLUTTER_ACTOR (self));
   clutter_actor_set_parent (priv->vscroll, CLUTTER_ACTOR (self));
