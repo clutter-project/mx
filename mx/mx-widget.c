@@ -981,7 +981,7 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                  "Font Weight",
                                  "Font Weight",
                                  MX_TYPE_FONT_WEIGHT,
-                                 MX_WEIGHT_NORMAL,
+                                 MX_FONT_WEIGHT_NORMAL,
                                  G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
 

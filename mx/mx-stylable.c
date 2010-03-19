@@ -846,13 +846,13 @@ mx_stylable_apply_clutter_text_attributes (MxStylable  *stylable,
   /* font weight */
   switch (font_weight)
     {
-  case MX_WEIGHT_BOLD:
+  case MX_FONT_WEIGHT_BOLD:
     weight = PANGO_WEIGHT_BOLD;
     break;
-  case MX_WEIGHT_LIGHTER:
+  case MX_FONT_WEIGHT_LIGHTER:
     weight = PANGO_WEIGHT_LIGHT;
     break;
-  case MX_WEIGHT_BOLDER:
+  case MX_FONT_WEIGHT_BOLDER:
     weight = PANGO_WEIGHT_HEAVY;
     break;
   default:
