@@ -143,7 +143,8 @@ mx_scroll_view_set_property (GObject      *object,
   switch (property_id)
     {
     case PROP_MOUSE_SCROLL:
-      mx_scroll_view_set_mouse_scrolling (view, g_value_get_boolean (value));
+      mx_scroll_view_set_enable_mouse_scrolling (view,
+                                                 g_value_get_boolean (value));
       break;
 
     case PROP_ENABLE_GESTURES:
@@ -856,9 +857,19 @@ mx_scroll_view_new (void)
   return g_object_new (MX_TYPE_SCROLL_VIEW, NULL);
 }
 
+#ifndef MX_DISABLE_DEPRECATED
 void
 mx_scroll_view_set_mouse_scrolling (MxScrollView *scroll,
                                     gboolean      enabled)
+{
+  g_warning ("mx_scroll_view_set_mouse_scrolling is deprecated."
+             " Use mx_scroll_view_set_enable_mouse_scrolling instead");
+  mx_scroll_view_set_enable_mouse_scrolling (scroll, enabled);
+}
+#endif
+void
+mx_scroll_view_set_enable_mouse_scrolling (MxScrollView *scroll,
+                                           gboolean      enabled)
 {
   MxScrollViewPrivate *priv;
 
@@ -873,11 +884,22 @@ mx_scroll_view_set_mouse_scrolling (MxScrollView *scroll,
       /* make sure we can receive mouse wheel events */
       if (enabled)
         clutter_actor_set_reactive ((ClutterActor *) scroll, TRUE);
+
+      g_object_notify (scroll, "enable-mouse-scrolling");
     }
 }
 
+#ifndef MX_DISABLE_DEPRECATED
 gboolean
 mx_scroll_view_get_mouse_scrolling (MxScrollView *scroll)
+{
+  g_warning ("mx_scroll_view_get_mouse_scrolling is deprecated,"
+             " Use mx_scroll_view_get_enable_mouse_scrolling instead.");
+  return mx_scroll_view_get_enable_mouse_scrolling (scroll);
+}
+#endif
+gboolean
+mx_scroll_view_get_enable_mouse_scrolling (MxScrollView *scroll)
 {
   MxScrollViewPrivate *priv;
 
