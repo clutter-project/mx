@@ -1,5 +1,5 @@
 /*
- * mx-deform-bowtie.h: A bowtie deformation actor
+ * mx-deform-bow-tie.h: A bow-tie deformation actor
  *
  * Copyright 2010 Intel Corporation.
  *
@@ -21,17 +21,17 @@
  *
  */
 
-#include "mx-deform-bowtie.h"
+#include "mx-deform-bow-tie.h"
 #include "mx-private.h"
 
 #include <math.h>
 
-G_DEFINE_TYPE (MxDeformBowtie, mx_deform_bowtie, MX_TYPE_DEFORM_TEXTURE)
+G_DEFINE_TYPE (MxDeformBowTie, mx_deform_bow_tie, MX_TYPE_DEFORM_TEXTURE)
 
-#define DEFORM_BOWTIE_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), \
-                                  MX_TYPE_DEFORM_BOWTIE, MxDeformBowtiePrivate))
+#define DEFORM_BOW_TIE_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), \
+                                   MX_TYPE_DEFORM_BOW_TIE, MxDeformBowTiePrivate))
 
-struct _MxDeformBowtiePrivate
+struct _MxDeformBowTiePrivate
 {
   gdouble period;
   ClutterTexture *back;
@@ -48,7 +48,7 @@ enum
 };
 
 static void
-mx_deform_bowtie_texture_vflip (ClutterTexture *texture)
+mx_deform_bow_tie_texture_vflip (ClutterTexture *texture)
 {
   CoglHandle material;
 
@@ -68,7 +68,7 @@ mx_deform_bowtie_texture_vflip (ClutterTexture *texture)
 }
 
 static void
-mx_deform_bowtie_texture_reset (ClutterTexture *texture)
+mx_deform_bow_tie_texture_reset (ClutterTexture *texture)
 {
   CoglHandle material;
 
@@ -83,12 +83,12 @@ mx_deform_bowtie_texture_reset (ClutterTexture *texture)
 }
 
 static void
-mx_deform_bowtie_get_property (GObject    *object,
-                              guint       property_id,
-                              GValue     *value,
-                              GParamSpec *pspec)
+mx_deform_bow_tie_get_property (GObject    *object,
+                                guint       property_id,
+                                GValue     *value,
+                                GParamSpec *pspec)
 {
-  MxDeformBowtiePrivate *priv = MX_DEFORM_BOWTIE (object)->priv;
+  MxDeformBowTiePrivate *priv = MX_DEFORM_BOW_TIE (object)->priv;
 
   switch (property_id)
     {
@@ -106,15 +106,15 @@ mx_deform_bowtie_get_property (GObject    *object,
 }
 
 static void
-mx_deform_bowtie_set_property (GObject      *object,
-                              guint         property_id,
-                              const GValue *value,
-                              GParamSpec   *pspec)
+mx_deform_bow_tie_set_property (GObject      *object,
+                                guint         property_id,
+                                const GValue *value,
+                                GParamSpec   *pspec)
 {
   gdouble set_value;
   gboolean flip_back;
   MxDeformTexture *texture = MX_DEFORM_TEXTURE (object);
-  MxDeformBowtiePrivate *priv = MX_DEFORM_BOWTIE (object)->priv;
+  MxDeformBowTiePrivate *priv = MX_DEFORM_BOW_TIE (object)->priv;
 
   switch (property_id)
     {
@@ -143,13 +143,13 @@ mx_deform_bowtie_set_property (GObject      *object,
                   priv->back_id =
                     g_signal_connect (priv->back, "notify::cogl-texture",
                                       G_CALLBACK (
-                                        mx_deform_bowtie_texture_vflip),
+                                        mx_deform_bow_tie_texture_vflip),
                                       texture);
-                  mx_deform_bowtie_texture_vflip (priv->back);
+                  mx_deform_bow_tie_texture_vflip (priv->back);
                 }
               else
                 {
-                  mx_deform_bowtie_texture_reset (priv->back);
+                  mx_deform_bow_tie_texture_reset (priv->back);
                   priv->back_id = 0;
                 }
             }
@@ -162,15 +162,15 @@ mx_deform_bowtie_set_property (GObject      *object,
 }
 
 static void
-mx_deform_bowtie_deform (MxDeformTexture   *texture,
-                         CoglTextureVertex *vertex,
-                         gfloat             width,
-                         gfloat             height)
+mx_deform_bow_tie_deform (MxDeformTexture   *texture,
+                          CoglTextureVertex *vertex,
+                          gfloat             width,
+                          gfloat             height)
 {
   gfloat cx, cy, rx, ry, turn_angle, height_radius;
   guint shade;
 
-  MxDeformBowtiePrivate *priv = ((MxDeformBowtie *)texture)->priv;
+  MxDeformBowTiePrivate *priv = ((MxDeformBowTie *)texture)->priv;
 
   cx = priv->period * (width + width/2);
   cy = height/2;
@@ -201,10 +201,10 @@ mx_deform_bowtie_deform (MxDeformTexture   *texture,
 }
 
 static void
-mx_deform_bowtie_back_notify (MxDeformBowtie *self,
-                              GParamSpec     *pspec)
+mx_deform_bow_tie_back_notify (MxDeformBowTie *self,
+                               GParamSpec     *pspec)
 {
-  MxDeformBowtiePrivate *priv = self->priv;
+  MxDeformBowTiePrivate *priv = self->priv;
 
   if (priv->back_id && priv->back)
     {
@@ -215,7 +215,7 @@ mx_deform_bowtie_back_notify (MxDeformBowtie *self,
   if (priv->back)
     {
       if (priv->flip_back)
-        mx_deform_bowtie_texture_reset (priv->back);
+        mx_deform_bow_tie_texture_reset (priv->back);
 
       g_object_remove_weak_pointer (G_OBJECT (priv->back),
                                     (gpointer *)&priv->back);
@@ -233,17 +233,17 @@ mx_deform_bowtie_back_notify (MxDeformBowtie *self,
         {
           priv->back_id =
             g_signal_connect (priv->back, "notify::cogl-texture",
-                              G_CALLBACK (mx_deform_bowtie_texture_vflip),
+                              G_CALLBACK (mx_deform_bow_tie_texture_vflip),
                               self);
-          mx_deform_bowtie_texture_vflip (priv->back);
+          mx_deform_bow_tie_texture_vflip (priv->back);
         }
     }
 }
 
 static void
-mx_deform_bowtie_dispose (GObject *object)
+mx_deform_bow_tie_dispose (GObject *object)
 {
-  MxDeformBowtiePrivate *priv = MX_DEFORM_BOWTIE (object)->priv;
+  MxDeformBowTiePrivate *priv = MX_DEFORM_BOW_TIE (object)->priv;
 
   if (priv->back_id && priv->back)
     {
@@ -270,24 +270,24 @@ mx_deform_bowtie_dispose (GObject *object)
       priv->back = NULL;
     }
 
-  G_OBJECT_CLASS (mx_deform_bowtie_parent_class)->dispose (object);
+  G_OBJECT_CLASS (mx_deform_bow_tie_parent_class)->dispose (object);
 }
 
 static void
-mx_deform_bowtie_class_init (MxDeformBowtieClass *klass)
+mx_deform_bow_tie_class_init (MxDeformBowTieClass *klass)
 {
   GParamSpec *pspec;
 
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   MxDeformTextureClass *deform_class = MX_DEFORM_TEXTURE_CLASS (klass);
 
-  g_type_class_add_private (klass, sizeof (MxDeformBowtiePrivate));
+  g_type_class_add_private (klass, sizeof (MxDeformBowTiePrivate));
 
-  object_class->get_property = mx_deform_bowtie_get_property;
-  object_class->set_property = mx_deform_bowtie_set_property;
-  object_class->dispose = mx_deform_bowtie_dispose;
+  object_class->get_property = mx_deform_bow_tie_get_property;
+  object_class->set_property = mx_deform_bow_tie_set_property;
+  object_class->dispose = mx_deform_bow_tie_dispose;
 
-  deform_class->deform = mx_deform_bowtie_deform;
+  deform_class->deform = mx_deform_bow_tie_deform;
 
   pspec = g_param_spec_double ("period",
                                "Period",
@@ -306,16 +306,16 @@ mx_deform_bowtie_class_init (MxDeformBowtieClass *klass)
 }
 
 static void
-mx_deform_bowtie_init (MxDeformBowtie *self)
+mx_deform_bow_tie_init (MxDeformBowTie *self)
 {
-  self->priv = DEFORM_BOWTIE_PRIVATE (self);
+  self->priv = DEFORM_BOW_TIE_PRIVATE (self);
   self->priv->flip_back = TRUE;
   g_signal_connect (self, "notify::back",
-                    G_CALLBACK (mx_deform_bowtie_back_notify), NULL);
+                    G_CALLBACK (mx_deform_bow_tie_back_notify), NULL);
 }
 
 ClutterActor *
-mx_deform_bowtie_new (void)
+mx_deform_bow_tie_new (void)
 {
-  return g_object_new (MX_TYPE_DEFORM_BOWTIE, NULL);
+  return g_object_new (MX_TYPE_DEFORM_BOW_TIE, NULL);
 }

@@ -1,5 +1,5 @@
 /*
- * mx-deform-bowtie.h: A bowtie deformation actor
+ * mx-deform-bow-tie.h: A bow-tie deformation actor
  *
  * Copyright 2010 Intel Corporation.
  *
@@ -21,56 +21,56 @@
  *
  */
 
-#ifndef _MX_DEFORM_BOWTIE_H
-#define _MX_DEFORM_BOWTIE_H
+#ifndef _MX_DEFORM_BOW_TIE_H
+#define _MX_DEFORM_BOW_TIE_H
 
 #include <glib-object.h>
 #include <mx/mx-deform-texture.h>
 
 G_BEGIN_DECLS
 
-#define MX_TYPE_DEFORM_BOWTIE mx_deform_bowtie_get_type()
+#define MX_TYPE_DEFORM_BOW_TIE mx_deform_bow_tie_get_type()
 
-#define MX_DEFORM_BOWTIE(obj) \
+#define MX_DEFORM_BOW_TIE(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-  MX_TYPE_DEFORM_BOWTIE, MxDeformBowtie))
+  MX_TYPE_DEFORM_BOW_TIE, MxDeformBowTie))
 
-#define MX_DEFORM_BOWTIE_CLASS(klass) \
+#define MX_DEFORM_BOW_TIE_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_CAST ((klass), \
-  MX_TYPE_DEFORM_BOWTIE, MxDeformBowtieClass))
+  MX_TYPE_DEFORM_BOW_TIE, MxDeformBowTieClass))
 
-#define MX_IS_DEFORM_BOWTIE(obj) \
+#define MX_IS_DEFORM_BOW_TIE(obj) \
   (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
-  MX_TYPE_DEFORM_BOWTIE))
+  MX_TYPE_DEFORM_BOW_TIE))
 
-#define MX_IS_DEFORM_BOWTIE_CLASS(klass) \
+#define MX_IS_DEFORM_BOW_TIE_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_TYPE ((klass), \
-  MX_TYPE_DEFORM_BOWTIE))
+  MX_TYPE_DEFORM_BOW_TIE))
 
-#define MX_DEFORM_BOWTIE_GET_CLASS(obj) \
+#define MX_DEFORM_BOW_TIE_GET_CLASS(obj) \
   (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-  MX_TYPE_DEFORM_BOWTIE, MxDeformBowtieClass))
+  MX_TYPE_DEFORM_BOW_TIE, MxDeformBowTieClass))
 
-typedef struct _MxDeformBowtie MxDeformBowtie;
-typedef struct _MxDeformBowtieClass MxDeformBowtieClass;
-typedef struct _MxDeformBowtiePrivate MxDeformBowtiePrivate;
+typedef struct _MxDeformBowTie MxDeformBowTie;
+typedef struct _MxDeformBowTieClass MxDeformBowTieClass;
+typedef struct _MxDeformBowTiePrivate MxDeformBowTiePrivate;
 
-struct _MxDeformBowtie
+struct _MxDeformBowTie
 {
   MxDeformTexture parent;
 
-  MxDeformBowtiePrivate *priv;
+  MxDeformBowTiePrivate *priv;
 };
 
-struct _MxDeformBowtieClass
+struct _MxDeformBowTieClass
 {
   MxDeformTextureClass parent_class;
 };
 
-GType mx_deform_bowtie_get_type (void) G_GNUC_CONST;
+GType mx_deform_bow_tie_get_type (void) G_GNUC_CONST;
 
-ClutterActor *mx_deform_bowtie_new (void);
+ClutterActor *mx_deform_bow_tie_new (void);
 
 G_END_DECLS
 
-#endif /* _MX_DEFORM_BOWTIE_H */
+#endif /* _MX_DEFORM_BOW_TIE_H */
