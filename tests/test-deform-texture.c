@@ -23,13 +23,11 @@
 static gint func = 0;
 
 static ClutterActor *
-replace_deformation (ClutterActor *texture, GType type)
+replace_deformation (ClutterActor *texture, GType type, MxWindow *window)
 {
   ClutterTexture *front, *back;
-  ClutterActor *parent;
   gint x, y;
 
-  parent = clutter_actor_get_parent (texture);
   mx_deform_texture_get_resolution (MX_DEFORM_TEXTURE (texture), &x, &y);
   mx_deform_texture_get_textures (MX_DEFORM_TEXTURE (texture),
                                   &front,
@@ -39,7 +37,6 @@ replace_deformation (ClutterActor *texture, GType type)
   if (back)
     g_object_ref (back);
   mx_deform_texture_set_textures (MX_DEFORM_TEXTURE (texture), NULL, NULL);
-  clutter_container_remove_actor (CLUTTER_CONTAINER (parent), texture);
 
   texture = g_object_new (type, NULL);
   mx_deform_texture_set_resolution (MX_DEFORM_TEXTURE (texture), x, y);
@@ -51,32 +48,34 @@ replace_deformation (ClutterActor *texture, GType type)
   if (back)
     g_object_unref (back);
 
-  clutter_container_add_actor (CLUTTER_CONTAINER (parent),
-                               texture);
+  mx_window_set_child (window, texture);
 
   return texture;
 }
 
 static void
 completed_cb (ClutterAnimation *animation,
-              ClutterActor     *texture)
+              MxWindow         *window)
 {
+  ClutterActor *texture =
+    CLUTTER_ACTOR (clutter_animation_get_object (animation));
+
   switch (func)
     {
     case 0:
       /* Change direction of page-turn animation */
       clutter_actor_animate (texture, CLUTTER_EASE_IN_OUT_SINE, 5000,
                              "period", 0.0,
-                             "signal-after::completed", completed_cb, texture,
+                             "signal-after::completed", completed_cb, window,
                              NULL);
       break;
 
     case 1:
       /* Replace page-turn deformation with bow-tie deformation */
-      texture = replace_deformation (texture, MX_TYPE_DEFORM_BOWTIE);
+      texture = replace_deformation (texture, MX_TYPE_DEFORM_BOWTIE, window);
       clutter_actor_animate (texture, CLUTTER_EASE_IN_OUT_SINE, 5000,
                              "period", 1.0,
-                             "signal-after::completed", completed_cb, texture,
+                             "signal-after::completed", completed_cb, window,
                              NULL);
       break;
 
@@ -84,36 +83,36 @@ completed_cb (ClutterAnimation *animation,
       /* Change direction of bow-tie animation */
       clutter_actor_animate (texture, CLUTTER_EASE_IN_OUT_SINE, 5000,
                              "period", 0.0,
-                             "signal-after::completed", completed_cb, texture,
+                             "signal-after::completed", completed_cb, window,
                              NULL);
       break;
 
     case 3:
-      /* Replace bow-tie deformation with cloth deformation */
-      texture = replace_deformation (texture, MX_TYPE_DEFORM_CLOTH);
+      /* Replace bow-tie deformation with waves deformation */
+      texture = replace_deformation (texture, MX_TYPE_DEFORM_WAVES, window);
       g_object_set (G_OBJECT (texture), "amplitude", 0.0, NULL);
       clutter_actor_animate (texture, CLUTTER_EASE_IN_QUAD, 5000,
                              "period", 2.0,
                              "amplitude", 1.0,
-                             "signal-after::completed", completed_cb, texture,
+                             "signal-after::completed", completed_cb, window,
                              NULL);
       break;
 
     case 4:
-      /* Reverse direction of cloth deformation */
+      /* Reverse direction of waves deformation */
       clutter_actor_animate (texture, CLUTTER_EASE_OUT_QUAD, 5000,
                              "period", 4.0,
                              "amplitude", 0.0,
-                             "signal-after::completed", completed_cb, texture,
+                             "signal-after::completed", completed_cb, window,
                              NULL);
       break;
 
     case 5:
-      /* Replace cloth deformation with page-turn deformation */
-      texture = replace_deformation (texture, MX_TYPE_DEFORM_PAGE_TURN);
+      /* Replace waves deformation with page-turn deformation */
+      texture = replace_deformation (texture, MX_TYPE_DEFORM_PAGE_TURN, window);
       clutter_actor_animate (texture, CLUTTER_EASE_IN_OUT_SINE, 5000,
                              "period", 1.0,
-                             "signal-after::completed", completed_cb, texture,
+                             "signal-after::completed", completed_cb, window,
                              NULL);
       break;
     }
@@ -184,7 +183,7 @@ main (int argc, char *argv[])
   /* Start animation */
   clutter_actor_animate (texture, CLUTTER_EASE_IN_OUT_SINE, 5000,
                          "period", 1.0,
-                         "signal-after::completed", completed_cb, texture,
+                         "signal-after::completed", completed_cb, window,
                          NULL);
 
   /* Begin */

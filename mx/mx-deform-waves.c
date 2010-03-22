@@ -1,5 +1,5 @@
 /*
- * mx-deform-cloth.h: A cloth deformation actor
+ * mx-deform-waves.h: A waves deformation actor
  *
  * Copyright 2010 Intel Corporation.
  *
@@ -21,17 +21,17 @@
  *
  */
 
-#include "mx-deform-cloth.h"
+#include "mx-deform-waves.h"
 #include "mx-private.h"
 
 #include <math.h>
 
-G_DEFINE_TYPE (MxDeformCloth, mx_deform_cloth, MX_TYPE_DEFORM_TEXTURE)
+G_DEFINE_TYPE (MxDeformWaves, mx_deform_waves, MX_TYPE_DEFORM_TEXTURE)
 
-#define DEFORM_CLOTH_PRIVATE(o) \
-  (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_DEFORM_CLOTH, MxDeformClothPrivate))
+#define DEFORM_WAVES_PRIVATE(o) \
+  (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_DEFORM_WAVES, MxDeformWavesPrivate))
 
-struct _MxDeformClothPrivate
+struct _MxDeformWavesPrivate
 {
   gdouble period;
   gdouble angle;
@@ -50,12 +50,12 @@ enum
 };
 
 static void
-mx_deform_cloth_get_property (GObject    *object,
+mx_deform_waves_get_property (GObject    *object,
                               guint       property_id,
                               GValue     *value,
                               GParamSpec *pspec)
 {
-  MxDeformClothPrivate *priv = MX_DEFORM_CLOTH (object)->priv;
+  MxDeformWavesPrivate *priv = MX_DEFORM_WAVES (object)->priv;
 
   switch (property_id)
     {
@@ -81,14 +81,14 @@ mx_deform_cloth_get_property (GObject    *object,
 }
 
 static void
-mx_deform_cloth_set_property (GObject      *object,
+mx_deform_waves_set_property (GObject      *object,
                               guint         property_id,
                               const GValue *value,
                               GParamSpec   *pspec)
 {
   gdouble set_value;
   MxDeformTexture *texture = MX_DEFORM_TEXTURE (object);
-  MxDeformClothPrivate *priv = MX_DEFORM_CLOTH (object)->priv;
+  MxDeformWavesPrivate *priv = MX_DEFORM_WAVES (object)->priv;
 
   switch (property_id)
     {
@@ -139,7 +139,7 @@ mx_deform_cloth_set_property (GObject      *object,
 }
 
 static void
-mx_deform_cloth_deform (MxDeformTexture   *texture,
+mx_deform_waves_deform (MxDeformTexture   *texture,
                         CoglTextureVertex *vertex,
                         gfloat             width,
                         gfloat             height)
@@ -147,7 +147,7 @@ mx_deform_cloth_deform (MxDeformTexture   *texture,
   gfloat cx, cy, rx, turn_angle, height_radius;
   guint shade;
 
-  MxDeformClothPrivate *priv = ((MxDeformCloth *)texture)->priv;
+  MxDeformWavesPrivate *priv = ((MxDeformWaves *)texture)->priv;
 
   /* Rotate the point around the centre of the curl ray to align it with
    * the y-axis.
@@ -179,19 +179,19 @@ mx_deform_cloth_deform (MxDeformTexture   *texture,
 }
 
 static void
-mx_deform_cloth_class_init (MxDeformClothClass *klass)
+mx_deform_waves_class_init (MxDeformWavesClass *klass)
 {
   GParamSpec *pspec;
 
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   MxDeformTextureClass *deform_class = MX_DEFORM_TEXTURE_CLASS (klass);
 
-  g_type_class_add_private (klass, sizeof (MxDeformClothPrivate));
+  g_type_class_add_private (klass, sizeof (MxDeformWavesPrivate));
 
-  object_class->get_property = mx_deform_cloth_get_property;
-  object_class->set_property = mx_deform_cloth_set_property;
+  object_class->get_property = mx_deform_waves_get_property;
+  object_class->set_property = mx_deform_waves_set_property;
 
-  deform_class->deform = mx_deform_cloth_deform;
+  deform_class->deform = mx_deform_waves_deform;
 
   pspec = g_param_spec_double ("period",
                                "Period",
@@ -209,7 +209,7 @@ mx_deform_cloth_class_init (MxDeformClothClass *klass)
 
   pspec = g_param_spec_double ("radius",
                                "Radius",
-                               "Cloth ripple radius",
+                               "Wave ripple radius",
                                G_MINDOUBLE, G_MAXDOUBLE, 32.0,
                                MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_RADIUS, pspec);
@@ -223,16 +223,16 @@ mx_deform_cloth_class_init (MxDeformClothClass *klass)
 }
 
 static void
-mx_deform_cloth_init (MxDeformCloth *self)
+mx_deform_waves_init (MxDeformWaves *self)
 {
-  MxDeformClothPrivate *priv = self->priv = DEFORM_CLOTH_PRIVATE (self);
+  MxDeformWavesPrivate *priv = self->priv = DEFORM_WAVES_PRIVATE (self);
 
   priv->radius = 32.0;
   priv->amplitude = 1.0;
 }
 
 ClutterActor *
-mx_deform_cloth_new (void)
+mx_deform_waves_new (void)
 {
-  return g_object_new (MX_TYPE_DEFORM_CLOTH, NULL);
+  return g_object_new (MX_TYPE_DEFORM_WAVES, NULL);
 }
