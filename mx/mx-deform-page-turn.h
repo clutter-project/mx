@@ -71,6 +71,18 @@ GType mx_deform_page_turn_get_type (void) G_GNUC_CONST;
 
 ClutterActor *mx_deform_page_turn_new (void);
 
+gdouble mx_deform_page_turn_get_period (MxDeformPageTurn *page_turn);
+void    mx_deform_page_turn_set_period (MxDeformPageTurn *page_turn,
+                                        gdouble period);
+
+gdouble mx_deform_page_turn_get_angle (MxDeformPageTurn *page_turn);
+void    mx_deform_page_turn_set_angle (MxDeformPageTurn *page_turn,
+                                       gdouble angle);
+
+gdouble mx_deform_page_turn_get_radius (MxDeformPageTurn *page_turn);
+void    mx_deform_page_turn_set_radius (MxDeformPageTurn *page_turn,
+                                        gdouble radius);
+
 G_END_DECLS
 
 #endif /* _MX_DEFORM_PAGE_TURN_H */

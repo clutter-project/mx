@@ -46,7 +46,6 @@ enum
   PROP_PERIOD,
   PROP_ANGLE,
   PROP_RADIUS,
-  PROP_AMPLITUDE
 };
 
 static void
@@ -82,40 +81,21 @@ mx_deform_page_turn_set_property (GObject      *object,
                                   const GValue *value,
                                   GParamSpec   *pspec)
 {
-  gdouble set_value;
-  MxDeformTexture *texture = MX_DEFORM_TEXTURE (object);
-  MxDeformPageTurnPrivate *priv = MX_DEFORM_PAGE_TURN (object)->priv;
-
   switch (property_id)
     {
     case PROP_PERIOD:
-      set_value = g_value_get_double (value);
-      if (priv->period != set_value)
-        {
-          priv->period = set_value;
-          g_object_notify (object, "period");
-          mx_deform_texture_invalidate (texture);
-        }
+      mx_deform_page_turn_set_period (MX_DEFORM_PAGE_TURN (object),
+                                      g_value_get_double (value));
       break;
 
     case PROP_ANGLE:
-      set_value = g_value_get_double (value);
-      if (priv->angle != set_value)
-        {
-          priv->angle = set_value;
-          g_object_notify (object, "angle");
-          mx_deform_texture_invalidate (texture);
-        }
+      mx_deform_page_turn_set_angle (MX_DEFORM_PAGE_TURN (object),
+                                     g_value_get_double (value));
       break;
 
     case PROP_RADIUS:
-      set_value = g_value_get_double (value);
-      if (priv->radius != set_value)
-        {
-          priv->radius = set_value;
-          g_object_notify (object, "radius");
-          mx_deform_texture_invalidate (texture);
-        }
+      mx_deform_page_turn_set_radius (MX_DEFORM_PAGE_TURN (object),
+                                      g_value_get_double (value));
       break;
 
     default:
@@ -234,4 +214,79 @@ ClutterActor *
 mx_deform_page_turn_new (void)
 {
   return g_object_new (MX_TYPE_DEFORM_PAGE_TURN, NULL);
+}
+
+gdouble
+mx_deform_page_turn_get_period (MxDeformPageTurn *page_turn)
+{
+  g_return_val_if_fail (MX_IS_DEFORM_PAGE_TURN (page_turn), 0.0);
+  return page_turn->priv->period;
+}
+
+void
+mx_deform_page_turn_set_period (MxDeformPageTurn *page_turn,
+                                gdouble           period)
+{
+  MxDeformPageTurnPrivate *priv;
+
+  g_return_if_fail (MX_IS_DEFORM_PAGE_TURN (page_turn));
+
+  priv = page_turn->priv;
+
+  if (priv->period != period)
+    {
+      priv->period = period;
+      g_object_notify (G_OBJECT (page_turn), "period");
+      mx_deform_texture_invalidate (MX_DEFORM_TEXTURE (page_turn));
+    }
+}
+
+gdouble
+mx_deform_page_turn_get_angle (MxDeformPageTurn *page_turn)
+{
+  g_return_val_if_fail (MX_IS_DEFORM_PAGE_TURN (page_turn), 0.0);
+  return page_turn->priv->angle;
+}
+
+void
+mx_deform_page_turn_set_angle (MxDeformPageTurn *page_turn,
+                               gdouble           angle)
+{
+  MxDeformPageTurnPrivate *priv;
+
+  g_return_if_fail (MX_IS_DEFORM_PAGE_TURN (page_turn));
+
+  priv = page_turn->priv;
+
+  if (priv->angle != angle)
+    {
+      priv->angle = angle;
+      g_object_notify (G_OBJECT (page_turn), "angle");
+      mx_deform_texture_invalidate (MX_DEFORM_TEXTURE (page_turn));
+    }
+}
+
+gdouble
+mx_deform_page_turn_get_radius (MxDeformPageTurn *page_turn)
+{
+  g_return_val_if_fail (MX_IS_DEFORM_PAGE_TURN (page_turn), 0.0);
+  return page_turn->priv->radius;
+}
+
+void
+mx_deform_page_turn_set_radius (MxDeformPageTurn *page_turn,
+                                gdouble           radius)
+{
+  MxDeformPageTurnPrivate *priv;
+
+  g_return_if_fail (MX_IS_DEFORM_PAGE_TURN (page_turn));
+
+  priv = page_turn->priv;
+
+  if (priv->radius != radius)
+    {
+      priv->radius = radius;
+      g_object_notify (G_OBJECT (page_turn), "radius");
+      mx_deform_texture_invalidate (MX_DEFORM_TEXTURE (page_turn));
+    }
 }
