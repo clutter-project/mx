@@ -404,7 +404,7 @@ mx_table_child_set_column_span (MxTable      *table,
 
   g_return_if_fail (MX_IS_TABLE (table));
   g_return_if_fail (CLUTTER_IS_ACTOR (child));
-  g_return_if_fail (span > 1);
+  g_return_if_fail (span >= 1);
 
   meta = get_child_meta (table, child);
 
@@ -454,7 +454,7 @@ mx_table_child_set_row_span (MxTable      *table,
 
   g_return_if_fail (MX_IS_TABLE (table));
   g_return_if_fail (CLUTTER_IS_ACTOR (child));
-  g_return_if_fail (span > 1);
+  g_return_if_fail (span >= 1);
 
   meta = get_child_meta (table, child);
 
