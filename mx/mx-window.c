@@ -1048,9 +1048,8 @@ mx_window_set_child (MxWindow     *window,
       priv->child = actor;
       clutter_container_add_actor (CLUTTER_CONTAINER (priv->stage),
                                    priv->child);
-      g_signal_connect (priv->stage, "paint",
-                        G_CALLBACK (mx_window_pre_paint_cb),
-                        window);
+      if (CLUTTER_ACTOR_IS_MAPPED (priv->stage))
+        mx_window_pre_paint_cb (priv->stage, window);
     }
 
   g_object_notify (G_OBJECT (window), "child");
