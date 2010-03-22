@@ -72,7 +72,7 @@ completed_cb (ClutterAnimation *animation,
 
     case 1:
       /* Replace page-turn deformation with bow-tie deformation */
-      texture = replace_deformation (texture, MX_TYPE_DEFORM_BOWTIE, window);
+      texture = replace_deformation (texture, MX_TYPE_DEFORM_BOW_TIE, window);
       clutter_actor_animate (texture, CLUTTER_EASE_IN_OUT_SINE, 5000,
                              "period", 1.0,
                              "signal-after::completed", completed_cb, window,

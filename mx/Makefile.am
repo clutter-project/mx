@@ -24,7 +24,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-button.h 		\
 	$(top_srcdir)/mx/mx-button-group.h 	\
 	$(top_srcdir)/mx/mx-deform-texture.h 	\
-	$(top_srcdir)/mx/mx-deform-bowtie.h 	\
+	$(top_srcdir)/mx/mx-deform-bow-tie.h 	\
 	$(top_srcdir)/mx/mx-deform-page-turn.h 	\
 	$(top_srcdir)/mx/mx-deform-waves.h 	\
 	$(top_srcdir)/mx/mx-draggable.h 		\
@@ -93,7 +93,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-button.c 		\
 	$(top_srcdir)/mx/mx-button-group.c 	\
 	$(top_srcdir)/mx/mx-deform-texture.c 	\
-	$(top_srcdir)/mx/mx-deform-bowtie.c 	\
+	$(top_srcdir)/mx/mx-deform-bow-tie.c 	\
 	$(top_srcdir)/mx/mx-deform-page-turn.c 	\
 	$(top_srcdir)/mx/mx-deform-waves.c 	\
 	$(top_srcdir)/mx/mx-draggable.c		\
