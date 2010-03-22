@@ -58,7 +58,8 @@ enum
   PROP_HAS_TOOLBAR,
   PROP_SMALL_SCREEN,
   PROP_ICON_NAME,
-  PROP_CLUTTER_STAGE
+  PROP_CLUTTER_STAGE,
+  PROP_CHILD
 };
 
 enum
@@ -96,6 +97,10 @@ mx_window_get_property (GObject    *object,
       g_value_set_object (value, priv->stage);
       break;
 
+    case PROP_CHILD:
+      g_value_set_object (value, priv->child);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -127,6 +132,11 @@ mx_window_set_property (GObject      *object,
     case PROP_CLUTTER_STAGE:
       MX_WINDOW (object)->priv->stage =
         (ClutterActor *)g_value_get_object (value);
+      break;
+
+    case PROP_CHILD:
+      mx_window_set_child (MX_WINDOW (object),
+                           (ClutterActor *)g_value_get_object (value));
       break;
 
     default:
@@ -964,6 +974,13 @@ mx_window_class_init (MxWindowClass *klass)
                                G_PARAM_CONSTRUCT_ONLY);
   g_object_class_install_property (object_class, PROP_CLUTTER_STAGE, pspec);
 
+  pspec = g_param_spec_object ("child",
+                               "Child",
+                               "ClutterActor used as the window child.",
+                               CLUTTER_TYPE_ACTOR,
+                               MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_CHILD, pspec);
+
   signals[DESTROY] = g_signal_new ("destroy",
                                    G_TYPE_FROM_CLASS (klass),
                                    G_SIGNAL_RUN_LAST,
@@ -1027,7 +1044,7 @@ mx_window_set_child (MxWindow     *window,
                                  (gpointer *)&priv->child);
     }
 
-  g_object_notify (G_OBJECT (window), "clutter-stage");
+  g_object_notify (G_OBJECT (window), "child");
 }
 
 ClutterActor*
