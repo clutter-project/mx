@@ -888,6 +888,13 @@ mx_application_init_wm (MxApplication *self)
   mx_application_refresh_wm_window (self);
 }
 
+MxApplicationFlags
+mx_application_get_flags (MxApplication *application)
+{
+  g_return_val_if_fail (MX_IS_APPLICATION (application), 0);
+  return application->priv->flags;
+}
+
 /**
  * mx_application_add_window:
  * @application: The #MxApplication

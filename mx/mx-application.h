@@ -91,6 +91,8 @@ void           mx_application_quit (MxApplication      *application);
 
 MxWindow * mx_application_create_window (MxApplication *app);
 
+MxApplicationFlags    mx_application_get_flags     (MxApplication *application);
+
 void                  mx_application_add_window    (MxApplication *application,
                                                     MxWindow      *window);
 void                  mx_application_remove_window (MxApplication *application,
