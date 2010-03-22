@@ -150,13 +150,6 @@ mx_window_dispose (GObject *object)
   MxWindow *self = MX_WINDOW (object);
   MxWindowPrivate *priv = self->priv;
 
-  if (priv->child)
-    {
-      g_object_remove_weak_pointer (G_OBJECT (priv->child),
-                                    (gpointer *)&priv->child);
-      priv->child = NULL;
-    }
-
   if (priv->toolbar)
     {
       g_object_remove_weak_pointer (G_OBJECT (priv->toolbar),
@@ -878,8 +871,6 @@ mx_window_actor_removed_cb (ClutterContainer *container,
 
   if (actor == priv->child)
     {
-      g_object_remove_weak_pointer (G_OBJECT (priv->child),
-                                    (gpointer)&priv->child);
       g_object_set (G_OBJECT (priv->child),
                     "natural-width-set", FALSE,
                     "natural-height-set", FALSE,
@@ -1049,21 +1040,14 @@ mx_window_set_child (MxWindow     *window,
     return;
 
   if (priv->child)
-    {
-      g_object_remove_weak_pointer (G_OBJECT (priv->child),
-                                    (gpointer *)&priv->child);
-      clutter_container_remove_actor (CLUTTER_CONTAINER (priv->stage),
-                                      priv->child);
-      priv->child = NULL;
-    }
+    clutter_container_remove_actor (CLUTTER_CONTAINER (priv->stage),
+                                    priv->child);
 
   if (actor)
     {
       priv->child = actor;
       clutter_container_add_actor (CLUTTER_CONTAINER (priv->stage),
                                    priv->child);
-      g_object_add_weak_pointer (G_OBJECT (priv->child),
-                                 (gpointer *)&priv->child);
       g_signal_connect (priv->stage, "paint",
                         G_CALLBACK (mx_window_pre_paint_cb),
                         window);
