@@ -158,7 +158,7 @@ mx_stylable_base_init (gpointer g_iface)
                   G_SIGNAL_RUN_FIRST,
                   G_STRUCT_OFFSET (MxStylableIface, style_changed),
                   NULL, NULL,
-                  _mx_marshal_VOID__ENUM,
+                  _mx_marshal_VOID__FLAGS,
                   G_TYPE_NONE, 1, MX_TYPE_STYLE_CHANGED_FLAGS);
 
 #if 0
