@@ -54,8 +54,8 @@ G_BEGIN_DECLS
  */
 typedef enum
 {
-  MX_STYLE_CHANGED_NONE   = 0,
-  MX_STYLE_CHANGED_FORCE = 1 << 1,
+  MX_STYLE_CHANGED_NONE  = 0,
+  MX_STYLE_CHANGED_FORCE = 1 << 0,
 } MxStyleChangedFlags;
 
 struct _MxStylableIface
