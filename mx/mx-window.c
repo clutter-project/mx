@@ -870,6 +870,26 @@ mx_window_actor_added_cb (ClutterContainer *container,
 }
 
 static void
+mx_window_actor_removed_cb (ClutterContainer *container,
+                            ClutterActor     *actor,
+                            MxWindow         *self)
+{
+  MxWindowPrivate *priv = self->priv;
+
+  if (actor == priv->child)
+    {
+      g_object_remove_weak_pointer (G_OBJECT (priv->child),
+                                    (gpointer)&priv->child);
+      g_object_set (G_OBJECT (priv->child),
+                    "natural-width-set", FALSE,
+                    "natural-height-set", FALSE,
+                    NULL);
+      priv->child = NULL;
+      g_object_notify (G_OBJECT (self), "child");
+    }
+}
+
+static void
 mx_window_constructed (GObject *object)
 {
   MxWindow *self = MX_WINDOW (object);
@@ -922,6 +942,8 @@ mx_window_constructed (GObject *object)
                     G_CALLBACK (mx_window_destroy_cb), self);
   g_signal_connect (priv->stage, "actor-added",
                     G_CALLBACK (mx_window_actor_added_cb), self);
+  g_signal_connect (priv->stage, "actor-removed",
+                    G_CALLBACK (mx_window_actor_removed_cb), self);
 
 #if CLUTTER_CHECK_VERSION(1,2,0)
   g_object_set (G_OBJECT (priv->stage), "use-alpha", TRUE, NULL);
@@ -1042,6 +1064,9 @@ mx_window_set_child (MxWindow     *window,
                                    priv->child);
       g_object_add_weak_pointer (G_OBJECT (priv->child),
                                  (gpointer *)&priv->child);
+      g_signal_connect (priv->stage, "paint",
+                        G_CALLBACK (mx_window_pre_paint_cb),
+                        window);
     }
 
   g_object_notify (G_OBJECT (window), "child");
