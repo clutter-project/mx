@@ -86,50 +86,26 @@ mx_deform_waves_set_property (GObject      *object,
                               const GValue *value,
                               GParamSpec   *pspec)
 {
-  gdouble set_value;
-  MxDeformTexture *texture = MX_DEFORM_TEXTURE (object);
-  MxDeformWavesPrivate *priv = MX_DEFORM_WAVES (object)->priv;
-
   switch (property_id)
     {
     case PROP_PERIOD:
-      set_value = g_value_get_double (value);
-      if (priv->period != set_value)
-        {
-          priv->period = set_value;
-          g_object_notify (object, "period");
-          mx_deform_texture_invalidate (texture);
-        }
+      mx_deform_waves_set_period (MX_DEFORM_WAVES (object),
+                                  g_value_get_double (value));
       break;
 
     case PROP_ANGLE:
-      set_value = g_value_get_double (value);
-      if (priv->angle != set_value)
-        {
-          priv->angle = set_value;
-          g_object_notify (object, "angle");
-          mx_deform_texture_invalidate (texture);
-        }
+      mx_deform_waves_set_angle (MX_DEFORM_WAVES (object),
+                                 g_value_get_double (value));
       break;
 
     case PROP_RADIUS:
-      set_value = g_value_get_double (value);
-      if (priv->radius != set_value)
-        {
-          priv->radius = set_value;
-          g_object_notify (object, "radius");
-          mx_deform_texture_invalidate (texture);
-        }
+      mx_deform_waves_set_radius (MX_DEFORM_WAVES (object),
+                                  g_value_get_double (value));
       break;
 
     case PROP_AMPLITUDE:
-      set_value = g_value_get_double (value);
-      if (priv->amplitude != set_value)
-        {
-          priv->amplitude = set_value;
-          g_object_notify (object, "amplitude");
-          mx_deform_texture_invalidate (texture);
-        }
+      mx_deform_waves_set_amplitude (MX_DEFORM_WAVES (object),
+                                     g_value_get_double (value));
       break;
 
     default:
@@ -235,4 +211,104 @@ ClutterActor *
 mx_deform_waves_new (void)
 {
   return g_object_new (MX_TYPE_DEFORM_WAVES, NULL);
+}
+
+gdouble
+mx_deform_waves_get_period (MxDeformWaves *waves)
+{
+  g_return_val_if_fail (MX_IS_DEFORM_WAVES (waves), 0.0);
+  return waves->priv->period;
+}
+
+void
+mx_deform_waves_set_period (MxDeformWaves *waves,
+                            gdouble        period)
+{
+  MxDeformWavesPrivate *priv;
+
+  g_return_if_fail (MX_IS_DEFORM_WAVES (waves));
+
+  priv = waves->priv;
+
+  if (priv->period != period)
+    {
+      priv->period = period;
+      g_object_notify (G_OBJECT (waves), "period");
+      mx_deform_texture_invalidate (MX_DEFORM_TEXTURE (waves));
+    }
+}
+
+gdouble
+mx_deform_waves_get_angle (MxDeformWaves *waves)
+{
+  g_return_val_if_fail (MX_IS_DEFORM_WAVES (waves), 0.0);
+  return waves->priv->angle;
+}
+
+void
+mx_deform_waves_set_angle (MxDeformWaves *waves,
+                           gdouble        angle)
+{
+  MxDeformWavesPrivate *priv;
+
+  g_return_if_fail (MX_IS_DEFORM_WAVES (waves));
+
+  priv = waves->priv;
+
+  if (priv->angle != angle)
+    {
+      priv->angle = angle;
+      g_object_notify (G_OBJECT (waves), "angle");
+      mx_deform_texture_invalidate (MX_DEFORM_TEXTURE (waves));
+    }
+}
+
+gdouble
+mx_deform_waves_get_radius (MxDeformWaves *waves)
+{
+  g_return_val_if_fail (MX_IS_DEFORM_WAVES (waves), 0.0);
+  return waves->priv->radius;
+}
+
+void
+mx_deform_waves_set_radius (MxDeformWaves *waves,
+                            gdouble        radius)
+{
+  MxDeformWavesPrivate *priv;
+
+  g_return_if_fail (MX_IS_DEFORM_WAVES (waves));
+
+  priv = waves->priv;
+
+  if (priv->radius != radius)
+    {
+      priv->radius = radius;
+      g_object_notify (G_OBJECT (waves), "radius");
+      mx_deform_texture_invalidate (MX_DEFORM_TEXTURE (waves));
+    }
+}
+
+gdouble
+mx_deform_waves_get_amplitude (MxDeformWaves *waves)
+{
+  g_return_val_if_fail (MX_IS_DEFORM_WAVES (waves), 0.0);
+  return waves->priv->amplitude;
+}
+
+void
+mx_deform_waves_set_amplitude (MxDeformWaves *waves,
+                               gdouble        amplitude)
+{
+  MxDeformWavesPrivate *priv;
+
+  g_return_if_fail (MX_IS_DEFORM_WAVES (waves));
+
+  priv = waves->priv;
+
+  if (priv->amplitude != amplitude)
+    {
+      priv->amplitude = amplitude;
+      g_object_notify (G_OBJECT (waves), "amplitude");
+      mx_deform_texture_invalidate (MX_DEFORM_TEXTURE (waves));
+    }
 }
