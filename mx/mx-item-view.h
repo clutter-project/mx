@@ -97,6 +97,7 @@ void          mx_item_view_freeze        (MxItemView    *item_view);
 void          mx_item_view_thaw          (MxItemView    *item_view);
 void          mx_item_view_set_factory   (MxItemView    *item_view,
                                           MxItemFactory *factory);
+MxItemFactory* mx_item_view_get_factory  (MxItemView    *item_view);
 
 G_END_DECLS
 
