@@ -77,12 +77,14 @@ msgstr "El año pasado"
 msgid "Ages ago"
 msgstr "Hace mucho tiempo"
 
+# This string is used by the action which brings the application to the
+# foreground. For example, if the application was minimised, or obscured by other windows, it would raise the application window to the foreground. This is the same as "Restaure application".
 #: ../mx/mx-application.c:311
 msgid "Raise application"
 msgstr "Restaurar la aplicación"
 
 #~ msgid "On"
 #~ msgstr "Activado"
-
 #~ msgid "Off"
 #~ msgstr "Desactivado"
+
