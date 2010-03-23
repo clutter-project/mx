@@ -26,12 +26,12 @@ Clutter.init (0, null);
 let stage = Clutter.Stage.get_default ();
 stage.title = "Test Icon Theme"
 
-let vbox = new Mx.BoxLayout ( {vertical: true} );
+let vbox = new Mx.BoxLayout ( {orientation: Mx.Orientation.VERTICAL} );
 stage.add_actor (vbox);
 vbox.set_size (stage.width, stage.height);
 
 let entry = new Mx.Entry ();
-vbox.add_actor (entry);
+vbox.add_actor (entry, -1);
 entry.grab_key_focus ();
 
 let theme = Mx.IconTheme.get_default ();
@@ -45,7 +45,7 @@ entry.get_clutter_text ().connect ("activate",
     if (texture)
       {
         //texture.keep_aspect_ratio = true;
-        vbox.add_actor (texture);
+        vbox.add_actor (texture, -1);
         vbox.child_set_property (texture, "x-fill", false);
         vbox.child_set_property (texture, "y-fill", false);
       }
