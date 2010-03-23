@@ -55,7 +55,8 @@ enum
   PROP_0,
 
   PROP_MODEL,
-  PROP_ITEM_TYPE
+  PROP_ITEM_TYPE,
+  PROP_FACTORY
 };
 
 struct _MxListViewPrivate
@@ -90,6 +91,9 @@ mx_list_view_get_property (GObject    *object,
     case PROP_ITEM_TYPE:
       g_value_set_gtype (value, priv->item_type);
       break;
+    case PROP_FACTORY:
+      g_value_set_object (value, priv->factory);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -110,6 +114,10 @@ mx_list_view_set_property (GObject      *object,
     case PROP_ITEM_TYPE:
       mx_list_view_set_item_type ((MxListView*) object,
                                   g_value_get_gtype (value));
+      break;
+    case PROP_FACTORY:
+      mx_list_view_set_factory ((MxListView*) object,
+                                (MxItemFactory*) g_value_get_object (value));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -175,6 +183,17 @@ mx_list_view_class_init (MxListViewClass *klass)
                               CLUTTER_TYPE_ACTOR,
                               MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_ITEM_TYPE, pspec);
+
+  /* Note, interfaces aren't necessarily objects, so you can't use
+   * MX_TYPE_ITEM_FACTORY here. The function mx_list_view_set_factory does
+   * a type check, so this is still safe.
+   */
+  pspec = g_param_spec_object ("factory",
+                               "Factory",
+                               "The MxItemFactory used for creating new items.",
+                               G_TYPE_OBJECT /*MX_TYPE_ITEM_FACTORY*/,
+                               MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_FACTORY, pspec);
 }
 
 static void
@@ -557,7 +576,7 @@ mx_list_view_thaw (MxListView *list_view)
 /**
  * mx_list_view_set_factory:
  * @list_view: A #MxListView
- * @factory: A #MxItemFactory
+ * @factory: (allow-none): A #MxItemFactory
  *
  * Sets @factory to be the factory used for creating new list items
  */
@@ -568,13 +587,36 @@ mx_list_view_set_factory (MxListView    *list_view,
   MxListViewPrivate *priv;
 
   g_return_if_fail (MX_IS_LIST_VIEW (list_view));
+  g_return_if_fail (!factory || MX_IS_ITEM_FACTORY (factory));
 
   priv = list_view->priv;
+
+  if (priv->factory == factory)
+    return;
 
   if (priv->factory)
     {
       g_object_unref (priv->factory);
+      priv->factory = NULL;
     }
 
-  priv->factory = g_object_ref (factory);
+  if (factory)
+    priv->factory = g_object_ref (factory);
+
+  g_object_notify (G_OBJECT (list_view), "factory");
+}
+
+/**
+ * mx_list_view_get_factory:
+ * @list_view: A #MxListView
+ *
+ * Gets the #MxItemFactory used for creating new list items.
+ *
+ * Returns: A #MxItemFactory.
+ */
+MxItemFactory *
+mx_list_view_get_factory (MxListView *list_view)
+{
+  g_return_val_if_fail (MX_IS_LIST_VIEW (list_view), NULL);
+  return list_view->priv->factory;
 }
