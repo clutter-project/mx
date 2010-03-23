@@ -26,6 +26,7 @@
 #include "mx-icon-theme.h"
 #include "mx-marshal.h"
 #include "mx-texture-cache.h"
+#include "mx-private.h"
 
 G_DEFINE_TYPE (MxIconTheme, mx_icon_theme, G_TYPE_OBJECT)
 
@@ -71,6 +72,12 @@ struct _MxIconThemePrivate
 
 static guint signals[LAST_SIGNAL] = { 0, };
 
+enum
+{
+  PROP_0,
+
+  PROP_THEME
+};
 
 static void
 mx_icon_theme_get_property (GObject    *object,
@@ -80,6 +87,11 @@ mx_icon_theme_get_property (GObject    *object,
 {
   switch (property_id)
     {
+    case PROP_THEME:
+      g_value_set_string (value,
+                          mx_icon_theme_get_theme (MX_ICON_THEME (object)));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -93,6 +105,11 @@ mx_icon_theme_set_property (GObject      *object,
 {
   switch (property_id)
     {
+    case PROP_THEME:
+      mx_icon_theme_set_theme (MX_ICON_THEME (object),
+                               g_value_get_string (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -134,6 +151,8 @@ mx_icon_theme_finalize (GObject *object)
 static void
 mx_icon_theme_class_init (MxIconThemeClass *klass)
 {
+  GParamSpec *pspec;
+
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
   g_type_class_add_private (klass, sizeof (MxIconThemePrivate));
@@ -142,6 +161,13 @@ mx_icon_theme_class_init (MxIconThemeClass *klass)
   object_class->set_property = mx_icon_theme_set_property;
   object_class->dispose = mx_icon_theme_dispose;
   object_class->finalize = mx_icon_theme_finalize;
+
+  pspec = g_param_spec_string ("theme",
+                               "Theme",
+                               "The currently loaded theme.",
+                               NULL,
+                               MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_THEME, pspec);
 
   signals[CHANGED] =
     g_signal_new ("changed",
@@ -385,6 +411,8 @@ mx_icon_theme_set_theme (MxIconTheme *theme,
         }
       g_free (fallbacks);
     }
+
+  g_object_notify (G_OBJECT (theme), "theme");
 }
 
 static void
