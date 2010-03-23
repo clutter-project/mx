@@ -56,7 +56,6 @@ struct _MxComboBoxPrivate
   gfloat        clip_x;
   gfloat        clip_y;
   gint          index;
-  gint          icon_size;
   gint          spacing;
 };
 
@@ -85,14 +84,6 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                   "combo-box expands on click.",
                                   MX_TYPE_BORDER_IMAGE,
                                   G_PARAM_READWRITE);
-      mx_stylable_iface_install_property (iface, MX_TYPE_COMBO_BOX, pspec);
-
-      pspec = g_param_spec_int ("x-mx-icon-size",
-                                "Icon size",
-                                "Icons size to use for icons inside the "
-                                "combo-box.",
-                                0, G_MAXINT, 16,
-                                G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_COMBO_BOX, pspec);
 
       pspec = g_param_spec_int ("x-mx-spacing",
@@ -559,21 +550,17 @@ static void
 mx_combo_box_style_changed (MxComboBox *combo, MxStyleChangedFlags flags)
 {
   MxBorderImage *marker_filename;
-  gint spacing, icon_size;
+  gint spacing;
 
   MxComboBoxPrivate *priv = combo->priv;
 
   mx_stylable_get (MX_STYLABLE (combo),
                    "x-mx-spacing", &spacing,
-                   "x-mx-icon-size", &icon_size,
                    "x-mx-marker-image", &marker_filename,
                    NULL);
 
   if (spacing != priv->spacing)
     priv->spacing = spacing;
-
-  if (icon_size != priv->icon_size)
-    priv->icon_size = icon_size;
 
   if (priv->marker)
     {
@@ -653,7 +640,6 @@ mx_combo_box_init (MxComboBox *self)
   priv = self->priv = COMBO_BOX_PRIVATE (self);
 
   priv->spacing = 8;
-  priv->icon_size = 16;
 
   priv->label = clutter_text_new ();
   clutter_actor_set_parent (priv->label, (ClutterActor*) self);
@@ -936,11 +922,10 @@ mx_combo_box_set_index (MxComboBox *box,
       MxIconTheme *icon_theme;
 
       icon_theme = mx_icon_theme_get_default ();
-      priv->icon = (ClutterActor *)
-        mx_icon_theme_lookup_texture (icon_theme, icon_name, priv->icon_size);
-
-      if (priv->icon)
+      if (mx_icon_theme_has_icon (icon_theme, icon_name))
         {
+          priv->icon = mx_icon_new ();
+          mx_icon_set_icon_name (MX_ICON (priv->icon), icon_name);
           clutter_actor_set_parent (priv->icon, CLUTTER_ACTOR (box));
         }
     }

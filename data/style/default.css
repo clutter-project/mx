@@ -181,6 +181,10 @@ MxComboBox {
   -mx-marker-image: url('combobox-marker.png');
 }
 
+MxComboBox MxIcon {
+  -mx-icon-size: 16;
+}
+
 MxMenu {
   padding: 3;
   border-image: url('menu.png') 2;
