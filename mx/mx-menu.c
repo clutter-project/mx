@@ -29,6 +29,7 @@
 #include "mx-menu.h"
 #include "mx-label.h"
 #include "mx-box-layout.h"
+#include "mx-icon.h"
 #include "mx-icon-theme.h"
 #include "mx-stylable.h"
 
@@ -38,7 +39,6 @@ G_DEFINE_TYPE (MxMenu, mx_menu, MX_TYPE_FLOATING_WIDGET)
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_MENU, MxMenuPrivate))
 
 #define SPACING 8
-#define DEFAULT_ICON_SIZE 16
 
 typedef struct
 {
@@ -564,8 +564,7 @@ mx_menu_add_action (MxMenu   *menu,
                     MxAction *action)
 {
   MxMenuChild child;
-  ClutterActor *label;
-  ClutterTexture *icon;
+  ClutterActor *label, *icon;
 
   g_return_if_fail (MX_IS_MENU (menu));
   g_return_if_fail (MX_IS_ACTION (action));
@@ -581,19 +580,17 @@ mx_menu_add_action (MxMenu   *menu,
 
   if (mx_action_get_icon (action))
     {
-      icon = mx_icon_theme_lookup_texture (mx_icon_theme_get_default (),
-                                           mx_action_get_icon (action),
-                                           DEFAULT_ICON_SIZE);
+      MxIconTheme *theme = mx_icon_theme_get_default ();
 
-      if (icon)
+      if (mx_icon_theme_has_icon (theme, mx_action_get_icon (action)))
         {
-          clutter_container_add_actor (CLUTTER_CONTAINER (child.box),
-                                       (ClutterActor *)icon);
-          clutter_container_child_set (CLUTTER_CONTAINER (child.box),
-                                       (ClutterActor *)icon,
+          icon = mx_icon_new ();
+          mx_icon_set_icon_name (MX_ICON (icon), mx_action_get_icon (action));
+
+          clutter_container_add_actor (CLUTTER_CONTAINER (child.box), icon);
+          clutter_container_child_set (CLUTTER_CONTAINER (child.box), icon,
                                        "y-fill", FALSE,
                                        NULL);
-
         }
     }
 

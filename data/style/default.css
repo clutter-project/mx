@@ -201,6 +201,10 @@ MxMenu > MxBoxLayout:active > MxLabel {
   color: white;
 }
 
+MxMenu MxIcon {
+  -mx-icon-size: 16;
+}
+
 MxToggle {
   padding: 4;
   background-image: url("toggle-background.png");
