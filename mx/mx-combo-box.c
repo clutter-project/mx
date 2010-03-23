@@ -986,7 +986,7 @@ mx_combo_box_get_active_icon_name (MxComboBox  *box)
  * @box: A #MxComboBox
  * @index: the index of the list item to set
  *
- * Set the currenet combo box text from the item at @index in the list.
+ * Set the current combo box text from the item at @index in the list.
  *
  */
 void
