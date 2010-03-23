@@ -33,12 +33,14 @@
 #include "mx-icon-theme.h"
 #include "mx-stylable.h"
 
-G_DEFINE_TYPE (MxMenu, mx_menu, MX_TYPE_FLOATING_WIDGET)
+static void mx_stylable_iface_init (MxStylableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE (MxMenu, mx_menu, MX_TYPE_FLOATING_WIDGET,
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
+                                                mx_stylable_iface_init))
 
 #define MENU_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_MENU, MxMenuPrivate))
-
-#define SPACING 8
 
 typedef struct
 {
@@ -48,6 +50,7 @@ typedef struct
 
 struct _MxMenuPrivate
 {
+  gint     spacing;
   GArray  *children;
   gboolean transition_out;
 
@@ -67,6 +70,27 @@ static guint signals[LAST_SIGNAL] = { 0, };
 static gboolean mx_menu_captured_event_handler (ClutterActor *actor,
                                                 ClutterEvent *event,
                                                 ClutterActor *menu);
+
+static void
+mx_stylable_iface_init (MxStylableIface *iface)
+{
+  static gboolean is_initialised = FALSE;
+
+  if (!is_initialised)
+    {
+      GParamSpec *pspec;
+
+      is_initialised = TRUE;
+
+      pspec = g_param_spec_int ("x-mx-spacing",
+                                "Spacing",
+                                "Spacing to use between elements inside the "
+                                "menu.",
+                                0, G_MAXINT, 8,
+                                G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_MENU, pspec);
+    }
+}
 
 static void
 mx_menu_get_property (GObject    *object,
@@ -446,7 +470,21 @@ mx_menu_style_changed (MxMenu              *menu,
                        MxStyleChangedFlags  flags)
 {
   MxMenuPrivate *priv = menu->priv;
-  int i;
+  gint i, spacing;
+
+  mx_stylable_get (MX_STYLABLE (menu),
+                   "x-mx-spacing", &spacing,
+                   NULL);
+
+  if (priv->spacing != spacing)
+    {
+      priv->spacing = spacing;
+      for (i = 0; i < priv->children->len; i++)
+        {
+          MxMenuChild *child = &g_array_index (priv->children, MxMenuChild, i);
+          mx_box_layout_set_spacing (MX_BOX_LAYOUT (child->box), priv->spacing);
+        }
+    }
 
   for (i = 0; i < priv->children->len; i++)
     {
@@ -575,7 +613,7 @@ mx_menu_add_action (MxMenu   *menu,
   /* TODO: Connect to notify signals in case action properties change */
   child.box = g_object_new (MX_TYPE_BOX_LAYOUT,
                             "reactive", TRUE,
-                            "spacing", SPACING,
+                            "spacing", priv->spacing,
                             NULL);
 
   if (mx_action_get_icon (action))
