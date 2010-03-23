@@ -30,6 +30,7 @@
 #include "mx-stylable.h"
 #include "mx-focusable.h"
 #include "mx-texture-frame.h"
+#include "mx-private.h"
 
 enum
 {
@@ -37,7 +38,8 @@ enum
 
   PROP_EDITABLE,
   PROP_CLEAR_ON_CHANGE,
-  PROP_LEVEL
+  PROP_LEVEL,
+  PROP_ENTRY
 };
 
 static void mx_stylable_iface_init (MxStylableIface *iface);
@@ -243,6 +245,10 @@ mx_path_bar_get_property (GObject    *object,
 
     case PROP_CLEAR_ON_CHANGE:
       g_value_set_boolean (value, mx_path_bar_get_clear_on_change (self));
+      break;
+
+    case PROP_ENTRY:
+      g_value_set_object (value, mx_path_bar_get_entry (self));
       break;
 
     default:
@@ -623,6 +629,13 @@ mx_path_bar_class_init (MxPathBarClass *klass)
                             "Depth of the path bar",
                             -1, G_MAXINT, 0, G_PARAM_READABLE);
   g_object_class_install_property (object_class, PROP_LEVEL, pspec);
+
+  pspec = g_param_spec_object ("entry",
+                               "Entry",
+                               "The MxEntry inside the path bar",
+                               MX_TYPE_ENTRY,
+                               MX_PARAM_READABLE);
+  g_object_class_install_property (object_class, PROP_ENTRY, pspec);
 }
 
 static void
