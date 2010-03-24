@@ -89,7 +89,8 @@ enum
   PROP_STYLE_CLASS,
   PROP_STYLE_PSEUDO_CLASS,
 
-  PROP_TOOLTIP_TEXT
+  PROP_TOOLTIP_TEXT,
+  PROP_MENU
 };
 
 enum
@@ -137,6 +138,10 @@ mx_widget_set_property (GObject      *gobject,
       mx_widget_set_tooltip_text (actor, g_value_get_string (value));
       break;
 
+    case PROP_MENU:
+      mx_widget_set_menu (actor, (MxMenu *)g_value_get_object (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -168,6 +173,10 @@ mx_widget_get_property (GObject    *gobject,
 
     case PROP_TOOLTIP_TEXT:
       g_value_set_string (value, mx_widget_get_tooltip_text (actor));
+      break;
+
+    case PROP_MENU:
+      g_value_set_object (value, mx_widget_get_menu (actor));
       break;
 
     default:
@@ -837,6 +846,18 @@ mx_widget_class_init (MxWidgetClass *klass)
                                MX_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_TOOLTIP_TEXT, pspec);
 
+  /**
+   * MxWidget:menu:
+   *
+   * #MxMenu associated with the widget.
+   * See mx_widget_show_menu().
+   */
+  pspec = g_param_spec_object ("menu",
+                               "Menu",
+                               "The MxMenu associated with the widget",
+                               MX_TYPE_MENU,
+                               MX_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_MENU, pspec);
 
   /**
    * MxWidget::long-press:
