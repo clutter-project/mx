@@ -64,6 +64,7 @@ enum
   PROP_0,
 
   PROP_ACTIVE_TEXT,
+  PROP_ACTIVE_ICON_NAME,
   PROP_INDEX
 };
 
@@ -111,6 +112,12 @@ mx_combo_box_get_property (GObject    *object,
                           clutter_text_get_text ((ClutterText*) priv->label));
       break;
 
+    case PROP_ACTIVE_ICON_NAME:
+      g_value_set_string (value,
+                          mx_combo_box_get_active_icon_name (
+                                                        MX_COMBO_BOX (object)));
+      break;
+
     case PROP_INDEX:
       g_value_set_int (value, priv->index);
       break;
@@ -132,6 +139,10 @@ mx_combo_box_set_property (GObject      *object,
     {
     case PROP_ACTIVE_TEXT:
       mx_combo_box_set_active_text (combo, g_value_get_string (value));
+      break;
+
+    case PROP_ACTIVE_ICON_NAME:
+      mx_combo_box_set_active_icon_name (combo, g_value_get_string (value));
       break;
 
     case PROP_INDEX:
@@ -622,6 +633,14 @@ mx_combo_box_class_init (MxComboBoxClass *klass)
                                MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_ACTIVE_TEXT, pspec);
 
+  pspec = g_param_spec_string ("active-icon-name",
+                               "Active Icon-name",
+                               "Name of the icon currently displayed in the "
+                               "combo-box",
+                               NULL,
+                               MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_ACTIVE_ICON_NAME, pspec);
+
   pspec = g_param_spec_int ("index",
                             "Index",
                             "Index of the selected item, or -1 if no item is"
@@ -876,11 +895,85 @@ mx_combo_box_get_active_text (MxComboBox *box)
 }
 
 /**
+ * mx_combo_box_set_active_icon_name:
+ * @box: A #MxComboBox
+ * @icon_name: (allow-none): Icon name to use for displayed icon
+ *
+ * Set the icon displayed in the combo box.
+ *
+ */
+void
+mx_combo_box_set_active_icon_name (MxComboBox  *box,
+                                   const gchar *icon_name)
+{
+  MxComboBoxPrivate *priv;
+
+  g_return_if_fail (MX_IS_COMBO_BOX (box));
+
+  priv = box->priv;
+
+  if (!priv->icon)
+    {
+      if (icon_name)
+        {
+          MxIconTheme *icon_theme;
+
+          icon_theme = mx_icon_theme_get_default ();
+          if (mx_icon_theme_has_icon (icon_theme, icon_name))
+            {
+              priv->icon = mx_icon_new ();
+              mx_icon_set_icon_name (MX_ICON (priv->icon), icon_name);
+              clutter_actor_set_parent (priv->icon, CLUTTER_ACTOR (box));
+            }
+        }
+    }
+  else
+    {
+      if (icon_name)
+        mx_icon_set_icon_name (MX_ICON (priv->icon), icon_name);
+      else
+        {
+          clutter_actor_destroy (priv->icon);
+          priv->icon = NULL;
+
+          clutter_actor_queue_relayout (CLUTTER_ACTOR (box));
+        }
+    }
+
+  priv->index = -1;
+  g_object_notify (G_OBJECT (box), "index");
+  g_object_notify (G_OBJECT (box), "active-icon-name");
+}
+
+/**
+ * mx_combo_box_get_active_icon_name:
+ * @box: A #MxComboBox
+ *
+ * Get the name of the icon displayed in the combo box
+ *
+ * Returns: the text string of the name of the displayed icon, owned by
+ *          the combo box, or %NULL if there is no active icon.
+ */
+const gchar *
+mx_combo_box_get_active_icon_name (MxComboBox  *box)
+{
+  MxComboBoxPrivate *priv;
+
+  g_return_val_if_fail (MX_IS_COMBO_BOX (box), NULL);
+
+  priv = box->priv;
+  if (priv->icon)
+    return mx_icon_get_icon_name (MX_ICON (priv->icon));
+  else
+    return NULL;
+}
+
+/**
  * mx_combo_box_set_index:
  * @box: A #MxComboBox
  * @index: the index of the list item to set
  *
- * Set the currenet combo box text from the item at @index in the list.
+ * Set the current combo box text from the item at @index in the list.
  *
  */
 void
@@ -932,6 +1025,7 @@ mx_combo_box_set_index (MxComboBox *box,
 
   g_object_notify (G_OBJECT (box), "index");
   g_object_notify (G_OBJECT (box), "active-text");
+  g_object_notify (G_OBJECT (box), "active-icon-name");
 }
 
 /**

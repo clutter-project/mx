@@ -96,6 +96,7 @@ void          mx_list_view_freeze        (MxListView    *list_view);
 void          mx_list_view_thaw          (MxListView    *list_view);
 void          mx_list_view_set_factory   (MxListView    *list_view,
                                           MxItemFactory *factory);
+MxItemFactory *mx_list_view_get_factory  (MxListView    *list_view);
 
 G_END_DECLS
 

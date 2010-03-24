@@ -71,6 +71,13 @@ GType mx_deform_bow_tie_get_type (void) G_GNUC_CONST;
 
 ClutterActor *mx_deform_bow_tie_new (void);
 
+gdouble mx_deform_bow_tie_get_period (MxDeformBowTie *bow_tie);
+void    mx_deform_bow_tie_set_period (MxDeformBowTie *bow_tie, gdouble period);
+
+gboolean mx_deform_bow_tie_get_flip_back (MxDeformBowTie *bow_tie);
+void     mx_deform_bow_tie_set_flip_back (MxDeformBowTie *bow_tie,
+                                          gboolean        flip_back);
+
 G_END_DECLS
 
 #endif /* _MX_DEFORM_BOW_TIE_H */

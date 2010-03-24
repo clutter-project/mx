@@ -191,3 +191,170 @@ mx_box_layout_child_init (MxBoxLayoutChild *self)
   self->y_align = MX_ALIGN_MIDDLE;
 }
 
+static MxBoxLayoutChild *
+_get_child_meta (MxBoxLayout  *layout,
+                 ClutterActor *child)
+{
+  MxBoxLayoutChild *meta;
+
+  meta = (MxBoxLayoutChild*)
+    clutter_container_get_child_meta (CLUTTER_CONTAINER (layout), child);
+
+  return meta;
+}
+
+gboolean
+mx_box_layout_child_get_expand (MxBoxLayout  *box_layout,
+                                ClutterActor *child)
+{
+  MxBoxLayoutChild *meta;
+
+  g_return_val_if_fail (MX_IS_BOX_LAYOUT (box_layout), FALSE);
+  g_return_val_if_fail (CLUTTER_IS_ACTOR (child), FALSE);
+
+  meta = _get_child_meta (box_layout, child);
+
+  return meta->expand;
+}
+
+void
+mx_box_layout_child_set_expand (MxBoxLayout  *box_layout,
+                                ClutterActor *child,
+                                gboolean      expand)
+{
+  MxBoxLayoutChild *meta;
+
+  g_return_if_fail (MX_IS_BOX_LAYOUT (box_layout));
+  g_return_if_fail (CLUTTER_IS_ACTOR (child));
+
+  meta = _get_child_meta (box_layout, child);
+
+  meta->expand = expand;
+
+  clutter_actor_queue_relayout (child);
+}
+
+gboolean
+mx_box_layout_child_get_x_fill (MxBoxLayout  *box_layout,
+                                ClutterActor *child)
+{
+  MxBoxLayoutChild *meta;
+
+  g_return_val_if_fail (MX_IS_BOX_LAYOUT (box_layout), FALSE);
+  g_return_val_if_fail (CLUTTER_IS_ACTOR (child), FALSE);
+
+  meta = _get_child_meta (box_layout, child);
+
+  return meta->x_fill;
+}
+
+void
+mx_box_layout_child_set_x_fill (MxBoxLayout  *box_layout,
+                                ClutterActor *child,
+                                gboolean      x_fill)
+{
+  MxBoxLayoutChild *meta;
+
+  g_return_if_fail (MX_IS_BOX_LAYOUT (box_layout));
+  g_return_if_fail (CLUTTER_IS_ACTOR (child));
+
+  meta = _get_child_meta (box_layout, child);
+
+  meta->x_fill = x_fill;
+
+  clutter_actor_queue_relayout (child);
+}
+
+gboolean
+mx_box_layout_child_get_y_fill (MxBoxLayout  *box_layout,
+                                ClutterActor *child)
+{
+  MxBoxLayoutChild *meta;
+
+  g_return_val_if_fail (MX_IS_BOX_LAYOUT (box_layout), FALSE);
+  g_return_val_if_fail (CLUTTER_IS_ACTOR (child), FALSE);
+
+  meta = _get_child_meta (box_layout, child);
+
+  return meta->y_fill;
+}
+
+void
+mx_box_layout_child_set_y_fill (MxBoxLayout  *box_layout,
+                                ClutterActor *child,
+                                gboolean      y_fill)
+{
+  MxBoxLayoutChild *meta;
+
+  g_return_if_fail (MX_IS_BOX_LAYOUT (box_layout));
+  g_return_if_fail (CLUTTER_IS_ACTOR (child));
+
+  meta = _get_child_meta (box_layout, child);
+
+  meta->y_fill = y_fill;
+
+  clutter_actor_queue_relayout (child);
+}
+
+MxAlign
+mx_box_layout_child_get_x_align (MxBoxLayout  *box_layout,
+                                 ClutterActor *child)
+{
+  MxBoxLayoutChild *meta;
+
+  g_return_val_if_fail (MX_IS_BOX_LAYOUT (box_layout), MX_ALIGN_START);
+  g_return_val_if_fail (CLUTTER_IS_ACTOR (child), MX_ALIGN_START);
+
+  meta = _get_child_meta (box_layout, child);
+
+  return meta->x_align;
+}
+
+void
+mx_box_layout_child_set_x_align (MxBoxLayout  *box_layout,
+                                 ClutterActor *child,
+                                 MxAlign       x_align)
+{
+  MxBoxLayoutChild *meta;
+
+  g_return_if_fail (MX_IS_BOX_LAYOUT (box_layout));
+  g_return_if_fail (CLUTTER_IS_ACTOR (child));
+
+  meta = _get_child_meta (box_layout, child);
+
+  meta->x_align = x_align;
+
+  clutter_actor_queue_relayout (child);
+}
+
+MxAlign
+mx_box_layout_child_get_y_align (MxBoxLayout  *box_layout,
+                                 ClutterActor *child)
+{
+  MxBoxLayoutChild *meta;
+
+  g_return_val_if_fail (MX_IS_BOX_LAYOUT (box_layout), MX_ALIGN_START);
+  g_return_val_if_fail (CLUTTER_IS_ACTOR (child), MX_ALIGN_START);
+
+  meta = _get_child_meta (box_layout, child);
+
+  return meta->y_align;
+}
+
+void
+mx_box_layout_child_set_y_align (MxBoxLayout  *box_layout,
+                                 ClutterActor *child,
+                                 MxAlign       y_align)
+{
+  MxBoxLayoutChild *meta;
+
+  g_return_if_fail (MX_IS_BOX_LAYOUT (box_layout));
+  g_return_if_fail (CLUTTER_IS_ACTOR (child));
+
+  meta = _get_child_meta (box_layout, child);
+
+  meta->y_align = y_align;
+
+  clutter_actor_queue_relayout (child);
+}
+

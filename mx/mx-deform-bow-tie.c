@@ -111,49 +111,17 @@ mx_deform_bow_tie_set_property (GObject      *object,
                                 const GValue *value,
                                 GParamSpec   *pspec)
 {
-  gdouble set_value;
-  gboolean flip_back;
-  MxDeformTexture *texture = MX_DEFORM_TEXTURE (object);
-  MxDeformBowTiePrivate *priv = MX_DEFORM_BOW_TIE (object)->priv;
-
   switch (property_id)
     {
     case PROP_PERIOD:
-      set_value = g_value_get_double (value);
-      if (priv->period != set_value)
-        {
-          priv->period = set_value;
-          g_object_notify (object, "period");
-          mx_deform_texture_invalidate (texture);
-        }
+      mx_deform_bow_tie_set_period (MX_DEFORM_BOW_TIE (object),
+                                    g_value_get_double (value));
       break;
 
     case PROP_FLIP_BACK:
-      flip_back = g_value_get_boolean (value);
-      if (priv->flip_back != flip_back)
-        {
-          priv->flip_back = flip_back;
-          if (priv->back)
-            {
-              if (priv->back_id)
-                g_signal_handler_disconnect (priv->back, priv->back_id);
-
-              if (flip_back)
-                {
-                  priv->back_id =
-                    g_signal_connect (priv->back, "notify::cogl-texture",
-                                      G_CALLBACK (
-                                        mx_deform_bow_tie_texture_vflip),
-                                      texture);
-                  mx_deform_bow_tie_texture_vflip (priv->back);
-                }
-              else
-                {
-                  mx_deform_bow_tie_texture_reset (priv->back);
-                  priv->back_id = 0;
-                }
-            }
-        }
+      mx_deform_bow_tie_set_flip_back (MX_DEFORM_BOW_TIE (object),
+                                       g_value_get_boolean (value));
+      break;
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -319,3 +287,68 @@ mx_deform_bow_tie_new (void)
 {
   return g_object_new (MX_TYPE_DEFORM_BOW_TIE, NULL);
 }
+
+gdouble
+mx_deform_bow_tie_get_period (MxDeformBowTie *bow_tie)
+{
+  g_return_val_if_fail (MX_IS_DEFORM_BOW_TIE (bow_tie), 0.0);
+  return bow_tie->priv->period;
+}
+
+void
+mx_deform_bow_tie_set_period (MxDeformBowTie *bow_tie,
+                              gdouble         period)
+{
+  g_return_if_fail (MX_IS_DEFORM_BOW_TIE (bow_tie));
+
+  if (bow_tie->priv->period != period)
+    {
+      bow_tie->priv->period = period;
+      g_object_notify (G_OBJECT (bow_tie), "period");
+      mx_deform_texture_invalidate (MX_DEFORM_TEXTURE (bow_tie));
+    }
+}
+
+gboolean
+mx_deform_bow_tie_get_flip_back (MxDeformBowTie *bow_tie)
+{
+  g_return_val_if_fail (MX_IS_DEFORM_BOW_TIE (bow_tie), FALSE);
+  return bow_tie->priv->flip_back;
+}
+
+void
+mx_deform_bow_tie_set_flip_back (MxDeformBowTie *bow_tie,
+                                 gboolean        flip_back)
+{
+  MxDeformBowTiePrivate *priv;
+
+  g_return_if_fail (MX_IS_DEFORM_BOW_TIE (bow_tie));
+
+  priv = bow_tie->priv;
+
+  if (priv->flip_back != flip_back)
+    {
+      priv->flip_back = flip_back;
+      if (priv->back)
+        {
+          if (priv->back_id)
+            g_signal_handler_disconnect (priv->back, priv->back_id);
+
+          if (flip_back)
+            {
+              priv->back_id =
+                g_signal_connect (priv->back, "notify::cogl-texture",
+                                  G_CALLBACK (mx_deform_bow_tie_texture_vflip),
+                                  bow_tie);
+              mx_deform_bow_tie_texture_vflip (priv->back);
+            }
+          else
+            {
+              mx_deform_bow_tie_texture_reset (priv->back);
+              priv->back_id = 0;
+            }
+        }
+      g_object_notify (G_OBJECT (bow_tie), "flip-back");
+    }
+}
+

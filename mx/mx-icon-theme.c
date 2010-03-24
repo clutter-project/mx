@@ -26,6 +26,7 @@
 #include "mx-icon-theme.h"
 #include "mx-marshal.h"
 #include "mx-texture-cache.h"
+#include "mx-private.h"
 
 G_DEFINE_TYPE (MxIconTheme, mx_icon_theme, G_TYPE_OBJECT)
 
@@ -71,6 +72,12 @@ struct _MxIconThemePrivate
 
 static guint signals[LAST_SIGNAL] = { 0, };
 
+enum
+{
+  PROP_0,
+
+  PROP_THEME_NAME
+};
 
 static void
 mx_icon_theme_get_property (GObject    *object,
@@ -78,8 +85,14 @@ mx_icon_theme_get_property (GObject    *object,
                             GValue     *value,
                             GParamSpec *pspec)
 {
+  MxIconTheme *theme = MX_ICON_THEME (object);
+
   switch (property_id)
     {
+    case PROP_THEME_NAME:
+      g_value_set_string (value, mx_icon_theme_get_theme_name (theme));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -93,6 +106,11 @@ mx_icon_theme_set_property (GObject      *object,
 {
   switch (property_id)
     {
+    case PROP_THEME_NAME:
+      mx_icon_theme_set_theme_name (MX_ICON_THEME (object),
+                                    g_value_get_string (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -134,6 +152,8 @@ mx_icon_theme_finalize (GObject *object)
 static void
 mx_icon_theme_class_init (MxIconThemeClass *klass)
 {
+  GParamSpec *pspec;
+
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
   g_type_class_add_private (klass, sizeof (MxIconThemePrivate));
@@ -142,6 +162,13 @@ mx_icon_theme_class_init (MxIconThemeClass *klass)
   object_class->set_property = mx_icon_theme_set_property;
   object_class->dispose = mx_icon_theme_dispose;
   object_class->finalize = mx_icon_theme_finalize;
+
+  pspec = g_param_spec_string ("theme-name",
+                               "Theme name",
+                               "The name of the currently loaded theme.",
+                               NULL,
+                               MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_THEME_NAME, pspec);
 
   signals[CHANGED] =
     g_signal_new ("changed",
@@ -276,7 +303,7 @@ mx_icon_theme_init (MxIconTheme *self)
   if (!theme)
     theme = "moblin";
 
-  mx_icon_theme_set_theme (self, theme);
+  mx_icon_theme_set_theme_name (self, theme);
 }
 
 MxIconTheme *
@@ -304,7 +331,7 @@ mx_icon_theme_get_default (void)
 }
 
 const gchar *
-mx_icon_theme_get_theme (MxIconTheme *theme)
+mx_icon_theme_get_theme_name (MxIconTheme *theme)
 {
   g_return_val_if_fail (MX_IS_ICON_THEME (theme), NULL);
 
@@ -312,8 +339,8 @@ mx_icon_theme_get_theme (MxIconTheme *theme)
 }
 
 void
-mx_icon_theme_set_theme (MxIconTheme *theme,
-                         const gchar *theme_name)
+mx_icon_theme_set_theme_name (MxIconTheme *theme,
+                              const gchar *theme_name)
 {
   gchar *fallbacks;
   MxIconThemePrivate *priv;
@@ -385,6 +412,8 @@ mx_icon_theme_set_theme (MxIconTheme *theme,
         }
       g_free (fallbacks);
     }
+
+  g_object_notify (G_OBJECT (theme), "theme-name");
 }
 
 static void

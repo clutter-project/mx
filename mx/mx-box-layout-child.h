@@ -84,6 +84,36 @@ struct _MxBoxLayoutChildClass
 
 GType mx_box_layout_child_get_type (void);
 
+gboolean mx_box_layout_child_get_expand  (MxBoxLayout  *box_layout,
+                                          ClutterActor *child);
+void     mx_box_layout_child_set_expand  (MxBoxLayout  *box_layout,
+                                          ClutterActor *child,
+                                          gboolean      expand);
+
+gboolean mx_box_layout_child_get_x_fill  (MxBoxLayout  *box_layout,
+                                          ClutterActor *child);
+void     mx_box_layout_child_set_x_fill  (MxBoxLayout  *box_layout,
+                                          ClutterActor *child,
+                                          gboolean      x_fill);
+
+gboolean mx_box_layout_child_get_y_fill  (MxBoxLayout  *box_layout,
+                                          ClutterActor *child);
+void     mx_box_layout_child_set_y_fill  (MxBoxLayout  *box_layout,
+                                          ClutterActor *child,
+                                          gboolean      y_fill);
+
+MxAlign  mx_box_layout_child_get_x_align (MxBoxLayout  *box_layout,
+                                          ClutterActor *child);
+void     mx_box_layout_child_set_x_align (MxBoxLayout  *box_layout,
+                                          ClutterActor *child,
+                                          MxAlign       x_align);
+
+MxAlign  mx_box_layout_child_get_y_align (MxBoxLayout  *box_layout,
+                                          ClutterActor *child);
+void     mx_box_layout_child_set_y_align (MxBoxLayout  *box_layout,
+                                          ClutterActor *child,
+                                          MxAlign       y_align);
+
 G_END_DECLS
 
 #endif /* _MX_BOX_LAYOUT_CHILD_H */

@@ -109,6 +109,11 @@ void         mx_combo_box_set_active_text (MxComboBox  *box,
                                            const gchar *text);
 const gchar* mx_combo_box_get_active_text (MxComboBox  *box);
 
+void         mx_combo_box_set_active_icon_name (MxComboBox  *box,
+                                                const gchar *icon_name);
+
+const gchar* mx_combo_box_get_active_icon_name (MxComboBox  *box);
+
 void         mx_combo_box_set_index       (MxComboBox *box,
                                            gint        index);
 const gint   mx_combo_box_get_index       (MxComboBox *box);

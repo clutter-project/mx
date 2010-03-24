@@ -103,16 +103,16 @@ enum
 
 static guint signals[LAST_SIGNAL] = { 0, };
 
-static gboolean mx_adjustment_set_lower          (MxAdjustment *adjustment,
-                                                  gdouble       lower);
-static gboolean mx_adjustment_set_upper          (MxAdjustment *adjustment,
-                                                  gdouble       upper);
-static gboolean mx_adjustment_set_step_increment (MxAdjustment *adjustment,
-                                                  gdouble       step);
-static gboolean mx_adjustment_set_page_increment (MxAdjustment *adjustment,
-                                                  gdouble       page);
-static gboolean mx_adjustment_set_page_size      (MxAdjustment *adjustment,
-                                                  gdouble       size);
+static gboolean _mx_adjustment_set_lower          (MxAdjustment *adjustment,
+                                                   gdouble       lower);
+static gboolean _mx_adjustment_set_upper          (MxAdjustment *adjustment,
+                                                   gdouble       upper);
+static gboolean _mx_adjustment_set_step_increment (MxAdjustment *adjustment,
+                                                   gdouble       step);
+static gboolean _mx_adjustment_set_page_increment (MxAdjustment *adjustment,
+                                                   gdouble       page);
+static gboolean _mx_adjustment_set_page_size      (MxAdjustment *adjustment,
+                                                   gdouble       size);
 static void mx_adjustment_clamp_page (MxAdjustment *adjustment,
                                       gdouble       lower,
                                       gdouble       upper);
@@ -587,8 +587,8 @@ mx_adjustment_emit_changed (MxAdjustment *adjustment)
 }
 
 static gboolean
-mx_adjustment_set_lower (MxAdjustment *adjustment,
-                         gdouble       lower)
+_mx_adjustment_set_lower (MxAdjustment *adjustment,
+                          gdouble       lower)
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
 
@@ -615,9 +615,23 @@ mx_adjustment_set_lower (MxAdjustment *adjustment,
   return FALSE;
 }
 
+void
+mx_adjustment_set_lower (MxAdjustment *adjustment,
+                         gdouble       lower)
+{
+  _mx_adjustment_set_lower (adjustment, lower);
+}
+
+gdouble
+mx_adjustment_get_lower (MxAdjustment *adjustment)
+{
+  g_return_val_if_fail (MX_IS_ADJUSTMENT (adjustment), 0.0);
+  return adjustment->priv->lower;
+}
+
 static gboolean
-mx_adjustment_set_upper (MxAdjustment *adjustment,
-                         gdouble       upper)
+_mx_adjustment_set_upper (MxAdjustment *adjustment,
+                          gdouble       upper)
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
 
@@ -644,9 +658,23 @@ mx_adjustment_set_upper (MxAdjustment *adjustment,
   return FALSE;
 }
 
+void
+mx_adjustment_set_upper (MxAdjustment *adjustment,
+                         gdouble       upper)
+{
+  _mx_adjustment_set_upper (adjustment, upper);
+}
+
+gdouble
+mx_adjustment_get_upper (MxAdjustment *adjustment)
+{
+  g_return_val_if_fail (MX_IS_ADJUSTMENT (adjustment), 0.0);
+  return adjustment->priv->upper;
+}
+
 static gboolean
-mx_adjustment_set_step_increment (MxAdjustment *adjustment,
-                                  gdouble       step)
+_mx_adjustment_set_step_increment (MxAdjustment *adjustment,
+                                   gdouble       step)
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
 
@@ -669,9 +697,23 @@ mx_adjustment_set_step_increment (MxAdjustment *adjustment,
   return FALSE;
 }
 
+void
+mx_adjustment_set_step_increment (MxAdjustment *adjustment,
+                                  gdouble       step)
+{
+  _mx_adjustment_set_step_increment (adjustment, step);
+}
+
+gdouble
+mx_adjustment_get_step_increment (MxAdjustment *adjustment)
+{
+  g_return_val_if_fail (MX_IS_ADJUSTMENT (adjustment), 0.0);
+  return adjustment->priv->step_increment;
+}
+
 static gboolean
-mx_adjustment_set_page_increment (MxAdjustment *adjustment,
-                                  gdouble       page)
+_mx_adjustment_set_page_increment (MxAdjustment *adjustment,
+                                   gdouble       page)
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
 
@@ -694,9 +736,23 @@ mx_adjustment_set_page_increment (MxAdjustment *adjustment,
   return FALSE;
 }
 
+void
+mx_adjustment_set_page_increment (MxAdjustment *adjustment,
+                                  gdouble       page)
+{
+  _mx_adjustment_set_page_increment (adjustment, page);
+}
+
+gdouble
+mx_adjustment_get_page_increment (MxAdjustment *adjustment)
+{
+  g_return_val_if_fail (MX_IS_ADJUSTMENT (adjustment), 0.0);
+  return adjustment->priv->page_increment;
+}
+
 static gboolean
-mx_adjustment_set_page_size (MxAdjustment *adjustment,
-                             gdouble       size)
+_mx_adjustment_set_page_size (MxAdjustment *adjustment,
+                              gdouble       size)
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
 
@@ -724,6 +780,20 @@ mx_adjustment_set_page_size (MxAdjustment *adjustment,
 }
 
 void
+mx_adjustment_set_page_size (MxAdjustment *adjustment,
+                             gdouble       size)
+{
+  _mx_adjustment_set_page_size (adjustment, size);
+}
+
+gdouble
+mx_adjustment_get_page_size (MxAdjustment *adjustment)
+{
+  g_return_val_if_fail (MX_IS_ADJUSTMENT (adjustment), 0.0);
+  return adjustment->priv->page_size;
+}
+
+void
 mx_adjustment_set_values (MxAdjustment *adjustment,
                           gdouble       value,
                           gdouble       lower,
@@ -748,11 +818,13 @@ mx_adjustment_set_values (MxAdjustment *adjustment,
 
   g_object_freeze_notify (G_OBJECT (adjustment));
 
-  emit_changed |= mx_adjustment_set_lower (adjustment, lower);
-  emit_changed |= mx_adjustment_set_upper (adjustment, upper);
-  emit_changed |= mx_adjustment_set_step_increment (adjustment, step_increment);
-  emit_changed |= mx_adjustment_set_page_increment (adjustment, page_increment);
-  emit_changed |= mx_adjustment_set_page_size (adjustment, page_size);
+  emit_changed |= _mx_adjustment_set_lower (adjustment, lower);
+  emit_changed |= _mx_adjustment_set_upper (adjustment, upper);
+  emit_changed |= _mx_adjustment_set_step_increment (adjustment,
+                                                     step_increment);
+  emit_changed |= _mx_adjustment_set_page_increment (adjustment,
+                                                     page_increment);
+  emit_changed |= _mx_adjustment_set_page_size (adjustment, page_size);
 
   if (value != priv->value)
     {

@@ -56,6 +56,7 @@ enum
   PROP_STYLE_CLASS,
   PROP_STYLE_PSEUDO_CLASS,
   PROP_HAS_TOOLBAR,
+  PROP_TOOLBAR,
   PROP_SMALL_SCREEN,
   PROP_ICON_NAME,
   PROP_CLUTTER_STAGE,
@@ -83,6 +84,10 @@ mx_window_get_property (GObject    *object,
     {
     case PROP_HAS_TOOLBAR:
       g_value_set_boolean (value, priv->has_toolbar);
+      break;
+
+    case PROP_TOOLBAR:
+      g_value_set_object (value, priv->toolbar);
       break;
 
     case PROP_SMALL_SCREEN:
@@ -962,6 +967,13 @@ mx_window_class_init (MxWindowClass *klass)
                                 TRUE,
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_HAS_TOOLBAR, pspec);
+
+  pspec = g_param_spec_object ("toolbar",
+                               "Toolbar",
+                               "The MxToolbar associated with the window.",
+                               MX_TYPE_TOOLBAR,
+                               MX_PARAM_READABLE);
+  g_object_class_install_property (object_class, PROP_TOOLBAR, pspec);
 
   pspec = g_param_spec_boolean ("small-screen",
                                 "Small screen",

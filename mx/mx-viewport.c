@@ -192,7 +192,7 @@ mx_viewport_set_property (GObject      *object,
       break;
 
     case PROP_SYNC_ADJUST:
-      priv->sync_adjustments = g_value_get_boolean (value);
+      mx_viewport_set_sync_adjustments (viewport, g_value_get_boolean (value));
       break;
 
     default:
@@ -596,3 +596,25 @@ mx_viewport_get_origin (MxViewport *viewport,
     *z = priv->z;
 }
 
+void
+mx_viewport_set_sync_adjustments (MxViewport *viewport,
+                                  gboolean    sync)
+{
+  MxViewportPrivate *priv;
+
+  g_return_if_fail (MX_IS_VIEWPORT (viewport));
+
+  priv = viewport->priv;
+  if (priv->sync_adjustments != sync)
+    {
+      priv->sync_adjustments = sync;
+      g_object_notify (G_OBJECT (viewport), "sync-adjustments");
+    }
+}
+
+gboolean
+mx_viewport_get_sync_adjustments (MxViewport *viewport)
+{
+  g_return_val_if_fail (MX_IS_VIEWPORT (viewport), FALSE);
+  return viewport->priv->sync_adjustments;
+}

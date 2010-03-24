@@ -25,32 +25,31 @@ Clutter.init (0, null);
 
 let stage = Clutter.Stage.get_default ();
 stage.title = "Test Path Bar"
-let focus_man = new Mx.FocusManager ({stage: stage});
+let focus_man = Mx.FocusManager.get_for_stage (stage);
 
-let vbox = new Mx.BoxLayout ();
-vbox.set_vertical (true);
+let vbox = new Mx.BoxLayout ({orientation: Mx.Orientation.VERTICAL});
 stage.add_actor (vbox);
 vbox.set_width (stage.width);
 
 let bar = new Mx.PathBar ({"clear-on-change": true});
-vbox.add_actor (bar);
+vbox.add_actor (bar, -1);
 vbox.child_set_property (bar, "x-align", 0);
 vbox.child_set_property (bar, "x-fill", false);
 
 let hbox = new Mx.BoxLayout ();
-vbox.add_actor (hbox);
+vbox.add_actor (hbox, -1);
 
 let push_button = new Mx.Button ( {label: "Add crumb"} )
-hbox.add_actor (push_button);
+hbox.add_actor (push_button, -1);
 
 let pop_button = new Mx.Button ( {label: "Remove crumb"} );
-hbox.add_actor (pop_button);
+hbox.add_actor (pop_button, -1);
 
 let editable_button = new Mx.Button ( {label: "Toggle editable"} );
-hbox.add_actor (editable_button);
+hbox.add_actor (editable_button, -1);
 
 let rename_button = new Mx.Button ( {label: "Re-label 1st button"} );
-hbox.add_actor (rename_button);
+hbox.add_actor (rename_button, -1);
 
 push_button.connect ("clicked",
                      function (b) {
@@ -71,7 +70,8 @@ editable_button.connect ("clicked",
 
 rename_button.connect ("clicked",
                        function (b) {
-                         bar.set_label (1, bar.get_text ());
+                         if (bar.editable)
+                           bar.set_label (1, bar.entry.text);
                        });
 
 stage.show ();

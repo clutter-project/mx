@@ -71,6 +71,22 @@ GType mx_deform_waves_get_type (void) G_GNUC_CONST;
 
 ClutterActor *mx_deform_waves_new (void);
 
+gdouble mx_deform_waves_get_period (MxDeformWaves *waves);
+void    mx_deform_waves_set_period (MxDeformWaves *waves,
+                                    gdouble        period);
+
+gdouble mx_deform_waves_get_angle (MxDeformWaves *waves);
+void    mx_deform_waves_set_angle (MxDeformWaves *waves,
+                                   gdouble        angle);
+
+gdouble mx_deform_waves_get_radius (MxDeformWaves *waves);
+void    mx_deform_waves_set_radius (MxDeformWaves *waves,
+                                    gdouble        radius);
+
+gdouble mx_deform_waves_get_amplitude (MxDeformWaves *waves);
+void    mx_deform_waves_set_amplitude (MxDeformWaves *waves,
+                                       gdouble        amplitude);
+
 G_END_DECLS
 
 #endif /* _MX_DEFORM_WAVES_H */
