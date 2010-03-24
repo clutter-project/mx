@@ -109,12 +109,6 @@ gdouble       mx_adjustment_get_page_size      (MxAdjustment *adjustment);
 void          mx_adjustment_set_page_size      (MxAdjustment *adjustment,
                                                 gdouble       page_size);
 
-#if 0
-void          mx_adjustment_clamp_page         (MxAdjustment *adjustment,
-                                                gdouble       lower,
-                                                gdouble       upper);
-#endif
-
 void          mx_adjustment_set_values         (MxAdjustment *adjustment,
                                                 gdouble       value,
                                                 gdouble       lower,

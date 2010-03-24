@@ -18,6 +18,7 @@
  *
  */
 #include "test-mx.h"
+#include <stdlib.h>
 
 static void
 swap_orientation (ClutterActor *button,
@@ -27,18 +28,44 @@ swap_orientation (ClutterActor *button,
 }
 
 static void
-set_max_stride (ClutterActor    *actor,
-                ClutterKeyEvent *event,
-                MxGrid        *grid)
+ensure_visible (ClutterText *text,
+                MxGrid      *grid)
 {
-  mx_grid_set_max_stride (grid, event->keyval - 48);
-  printf ("Max Stride: %d\n", event->keyval - 48);
+  GList *children;
+  ClutterActor *child;
+
+  const gchar *string = clutter_text_get_text (text);
+  gint number = atoi (string) - 1;
+
+  children = clutter_container_get_children (CLUTTER_CONTAINER (grid));
+  child = g_list_nth_data (children, number);
+  if (child)
+    {
+      ClutterGeometry geom;
+      MxScrollView *scroll = (MxScrollView *)
+        clutter_actor_get_parent (CLUTTER_ACTOR (grid));
+      clutter_actor_get_allocation_geometry (child, &geom);
+      mx_scroll_view_ensure_visible (scroll, &geom);
+      printf ("Making child %d visible\n", number);
+    }
+  else
+    printf ("Couldn't make child %d visible\n", number);
+  g_list_free (children);
+}
+
+static void
+set_max_stride (ClutterText *text,
+                MxGrid      *grid)
+{
+  const gchar *string = clutter_text_get_text (text);
+  mx_grid_set_max_stride (grid, atoi (string));
+  printf ("Max Stride: %d\n", atoi (string));
 }
 
 void
 scroll_grid_main (ClutterContainer *stage)
 {
-  ClutterActor *scroll, *grid;
+  ClutterActor *scroll, *grid, *table, *label, *visible_entry, *stride_entry;
   int i;
 
   scroll = mx_scroll_view_new ();
@@ -69,6 +96,36 @@ scroll_grid_main (ClutterContainer *stage)
       g_free (label);
     }
 
-  g_signal_connect (stage, "key-release-event",
+  table = mx_table_new ();
+
+  label = mx_label_new_with_text ("Make button visible:");
+  visible_entry = mx_entry_new ();
+  mx_table_add_actor_with_properties (MX_TABLE (table),
+                                      label,
+                                      0, 0,
+                                      "x-expand", FALSE,
+                                      NULL);
+  mx_table_add_actor (MX_TABLE (table), visible_entry, 0, 1);
+
+  label = mx_label_new_with_text ("Set max-stride:");
+  stride_entry = mx_entry_new ();
+  mx_table_add_actor_with_properties (MX_TABLE (table),
+                                      label,
+                                      1, 0,
+                                      "x-expand", FALSE,
+                                      NULL);
+  mx_table_add_actor (MX_TABLE (table), stride_entry, 1, 1);
+
+  clutter_actor_set_position (table, 10, 420);
+  clutter_actor_set_width (table, 400);
+  clutter_container_add_actor (stage, table);
+
+  g_signal_connect (mx_entry_get_clutter_text (MX_ENTRY (visible_entry)),
+                    "activate",
+                    G_CALLBACK (ensure_visible),
+                    grid);
+
+  g_signal_connect (mx_entry_get_clutter_text (MX_ENTRY (stride_entry)),
+                    "activate",
                     G_CALLBACK (set_max_stride), grid);
 }
