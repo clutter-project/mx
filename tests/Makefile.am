@@ -17,6 +17,7 @@ noinst_PROGRAMS = 			\
 	test-grid 			\
 	test-gtk			\
 	test-path-bar			\
+	test-shaders			\
 	test-table   			\
 	test-table-2            	\
 	test-texture-frame 		\
