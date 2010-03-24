@@ -79,6 +79,10 @@ void mx_viewport_get_origin (MxViewport *viewport,
                              gfloat     *y,
                              gfloat     *z);
 
+void mx_viewport_set_sync_adjustments (MxViewport *viewport,
+                                       gboolean    sync);
+gboolean mx_viewport_get_sync_adjustments (MxViewport *viewport);
+
 G_END_DECLS
 
 #endif /* __MX_VIEWPORT_H__ */
