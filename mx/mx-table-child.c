@@ -110,11 +110,33 @@ table_child_set_property (GObject      *gobject,
       clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
     case CHILD_PROP_X_ALIGN:
-      child->x_align = g_value_get_double (value);
+      switch (g_value_get_enum (value))
+        {
+        case MX_ALIGN_START:
+          child->x_align = 0.0;
+          break;
+        case MX_ALIGN_MIDDLE:
+          child->x_align = 0.5;
+          break;
+        case MX_ALIGN_END:
+          child->x_align = 1.0;
+          break;
+        }
       clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
     case CHILD_PROP_Y_ALIGN:
-      child->y_align = g_value_get_double (value);
+      switch (g_value_get_enum (value))
+        {
+        case MX_ALIGN_START:
+          child->y_align = 0.0;
+          break;
+        case MX_ALIGN_MIDDLE:
+          child->y_align = 0.5;
+          break;
+        case MX_ALIGN_END:
+          child->y_align = 1.0;
+          break;
+        }
       clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
     case CHILD_PROP_X_FILL:
@@ -171,10 +193,20 @@ table_child_get_property (GObject    *gobject,
       g_value_set_boolean (value, child->y_expand);
       break;
     case CHILD_PROP_X_ALIGN:
-      g_value_set_double (value, child->x_align);
+      if (child->x_align < 1.0/3.0)
+        g_value_set_enum (value, MX_ALIGN_START);
+      else if (child->x_align > 2.0/3.0)
+        g_value_set_enum (value, MX_ALIGN_END);
+      else
+        g_value_set_enum (value, MX_ALIGN_MIDDLE);
       break;
     case CHILD_PROP_Y_ALIGN:
-      g_value_set_double (value, child->y_align);
+      if (child->y_align < 1.0/3.0)
+        g_value_set_enum (value, MX_ALIGN_START);
+      else if (child->y_align > 2.0/3.0)
+        g_value_set_enum (value, MX_ALIGN_END);
+      else
+        g_value_set_enum (value, MX_ALIGN_MIDDLE);
       break;
     case CHILD_PROP_X_FILL:
       g_value_set_boolean (value, child->x_fill);
@@ -277,21 +309,21 @@ mx_table_child_class_init (MxTableChildClass *klass)
 
   g_object_class_install_property (gobject_class, CHILD_PROP_Y_EXPAND, pspec);
 
-  pspec = g_param_spec_double ("x-align",
-                               "X Alignment",
-                               "X alignment of the widget within the cell",
-                               0, 1,
-                               0.5,
-                               MX_PARAM_READWRITE);
+  pspec = g_param_spec_enum ("x-align",
+                             "X Alignment",
+                             "X alignment of the widget within the cell",
+                             MX_TYPE_ALIGN,
+                             MX_ALIGN_MIDDLE,
+                             MX_PARAM_READWRITE);
 
   g_object_class_install_property (gobject_class, CHILD_PROP_X_ALIGN, pspec);
 
-  pspec = g_param_spec_double ("y-align",
-                               "Y Alignment",
-                               "Y alignment of the widget within the cell",
-                               0, 1,
-                               0.5,
-                               MX_PARAM_READWRITE);
+  pspec = g_param_spec_enum ("y-align",
+                             "Y Alignment",
+                             "Y alignment of the widget within the cell",
+                             MX_TYPE_ALIGN,
+                             MX_ALIGN_MIDDLE,
+                             MX_PARAM_READWRITE);
 
   g_object_class_install_property (gobject_class, CHILD_PROP_Y_ALIGN, pspec);
 
