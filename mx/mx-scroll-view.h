@@ -85,6 +85,8 @@ gboolean       mx_scroll_view_get_enable_gestures (MxScrollView  *scroll);
 void           mx_scroll_view_set_scroll_policy   (MxScrollView  *scroll,
                                                    MxScrollPolicy policy);
 MxScrollPolicy mx_scroll_view_get_scroll_policy   (MxScrollView  *scroll);
+void           mx_scroll_view_ensure_visible (MxScrollView          *scroll,
+                                              const ClutterGeometry *geometry);
 
 G_END_DECLS
 

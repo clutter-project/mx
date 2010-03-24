@@ -981,3 +981,70 @@ mx_scroll_view_get_scroll_policy (MxScrollView *scroll)
   return scroll->priv->scroll_policy;
 }
 
+static void
+_mx_scroll_view_ensure_visible_axis (MxScrollBar  *bar,
+                                     gdouble       lower,
+                                     gdouble       upper)
+{
+  gdouble new_value, adjust_lower, adjust_upper, adjust_page_size;
+
+  gboolean changed = FALSE;
+  MxAdjustment *adjust = mx_scroll_bar_get_adjustment (bar);
+
+  mx_adjustment_get_values (adjust,
+                            &new_value,
+                            &adjust_lower,
+                            &adjust_upper,
+                            NULL,
+                            NULL,
+                            &adjust_page_size);
+
+  /* Sanitise input values */
+  lower = CLAMP (lower, adjust_lower, adjust_upper - adjust_page_size);
+  upper = CLAMP (upper, adjust_lower + adjust_page_size, adjust_upper);
+
+  /* Ensure the bottom is visible */
+  if (new_value + adjust_page_size < upper)
+    {
+      new_value = upper - adjust_page_size;
+      changed = TRUE;
+    }
+
+  /* Ensure the top is visible */
+  if (lower < new_value)
+    {
+      new_value = lower;
+      changed = TRUE;
+    }
+
+  if (changed)
+    mx_adjustment_interpolate (adjust, new_value,
+                               250, CLUTTER_EASE_OUT_CUBIC);
+}
+
+/**
+ * mx_scroll_view_ensure_visible:
+ * @scroll: A #MxScrollView
+ * @geometry: The region to make visible
+ *
+ * Ensures that a given region is visible in the ScrollView, with the top-left
+ * taking precedence.
+ *
+ */
+void
+mx_scroll_view_ensure_visible (MxScrollView          *scroll,
+                               const ClutterGeometry *geometry)
+{
+  MxScrollViewPrivate *priv;
+
+  g_return_if_fail (MX_IS_SCROLL_VIEW (scroll));
+
+  priv = scroll->priv;
+
+  _mx_scroll_view_ensure_visible_axis (MX_SCROLL_BAR (priv->hscroll),
+                                       geometry->x,
+                                       geometry->x + geometry->width);
+  _mx_scroll_view_ensure_visible_axis (MX_SCROLL_BAR (priv->vscroll),
+                                       geometry->y,
+                                       geometry->y + geometry->height);
+}
