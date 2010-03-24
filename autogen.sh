@@ -35,7 +35,7 @@ if test -z $AUTORECONF; then
         echo "*** No autoreconf found ***"
         exit 1
 else
-        autoreconf -v --install || exit $?
+        ACLOCAL="${ACLOCAL-aclocal} $ACLOCAL_FLAGS" autoreconf -v --install || exit $?
 fi
 
 cd $olddir
