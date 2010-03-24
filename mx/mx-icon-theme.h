@@ -75,10 +75,10 @@ MxIconTheme    *mx_icon_theme_new (void);
 
 MxIconTheme    *mx_icon_theme_get_default (void);
 
-const gchar    *mx_icon_theme_get_theme (MxIconTheme *theme);
+const gchar    *mx_icon_theme_get_theme_name (MxIconTheme *theme);
 
-void            mx_icon_theme_set_theme (MxIconTheme *theme,
-                                         const gchar *theme_name);
+void            mx_icon_theme_set_theme_name (MxIconTheme *theme,
+                                              const gchar *theme_name);
 
 CoglHandle      mx_icon_theme_lookup (MxIconTheme *theme,
                                       const gchar *icon_name,

@@ -76,7 +76,7 @@ enum
 {
   PROP_0,
 
-  PROP_THEME
+  PROP_THEME_NAME
 };
 
 static void
@@ -85,11 +85,12 @@ mx_icon_theme_get_property (GObject    *object,
                             GValue     *value,
                             GParamSpec *pspec)
 {
+  MxIconTheme *theme = MX_ICON_THEME (object);
+
   switch (property_id)
     {
-    case PROP_THEME:
-      g_value_set_string (value,
-                          mx_icon_theme_get_theme (MX_ICON_THEME (object)));
+    case PROP_THEME_NAME:
+      g_value_set_string (value, mx_icon_theme_get_theme_name (theme));
       break;
 
     default:
@@ -105,9 +106,9 @@ mx_icon_theme_set_property (GObject      *object,
 {
   switch (property_id)
     {
-    case PROP_THEME:
-      mx_icon_theme_set_theme (MX_ICON_THEME (object),
-                               g_value_get_string (value));
+    case PROP_THEME_NAME:
+      mx_icon_theme_set_theme_name (MX_ICON_THEME (object),
+                                    g_value_get_string (value));
       break;
 
     default:
@@ -162,12 +163,12 @@ mx_icon_theme_class_init (MxIconThemeClass *klass)
   object_class->dispose = mx_icon_theme_dispose;
   object_class->finalize = mx_icon_theme_finalize;
 
-  pspec = g_param_spec_string ("theme",
-                               "Theme",
-                               "The currently loaded theme.",
+  pspec = g_param_spec_string ("theme-name",
+                               "Theme name",
+                               "The name of the currently loaded theme.",
                                NULL,
                                MX_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_THEME, pspec);
+  g_object_class_install_property (object_class, PROP_THEME_NAME, pspec);
 
   signals[CHANGED] =
     g_signal_new ("changed",
@@ -302,7 +303,7 @@ mx_icon_theme_init (MxIconTheme *self)
   if (!theme)
     theme = "moblin";
 
-  mx_icon_theme_set_theme (self, theme);
+  mx_icon_theme_set_theme_name (self, theme);
 }
 
 MxIconTheme *
@@ -330,7 +331,7 @@ mx_icon_theme_get_default (void)
 }
 
 const gchar *
-mx_icon_theme_get_theme (MxIconTheme *theme)
+mx_icon_theme_get_theme_name (MxIconTheme *theme)
 {
   g_return_val_if_fail (MX_IS_ICON_THEME (theme), NULL);
 
@@ -338,8 +339,8 @@ mx_icon_theme_get_theme (MxIconTheme *theme)
 }
 
 void
-mx_icon_theme_set_theme (MxIconTheme *theme,
-                         const gchar *theme_name)
+mx_icon_theme_set_theme_name (MxIconTheme *theme,
+                              const gchar *theme_name)
 {
   gchar *fallbacks;
   MxIconThemePrivate *priv;
