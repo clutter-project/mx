@@ -661,7 +661,8 @@ mx_window_captured_event_cb (ClutterActor *actor,
     case CLUTTER_MOTION:
       /* Check if we're over the resize handle */
       if ((priv->is_moving == -1) && priv->has_toolbar && !priv->small_screen &&
-          !clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
+          !clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)) &&
+          priv->resize_grip)
         {
           gint x, y;
           Window win;
@@ -708,6 +709,7 @@ mx_window_captured_event_cb (ClutterActor *actor,
               return FALSE;
             }
         }
+      return FALSE;
 
     case CLUTTER_BUTTON_PRESS:
       /* We want resizing to happen even if there are active widgets
@@ -844,12 +846,18 @@ mx_window_fullscreen_set_cb (ClutterStage *stage,
   /* If we're in small-screen mode, make sure the size gets reset
    * correctly.
    */
-  if (!clutter_stage_get_fullscreen (stage) && priv->small_screen)
+  if (!clutter_stage_get_fullscreen (stage))
     {
-      priv->has_mapped = FALSE;
-      clutter_actor_show (priv->resize_grip);
+      if (priv->small_screen)
+        priv->has_mapped = FALSE;
+      else if (priv->resize_grip)
+        {
+          clutter_actor_show (priv->resize_grip);
+          if (priv->child)
+            clutter_actor_raise (priv->resize_grip, priv->child);
+        }
     }
-  else
+  else if (priv->resize_grip)
     clutter_actor_hide (priv->resize_grip);
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (stage));
@@ -867,8 +875,8 @@ mx_window_actor_added_cb (ClutterContainer *container,
                           ClutterActor     *actor,
                           MxWindow         *self)
 {
-  if (self->priv->resize_grip)
-    clutter_actor_raise_top (self->priv->resize_grip);
+  if (self->priv->resize_grip && self->priv->child)
+    clutter_actor_raise (self->priv->resize_grip, self->priv->child);
 }
 
 static void
@@ -1206,7 +1214,8 @@ mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
               XMoveResizeWindow (dpy, win, 0, 0, width, height);
             }
 
-          clutter_actor_hide (priv->resize_grip);
+          if (priv->resize_grip)
+            clutter_actor_hide (priv->resize_grip);
         }
       else
         {
@@ -1222,7 +1231,12 @@ mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
                                   priv->last_width,
                                   priv->last_height);
 
-          clutter_actor_show (priv->resize_grip);
+          if (priv->resize_grip)
+            {
+              clutter_actor_show (priv->resize_grip);
+              if (priv->child)
+                clutter_actor_raise (priv->resize_grip, priv->child);
+            }
         }
 
       g_object_notify (G_OBJECT (window), "small-screen");
