@@ -23,10 +23,14 @@
 static gint func = 0;
 
 static ClutterActor *
-replace_deformation (ClutterActor *texture, GType type, MxWindow *window)
+replace_deformation (ClutterActor *texture, GType type)
 {
   ClutterTexture *front, *back;
+  MxWindow *window;
   gint x, y;
+
+  window =
+    mx_window_get_for_stage (CLUTTER_STAGE (clutter_actor_get_stage (texture)));
 
   mx_deform_texture_get_resolution (MX_DEFORM_TEXTURE (texture), &x, &y);
   mx_deform_texture_get_textures (MX_DEFORM_TEXTURE (texture),
@@ -54,28 +58,24 @@ replace_deformation (ClutterActor *texture, GType type, MxWindow *window)
 }
 
 static void
-completed_cb (ClutterAnimation *animation,
-              MxWindow         *window)
+completed_cb (ClutterAnimation *animation, ClutterActor *texture)
 {
-  ClutterActor *texture =
-    CLUTTER_ACTOR (clutter_animation_get_object (animation));
-
   switch (func)
     {
     case 0:
       /* Change direction of page-turn animation */
       clutter_actor_animate (texture, CLUTTER_EASE_IN_OUT_SINE, 5000,
                              "period", 0.0,
-                             "signal-after::completed", completed_cb, window,
+                             "signal-after::completed", completed_cb, texture,
                              NULL);
       break;
 
     case 1:
       /* Replace page-turn deformation with bow-tie deformation */
-      texture = replace_deformation (texture, MX_TYPE_DEFORM_BOW_TIE, window);
+      texture = replace_deformation (texture, MX_TYPE_DEFORM_BOW_TIE);
       clutter_actor_animate (texture, CLUTTER_EASE_IN_OUT_SINE, 5000,
                              "period", 1.0,
-                             "signal-after::completed", completed_cb, window,
+                             "signal-after::completed", completed_cb, texture,
                              NULL);
       break;
 
@@ -83,18 +83,18 @@ completed_cb (ClutterAnimation *animation,
       /* Change direction of bow-tie animation */
       clutter_actor_animate (texture, CLUTTER_EASE_IN_OUT_SINE, 5000,
                              "period", 0.0,
-                             "signal-after::completed", completed_cb, window,
+                             "signal-after::completed", completed_cb, texture,
                              NULL);
       break;
 
     case 3:
       /* Replace bow-tie deformation with waves deformation */
-      texture = replace_deformation (texture, MX_TYPE_DEFORM_WAVES, window);
+      texture = replace_deformation (texture, MX_TYPE_DEFORM_WAVES);
       g_object_set (G_OBJECT (texture), "amplitude", 0.0, NULL);
       clutter_actor_animate (texture, CLUTTER_EASE_IN_QUAD, 5000,
                              "period", 2.0,
                              "amplitude", 1.0,
-                             "signal-after::completed", completed_cb, window,
+                             "signal-after::completed", completed_cb, texture,
                              NULL);
       break;
 
@@ -103,16 +103,16 @@ completed_cb (ClutterAnimation *animation,
       clutter_actor_animate (texture, CLUTTER_EASE_OUT_QUAD, 5000,
                              "period", 4.0,
                              "amplitude", 0.0,
-                             "signal-after::completed", completed_cb, window,
+                             "signal-after::completed", completed_cb, texture,
                              NULL);
       break;
 
     case 5:
       /* Replace waves deformation with page-turn deformation */
-      texture = replace_deformation (texture, MX_TYPE_DEFORM_PAGE_TURN, window);
+      texture = replace_deformation (texture, MX_TYPE_DEFORM_PAGE_TURN);
       clutter_actor_animate (texture, CLUTTER_EASE_IN_OUT_SINE, 5000,
                              "period", 1.0,
-                             "signal-after::completed", completed_cb, window,
+                             "signal-after::completed", completed_cb, texture,
                              NULL);
       break;
     }
@@ -183,7 +183,7 @@ main (int argc, char *argv[])
   /* Start animation */
   clutter_actor_animate (texture, CLUTTER_EASE_IN_OUT_SINE, 5000,
                          "period", 1.0,
-                         "signal-after::completed", completed_cb, window,
+                         "signal-after::completed", completed_cb, texture,
                          NULL);
 
   /* Begin */

@@ -16,6 +16,8 @@ G_DEFINE_TYPE (MxWindow, mx_window, G_TYPE_OBJECT)
 #define WINDOW_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_WINDOW, MxWindowPrivate))
 
+static GQuark window_quark = 0;
+
 struct _MxWindowPrivate
 {
   guint is_fullscreen : 1;
@@ -171,6 +173,8 @@ mx_window_dispose (GObject *object)
 
   if (priv->stage)
     {
+      g_object_set_qdata (G_OBJECT (priv->stage), window_quark, NULL);
+
       /* Destroying the stage will destroy all the actors inside it */
       g_object_remove_weak_pointer (G_OBJECT (priv->stage),
                                     (gpointer *)&priv->stage);
@@ -895,6 +899,7 @@ mx_window_constructed (GObject *object)
     priv->stage = clutter_stage_new ();
   g_object_add_weak_pointer (G_OBJECT (priv->stage),
                              (gpointer *)&priv->stage);
+  g_object_set_qdata (G_OBJECT (priv->stage), window_quark, self);
 
   priv->has_toolbar = TRUE;
   priv->toolbar = mx_toolbar_new ();
@@ -1013,6 +1018,8 @@ mx_window_class_init (MxWindowClass *klass)
                                    NULL, NULL,
                                    _mx_marshal_VOID__VOID,
                                    G_TYPE_NONE, 0);
+
+  window_quark = g_quark_from_static_string ("mx-window");
 }
 
 static void
@@ -1033,6 +1040,13 @@ MxWindow *
 mx_window_new_with_clutter_stage (ClutterStage *stage)
 {
   return g_object_new (MX_TYPE_WINDOW, "clutter-stage", stage, NULL);
+}
+
+MxWindow *
+mx_window_get_for_stage (ClutterStage *stage)
+{
+  g_return_val_if_fail (CLUTTER_IS_STAGE (stage), NULL);
+  return (MxWindow *)g_object_get_qdata (G_OBJECT (stage), window_quark);
 }
 
 void
