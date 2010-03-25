@@ -35,6 +35,27 @@ fullscreen_cb (MxToggle     *toggle,
   clutter_stage_set_fullscreen (stage, mx_toggle_get_active (toggle));
 }
 
+static void
+icon_cb (MxToggle   *toggle,
+         GParamSpec *pspec,
+         MxWindow   *window)
+{
+  gboolean use_custom = mx_toggle_get_active (toggle);
+
+  if (use_custom)
+    {
+      CoglHandle texture = cogl_texture_new_from_file ("redhand.png",
+                                                       COGL_TEXTURE_NONE,
+                                                       COGL_PIXEL_FORMAT_ANY,
+                                                       NULL);
+      if (texture)
+        mx_window_set_icon_from_cogl_texture (window, texture);
+      cogl_handle_unref (texture);
+    }
+  else
+    mx_window_set_icon_name (window, "window-new");
+}
+
 int
 main (int argc, char **argv)
 {
@@ -89,6 +110,26 @@ main (int argc, char **argv)
   mx_table_add_actor_with_properties (MX_TABLE (table),
                                       label,
                                       1, 1,
+                                      "x-expand", TRUE,
+                                      "x-align", MX_ALIGN_START,
+                                      "y-fill", FALSE,
+                                      "x-fill", FALSE,
+                                      NULL);
+
+  toggle = mx_toggle_new ();
+  label = mx_label_new_with_text ("Toggle custom window icon");
+  g_signal_connect (toggle, "notify::active",
+                    G_CALLBACK (icon_cb), window);
+  mx_table_add_actor_with_properties (MX_TABLE (table),
+                                      toggle,
+                                      2, 0,
+                                      "x-expand", TRUE,
+                                      "x-align", MX_ALIGN_END,
+                                      "x-fill", FALSE,
+                                      NULL);
+  mx_table_add_actor_with_properties (MX_TABLE (table),
+                                      label,
+                                      2, 1,
                                       "x-expand", TRUE,
                                       "x-align", MX_ALIGN_START,
                                       "y-fill", FALSE,
