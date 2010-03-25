@@ -839,6 +839,7 @@ mx_window_realize_cb (ClutterActor *actor,
 
 static void
 mx_window_fullscreen_set_cb (ClutterStage *stage,
+                             GParamSpec   *pspec,
                              MxWindow     *self)
 {
   MxWindowPrivate *priv = self->priv;
