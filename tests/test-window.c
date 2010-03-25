@@ -58,19 +58,19 @@ main (int argc, char **argv)
   toggle = mx_toggle_new ();
   label = mx_label_new_with_text ("Toggle small-screen mode");
   g_signal_connect (toggle, "notify::active",
-                    G_CALLBACK (small_screen_cb), stage);
+                    G_CALLBACK (small_screen_cb), window);
   mx_table_add_actor_with_properties (MX_TABLE (table),
                                       toggle,
                                       0, 0,
                                       "x-expand", TRUE,
-                                      "x-align", 1.0,
+                                      "x-align", MX_ALIGN_END,
                                       "x-fill", FALSE,
                                       NULL);
   mx_table_add_actor_with_properties (MX_TABLE (table),
                                       label,
                                       0, 1,
                                       "x-expand", TRUE,
-                                      "x-align", 0.0,
+                                      "x-align", MX_ALIGN_START,
                                       "y-fill", FALSE,
                                       "x-fill", FALSE,
                                       NULL);
@@ -83,14 +83,14 @@ main (int argc, char **argv)
                                       toggle,
                                       1, 0,
                                       "x-expand", TRUE,
-                                      "x-align", 1.0,
+                                      "x-align", MX_ALIGN_END,
                                       "x-fill", FALSE,
                                       NULL);
   mx_table_add_actor_with_properties (MX_TABLE (table),
                                       label,
                                       1, 1,
                                       "x-expand", TRUE,
-                                      "x-align", 0.0,
+                                      "x-align", MX_ALIGN_START,
                                       "y-fill", FALSE,
                                       "x-fill", FALSE,
                                       NULL);
