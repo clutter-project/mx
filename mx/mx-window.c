@@ -1078,6 +1078,7 @@ mx_window_init (MxWindow *self)
   MxWindowPrivate *priv = self->priv = WINDOW_PRIVATE (self);
 
   priv->is_moving = -1;
+  priv->icon_changed = TRUE;
 }
 
 MxWindow *
