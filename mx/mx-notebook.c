@@ -39,10 +39,9 @@ G_DEFINE_TYPE_WITH_CODE (MxNotebook, mx_notebook, MX_TYPE_WIDGET,
 
 struct _MxNotebookPrivate
 {
-  gint    current_page;
+  ClutterActor *current_page;
 
-  GSList *children;
-  gint    n_children;
+  GList *children;
 
   gboolean enable_gestures;
 
@@ -53,42 +52,62 @@ struct _MxNotebookPrivate
 
 enum
 {
-  PROP_PAGE = 1,
+  PROP_CURRENT_PAGE = 1,
   PROP_ENABLE_GESTURES
 };
+
+static void
+mx_notebook_show_complete_cb (MxNotebook *book)
+{
+  MxNotebookPrivate *priv = book->priv;
+  GList *l;
+
+  for (l = priv->children; l; l = l->next)
+    {
+      ClutterActor *child = CLUTTER_ACTOR (l->data);
+      if (child != priv->current_page)
+        {
+          clutter_actor_hide (child);
+          clutter_actor_set_opacity (child, 0x00);
+        }
+    }
+}
 
 static void
 mx_notebook_update_children (MxNotebook *book)
 {
   MxNotebookPrivate *priv = book->priv;
-  gint i;
-  GSList *l;
+  GList *l;
 
-  i = 0;
   for (l = priv->children; l; l = l->next)
     {
       ClutterActor *child = CLUTTER_ACTOR (l->data);
+      ClutterAnimation *anim = clutter_actor_get_animation (child);
 
-      if (i == priv->current_page)
+      if (anim)
         {
-          {
-            clutter_actor_set_opacity (child, 0);
-            clutter_actor_show (child);
-            clutter_actor_animate (child, CLUTTER_LINEAR, 250,
-                                   "opacity", 255, NULL);
-          }
+          /* A bit of a hack - we want to just abort the animation,
+           * but there's no way of aborting an animation that was
+           * started with clutter_actor_animate().
+           */
+          guint8 opacity = clutter_actor_get_opacity (child);
+          g_signal_handlers_disconnect_by_func (anim,
+                                                mx_notebook_show_complete_cb,
+                                                book);
+          clutter_animation_completed (anim);
+          clutter_actor_set_opacity (child, opacity);
         }
-      else
-      if (CLUTTER_ACTOR_IS_VISIBLE (child))
+
+      if (child == priv->current_page)
         {
+          clutter_actor_show (child);
           clutter_actor_animate (child, CLUTTER_LINEAR, 250,
-                                 "opacity", (guint8) 0,
+                                 "opacity", 255,
                                  "signal-swapped::completed",
-                                 clutter_actor_hide, child,
+                                   mx_notebook_show_complete_cb,
+                                   book,
                                  NULL);
         }
-
-      i++;
     }
 }
 
@@ -99,12 +118,14 @@ mx_notebook_add (ClutterContainer *container,
   MxNotebookPrivate *priv = MX_NOTEBOOK (container)->priv;
 
   clutter_actor_set_parent (actor, CLUTTER_ACTOR (container));
-  priv->children = g_slist_append (priv->children, actor);
+  priv->children = g_list_append (priv->children, actor);
 
-  priv->n_children++;
-
-  /* hide the actor until its page is displayed */
-  if ((priv->n_children - 1) != priv->current_page)
+  if (!priv->current_page)
+    {
+      priv->current_page = actor;
+      clutter_actor_set_opacity (actor, 0xff);
+    }
+  else
     clutter_actor_hide (actor);
 
   g_signal_emit_by_name (container, "actor-added", actor);
@@ -116,9 +137,9 @@ mx_notebook_remove (ClutterContainer *container,
 {
   MxNotebookPrivate *priv = MX_NOTEBOOK (container)->priv;
 
-  GSList *item = NULL;
+  GList *item = NULL;
 
-  item = g_slist_find (priv->children, actor);
+  item = g_list_find (priv->children, actor);
 
   if (item == NULL)
     {
@@ -128,21 +149,21 @@ mx_notebook_remove (ClutterContainer *container,
       return;
     }
 
+  /* If it was the current page, select either the previous or
+   * the next, whichever exists first.
+   */
+  if (actor == priv->current_page)
+    priv->current_page = item->prev ? item->prev->data :
+      (item->next ? item->next->data : NULL);
+
   g_object_ref (actor);
 
-  priv->children = g_slist_delete_link (priv->children, item);
+  priv->children = g_list_delete_link (priv->children, item);
   clutter_actor_unparent (actor);
 
   g_signal_emit_by_name (container, "actor-removed", actor);
 
   g_object_unref (actor);
-
-  priv->n_children--;
-
-  /* check if the last page was just removed and it was also the visible page */
-  if (priv->current_page > (priv->n_children - 1))
-    priv->current_page = priv->n_children - 1;
-
 
   mx_notebook_update_children (MX_NOTEBOOK (container));
 }
@@ -154,7 +175,7 @@ mx_notebook_foreach (ClutterContainer *container,
 {
   MxNotebookPrivate *priv = MX_NOTEBOOK (container)->priv;
 
-  g_slist_foreach (priv->children, (GFunc) callback, callback_data);
+  g_list_foreach (priv->children, (GFunc) callback, callback_data);
 }
 
 static void
@@ -176,8 +197,8 @@ mx_notebook_get_property (GObject    *object,
 
   switch (property_id)
     {
-    case PROP_PAGE:
-      g_value_set_int (value, priv->current_page);
+    case PROP_CURRENT_PAGE:
+      g_value_set_object (value, priv->current_page);
       break;
 
     case PROP_ENABLE_GESTURES:
@@ -197,8 +218,9 @@ mx_notebook_set_property (GObject      *object,
 {
   switch (property_id)
     {
-    case PROP_PAGE:
-      mx_notebook_set_page (MX_NOTEBOOK (object), g_value_get_int (value));
+    case PROP_CURRENT_PAGE:
+      mx_notebook_set_current_page (MX_NOTEBOOK (object),
+                                    (ClutterActor *)g_value_get_object (value));
       break;
 
     case PROP_ENABLE_GESTURES:
@@ -214,20 +236,28 @@ mx_notebook_set_property (GObject      *object,
 static void
 mx_notebook_dispose (GObject *object)
 {
-  MxNotebook *notebook;
-
-  G_OBJECT_CLASS (mx_notebook_parent_class)->dispose (object);
-
-  notebook = MX_NOTEBOOK (object);
-
 #ifdef HAVE_CLUTTER_GESTURE
-  if (notebook->priv->gesture)
+  MxNotebookPrivate *priv = MX_NOTEBOOK (object)->priv;
+
+  if (priv->gesture)
     {
-      g_object_unref (notebook->priv->gesture);
-      notebook->priv->gesture = NULL;
+      g_object_unref (priv->gesture);
+      priv->gesture = NULL;
     }
 #endif
 
+  G_OBJECT_CLASS (mx_notebook_parent_class)->dispose (object);
+}
+
+static void
+mx_notebook_destroy (ClutterActor *actor)
+{
+  MxNotebookPrivate *priv = MX_NOTEBOOK (actor)->priv;
+
+  g_list_foreach (priv->children, (GFunc) clutter_actor_destroy, NULL);
+
+  if (CLUTTER_ACTOR_CLASS (mx_notebook_parent_class)->destroy)
+    CLUTTER_ACTOR_CLASS (mx_notebook_parent_class)->destroy (actor);
 }
 
 static void
@@ -243,7 +273,7 @@ mx_notebook_get_preferred_width (ClutterActor *actor,
                                  gfloat       *natural_width_p)
 {
   MxNotebookPrivate *priv = MX_NOTEBOOK (actor)->priv;
-  GSList *l;
+  GList *l;
   MxPadding padding;
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
@@ -283,7 +313,7 @@ mx_notebook_get_preferred_height (ClutterActor *actor,
                                   gfloat       *natural_height_p)
 {
   MxNotebookPrivate *priv = MX_NOTEBOOK (actor)->priv;
-  GSList *l;
+  GList *l;
   MxPadding padding;
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
@@ -319,36 +349,37 @@ mx_notebook_get_preferred_height (ClutterActor *actor,
 static void
 mx_notebook_paint (ClutterActor *actor)
 {
-  GSList *l;
+  GList *l;
+
+  MxNotebookPrivate *priv = MX_NOTEBOOK (actor)->priv;
 
   CLUTTER_ACTOR_CLASS (mx_notebook_parent_class)->paint (actor);
 
-  for (l = MX_NOTEBOOK (actor)->priv->children; l; l = l->next)
+  for (l = priv->children; l; l = l->next)
     {
       ClutterActor *child = CLUTTER_ACTOR (l->data);
+
+      if (child == priv->current_page)
+        continue;
 
       if (CLUTTER_ACTOR_IS_VISIBLE (child))
         clutter_actor_paint (child);
     }
 
+  if (priv->current_page)
+    clutter_actor_paint (priv->current_page);
 }
 
 static void
 mx_notebook_pick (ClutterActor       *actor,
                   const ClutterColor *color)
 {
-  GSList *l;
+  MxNotebookPrivate *priv = MX_NOTEBOOK (actor)->priv;
 
   CLUTTER_ACTOR_CLASS (mx_notebook_parent_class)->pick (actor, color);
 
-  for (l = MX_NOTEBOOK (actor)->priv->children; l; l = l->next)
-    {
-      ClutterActor *child = CLUTTER_ACTOR (l->data);
-
-      if (CLUTTER_ACTOR_IS_VISIBLE (child))
-        clutter_actor_paint (child);
-    }
-
+  if (priv->current_page)
+    clutter_actor_paint (priv->current_page);
 }
 
 static void
@@ -357,7 +388,7 @@ mx_notebook_allocate (ClutterActor          *actor,
                       ClutterAllocationFlags flags)
 {
   MxNotebookPrivate *priv = MX_NOTEBOOK (actor)->priv;
-  GSList *l;
+  GList *l;
   MxPadding padding;
   ClutterActorBox childbox;
 
@@ -388,17 +419,37 @@ mx_notebook_gesture_slide_event_cb (ClutterGesture           *gesture,
                                     ClutterGestureSlideEvent *event,
                                     MxNotebook               *book)
 {
+  GList *item;
   MxNotebookPrivate *priv = book->priv;
 
-  if (!priv->enable_gestures)
+  if (!priv->enable_gestures || !priv->current_page)
     return FALSE;
 
+  item = g_list_find (priv->children, priv->current_page);
+  if (!item)
+    {
+      g_warning ("Current page not found in child list");
+      return FALSE;
+    }
+
   if (event->direction % 2)
-    /* up, left (1, 3) */
-    mx_notebook_set_page (book, priv->current_page - 1);
+    {
+      /* up, left (1, 3) */
+      if (item->prev)
+        mx_notebook_set_current_page (book, (ClutterActor *)item->prev->data);
+      else
+        mx_notebook_set_current_page (book,
+                                      (ClutterActor *)g_list_last (item)->data);
+    }
   else
-    /* down, right (2, 4) */
-    mx_notebook_set_page (book, priv->current_page + 1);
+    {
+      /* down, right (2, 4) */
+      if (item->next)
+        mx_notebook_set_current_page (book, (ClutterActor *)item->next->data);
+      else
+        mx_notebook_set_current_page (book,
+                                      (ClutterActor *)priv->children->data);
+    }
 
   return TRUE;
 }
@@ -423,13 +474,14 @@ mx_notebook_class_init (MxNotebookClass *klass)
   actor_class->get_preferred_height = mx_notebook_get_preferred_height;
   actor_class->paint = mx_notebook_paint;
   actor_class->pick = mx_notebook_pick;
+  actor_class->destroy = mx_notebook_destroy;
 
-  pspec = g_param_spec_int ("page",
-                            "Page",
-                            "Index of the child to display",
-                            0, G_MAXINT, 0,
-                            MX_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_PAGE, pspec);
+  pspec = g_param_spec_object ("current-page",
+                               "Current page",
+                               "The current ClutterActor being displayed",
+                               CLUTTER_TYPE_ACTOR,
+                               MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_CURRENT_PAGE, pspec);
 
   pspec = g_param_spec_boolean ("enable-gestures",
                                 "Enable Gestures",
@@ -443,7 +495,6 @@ static void
 mx_notebook_init (MxNotebook *self)
 {
   self->priv = NOTEBOOK_PRIVATE (self);
-
 }
 
 ClutterActor *
@@ -453,20 +504,17 @@ mx_notebook_new (void)
 }
 
 void
-mx_notebook_set_page (MxNotebook *book,
-                      gint        page)
+mx_notebook_set_current_page (MxNotebook   *book,
+                              ClutterActor *page)
 {
   MxNotebookPrivate *priv;
 
   g_return_if_fail (MX_IS_NOTEBOOK (book));
+  g_return_if_fail (CLUTTER_IS_ACTOR (page));
 
   priv = book->priv;
 
   if (page == priv->current_page)
-    return;
-
-  /* check for invalid page numbers */
-  if (page < 0 || page > (priv->n_children - 1))
     return;
 
   priv->current_page = page;
@@ -474,13 +522,13 @@ mx_notebook_set_page (MxNotebook *book,
   /* ensure the correct child is visible */
   mx_notebook_update_children (book);
 
-  g_object_notify (G_OBJECT (book), "page");
+  g_object_notify (G_OBJECT (book), "current-page");
 }
 
-gint
-mx_notebook_get_page (MxNotebook *book)
+ClutterActor *
+mx_notebook_get_current_page (MxNotebook *book)
 {
-  g_return_val_if_fail (MX_IS_NOTEBOOK (book), -1);
+  g_return_val_if_fail (MX_IS_NOTEBOOK (book), NULL);
 
   return book->priv->current_page;
 }
