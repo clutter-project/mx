@@ -80,11 +80,11 @@ scroll_grid_main (ClutterContainer *stage)
   for (i = 1; i <= 200; i++)
     {
       ClutterActor *button;
-      gchar *label;
+      gchar *text;
 
-      label = g_strdup_printf ("Button %d", i);
+      text = g_strdup_printf ("Button %d", i);
 
-      button = mx_button_new_with_label (label);
+      button = mx_button_new_with_label (text);
       clutter_container_add_actor (CLUTTER_CONTAINER (grid), button);
       mx_widget_set_tooltip_text (MX_WIDGET (button), "test");
       if (i == 1)
@@ -93,7 +93,7 @@ scroll_grid_main (ClutterContainer *stage)
                           G_CALLBACK (swap_orientation),
                           grid);
 
-      g_free (label);
+      g_free (text);
     }
 
   table = mx_table_new ();
