@@ -395,21 +395,26 @@ mx_window_set_wm_hints (MxWindow *window)
           return;
         }
 
+      data = g_malloc (size + (sizeof (gulong) * 2));
+      ((gulong *)data)[0] = width;
+      ((gulong *)data)[1] = height;
+
       /* Get the window icon */
-      data = g_malloc (size + (sizeof (int) * 2));
-      ((int *)data)[0] = width;
-      ((int *)data)[1] = height;
-      cogl_texture_get_data (texture,
-                             COGL_PIXEL_FORMAT_BGRA_8888,
-                             width * 4,
-                             data + (sizeof (int) * 2));
+      if (cogl_texture_get_data (texture,
+                                 COGL_PIXEL_FORMAT_BGRA_8888,
+                                 width * 4,
+                                 data + (sizeof (gulong) * 2)) == size)
+        {
+          /* Set the property */
+          XChangeProperty (dpy, win, net_wm_icon, XA_CARDINAL,
+                           32, PropModeReplace, data,
+                           (width * height) + 2);
+        }
+      else
+        g_warning ("Size mismatch when retrieving texture data "
+                   "for window icon");
+
       cogl_handle_unref (texture);
-
-      /* Set the property */
-      XChangeProperty (dpy, win, net_wm_icon, XA_CARDINAL,
-                       32, PropModeReplace, data,
-                       (width * height) + 2);
-
       g_free (data);
     }
 }
