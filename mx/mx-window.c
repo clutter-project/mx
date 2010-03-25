@@ -1429,13 +1429,14 @@ mx_window_set_icon_from_cogl_texture (MxWindow   *window,
       g_object_notify (G_OBJECT (window), "icon-name");
     }
 
-  if (texture)
-    priv->icon_texture = cogl_handle_ref (texture);
-  else if (priv->icon_texture)
+  if (priv->icon_texture)
     {
       cogl_handle_unref (priv->icon_texture);
       priv->icon_texture = NULL;
     }
+
+  if (texture)
+    priv->icon_texture = cogl_handle_ref (texture);
 
   priv->icon_changed = TRUE;
   mx_window_set_wm_hints (window);
