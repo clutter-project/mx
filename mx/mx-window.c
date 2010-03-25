@@ -384,7 +384,7 @@ mx_window_set_wm_hints (MxWindow *window)
       width = cogl_texture_get_width (texture);
       height = cogl_texture_get_height (texture);
       size = cogl_texture_get_data (texture,
-                                    COGL_PIXEL_FORMAT_ARGB_8888,
+                                    COGL_PIXEL_FORMAT_BGRA_8888,
                                     width * 4,
                                     NULL);
       if (!size)
@@ -400,7 +400,7 @@ mx_window_set_wm_hints (MxWindow *window)
       ((int *)data)[0] = width;
       ((int *)data)[1] = height;
       cogl_texture_get_data (texture,
-                             COGL_PIXEL_FORMAT_ARGB_8888,
+                             COGL_PIXEL_FORMAT_BGRA_8888,
                              width * 4,
                              data + (sizeof (int) * 2));
       cogl_handle_unref (texture);
