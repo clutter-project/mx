@@ -124,6 +124,7 @@ mx_notebook_add (ClutterContainer *container,
     {
       priv->current_page = actor;
       clutter_actor_set_opacity (actor, 0xff);
+      g_object_notify (G_OBJECT (container), "current-page");
     }
   else
     clutter_actor_hide (actor);
@@ -153,8 +154,11 @@ mx_notebook_remove (ClutterContainer *container,
    * the next, whichever exists first.
    */
   if (actor == priv->current_page)
-    priv->current_page = item->prev ? item->prev->data :
-      (item->next ? item->next->data : NULL);
+    {
+      priv->current_page = item->prev ? item->prev->data :
+        (item->next ? item->next->data : NULL);
+      g_object_notify (G_OBJECT (container), "current-page");
+    }
 
   g_object_ref (actor);
 
