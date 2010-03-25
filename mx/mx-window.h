@@ -72,6 +72,9 @@ void       mx_window_set_window_position (MxWindow *window, gint  x, gint  y);
 void         mx_window_set_icon_name (MxWindow *window, const gchar *icon_name);
 const gchar *mx_window_get_icon_name (MxWindow *window);
 
+void         mx_window_set_icon_from_cogl_texture (MxWindow   *window,
+                                                   CoglHandle  texture);
+
 ClutterStage *mx_window_get_clutter_stage (MxWindow *window);
 
 G_END_DECLS

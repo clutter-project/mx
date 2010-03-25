@@ -27,6 +27,7 @@ struct _MxWindowPrivate
   guint has_mapped    : 1;
   guint width_set     : 1;
   guint height_set    : 1;
+  guint icon_changed  : 1;
 
   gint  is_moving;
 
@@ -35,7 +36,8 @@ struct _MxWindowPrivate
   gfloat     natural_width;
   gfloat     natural_height;
 
-  gchar *icon_name;
+  gchar      *icon_name;
+  CoglHandle  icon_texture;
 
   ClutterActor *stage;
   ClutterActor *toolbar;
@@ -61,6 +63,7 @@ enum
   PROP_TOOLBAR,
   PROP_SMALL_SCREEN,
   PROP_ICON_NAME,
+  PROP_ICON_COGL_TEXTURE,
   PROP_CLUTTER_STAGE,
   PROP_CHILD
 };
@@ -136,6 +139,11 @@ mx_window_set_property (GObject      *object,
                                g_value_get_string (value));
       break;
 
+    case PROP_ICON_COGL_TEXTURE:
+      mx_window_set_icon_from_cogl_texture (MX_WINDOW (object),
+                                            g_value_get_pointer (value));
+      break;
+
     case PROP_CLUTTER_STAGE:
       MX_WINDOW (object)->priv->stage =
         (ClutterActor *)g_value_get_object (value);
@@ -156,6 +164,12 @@ mx_window_dispose (GObject *object)
 {
   MxWindow *self = MX_WINDOW (object);
   MxWindowPrivate *priv = self->priv;
+
+  if (priv->icon_texture)
+    {
+      cogl_handle_unref (priv->icon_texture);
+      priv->icon_texture = NULL;
+    }
 
   if (priv->toolbar)
     {
@@ -332,19 +346,39 @@ mx_window_set_wm_hints (MxWindow *window)
     net_wm_icon = XInternAtom (dpy, "_NET_WM_ICON", False);
 
   /* Set the window icon */
+  if (!priv->icon_changed)
+    return;
+
+  priv->icon_changed = FALSE;
+
   icon_name = priv->icon_name ? priv->icon_name : g_get_prgname ();
-  if (icon_name && net_wm_icon)
+  if ((priv->icon_texture || icon_name) && net_wm_icon)
     {
       guint width, height;
       CoglHandle texture;
       guchar *data;
       gint size;
 
-      /* Lookup icon for program name */
-      texture = mx_icon_theme_lookup (mx_icon_theme_get_default (),
-                                      icon_name, 32);
-      if (!texture)
-        return;
+      /* Lookup icon for program name if there's no texture set */
+      if (priv->icon_texture)
+        {
+          texture = priv->icon_texture;
+          priv->icon_texture = NULL;
+        }
+      else
+        {
+          texture = mx_icon_theme_lookup (mx_icon_theme_get_default (),
+                                          icon_name, 32);
+          if (!texture)
+            {
+              /* Remove the window icon */
+              clutter_x11_trap_x_errors ();
+              XDeleteProperty (dpy, win, net_wm_icon);
+              clutter_x11_untrap_x_errors ();
+
+              return;
+            }
+        }
 
       /* Get window icon size */
       width = cogl_texture_get_width (texture);
@@ -1005,6 +1039,13 @@ mx_window_class_init (MxWindowClass *klass)
                                MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_ICON_NAME, pspec);
 
+  pspec = g_param_spec_string ("icon-cogl-texture",
+                               "Icon CoglTexture",
+                               "CoglTexture to use for the window icon.",
+                               NULL,
+                               MX_PARAM_WRITABLE);
+  g_object_class_install_property (object_class, PROP_ICON_COGL_TEXTURE, pspec);
+
   pspec = g_param_spec_object ("clutter-stage",
                                "Clutter stage",
                                "ClutterStage to use as the window.",
@@ -1315,6 +1356,14 @@ mx_window_set_window_position (MxWindow *window, gint x, gint y)
   XMoveWindow (dpy, win, x, y);
 }
 
+/**
+ * mx_window_set_icon_name:
+ * @window: A #MxWindow
+ * @icon_name: (allow-none): An icon name, or %NULL
+ *
+ * Set an icon-name to use for the window icon. The icon will be looked up
+ * from the default theme.
+ */
 void
 mx_window_set_icon_name (MxWindow *window, const gchar *icon_name)
 {
@@ -1334,14 +1383,62 @@ mx_window_set_icon_name (MxWindow *window, const gchar *icon_name)
 
   g_object_notify (G_OBJECT (window), "icon-name");
 
+  priv->icon_changed = TRUE;
   mx_window_set_wm_hints (window);
 }
 
+/**
+ * mx_window_get_icon_name:
+ * @window: A #MxWindow
+ *
+ * Gets the currently set window icon name. This will be %NULL if there is none
+ * set, or the icon was set with mx_window_set_icon_from_cogl_texture().
+ *
+ * Returns: The window icon name, or %NULL
+ */
 const gchar *
 mx_window_get_icon_name (MxWindow *window)
 {
   g_return_val_if_fail (MX_IS_WINDOW (window), NULL);
   return window->priv->icon_name;
+}
+
+/**
+ * mx_window_set_icon_from_cogl_texture:
+ * @window: A #MxWindow
+ * @texture: A #CoglHandle for a texture
+ *
+ * Sets the window icon from a texture. This will take precedence over
+ * any currently set icon-name.
+ */
+void
+mx_window_set_icon_from_cogl_texture (MxWindow   *window,
+                                      CoglHandle  texture)
+{
+  MxWindowPrivate *priv;
+
+  g_return_if_fail (MX_IS_WINDOW (window));
+  g_return_if_fail (texture != NULL);
+
+  priv = window->priv;
+
+  if (priv->icon_name)
+    {
+      g_free (priv->icon_name);
+      priv->icon_name = NULL;
+      g_object_notify (G_OBJECT (window), "icon-name");
+    }
+
+  if (texture)
+    priv->icon_texture = cogl_handle_ref (texture);
+  else if (priv->icon_texture)
+    {
+      cogl_handle_unref (priv->icon_texture);
+      priv->icon_texture = NULL;
+    }
+
+  priv->icon_changed = TRUE;
+  mx_window_set_wm_hints (window);
 }
 
 ClutterStage *
