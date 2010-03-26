@@ -49,7 +49,6 @@ GType mx_border_image_get_type (void) G_GNUC_CONST;
 /**
  * MxBorderImage:
  * @uri: uri of a supported image file
- *
  * @top: top border slice width
  * @right: right border slice width
  * @bottom: bottom border slice width
@@ -91,14 +90,30 @@ struct _MxPadding
 GType mx_padding_get_type (void) G_GNUC_CONST;
 
 
-
-typedef enum {
+/**
+ * MxAlign:
+ * @MX_ALIGN_START: Align at the beginning of the axis
+ * @MX_ALIGN_MIDDLE: Align in the middle of the axis
+ * @MX_ALIGN_END: Align at the end of the axis
+ *
+ * Set the alignment of the item
+ */
+typedef enum { /*< prefix=MX_ALIGN >*/
   MX_ALIGN_START,
   MX_ALIGN_MIDDLE,
   MX_ALIGN_END
 } MxAlign;
 
-typedef enum
+/**
+ * MxFontWeight:
+ * @MX_FONT_WEIGHT_NORMAL: Normal font weight
+ * @MX_FONT_WEIGHT_BOLD: Bold font weight
+ * @MX_FONT_WEIGHT_BOLDER: Bolder font weight
+ * @MX_FONT_WEIGHT_LIGHTER: Lighter font weight
+ *
+ * Support values of font weight
+ */
+typedef enum /*< prefix=MX_FONT_WEIGHT >*/
 {
   MX_FONT_WEIGHT_NORMAL,
   MX_FONT_WEIGHT_BOLD,
@@ -106,7 +121,16 @@ typedef enum
   MX_FONT_WEIGHT_LIGHTER
 } MxFontWeight;
 
-typedef enum
+/**
+ * MxScrollPolicy:
+ * @MX_SCROLL_POLICY_NONE: Never scroll
+ * @MX_SCROLL_POLICY_HORIZONTAL: Only allow horizontal scrolling
+ * @MX_SCROLL_POLICY_VERTICAL: Only allow vertical scrolling
+ * @MX_SCROLL_POLICY_BOTH: Allow scrolling both horizontally and vertically
+ *
+ * Defines the scrolling policy of scrollable widgets.
+ */
+typedef enum /*< prefix=MX_SCROLL_POLICY >*/
 {
   MX_SCROLL_POLICY_NONE,
   MX_SCROLL_POLICY_HORIZONTAL,
@@ -114,7 +138,14 @@ typedef enum
   MX_SCROLL_POLICY_BOTH
 } MxScrollPolicy;
 
-typedef enum
+/**
+ * MxOrientation:
+ * @MX_ORIENTATION_HORIZONTAL: horizontal orientation
+ * @MX_ORIENTATION_VERTICAL: vertical orientation
+ *
+ * Defines the orientation of various layout widgets.
+ */
+typedef enum /*< prefix=MX_ORIENTATION >*/
 {
   MX_ORIENTATION_HORIZONTAL,
   MX_ORIENTATION_VERTICAL
