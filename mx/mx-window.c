@@ -16,6 +16,8 @@ G_DEFINE_TYPE (MxWindow, mx_window, G_TYPE_OBJECT)
 #define WINDOW_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_WINDOW, MxWindowPrivate))
 
+static GQuark window_quark = 0;
+
 struct _MxWindowPrivate
 {
   guint is_fullscreen : 1;
@@ -25,6 +27,7 @@ struct _MxWindowPrivate
   guint has_mapped    : 1;
   guint width_set     : 1;
   guint height_set    : 1;
+  guint icon_changed  : 1;
 
   gint  is_moving;
 
@@ -33,7 +36,8 @@ struct _MxWindowPrivate
   gfloat     natural_width;
   gfloat     natural_height;
 
-  gchar *icon_name;
+  gchar      *icon_name;
+  CoglHandle  icon_texture;
 
   ClutterActor *stage;
   ClutterActor *toolbar;
@@ -59,6 +63,7 @@ enum
   PROP_TOOLBAR,
   PROP_SMALL_SCREEN,
   PROP_ICON_NAME,
+  PROP_ICON_COGL_TEXTURE,
   PROP_CLUTTER_STAGE,
   PROP_CHILD
 };
@@ -134,6 +139,11 @@ mx_window_set_property (GObject      *object,
                                g_value_get_string (value));
       break;
 
+    case PROP_ICON_COGL_TEXTURE:
+      mx_window_set_icon_from_cogl_texture (MX_WINDOW (object),
+                                            g_value_get_pointer (value));
+      break;
+
     case PROP_CLUTTER_STAGE:
       MX_WINDOW (object)->priv->stage =
         (ClutterActor *)g_value_get_object (value);
@@ -155,6 +165,12 @@ mx_window_dispose (GObject *object)
   MxWindow *self = MX_WINDOW (object);
   MxWindowPrivate *priv = self->priv;
 
+  if (priv->icon_texture)
+    {
+      cogl_handle_unref (priv->icon_texture);
+      priv->icon_texture = NULL;
+    }
+
   if (priv->toolbar)
     {
       g_object_remove_weak_pointer (G_OBJECT (priv->toolbar),
@@ -171,6 +187,8 @@ mx_window_dispose (GObject *object)
 
   if (priv->stage)
     {
+      g_object_set_qdata (G_OBJECT (priv->stage), window_quark, NULL);
+
       /* Destroying the stage will destroy all the actors inside it */
       g_object_remove_weak_pointer (G_OBJECT (priv->stage),
                                     (gpointer *)&priv->stage);
@@ -328,25 +346,45 @@ mx_window_set_wm_hints (MxWindow *window)
     net_wm_icon = XInternAtom (dpy, "_NET_WM_ICON", False);
 
   /* Set the window icon */
+  if (!priv->icon_changed)
+    return;
+
+  priv->icon_changed = FALSE;
+
   icon_name = priv->icon_name ? priv->icon_name : g_get_prgname ();
-  if (icon_name && net_wm_icon)
+  if ((priv->icon_texture || icon_name) && net_wm_icon)
     {
       guint width, height;
       CoglHandle texture;
       guchar *data;
       gint size;
 
-      /* Lookup icon for program name */
-      texture = mx_icon_theme_lookup (mx_icon_theme_get_default (),
-                                      icon_name, 32);
-      if (!texture)
-        return;
+      /* Lookup icon for program name if there's no texture set */
+      if (priv->icon_texture)
+        {
+          texture = priv->icon_texture;
+          priv->icon_texture = NULL;
+        }
+      else
+        {
+          texture = mx_icon_theme_lookup (mx_icon_theme_get_default (),
+                                          icon_name, 32);
+          if (!texture)
+            {
+              /* Remove the window icon */
+              clutter_x11_trap_x_errors ();
+              XDeleteProperty (dpy, win, net_wm_icon);
+              clutter_x11_untrap_x_errors ();
+
+              return;
+            }
+        }
 
       /* Get window icon size */
       width = cogl_texture_get_width (texture);
       height = cogl_texture_get_height (texture);
       size = cogl_texture_get_data (texture,
-                                    COGL_PIXEL_FORMAT_ARGB_8888,
+                                    COGL_PIXEL_FORMAT_BGRA_8888,
                                     width * 4,
                                     NULL);
       if (!size)
@@ -357,21 +395,26 @@ mx_window_set_wm_hints (MxWindow *window)
           return;
         }
 
+      data = g_malloc (size + (sizeof (gulong) * 2));
+      ((gulong *)data)[0] = width;
+      ((gulong *)data)[1] = height;
+
       /* Get the window icon */
-      data = g_malloc (size + (sizeof (int) * 2));
-      ((int *)data)[0] = width;
-      ((int *)data)[1] = height;
-      cogl_texture_get_data (texture,
-                             COGL_PIXEL_FORMAT_ARGB_8888,
-                             width * 4,
-                             data + (sizeof (int) * 2));
+      if (cogl_texture_get_data (texture,
+                                 COGL_PIXEL_FORMAT_BGRA_8888,
+                                 width * 4,
+                                 data + (sizeof (gulong) * 2)) == size)
+        {
+          /* Set the property */
+          XChangeProperty (dpy, win, net_wm_icon, XA_CARDINAL,
+                           32, PropModeReplace, data,
+                           (width * height) + 2);
+        }
+      else
+        g_warning ("Size mismatch when retrieving texture data "
+                   "for window icon");
+
       cogl_handle_unref (texture);
-
-      /* Set the property */
-      XChangeProperty (dpy, win, net_wm_icon, XA_CARDINAL,
-                       32, PropModeReplace, data,
-                       (width * height) + 2);
-
       g_free (data);
     }
 }
@@ -657,7 +700,8 @@ mx_window_captured_event_cb (ClutterActor *actor,
     case CLUTTER_MOTION:
       /* Check if we're over the resize handle */
       if ((priv->is_moving == -1) && priv->has_toolbar && !priv->small_screen &&
-          !clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
+          !clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)) &&
+          priv->resize_grip)
         {
           gint x, y;
           Window win;
@@ -704,6 +748,7 @@ mx_window_captured_event_cb (ClutterActor *actor,
               return FALSE;
             }
         }
+      return FALSE;
 
     case CLUTTER_BUTTON_PRESS:
       /* We want resizing to happen even if there are active widgets
@@ -833,6 +878,7 @@ mx_window_realize_cb (ClutterActor *actor,
 
 static void
 mx_window_fullscreen_set_cb (ClutterStage *stage,
+                             GParamSpec   *pspec,
                              MxWindow     *self)
 {
   MxWindowPrivate *priv = self->priv;
@@ -840,12 +886,18 @@ mx_window_fullscreen_set_cb (ClutterStage *stage,
   /* If we're in small-screen mode, make sure the size gets reset
    * correctly.
    */
-  if (!clutter_stage_get_fullscreen (stage) && priv->small_screen)
+  if (!clutter_stage_get_fullscreen (stage))
     {
-      priv->has_mapped = FALSE;
-      clutter_actor_show (priv->resize_grip);
+      if (priv->small_screen)
+        priv->has_mapped = FALSE;
+      else if (priv->resize_grip)
+        {
+          clutter_actor_show (priv->resize_grip);
+          if (priv->child)
+            clutter_actor_raise (priv->resize_grip, priv->child);
+        }
     }
-  else
+  else if (priv->resize_grip)
     clutter_actor_hide (priv->resize_grip);
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (stage));
@@ -863,8 +915,8 @@ mx_window_actor_added_cb (ClutterContainer *container,
                           ClutterActor     *actor,
                           MxWindow         *self)
 {
-  if (self->priv->resize_grip)
-    clutter_actor_raise_top (self->priv->resize_grip);
+  if (self->priv->resize_grip && self->priv->child)
+    clutter_actor_raise (self->priv->resize_grip, self->priv->child);
 }
 
 static void
@@ -895,6 +947,7 @@ mx_window_constructed (GObject *object)
     priv->stage = clutter_stage_new ();
   g_object_add_weak_pointer (G_OBJECT (priv->stage),
                              (gpointer *)&priv->stage);
+  g_object_set_qdata (G_OBJECT (priv->stage), window_quark, self);
 
   priv->has_toolbar = TRUE;
   priv->toolbar = mx_toolbar_new ();
@@ -991,6 +1044,13 @@ mx_window_class_init (MxWindowClass *klass)
                                MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_ICON_NAME, pspec);
 
+  pspec = g_param_spec_string ("icon-cogl-texture",
+                               "Icon CoglTexture",
+                               "CoglTexture to use for the window icon.",
+                               NULL,
+                               MX_PARAM_WRITABLE);
+  g_object_class_install_property (object_class, PROP_ICON_COGL_TEXTURE, pspec);
+
   pspec = g_param_spec_object ("clutter-stage",
                                "Clutter stage",
                                "ClutterStage to use as the window.",
@@ -1013,6 +1073,8 @@ mx_window_class_init (MxWindowClass *klass)
                                    NULL, NULL,
                                    _mx_marshal_VOID__VOID,
                                    G_TYPE_NONE, 0);
+
+  window_quark = g_quark_from_static_string ("mx-window");
 }
 
 static void
@@ -1021,6 +1083,7 @@ mx_window_init (MxWindow *self)
   MxWindowPrivate *priv = self->priv = WINDOW_PRIVATE (self);
 
   priv->is_moving = -1;
+  priv->icon_changed = TRUE;
 }
 
 MxWindow *
@@ -1033,6 +1096,13 @@ MxWindow *
 mx_window_new_with_clutter_stage (ClutterStage *stage)
 {
   return g_object_new (MX_TYPE_WINDOW, "clutter-stage", stage, NULL);
+}
+
+MxWindow *
+mx_window_get_for_stage (ClutterStage *stage)
+{
+  g_return_val_if_fail (CLUTTER_IS_STAGE (stage), NULL);
+  return (MxWindow *)g_object_get_qdata (G_OBJECT (stage), window_quark);
 }
 
 void
@@ -1192,7 +1262,8 @@ mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
               XMoveResizeWindow (dpy, win, 0, 0, width, height);
             }
 
-          clutter_actor_hide (priv->resize_grip);
+          if (priv->resize_grip)
+            clutter_actor_hide (priv->resize_grip);
         }
       else
         {
@@ -1208,7 +1279,12 @@ mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
                                   priv->last_width,
                                   priv->last_height);
 
-          clutter_actor_show (priv->resize_grip);
+          if (priv->resize_grip)
+            {
+              clutter_actor_show (priv->resize_grip);
+              if (priv->child)
+                clutter_actor_raise (priv->resize_grip, priv->child);
+            }
         }
 
       g_object_notify (G_OBJECT (window), "small-screen");
@@ -1286,6 +1362,14 @@ mx_window_set_window_position (MxWindow *window, gint x, gint y)
   XMoveWindow (dpy, win, x, y);
 }
 
+/**
+ * mx_window_set_icon_name:
+ * @window: A #MxWindow
+ * @icon_name: (allow-none): An icon name, or %NULL
+ *
+ * Set an icon-name to use for the window icon. The icon will be looked up
+ * from the default theme.
+ */
 void
 mx_window_set_icon_name (MxWindow *window, const gchar *icon_name)
 {
@@ -1305,14 +1389,63 @@ mx_window_set_icon_name (MxWindow *window, const gchar *icon_name)
 
   g_object_notify (G_OBJECT (window), "icon-name");
 
+  priv->icon_changed = TRUE;
   mx_window_set_wm_hints (window);
 }
 
+/**
+ * mx_window_get_icon_name:
+ * @window: A #MxWindow
+ *
+ * Gets the currently set window icon name. This will be %NULL if there is none
+ * set, or the icon was set with mx_window_set_icon_from_cogl_texture().
+ *
+ * Returns: The window icon name, or %NULL
+ */
 const gchar *
 mx_window_get_icon_name (MxWindow *window)
 {
   g_return_val_if_fail (MX_IS_WINDOW (window), NULL);
   return window->priv->icon_name;
+}
+
+/**
+ * mx_window_set_icon_from_cogl_texture:
+ * @window: A #MxWindow
+ * @texture: A #CoglHandle for a texture
+ *
+ * Sets the window icon from a texture. This will take precedence over
+ * any currently set icon-name.
+ */
+void
+mx_window_set_icon_from_cogl_texture (MxWindow   *window,
+                                      CoglHandle  texture)
+{
+  MxWindowPrivate *priv;
+
+  g_return_if_fail (MX_IS_WINDOW (window));
+  g_return_if_fail (texture != NULL);
+
+  priv = window->priv;
+
+  if (priv->icon_name)
+    {
+      g_free (priv->icon_name);
+      priv->icon_name = NULL;
+      g_object_notify (G_OBJECT (window), "icon-name");
+    }
+
+  if (priv->icon_texture)
+    {
+      cogl_handle_unref (priv->icon_texture);
+      priv->icon_texture = NULL;
+    }
+
+  if (texture)
+    priv->icon_texture = cogl_handle_ref (texture);
+
+  priv->icon_changed = TRUE;
+  mx_window_set_wm_hints (window);
 }
 
 ClutterStage *
