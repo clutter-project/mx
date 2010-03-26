@@ -29,22 +29,22 @@ stage.title = "Test Notebook";
 let notebook = new Mx.Notebook ();
 stage.add_actor (notebook);
 
-let label = new Mx.Label ({text: "Paddington"});
-notebook.add_actor (label);
+let buttons = new Array ();
+buttons[0] = new Mx.Button ({label: "Paddington"});
+notebook.add_actor (buttons[0]);
 
-let label = new Mx.Label ({text: "Aldgate"});
-notebook.add_actor (label);
+buttons[1] = new Mx.Button ({label: "Aldgate"});
+notebook.add_actor (buttons[1]);
 
-let label = new Mx.Label ({text: "Baker Street"});
-notebook.add_actor (label);
+buttons[2] = new Mx.Button ({label: "Baker Street"});
+notebook.add_actor (buttons[2]);
 
-notebook.set_page (1);
-
+let page_no = 0;
 stage.connect ("button-release-event",
                function (o, e) {
-                  let i = notebook.page;
-                  i++; if (i > 2) i = 0; notebook.page = i;
-                  log ("bar " + i);
+                  if (++page_no >= buttons.length)
+                    page_no = 0;
+                  notebook.current_page = buttons[page_no];
                });
 
 stage.show ();

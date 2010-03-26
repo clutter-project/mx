@@ -709,7 +709,7 @@ mx_slider_init (MxSlider *self)
 
   self->priv->handle = CLUTTER_ACTOR (mx_button_new ());
   clutter_actor_set_name (priv->handle, "handle");
-  clutter_actor_set_parent (priv->handle, priv->trough);
+  clutter_actor_set_parent (priv->handle, CLUTTER_ACTOR (self));
   g_signal_connect (priv->handle, "button-press-event",
                     G_CALLBACK (on_handle_button_press_event), self);
 }

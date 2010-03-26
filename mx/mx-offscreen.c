@@ -40,7 +40,6 @@ struct _MxOffscreenPrivate
   gboolean      auto_update;
 
   CoglHandle    fbo;
-  CoglHandle    program;
 };
 
 enum
@@ -108,10 +107,6 @@ mx_offscreen_get_property (GObject    *object,
       g_value_set_boolean (value, mx_offscreen_get_pick_child (self));
       break;
 
-    case PROP_COGL_PROGRAM:
-      g_value_set_pointer (value, mx_offscreen_get_cogl_program (self));
-      break;
-
     case PROP_AUTO_UPDATE:
       g_value_set_boolean (value, mx_offscreen_get_auto_update (self));
       break;
@@ -137,11 +132,6 @@ mx_offscreen_set_property (GObject      *object,
 
     case PROP_PICK_CHILD:
       mx_offscreen_set_pick_child (self, g_value_get_boolean (value));
-      break;
-
-    case PROP_COGL_PROGRAM:
-      mx_offscreen_set_cogl_program (self,
-                                     (CoglHandle)g_value_get_pointer (value));
       break;
 
     case PROP_AUTO_UPDATE:
@@ -177,12 +167,6 @@ mx_offscreen_dispose (GObject *object)
     {
       cogl_handle_unref (priv->fbo);
       priv->fbo = NULL;
-    }
-
-  if (priv->program)
-    {
-      cogl_handle_unref (priv->program);
-      priv->program = NULL;
     }
 
   G_OBJECT_CLASS (mx_offscreen_parent_class)->dispose (object);
@@ -276,13 +260,7 @@ mx_offscreen_paint (ClutterActor *actor)
   if (priv->auto_update)
     mx_offscreen_update (self);
 
-  if (priv->program)
-    cogl_program_use (priv->program);
-
   CLUTTER_ACTOR_CLASS (mx_offscreen_parent_class)->paint (actor);
-
-  if (priv->program)
-    cogl_program_use (COGL_INVALID_HANDLE);
 }
 
 static void
@@ -364,12 +342,6 @@ mx_offscreen_class_init (MxOffscreenClass *klass)
                                 FALSE,
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_PICK_CHILD, pspec);
-
-  pspec = g_param_spec_pointer ("cogl-program",
-                                "Cogl program",
-                                "Cogl program to use when rendering texture.",
-                                MX_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_COGL_PROGRAM, pspec);
 
   pspec = g_param_spec_boolean ("auto-update",
                                 "Auto update",
@@ -528,39 +500,6 @@ mx_offscreen_get_pick_child (MxOffscreen *offscreen)
 }
 
 void
-mx_offscreen_set_cogl_program (MxOffscreen *offscreen, CoglHandle program)
-{
-  MxOffscreenPrivate *priv;
-
-  g_return_if_fail (MX_IS_OFFSCREEN (offscreen));
-
-  priv = offscreen->priv;
-
-  if (program == priv->program)
-    return;
-
-  if (priv->program)
-    {
-      cogl_handle_unref (priv->program);
-      priv->program = NULL;
-    }
-
-  if (program)
-    priv->program = cogl_handle_ref (program);
-
-  g_object_notify (G_OBJECT (offscreen), "cogl-program");
-
-  clutter_actor_queue_redraw (CLUTTER_ACTOR (offscreen));
-}
-
-CoglHandle
-mx_offscreen_get_cogl_program (MxOffscreen *offscreen)
-{
-  g_return_val_if_fail (MX_IS_OFFSCREEN (offscreen), COGL_INVALID_HANDLE);
-  return offscreen->priv->program;
-}
-
-void
 mx_offscreen_set_auto_update (MxOffscreen *offscreen, gboolean auto_update)
 {
   MxOffscreenPrivate *priv;
@@ -586,10 +525,14 @@ mx_offscreen_get_auto_update (MxOffscreen *offscreen)
 void
 mx_offscreen_update (MxOffscreen *offscreen)
 {
+#if CLUTTER_CHECK_VERSION(1,2,0)
   CoglHandle texture;
   gboolean sync_size;
+  ClutterActor *actor;
   gfloat width, height;
   CoglColor zero_colour;
+  GList *s, *disabled_shaders;
+#endif
 
   MxOffscreenPrivate *priv = offscreen->priv;
 
@@ -597,6 +540,19 @@ mx_offscreen_update (MxOffscreen *offscreen)
     return;
 
 #if CLUTTER_CHECK_VERSION(1,2,0)
+  /* Disable shaders when we paint our off-screen children */
+  actor = (ClutterActor *)offscreen;
+  disabled_shaders = NULL;
+  do
+    {
+      ClutterShader *shader = clutter_actor_get_shader (actor);
+      if (shader && clutter_shader_get_is_enabled (shader))
+        {
+          clutter_shader_set_is_enabled (shader, FALSE);
+          disabled_shaders = g_list_prepend (disabled_shaders, shader);
+        }
+    } while ((actor = clutter_actor_get_parent (actor)));
+
   clutter_actor_get_size (priv->child, &width, &height);
   sync_size = clutter_texture_get_sync_size (CLUTTER_TEXTURE (offscreen));
 
@@ -642,6 +598,10 @@ mx_offscreen_update (MxOffscreen *offscreen)
   /* Restore state */
   cogl_pop_matrix ();
   cogl_pop_framebuffer ();
+
+  for (s = disabled_shaders; s; s = s->next)
+    clutter_shader_set_is_enabled ((ClutterShader *)s->data, TRUE);
+  g_list_free (disabled_shaders);
 #else
   static gboolean warned = FALSE;
   if (warned)

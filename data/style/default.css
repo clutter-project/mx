@@ -314,6 +314,23 @@ MxSlider *#fill {
   background-color: #84dbf5;
 }
 
+MxToolbar MxSlider > MxButton
+{
+  padding: 10;
+  border-image: url("button.png") 10;
+}
+
+MxToolbar MxSlider > MxButton:hover
+{
+  border-image: url("button-hover.png") 10;
+}
+
+MxToolbar MxSlider > MxButton:active
+{
+  padding: 11 9 9 11;
+  border-image: url("button-active.png") 10;
+}
+
 MxPathBar {
   -mx-overlap: 19;
 }
