@@ -22,24 +22,30 @@
     <chapter>
       <title>Widgets</title>
       <xi:include href="xml/mx-widget.xml"/>
+      <xi:include href="xml/mx-window.xml"/>
       <xi:include href="xml/mx-button.xml"/>
       <xi:include href="xml/mx-combo-box.xml"/>
       <xi:include href="xml/mx-entry.xml"/>
+      <xi:include href="xml/mx-frame.xml"/>
       <xi:include href="xml/mx-icon.xml"/>
       <xi:include href="xml/mx-label.xml"/>
-      <xi:include href="xml/mx-popup.xml"/>
+      <xi:include href="xml/mx-menu.xml"/>
       <xi:include href="xml/mx-progress-bar.xml"/>
+      <xi:include href="xml/mx-path-bar.xml"/>
       <xi:include href="xml/mx-scroll-bar.xml"/>
       <xi:include href="xml/mx-slider.xml"/>
       <xi:include href="xml/mx-texture-frame.xml"/>
-      <xi:include href="xml/mx-tooltip.xml"/>
       <xi:include href="xml/mx-toggle.xml"/>
+      <xi:include href="xml/mx-toolbar.xml"/>
+      <xi:include href="xml/mx-tooltip.xml"/>
     </chapter>
     <chapter>
       <title>Containers</title>
-      <xi:include href="xml/mx-bin.xml"/>
       <xi:include href="xml/mx-box-layout-child.xml"/>
       <xi:include href="xml/mx-box-layout.xml"/>
+      <xi:include href="xml/mx-deform-bow-tie.xml"/>
+      <xi:include href="xml/mx-deform-page-turn.xml"/>
+      <xi:include href="xml/mx-deform-waves.xml"/>
       <xi:include href="xml/mx-expander.xml"/>
       <xi:include href="xml/mx-grid.xml"/>
       <xi:include href="xml/mx-scroll-view.xml"/>
@@ -47,6 +53,7 @@
       <xi:include href="xml/mx-table.xml"/>
       <xi:include href="xml/mx-viewport.xml"/>
       <xi:include href="xml/mx-notebook.xml"/>
+      <xi:include href="xml/mx-offscreen.xml"/>
     </chapter>
     <chapter>
       <title>Data Views</title>
@@ -57,16 +64,22 @@
       <title>Interfaces</title>
       <xi:include href="xml/mx-draggable.xml"/>
       <xi:include href="xml/mx-droppable.xml"/>
+      <xi:include href="xml/mx-focusable.xml"/>
       <xi:include href="xml/mx-item-factory.xml"/>
       <xi:include href="xml/mx-scrollable.xml"/>
       <xi:include href="xml/mx-stylable.xml"/>
     </chapter>
     <chapter>
-      <title>Types and Utilities</title>
+      <title>Abstract Types and Utilities</title>
       <xi:include href="xml/mx-action.xml"/>
+      <xi:include href="xml/mx-application.xml"/>
       <xi:include href="xml/mx-adjustment.xml"/>
-      <xi:include href="xml/mx-clipboard.xml"/>
       <xi:include href="xml/mx-button-group.xml"/>
+      <xi:include href="xml/mx-bin.xml"/>
+      <xi:include href="xml/mx-clipboard.xml"/>
+      <xi:include href="xml/mx-deform-texture.xml"/>
+      <xi:include href="xml/mx-floating-widget.xml"/>
+      <xi:include href="xml/mx-icon-theme.xml"/>
       <xi:include href="xml/mx-style.xml"/>
       <xi:include href="xml/mx-subtexture.xml"/>
       <xi:include href="xml/mx-texture-cache.xml"/>
