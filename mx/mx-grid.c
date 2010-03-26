@@ -546,9 +546,9 @@ update_adjustments (MxGrid      *self,
 }
 
 static MxFocusable*
-mx_grid_move_focus (MxFocusable *focusable,
-                          MxDirection  direction,
-                          MxFocusable *from)
+mx_grid_move_focus (MxFocusable      *focusable,
+                    MxFocusDirection  direction,
+                    MxFocusable      *from)
 {
   MxGridPrivate *priv = MX_GRID (focusable)->priv;
   GList *l, *childlink;
@@ -560,7 +560,7 @@ mx_grid_move_focus (MxFocusable *focusable,
     return NULL;
 
   /* find the next widget to focus */
-  if (direction == MX_NEXT)
+  if (direction == MX_FOCUS_DIRECTION_NEXT)
     {
       for (l = childlink->next; l; l = g_list_next (l))
         {
@@ -582,7 +582,7 @@ mx_grid_move_focus (MxFocusable *focusable,
       /* no next widgets to focus */
       return NULL;
     }
-  else if (direction == MX_PREVIOUS)
+  else if (direction == MX_FOCUS_DIRECTION_PREVIOUS)
     {
       for (l = g_list_previous (childlink); l; l = g_list_previous (l))
         {

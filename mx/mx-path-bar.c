@@ -115,18 +115,18 @@ mx_path_bar_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 }
 
 static MxFocusable *
-mx_path_bar_move_focus (MxFocusable *focusable,
-                        MxDirection  direction,
-                        MxFocusable *from)
+mx_path_bar_move_focus (MxFocusable      *focusable,
+                        MxFocusDirection  direction,
+                        MxFocusable      *from)
 {
   gint i;
   GList *c, *last;
   MxFocusable *focus_widget;
   MxPathBarPrivate *priv = MX_PATH_BAR (focusable)->priv;
 
-  if (direction == MX_UP ||
-      direction == MX_DOWN ||
-      direction == MX_OUT)
+  if (direction == MX_FOCUS_DIRECTION_UP ||
+      direction == MX_FOCUS_DIRECTION_DOWN ||
+      direction == MX_FOCUS_DIRECTION_OUT)
     return NULL;
 
   last = NULL;
@@ -141,15 +141,15 @@ mx_path_bar_move_focus (MxFocusable *focusable,
         {
           switch (direction)
             {
-            case MX_LEFT:
-            case MX_PREVIOUS:
+            case MX_FOCUS_DIRECTION_LEFT:
+            case MX_FOCUS_DIRECTION_PREVIOUS:
               if (!last)
                 return NULL;
               focus_widget = (MxFocusable *)last->data;
               break;
 
-            case MX_RIGHT:
-            case MX_NEXT:
+            case MX_FOCUS_DIRECTION_RIGHT:
+            case MX_FOCUS_DIRECTION_NEXT:
               if (c->next)
                 focus_widget = (MxFocusable *)c->next->data;
               else if (priv->editable)
@@ -169,8 +169,8 @@ mx_path_bar_move_focus (MxFocusable *focusable,
     {
       switch (direction)
         {
-        case MX_LEFT:
-        case MX_PREVIOUS:
+        case MX_FOCUS_DIRECTION_LEFT:
+        case MX_FOCUS_DIRECTION_PREVIOUS:
           if (!last)
             return NULL;
           else

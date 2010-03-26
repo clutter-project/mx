@@ -48,9 +48,9 @@ mx_focusable_get_type (void)
 }
 
 MxFocusable*
-mx_focusable_move_focus (MxFocusable *focusable,
-                         MxDirection  direction,
-                         MxFocusable *from)
+mx_focusable_move_focus (MxFocusable      *focusable,
+                         MxFocusDirection  direction,
+                         MxFocusable      *from)
 {
   MxFocusableIface *iface;
   ClutterActor *actor, *parent;

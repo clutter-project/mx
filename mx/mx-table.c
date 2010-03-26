@@ -120,9 +120,9 @@ G_DEFINE_TYPE_WITH_CODE (MxTable, mx_table, MX_TYPE_WIDGET,
                                                 mx_focusable_iface_init));
 
 static MxFocusable*
-mx_table_move_focus (MxFocusable *focusable,
-                     MxDirection  direction,
-                     MxFocusable *from)
+mx_table_move_focus (MxFocusable      *focusable,
+                     MxFocusDirection  direction,
+                     MxFocusable      *from)
 {
   MxTablePrivate *priv = MX_TABLE (focusable)->priv;
   GList *l, *childlink;
@@ -134,7 +134,7 @@ mx_table_move_focus (MxFocusable *focusable,
     return NULL;
 
   /* find the next widget to focus */
-  if (direction == MX_NEXT)
+  if (direction == MX_FOCUS_DIRECTION_NEXT)
     {
       for (l = childlink->next; l; l = g_list_next (l))
         {
@@ -153,7 +153,7 @@ mx_table_move_focus (MxFocusable *focusable,
       /* no next widgets to focus */
       return NULL;
     }
-  else if (direction == MX_PREVIOUS)
+  else if (direction == MX_FOCUS_DIRECTION_PREVIOUS)
     {
       for (l = g_list_previous (childlink); l; l = g_list_previous (l))
         {

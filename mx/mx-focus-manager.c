@@ -217,7 +217,7 @@ mx_focus_manager_event_cb (ClutterStage   *stage,
                            MxFocusManager *manager)
 {
   MxFocusHint hint;
-  MxDirection direction;
+  MxFocusDirection direction;
   MxFocusable *old_focus;
   MxFocusManagerPrivate *priv = manager->priv;
 
@@ -233,12 +233,12 @@ mx_focus_manager_event_cb (ClutterStage   *stage,
 
     if (event->key.modifier_state & CLUTTER_SHIFT_MASK)
       {
-        direction = MX_PREVIOUS;
+        direction = MX_FOCUS_DIRECTION_PREVIOUS;
         hint = MX_LAST;
       }
     else
       {
-        direction = MX_NEXT;
+        direction = MX_FOCUS_DIRECTION_NEXT;
         hint = MX_FIRST;
       }
 
@@ -256,8 +256,8 @@ mx_focus_manager_event_cb (ClutterStage   *stage,
     return TRUE;
 /*
   case CLUTTER_Right:
-    if (!mx_focusable_move_focus (focusable, MX_RIGHT))
-      result = mx_focusable_move_focus (focusable, MX_NEXT);
+    if (!mx_focusable_move_focus (focusable, MX_FOCUS_DIRECTION_RIGHT))
+      result = mx_focusable_move_focus (focusable, MX_FOCUS_DIRECTION_NEXT);
     else
       result = TRUE;
     break;
@@ -338,7 +338,7 @@ mx_focus_manager_push_focus (MxFocusManager *manager,
       if (priv->focused)
         {
           /* notify the current focusable that focus is being moved */
-          mx_focusable_move_focus (priv->focused, MX_OUT, priv->focused);
+          mx_focusable_move_focus (priv->focused, MX_FOCUS_DIRECTION_OUT, priv->focused);
         }
 
       priv->focused = mx_focusable_accept_focus (focusable, MX_FIRST);
