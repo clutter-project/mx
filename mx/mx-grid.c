@@ -569,7 +569,7 @@ mx_grid_move_focus (MxFocusable      *focusable,
               MxFocusable *focused;
 
               focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data),
-                                                   MX_FIRST);
+                                                   MX_FOCUS_HINT_FIRST);
 
               if (focused)
                 {
@@ -591,7 +591,7 @@ mx_grid_move_focus (MxFocusable      *focusable,
               MxFocusable *focused;
 
               focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data),
-                                                   MX_LAST);
+                                                   MX_FOCUS_HINT_LAST);
 
               if (focused)
                 {
@@ -617,12 +617,12 @@ mx_grid_accept_focus (MxFocusable *focusable, MxFocusHint hint)
   /* find the first/last focusable widget */
   switch (hint)
     {
-    case MX_LAST:
+    case MX_FOCUS_HINT_LAST:
       list = g_list_reverse (g_list_copy (priv->list));
       break;
 
     default:
-    case MX_FIRST:
+    case MX_FOCUS_HINT_FIRST:
       list = g_list_copy (priv->list);
       break;
     }

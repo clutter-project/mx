@@ -157,7 +157,7 @@ mx_focus_manager_start_focus (MxFocusManager *manager, MxFocusHint hint)
   children = clutter_container_get_children (CLUTTER_CONTAINER (priv->stage));
   focusable = NULL;
 
-  if (hint == MX_LAST)
+  if (hint == MX_FOCUS_HINT_LAST)
     children = g_list_reverse (children);
 
   for (l = children; l; l = g_list_next (l))
@@ -199,10 +199,10 @@ mx_focus_manager_ensure_focused (MxFocusManager *manager, ClutterStage *stage)
 
       /* if we didn't find a focusable, try any children of the stage */
       if (!actor)
-        mx_focus_manager_start_focus (manager, MX_FIRST);
+        mx_focus_manager_start_focus (manager, MX_FOCUS_HINT_FIRST);
       else
         priv->focused = mx_focusable_accept_focus (MX_FOCUSABLE (actor),
-                                                   MX_FIRST);
+                                                   MX_FOCUS_HINT_FIRST);
 
       if (priv->focused)
         g_object_notify (G_OBJECT (manager), "focused");
@@ -234,12 +234,12 @@ mx_focus_manager_event_cb (ClutterStage   *stage,
     if (event->key.modifier_state & CLUTTER_SHIFT_MASK)
       {
         direction = MX_FOCUS_DIRECTION_PREVIOUS;
-        hint = MX_LAST;
+        hint = MX_FOCUS_HINT_LAST;
       }
     else
       {
         direction = MX_FOCUS_DIRECTION_NEXT;
-        hint = MX_FIRST;
+        hint = MX_FOCUS_HINT_FIRST;
       }
 
     old_focus = priv->focused;
@@ -341,7 +341,7 @@ mx_focus_manager_push_focus (MxFocusManager *manager,
           mx_focusable_move_focus (priv->focused, MX_FOCUS_DIRECTION_OUT, priv->focused);
         }
 
-      priv->focused = mx_focusable_accept_focus (focusable, MX_FIRST);
+      priv->focused = mx_focusable_accept_focus (focusable, MX_FOCUS_HINT_FIRST);
 
       g_object_notify (G_OBJECT (manager), "focused");
     }

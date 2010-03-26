@@ -96,7 +96,7 @@ mx_path_bar_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 
   if (priv->current_level)
     {
-      if (hint == MX_LAST)
+      if (hint == MX_FOCUS_HINT_LAST)
         {
           if (priv->editable)
             focus_widget = MX_FOCUSABLE (priv->entry);
@@ -190,7 +190,7 @@ mx_path_bar_move_focus (MxFocusable      *focusable,
       focus_widget = (MxFocusable *)priv->entry;
     }
 
-  return mx_focusable_accept_focus (focus_widget, MX_FIRST);
+  return mx_focusable_accept_focus (focus_widget, MX_FOCUS_HINT_FIRST);
 }
 
 static void
