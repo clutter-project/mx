@@ -155,9 +155,9 @@ mx_button_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 }
 
 static MxFocusable*
-mx_button_move_focus (MxFocusable *focusable,
-                      MxDirection  direction,
-                      MxFocusable *from)
+mx_button_move_focus (MxFocusable      *focusable,
+                      MxFocusDirection  direction,
+                      MxFocusable      *from)
 {
   /* check if focus is being moved from us */
   if (focusable == from)

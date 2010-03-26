@@ -546,9 +546,9 @@ update_adjustments (MxGrid      *self,
 }
 
 static MxFocusable*
-mx_grid_move_focus (MxFocusable *focusable,
-                          MxDirection  direction,
-                          MxFocusable *from)
+mx_grid_move_focus (MxFocusable      *focusable,
+                    MxFocusDirection  direction,
+                    MxFocusable      *from)
 {
   MxGridPrivate *priv = MX_GRID (focusable)->priv;
   GList *l, *childlink;
@@ -560,7 +560,7 @@ mx_grid_move_focus (MxFocusable *focusable,
     return NULL;
 
   /* find the next widget to focus */
-  if (direction == MX_NEXT)
+  if (direction == MX_FOCUS_DIRECTION_NEXT)
     {
       for (l = childlink->next; l; l = g_list_next (l))
         {
@@ -569,7 +569,7 @@ mx_grid_move_focus (MxFocusable *focusable,
               MxFocusable *focused;
 
               focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data),
-                                                   MX_FIRST);
+                                                   MX_FOCUS_HINT_FIRST);
 
               if (focused)
                 {
@@ -582,7 +582,7 @@ mx_grid_move_focus (MxFocusable *focusable,
       /* no next widgets to focus */
       return NULL;
     }
-  else if (direction == MX_PREVIOUS)
+  else if (direction == MX_FOCUS_DIRECTION_PREVIOUS)
     {
       for (l = g_list_previous (childlink); l; l = g_list_previous (l))
         {
@@ -591,7 +591,7 @@ mx_grid_move_focus (MxFocusable *focusable,
               MxFocusable *focused;
 
               focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data),
-                                                   MX_LAST);
+                                                   MX_FOCUS_HINT_LAST);
 
               if (focused)
                 {
@@ -617,12 +617,12 @@ mx_grid_accept_focus (MxFocusable *focusable, MxFocusHint hint)
   /* find the first/last focusable widget */
   switch (hint)
     {
-    case MX_LAST:
+    case MX_FOCUS_HINT_LAST:
       list = g_list_reverse (g_list_copy (priv->list));
       break;
 
     default:
-    case MX_FIRST:
+    case MX_FOCUS_HINT_FIRST:
       list = g_list_copy (priv->list);
       break;
     }

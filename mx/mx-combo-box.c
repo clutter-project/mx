@@ -687,9 +687,9 @@ mx_combo_box_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 }
 
 static MxFocusable *
-mx_combo_box_move_focus (MxFocusable *focusable,
-                         MxDirection  direction,
-                         MxFocusable *from)
+mx_combo_box_move_focus (MxFocusable      *focusable,
+                         MxFocusDirection  direction,
+                         MxFocusable      *from)
 {
   if (focusable == from)
     {

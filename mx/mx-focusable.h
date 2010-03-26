@@ -45,19 +45,19 @@ typedef struct _MxFocusableIface MxFocusableIface;
 
 typedef enum
 {
-  MX_OUT,
-  MX_UP,
-  MX_DOWN,
-  MX_LEFT,
-  MX_RIGHT,
-  MX_NEXT,
-  MX_PREVIOUS
-} MxDirection;
+  MX_FOCUS_DIRECTION_OUT,
+  MX_FOCUS_DIRECTION_UP,
+  MX_FOCUS_DIRECTION_DOWN,
+  MX_FOCUS_DIRECTION_LEFT,
+  MX_FOCUS_DIRECTION_RIGHT,
+  MX_FOCUS_DIRECTION_NEXT,
+  MX_FOCUS_DIRECTION_PREVIOUS
+} MxFocusDirection;
 
 typedef enum
 {
-  MX_FIRST,
-  MX_LAST
+  MX_FOCUS_HINT_FIRST,
+  MX_FOCUS_HINT_LAST
 } MxFocusHint;
 
 struct _MxFocusableIface
@@ -66,16 +66,16 @@ struct _MxFocusableIface
 
   MxFocusable* (*accept_focus) (MxFocusable *focusable,
                                 MxFocusHint  hint);
-  MxFocusable* (*move_focus)   (MxFocusable *focusable,
-                                MxDirection  direction,
-                                MxFocusable *from);
+  MxFocusable* (*move_focus)   (MxFocusable      *focusable,
+                                MxFocusDirection  direction,
+                                MxFocusable      *from);
 };
 
 GType mx_focusable_get_type (void) G_GNUC_CONST;
 
-MxFocusable* mx_focusable_move_focus   (MxFocusable *focusable,
-                                        MxDirection  direction,
-                                        MxFocusable *from);
+MxFocusable* mx_focusable_move_focus   (MxFocusable      *focusable,
+                                        MxFocusDirection  direction,
+                                        MxFocusable      *from);
 MxFocusable* mx_focusable_accept_focus (MxFocusable *focusable,
                                         MxFocusHint  hint);
 
