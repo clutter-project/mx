@@ -617,8 +617,6 @@ MxProgressBarPrivate
 
 <SECTION>
 <FILE>mx-stylable</FILE>
-MX_STYLABLE_IFACE
-MX_IS_STYLABLE_IFACE
 MxStyleChangedFlags
 MxStylableIface
 mx_stylable_iface_install_property
@@ -640,6 +638,8 @@ mx_stylable_style_changed
 mx_stylable_connect_change_notifiers
 mx_stylable_apply_clutter_text_attributes
 <SUBSECTION Standard>
+MX_STYLABLE_IFACE
+MX_IS_STYLABLE_IFACE
 MX_STYLABLE
 MX_IS_STYLABLE
 MX_TYPE_STYLABLE
@@ -1226,8 +1226,6 @@ mx_actor_box_clamp_to_pixels
 
 <SECTION>
 <FILE>mx-types</FILE>
-MX_TYPE_BORDER_IMAGE
-MX_TYPE_PADDING
 MxBorderImage
 MxPadding
 mx_border_image_get_type
@@ -1238,6 +1236,9 @@ MxAlign
 MxFontWeight
 MxScrollPolicy
 MxOrientation
+<SUBSECTION Standard>
+MX_TYPE_BORDER_IMAGE
+MX_TYPE_PADDING
 </SECTION>
 
 <SECTION>
