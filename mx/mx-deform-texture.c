@@ -253,14 +253,16 @@ mx_deform_texture_paint (ClutterActor *actor)
   front_material = back_material = NULL;
   if (priv->front)
     {
-      if (MX_IS_OFFSCREEN (priv->front))
+      if (MX_IS_OFFSCREEN (priv->front) &&
+          mx_offscreen_get_auto_update (MX_OFFSCREEN (priv->front)))
         mx_offscreen_update (MX_OFFSCREEN (priv->front));
       front_material =
         clutter_texture_get_cogl_material (CLUTTER_TEXTURE (priv->front));
     }
   if (priv->back)
     {
-      if (MX_IS_OFFSCREEN (priv->back))
+      if (MX_IS_OFFSCREEN (priv->back) &&
+          mx_offscreen_get_auto_update (MX_OFFSCREEN (priv->back)))
         mx_offscreen_update (MX_OFFSCREEN (priv->back));
       back_material =
         clutter_texture_get_cogl_material (CLUTTER_TEXTURE (priv->back));
