@@ -12,10 +12,9 @@ msgstr ""
 "X-Poedit-Language: German\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-# context ???
 #: ../mx/mx-application.c:311
 msgid "Raise application"
-msgstr "Anwendung anheben"
+msgstr "Anwendung nach vorn bringen"
 
 #: ../mx/mx-gtk-light-switch.c:96
 msgid "Unavailable"
