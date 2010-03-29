@@ -271,15 +271,32 @@ mx_icon_theme_hash (GThemedIcon *icon)
 static void
 mx_icon_theme_init (MxIconTheme *self)
 {
+  gint i;
   gchar *path;
   const gchar *theme;
+  const gchar *datadir;
+  const gchar * const *datadirs;
+
   MxIconThemePrivate *priv = self->priv = ICON_THEME_PRIVATE (self);
 
-  /* These three paths are named in the icon theme spec */
-  path = g_build_filename (G_DIR_SEPARATOR_S, "usr", "share", "pixmaps", NULL);
-  priv->search_paths = g_list_prepend (priv->search_paths, path);
+  /* /usr/share/pixmaps, /usr/share/icons and $HOME/.icons are named in the
+   * icon theme spec, but we'll interpret this to look in the system data
+   * dirs, as most other (well, gtk) toolkits do.
+   */
+  datadirs = g_get_system_data_dirs ();
+  for (i = 0; datadirs[i]; i++)
+    {
+      datadir = datadirs[i];
+      path = g_build_filename (G_DIR_SEPARATOR_S, datadir, "pixmaps", NULL);
+      priv->search_paths = g_list_prepend (priv->search_paths, path);
+      path = g_build_filename (G_DIR_SEPARATOR_S, datadir, "icons", NULL);
+      priv->search_paths = g_list_prepend (priv->search_paths, path);
+    }
 
-  path = g_build_filename (G_DIR_SEPARATOR_S, "usr", "share", "icons", NULL);
+  datadir = g_get_user_data_dir ();
+  path = g_build_filename (G_DIR_SEPARATOR_S, datadir, "pixmaps", NULL);
+  priv->search_paths = g_list_prepend (priv->search_paths, path);
+  path = g_build_filename (G_DIR_SEPARATOR_S, datadir, "icons", NULL);
   priv->search_paths = g_list_prepend (priv->search_paths, path);
 
   path = g_build_filename (g_get_home_dir (), ".icons", NULL);
