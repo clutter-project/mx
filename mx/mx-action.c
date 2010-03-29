@@ -198,6 +198,13 @@ mx_action_class_init (MxActionClass *klass)
                                                          G_PARAM_STATIC_NICK |
                                                          G_PARAM_STATIC_BLURB));
 
+  /**
+   * MxAction::activated
+   * @action: the object that received the signal
+   *
+   * Emitted when the MxAction is activated.
+   *
+   */
   signals[ACTIVATED] =
     g_signal_new ("activated",
                   G_TYPE_FROM_CLASS (klass),
@@ -410,7 +417,7 @@ mx_action_set_display_name (MxAction    *action,
  */
 void
 mx_action_set_icon (MxAction    *action,
-                    const gchar *icon)
+                    const gchar *name)
 {
   MxActionPrivate *priv;
 
@@ -418,10 +425,10 @@ mx_action_set_icon (MxAction    *action,
 
   priv = action->priv;
 
-  if (g_strcmp0 (priv->icon, icon))
+  if (g_strcmp0 (priv->icon, name))
     {
       g_free (priv->icon);
-      priv->icon = g_strdup (icon);
+      priv->icon = g_strdup (name);
 
       g_object_notify (G_OBJECT (action), "icon");
     }
