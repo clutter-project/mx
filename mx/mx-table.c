@@ -1546,7 +1546,7 @@ mx_table_set_column_spacing (MxTable *table,
 
       clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
 
-      g_object_notify (G_OBJECT (table), "col-spacing");
+      g_object_notify (G_OBJECT (table), "column-spacing");
     }
 }
 
