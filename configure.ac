@@ -1,5 +1,5 @@
 m4_define([mx_major], [0])
-m4_define([mx_minor], [9])
+m4_define([mx_minor], [99])
 m4_define([mx_micro], [0])
 
 m4_define([mx_version], [mx_major.mx_minor.mx_micro])
@@ -102,10 +102,13 @@ AS_IF([test "x$enable_maintainer_flags" = "xyes"],
                           ["-Werror -Wall -Wshadow -Wcast-align
                             -Wno-uninitialized -Wempty-body -Wformat-security
                             -Winit-self -Wmissing-declarations
-                            -Wredundant-decls"])
+                            -Wredundant-decls
+                            -DMX_DISABLE_DEPRECATED"])
       ],
       [
-        AS_COMPILER_FLAGS([MX_MAINTAINER_CFLAGS], ["-Wall"])
+        AS_COMPILER_FLAGS([MX_MAINTAINER_CFLAGS],
+                          ["-Wall
+                            -DMX_DISABLE_DEPRECATED"])
       ]
 )
 
