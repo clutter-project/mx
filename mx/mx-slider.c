@@ -352,8 +352,12 @@ mx_slider_get_preferred_width (ClutterActor *actor,
   /* Set the size of the handle + padding */
   if (min_width_p)
     *min_width_p = priv->handle_width + padding.left + padding.right;
+
+  /* Set the preferred size as some arbitrary value larger than the handle 
+   * width. This ensures the slider can actually move!
+   */
   if (nat_width_p)
-    *nat_width_p = priv->handle_width + padding.left + padding.right;
+    *nat_width_p = (priv->handle_width * 4) + padding.left + padding.right;
 }
 
 static void
