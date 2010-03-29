@@ -336,6 +336,7 @@ mx_entry_get_preferred_width (ClutterActor *actor,
   MxEntryPrivate *priv = MX_ENTRY_PRIV (actor);
   MxPadding padding;
   gfloat icon_w;
+  gfloat entry_height;
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
@@ -344,6 +345,12 @@ mx_entry_get_preferred_width (ClutterActor *actor,
   clutter_actor_get_preferred_width (priv->entry, for_height,
                                      min_width_p,
                                      natural_width_p);
+  clutter_actor_get_preferred_height (priv->entry, -1,
+                                      NULL, &entry_height);
+
+  /* ensure the preferred width is at least large enough to be useful */
+  if (natural_width_p)
+    *natural_width_p = MAX ((entry_height * 6), *natural_width_p);
 
   if (priv->primary_icon)
     {

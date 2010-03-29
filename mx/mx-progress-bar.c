@@ -190,18 +190,27 @@ mx_progress_bar_get_preferred_width (ClutterActor *actor,
 {
   MxPadding padding;
   MxProgressBarPrivate *priv = MX_PROGRESS_BAR (actor)->priv;
+  gfloat height;
 
   clutter_actor_get_preferred_width (priv->fill,
                                      for_height,
                                      min_width_p,
                                      nat_width_p);
 
+  clutter_actor_get_preferred_height (priv->fill,
+                                      -1,
+                                      &height,
+                                      NULL);
+
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
   if (min_width_p)
     *min_width_p += padding.left + padding.right;
+
+  /* Add an arbitrary amount to the width for preferred width, so that the
+   * indicator is visible and can display some values */
   if (nat_width_p)
-    *nat_width_p += padding.left + padding.right;
+    *nat_width_p += padding.left + padding.right + height * 4;
 }
 
 static void
