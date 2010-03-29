@@ -35,17 +35,17 @@ static PropertyInfo properties_info [3] =
 };
 
 static void
-on_progress_changed (MxSlider     *slider,
+on_value_changed (MxSlider     *slider,
                      GParamSpec   *pspec,
                      PropertyInfo *info)
 {
-  gdouble progress;
+  gdouble value;
   char *label;
 
-  progress = mx_slider_get_progress (slider);
-  progress *= info->factor;
-  g_object_set (info->texture, info->name, progress, NULL);
-  label = g_strdup_printf ("%.2f", progress);
+  value = mx_slider_get_value (slider);
+  value *= info->factor;
+  g_object_set (info->texture, info->name, value, NULL);
+  label = g_strdup_printf ("%.2f", value);
   mx_label_set_text (MX_LABEL (info->value_label), label);
   g_free (label);
 }
@@ -125,8 +125,8 @@ main (int argc, char *argv[])
   slider = mx_slider_new ();
   properties_info[0].value_label = mx_label_new_with_text ("0.0");
   clutter_actor_set_width (slider, 200);
-  g_signal_connect (slider, "notify::progress",
-                    G_CALLBACK (on_progress_changed), &properties_info[0]);
+  g_signal_connect (slider, "notify::value",
+                    G_CALLBACK (on_value_changed), &properties_info[0]);
   mx_table_add_actor_with_properties (MX_TABLE (table),
                                       label,
                                       1, 0,
@@ -159,8 +159,8 @@ main (int argc, char *argv[])
   slider = mx_slider_new ();
   properties_info[1].value_label = mx_label_new_with_text ("0.00");
   clutter_actor_set_width (slider, 200);
-  g_signal_connect (slider, "notify::progress",
-                    G_CALLBACK (on_progress_changed), &properties_info[1]);
+  g_signal_connect (slider, "notify::value",
+                    G_CALLBACK (on_value_changed), &properties_info[1]);
   mx_table_add_actor_with_properties (MX_TABLE (table),
                                       label,
                                       2, 0,
@@ -194,9 +194,9 @@ main (int argc, char *argv[])
   slider = mx_slider_new ();
   properties_info[2].value_label = mx_label_new_with_text ("24.00");
   clutter_actor_set_width (slider, 200);
-  mx_slider_set_progress (MX_SLIDER (slider), 0.24);
-  g_signal_connect (slider, "notify::progress",
-                    G_CALLBACK (on_progress_changed), &properties_info[2]);
+  mx_slider_set_value (MX_SLIDER (slider), 0.24);
+  g_signal_connect (slider, "notify::value",
+                    G_CALLBACK (on_value_changed), &properties_info[2]);
   mx_table_add_actor_with_properties (MX_TABLE (table),
                                       label,
                                       3, 0,

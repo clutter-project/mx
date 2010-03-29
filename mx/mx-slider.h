@@ -82,9 +82,9 @@ GType           mx_slider_get_type      (void) G_GNUC_CONST;
 
 ClutterActor *  mx_slider_new           (void);
 
-void            mx_slider_set_progress  (MxSlider *bar,
-                                         gdouble   progress);
-gdouble         mx_slider_get_progress  (MxSlider *bar);
+void            mx_slider_set_value  (MxSlider *bar,
+                                      gdouble   value);
+gdouble         mx_slider_get_value  (MxSlider *bar);
 
 G_END_DECLS
 

@@ -70,14 +70,14 @@ struct _MxSliderPrivate
   guint         handle_width;
   guint         handle_height;
 
-  gdouble       progress;
+  gdouble       value;
 };
 
 enum
 {
   PROP_0,
 
-  PROP_PROGRESS
+  PROP_VALUE
 };
 
 static void
@@ -86,7 +86,7 @@ drag_handle (MxSlider *bar,
              gfloat    y)
 {
   MxSliderPrivate *priv = bar->priv;
-  gdouble progress;
+  gdouble value;
   gfloat ux, pos, handle_width_2, fill_size, offset;
 
   if (!clutter_actor_transform_stage_point (CLUTTER_ACTOR (bar),
@@ -106,8 +106,8 @@ drag_handle (MxSlider *bar,
   pos = ux - priv->handle_middle_start + offset;
   pos = CLAMP (pos, 0, fill_size);
 
-  progress = pos / fill_size;
-  mx_slider_set_progress (bar, progress);
+  value = pos / fill_size;
+  mx_slider_set_value (bar, value);
 }
 
 static gboolean
@@ -161,7 +161,7 @@ move_handle (MxSlider *bar,
              gfloat    y)
 {
   MxSliderPrivate *priv = bar->priv;
-  gdouble progress;
+  gdouble value;
   gfloat ux, pos, fill_size;
 
   if (!clutter_actor_transform_stage_point (CLUTTER_ACTOR (bar),
@@ -177,8 +177,8 @@ move_handle (MxSlider *bar,
   pos = ux - priv->handle_middle_start;
   pos = CLAMP (pos, 0, fill_size);
 
-  progress = pos / fill_size;
-  mx_slider_set_progress (bar, progress);
+  value = pos / fill_size;
+  mx_slider_set_value (bar, value);
 }
 
 static gboolean
@@ -315,7 +315,7 @@ mx_slider_paint (ClutterActor *actor)
 
   clutter_actor_paint (priv->trough_bg);
 
-  if (priv->progress)
+  if (priv->value)
     clutter_actor_paint (priv->fill);
 
   clutter_actor_paint (priv->trough);
@@ -406,7 +406,7 @@ mx_slider_allocate_fill_handle (MxSlider               *self,
   fill_box.x1 = padding.left;
   fill_box.y1 = priv->trough_box_y1;
   fill_box.x2 = ((box->x2 - box->x1 - padding.left - padding.right -
-                  priv->handle_width) * priv->progress) + padding.left +
+                  priv->handle_width) * priv->value) + padding.left +
                   handle_width_2;
   fill_box.x2 = CLAMP (fill_box.x2,
                        priv->handle_middle_start,
@@ -543,8 +543,8 @@ mx_slider_get_property (GObject    *object,
 
   switch (property_id)
     {
-    case PROP_PROGRESS:
-      g_value_set_double (value, mx_slider_get_progress (self));
+    case PROP_VALUE:
+      g_value_set_double (value, mx_slider_get_value (self));
       break;
 
     default:
@@ -562,8 +562,8 @@ mx_slider_set_property (GObject      *object,
 
   switch (property_id)
     {
-    case PROP_PROGRESS:
-      mx_slider_set_progress (self, g_value_get_double (value));
+    case PROP_VALUE:
+      mx_slider_set_value (self, g_value_get_double (value));
       break;
 
     default:
@@ -636,11 +636,11 @@ mx_slider_class_init (MxSliderClass *klass)
   actor_class->map = mx_slider_map;
   actor_class->unmap = mx_slider_unmap;
 
-  pspec = g_param_spec_double ("progress",
-                               "Progress",
-                               "Progress",
+  pspec = g_param_spec_double ("value",
+                               "Value",
+                               "Value",
                                0.0, 1.0, 0.0, G_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_PROGRESS, pspec);
+  g_object_class_install_property (object_class, PROP_VALUE, pspec);
 }
 
 static void
@@ -732,49 +732,49 @@ mx_slider_new (void)
 }
 
 /**
- * mx_slider_set_progress:
- * @bar: A #MxProgressBar
- * @progress: A value between 0.0 and 1.0
+ * mx_slider_set_value:
+ * @bar: A #MxSlider
+ * @value: A value between 0.0 and 1.0
  *
- * Set the progress of the slider
+ * Set the value of the slider
  */
 void
-mx_slider_set_progress (MxSlider *bar,
-                        gdouble      progress)
+mx_slider_set_value (MxSlider *bar,
+                     gdouble   value)
 {
   MxSliderPrivate *priv = bar->priv;
 
   g_return_if_fail (MX_IS_SLIDER (bar));
 
-  if (priv->progress == progress)
+  if (priv->value == value)
     return;
 
-  if (G_UNLIKELY ((progress < 0.0) || (progress > 1.0)))
+  if (G_UNLIKELY ((value < 0.0) || (value > 1.0)))
     {
-      g_warning ("progress must be a number between 0.0 and 1.0");
+      g_warning ("MxSlider:value must be a number between 0.0 and 1.0");
       return;
     }
 
-  priv->progress = progress;
+  priv->value = value;
 
   mx_slider_allocate_fill_handle (bar, NULL, 0);
   clutter_actor_queue_redraw (CLUTTER_ACTOR (bar));
 
-  g_object_notify (G_OBJECT (bar), "progress");
+  g_object_notify (G_OBJECT (bar), "value");
 }
 
 /**
- * mx_slider_get_progress:
- * @bar: A #MxProgressBar
+ * mx_slider_get_value:
+ * @bar: A #MxSlider
  *
- * Retrieve the current progress of the media bar
+ * Retrieve the current value of the media bar
  *
  * Returns: gdouble
  */
 gdouble
-mx_slider_get_progress (MxSlider *bar)
+mx_slider_get_value (MxSlider *bar)
 {
   g_return_val_if_fail (MX_IS_SLIDER (bar), 0.0);
 
-  return bar->priv->progress;
+  return bar->priv->value;
 }

@@ -42,14 +42,14 @@ size_change_cb (ClutterActor *texture,
 }
 
 static void
-progress_cb (MxSlider     *slider,
+value_cb (MxSlider     *slider,
              GParamSpec   *pspec,
              ClutterActor *actor)
 {
-  gdouble progress = mx_slider_get_progress (slider);
-  if (progress < 1.0/3.0)
+  gdouble value = mx_slider_get_value (slider);
+  if (value < 1.0/3.0)
     clutter_actor_set_shader_param_int (actor, "radius", 1);
-  else if (progress > 2.0/3.0)
+  else if (value > 2.0/3.0)
     clutter_actor_set_shader_param_int (actor, "radius", 3);
   else
     clutter_actor_set_shader_param_int (actor, "radius", 2);
@@ -112,10 +112,10 @@ main (int argc, char **argv)
   clutter_container_add_actor (
     CLUTTER_CONTAINER (mx_window_get_toolbar (window)), slider);
   mx_bin_set_fill (MX_BIN (mx_window_get_toolbar (window)), TRUE, FALSE);
-  g_signal_connect (slider, "notify::progress",
-                    G_CALLBACK (progress_cb), texture);
-  g_signal_connect (slider, "notify::progress",
-                    G_CALLBACK (progress_cb), offscreen);
+  g_signal_connect (slider, "notify::value",
+                    G_CALLBACK (value_cb), texture);
+  g_signal_connect (slider, "notify::value",
+                    G_CALLBACK (value_cb), offscreen);
 
   g_signal_connect (window, "destroy",
                     G_CALLBACK (clutter_main_quit), NULL);

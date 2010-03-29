@@ -21,15 +21,15 @@
 #include "test-mx.h"
 
 static void
-on_progress_changed (MxSlider         *slider,
-                     GParamSpec       *pspec,
-                     ClutterRectangle *rectangle)
+on_value_changed (MxSlider         *slider,
+                  GParamSpec       *pspec,
+                  ClutterRectangle *rectangle)
 {
   ClutterColor color = {0xff, 0, 0, 0xff};
-  gdouble progress;
+  gdouble value;
 
-  progress = mx_slider_get_progress (slider);
-  color.alpha = (guint8) (progress * 0xff);
+  value = mx_slider_get_value (slider);
+  color.alpha = (guint8) (value * 0xff);
   clutter_rectangle_set_color (rectangle, &color);
 }
 
@@ -42,8 +42,8 @@ slider_main (ClutterContainer *stage)
   slider = mx_slider_new ();
   rectangle = clutter_rectangle_new_with_color (&color);
 
-  g_signal_connect (slider, "notify::progress",
-                    G_CALLBACK (on_progress_changed), rectangle);
+  g_signal_connect (slider, "notify::value",
+                    G_CALLBACK (on_value_changed), rectangle);
 
   clutter_container_add_actor (stage, slider);
   clutter_actor_set_width (slider, 280);
