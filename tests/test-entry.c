@@ -17,11 +17,16 @@
  * Boston, MA 02111-1307, USA.
  *
  */
-#ifdef HAVE_CLUTTER_IMCONTEXT
-#include <clutter-imcontext/clutter-imtext.h>
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
 #endif
 
 #include "test-mx.h"
+
+#ifdef HAVE_CLUTTER_IMCONTEXT
+#include <clutter-imcontext/clutter-imtext.h>
+#endif
 
 static void
 btn_clicked_cb (ClutterActor *button, MxEntry *entry)

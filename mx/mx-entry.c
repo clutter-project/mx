@@ -956,7 +956,7 @@ mx_entry_init (MxEntry *entry)
 
   priv = entry->priv = MX_ENTRY_GET_PRIVATE (entry);
 
-#ifdef HAVE_CLUTTER_IM_CONTEXT
+#ifdef HAVE_CLUTTER_IMCONTEXT
   priv->entry = g_object_new (CLUTTER_TYPE_IMTEXT,
 #else
   priv->entry = g_object_new (CLUTTER_TYPE_TEXT,
