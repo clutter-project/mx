@@ -1,3 +1,31 @@
+0.99.0
+======
+
+Changes since 0.9.0:
+
+ * Deprecated API has been disabled
+ * Rename MxSlider "progress" property to "value"
+ * IconTheme: look in the system and user data directories
+ * Set arbitrary preferred widths for ProgressBar, Slider and Entry, so that
+   they are useful and usable when allocated their preferred size.
+ * Simplify the offscreen shaders API in MxOffscreen
+ * Convert the MxNotebook API to be actor based, rather than index based
+ * Ensure that all enumeration types are namespaced properly
+ * MxWindow icon can now be set from a cogl texture
+ * Add function to retrieve the associated MxWindow from an ClutterStage
+ * Fix type inconsistencies in MxTableChild properties (x/y-align)
+ * Various updates to documentation
+
+Updated translations:
+
+  German (de) translation (Andreas Machoy)
+
+Many thanks to:
+
+  Thomas Wood
+  Chris Lord
+
+
 0.9.0
 ====
 
