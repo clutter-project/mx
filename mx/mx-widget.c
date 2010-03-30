@@ -70,6 +70,8 @@ struct _MxWidgetPrivate
   MxMenu       *menu;
 
   guint         long_press_source;
+
+  guint         tooltip_timeout;
 };
 
 /**
@@ -108,6 +110,9 @@ static guint widget_signals[LAST_SIGNAL] = { 0, };
 
 static void mx_stylable_iface_init (MxStylableIface *iface);
 
+/* Length of time in milliseconds that the cursor must be held steady
+   over a widget before the tooltip is displayed */
+#define MX_WIDGET_TOOLTIP_TIMEOUT 500
 
 G_DEFINE_ABSTRACT_TYPE_WITH_CODE (MxWidget, mx_widget, CLUTTER_TYPE_ACTOR,
                                   G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
@@ -197,6 +202,45 @@ mx_widget_get_property (GObject    *gobject,
     }
 }
 
+static gboolean
+mx_widget_tooltip_timeout_cb (gpointer data)
+{
+  MxWidget *self = MX_WIDGET (data);
+  MxWidgetPrivate *priv = self->priv;
+
+  mx_widget_show_tooltip (self);
+
+  priv->tooltip_timeout = 0;
+
+  return FALSE;
+}
+
+static void
+mx_widget_remove_tooltip_timeout (MxWidget *widget)
+{
+  MxWidgetPrivate *priv = widget->priv;
+
+  if (priv->tooltip_timeout)
+    {
+      g_source_remove (priv->tooltip_timeout);
+      priv->tooltip_timeout = 0;
+    }
+}
+
+static void
+mx_widget_set_tooltip_timeout (MxWidget *widget)
+{
+  MxWidgetPrivate *priv = widget->priv;
+
+  /* Remove any existing tooltip timeout so that we can start again */
+  mx_widget_remove_tooltip_timeout (widget);
+
+  priv->tooltip_timeout =
+    clutter_threads_add_timeout (MX_WIDGET_TOOLTIP_TIMEOUT,
+                                 mx_widget_tooltip_timeout_cb,
+                                 widget);
+}
+
 static void
 mx_widget_dispose (GObject *gobject)
 {
@@ -248,6 +292,8 @@ static void
 mx_widget_finalize (GObject *gobject)
 {
   MxWidgetPrivate *priv = MX_WIDGET (gobject)->priv;
+
+  mx_widget_remove_tooltip_timeout (MX_WIDGET (gobject));
 
   g_free (priv->style_class);
   g_free (priv->pseudo_class);
@@ -743,9 +789,6 @@ mx_widget_enter (ClutterActor         *actor,
   if (event->source != actor)
     return FALSE;
 
-  if (priv->tooltip)
-    mx_widget_show_tooltip (widget);
-
   if (mx_widget_get_disabled (MX_WIDGET (actor)))
       return TRUE;
 
@@ -765,14 +808,32 @@ mx_widget_leave (ClutterActor         *actor,
   if (event->source != actor)
     return FALSE;
 
-  if (priv->tooltip)
-    mx_tooltip_hide (priv->tooltip);
+  mx_widget_hide_tooltip (widget);
 
   if (mx_widget_get_disabled (MX_WIDGET (actor)))
       return TRUE;
 
   mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "");
   priv->is_hovered = FALSE;
+
+  return FALSE;
+}
+
+static gboolean
+mx_widget_motion (ClutterActor       *actor,
+                  ClutterMotionEvent *event)
+{
+  MxWidget *widget = MX_WIDGET (actor);
+  MxWidgetPrivate *priv = widget->priv;
+
+  if (priv->tooltip && !CLUTTER_ACTOR_IS_VISIBLE (priv->tooltip))
+    {
+      /* If tooltips are in browse mode then display the tooltip immediately */
+      if (mx_tooltip_is_in_browse_mode ())
+        mx_widget_show_tooltip (widget);
+      else
+        mx_widget_set_tooltip_timeout (widget);
+    }
 
   return FALSE;
 }
@@ -884,8 +945,7 @@ mx_widget_hide (ClutterActor *actor)
   MxWidget *widget = (MxWidget *) actor;
 
   /* hide the tooltip, if there is one */
-  if (widget->priv->tooltip)
-    mx_tooltip_hide (widget->priv->tooltip);
+  mx_widget_hide_tooltip (widget);
 
   CLUTTER_ACTOR_CLASS (mx_widget_parent_class)->hide (actor);
 }
@@ -980,6 +1040,7 @@ mx_widget_class_init (MxWidgetClass *klass)
 
   actor_class->enter_event = mx_widget_enter;
   actor_class->leave_event = mx_widget_leave;
+  actor_class->motion_event = mx_widget_motion;
   actor_class->button_press_event = mx_widget_button_press;
   actor_class->button_release_event = mx_widget_button_release;
 
@@ -1329,6 +1390,8 @@ mx_widget_set_has_tooltip (MxWidget *widget,
           clutter_actor_unparent (CLUTTER_ACTOR (priv->tooltip));
           priv->tooltip = NULL;
         }
+
+      mx_widget_remove_tooltip_timeout (widget);
     }
 }
 
@@ -1414,6 +1477,9 @@ mx_widget_show_tooltip (MxWidget *widget)
 
   g_return_if_fail (MX_IS_WIDGET (widget));
 
+  /* Remove any timeout so we don't show the tooltip again */
+  mx_widget_remove_tooltip_timeout (widget);
+
   /* XXX not necceary, but first allocate transform is wrong */
 
   /* Work out the bounding box */
@@ -1458,6 +1524,8 @@ void
 mx_widget_hide_tooltip (MxWidget *widget)
 {
   g_return_if_fail (MX_IS_WIDGET (widget));
+
+  mx_widget_remove_tooltip_timeout (widget);
 
   if (widget->priv->tooltip)
     mx_tooltip_hide (widget->priv->tooltip);

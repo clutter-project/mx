@@ -72,6 +72,13 @@ struct _MxTooltipPrivate
   gfloat           angle;
 };
 
+/* Time in milliseconds after a tooltip is hidden before disabling
+   browse mode */
+#define MX_TOOLTIP_BROWSE_MODE_TIMEOUT 500
+
+static gboolean mx_tooltip_in_browse_mode = FALSE;
+static guint mx_tooltip_browse_mode_timeout = 0;
+
 G_DEFINE_TYPE (MxTooltip, mx_tooltip, MX_TYPE_FLOATING_WIDGET);
 
 static void
@@ -751,6 +758,23 @@ mx_tooltip_show (MxTooltip *tooltip)
                          "scale-x", 1.0,
                          "scale-y", 1.0,
                          NULL);
+
+  /* Enter browse mode */
+  mx_tooltip_in_browse_mode = TRUE;
+  /* Disable any previous queued attempts to leave browse mode */
+  if (mx_tooltip_browse_mode_timeout)
+    {
+      g_source_remove (mx_tooltip_browse_mode_timeout);
+      mx_tooltip_browse_mode_timeout = 0;
+    }
+}
+
+static gboolean
+mx_tooltip_browse_mode_timeout_cb (gpointer data)
+{
+  mx_tooltip_in_browse_mode = FALSE;
+  mx_tooltip_browse_mode_timeout = 0;
+  return FALSE;
 }
 
 static void
@@ -792,6 +816,14 @@ mx_tooltip_hide (MxTooltip *tooltip)
                            NULL);
   g_signal_connect (animation, "completed",
                     G_CALLBACK (mx_tooltip_hide_complete), tooltip);
+
+  /* Leave browse mode after a short delay */
+  if (mx_tooltip_browse_mode_timeout)
+    g_source_remove (mx_tooltip_browse_mode_timeout);
+  mx_tooltip_browse_mode_timeout =
+    g_timeout_add (MX_TOOLTIP_BROWSE_MODE_TIMEOUT,
+                   mx_tooltip_browse_mode_timeout_cb,
+                   NULL);
 }
 
 /**
@@ -827,4 +859,21 @@ mx_tooltip_get_tip_area (MxTooltip *tooltip)
   g_return_val_if_fail (MX_IS_TOOLTIP (tooltip), NULL);
 
   return tooltip->priv->tip_area;
+}
+
+/**
+ * mx_tooltip_is_in_browse_mode:
+ *
+ * Browse mode is entered whenever a tooltip is displayed and it is
+ * left after a short delay when a tooltip is hidden. This is used to
+ * make tooltips display quicker when a previous tooltip is already
+ * displayed.
+ *
+ * Returns: %TRUE if the app is in tooltip browse mode or %FALSE
+ * otherwise.
+ */
+gboolean
+mx_tooltip_is_in_browse_mode (void)
+{
+  return mx_tooltip_in_browse_mode;
 }

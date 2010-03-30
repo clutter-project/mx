@@ -384,10 +384,6 @@ mx_button_enter (ClutterActor         *actor,
   if (event->source != actor)
     return FALSE;
 
-  /* hide the tooltip */
-  if (mx_widget_get_tooltip_text (widget))
-    mx_widget_show_tooltip (widget);
-
   /* check if the widget is disabled */
   if (mx_widget_get_disabled (MX_WIDGET (actor)))
     return FALSE;
