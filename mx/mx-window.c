@@ -1066,6 +1066,12 @@ mx_window_class_init (MxWindowClass *klass)
                                MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_CHILD, pspec);
 
+  /**
+   * MxWindow::destroy:
+   * @window: the object that received the signal
+   *
+   * Emitted when the stage managed by the window is destroyed.
+   */
   signals[DESTROY] = g_signal_new ("destroy",
                                    G_TYPE_FROM_CLASS (klass),
                                    G_SIGNAL_RUN_LAST,
@@ -1086,18 +1092,43 @@ mx_window_init (MxWindow *self)
   priv->icon_changed = TRUE;
 }
 
+/**
+ * mx_window_new:
+ *
+ * Creates a new #MxWindow.
+ *
+ * Returns: A #MxWindow
+ */
 MxWindow *
 mx_window_new (void)
 {
   return g_object_new (MX_TYPE_WINDOW, NULL);
 }
 
+/**
+ * mx_window_new_with_clutter_stage:
+ * @stage: A #ClutterStage
+ *
+ * Creates a new #MxWindow, using @stage as the backing #ClutterStage. This
+ * function is meant for use primarily for embedding a #MxWindow into
+ * a foreign stage when using a #Clutter toolkit integration library.
+ *
+ * Returns: A #MxWindow
+ */
 MxWindow *
 mx_window_new_with_clutter_stage (ClutterStage *stage)
 {
   return g_object_new (MX_TYPE_WINDOW, "clutter-stage", stage, NULL);
 }
 
+/**
+ * mx_window_get_for_stage:
+ * @stage: A #ClutterStage
+ *
+ * Gets the #MxWindow parent of the #ClutterStage, if it exists.
+ *
+ * Returns: A #MxWindow, or %NULL
+ */
 MxWindow *
 mx_window_get_for_stage (ClutterStage *stage)
 {
@@ -1105,6 +1136,15 @@ mx_window_get_for_stage (ClutterStage *stage)
   return (MxWindow *)g_object_get_qdata (G_OBJECT (stage), window_quark);
 }
 
+/**
+ * mx_window_set_child:
+ * @window: A #MxWindow
+ * @actor: A #ClutterActor
+ *
+ * Adds @actor to the window and sets it as the primary child. When the
+ * stage managed in the window changes size, the child will be resized
+ * to match it.
+ */
 void
 mx_window_set_child (MxWindow     *window,
                      ClutterActor *actor)
@@ -1137,6 +1177,14 @@ mx_window_set_child (MxWindow     *window,
   g_object_notify (G_OBJECT (window), "child");
 }
 
+/**
+ * mx_window_get_child:
+ * @window: A #MxWindow
+ *
+ * Get the primary child of the window. See mx_window_set_child().
+ *
+ * Returns: A #ClutterActor, or %NULL
+ */
 ClutterActor*
 mx_window_get_child (MxWindow *window)
 {
@@ -1145,6 +1193,14 @@ mx_window_get_child (MxWindow *window)
   return window->priv->child;
 }
 
+/**
+ * mx_window_set_has_toolbar:
+ * @window: A #MxWindow
+ * @toolbar: %TRUE if the toolbar should be displayed
+ *
+ * Sets whether the window has a toolbar or not. If the window has a toolbar,
+ * client-side window decorations will be enabled.
+ */
 void
 mx_window_set_has_toolbar (MxWindow *window,
                            gboolean  toolbar)
@@ -1171,6 +1227,15 @@ mx_window_set_has_toolbar (MxWindow *window,
     }
 }
 
+/**
+ * mx_window_get_has_toolbar:
+ * @window: A #MxWindow
+ *
+ * Determines whether the window has a toolbar or not.
+ * See mx_window_set_has_toolbar().
+ *
+ * Returns: %TRUE if the window has a toolbar, otherwise %FALSE
+ */
 gboolean
 mx_window_get_has_toolbar (MxWindow *window)
 {
@@ -1179,6 +1244,14 @@ mx_window_get_has_toolbar (MxWindow *window)
   return window->priv->has_toolbar;
 }
 
+/**
+ * mx_window_get_toolbar:
+ * @window: A #MxWindow
+ *
+ * Retrieves the toolbar associated with the window.
+ *
+ * Returns: A #MxToolbar
+ */
 MxToolbar *
 mx_window_get_toolbar (MxWindow *window)
 {
@@ -1187,6 +1260,15 @@ mx_window_get_toolbar (MxWindow *window)
   return (MxToolbar*) window->priv->toolbar;
 }
 
+/**
+ * mx_window_get_small_screen:
+ * @window: A #MxWindow
+ *
+ * Determines if the window is in small-screen mode.
+ * See mx_window_set_small_screen().
+ *
+ * Returns: %TRUE if the window is in small-screen mode, otherwise %FALSE
+ */
 gboolean
 mx_window_get_small_screen (MxWindow *window)
 {
@@ -1195,6 +1277,16 @@ mx_window_get_small_screen (MxWindow *window)
   return window->priv->small_screen;
 }
 
+/**
+ * mx_window_set_small_screen:
+ * @window: A #MxWindow
+ * @small_screen: %TRUE if small-screen mode should be enabled
+ *
+ * Enables or disables small-screen mode. This mode is meant primarily
+ * for platforms with limited screen-space, such as netbooks. When enabled,
+ * the window will take up all available room and will disable moving and
+ * resizing.
+ */
 void
 mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
 {
@@ -1291,6 +1383,13 @@ mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
     }
 }
 
+/**
+ * mx_window_get_window_position:
+ * @x: (out): A pointer for the x-coordinate
+ * @y: (out): A pointer for the y-coordinate
+ *
+ * Retrieves the absolute position of the window on the screen.
+ */
 void
 mx_window_get_window_position (MxWindow *window, gint *x, gint *y)
 {
@@ -1335,6 +1434,14 @@ mx_window_get_window_position (MxWindow *window, gint *x, gint *y)
     *y = win_y;
 }
 
+/**
+ * mx_window_set_window_position:
+ * @window: A #MxWindow
+ * @x: An x-coordinate
+ * @y: A y-coordinate
+ *
+ * Sets the absolute position of the window on the screen.
+ */
 void
 mx_window_set_window_position (MxWindow *window, gint x, gint y)
 {
@@ -1448,6 +1555,14 @@ mx_window_set_icon_from_cogl_texture (MxWindow   *window,
   mx_window_set_wm_hints (window);
 }
 
+/**
+ * mx_window_get_clutter_stage:
+ * @window: A #MxWindow
+ *
+ * Gets the #ClutterStage managed by the window.
+ *
+ * Returns: A #ClutterStage
+ */
 ClutterStage *
 mx_window_get_clutter_stage (MxWindow *window)
 {

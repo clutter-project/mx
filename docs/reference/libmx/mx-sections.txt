@@ -264,6 +264,7 @@ MxButtonPrivate
 MxWindow
 mx_window_new
 mx_window_new_with_clutter_stage
+mx_window_get_for_stage
 mx_window_get_child
 mx_window_set_child
 mx_window_get_toolbar
