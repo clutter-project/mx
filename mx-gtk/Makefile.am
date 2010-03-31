@@ -91,3 +91,5 @@ typelibs_DATA = $(BUILT_GIRSOURCES:.gir=.typelib)
 CLEANFILES += $(BUILT_GIRSOURCES) $(typelibs_DATA)
 
 endif # HAVE_INTROSPECTION
+
+-include $(top_srcdir)/git.mk
