@@ -1,9 +1,12 @@
 NULL =
 
-AM_CFLAGS = $(MX_CFLAGS) $(GTK_CFLAGS)  $(MX_MAINTAINER_CFLAGS)
-LDADD = $(top_builddir)/mx/libmx-$(MX_API_VERSION).la \
-        $(top_builddir)/mx-gtk/libmx-gtk-$(MX_API_VERSION).la
+AM_CFLAGS = $(MX_CFLAGS) $(MX_MAINTAINER_CFLAGS)
+LDADD = $(top_builddir)/mx/libmx-$(MX_API_VERSION).la
 
+if ENABLE_GTK_WIDGETS
+AM_CFLAGS += $(GTK_CFLAGS)
+LDADD += $(top_builddir)/mx-gtk/libmx-gtk-$(MX_API_VERSION).la
+endif
 
 INCLUDES = \
 	-I$(top_srcdir) \
@@ -15,7 +18,6 @@ noinst_PROGRAMS = 			\
 	test-draggable			\
 	test-droppable			\
 	test-grid 			\
-	test-gtk			\
 	test-path-bar			\
 	test-shaders			\
 	test-table   			\
@@ -27,11 +29,16 @@ noinst_PROGRAMS = 			\
 	test-mx				\
 	$(NULL)
 
+if ENABLE_GTK_WIDGETS
+noinst_PROGRAMS += test-gtk
+
+test_gtk_SOURCES = test-gtk.c
+endif
+
 test_table_SOURCES = test-table.c
 test_table_2_SOURCES = test-table-2.c
 test_texture_frame_SOURCES = test-texture-frame.c
 test_grid_SOURCES = test-grid.c
-test_gtk_SOURCES = test-gtk.c
 test_views_SOURCES = test-views.c
 
 test_mx_SOURCES = test-mx.c \
