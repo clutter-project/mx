@@ -27,8 +27,8 @@
 
 #define MX_H_INSIDE
 
-#include <mx/mx-gtk-light-switch.h>
-#include <mx/mx-gtk-frame.h>
+#include "mx-gtk-light-switch.h"
+#include "mx-gtk-frame.h"
 
 #undef MX_H_INSIDE
 

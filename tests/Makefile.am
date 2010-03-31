@@ -2,7 +2,7 @@ NULL =
 
 AM_CFLAGS = $(MX_CFLAGS) $(GTK_CFLAGS)  $(MX_MAINTAINER_CFLAGS)
 LDADD = $(top_builddir)/mx/libmx-$(MX_API_VERSION).la \
-        $(top_builddir)/mx/libmx-gtk-$(MX_API_VERSION).la
+        $(top_builddir)/mx-gtk/libmx-gtk-$(MX_API_VERSION).la
 
 
 INCLUDES = \

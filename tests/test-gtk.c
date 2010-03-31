@@ -19,7 +19,7 @@
  *
  */
 #include <gtk/gtk.h>
-#include <mx/mx-gtk.h>
+#include <mx-gtk/mx-gtk.h>
 
 static void
 _toggle_cb (GtkToggleButton *toggle,

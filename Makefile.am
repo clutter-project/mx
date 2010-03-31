@@ -1,4 +1,4 @@
-SUBDIRS = mx data tests docs po
+SUBDIRS = mx mx-gtk data tests docs po
 
 ACLOCAL_AMFLAGS=-I m4
 

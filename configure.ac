@@ -231,6 +231,7 @@ AC_OUTPUT([
         docs/reference/libmx/Makefile
         docs/reference/libmx/version.xml
         mx/Makefile
+        mx-gtk/Makefile
         mx/mx-version.h
         po/Makefile.in
         tests/Makefile
