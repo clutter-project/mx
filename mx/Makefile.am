@@ -139,7 +139,8 @@ EXTRA_DIST = \
 	mx-marshal.list \
 	mx-enum-types.h.in \
 	mx-enum-types.c.in \
-	mx-version.h.in
+	mx-version.h.in \
+	mx-gtk.h
 
 STAMP_FILES = stamp-mx-marshal.h stamp-mx-enum-types.h
 
