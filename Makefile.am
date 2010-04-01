@@ -1,4 +1,11 @@
-SUBDIRS = mx data tests docs po
+SUBDIRS = mx
+
+if ENABLE_GTK_WIDGETS
+SUBDIRS += mx-gtk
+endif
+
+SUBDIRS += data tests docs po
+
 
 ACLOCAL_AMFLAGS=-I m4
 
@@ -16,13 +23,19 @@ GITIGNOREFILES= $(top_srcdir)/docs/reference/libmx/tmpl \
 
 DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
 
-pcfiles = mx-$(MX_API_VERSION).pc mx-gtk-$(MX_API_VERSION).pc
+pcfiles = mx-$(MX_API_VERSION).pc
+
+if ENABLE_GTK_WIDGETS
+pcfiles += mx-gtk-$(MX_API_VERSION).pc
+endif
 
 mx-$(MX_API_VERSION).pc: mx.pc
 	@cp -f $< $@
 
+if ENABLE_GTK_WIDGETS
 mx-gtk-$(MX_API_VERSION).pc: mx-gtk.pc
 	@cp -f $< $@
+endif
 
 pkgconfig_DATA = $(pcfiles)
 pkgconfigdir = $(libdir)/pkgconfig

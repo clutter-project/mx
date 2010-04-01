@@ -194,6 +194,19 @@ AS_IF([test "x$with_glade" = xyes],
 AM_CONDITIONAL(WITH_GLADE, test "x$with_glade" = xyes)
 AC_SUBST([catalogdir])
 
+
+#
+# Gtk+ widgets library
+#
+
+AC_ARG_ENABLE([gtk-widgets],
+              [AC_HELP_STRING([--disable-gtk-widgets],
+                              [disable building the gtk+ widgets library])],
+              [],
+              [enable_gtk_widgets=yes])
+
+AM_CONDITIONAL(ENABLE_GTK_WIDGETS, test "x$enable_gtk_widgets" = xyes)
+
 dnl ***************************************************************************
 dnl Internationalization
 dnl ***************************************************************************
@@ -231,6 +244,7 @@ AC_OUTPUT([
         docs/reference/libmx/Makefile
         docs/reference/libmx/version.xml
         mx/Makefile
+        mx-gtk/Makefile
         mx/mx-version.h
         po/Makefile.in
         tests/Makefile

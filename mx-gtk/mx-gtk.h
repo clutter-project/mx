@@ -1,7 +1,10 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 
 /*
- * Copyright 2010 Intel Corporation.
+ * mx.h: Collection of high-level actors for Clutter
+ *
+ * Copyright 2007 OpenedHand
+ * Copyright 2009 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -19,16 +22,14 @@
  *
  */
 
-#ifndef _MX_MX_GTK_H_
-#define _MX_MX_GTK_H_
+#ifndef __MX_GTK_H__
+#define __MX_GTK_H__
 
 #define MX_H_INSIDE
 
-#include <mx-gtk/mx-gtk.h>
-
-#warning "mx-gtk.h file has moved to a seperate directory"
-#warning "Use #include <mx-gtk/mx-gtk.h> instead"
+#include "mx-gtk-light-switch.h"
+#include "mx-gtk-frame.h"
 
 #undef MX_H_INSIDE
 
-#endif /* _MX_MX_GTK_H_ */
+#endif /* __MX_GTK_H__ */
