@@ -39,6 +39,11 @@ MxEntry:focus
   border-image: url("entry-active.png") 5;
 }
 
+MxEntry:hover
+{
+  border-image: url("entry-hover.png") 5;
+}
+
 MxEntry:indeterminate
 {
   color: #8e8e8e;
@@ -167,11 +172,11 @@ MxTooltip {
 
 MxProgressBar {
   padding: 3;
-  border-image: url('progress-bar-background.png') 2;
+  border-image: url('progress-bar-background.png') 3;
 }
 
 MxProgressBar MxProgressBarFill {
-  border-image: url('progress-bar-bar.png') 2;
+  border-image: url('progress-bar-bar.png') 3;
   height: 16;
 }
 
@@ -183,6 +188,21 @@ MxComboBox {
 
 MxComboBox MxIcon {
   -mx-icon-size: 16;
+}
+
+MxComboBox:hover {
+  border-image: url('combobox-hover.png') 4 32 4 4;
+  -mx-marker-image: url('combobox-marker-hover.png');
+}
+
+MxComboBox:active {
+  border-image: url('combobox-active.png') 4 32 4 4;
+  -mx-marker-image: url('combobox-marker-active.png');
+}
+
+MxComboBox:disabled {
+  border-image: url('combobox-disabled.png') 4 32 4 4;
+  -mx-marker-image: url('combobox-marker-disabled.png');
 }
 
 MxMenu {

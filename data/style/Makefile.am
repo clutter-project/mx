@@ -4,7 +4,12 @@ dist_style_DATA = \
 		button-hover.png \
 		button.png \
 		combobox.png \
+		combobox-hover.png \
+		combobox-active.png \
+		combobox-disabled.png \
 		combobox-marker.png \
+		combobox-marker-hover.png \
+		combobox-marker-active.png \
 		combobox-toolbar.png \
 		combobox-toolbar-marker.png \
 		close.png \
@@ -12,6 +17,8 @@ dist_style_DATA = \
 		default.css \
 		entry.png \
 		entry-active.png \
+		entry-disabled.png \
+		entry-hover.png \
 		expander-arrow-down-hover.png \
 		expander-arrow-down.png \
 		expander-arrow-up-hover.png \
