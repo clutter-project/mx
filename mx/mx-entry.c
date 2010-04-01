@@ -580,6 +580,9 @@ mx_entry_pick (ClutterActor       *actor,
 
   CLUTTER_ACTOR_CLASS (mx_entry_parent_class)->pick (actor, c);
 
+  if (!clutter_actor_should_pick_paint (actor))
+    return;
+
   clutter_actor_paint (priv->entry);
 
   if (priv->primary_icon)
