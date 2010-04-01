@@ -10,6 +10,7 @@ MxIcon.ResizeGrip
 
 MxButton
 {
+  color: #009bce;
   -mx-border-image-transition-duration: 120;
   padding: 10;
   border-image: url("button.png") 10;
@@ -19,7 +20,7 @@ MxButton:disabled
 {
   -mx-border-image-transition-duration: 0;
   border-image: url("button-disabled.png") 10;
-  color: #e1e3e1;
+  color: #adaead;
 }
 
 MxButton:hover
@@ -58,7 +59,7 @@ MxEntry:indeterminate
 
 MxEntry:disabled
 {
-  color: #e1e3e1;
+  color: #adaead;
   border-image: url("entry-disabled.png") 5;
 }
 
@@ -215,7 +216,7 @@ MxComboBox:active {
 MxComboBox:disabled {
   border-image: url('combobox-disabled.png') 4 32 4 4;
   -mx-marker-image: url('combobox-marker-disabled.png');
-  color: #e1e3e1;
+  color: #adaead;
 }
 
 MxMenu {
