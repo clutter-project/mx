@@ -58,8 +58,8 @@ MxScrollBar
 
 MxScrollView
 {
-  -mx-scrollbar-width: 28;
-  -mx-scrollbar-height: 28;
+  -mx-scrollbar-width: 22;
+  -mx-scrollbar-height: 22;
 }
 
 MxButton#backward-stepper
