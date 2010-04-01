@@ -171,8 +171,8 @@ MxTooltip {
 
 
 MxProgressBar {
-  padding: 3;
-  border-image: url('progress-bar-background.png') 3;
+  padding: 0 0 3 0;
+  border-image: url('progress-bar-background.png') 3 3 6 3;
 }
 
 MxProgressBar MxProgressBarFill {
