@@ -1,5 +1,6 @@
 styledir = ${datadir}/mx/style
 dist_style_DATA = \
+		button-disabled.png \
 		button-active.png \
 		button-hover.png \
 		button.png \
@@ -10,6 +11,7 @@ dist_style_DATA = \
 		combobox-marker.png \
 		combobox-marker-hover.png \
 		combobox-marker-active.png \
+		combobox-marker-disabled.png \
 		combobox-toolbar.png \
 		combobox-toolbar-marker.png \
 		close.png \

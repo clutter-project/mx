@@ -15,6 +15,13 @@ MxButton
   border-image: url("button.png") 10;
 }
 
+MxButton:disabled
+{
+  -mx-border-image-transition-duration: 0;
+  border-image: url("button-disabled.png") 10;
+  color: #e1e3e1;
+}
+
 MxButton:hover
 {
   -mx-border-image-transition-duration: 0;
@@ -49,6 +56,11 @@ MxEntry:indeterminate
   color: #8e8e8e;
 }
 
+MxEntry:disabled
+{
+  color: #e1e3e1;
+  border-image: url("entry-disabled.png") 5;
+}
 
 MxScrollBar
 {
@@ -203,6 +215,7 @@ MxComboBox:active {
 MxComboBox:disabled {
   border-image: url('combobox-disabled.png') 4 32 4 4;
   -mx-marker-image: url('combobox-marker-disabled.png');
+  color: #e1e3e1;
 }
 
 MxMenu {
