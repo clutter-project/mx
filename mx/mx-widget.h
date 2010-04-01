@@ -106,6 +106,11 @@ MxMenu  * mx_widget_get_menu   (MxWidget *widget);
 void      mx_widget_show_menu  (MxWidget *widget, gfloat x, gfloat y);
 void      mx_widget_hide_menu  (MxWidget *widget);
 
+
+gboolean  mx_widget_get_disabled (MxWidget *widget);
+void      mx_widget_set_disabled (MxWidget *widget,
+                                  gboolean  disabled);
+
 void mx_widget_long_press_query  (MxWidget           *widget,
                                   ClutterButtonEvent *event);
 void mx_widget_long_press_cancel (MxWidget           *widget);
@@ -119,7 +124,6 @@ void          mx_widget_paint_background     (MxWidget  *widget);
 void          mx_widget_get_available_area   (MxWidget              *widget,
                                               const ClutterActorBox *allocation,
                                               ClutterActorBox       *area);
-
 G_END_DECLS
 
 #endif /* __MX_WIDGET_H__ */

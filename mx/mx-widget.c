@@ -63,6 +63,7 @@ struct _MxWidgetPrivate
   ClutterColor *bg_color;
 
   guint         is_hovered : 1;
+  guint         is_disabled : 1;
 
   MxTooltip    *tooltip;
   MxMenu       *menu;
@@ -90,7 +91,9 @@ enum
   PROP_STYLE_PSEUDO_CLASS,
 
   PROP_TOOLTIP_TEXT,
-  PROP_MENU
+  PROP_MENU,
+
+  PROP_DISABLED
 };
 
 enum
@@ -142,6 +145,10 @@ mx_widget_set_property (GObject      *gobject,
       mx_widget_set_menu (actor, (MxMenu *)g_value_get_object (value));
       break;
 
+    case PROP_DISABLED:
+      mx_widget_set_disabled (actor, g_value_get_boolean (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -177,6 +184,10 @@ mx_widget_get_property (GObject    *gobject,
 
     case PROP_MENU:
       g_value_set_object (value, mx_widget_get_menu (actor));
+      break;
+
+    case PROP_DISABLED:
+      g_value_set_boolean (value, priv->is_disabled);
       break;
 
     default:
@@ -859,6 +870,16 @@ mx_widget_class_init (MxWidgetClass *klass)
                                MX_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_MENU, pspec);
 
+  pspec = g_param_spec_boolean ("disabled",
+                               "Disabled",
+                               "Whether disabled styling should be applied and"
+                               " the widget made unreactive.",
+                               FALSE,
+                               MX_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_DISABLED, pspec);
+
+
+
   /**
    * MxWidget::long-press:
    * @widget: the object that received the signal
@@ -939,7 +960,12 @@ _mx_stylable_set_style_pseudo_class (MxStylable  *actor,
 static const gchar*
 _mx_stylable_get_style_pseudo_class (MxStylable *actor)
 {
-  return ((MxWidget *) actor)->priv->pseudo_class;
+  MxWidgetPrivate *priv = ((MxWidget *) actor)->priv;
+
+  if (priv->is_disabled)
+    return "disabled";
+  else
+    return ((MxWidget *) actor)->priv->pseudo_class;
 }
 
 
@@ -1362,3 +1388,49 @@ mx_widget_get_menu (MxWidget *widget)
   return widget->priv->menu;
 }
 
+/**
+ * mx_widget_set_disabled:
+ * @widget: an #MxWidget
+ * @disabled: value to set
+ *
+ * Set the disabled property. Disabled widgets have a "disabled" pseudo-class
+ * until disabled is set to #FALSE.
+ */
+void
+mx_widget_set_disabled (MxWidget *widget,
+                        gboolean  disabled)
+{
+  MxWidgetPrivate *priv;
+
+  g_return_if_fail (MX_IS_WIDGET (widget));
+
+  priv = widget->priv;
+
+  if (priv->is_disabled != disabled)
+    {
+      priv->is_disabled = disabled;
+
+      /* when a widget is disabled, get_style_pseudo_class will always return
+       * "disabled" */
+
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (widget));
+
+      mx_stylable_style_changed (MX_STYLABLE (widget), 0);
+
+      g_object_notify (G_OBJECT (widget), "disabled");
+    }
+}
+
+/**
+ * mx_widget_get_disabled:
+ * @widget: an #MxWidget
+ *
+ * Get the value of the "disabled" property.
+ */
+gboolean
+mx_widget_get_disabled (MxWidget *widget)
+{
+  g_return_val_if_fail (MX_IS_WIDGET (widget), FALSE);
+
+  return widget->priv->is_disabled;
+}
