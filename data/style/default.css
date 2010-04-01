@@ -261,6 +261,7 @@ MxToolbar {
 }
 
 MxToolbar MxButton {
+  color: white;
   border-image: none;
   padding: 2 4;
 }
@@ -305,6 +306,14 @@ MxToolbar MxButton#close-button:hover, MxToolbar MxButton#close-button:active {
 }*/
 
 MxToolbar MxComboBox {
+  color: #dadada;
+  border-image: url('combobox-toolbar.png') 4 32 4 4;
+  -mx-marker-image: url('combobox-toolbar-marker.png');
+  padding: 12 14;
+  font-size: 15;
+}
+
+MxToolbar MxComboBox:hover {
   color: #dadada;
   border-image: url('combobox-toolbar.png') 4 32 4 4;
   -mx-marker-image: url('combobox-toolbar-marker.png');
