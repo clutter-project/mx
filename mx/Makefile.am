@@ -191,6 +191,7 @@ mxincludedir = $(includedir)/mx-$(MX_API_VERSION)/mx
 mxinclude_DATA = 				\
 	$(source_h) 				\
 	$(top_srcdir)/mx/mx.h 		\
+	$(top_srcdir)/mx/mx-gtk.h 		\
 	$(top_builddir)/mx/mx-version.h     \
 	$(top_builddir)/mx/mx-enum-types.h	\
 	$(NULL)
