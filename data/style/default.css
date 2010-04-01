@@ -24,7 +24,7 @@ MxButton:hover
 MxButton:active, MxButton:checked
 {
   -mx-border-image-transition-duration: 0;
-  padding: 11 9 9 11;
+  padding: 11 10 9 10;
   border-image: url("button-active.png") 10;
 }
 
