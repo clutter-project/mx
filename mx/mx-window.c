@@ -890,7 +890,7 @@ mx_window_fullscreen_set_cb (ClutterStage *stage,
     {
       if (priv->small_screen)
         priv->has_mapped = FALSE;
-      else if (priv->resize_grip)
+      else if (priv->resize_grip && priv->has_toolbar)
         {
           clutter_actor_show (priv->resize_grip);
           if (priv->child)
@@ -959,7 +959,8 @@ mx_window_constructed (GObject *object)
   mx_stylable_set_style_class (MX_STYLABLE (priv->resize_grip), "ResizeGrip");
   clutter_container_add_actor (CLUTTER_CONTAINER (priv->stage),
                                priv->resize_grip);
-  if (clutter_stage_get_fullscreen (CLUTTER_STAGE (priv->stage)))
+  if (clutter_stage_get_fullscreen (CLUTTER_STAGE (priv->stage)) ||
+      !priv->has_toolbar)
     clutter_actor_hide (priv->resize_grip);
   g_object_add_weak_pointer (G_OBJECT (priv->resize_grip),
                              (gpointer *)&priv->resize_grip);
@@ -1216,9 +1217,15 @@ mx_window_set_has_toolbar (MxWindow *window,
       window->priv->has_toolbar = toolbar;
 
       if (!toolbar)
-        clutter_actor_hide (priv->toolbar);
+        {
+          clutter_actor_hide (priv->toolbar);
+          clutter_actor_hide (priv->resize_grip);
+        }
       else
-        clutter_actor_show (priv->toolbar);
+        {
+          clutter_actor_show (priv->toolbar);
+          clutter_actor_show (priv->resize_grip);
+        }
 
       g_object_notify (G_OBJECT (window), "has-toolbar");
 
@@ -1371,7 +1378,7 @@ mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
                                   priv->last_width,
                                   priv->last_height);
 
-          if (priv->resize_grip)
+          if (priv->resize_grip && priv->has_toolbar)
             {
               clutter_actor_show (priv->resize_grip);
               if (priv->child)
