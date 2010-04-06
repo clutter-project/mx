@@ -2,9 +2,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-26 12:45+0000\n"
+"POT-Creation-Date: 2010-04-05 09:39+0000\n"
 "PO-Revision-Date: \n"
-"Last-Translator: GLSJPN_Yukari <yukarix.yamashita@intel.com>\n"
+"Last-Translator: Takashi Kazami <tkazami@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -12,81 +12,70 @@ msgstr ""
 "X-Poedit-Language: Japanese\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: mx/mx-gtk-light-switch.c:232
+# Not sure the meaning of "raise" in this case...
+#: ../mx/mx-application.c:311
+msgid "Raise application"
+msgstr "アプリケーションを上げる"
+
+#: ../mx-gtk/mx-gtk-light-switch.c:96
 msgid "Unavailable"
 msgstr "使用できません"
 
-# keep it in English to look cool
-#. TRANSLATORS: If this string takes more than four or five characters in
-#. * your language, please use the MEDIUM VERTICAL BAR unicode character
-#. * instead
-#: mx/mx-gtk-light-switch.c:252 mx/mx-gtk-light-switch.c:326
-msgid "On"
-msgstr "ON"
-
-# keep it in English to look cool
-#. Draw the second label; "Off"
-#. TRANSLATORS: If this string takes more than four or five characters in
-#. * your language, please use the WHITE CIRCLE U+25CB unicode character
-#. * instead
-#: mx/mx-gtk-light-switch.c:271 mx/mx-gtk-light-switch.c:324
-msgid "Off"
-msgstr "OFF"
-
-#: mx/mx-utils.c:93
+#: ../mx/mx-utils.c:94
 msgid "Less than a minute ago"
 msgstr "1分以内"
 
-#: mx/mx-utils.c:97
+#: ../mx/mx-utils.c:98
 msgid "A few minutes ago"
 msgstr "数分前"
 
-#: mx/mx-utils.c:101
+#: ../mx/mx-utils.c:102
 msgid "A couple of hours ago"
 msgstr "数時間前"
 
-#: mx/mx-utils.c:108
+#: ../mx/mx-utils.c:109
 msgid "Earlier today"
 msgstr "今日"
 
-#: mx/mx-utils.c:111
+#: ../mx/mx-utils.c:112
 msgid "Yesterday"
 msgstr "昨日"
 
-#: mx/mx-utils.c:119
+#: ../mx/mx-utils.c:120
 #, c-format
 msgid "On %A"
 msgstr "%A"
 
-#: mx/mx-utils.c:125
+#: ../mx/mx-utils.c:126
 msgid "Unknown"
 msgstr "不明"
 
-#: mx/mx-utils.c:132
+#: ../mx/mx-utils.c:133
 msgid "Last week"
 msgstr "先週"
 
-#: mx/mx-utils.c:135
+#: ../mx/mx-utils.c:136
 msgid "A couple of weeks ago"
 msgstr "数週間前"
 
-#: mx/mx-utils.c:141
+#: ../mx/mx-utils.c:142
 msgid "This month"
 msgstr "今月"
 
 #. Now Jan., last used in Dec.
-#: mx/mx-utils.c:145
+#: ../mx/mx-utils.c:146
 msgid "Last month"
 msgstr "先月"
 
-#: mx/mx-utils.c:148
+#: ../mx/mx-utils.c:149
 msgid "This year"
 msgstr "今年"
 
-#: mx/mx-utils.c:151
+#: ../mx/mx-utils.c:152
 msgid "Last year"
 msgstr "去年"
 
-#: mx/mx-utils.c:153
+#: ../mx/mx-utils.c:154
 msgid "Ages ago"
 msgstr "ずいぶんと前"
+
