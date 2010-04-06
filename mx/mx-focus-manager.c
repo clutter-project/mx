@@ -165,16 +165,14 @@ mx_focus_manager_start_focus (MxFocusManager *manager, MxFocusHint hint)
       if (MX_IS_FOCUSABLE (l->data))
         {
           focusable = MX_FOCUSABLE (l->data);
-          break;
+          priv->focused = mx_focusable_accept_focus (focusable, hint);
+
+          if (priv->focused)
+            break;
         }
     }
 
   g_list_free (children);
-
-  if (focusable)
-    {
-      priv->focused = mx_focusable_accept_focus (focusable, hint);
-    }
 }
 
 static gboolean
