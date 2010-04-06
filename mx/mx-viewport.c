@@ -522,7 +522,8 @@ mx_viewport_init (MxViewport *self)
 
   self->priv->sync_adjustments = TRUE;
 
-  g_object_set (G_OBJECT (self), "reactive", FALSE, NULL);
+  g_object_set (G_OBJECT (self), "reactive", FALSE,
+                "clip-to-allocation", TRUE, NULL);
 }
 
 ClutterActor *
