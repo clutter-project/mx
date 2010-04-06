@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-03-03 10:46+0000\n"
-"PO-Revision-Date: 2010-03-06 22:24+0200\n"
+"POT-Creation-Date: 2010-04-05 09:39+0000\n"
+"PO-Revision-Date: 2010-04-06 16:16+0200\n"
 "Last-Translator: Yuri Nazarenko <yuri.nazarenko@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -18,7 +18,11 @@ msgstr ""
 "X-Poedit-Language: Russian\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: ../mx/mx-gtk-light-switch.c:238
+#: ../mx/mx-application.c:311
+msgid "Raise application"
+msgstr "Вызвать приложение"
+
+#: ../mx-gtk/mx-gtk-light-switch.c:96
 msgid "Unavailable"
 msgstr "Недоступно"
 
