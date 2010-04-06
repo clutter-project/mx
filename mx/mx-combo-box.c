@@ -465,7 +465,7 @@ mx_combo_box_allocate (ClutterActor          *actor,
       stage_h = clutter_actor_get_height (stage);
       clutter_actor_get_transformed_position (actor, &trans_x, &trans_y);
 
-      if ( ((y + nat_menu_h + combo_h) > stage_h) &&
+      if ( ((trans_y + nat_menu_h + combo_h) > stage_h) &&
            (stage_h - combo_h) > 0 )
         {
           childbox.y1 = -nat_menu_h;
