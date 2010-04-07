@@ -158,16 +158,27 @@ MxExpander:active {
   border-image: url('expander-closed-active.png') 6;
 }
 
+MxExpander:disabled {
+  color: #adaead;
+  border-image: url('expander-closed-disabled.png') 6;
+}
+
+
 MxExpander.open-expander {
-  border-image: url('expander-open.png') 6;
+  border-image: url('expander-open.png') 36 6 6 6;
 }
 
 MxExpander.open-expander:hover {
-  border-image: url('expander-open-hover.png') 6;
+  border-image: url('expander-open-hover.png') 36 6 6 6;
 }
 
 MxExpander.open-expander:active {
   border-image: url('expander-open-active.png') 36 6 6 6;
+}
+
+MxExpander.open-expander:disabled {
+  color: #adaead;
+  border-image: url('expander-open-disabled.png') 36 6 6 6;
 }
 
 MxExpander > MxIcon#mx-expander-arrow-closed {
@@ -179,12 +190,19 @@ MxExpander > MxIcon#mx-expander-arrow-closed:hover {
     -mx-content-image: url('expander-arrow-up-hover.png');
 }
 
+MxExpander > MxIcon#mx-expander-arrow-closed:disabled {
+    -mx-content-image: url('expander-arrow-up-disabled.png');
+}
+
 MxExpander > MxIcon#mx-expander-arrow-open {
     -mx-content-image: url('expander-arrow-down.png');
 }
 
 MxExpander > MxIcon#mx-expander-arrow-open:hover {
     -mx-content-image: url('expander-arrow-down-hover.png');
+}
+MxExpander > MxIcon#mx-expander-arrow-open:disabled {
+    -mx-content-image: url('expander-arrow-down-disabled.png');
 }
 
 MxTooltip {

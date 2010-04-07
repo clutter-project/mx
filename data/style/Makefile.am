@@ -22,8 +22,10 @@ dist_style_DATA = \
 		entry-disabled.png \
 		entry-hover.png \
 		expander-arrow-down-hover.png \
+		expander-arrow-down-disabled.png \
 		expander-arrow-down.png \
 		expander-arrow-up-hover.png \
+		expander-arrow-up-disabled.png \
 		expander-arrow-up.png \
 		expander-closed.png \
 		expander-closed-hover.png \
