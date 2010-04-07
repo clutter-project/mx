@@ -529,26 +529,6 @@ mx_expander_style_changed (MxStylable *stylable)
                                              CLUTTER_TEXT (priv->label));
 }
 
-static gboolean
-mx_expander_enter (ClutterActor         *actor,
-                   ClutterCrossingEvent *event)
-{
-  if (!MX_EXPANDER (actor)->priv->expanded)
-    mx_stylable_set_style_pseudo_class (MX_STYLABLE (actor), "hover");
-
-  return FALSE;
-}
-
-static gboolean
-mx_expander_leave (ClutterActor         *actor,
-                   ClutterCrossingEvent *event)
-{
-  if (!MX_EXPANDER (actor)->priv->expanded)
-    mx_stylable_set_style_pseudo_class (MX_STYLABLE (actor), NULL);
-
-  return FALSE;
-}
-
 static void
 mx_expander_foreach (ClutterContainer *container,
                      ClutterCallback   callback,
@@ -612,8 +592,6 @@ mx_expander_class_init (MxExpanderClass *klass)
   actor_class->get_preferred_width = mx_expander_get_preferred_width;
   actor_class->get_preferred_height = mx_expander_get_preferred_height;
   actor_class->paint = mx_expander_paint;
-  actor_class->enter_event = mx_expander_enter;
-  actor_class->leave_event = mx_expander_leave;
   actor_class->map = mx_expander_map;
   actor_class->unmap = mx_expander_unmap;
 
