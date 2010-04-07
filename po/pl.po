@@ -7,92 +7,86 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Moblin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-26 12:45+0000\n"
+"POT-Creation-Date: 2010-04-07 09:46+0000\n"
 "PO-Revision-Date: \n"
-"Last-Translator: Andrzej Zaborowski <andrew.zaborowski@intel.com>\n"
+"Last-Translator: Romuald Pawlikowski <r.pawlikowski@gmail.com>\n"
 "Language-Team: Moblin\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
-"|| n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Poedit-Language: Polish\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: mx/mx-gtk-light-switch.c:232
+#: ../mx/mx-application.c:311
+msgid "Raise application"
+msgstr "Podnieś aplikację"
+
+#: ../mx-gtk/mx-gtk-light-switch.c:96
 msgid "Unavailable"
 msgstr "Niedostępne"
 
-#. TRANSLATORS: If this string takes more than four or five characters in
-#. * your language, please use the MEDIUM VERTICAL BAR unicode character
-#. * instead
-#: mx/mx-gtk-light-switch.c:252 mx/mx-gtk-light-switch.c:326
-msgid "On"
-msgstr "Tak"
-
-#. Draw the second label; "Off"
-#. TRANSLATORS: If this string takes more than four or five characters in
-#. * your language, please use the WHITE CIRCLE U+25CB unicode character
-#. * instead
-#: mx/mx-gtk-light-switch.c:271 mx/mx-gtk-light-switch.c:324
-msgid "Off"
-msgstr "Nie"
-
-#: mx/mx-utils.c:93
+#: ../mx/mx-utils.c:94
 msgid "Less than a minute ago"
 msgstr "Mniej niż minutę temu"
 
-#: mx/mx-utils.c:97
+#: ../mx/mx-utils.c:98
 msgid "A few minutes ago"
 msgstr "Parę minut temu"
 
-#: mx/mx-utils.c:101
+#: ../mx/mx-utils.c:102
 msgid "A couple of hours ago"
 msgstr "Kilka godzin temu"
 
 # No good way to say "earlier today"
-#: mx/mx-utils.c:108
+#: ../mx/mx-utils.c:109
 msgid "Earlier today"
 msgstr "Kilkanaście godzin temu"
 
-#: mx/mx-utils.c:111
+#: ../mx/mx-utils.c:112
 msgid "Yesterday"
 msgstr "Wczoraj"
 
-#: mx/mx-utils.c:119
+#: ../mx/mx-utils.c:120
 #, c-format
 msgid "On %A"
 msgstr "Dnia %A"
 
-#: mx/mx-utils.c:125
+#: ../mx/mx-utils.c:126
 msgid "Unknown"
 msgstr "Nie sprecyzowano"
 
-#: mx/mx-utils.c:132
+#: ../mx/mx-utils.c:133
 msgid "Last week"
 msgstr "Zeszły tydzień"
 
-#: mx/mx-utils.c:135
+#: ../mx/mx-utils.c:136
 msgid "A couple of weeks ago"
 msgstr "Parę tygodni temu"
 
-#: mx/mx-utils.c:141
+#: ../mx/mx-utils.c:142
 msgid "This month"
 msgstr "W tym miesiącu"
 
 #. Now Jan., last used in Dec.
-#: mx/mx-utils.c:145
+#: ../mx/mx-utils.c:146
 msgid "Last month"
 msgstr "W zeszłym miesiącu"
 
-#: mx/mx-utils.c:148
+#: ../mx/mx-utils.c:149
 msgid "This year"
 msgstr "W tym roku"
 
-#: mx/mx-utils.c:151
+#: ../mx/mx-utils.c:152
 msgid "Last year"
 msgstr "W zeszłym roku"
 
-#: mx/mx-utils.c:153
+#: ../mx/mx-utils.c:154
 msgid "Ages ago"
 msgstr "Wieki temu"
+
+#~ msgid "On"
+#~ msgstr "Tak"
+#~ msgid "Off"
+#~ msgstr "Nie"
+
