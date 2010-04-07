@@ -72,8 +72,10 @@ dist_style_DATA = \
 		progress-bar-background.png \
 		progress-bar-bar.png \
 		toggle-background-active.png \
+		toggle-background-disabled.png \
 		toggle-background.png \
 		toggle-handle.png \
+		toggle-handle-disabled.png \
 		toolbar-button-hover.png \
 		tooltip-background.png
 

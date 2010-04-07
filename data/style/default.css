@@ -274,8 +274,11 @@ MxMenu MxIcon {
 }
 
 MxToggle {
-  padding: 4;
   background-image: url("toggle-background.png");
+}
+
+MxToggle:disabled {
+  background-image: url("toggle-background-disabled.png");
 }
 
 MxToggle:checked {
@@ -285,6 +288,12 @@ MxToggle:checked {
 MxToggleHandle {
   background-image: url("toggle-handle.png");
 }
+
+MxToggleHandle:disabled {
+  background-image: url("toggle-handle-disabled.png");
+}
+
+
 
 MxToolbar {
   background-color: #333;
