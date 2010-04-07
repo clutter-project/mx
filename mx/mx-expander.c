@@ -179,6 +179,15 @@ timeline_complete (ClutterTimeline *timeline,
 
   g_signal_emit (expander, expander_signals[EXPAND_COMPLETE], 0);
 
+  /* if the expander is now closed, update the style */
+  if (!priv->expanded)
+    {
+      clutter_actor_set_name (priv->arrow, "mx-expander-arrow-closed");
+      mx_stylable_set_style_class (MX_STYLABLE (expander), "closed-expander");
+
+      clutter_actor_queue_relayout (expander);
+    }
+
   child = mx_bin_get_child (MX_BIN (expander));
 
   if (!child)
@@ -226,13 +235,9 @@ mx_expander_update (MxExpander *expander)
   if (priv->expanded)
     {
       clutter_actor_set_name (priv->arrow, "mx-expander-arrow-open");
-      mx_stylable_set_style_pseudo_class (MX_STYLABLE (expander), "active");
+      mx_stylable_set_style_class (MX_STYLABLE (expander), "open-expander");
     }
-  else
-    {
-      clutter_actor_set_name (priv->arrow, "mx-expander-arrow-closed");
-      mx_stylable_set_style_pseudo_class (MX_STYLABLE (expander), NULL);
-    }
+  /* closed state is set when animation is finished */
 
   child = mx_bin_get_child (MX_BIN (expander));
 
