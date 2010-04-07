@@ -376,32 +376,37 @@ MxToolbar MxMenu > MxBoxLayout:active > MxLabel
 }
 
 MxSlider {
-  -mx-trough-height: 8;
+  -mx-trough-height: 6;
 }
 
 MxSlider *#trough-background {
-  background-color: #dadada;
+  border-image: url('slider-background.png') 1;
 }
 
 MxSlider *#fill {
-  background-color: #84dbf5;
 }
 
-MxToolbar MxSlider > MxButton
+MxSlider > MxButton
 {
   padding: 10;
-  border-image: url("button.png") 10;
+  border-image: url("slider-handle.png") 10;
 }
 
-MxToolbar MxSlider > MxButton:hover
+MxSlider > MxButton:hover
 {
-  border-image: url("button-hover.png") 10;
+  border-image: url("slider-handle-hover.png") 10;
 }
 
-MxToolbar MxSlider > MxButton:active
+MxSlider > MxButton:active
 {
   padding: 11 9 9 11;
-  border-image: url("button-active.png") 10;
+  border-image: url("slider-handle-active.png") 10;
+}
+
+MxSlider > MxButton:disabled
+{
+  padding: 11 9 9 11;
+  border-image: url("slider-handle-disabled.png") 10;
 }
 
 MxPathBar {

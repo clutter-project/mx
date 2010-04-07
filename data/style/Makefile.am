@@ -48,6 +48,16 @@ dist_style_DATA = \
 		scroll-hhandle-hover.png \
 		scroll-vhandle.png \
 		scroll-vhandle-hover.png \
+		slider-background-active.png \
+		slider-background-disabled.png \
+		slider-background-focus.png \
+		slider-background-hover.png \
+		slider-background.png \
+		slider-handle-active.png \
+		slider-handle-disabled.png \
+		slider-handle-focus.png \
+		slider-handle-hover.png \
+		slider-handle.png \
 		menu-item.png \
 		menu.png \
 		menu-toolbar.png \
