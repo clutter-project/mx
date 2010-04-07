@@ -26,8 +26,13 @@ dist_style_DATA = \
 		expander-arrow-up-hover.png \
 		expander-arrow-up.png \
 		expander-closed.png \
-		expander-hover.png \
+		expander-closed-hover.png \
+		expander-closed-active.png \
+		expander-closed-disabled.png \
 		expander-open.png \
+		expander-open-hover.png \
+		expander-open-active.png \
+		expander-open-disabled.png \
 		resize-grip.png \
 		scroll-button-down-hover.png \
 		scroll-button-down.png \
