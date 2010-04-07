@@ -419,6 +419,7 @@ MxPathBar > MxEntry {
 
 MxPathBarButton,
 MxToolbar MxPathBarButton {
+  color: black;
   border-image: url('pathbar-button.png') 4 19 3 3;
   padding: 4 24;
 }
