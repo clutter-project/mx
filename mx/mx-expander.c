@@ -468,7 +468,7 @@ mx_expander_allocate (ClutterActor          *actor,
       child_box.x1 = padding.left;
       child_box.x2 = child_box.x1 + child_w;
       child_box.y1 = padding.top + priv->spacing + MAX (label_h, arrow_h);
-      child_box.y2 = child_box.y2 + child_h;
+      child_box.y2 = child_box.y1 + child_h;
       clutter_actor_allocate (child, &child_box, flags);
 
       full_h += priv->spacing + child_h;
