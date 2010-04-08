@@ -71,6 +71,13 @@ struct _MxApplicationClass
 
   /* signals */
   void          (*actions_changed) (MxApplication *app);
+
+  /* padding for future expansion */
+  void (*_padding_0) (void);
+  void (*_padding_1) (void);
+  void (*_padding_2) (void);
+  void (*_padding_3) (void);
+  void (*_padding_4) (void);
 };
 
 GType mx_application_get_type (void) G_GNUC_CONST;

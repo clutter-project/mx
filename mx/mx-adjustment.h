@@ -74,6 +74,13 @@ struct _MxAdjustmentClass
 
   /*< public >*/
   void (* changed) (MxAdjustment *adjustment);
+
+  /* padding for future expansion */
+  void (*_padding_0) (void);
+  void (*_padding_1) (void);
+  void (*_padding_2) (void);
+  void (*_padding_3) (void);
+  void (*_padding_4) (void);
 };
 
 GType mx_adjustment_get_type (void) G_GNUC_CONST;

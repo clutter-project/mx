@@ -70,6 +70,14 @@ struct _MxFloatingWidgetClass
 
   void (*floating_pick) (ClutterActor *actor, const ClutterColor *color);
   void (*floating_paint) (ClutterActor *actor);
+
+
+  /* padding for future expansion */
+  void (*_padding_0) (void);
+  void (*_padding_1) (void);
+  void (*_padding_2) (void);
+  void (*_padding_3) (void);
+  void (*_padding_4) (void);
 };
 
 GType mx_floating_widget_get_type (void) G_GNUC_CONST;

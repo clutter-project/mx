@@ -66,6 +66,13 @@ struct _MxStyleClass
   GObjectClass parent_class;
 
   void (* changed) (MxStyle *style);
+
+  /* padding for future expansion */
+  void (*_padding_0) (void);
+  void (*_padding_1) (void);
+  void (*_padding_2) (void);
+  void (*_padding_3) (void);
+  void (*_padding_4) (void);
 };
 
 GType mx_style_get_type (void) G_GNUC_CONST;

@@ -67,6 +67,13 @@ typedef struct {
 
 typedef struct {
   MxWidgetClass parent_class;
+
+  /* padding for future expansion */
+  void (*_padding_0) (void);
+  void (*_padding_1) (void);
+  void (*_padding_2) (void);
+  void (*_padding_3) (void);
+  void (*_padding_4) (void);
 } MxIconClass;
 
 GType mx_icon_get_type (void);

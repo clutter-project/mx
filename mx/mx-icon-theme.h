@@ -67,6 +67,13 @@ struct _MxIconThemeClass
   GObjectClass parent_class;
 
   void (* changed) (MxIconTheme *theme);
+
+  /* padding for future expansion */
+  void (*_padding_0) (void);
+  void (*_padding_1) (void);
+  void (*_padding_2) (void);
+  void (*_padding_3) (void);
+  void (*_padding_4) (void);
 };
 
 GType mx_icon_theme_get_type (void) G_GNUC_CONST;

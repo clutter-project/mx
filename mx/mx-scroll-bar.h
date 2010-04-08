@@ -68,6 +68,13 @@ struct _MxScrollBarClass
   /* signals */
   void (*scroll_start) (MxScrollBar *bar);
   void (*scroll_stop)  (MxScrollBar *bar);
+
+  /* padding for future expansion */
+  void (*_padding_0) (void);
+  void (*_padding_1) (void);
+  void (*_padding_2) (void);
+  void (*_padding_3) (void);
+  void (*_padding_4) (void);
 };
 
 GType mx_scroll_bar_get_type (void) G_GNUC_CONST;

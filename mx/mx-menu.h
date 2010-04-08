@@ -77,6 +77,13 @@ struct _MxMenuClass
 
   void (*action_activated) (MxMenu   *menu,
                             MxAction *action);
+
+  /* padding for future expansion */
+  void (*_padding_0) (void);
+  void (*_padding_1) (void);
+  void (*_padding_2) (void);
+  void (*_padding_3) (void);
+  void (*_padding_4) (void);
 };
 
 GType mx_menu_get_type (void);

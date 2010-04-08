@@ -75,6 +75,14 @@ typedef struct {
 
   void (* error_loading) (MxTextureCache *self,
                           GError           *error);
+
+
+  /* padding for future expansion */
+  void (*_padding_0) (void);
+  void (*_padding_1) (void);
+  void (*_padding_2) (void);
+  void (*_padding_3) (void);
+  void (*_padding_4) (void);
 } MxTextureCacheClass;
 
 GType mx_texture_cache_get_type (void);

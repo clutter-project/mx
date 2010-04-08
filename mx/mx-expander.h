@@ -73,6 +73,13 @@ typedef struct {
   void (* expand_complete)   (MxExpander *expander);
   void (* contract_complete) (MxExpander *expander);
 
+  /* padding for future expansion */
+  void (*_padding_0) (void);
+  void (*_padding_1) (void);
+  void (*_padding_2) (void);
+  void (*_padding_3) (void);
+  void (*_padding_4) (void);
+
 } MxExpanderClass;
 
 GType mx_expander_get_type (void);

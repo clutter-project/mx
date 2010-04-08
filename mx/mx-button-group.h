@@ -70,6 +70,13 @@ struct _MxButtonGroup
 struct _MxButtonGroupClass
 {
   GInitiallyUnownedClass parent_class;
+
+  /* padding for future expansion */
+  void (*_padding_0) (void);
+  void (*_padding_1) (void);
+  void (*_padding_2) (void);
+  void (*_padding_3) (void);
+  void (*_padding_4) (void);
 };
 
 GType mx_button_group_get_type (void) G_GNUC_CONST;

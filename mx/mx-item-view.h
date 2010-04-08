@@ -75,6 +75,13 @@ typedef struct {
 
 typedef struct {
   MxGridClass parent_class;
+
+  /* padding for future expansion */
+  void (*_padding_0) (void);
+  void (*_padding_1) (void);
+  void (*_padding_2) (void);
+  void (*_padding_3) (void);
+  void (*_padding_4) (void);
 } MxItemViewClass;
 
 GType mx_item_view_get_type (void);
