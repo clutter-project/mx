@@ -12,7 +12,7 @@ MxButton
 {
   color: #009bce;
   -mx-border-image-transition-duration: 120;
-  padding: 10;
+  padding: 5;
   border-image: url("button.png") 10;
 }
 
@@ -32,7 +32,7 @@ MxButton:hover
 MxButton:active, MxButton:checked
 {
   -mx-border-image-transition-duration: 0;
-  padding: 11 10 9 10;
+  padding: 6 5 4 5;
   border-image: url("button-active.png") 10;
 }
 
