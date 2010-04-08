@@ -119,13 +119,44 @@ G_DEFINE_TYPE_WITH_CODE (MxTable, mx_table, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
                                                 mx_focusable_iface_init));
 
+ClutterActor*
+mx_table_find_actor_at (MxTable *table,
+                        int      row,
+                        int      column)
+{
+  MxTablePrivate *priv;
+  GList *l;
+
+  priv = table->priv;
+
+  for (l = priv->children; l; l = g_list_next (l))
+    {
+      MxTableChild *child;
+      ClutterActor *actor_child = CLUTTER_ACTOR (l->data);
+
+      child = (MxTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (table),
+                                                                 actor_child);
+
+      if (child->row == row && child->col == column)
+        return actor_child;
+    }
+
+  return NULL;
+}
+
 static MxFocusable*
 mx_table_move_focus (MxFocusable      *focusable,
                      MxFocusDirection  direction,
                      MxFocusable      *from)
 {
   MxTablePrivate *priv = MX_TABLE (focusable)->priv;
+  MxTable *table = MX_TABLE (focusable);
   GList *l, *childlink;
+  MxTableChild *child_meta;
+  ClutterActor *child_actor;
+  MxFocusable *focused;
+  gint row, column;
+  ClutterActor *found;
 
   /* find the current focus */
   childlink = g_list_find (priv->children, from);
@@ -133,15 +164,19 @@ mx_table_move_focus (MxFocusable      *focusable,
   if (!childlink)
     return NULL;
 
+  child_actor = CLUTTER_ACTOR (childlink->data);
+  child_meta = (MxTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (focusable),
+                                                                  child_actor);
+
   /* find the next widget to focus */
-  if (direction == MX_FOCUS_DIRECTION_NEXT)
+  switch (direction)
     {
+    case MX_FOCUS_DIRECTION_NEXT:
+
       for (l = childlink->next; l; l = g_list_next (l))
         {
           if (MX_IS_FOCUSABLE (l->data))
             {
-              MxFocusable *focused;
-
               focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data),
                                                    MX_FOCUS_HINT_FIRST);
 
@@ -152,15 +187,13 @@ mx_table_move_focus (MxFocusable      *focusable,
 
       /* no next widgets to focus */
       return NULL;
-    }
-  else if (direction == MX_FOCUS_DIRECTION_PREVIOUS)
-    {
+
+    case MX_FOCUS_DIRECTION_PREVIOUS:
+
       for (l = g_list_previous (childlink); l; l = g_list_previous (l))
         {
           if (MX_IS_FOCUSABLE (l->data))
             {
-              MxFocusable *focused;
-
               focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data),
                                                    MX_FOCUS_HINT_LAST);
 
@@ -168,6 +201,108 @@ mx_table_move_focus (MxFocusable      *focusable,
                   return focused;
             }
         }
+
+      /* no widget found in the previous position */
+      return NULL;
+
+    case MX_FOCUS_DIRECTION_UP:
+      /* move focus up */
+
+      row = child_meta->row - 1;
+      column = child_meta->col;
+
+      focused = NULL;
+
+      while (!focused && row >= 0)
+        {
+
+          found = mx_table_find_actor_at (table, row, column);
+
+          if (MX_IS_FOCUSABLE (found))
+            {
+              focused = mx_focusable_accept_focus (MX_FOCUSABLE (found),
+                                                   MX_FOCUS_HINT_FIRST);
+            }
+
+          row--;
+        }
+
+      return focused;
+
+
+    case MX_FOCUS_DIRECTION_DOWN:
+      /* move focus down */
+
+      row = child_meta->row + 1;
+      column = child_meta->col;
+
+      focused = NULL;
+
+      while (!focused && row < priv->n_rows)
+        {
+          found = mx_table_find_actor_at (table, row, column);
+
+          if (MX_IS_FOCUSABLE (found))
+            {
+              focused = mx_focusable_accept_focus (MX_FOCUSABLE (found),
+                                                   MX_FOCUS_HINT_FIRST);
+            }
+
+          row++;
+        }
+
+      return focused;
+
+
+    case MX_FOCUS_DIRECTION_LEFT:
+      /* move focus left */
+
+      row = child_meta->row;
+      column = child_meta->col - 1;
+
+      focused = NULL;
+
+      while (!focused && column >= 0)
+        {
+          found = mx_table_find_actor_at (table, row, column);
+
+          if (MX_IS_FOCUSABLE (found))
+            {
+              focused = mx_focusable_accept_focus (MX_FOCUSABLE (found),
+                                                   MX_FOCUS_HINT_FIRST);
+            }
+
+          column--;
+        }
+
+      return focused;
+
+
+    case MX_FOCUS_DIRECTION_RIGHT:
+      /* move focus right */
+
+      row = child_meta->row;
+      column = child_meta->col + 1;
+
+      focused = NULL;
+
+      while (!focused && column < priv->n_cols)
+        {
+          found = mx_table_find_actor_at (table, row, column);
+
+          if (MX_IS_FOCUSABLE (found))
+            {
+              focused = mx_focusable_accept_focus (MX_FOCUSABLE (found),
+                                                   MX_FOCUS_HINT_FIRST);
+            }
+
+          column++;
+        }
+
+      return focused;
+
+    default:
+      break;
     }
 
   return NULL;
