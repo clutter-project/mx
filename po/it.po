@@ -2,12 +2,12 @@
 # Copyright (C) 2009 the mx copyright holder
 # This file is distributed under the same license as the mx package.
 # Milo Casagrande <milo@ubuntu.com>, 2009.
-#
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: mx\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-26 12:45+0000\n"
+"POT-Creation-Date: 2010-04-07 09:46+0000\n"
 "PO-Revision-Date: 2009-07-22 22:05+0200\n"
 "Last-Translator: Milo Casagrande <milo@ubuntu.com>\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
@@ -15,80 +15,75 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: mx/mx-gtk-light-switch.c:232
+#: ../mx-gtk/mx-gtk-light-switch.c:96
 msgid "Unavailable"
 msgstr "Non disponibile"
 
-#. TRANSLATORS: If this string takes more than four or five characters in
-#. * your language, please use the MEDIUM VERTICAL BAR unicode character
-#. * instead
-#: mx/mx-gtk-light-switch.c:252 mx/mx-gtk-light-switch.c:326
-msgid "On"
-msgstr "On"
-
-#. Draw the second label; "Off"
-#. TRANSLATORS: If this string takes more than four or five characters in
-#. * your language, please use the WHITE CIRCLE U+25CB unicode character
-#. * instead
-#: mx/mx-gtk-light-switch.c:271 mx/mx-gtk-light-switch.c:324
-msgid "Off"
-msgstr "Off"
-
-#: mx/mx-utils.c:93
+#: ../mx/mx-utils.c:94
 msgid "Less than a minute ago"
 msgstr "Meno di un minuto fa"
 
-#: mx/mx-utils.c:97
+#: ../mx/mx-utils.c:98
 msgid "A few minutes ago"
 msgstr "Alcuni minuti fa"
 
-#: mx/mx-utils.c:101
+#: ../mx/mx-utils.c:102
 msgid "A couple of hours ago"
 msgstr "Un paio d'ore fa"
 
-#: mx/mx-utils.c:108
+#: ../mx/mx-utils.c:109
 msgid "Earlier today"
 msgstr "Oggi"
 
-#: mx/mx-utils.c:111
+#: ../mx/mx-utils.c:112
 msgid "Yesterday"
 msgstr "Ieri"
 
 # (ndt) giorno della settimana
-#: mx/mx-utils.c:119
+#: ../mx/mx-utils.c:120
 #, c-format
 msgid "On %A"
 msgstr "%A"
 
-#: mx/mx-utils.c:125
+#: ../mx/mx-utils.c:126
 msgid "Unknown"
 msgstr "Sconosciuto"
 
-#: mx/mx-utils.c:132
+#: ../mx/mx-utils.c:133
 msgid "Last week"
 msgstr "La scorsa settimana"
 
-#: mx/mx-utils.c:135
+#: ../mx/mx-utils.c:136
 msgid "A couple of weeks ago"
 msgstr "Un paio di settimane fa"
 
-#: mx/mx-utils.c:141
+#: ../mx/mx-utils.c:142
 msgid "This month"
 msgstr "Questo mese"
 
 #. Now Jan., last used in Dec.
-#: mx/mx-utils.c:145
+#: ../mx/mx-utils.c:146
 msgid "Last month"
 msgstr "Lo scorso mese"
 
-#: mx/mx-utils.c:148
+#: ../mx/mx-utils.c:149
 msgid "This year"
 msgstr "Quest'anno"
 
-#: mx/mx-utils.c:151
+#: ../mx/mx-utils.c:152
 msgid "Last year"
 msgstr "Lo scorso anno"
 
-#: mx/mx-utils.c:153
+#: ../mx/mx-utils.c:154
 msgid "Ages ago"
 msgstr "Anni fa"
+
+#: ../mx/mx-application.c:311
+msgid "Raise application"
+msgstr "Sposta applicazione"
+
+#~ msgid "On"
+#~ msgstr "On"
+
+#~ msgid "Off"
+#~ msgstr "Off"
