@@ -175,17 +175,16 @@ motion_event (ClutterActor *actor, ClutterMotionEvent *event,
 int
 main (int argc, char *argv[])
 {
+  MxApplication *application;
+  MxWindow *window;
   ClutterActor *stage, *button2, *table;
   ClutterActor *button1, *button3, *button4, *button5, *button6, *button7,
                *button8, *button9, *button10;
 
-  clutter_init (&argc, &argv);
+  application = mx_application_new (&argc, &argv, "Test Table", 0);
 
-  /* load the style sheet */
-  mx_style_load_from_file (mx_style_get_default (),
-                           "style/default.css", NULL);
-
-  stage = clutter_stage_get_default ();
+  window = mx_application_create_window (application);
+  stage = (ClutterActor *) mx_window_get_clutter_stage (window);
   clutter_stage_set_user_resizable (CLUTTER_STAGE (stage), TRUE);
 
   table = mx_table_new ();
@@ -273,9 +272,7 @@ main (int argc, char *argv[])
 
   g_object_set (G_OBJECT (button2), "keep-aspect-ratio", TRUE, NULL);
 
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage), table);
-
-  clutter_actor_set_position (table, 5, 5);
+  mx_window_set_child (window, table);
 
   g_signal_connect (button4, "clicked", G_CALLBACK (toggle_expand), button6);
   g_signal_connect (button7, "clicked", G_CALLBACK (switch_align), table);
@@ -295,7 +292,7 @@ main (int argc, char *argv[])
   g_debug ("table column count = %d",
            mx_table_get_column_count (MX_TABLE (table)));
 
-  clutter_main ();
+  mx_application_run (application);
 
   return EXIT_SUCCESS;
 }
