@@ -505,6 +505,22 @@ mx_box_layout_move_focus (MxFocusable      *focusable,
   if (!childlink)
     return NULL;
 
+  /* convert left/right and up/down into next/previous */
+  if (priv->orientation == MX_ORIENTATION_HORIZONTAL)
+    {
+      if (direction == MX_FOCUS_DIRECTION_LEFT)
+        direction = MX_FOCUS_DIRECTION_PREVIOUS;
+      else if (direction == MX_FOCUS_DIRECTION_RIGHT)
+        direction = MX_FOCUS_DIRECTION_NEXT;
+    }
+  else
+    {
+      if (direction == MX_FOCUS_DIRECTION_UP)
+        direction = MX_FOCUS_DIRECTION_PREVIOUS;
+      else if (direction == MX_FOCUS_DIRECTION_DOWN)
+        direction = MX_FOCUS_DIRECTION_NEXT;
+    }
+
   /* find the next widget to focus */
   if (direction == MX_FOCUS_DIRECTION_NEXT)
     {
