@@ -254,33 +254,37 @@ mx_focus_manager_event_cb (ClutterStage   *stage,
 
     case CLUTTER_Right:
 
-      priv->focused = mx_focusable_move_focus (priv->focused,
-                                               MX_FOCUS_DIRECTION_RIGHT,
-                                               priv->focused);
+      if (priv->focused)
+        priv->focused = mx_focusable_move_focus (priv->focused,
+                                                 MX_FOCUS_DIRECTION_RIGHT,
+                                                 priv->focused);
       break;
 
 
     case CLUTTER_Left:
 
-      priv->focused = mx_focusable_move_focus (priv->focused,
-                                               MX_FOCUS_DIRECTION_LEFT,
-                                               priv->focused);
+      if (priv->focused)
+        priv->focused = mx_focusable_move_focus (priv->focused,
+                                                 MX_FOCUS_DIRECTION_LEFT,
+                                                 priv->focused);
       break;
 
 
     case CLUTTER_Up:
 
-      priv->focused = mx_focusable_move_focus (priv->focused,
-                                               MX_FOCUS_DIRECTION_UP,
-                                               priv->focused);
+      if (priv->focused)
+        priv->focused = mx_focusable_move_focus (priv->focused,
+                                                 MX_FOCUS_DIRECTION_UP,
+                                                 priv->focused);
       break;
 
 
     case CLUTTER_Down:
 
-      priv->focused = mx_focusable_move_focus (priv->focused,
-                                               MX_FOCUS_DIRECTION_DOWN,
-                                               priv->focused);
+      if (priv->focused)
+        priv->focused = mx_focusable_move_focus (priv->focused,
+                                                 MX_FOCUS_DIRECTION_DOWN,
+                                                 priv->focused);
       break;
 
     default:
