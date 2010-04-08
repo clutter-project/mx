@@ -4,6 +4,13 @@ dist_style_DATA = \
 		button-active.png \
 		button-hover.png \
 		button.png \
+		checkbox-background.png \
+		checkbox-background-active.png \
+		checkbox-background-disabled.png \
+		checkbox-background-focus.png \
+		checkbox-background-hover.png \
+		checkbox-check.png \
+		checkbox-check-disabled.png \
 		combobox.png \
 		combobox-hover.png \
 		combobox-active.png \

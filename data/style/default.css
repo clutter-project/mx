@@ -460,3 +460,24 @@ MxToolbar MxPathBarButton.End:active {
   border-image: url('pathbar-button-last-active.png') 5;
 }
 
+MxButton.check-box {
+  padding: 9;
+  border-image: url('checkbox-background.png') 5;
+}
+
+MxButton.check-box:hover,
+MxButton.check-box:active {
+  padding: 9;
+  border-image: url('checkbox-background-hover.png') 5;
+}
+
+MxButton.check-box:disabled {
+  padding: 9;
+  border-image: url('checkbox-background-disabled.png') 5;
+}
+
+MxButton.check-box:checked {
+  padding: 9;
+  background-image: url('checkbox-check.png');
+  border-image: url('checkbox-background.png') 5;
+}
