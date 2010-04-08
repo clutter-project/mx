@@ -65,34 +65,77 @@ mx_focusable_move_focus (MxFocusable      *focusable,
 
   if (moved)
     return moved;
-  else
+
+
+  /* try and pass the focus up to something that can manage it */
+  actor = CLUTTER_ACTOR (focusable);
+  parent = clutter_actor_get_parent (actor);
+
+  /* special case the stage */
+  if (CLUTTER_IS_STAGE (parent))
     {
-      /* try and pass the focus up to something that can manage it */
-      actor = CLUTTER_ACTOR (focusable);
-      parent = clutter_actor_get_parent (actor);
+      GList *children, *l;
+      GList *child_link;
 
-      /* the parent will only have knowledge of its direct children
-       * that are focusable.
-       */
-      if (MX_IS_FOCUSABLE (actor))
-        from = MX_FOCUSABLE (actor);
+      children = clutter_container_get_children (CLUTTER_CONTAINER (parent));
 
-      while (parent)
+      /* find the current focused widget */
+      child_link = g_list_find (children, focusable);
+
+      if (direction == MX_FOCUS_DIRECTION_NEXT)
         {
-          if (MX_IS_FOCUSABLE (parent))
+          /* find the next widget to focus */
+          for (l = child_link->next; l; l = g_list_next (l))
             {
-              moved = mx_focusable_move_focus (MX_FOCUSABLE (parent), direction,
-                                               from);
-              if (moved)
-                break;
+              if (MX_IS_FOCUSABLE (l->data))
+                {
+                  moved = mx_focusable_accept_focus (l->data,
+                                                     MX_FOCUS_HINT_FIRST);
+                  if (moved)
+                    break;
+                }
             }
-
-          actor = parent;
-          parent = clutter_actor_get_parent (actor);
+        }
+      else if (direction == MX_FOCUS_DIRECTION_PREVIOUS)
+        {
+          /* find the previous widget to focus */
+          for (l = child_link->next; l; l = g_list_previous (l))
+            {
+              if (MX_IS_FOCUSABLE (l->data))
+                {
+                  moved = mx_focusable_accept_focus (l->data,
+                                                     MX_FOCUS_HINT_LAST);
+                  if (moved)
+                    break;
+                }
+            }
         }
 
+      g_list_free (children);
       return moved;
     }
+
+  /* the parent will only have knowledge of its direct children
+   * that are focusable.
+   */
+  if (MX_IS_FOCUSABLE (actor))
+    from = MX_FOCUSABLE (actor);
+
+  while (parent)
+    {
+      if (MX_IS_FOCUSABLE (parent))
+        {
+          moved = mx_focusable_move_focus (MX_FOCUSABLE (parent), direction,
+                                           from);
+          if (moved)
+            break;
+        }
+
+      actor = parent;
+      parent = clutter_actor_get_parent (actor);
+    }
+
+  return moved;
 }
 
 MxFocusable *
