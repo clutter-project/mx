@@ -222,47 +222,76 @@ mx_focus_manager_event_cb (ClutterStage   *stage,
   if (event->type != CLUTTER_KEY_PRESS)
     return FALSE;
 
+  old_focus = priv->focused;
+
   switch (event->key.keyval)
     {
-  case CLUTTER_Tab:
+    case CLUTTER_Tab:
 
-    if (!priv->focused)
-      return mx_focus_manager_ensure_focused (manager, stage);
+      if (!priv->focused)
+        return mx_focus_manager_ensure_focused (manager, stage);
 
-    if (event->key.modifier_state & CLUTTER_SHIFT_MASK)
-      {
-        direction = MX_FOCUS_DIRECTION_PREVIOUS;
-        hint = MX_FOCUS_HINT_LAST;
-      }
-    else
-      {
-        direction = MX_FOCUS_DIRECTION_NEXT;
-        hint = MX_FOCUS_HINT_FIRST;
-      }
+      if (event->key.modifier_state & CLUTTER_SHIFT_MASK)
+        {
+          direction = MX_FOCUS_DIRECTION_PREVIOUS;
+          hint = MX_FOCUS_HINT_LAST;
+        }
+      else
+        {
+          direction = MX_FOCUS_DIRECTION_NEXT;
+          hint = MX_FOCUS_HINT_FIRST;
+        }
 
-    old_focus = priv->focused;
-    priv->focused = mx_focusable_move_focus (priv->focused, direction,
-                                             priv->focused);
+      priv->focused = mx_focusable_move_focus (priv->focused, direction,
+                                               priv->focused);
 
-    /* if focusable is NULL, then we reached the end of the focus chain */
-    if (!priv->focused)
-      mx_focus_manager_start_focus (manager, hint);
+      /* if focusable is NULL, then we reached the end of the focus chain */
+      if (!priv->focused)
+        mx_focus_manager_start_focus (manager, hint);
 
-    if (priv->focused != old_focus)
-      g_object_notify (G_OBJECT (manager), "focused");
+      break;
 
-    return TRUE;
-/*
-  case CLUTTER_Right:
-    if (!mx_focusable_move_focus (focusable, MX_FOCUS_DIRECTION_RIGHT))
-      result = mx_focusable_move_focus (focusable, MX_FOCUS_DIRECTION_NEXT);
-    else
-      result = TRUE;
-    break;
-*/
-  default:
+
+    case CLUTTER_Right:
+
+      priv->focused = mx_focusable_move_focus (priv->focused,
+                                               MX_FOCUS_DIRECTION_RIGHT,
+                                               priv->focused);
+      break;
+
+
+    case CLUTTER_Left:
+
+      priv->focused = mx_focusable_move_focus (priv->focused,
+                                               MX_FOCUS_DIRECTION_LEFT,
+                                               priv->focused);
+      break;
+
+
+    case CLUTTER_Up:
+
+      priv->focused = mx_focusable_move_focus (priv->focused,
+                                               MX_FOCUS_DIRECTION_UP,
+                                               priv->focused);
+      break;
+
+
+    case CLUTTER_Down:
+
+      priv->focused = mx_focusable_move_focus (priv->focused,
+                                               MX_FOCUS_DIRECTION_DOWN,
+                                               priv->focused);
+      break;
+
+    default:
       return FALSE;
     }
+
+
+  if (priv->focused != old_focus)
+    g_object_notify (G_OBJECT (manager), "focused");
+
+  return TRUE;
 }
 
 MxFocusManager *
