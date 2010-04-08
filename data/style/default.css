@@ -224,6 +224,7 @@ MxProgressBar MxProgressBarFill {
 }
 
 MxComboBox {
+  color: #009bce;
   padding: 5 11 5 5;
   border-image: url('combobox.png') 4 32 4 4;
   -mx-marker-image: url('combobox-marker.png');
