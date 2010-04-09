@@ -39,7 +39,7 @@ MxButton:active, MxButton:checked
 
 MxEntry
 {
-  padding: 5 6 6 5;
+  padding: 5;
   border-image: url("entry.png") 5;
 }
 
