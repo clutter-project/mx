@@ -430,19 +430,19 @@ MxPathBar > MxEntry {
 MxPathBarButton,
 MxToolbar MxPathBarButton {
   color: black;
-  border-image: url('pathbar-button.png') 4 19 3 3;
+  border-image: url('pathbar-button.png') 4 13 4 4;
   padding: 4 24;
 }
 
 MxPathBarButton:hover,
 MxToolbar MxPathBarButton:hover {
-  border-image: url('pathbar-button-hover.png') 4 19 3 3;
+  border-image: url('pathbar-button-hover.png') 4 13 4 4;
   padding: 4 24;
 }
 
 MxPathBarButton:active,
 MxToolbar MxPathBarButton:active {
-  border-image: url('pathbar-button-active.png') 4 19 3 3;
+  border-image: url('pathbar-button-active.png') 4 13 4 4;
   padding: 4 24;
 }
 
