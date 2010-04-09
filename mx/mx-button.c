@@ -322,6 +322,10 @@ static gboolean
 mx_button_button_press (ClutterActor       *actor,
                         ClutterButtonEvent *event)
 {
+
+  if (mx_widget_get_disabled (MX_WIDGET (actor)))
+    return TRUE;
+
   if (event->button == 1)
     {
       mx_button_push (MX_BUTTON (actor), event);
@@ -336,6 +340,9 @@ static gboolean
 mx_button_button_release (ClutterActor       *actor,
                           ClutterButtonEvent *event)
 {
+  if (mx_widget_get_disabled (MX_WIDGET (actor)))
+    return TRUE;
+
   if (event->button == 1)
     {
       mx_button_pull (MX_BUTTON (actor));
@@ -384,13 +391,19 @@ mx_button_enter (ClutterActor         *actor,
   if (event->source != actor)
     return FALSE;
 
+  /* hide the tooltip */
+  if (mx_widget_get_tooltip_text (widget))
+    mx_widget_show_tooltip (widget);
+
+  /* check if the widget is disabled */
+  if (mx_widget_get_disabled (MX_WIDGET (actor)))
+    return FALSE;
+
+
   if (!button->priv->is_toggled)
     mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "hover");
 
   button->priv->is_hover = 1;
-
-  if (mx_widget_get_tooltip_text (widget))
-    mx_widget_show_tooltip (widget);
 
   return FALSE;
 }
@@ -405,6 +418,15 @@ mx_button_leave (ClutterActor         *actor,
   if (event->source != actor)
     return FALSE;
 
+  /* hide the tooltip */
+  if (mx_widget_get_tooltip_text (widget))
+    mx_widget_hide_tooltip (widget);
+
+  /* check if the widget is disabled */
+  if (mx_widget_get_disabled (MX_WIDGET (actor)))
+    return FALSE;
+
+
   button->priv->is_hover = 0;
 
   if (button->priv->is_pressed)
@@ -418,9 +440,6 @@ mx_button_leave (ClutterActor         *actor,
     mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "checked");
   else
     mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), NULL);
-
-  if (mx_widget_get_tooltip_text (widget))
-    mx_widget_hide_tooltip (widget);
 
   return FALSE;
 }

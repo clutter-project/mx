@@ -676,11 +676,14 @@ mx_widget_enter (ClutterActor         *actor,
   if (event->source != actor)
     return FALSE;
 
-  mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "hover");
-  priv->is_hovered = TRUE;
-
   if (priv->tooltip)
     mx_widget_show_tooltip (widget);
+
+  if (mx_widget_get_disabled (MX_WIDGET (actor)))
+      return TRUE;
+
+  mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "hover");
+  priv->is_hovered = TRUE;
 
   return FALSE;
 }
@@ -695,11 +698,14 @@ mx_widget_leave (ClutterActor         *actor,
   if (event->source != actor)
     return FALSE;
 
-  mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "");
-  priv->is_hovered = FALSE;
-
   if (priv->tooltip)
     mx_tooltip_hide (priv->tooltip);
+
+  if (mx_widget_get_disabled (MX_WIDGET (actor)))
+      return TRUE;
+
+  mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "");
+  priv->is_hovered = FALSE;
 
   return FALSE;
 }
@@ -768,6 +774,9 @@ mx_widget_button_press (ClutterActor       *actor,
 {
   MxWidget *widget = MX_WIDGET (actor);
 
+  if (mx_widget_get_disabled (MX_WIDGET (actor)))
+      return TRUE;
+
   if (event->button == 1)
     mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "active");
 
@@ -781,6 +790,9 @@ mx_widget_button_release (ClutterActor       *actor,
                           ClutterButtonEvent *event)
 {
   MxWidget *widget = MX_WIDGET (actor);
+
+  if (mx_widget_get_disabled (MX_WIDGET (actor)))
+      return TRUE;
 
   if (event->button == 1)
     {
@@ -960,8 +972,6 @@ _mx_stylable_set_style_pseudo_class (MxStylable  *actor,
 static const gchar*
 _mx_stylable_get_style_pseudo_class (MxStylable *actor)
 {
-  MxWidgetPrivate *priv = ((MxWidget *) actor)->priv;
-
   if (mx_widget_get_disabled (MX_WIDGET (actor)))
     return "disabled";
   else

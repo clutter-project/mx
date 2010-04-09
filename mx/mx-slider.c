@@ -191,6 +191,10 @@ on_trough_bg_button_press_event (ClutterActor       *actor,
   if (event->button != 1)
     return FALSE;
 
+  if (mx_widget_get_disabled (MX_WIDGET (actor)))
+    return FALSE;
+
+
   move_handle (self, event->x, event->y);
 
   /* Turn off picking for motion events */
@@ -230,6 +234,9 @@ on_handle_button_press_event (ClutterActor       *actor,
                               MxSlider           *bar)
 {
   MxSliderPrivate *priv = bar->priv;
+
+  if (mx_widget_get_disabled (MX_WIDGET (actor)))
+    return FALSE;
 
   if (event->button != 1)
     return FALSE;
@@ -677,6 +684,11 @@ mx_slider_style_changed_cb (MxSlider *self)
       priv->handle_height = handle_height;
       relayout = TRUE;
     }
+
+  mx_stylable_style_changed (MX_STYLABLE (priv->trough_bg), 0);
+  mx_stylable_style_changed (MX_STYLABLE (priv->fill), 0);
+  mx_stylable_style_changed (MX_STYLABLE (priv->trough), 0);
+  mx_stylable_style_changed (MX_STYLABLE (priv->handle), 0);
 
   if (relayout)
     clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
