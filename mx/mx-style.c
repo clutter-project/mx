@@ -293,6 +293,28 @@ mx_style_transform_css_value (MxStyleSheetValue *css_value,
 
       mx_font_weight_set_from_string (value, css_value->string);
     }
+  else if (pspec->value_type == G_TYPE_STRING)
+    {
+      gchar *stripped, *original;
+      gint len;
+
+      g_value_init (value, pspec->value_type);
+
+
+      original = g_strdup (css_value->string);
+      len = strlen (original);
+
+      if ((original[0] == '\'' && original[len -1] == '\'')
+          || (original[0] == '\"' && original[len -1] == '\"'))
+        {
+          stripped = original + 1;
+          original[len -1] = '\0';
+        }
+      else
+        stripped = original;
+
+      g_value_set_string (value, stripped);
+    }
   else
     {
       GValue strval = { 0, };
