@@ -1,6 +1,7 @@
 *
 {
   font-size: 13;
+  color: #616261;
 }
 
 MxIcon.ResizeGrip
@@ -429,7 +430,7 @@ MxPathBar > MxEntry {
 
 MxPathBarButton,
 MxToolbar MxPathBarButton {
-  color: black;
+  color: #009bce;
   border-image: url('pathbar-button.png') 4 13 4 4;
   padding: 4 24;
 }
