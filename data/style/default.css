@@ -78,46 +78,50 @@ MxScrollView
 
 MxButton#backward-stepper
 {
-  border-image: url("scroll-button-left.png") 5;
+  border-image: none;
+  -mx-content-image: url("scroll-button-left.png");
 }
 
 MxButton#backward-stepper:hover,
 MxButton#backward-stepper:active
 {
-  border-image: url("scroll-button-left-hover.png") 5;
+  -mx-content-image: url("scroll-button-left-hover.png") 5;
 }
 
 MxButton#forward-stepper
 {
-  border-image: url("scroll-button-right.png") 5;
+  border-image: none;
+  -mx-content-image: url("scroll-button-right.png") 5;
 }
 
 MxButton#forward-stepper:hover,
 MxButton#forward-stepper:active
 {
-  border-image: url("scroll-button-right-hover.png") 5;
+  -mx-content-image: url("scroll-button-right-hover.png") 5;
 }
 
 MxButton#up-stepper
 {
-  border-image: url("scroll-button-up.png") 5;
+  border-image: none;
+  -mx-content-image: url("scroll-button-up.png") 5;
 }
 
 MxButton#up-stepper:hover,
 MxButton#up-stepper:active
 {
-  border-image: url("scroll-button-up-hover.png") 5;
+  -mx-content-image: url("scroll-button-up-hover.png") 5;
 }
 
 MxButton#down-stepper
 {
-  border-image: url("scroll-button-down.png") 5;
+  border-image: none;
+  -mx-content-image: url("scroll-button-down.png") 5;
 }
 
 MxButton#down-stepper:hover,
 MxButton#down-stepper:active
 {
-  border-image: url("scroll-button-down-hover.png") 5;
+  -mx-content-image: url("scroll-button-down-hover.png") 5;
 }
 
 MxScrollBar MxButton#vhandle

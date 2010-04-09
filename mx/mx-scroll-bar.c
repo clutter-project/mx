@@ -72,6 +72,8 @@ struct _MxScrollBarPrivate
   gfloat        move_x;
   gfloat        move_y;
 
+  guint         handle_min_size;
+
   /* Trough-click handling. */
   enum { NONE, UP, DOWN }  paging_direction;
   guint             paging_source_id;
@@ -257,6 +259,98 @@ mx_scroll_bar_unmap (ClutterActor *actor)
 }
 
 static void
+mx_scroll_bar_get_preferred_width (ClutterActor *actor,
+                                   gfloat        for_height,
+                                   gfloat       *min_width,
+                                   gfloat       *pref_width)
+{
+  MxScrollBarPrivate *priv = MX_SCROLL_BAR (actor)->priv;
+  MxPadding padding;
+  gfloat width;
+
+  mx_widget_get_padding (MX_WIDGET (actor), &padding);
+
+  if (priv->orientation == MX_ORIENTATION_VERTICAL)
+    {
+      gfloat bg_w, h_w, bs_w, fs_w;
+
+      clutter_actor_get_preferred_width (priv->bw_stepper, -1, NULL, &bs_w);
+      clutter_actor_get_preferred_width (priv->fw_stepper, -1, NULL, &fs_w);
+      clutter_actor_get_preferred_width (priv->trough, -1, NULL, &bg_w);
+      clutter_actor_get_preferred_width (priv->handle, -1, NULL, &h_w);
+
+      h_w += padding.left + padding.right;
+      bs_w += padding.left + padding.right;
+      fs_w += padding.left + padding.right;
+
+      width = MAX (bg_w, MAX (h_w, MAX (bs_w, fs_w)));
+    }
+  else
+    {
+      gfloat fs_w, bs_w;
+
+      clutter_actor_get_preferred_width (priv->bw_stepper, -1, NULL, &bs_w);
+      clutter_actor_get_preferred_width (priv->fw_stepper, -1, NULL, &fs_w);
+
+      width = padding.left + fs_w + priv->handle_min_size + bs_w
+        + padding.right;
+
+    }
+
+  if (min_width)
+    *min_width = width;
+
+  if (pref_width)
+    *pref_width = width;
+}
+
+static void
+mx_scroll_bar_get_preferred_height (ClutterActor *actor,
+                                    gfloat        for_width,
+                                    gfloat       *min_height,
+                                    gfloat       *pref_height)
+{
+  MxScrollBarPrivate *priv = MX_SCROLL_BAR (actor)->priv;
+  MxPadding padding;
+  gfloat height;
+
+  mx_widget_get_padding (MX_WIDGET (actor), &padding);
+
+  if (priv->orientation == MX_ORIENTATION_HORIZONTAL)
+    {
+      gfloat bg_h, h_h, bs_h, fs_h;
+
+      clutter_actor_get_preferred_height (priv->bw_stepper, -1, NULL, &bs_h);
+      clutter_actor_get_preferred_height (priv->fw_stepper, -1, NULL, &fs_h);
+      clutter_actor_get_preferred_height (priv->trough, -1, NULL, &bg_h);
+      clutter_actor_get_preferred_height (priv->handle, -1, NULL, &h_h);
+
+      h_h += padding.top + padding.bottom;
+      bs_h += padding.top + padding.bottom;
+      fs_h += padding.top + padding.bottom;
+
+      height = MAX (bg_h, MAX (h_h, MAX (bs_h, fs_h)));
+    }
+  else
+    {
+      gfloat fs_h, bs_h;
+
+      clutter_actor_get_preferred_height (priv->bw_stepper, -1, NULL, &bs_h);
+      clutter_actor_get_preferred_height (priv->fw_stepper, -1, NULL, &fs_h);
+
+      height = padding.top + fs_h + priv->handle_min_size + bs_h
+        + padding.bottom;
+    }
+
+  if (min_height)
+    *min_height = height;
+
+  if (pref_height)
+    *pref_height = height;
+
+}
+
+static void
 mx_scroll_bar_allocate (ClutterActor          *actor,
                         const ClutterActorBox *box,
                         ClutterAllocationFlags flags)
@@ -267,8 +361,8 @@ mx_scroll_bar_allocate (ClutterActor          *actor,
   gfloat x, y, width, height, stepper_size;
 
   /* Chain up */
-  CLUTTER_ACTOR_CLASS (mx_scroll_bar_parent_class)->
-  allocate (actor, box, flags);
+  CLUTTER_ACTOR_CLASS (mx_scroll_bar_parent_class)->allocate (actor, box,
+                                                              flags);
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
@@ -354,9 +448,10 @@ mx_scroll_bar_allocate (ClutterActor          *actor,
       else
         increment = page_size / (upper - lower);
 
+      min_size = priv->handle_min_size;
+
       mx_stylable_get (MX_STYLABLE (actor),
-                       "min-size", &min_size,
-                       "max-size", &max_size,
+                       "mx-max-size", &max_size,
                        NULL);
 
       if (upper - lower - page_size <= 0)
@@ -405,6 +500,10 @@ static void
 mx_scroll_bar_style_changed (MxWidget *widget, MxStyleChangedFlags flags)
 {
   MxScrollBarPrivate *priv = MX_SCROLL_BAR (widget)->priv;
+
+  mx_stylable_get (MX_STYLABLE (widget),
+                   "mx-min-size", &priv->handle_min_size,
+                   NULL);
 
   mx_stylable_style_changed ((MxStylable *) priv->bw_stepper, flags);
   mx_stylable_style_changed ((MxStylable *) priv->fw_stepper, flags);
@@ -504,6 +603,8 @@ mx_scroll_bar_class_init (MxScrollBarClass *klass)
   object_class->dispose      = mx_scroll_bar_dispose;
   object_class->constructor  = mx_scroll_bar_constructor;
 
+  actor_class->get_preferred_width  = mx_scroll_bar_get_preferred_width;
+  actor_class->get_preferred_height = mx_scroll_bar_get_preferred_height;
   actor_class->allocate       = mx_scroll_bar_allocate;
   actor_class->paint          = mx_scroll_bar_paint;
   actor_class->pick           = mx_scroll_bar_pick;
@@ -558,7 +659,7 @@ mx_stylable_iface_init (MxStylableIface *iface)
 
       is_initialized = TRUE;
 
-      pspec = g_param_spec_uint ("min-size",
+      pspec = g_param_spec_uint ("mx-min-size",
                                  "Minimum grabber size",
                                  "Minimum size of the scroll grabber, in px",
                                  0, G_MAXUINT, 32,
@@ -566,7 +667,7 @@ mx_stylable_iface_init (MxStylableIface *iface)
       mx_stylable_iface_install_property (iface,
                                           MX_TYPE_SCROLL_BAR, pspec);
 
-      pspec = g_param_spec_uint ("max-size",
+      pspec = g_param_spec_uint ("mx-max-size",
                                  "Maximum grabber size",
                                  "Maximum size of the scroll grabber, in px",
                                  0, G_MAXINT16, G_MAXINT16,
