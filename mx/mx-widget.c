@@ -187,7 +187,7 @@ mx_widget_get_property (GObject    *gobject,
       break;
 
     case PROP_DISABLED:
-      g_value_set_boolean (value, priv->is_disabled);
+      g_value_set_boolean (value, mx_widget_get_disabled (actor));
       break;
 
     default:
@@ -962,7 +962,7 @@ _mx_stylable_get_style_pseudo_class (MxStylable *actor)
 {
   MxWidgetPrivate *priv = ((MxWidget *) actor)->priv;
 
-  if (priv->is_disabled)
+  if (mx_widget_get_disabled (MX_WIDGET (actor)))
     return "disabled";
   else
     return ((MxWidget *) actor)->priv->pseudo_class;
@@ -1430,7 +1430,23 @@ mx_widget_set_disabled (MxWidget *widget,
 gboolean
 mx_widget_get_disabled (MxWidget *widget)
 {
+  ClutterActor *parent;
+
   g_return_val_if_fail (MX_IS_WIDGET (widget), FALSE);
 
-  return widget->priv->is_disabled;
+  if (widget->priv->is_disabled)
+    return TRUE;
+
+  /* check if any of the parents are disabled */
+  parent = clutter_actor_get_parent (CLUTTER_ACTOR (widget));
+
+  while (parent)
+    {
+      if (MX_IS_WIDGET (parent) && MX_WIDGET (parent)->priv->is_disabled)
+        return TRUE;
+
+      parent = clutter_actor_get_parent (CLUTTER_ACTOR (parent));
+    }
+
+  return FALSE;
 }
