@@ -145,9 +145,9 @@ MxScrollBar MxButton#hhandle:hover
  */
 
 MxExpander {
-  font-size: 15;
+  font-weight: bold;
   border-image: url('expander-closed.png') 6;
-  padding: 6 12;
+  padding: 3 12;
 }
 
 MxExpander:hover {
@@ -165,20 +165,20 @@ MxExpander:disabled {
 
 
 MxExpander.open-expander {
-  border-image: url('expander-open.png') 36 6 6 6;
+  border-image: url('expander-open.png') 28 6 6 6;
 }
 
 MxExpander.open-expander:hover {
-  border-image: url('expander-open-hover.png') 36 6 6 6;
+  border-image: url('expander-open-hover.png') 28 6 6 6;
 }
 
 MxExpander.open-expander:active {
-  border-image: url('expander-open-active.png') 36 6 6 6;
+  border-image: url('expander-open-active.png') 28 6 6 6;
 }
 
 MxExpander.open-expander:disabled {
   color: #adaead;
-  border-image: url('expander-open-disabled.png') 36 6 6 6;
+  border-image: url('expander-open-disabled.png') 28 6 6 6;
 }
 
 MxExpander > MxIcon#mx-expander-arrow-closed {
