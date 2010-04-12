@@ -383,11 +383,14 @@ void
 mx_focus_manager_move_focus  (MxFocusManager   *manager,
                               MxFocusDirection  direction)
 {
+  MxFocusable *old_focus;
   MxFocusManagerPrivate *priv;
 
   g_return_if_fail (MX_IS_FOCUS_MANAGER (manager));
 
   priv = manager->priv;
+
+  old_focus = priv->focused;
 
   if (priv->focused)
     priv->focused = mx_focusable_move_focus (priv->focused,
@@ -418,5 +421,9 @@ mx_focus_manager_move_focus  (MxFocusManager   *manager,
           break;
         }
     }
+
+  /* Notify if the focus has changed */
+  if (priv->focused != old_focus)
+    g_object_notify (G_OBJECT (manager), "focused");
 }
 
