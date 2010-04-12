@@ -337,6 +337,13 @@ mx_focus_manager_push_focus (MxFocusManager *manager,
     }
 }
 
+/**
+ * mx_focus_manager_move_focus
+ * @manager: the focus manager
+ * @direction: The direction to move focus in
+ *
+ * Moves the current focus in the given direction.
+ */
 void
 mx_focus_manager_move_focus  (MxFocusManager   *manager,
                               MxFocusDirection  direction)

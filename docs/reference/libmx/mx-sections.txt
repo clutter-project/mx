@@ -926,6 +926,7 @@ mx_focus_manager_get_for_stage
 mx_focus_manager_get_stage
 mx_focus_manager_get_focused
 mx_focus_manager_push_focus
+mx_focus_manager_move_focus
 <SUBSECTION Standard>
 MX_FOCUS_MANAGER
 MX_IS_FOCUS_MANAGER
