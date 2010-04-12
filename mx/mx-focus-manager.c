@@ -176,7 +176,9 @@ mx_focus_manager_start_focus (MxFocusManager *manager, MxFocusHint hint)
 }
 
 static gboolean
-mx_focus_manager_ensure_focused (MxFocusManager *manager, ClutterStage *stage)
+mx_focus_manager_ensure_focused (MxFocusManager *manager,
+                                 ClutterStage   *stage,
+                                 MxFocusHint     hint)
 {
   ClutterActor *actor;
   MxFocusManagerPrivate *priv = manager->priv;
@@ -197,10 +199,9 @@ mx_focus_manager_ensure_focused (MxFocusManager *manager, ClutterStage *stage)
 
       /* if we didn't find a focusable, try any children of the stage */
       if (!actor)
-        mx_focus_manager_start_focus (manager, MX_FOCUS_HINT_FIRST);
+        mx_focus_manager_start_focus (manager, hint);
       else
-        priv->focused = mx_focusable_accept_focus (MX_FOCUSABLE (actor),
-                                                   MX_FOCUS_HINT_FIRST);
+        priv->focused = mx_focusable_accept_focus (MX_FOCUSABLE (actor), hint);
 
       if (priv->focused)
         g_object_notify (G_OBJECT (manager), "focused");
@@ -228,9 +229,6 @@ mx_focus_manager_event_cb (ClutterStage   *stage,
     {
     case CLUTTER_Tab:
 
-      if (!priv->focused)
-        return mx_focus_manager_ensure_focused (manager, stage);
-
       if (event->key.modifier_state & CLUTTER_SHIFT_MASK)
         {
           direction = MX_FOCUS_DIRECTION_PREVIOUS;
@@ -241,6 +239,9 @@ mx_focus_manager_event_cb (ClutterStage   *stage,
           direction = MX_FOCUS_DIRECTION_NEXT;
           hint = MX_FOCUS_HINT_FIRST;
         }
+
+      if (!priv->focused)
+        return mx_focus_manager_ensure_focused (manager, stage, hint);
 
       priv->focused = mx_focusable_move_focus (priv->focused, direction,
                                                priv->focused);
@@ -375,6 +376,47 @@ mx_focus_manager_push_focus (MxFocusManager *manager,
       priv->focused = mx_focusable_accept_focus (focusable, MX_FOCUS_HINT_FIRST);
 
       g_object_notify (G_OBJECT (manager), "focused");
+    }
+}
+
+void
+mx_focus_manager_move_focus  (MxFocusManager   *manager,
+                              MxFocusDirection  direction)
+{
+  MxFocusManagerPrivate *priv;
+
+  g_return_if_fail (MX_IS_FOCUS_MANAGER (manager));
+
+  priv = manager->priv;
+
+  if (priv->focused)
+    priv->focused = mx_focusable_move_focus (priv->focused,
+                                             direction,
+                                             priv->focused);
+
+  if (!priv->focused)
+    {
+      /* If we're going next or previous, we wrap around, otherwise
+       * we lose focus (this is the same as the behaviour triggered
+       * with the keys in the event handler).
+       */
+      switch (direction)
+        {
+        case MX_FOCUS_DIRECTION_NEXT:
+          mx_focus_manager_ensure_focused (manager,
+                                           priv->stage,
+                                           MX_FOCUS_HINT_FIRST);
+          break;
+
+        case MX_FOCUS_DIRECTION_PREVIOUS:
+          mx_focus_manager_ensure_focused (manager,
+                                           priv->stage,
+                                           MX_FOCUS_HINT_LAST);
+          break;
+
+        default:
+          break;
+        }
     }
 }
 
