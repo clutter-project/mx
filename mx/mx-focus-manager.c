@@ -404,13 +404,13 @@ mx_focus_manager_move_focus  (MxFocusManager   *manager,
         {
         case MX_FOCUS_DIRECTION_NEXT:
           mx_focus_manager_ensure_focused (manager,
-                                           priv->stage,
+                                           CLUTTER_STAGE (priv->stage),
                                            MX_FOCUS_HINT_FIRST);
           break;
 
         case MX_FOCUS_DIRECTION_PREVIOUS:
           mx_focus_manager_ensure_focused (manager,
-                                           priv->stage,
+                                           CLUTTER_STAGE (priv->stage),
                                            MX_FOCUS_HINT_LAST);
           break;
 
