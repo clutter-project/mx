@@ -201,7 +201,8 @@ mx_focus_manager_ensure_focused (MxFocusManager *manager,
       if (!actor)
         mx_focus_manager_start_focus (manager, hint);
       else
-        priv->focused = mx_focusable_accept_focus (MX_FOCUSABLE (actor), hint);
+        priv->focused = mx_focusable_accept_focus (MX_FOCUSABLE (actor),
+                                                   MX_FOCUS_HINT_NONE);
 
       if (priv->focused)
         g_object_notify (G_OBJECT (manager), "focused");
