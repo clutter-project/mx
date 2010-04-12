@@ -104,6 +104,8 @@ struct _MxBoxLayoutPrivate
   guint            enable_animations : 1;
 
   MxOrientation orientation;
+
+  MxFocusable *last_focus;
 };
 
 void _mx_box_layout_finish_animation (MxBoxLayout *box);
@@ -337,6 +339,9 @@ mx_box_container_remove_actor (ClutterContainer *container,
 
   priv = MX_BOX_LAYOUT (container)->priv;
 
+  if ((ClutterActor *)priv->last_focus == actor)
+    priv->last_focus = NULL;
+
   priv->children = g_list_delete_link (priv->children, item);
   clutter_actor_unparent (actor);
 
@@ -528,13 +533,14 @@ mx_box_layout_move_focus (MxFocusable      *focusable,
         {
           if (MX_IS_FOCUSABLE (l->data))
             {
-              MxFocusable *focused;
+              MxFocusable *focused, *child;
 
-              focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data),
-                                                   MX_FOCUS_HINT_FIRST);
+              child = MX_FOCUSABLE (l->data);
+              focused = mx_focusable_accept_focus (child, MX_FOCUS_HINT_FIRST);
 
               if (focused)
                 {
+                  priv->last_focus = child;
                   update_adjustments (MX_BOX_LAYOUT (focusable), focused);
                   return focused;
                 }
@@ -550,13 +556,14 @@ mx_box_layout_move_focus (MxFocusable      *focusable,
         {
           if (MX_IS_FOCUSABLE (l->data))
             {
-              MxFocusable *focused;
+              MxFocusable *focused, *child;
 
-              focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data),
-                                                   MX_FOCUS_HINT_LAST);
+              child = MX_FOCUSABLE (l->data);
+              focused = mx_focusable_accept_focus (child, MX_FOCUS_HINT_LAST);
 
               if (focused)
                 {
+                  priv->last_focus = child;
                   update_adjustments (MX_BOX_LAYOUT (focusable), focused);
                   return focused;
                 }
@@ -582,6 +589,15 @@ mx_box_layout_accept_focus (MxFocusable *focusable, MxFocusHint hint)
     case MX_FOCUS_HINT_LAST:
       list = g_list_reverse (g_list_copy (priv->children));
       break;
+
+    case MX_FOCUS_HINT_NONE:
+      if (priv->last_focus)
+        {
+          list = g_list_copy (g_list_find (priv->children, priv->last_focus));
+          if (list)
+            break;
+        }
+      /* This intentionally runs into the next case */
 
     default:
     case MX_FOCUS_HINT_FIRST:
