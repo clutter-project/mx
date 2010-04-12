@@ -363,15 +363,21 @@ mx_focus_manager_move_focus  (MxFocusManager   *manager,
       switch (direction)
         {
         case MX_FOCUS_DIRECTION_NEXT:
-          mx_focus_manager_ensure_focused (manager,
-                                           CLUTTER_STAGE (priv->stage),
-                                           MX_FOCUS_HINT_FIRST);
+          if (old_focus)
+            mx_focus_manager_start_focus (manager, MX_FOCUS_HINT_FIRST);
+          else
+            mx_focus_manager_ensure_focused (manager,
+                                             CLUTTER_STAGE (priv->stage),
+                                             MX_FOCUS_HINT_FIRST);
           break;
 
         case MX_FOCUS_DIRECTION_PREVIOUS:
-          mx_focus_manager_ensure_focused (manager,
-                                           CLUTTER_STAGE (priv->stage),
-                                           MX_FOCUS_HINT_LAST);
+          if (old_focus)
+            mx_focus_manager_start_focus (manager, MX_FOCUS_HINT_LAST);
+          else
+            mx_focus_manager_ensure_focused (manager,
+                                             CLUTTER_STAGE (priv->stage),
+                                             MX_FOCUS_HINT_LAST);
           break;
 
         default:
