@@ -546,8 +546,6 @@ mx_adjustment_clamp_page (MxAdjustment *adjustment,
 
   priv = adjustment->priv;
 
-  stop_interpolation (adjustment);
-
   lower = CLAMP (lower, priv->lower, priv->upper - priv->page_size);
   upper = CLAMP (upper, priv->lower + priv->page_size, priv->upper);
 
