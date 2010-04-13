@@ -608,101 +608,6 @@ mx_table_dispose (GObject *gobject)
 
 #define CLAMP_TO_PIXEL(x) ((float)((int)(x)))
 
-/* Utility function to modify a child allocation box with respect to the
- * x/y-fill child properties. Expects childbox to contain the available
- * allocation space.
- */
-static void
-mx_table_allocate_fill (ClutterActor    *child,
-                        ClutterActorBox *childbox,
-                        gdouble          x_align,
-                        gdouble          y_align,
-                        gboolean         x_fill,
-                        gboolean         y_fill)
-{
-  gfloat natural_width, natural_height;
-  gfloat min_width, min_height;
-  gfloat child_width, child_height;
-  gfloat available_width, available_height;
-  ClutterRequestMode request;
-  ClutterActorBox allocation = { 0, };
-
-  available_width  = childbox->x2 - childbox->x1;
-  available_height = childbox->y2 - childbox->y1;
-
-  if (available_width < 0)
-    available_width = 0;
-
-  if (available_height < 0)
-    available_height = 0;
-
-  if (x_fill)
-    {
-      allocation.x1 = childbox->x1;
-      allocation.x2 = (int)(allocation.x1 + available_width);
-    }
-
-  if (y_fill)
-    {
-      allocation.y1 = childbox->y1;
-      allocation.y2 = (int)(allocation.y1 + available_height);
-    }
-
-  /* if we are filling horizontally and vertically then we're done */
-  if (x_fill && y_fill)
-    {
-      *childbox = allocation;
-      return;
-    }
-
-  request = CLUTTER_REQUEST_HEIGHT_FOR_WIDTH;
-  g_object_get (G_OBJECT (child), "request-mode", &request, NULL);
-
-  if (request == CLUTTER_REQUEST_HEIGHT_FOR_WIDTH)
-    {
-      clutter_actor_get_preferred_width (child, available_height,
-                                         &min_width,
-                                         &natural_width);
-
-      child_width = CLAMP (natural_width, min_width, available_width);
-
-      clutter_actor_get_preferred_height (child, child_width,
-                                          &min_height,
-                                          &natural_height);
-
-      child_height = CLAMP (natural_height, min_height, available_height);
-    }
-  else
-    {
-      clutter_actor_get_preferred_height (child, available_width,
-                                          &min_height,
-                                          &natural_height);
-
-      child_height = CLAMP (natural_height, min_height, available_height);
-
-      clutter_actor_get_preferred_width (child, child_height,
-                                         &min_width,
-                                         &natural_width);
-
-      child_width = CLAMP (natural_width, min_width, available_width);
-    }
-
-  if (!x_fill)
-    {
-      allocation.x1 = childbox->x1 + (int)((available_width - child_width) * x_align);
-      allocation.x2 = allocation.x1 + (int) child_width;
-    }
-
-  if (!y_fill)
-    {
-      allocation.y1 = childbox->y1 + (int)((available_height - child_height) * y_align);
-      allocation.y2 = allocation.y1 + (int) child_height;
-    }
-
-  *childbox = allocation;
-
-}
-
 static void
 mx_table_calculate_col_widths (MxTable *table,
                                gint     for_width)
@@ -1341,8 +1246,9 @@ mx_table_preferred_allocate (ClutterActor          *self,
       ClutterActor *child;
       ClutterActorBox childbox;
       gint child_x, child_y;
-      gdouble x_align, y_align;
+      gdouble x_align_d, y_align_d;
       gboolean x_fill, y_fill;
+      MxAlign x_align, y_align;
 
       child = CLUTTER_ACTOR (list->data);
 
@@ -1356,10 +1262,24 @@ mx_table_preferred_allocate (ClutterActor          *self,
       row = meta->row;
       row_span = meta->row_span;
       col_span = meta->col_span;
-      x_align = meta->x_align;
-      y_align = meta->y_align;
+      x_align_d = meta->x_align;
+      y_align_d = meta->y_align;
       x_fill = meta->x_fill;
       y_fill = meta->y_fill;
+
+      /* Convert to MxAlign */
+      if (x_align_d < 1.0 / 3.0)
+        x_align = MX_ALIGN_START;
+      else if (x_align_d > 2.0 / 3.0)
+        x_align = MX_ALIGN_END;
+      else
+        x_align = MX_ALIGN_MIDDLE;
+      if (y_align_d < 1.0 / 3.0)
+        y_align = MX_ALIGN_START;
+      else if (y_align_d > 2.0 / 3.0)
+        y_align = MX_ALIGN_END;
+      else
+        y_align = MX_ALIGN_MIDDLE;
 
       /* initialise the width and height */
       col_width = columns[col].final_size;
@@ -1427,7 +1347,7 @@ mx_table_preferred_allocate (ClutterActor          *self,
       childbox.y2 = (float) MAX (0, child_y + row_height);
 
 
-      mx_table_allocate_fill (child, &childbox, x_align, y_align, x_fill, y_fill);
+      mx_allocate_align_fill (child, &childbox, x_align, y_align, x_fill, y_fill);
 
       clutter_actor_allocate (child, &childbox, flags);
     }
