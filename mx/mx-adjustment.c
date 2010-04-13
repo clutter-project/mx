@@ -812,8 +812,6 @@ mx_adjustment_set_values (MxAdjustment *adjustment,
 
   priv = adjustment->priv;
 
-  stop_interpolation (adjustment);
-
   emit_changed = FALSE;
 
   g_object_freeze_notify (G_OBJECT (adjustment));
