@@ -173,11 +173,11 @@ mx_texture_frame_paint (ClutterActor *self)
   ty2 = (tex_height - priv->bottom) / tex_height;
 
   ex = width - priv->right;
-  if (ex < 0)
+  if (ex < priv->right)
     ex = priv->right;           /* FIXME ? */
 
   ey = height - priv->bottom;
-  if (ey < 0)
+  if (ey < priv->bottom)
     ey = priv->bottom;          /* FIXME ? */
 
   opacity = clutter_actor_get_paint_opacity (self);
@@ -201,47 +201,56 @@ mx_texture_frame_paint (ClutterActor *self)
     GLfloat rectangles[] =
     {
       /* top left corner */
-      0, 0, priv->left, priv->top,
+      0, 0,
+      priv->left, priv->top,
       0.0, 0.0,
       tx1, ty1,
 
       /* top middle */
-      priv->left, 0, ex, priv->top,
+      priv->left, 0,
+      MAX (priv->left, ex), priv->top,
       tx1, 0.0,
       tx2, ty1,
 
       /* top right */
-      ex, 0, width, priv->top,
+      ex, 0,
+      MAX (ex + priv->right, width), priv->top,
       tx2, 0.0,
       1.0, ty1,
 
       /* mid left */
-      0, priv->top, priv->left, ey,
+      0, priv->top,
+      priv->left,  ey,
       0.0, ty1,
       tx1, ty2,
 
       /* center */
-      priv->left, priv->top, ex, ey,
+      priv->left, priv->top,
+      ex, ey,
       tx1, ty1,
       tx2, ty2,
 
       /* mid right */
-      ex, priv->top, width, ey,
+      ex, priv->top,
+      MAX (ex + priv->right, width), ey,
       tx2, ty1,
       1.0, ty2,
 
       /* bottom left */
-      0, ey, priv->left, height,
+      0, ey,
+      priv->left, MAX (ey + priv->bottom, height),
       0.0, ty2,
       tx1, 1.0,
 
       /* bottom center */
-      priv->left, ey, ex, height,
+      priv->left, ey,
+      ex, MAX (ey + priv->bottom, height),
       tx1, ty2,
       tx2, 1.0,
 
       /* bottom right */
-      ex, ey, width, height,
+      ex, ey,
+      MAX (ex + priv->right, width), MAX (ey + priv->bottom, height),
       tx2, ty2,
       1.0, 1.0
     };
