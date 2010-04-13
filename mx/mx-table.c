@@ -434,8 +434,8 @@ mx_container_remove_actor (ClutterContainer *container,
       ClutterActor *child = CLUTTER_ACTOR (l->data);
       meta = (MxTableChild *) clutter_container_get_child_meta (container,
                                                                   child);
-      rows = MAX (rows, meta->row + 1);
-      cols = MAX (cols, meta->col + 1);
+      rows = MAX (rows, meta->row + meta->row_span);
+      cols = MAX (cols, meta->col + meta->col_span);
     }
   priv->n_rows = rows;
   priv->n_cols = cols;
