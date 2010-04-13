@@ -108,6 +108,8 @@ struct _MxTablePrivate
 
   GArray *columns;
   GArray *rows;
+
+  MxFocusable *last_focus;
 };
 
 static void mx_container_iface_init (ClutterContainerIface *iface);
@@ -181,7 +183,10 @@ mx_table_move_focus (MxFocusable      *focusable,
                                                    MX_FOCUS_HINT_FIRST);
 
               if (focused)
+                {
+                  priv->last_focus = (MxFocusable *)l->data;
                   return focused;
+                }
             }
         }
 
@@ -198,7 +203,10 @@ mx_table_move_focus (MxFocusable      *focusable,
                                                    MX_FOCUS_HINT_LAST);
 
               if (focused)
+                {
+                  priv->last_focus = (MxFocusable *)l->data;
                   return focused;
+                }
             }
         }
 
@@ -222,6 +230,8 @@ mx_table_move_focus (MxFocusable      *focusable,
             {
               focused = mx_focusable_accept_focus (MX_FOCUSABLE (found),
                                                    MX_FOCUS_HINT_FIRST);
+              if (focused)
+                priv->last_focus = (MxFocusable *)found;
             }
 
           row--;
@@ -246,6 +256,8 @@ mx_table_move_focus (MxFocusable      *focusable,
             {
               focused = mx_focusable_accept_focus (MX_FOCUSABLE (found),
                                                    MX_FOCUS_HINT_FIRST);
+              if (focused)
+                priv->last_focus = (MxFocusable *)found;
             }
 
           row++;
@@ -270,6 +282,8 @@ mx_table_move_focus (MxFocusable      *focusable,
             {
               focused = mx_focusable_accept_focus (MX_FOCUSABLE (found),
                                                    MX_FOCUS_HINT_FIRST);
+              if (focused)
+                priv->last_focus = (MxFocusable *)found;
             }
 
           column--;
@@ -294,6 +308,8 @@ mx_table_move_focus (MxFocusable      *focusable,
             {
               focused = mx_focusable_accept_focus (MX_FOCUSABLE (found),
                                                    MX_FOCUS_HINT_FIRST);
+              if (focused)
+                priv->last_focus = (MxFocusable *)found;
             }
 
           column++;
@@ -323,6 +339,15 @@ mx_table_accept_focus (MxFocusable *focusable, MxFocusHint hint)
     case MX_FOCUS_HINT_LAST:
       list = g_list_reverse (g_list_copy (priv->children));
       break;
+
+    case MX_FOCUS_HINT_PRIOR:
+      if (priv->last_focus)
+        {
+          list = g_list_copy (g_list_find (priv->children, priv->last_focus));
+          if (list)
+            break;
+        }
+      /* This intentionally runs into the next switch case */
 
     default:
     case MX_FOCUS_HINT_FIRST:
@@ -394,6 +419,9 @@ mx_container_remove_actor (ClutterContainer *container,
     }
 
   g_object_ref (actor);
+
+  if ((ClutterActor *)priv->last_focus == actor)
+    priv->last_focus = NULL;
 
   priv->children = g_list_delete_link (priv->children, item);
   clutter_actor_unparent (actor);

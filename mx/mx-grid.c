@@ -207,6 +207,8 @@ struct _MxGridPrivate
 
   MxAdjustment *hadjustment;
   MxAdjustment *vadjustment;
+
+  MxFocusable  *last_focus;
 };
 
 enum
@@ -573,6 +575,7 @@ mx_grid_move_focus (MxFocusable      *focusable,
 
               if (focused)
                 {
+                  priv->last_focus = (MxFocusable *)l->data;
                   update_adjustments (MX_GRID (focusable), focused);
                   return focused;
                 }
@@ -595,6 +598,7 @@ mx_grid_move_focus (MxFocusable      *focusable,
 
               if (focused)
                 {
+                  priv->last_focus = (MxFocusable *)l->data;
                   update_adjustments (MX_GRID (focusable), focused);
                   return focused;
                 }
@@ -620,6 +624,15 @@ mx_grid_accept_focus (MxFocusable *focusable, MxFocusHint hint)
     case MX_FOCUS_HINT_LAST:
       list = g_list_reverse (g_list_copy (priv->list));
       break;
+
+    case MX_FOCUS_HINT_PRIOR:
+      if (priv->last_focus)
+        {
+          list = g_list_copy (g_list_find (priv->list, priv->last_focus));
+          if (list)
+            break;
+        }
+      /* This intentionally runs into the next case */
 
     default:
     case MX_FOCUS_HINT_FIRST:
