@@ -999,7 +999,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
   /* update adjustments for scrolling */
   if (priv->vadjustment)
     {
-      gdouble prev_value, step_inc, page_inc;
+      gdouble step_inc, page_inc;
 
       /* Base the adjustment stepping on the size of the first child.
        * In the case where all your children are the same size, this
@@ -1029,14 +1029,11 @@ mx_box_layout_allocate (ClutterActor          *actor,
                     "step-increment", step_inc,
                     "page-increment", page_inc,
                     NULL);
-
-      prev_value = mx_adjustment_get_value (priv->vadjustment);
-      mx_adjustment_set_value (priv->vadjustment, prev_value);
     }
 
   if (priv->hadjustment)
     {
-      gdouble prev_value, step_inc, page_inc;
+      gdouble step_inc, page_inc;
 
       if (priv->children && priv->orientation == MX_ORIENTATION_HORIZONTAL)
         {
@@ -1062,9 +1059,6 @@ mx_box_layout_allocate (ClutterActor          *actor,
                     "step-increment", step_inc,
                     "page-increment", page_inc,
                     NULL);
-
-      prev_value = mx_adjustment_get_value (priv->hadjustment);
-      mx_adjustment_set_value (priv->hadjustment, prev_value);
     }
 
   /* We're allocating our preferred size or higher, so calculate
