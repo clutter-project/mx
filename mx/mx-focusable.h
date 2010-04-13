@@ -58,7 +58,7 @@ typedef enum
 {
   MX_FOCUS_HINT_FIRST,
   MX_FOCUS_HINT_LAST,
-  MX_FOCUS_HINT_NONE
+  MX_FOCUS_HINT_PRIOR
 } MxFocusHint;
 
 struct _MxFocusableIface

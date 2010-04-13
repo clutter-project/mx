@@ -625,7 +625,7 @@ mx_grid_accept_focus (MxFocusable *focusable, MxFocusHint hint)
       list = g_list_reverse (g_list_copy (priv->list));
       break;
 
-    case MX_FOCUS_HINT_NONE:
+    case MX_FOCUS_HINT_PRIOR:
       if (priv->last_focus)
         {
           list = g_list_copy (g_list_find (priv->list, priv->last_focus));
