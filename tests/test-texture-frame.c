@@ -23,6 +23,40 @@
 #include <clutter/clutter.h>
 #include <mx/mx.h>
 
+static gboolean in_drag = FALSE;
+
+static gboolean
+on_button_press (ClutterActor       *stage,
+                 ClutterButtonEvent *event,
+                 gpointer            data)
+{
+  in_drag = (event->button == 1);
+
+  return FALSE;
+}
+
+static gboolean
+on_button_release (ClutterActor       *stage,
+                   ClutterButtonEvent *event,
+                   gpointer            data)
+{
+  if (in_drag)
+    in_drag = FALSE;
+
+  return FALSE;
+}
+
+static gboolean
+on_motion (ClutterActor       *stage,
+           ClutterMotionEvent *event,
+           ClutterActor       *frame)
+{
+  if (in_drag)
+    clutter_actor_set_size (frame, event->x - 50, event->y - 50);
+
+  return FALSE;
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -49,6 +83,12 @@ main (int argc, char *argv[])
   clutter_container_add (CLUTTER_CONTAINER (stage), frame, NULL);
 
   clutter_actor_show (stage);
+
+  g_signal_connect (stage, "motion-event", G_CALLBACK (on_motion), frame);
+  g_signal_connect (stage, "button-press-event",
+                    G_CALLBACK (on_button_press), NULL);
+  g_signal_connect (stage, "button-release-event",
+                    G_CALLBACK (on_button_release), NULL);
 
   clutter_main ();
 
