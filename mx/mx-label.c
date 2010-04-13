@@ -196,6 +196,7 @@ mx_label_allocate (ClutterActor          *actor,
   MxLabelPrivate *priv = MX_LABEL (actor)->priv;
   ClutterActorClass *parent_class;
   ClutterActorBox child_box;
+  gboolean x_fill, y_fill;
   MxPadding padding = { 0, };
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
@@ -208,8 +209,18 @@ mx_label_allocate (ClutterActor          *actor,
   child_box.x2 = box->x2 - box->x1 - padding.right;
   child_box.y2 = box->y2 - box->y1 - padding.bottom;
 
+  /* The default behaviour of ClutterText is to align to the
+   * top-left when it gets more space than is needed. Because
+   * of this behaviour, if we're aligning to the left, we can
+   * assign all our horizontal space to the label without
+   * measuring it (i.e. x-fill), and the same applies for
+   * aligning to the top and vertical space.
+   */
+  x_fill = (priv->x_align == MX_ALIGN_START) ? TRUE : FALSE;
+  y_fill = (priv->y_align == MX_ALIGN_START) ? TRUE : FALSE;
+
   mx_allocate_align_fill (priv->label, &child_box, priv->x_align,
-                          priv->y_align, FALSE, FALSE);
+                          priv->y_align, x_fill, y_fill);
   clutter_actor_allocate (priv->label, &child_box, flags);
 }
 
