@@ -23,7 +23,7 @@ MxTooltipPrivate
 <FILE>mx-focusable</FILE>
 MxFocusable
 MxFocusableIface
-MxDirection
+MxFocusDirection
 MxFocusHint
 mx_focusable_move_focus
 mx_focusable_accept_focus
@@ -391,8 +391,6 @@ mx_widget_show_tooltip
 mx_widget_hide_tooltip
 mx_widget_set_menu
 mx_widget_get_menu
-mx_widget_show_menu
-mx_widget_hide_menu
 mx_widget_long_press_query
 mx_widget_long_press_cancel
 mx_widget_get_background_image
@@ -1111,8 +1109,8 @@ MxToolbarPrivate
 <TITLE>MxSlider</TITLE>
 MxSlider
 mx_slider_new
-mx_slider_set_progress
-mx_slider_get_progress
+mx_slider_set_value
+mx_slider_get_value
 <SUBSECTION Standard>
 MX_SLIDER
 MX_IS_SLIDER
@@ -1230,15 +1228,15 @@ mx_actor_box_clamp_to_pixels
 <FILE>mx-types</FILE>
 MxBorderImage
 MxPadding
-mx_border_image_get_type
 mx_border_image_set_from_string
 mx_font_weight_set_from_string
-mx_padding_get_type
 MxAlign
 MxFontWeight
 MxScrollPolicy
 MxOrientation
 <SUBSECTION Standard>
+mx_padding_get_type
+mx_border_image_get_type
 MX_TYPE_BORDER_IMAGE
 MX_TYPE_PADDING
 </SECTION>
