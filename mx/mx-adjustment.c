@@ -1002,30 +1002,3 @@ mx_adjustment_set_elastic (MxAdjustment *adjustment,
   adjustment->priv->elastic = elastic;
 }
 
-gboolean
-mx_adjustment_clamp (MxAdjustment *adjustment,
-                     gboolean      interpolate,
-                     guint         duration,
-                     gulong        mode)
-{
-  MxAdjustmentPrivate *priv = adjustment->priv;
-  gdouble dest = priv->value;
-
-  if (priv->value < priv->lower)
-    dest = priv->lower;
-
-  if (priv->value > priv->upper - priv->page_size)
-    dest = priv->upper - priv->page_size;
-
-  if (dest != priv->value)
-    {
-      if (interpolate)
-        mx_adjustment_interpolate (adjustment, dest, duration, mode);
-      else
-        mx_adjustment_set_value (adjustment, dest);
-
-      return TRUE;
-    }
-
-  return FALSE;
-}
