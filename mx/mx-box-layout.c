@@ -955,12 +955,11 @@ mx_box_layout_allocate (ClutterActor          *actor,
     return;
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
-  avail_width  = box->x2 - box->x1
-                 - padding.left
-                 - padding.right;
-  avail_height = box->y2 - box->y1
-                 - padding.top
-                 - padding.bottom;
+
+  /* do not take off padding just yet, as we are comparing this to the values
+   * from get_preferred_height/width which will include padding */
+  avail_width  = box->x2 - box->x1;
+  avail_height = box->y2 - box->y1;
 
   if (priv->orientation == MX_ORIENTATION_VERTICAL)
     {
@@ -971,6 +970,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
 
       if (!priv->vadjustment && (pref_height > box->y2 - box->y1))
         {
+          /* allocated less than the preferred height and not scrolling */
           allocate_pref = FALSE;
           extra_space = avail_height - min_height;
         }
@@ -986,6 +986,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
 
       if (!priv->hadjustment && (pref_width > box->x2 - box->x1))
         {
+          /* allocated less than the preferred width and not scrolling */
           allocate_pref = FALSE;
           extra_space = avail_width - min_width;
         }
@@ -993,8 +994,13 @@ mx_box_layout_allocate (ClutterActor          *actor,
         allocate_pref = TRUE;
     }
 
-   pref_width -= padding.left + padding.right;
-   pref_height -= padding.top + padding.bottom;
+  /* remove the padding values from the available and preferred sizes so we
+   * can use them for allocating the children */
+  avail_width -= padding.left + padding.right;
+  avail_height -= padding.top + padding.bottom;
+
+  pref_width -= padding.left + padding.right;
+  pref_height -= padding.top + padding.bottom;
 
   /* update adjustments for scrolling */
   if (priv->vadjustment)
