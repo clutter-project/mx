@@ -66,8 +66,6 @@ struct _MxIconThemeClass
 {
   GObjectClass parent_class;
 
-  void (* changed) (MxIconTheme *theme);
-
   /* padding for future expansion */
   void (*_padding_0) (void);
   void (*_padding_1) (void);

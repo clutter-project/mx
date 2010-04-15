@@ -169,15 +169,6 @@ mx_icon_theme_class_init (MxIconThemeClass *klass)
                                NULL,
                                MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_THEME_NAME, pspec);
-
-  signals[CHANGED] =
-    g_signal_new ("changed",
-                  G_TYPE_FROM_CLASS (klass),
-                  G_SIGNAL_RUN_LAST,
-                  G_STRUCT_OFFSET (MxIconThemeClass, changed),
-                  NULL, NULL,
-                  _mx_marshal_VOID__VOID,
-                  G_TYPE_NONE, 0);
 }
 
 static GKeyFile *
