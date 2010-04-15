@@ -1,0 +1,87 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: mx\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-04-14 09:54+0000\n"
+"PO-Revision-Date: 2010-04-15 09:02+0100\n"
+"Last-Translator: Jon Hedemann <tradomusnordic@gmail.com>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n!=1;\n"
+"X-Poedit-Language: Danish\n"
+"X-Poedit-Country: DENMARK\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: ../mx/mx-application.c:311
+msgid "Raise application"
+msgstr "Bring program i forgrunden"
+
+#: ../mx-gtk/mx-gtk-light-switch.c:96
+msgid "Unavailable"
+msgstr "Utilgængelig"
+
+#: ../mx/mx-utils.c:94
+msgid "Less than a minute ago"
+msgstr "Mindre end ét minut siden"
+
+#: ../mx/mx-utils.c:98
+msgid "A few minutes ago"
+msgstr "Nogle få minutter siden"
+
+#: ../mx/mx-utils.c:102
+msgid "A couple of hours ago"
+msgstr "Et par timer tiden"
+
+#: ../mx/mx-utils.c:109
+msgid "Earlier today"
+msgstr "Tidligere i dag"
+
+#: ../mx/mx-utils.c:112
+msgid "Yesterday"
+msgstr "I går"
+
+#: ../mx/mx-utils.c:120
+#, c-format
+msgid "On %A"
+msgstr "%A"
+
+#: ../mx/mx-utils.c:126
+msgid "Unknown"
+msgstr "Ukendt"
+
+#: ../mx/mx-utils.c:133
+msgid "Last week"
+msgstr "Sidste uge"
+
+#: ../mx/mx-utils.c:136
+msgid "A couple of weeks ago"
+msgstr "Et par uger siden"
+
+#: ../mx/mx-utils.c:142
+msgid "This month"
+msgstr "Denne måned"
+
+#. Now Jan., last used in Dec.
+#: ../mx/mx-utils.c:146
+msgid "Last month"
+msgstr "Sidste måned"
+
+#: ../mx/mx-utils.c:149
+msgid "This year"
+msgstr "I år"
+
+#: ../mx/mx-utils.c:152
+msgid "Last year"
+msgstr "Sidste år"
+
+#: ../mx/mx-utils.c:154
+msgid "Ages ago"
+msgstr "Lang tid siden"
+
