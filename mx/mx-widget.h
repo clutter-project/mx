@@ -115,9 +115,6 @@ void mx_widget_hide_tooltip (MxWidget *widget);
 void      mx_widget_set_menu   (MxWidget *widget,
                                 MxMenu   *menu);
 MxMenu  * mx_widget_get_menu   (MxWidget *widget);
-void      mx_widget_show_menu  (MxWidget *widget, gfloat x, gfloat y);
-void      mx_widget_hide_menu  (MxWidget *widget);
-
 
 gboolean  mx_widget_get_disabled (MxWidget *widget);
 void      mx_widget_set_disabled (MxWidget *widget,
