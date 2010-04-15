@@ -1357,6 +1357,17 @@ mx_widget_paint_background (MxWidget *self)
 
 }
 
+/**
+ * mx_widget_get_available_area:
+ * @widget: A #MxWidget
+ * @allocation: A #ClutterActorBox
+ * @area: A #ClutterActorBox
+ *
+ * Copies @allocation into @area and accounts for the padding values. This
+ * gives the area that is available in which to allocate children with respect
+ * to padding.
+ *
+ */
 void
 mx_widget_get_available_area (MxWidget              *widget,
                               const ClutterActorBox *allocation,
@@ -1371,6 +1382,14 @@ mx_widget_get_available_area (MxWidget              *widget,
   area->y2 = allocation->y2 - allocation->y1 - priv->padding.bottom;
 }
 
+/**
+ * mx_widget_set_menu:
+ * @widget: A #MxWidget
+ * @menu: A #MxMenu
+ *
+ * Set the value of the #MxWidget:menu property.
+ *
+ */
 void
 mx_widget_set_menu (MxWidget *widget,
                     MxMenu   *menu)
@@ -1392,6 +1411,14 @@ mx_widget_set_menu (MxWidget *widget,
   clutter_actor_queue_relayout (CLUTTER_ACTOR (widget));
 }
 
+/**
+ * mx_widget_get_menu:
+ * @widget: A #MxWidget
+ *
+ * Get the object in the #MxWidget:menu property.
+ *
+ * Returns: The current object in the "menu" property.
+ */
 MxMenu *
 mx_widget_get_menu (MxWidget *widget)
 {

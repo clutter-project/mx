@@ -1392,6 +1392,7 @@ mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
 
 /**
  * mx_window_get_window_position:
+ * @window: an #MxWindow
  * @x: (out): A pointer for the x-coordinate
  * @y: (out): A pointer for the y-coordinate
  *

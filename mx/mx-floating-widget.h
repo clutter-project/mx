@@ -57,6 +57,12 @@ typedef struct _MxFloatingWidget MxFloatingWidget;
 typedef struct _MxFloatingWidgetClass MxFloatingWidgetClass;
 typedef struct _MxFloatingWidgetPrivate MxFloatingWidgetPrivate;
 
+/**
+ * MxFloatingWidget:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _MxFloatingWidget
 {
   MxWidget parent;

@@ -751,8 +751,9 @@ mx_combo_box_insert_text (MxComboBox  *box,
  * @box: A #MxComboBox
  * @position: zero indexed position to insert the item at
  * @text: name of the item
+ * @icon: name of an icon from the icon theme
  *
- * Insert an item into the combo box list.
+ * Insert an item with text and an icon into the combo box list.
  *
  */
 void

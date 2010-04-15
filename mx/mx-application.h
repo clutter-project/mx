@@ -54,6 +54,12 @@ typedef struct _MxApplication MxApplication;
 typedef struct _MxApplicationClass MxApplicationClass;
 typedef struct _MxApplicationPrivate MxApplicationPrivate;
 
+/**
+ * MxApplication:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _MxApplication
 {
   GObject parent;
@@ -96,7 +102,7 @@ MxApplication* mx_application_new (gint                 *argc,
 void           mx_application_run  (MxApplication      *application);
 void           mx_application_quit (MxApplication      *application);
 
-MxWindow * mx_application_create_window (MxApplication *app);
+MxWindow * mx_application_create_window (MxApplication *application);
 
 MxApplicationFlags    mx_application_get_flags     (MxApplication *application);
 

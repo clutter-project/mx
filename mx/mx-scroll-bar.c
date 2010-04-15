@@ -1114,6 +1114,7 @@ mx_scroll_bar_new (void)
 
 /**
  * mx_scroll_bar_new_with_adjustment:
+ * @adjustment: an #MxAdjustment
  *
  * Create a new #MxScrollBar with the given adjustment set
  *

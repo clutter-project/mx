@@ -60,6 +60,12 @@ typedef struct _MxButtonGroup MxButtonGroup;
 typedef struct _MxButtonGroupClass MxButtonGroupClass;
 typedef struct _MxButtonGroupPrivate MxButtonGroupPrivate;
 
+/**
+ * MxButtonGroup:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _MxButtonGroup
 {
   GInitiallyUnowned parent;
@@ -71,6 +77,7 @@ struct _MxButtonGroupClass
 {
   GInitiallyUnownedClass parent_class;
 
+  /*< private >*/
   /* padding for future expansion */
   void (*_padding_0) (void);
   void (*_padding_1) (void);

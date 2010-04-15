@@ -89,7 +89,7 @@ void                  mx_entry_set_hint_text    (MxEntry     *entry,
 G_CONST_RETURN gchar *mx_entry_get_hint_text    (MxEntry     *entry);
 
 void                  mx_entry_set_password_char (MxEntry  *entry,
-                                                  gunichar  text);
+                                                  gunichar  password_char);
 gunichar              mx_entry_get_password_char (MxEntry  *entry);
 
 void mx_entry_set_primary_icon_from_file   (MxEntry     *entry,

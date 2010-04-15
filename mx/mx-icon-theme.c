@@ -314,6 +314,15 @@ mx_icon_theme_init (MxIconTheme *self)
   mx_icon_theme_set_theme_name (self, theme);
 }
 
+/**
+ * mx_icon_theme_new:
+ * @void: A #mx_icon_theme_new
+ *
+ * Create a new #MxIconTheme. In most cicumstances, it is more useful to use
+ * #mx_icon_theme_get_default to load the default icon theme.
+ *
+ * Returns: a newly allocated #MxIconTheme.
+ */
 MxIconTheme *
 mx_icon_theme_new (void)
 {
@@ -338,6 +347,14 @@ mx_icon_theme_get_default (void)
   return default_icon_theme;
 }
 
+/**
+ * mx_icon_theme_get_theme_name:
+ * @theme: A #MxIconTheme
+ *
+ * Get the value of the #MxIconTheme:theme-name property.
+ *
+ * Returns: the current value of the "theme-name" property.
+ */
 const gchar *
 mx_icon_theme_get_theme_name (MxIconTheme *theme)
 {
@@ -346,6 +363,17 @@ mx_icon_theme_get_theme_name (MxIconTheme *theme)
   return theme->priv->theme;
 }
 
+/**
+ * mx_icon_theme_set_theme_name:
+ * @theme: A #MxIconTheme
+ * @theme_name: the name of an icon theme to load
+ *
+ * Set the value of the #MxIconTheme:theme-name property. This will cause the
+ * icon theme to be loaded if it differs from the existing theme name. If the
+ * theme could not be loaded, it will fall back to using the default icon theme
+ * (hicolor).
+ *
+ */
 void
 mx_icon_theme_set_theme_name (MxIconTheme *theme,
                               const gchar *theme_name)

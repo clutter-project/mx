@@ -203,6 +203,15 @@ _get_child_meta (MxBoxLayout  *layout,
   return meta;
 }
 
+/**
+ * mx_box_layout_child_get_expand:
+ * @box_layout: A #MxBoxLayout
+ * @child: A #ClutterActor
+ *
+ * Get the value of the #MxBoxLayoutChild:expand property
+ *
+ * Returns: the current value of the "expand" property
+ */
 gboolean
 mx_box_layout_child_get_expand (MxBoxLayout  *box_layout,
                                 ClutterActor *child)
@@ -217,6 +226,15 @@ mx_box_layout_child_get_expand (MxBoxLayout  *box_layout,
   return meta->expand;
 }
 
+/**
+ * mx_box_layout_child_set_expand:
+ * @box_layout: A #MxBoxLayout
+ * @child: A #ClutterActor
+ * @expand: A #gboolean
+ *
+ * Set the value of the #MxBoxLayoutChild:expand property.
+ *
+ */
 void
 mx_box_layout_child_set_expand (MxBoxLayout  *box_layout,
                                 ClutterActor *child,
@@ -234,6 +252,15 @@ mx_box_layout_child_set_expand (MxBoxLayout  *box_layout,
   clutter_actor_queue_relayout (child);
 }
 
+/**
+ * mx_box_layout_child_get_x_fill:
+ * @box_layout: A #MxBoxLayout
+ * @child: A #ClutterActor
+ *
+ * Get the value of the #MxBoxLayoutChild:x-fill property.
+ *
+ * Returns: the current value of the "x-fill" property.
+ */
 gboolean
 mx_box_layout_child_get_x_fill (MxBoxLayout  *box_layout,
                                 ClutterActor *child)
@@ -248,6 +275,15 @@ mx_box_layout_child_get_x_fill (MxBoxLayout  *box_layout,
   return meta->x_fill;
 }
 
+/**
+ * mx_box_layout_child_set_x_fill:
+ * @box_layout: A #MxBoxLayout
+ * @child: A #ClutterActor
+ * @x_fill: A #gboolean
+ *
+ * Set the value of the #MxBoxLayoutChild:x-fill property.
+ *
+ */
 void
 mx_box_layout_child_set_x_fill (MxBoxLayout  *box_layout,
                                 ClutterActor *child,
@@ -265,6 +301,15 @@ mx_box_layout_child_set_x_fill (MxBoxLayout  *box_layout,
   clutter_actor_queue_relayout (child);
 }
 
+/**
+ * mx_box_layout_child_get_y_fill:
+ * @box_layout: An #MxBoxLayout
+ * @child: A #ClutterActor
+ *
+ * Get the value of the #MxBoxLayoutChild:y-fill property
+ *
+ * Returns: the current value of the "y-fill" property
+ */
 gboolean
 mx_box_layout_child_get_y_fill (MxBoxLayout  *box_layout,
                                 ClutterActor *child)
@@ -279,6 +324,15 @@ mx_box_layout_child_get_y_fill (MxBoxLayout  *box_layout,
   return meta->y_fill;
 }
 
+/**
+ * mx_box_layout_child_set_y_fill:
+ * @box_layout: An #MxBoxLayout
+ * @child: A #ClutterActor
+ * @y_fill: A #gboolean
+ *
+ * Set the value of the #MxBoxLayoutChild:y-fill property.
+ *
+ */
 void
 mx_box_layout_child_set_y_fill (MxBoxLayout  *box_layout,
                                 ClutterActor *child,
@@ -296,6 +350,15 @@ mx_box_layout_child_set_y_fill (MxBoxLayout  *box_layout,
   clutter_actor_queue_relayout (child);
 }
 
+/**
+ * mx_box_layout_child_get_x_align:
+ * @box_layout: An #MxBoxLayout
+ * @child: A #ClutterActor
+ *
+ * Get the value of the #MxBoxLayoutChild:x-align property
+ *
+ * Returns: the current value of the "x-align" property
+ */
 MxAlign
 mx_box_layout_child_get_x_align (MxBoxLayout  *box_layout,
                                  ClutterActor *child)
@@ -310,6 +373,15 @@ mx_box_layout_child_get_x_align (MxBoxLayout  *box_layout,
   return meta->x_align;
 }
 
+/**
+ * mx_box_layout_child_set_x_align:
+ * @box_layout: A #MxBoxLayout
+ * @child: A #ClutterActor
+ * @x_align: An #MxAlign
+ *
+ * Set the value of the #MxBoxLayoutChild:x-align property.
+ *
+ */
 void
 mx_box_layout_child_set_x_align (MxBoxLayout  *box_layout,
                                  ClutterActor *child,
@@ -327,6 +399,15 @@ mx_box_layout_child_set_x_align (MxBoxLayout  *box_layout,
   clutter_actor_queue_relayout (child);
 }
 
+/**
+ * mx_box_layout_child_get_y_align:
+ * @box_layout: An #MxBoxLayout
+ * @child: A #ClutterActor
+ *
+ * Get the value of the #MxBoxLayoutChild:y-align property.
+ *
+ * Returns: the current value of the "y-align" property.
+ */
 MxAlign
 mx_box_layout_child_get_y_align (MxBoxLayout  *box_layout,
                                  ClutterActor *child)
@@ -341,6 +422,15 @@ mx_box_layout_child_get_y_align (MxBoxLayout  *box_layout,
   return meta->y_align;
 }
 
+/**
+ * mx_box_layout_child_set_y_align:
+ * @box_layout: An #MxBoxLayout
+ * @child: A #ClutterActor
+ * @y_align: An #MxAlign
+ *
+ * Set the value of the #MxBoxLayoutChild:y-align property.
+ *
+ */
 void
 mx_box_layout_child_set_y_align (MxBoxLayout  *box_layout,
                                  ClutterActor *child,

@@ -889,7 +889,7 @@ mx_button_get_toggled (MxButton *button)
 /**
  * mx_button_set_toggled:
  * @button: a #Mxbutton
- * @checked: #TRUE or #FALSE
+ * @toggled: #TRUE or #FALSE
  *
  * Sets the toggled state of the button. This is only really useful if the
  * button has #toggle-mode mode set to #TRUE.

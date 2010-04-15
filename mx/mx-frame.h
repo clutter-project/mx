@@ -52,6 +52,12 @@ typedef struct _MxFrame MxFrame;
 typedef struct _MxFrameClass MxFrameClass;
 typedef struct _MxFramePrivate MxFramePrivate;
 
+/**
+ * MxFrame:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _MxFrame
 {
   MxBin parent;

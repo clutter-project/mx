@@ -147,6 +147,14 @@ mx_button_group_init (MxButtonGroup *self)
   self->priv = BUTTON_GROUP_PRIVATE (self);
 }
 
+/**
+ * mx_button_group_new:
+ * @void: A #mx_button_group_new
+ *
+ * Create a new #MxButtonGroup.
+ *
+ * Returns: a newly allocated #MxButtonGroup.
+ */
 MxButtonGroup *
 mx_button_group_new (void)
 {
@@ -224,6 +232,14 @@ button_weak_notify (MxButtonGroup *group,
     }
 }
 
+/**
+ * mx_button_group_add:
+ * @group: A #MxButtonGroup
+ * @button: A #MxButton
+ *
+ * Add @button to the #MxButtonGroup.
+ *
+ */
 void
 mx_button_group_add (MxButtonGroup   *group,
                      MxButton        *button)
@@ -244,6 +260,14 @@ mx_button_group_add (MxButtonGroup   *group,
                      group);
 }
 
+/**
+ * mx_button_group_remove:
+ * @group: A #MxButtonGroup
+ * @button: A #MxButton
+ *
+ * Remove @button from the #MxButtonGroup
+ *
+ */
 void
 mx_button_group_remove (MxButtonGroup   *group,
                         MxButton        *button)
@@ -310,6 +334,15 @@ mx_button_group_remove (MxButtonGroup   *group,
     }
 }
 
+/**
+ * mx_button_group_foreach:
+ * @group: A #MxButtonGroup
+ * @callback: A #ClutterCallback
+ * @userdata: A #gpointer
+ *
+ * Calls @callback for each button in the group.
+ *
+ */
 void
 mx_button_group_foreach (MxButtonGroup   *group,
                          ClutterCallback  callback,
@@ -321,6 +354,15 @@ mx_button_group_foreach (MxButtonGroup   *group,
   g_slist_foreach (group->priv->children, (GFunc) callback, userdata);
 }
 
+/**
+ * mx_button_group_set_active_button:
+ * @group: A #MxButtonGroup
+ * @button: A #MxButton
+ *
+ * Set the current active button in the group. The previous active button will
+ * have #MxButton:toggled set to #FALSE.
+ *
+ */
 void
 mx_button_group_set_active_button (MxButtonGroup *group,
                                    MxButton      *button)
@@ -345,6 +387,14 @@ mx_button_group_set_active_button (MxButtonGroup *group,
   g_object_notify (G_OBJECT (group), "active-button");
 }
 
+/**
+ * mx_button_group_get_active_button:
+ * @group: A #MxButtonGroup
+ *
+ * Get the current active button
+ *
+ * Returns: the currently active button
+ */
 MxButton *
 mx_button_group_get_active_button (MxButtonGroup *group)
 {
@@ -357,6 +407,14 @@ mx_button_group_get_active_button (MxButtonGroup *group)
   return priv->active_button;
 }
 
+/**
+ * mx_button_group_set_allow_no_active:
+ * @group: A #MxButtonGroup
+ * @allow_no_active: A #gboolean
+ *
+ * Set the value of the #MxButtonGroup:allow-no-active property.
+ *
+ */
 void
 mx_button_group_set_allow_no_active (MxButtonGroup *group,
                                      gboolean       allow_no_active)
@@ -371,6 +429,14 @@ mx_button_group_set_allow_no_active (MxButtonGroup *group,
     }
 }
 
+/**
+ * mx_button_group_get_allow_no_active:
+ * @group: A #MxButtonGroup
+ *
+ * Get the value of the #MxButtonGroup:allow-no-active property.
+ *
+ * Returns: the value of the "allow-no-active" property.
+ */
 gboolean
 mx_button_group_get_allow_no_active (MxButtonGroup *group)
 {
@@ -379,6 +445,15 @@ mx_button_group_get_allow_no_active (MxButtonGroup *group)
   return group->priv->allow_no_active;
 }
 
+/**
+ * mx_button_group_get_buttons:
+ * @group: A #MxButtonGroup
+ *
+ * Get a list of the buttons in the button group.
+ *
+ * Returns: a list of buttons. The list is owned by the #MxButtonGroup and
+ * should not be modified by the application.
+ */
 G_CONST_RETURN GSList *
 mx_button_group_get_buttons (MxButtonGroup *group)
 {

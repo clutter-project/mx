@@ -579,6 +579,11 @@ mx_application_class_init (MxApplicationClass *klass)
                              G_PARAM_CONSTRUCT_ONLY | MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_FLAGS, pspec);
 
+  /**
+   * MxApplication::actions-changed
+   *
+   * Emitted when an action has been added or removed from the MxApplication.
+   */
   signals[ACTIONS_CHANGED] =
     g_signal_new ("actions-changed",
                   G_TYPE_FROM_CLASS (klass),
@@ -674,6 +679,16 @@ mx_application_new (gint                *argc,
   return app;
 }
 
+/**
+ * mx_application_run:
+ * @application: an MxApplication
+ *
+ * Run the main loop of the application and start processing events. This
+ * function will not return until the application is quit. If the application
+ * is single instance and an existing instance is already running, this will
+ * cause the existing instance to be raised and the function will complete
+ * immediately.
+ */
 void
 mx_application_run (MxApplication *application)
 {
@@ -697,6 +712,13 @@ mx_application_run (MxApplication *application)
   priv->is_running = FALSE;
 }
 
+/**
+ * mx_application_quit:
+ * @application: an #MxApplication
+ *
+ * Stop the application from running and quit the main loop. This will cause
+ * the call to mx_application_run() to complete.
+ */
 void
 mx_application_quit (MxApplication *application)
 {
@@ -888,6 +910,14 @@ mx_application_init_wm (MxApplication *self)
   mx_application_refresh_wm_window (self);
 }
 
+/**
+ * mx_application_get_flags:
+ * @application: an #MxApplication
+ *
+ * Get the application flags that where set on @application when created.
+ *
+ * Returns: the application flags
+ */
 MxApplicationFlags
 mx_application_get_flags (MxApplication *application)
 {
@@ -966,6 +996,14 @@ mx_application_add_window (MxApplication *application,
     mx_window_set_small_screen (window, priv->small_screen);
 }
 
+/**
+ * mx_application_remove_window:
+ * @application: an #MxApplication
+ * @window: an #MxWindow
+ *
+ * Remove the specified window from the application. This will cause the window
+ * to be unreferenced and destroyed unless another reference is held on it.
+ */
 void
 mx_application_remove_window (MxApplication *application,
                               MxWindow      *window)
@@ -1275,6 +1313,13 @@ mx_application_register_actions (MxApplication *application)
   g_signal_emit (application, signals[ACTIONS_CHANGED], 0);
 }
 
+/**
+ * mx_application_add_action:
+ * @application: an #MxApplication
+ * @action: an #MxAction
+ *
+ * Add an action to the application.
+ */
 void
 mx_application_add_action (MxApplication *application,
                            MxAction      *action)
@@ -1294,6 +1339,13 @@ mx_application_add_action (MxApplication *application,
   mx_application_register_actions (application);
 }
 
+/**
+ * mx_application_remove_action:
+ * @application: an #MxApplication
+ * @name: name of the action to remove
+ *
+ * Remove the action with the specified name from the application.
+ */
 void
 mx_application_remove_action (MxApplication *application,
                               const gchar   *name)
@@ -1443,6 +1495,13 @@ mx_application_get_actions (MxApplication *application)
   return g_hash_table_get_values (priv->actions);
 }
 
+/**
+ * mx_application_invoke_action:
+ * @application: an #MxApplication
+ * @name: name of the action to invoke
+ *
+ * Run the named action for the application.
+ */
 void
 mx_application_invoke_action (MxApplication *application,
                               const gchar   *name)
@@ -1480,6 +1539,16 @@ mx_application_invoke_action (MxApplication *application,
     }
 }
 
+/**
+ * mx_application_is_running:
+ * @application: an #MxApplication
+ *
+ * Query whether #MxApplication is running. This will also return #TRUE if the
+ * given #MxApplication is single instance and there is an instance already
+ * running.
+ *
+ * Returns: #TRUE if the application is running
+ */
 gboolean
 mx_application_is_running (MxApplication *application)
 {

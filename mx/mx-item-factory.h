@@ -50,12 +50,13 @@ typedef struct _MxItemFactoryIface MxItemFactoryIface;
 struct _MxItemFactoryIface
 {
   /*< private >*/
-    GTypeInterface g_iface;
+  GTypeInterface g_iface;
 
-    /*< public >*/
-    /* vfuncs, not signals */
-    ClutterActor *(* create) (MxItemFactory *factory);
+  /*< public >*/
+  /* vfuncs, not signals */
+  ClutterActor *(* create) (MxItemFactory *factory);
 
+  /*< private >*/
   /* padding for future expansion */
   void (*_padding_0) (void);
   void (*_padding_1) (void);

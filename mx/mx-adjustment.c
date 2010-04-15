@@ -391,12 +391,32 @@ mx_adjustment_init (MxAdjustment *self)
   self->priv->is_constructing = TRUE;
 }
 
+/**
+ * mx_adjustment_new:
+ *
+ * Create a new MxAdjustment
+ *
+ * Returns: a newly allocated MxAdjustment
+ */
 MxAdjustment *
 mx_adjustment_new (void)
 {
   return g_object_new (MX_TYPE_ADJUSTMENT, NULL);
 }
 
+/**
+ * mx_adjustment_new_with_values:
+ * @value: A #gdouble
+ * @lower: A #gdouble
+ * @upper: A #gdouble
+ * @step_increment: A #gdouble
+ * @page_increment: A #gdouble
+ * @page_size: A #gdouble
+ *
+ * Create a new MxAdjustment with the properties set to the values specified.
+ *
+ * Returns: a newly allocated MxAdjustment
+ */
 MxAdjustment *
 mx_adjustment_new_with_values (gdouble value,
                                gdouble lower,
@@ -415,6 +435,14 @@ mx_adjustment_new_with_values (gdouble value,
                        NULL);
 }
 
+/**
+ * mx_adjustment_get_value:
+ * @adjustment: An #MxAdjustment
+ *
+ * Get the current value of the #MxAdjustment:value property
+ *
+ * Returns: the current value of the "value" property
+ */
 gdouble
 mx_adjustment_get_value (MxAdjustment *adjustment)
 {
@@ -505,6 +533,14 @@ mx_adjustment_emit_changed_cb (MxAdjustment *adjustment)
   return FALSE;
 }
 
+/**
+ * mx_adjustment_set_value:
+ * @adjustment: An #MxAdjustment
+ * @value: A #gdouble
+ *
+ * Set the value of the #MxAdjustment:value property.
+ *
+ */
 void
 mx_adjustment_set_value (MxAdjustment *adjustment,
                          gdouble       value)
@@ -613,6 +649,14 @@ _mx_adjustment_set_lower (MxAdjustment *adjustment,
   return FALSE;
 }
 
+/**
+ * mx_adjustment_set_lower:
+ * @adjustment: A #MxAdjustment
+ * @lower: A #gdouble
+ *
+ * Set the value of the #MxAdjustment:lower property.
+ *
+ */
 void
 mx_adjustment_set_lower (MxAdjustment *adjustment,
                          gdouble       lower)
@@ -620,6 +664,14 @@ mx_adjustment_set_lower (MxAdjustment *adjustment,
   _mx_adjustment_set_lower (adjustment, lower);
 }
 
+/**
+ * mx_adjustment_get_lower:
+ * @adjustment: A #MxAdjustment
+ *
+ * Get the value of the #MxAdjustment:lower property.
+ *
+ * Returns: the current value of the "lower" property.
+ */
 gdouble
 mx_adjustment_get_lower (MxAdjustment *adjustment)
 {
@@ -656,6 +708,14 @@ _mx_adjustment_set_upper (MxAdjustment *adjustment,
   return FALSE;
 }
 
+/**
+ * mx_adjustment_set_upper:
+ * @adjustment: A #MxAdjustment
+ * @upper: A #gdouble
+ *
+ * Set the value of the #MxAdjustment:upper property.
+ *
+ */
 void
 mx_adjustment_set_upper (MxAdjustment *adjustment,
                          gdouble       upper)
@@ -663,6 +723,14 @@ mx_adjustment_set_upper (MxAdjustment *adjustment,
   _mx_adjustment_set_upper (adjustment, upper);
 }
 
+/**
+ * mx_adjustment_get_upper:
+ * @adjustment: A #MxAdjustment
+ *
+ * Get the value of the #MxAdjustment:upper property.
+ *
+ * Returns: the current value of the "upper" property.
+ */
 gdouble
 mx_adjustment_get_upper (MxAdjustment *adjustment)
 {
@@ -695,13 +763,29 @@ _mx_adjustment_set_step_increment (MxAdjustment *adjustment,
   return FALSE;
 }
 
+/**
+ * mx_adjustment_set_step_increment:
+ * @adjustment: A #MxAdjustment
+ * @increment: A #gdouble
+ *
+ * Set the value of the #MxAdjustment:step-increment property.
+ *
+ */
 void
 mx_adjustment_set_step_increment (MxAdjustment *adjustment,
-                                  gdouble       step)
+                                  gdouble       increment)
 {
-  _mx_adjustment_set_step_increment (adjustment, step);
+  _mx_adjustment_set_step_increment (adjustment, increment);
 }
 
+/**
+ * mx_adjustment_get_step_increment:
+ * @adjustment: A #MxAdjustment
+ *
+ * Get the value of the MxAdjustment:step-increment property.
+ *
+ * Returns: the current value of the "step-increment" property.
+ */
 gdouble
 mx_adjustment_get_step_increment (MxAdjustment *adjustment)
 {
@@ -734,13 +818,29 @@ _mx_adjustment_set_page_increment (MxAdjustment *adjustment,
   return FALSE;
 }
 
+/**
+ * mx_adjustment_set_page_increment:
+ * @adjustment: A #MxAdjustment
+ * @increment: A #gdouble
+ *
+ * Set the value of the #MxAdjustment:page-increment property.
+ *
+ */
 void
 mx_adjustment_set_page_increment (MxAdjustment *adjustment,
-                                  gdouble       page)
+                                  gdouble       increment)
 {
-  _mx_adjustment_set_page_increment (adjustment, page);
+  _mx_adjustment_set_page_increment (adjustment, increment);
 }
 
+/**
+ * mx_adjustment_get_page_increment:
+ * @adjustment: A #MxAdjustment
+ *
+ * Get the value of the MxAdjustment:page-increment property.
+ *
+ * Returns: the current value of the "page-increment" property.
+ */
 gdouble
 mx_adjustment_get_page_increment (MxAdjustment *adjustment)
 {
@@ -777,13 +877,29 @@ _mx_adjustment_set_page_size (MxAdjustment *adjustment,
   return FALSE;
 }
 
+/**
+ * mx_adjustment_set_page_size:
+ * @adjustment: A #MxAdjustment
+ * @page_size: A #gdouble
+ *
+ * Set the #MxAdjustment:page-size property.
+ *
+ */
 void
 mx_adjustment_set_page_size (MxAdjustment *adjustment,
-                             gdouble       size)
+                             gdouble       page_size)
 {
-  _mx_adjustment_set_page_size (adjustment, size);
+  _mx_adjustment_set_page_size (adjustment, page_size);
 }
 
+/**
+ * mx_adjustment_get_page_size:
+ * @adjustment: A #MxAdjustment
+ *
+ * Get the value of the #MxAdjustment:page-size property.
+ *
+ * Returns: the current value of the "page-size" property.
+ */
 gdouble
 mx_adjustment_get_page_size (MxAdjustment *adjustment)
 {
@@ -791,6 +907,19 @@ mx_adjustment_get_page_size (MxAdjustment *adjustment)
   return adjustment->priv->page_size;
 }
 
+/**
+ * mx_adjustment_set_values:
+ * @adjustment: A #MxAdjustment
+ * @value: A #gdouble
+ * @lower: A #gdouble
+ * @upper: A #gdouble
+ * @step_increment: A #gdouble
+ * @page_increment: A #gdouble
+ * @page_size: A #gdouble
+ *
+ * Set the various properties of MxAdjustment.
+ *
+ */
 void
 mx_adjustment_set_values (MxAdjustment *adjustment,
                           gdouble       value,
@@ -834,6 +963,19 @@ mx_adjustment_set_values (MxAdjustment *adjustment,
   g_object_thaw_notify (G_OBJECT (adjustment));
 }
 
+/**
+ * mx_adjustment_get_values:
+ * @adjustment: A #MxAdjustment
+ * @value: A #gdouble
+ * @lower: A #gdouble
+ * @upper: A #gdouble
+ * @step_increment: A #gdouble
+ * @page_increment: A #gdouble
+ * @page_size: A #gdouble
+ *
+ * Get the various properties of MxAdjustment.
+ *
+ */
 void
 mx_adjustment_get_values (MxAdjustment *adjustment,
                           gdouble      *value,
@@ -927,6 +1069,16 @@ interpolation_completed_cb (ClutterTimeline *timeline,
    }
  */
 
+/**
+ * mx_adjustment_interpolate:
+ * @adjustment: A #MxAdjustment
+ * @value: A #gdouble
+ * @duration: duration in milliseconds
+ * @mode: A #ClutterAnimationMode
+ *
+ * Interpolate #MxAdjustment:value to the new value specified by @value, using
+ * the mode and duration given.
+ */
 void
 mx_adjustment_interpolate (MxAdjustment *adjustment,
                            gdouble       value,
@@ -970,6 +1122,17 @@ mx_adjustment_interpolate (MxAdjustment *adjustment,
   clutter_timeline_start (priv->interpolation);
 }
 
+/**
+ * mx_adjustment_interpolate_relative:
+ * @adjustment: A #MxAdjustment
+ * @offset: A #gdouble
+ * @duration: duration in milliseconds
+ * @mode: A #ClutterAnimationMode
+ *
+ * Interpolate the value of #MxAdjustment:value to a new value calculated from
+ * @offset.
+ *
+ */
 void
 mx_adjustment_interpolate_relative (MxAdjustment *adjustment,
                                     gdouble       offset,
@@ -989,12 +1152,28 @@ mx_adjustment_interpolate_relative (MxAdjustment *adjustment,
                              mode);
 }
 
+/**
+ * mx_adjustment_get_elastic:
+ * @adjustment: A #MxAdjustment
+ *
+ * Get the value of the #MxAdjustment:elastic property.
+ *
+ * Returns: the current value of the "elastic" property.
+ */
 gboolean
 mx_adjustment_get_elastic (MxAdjustment *adjustment)
 {
   return adjustment->priv->elastic;
 }
 
+/**
+ * mx_adjustment_set_elastic:
+ * @adjustment: A #MxAdjustment
+ * @elastic: A #gboolean
+ *
+ * Set the value of the #MxAdjustment:elastic property.
+ *
+ */
 void
 mx_adjustment_set_elastic (MxAdjustment *adjustment,
                            gboolean      elastic)

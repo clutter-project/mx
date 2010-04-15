@@ -1711,11 +1711,11 @@ mx_box_layout_add_actor (MxBoxLayout  *box,
 }
 
 /**
- * mx_box_layout_add_at:
+ * mx_box_layout_add_actor_with_properties:
  * @box: a #MxBoxLayout
  * @actor: the #ClutterActor actor to add to the box layout
  * @position: the position where to insert the actor
- * @first_property_name: name of the first property to set
+ * @first_property: name of the first property to set
  * @...: value for the first property, followed optionally by more name/value
  *       pairs terminated with NULL.
  *

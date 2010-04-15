@@ -55,6 +55,12 @@ typedef struct _MxIconTheme MxIconTheme;
 typedef struct _MxIconThemeClass MxIconThemeClass;
 typedef struct _MxIconThemePrivate MxIconThemePrivate;
 
+/**
+ * MxIconTheme:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _MxIconTheme
 {
   GObject parent;

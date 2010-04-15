@@ -102,6 +102,13 @@ mx_frame_init (MxFrame *self)
   self->priv = FRAME_PRIVATE (self);
 }
 
+/**
+ * mx_frame_new:
+ *
+ * Create a new #MxFrame
+ *
+ * Returns: a newly allocated #MxFrame
+ */
 ClutterActor *
 mx_frame_new (void)
 {
