@@ -139,7 +139,8 @@ mx_table_find_actor_at (MxTable *table,
       child = (MxTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (table),
                                                                  actor_child);
 
-      if (child->row == row && child->col == column)
+      if ((row >= child->row && row <= child->row + (child->row_span - 1)) &&
+          (column >= child->col && column <= child->col + (child->col_span - 1)))
         return actor_child;
     }
 
