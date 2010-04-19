@@ -153,9 +153,7 @@ mx_deform_bow_tie_deform (MxDeformTexture   *texture,
 
   /* Add a gradient that makes it look like lighting */
   shade = (cos (turn_angle * 2) * 96) + 159;
-  vertex->color.red = shade;
-  vertex->color.green = shade;
-  vertex->color.blue = shade;
+  cogl_color_set_from_4ub (&vertex->color, shade, shade, shade, 0xff);
 
   /* Calculate the point on a cone (note, a cone, not a right cone) */
   height_radius = ry;

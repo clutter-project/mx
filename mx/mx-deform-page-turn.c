@@ -138,9 +138,7 @@ mx_deform_page_turn_deform (MxDeformTexture   *texture,
       /* Add a gradient that makes it look like lighting and hides the switch
        * between textures.
        */
-      vertex->color.red = shade;
-      vertex->color.green = shade;
-      vertex->color.blue = shade;
+      cogl_color_set_from_4ub (&vertex->color, shade, shade, shade, 0xff);
     }
 
   if (rx > 0)

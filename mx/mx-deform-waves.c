@@ -143,9 +143,7 @@ mx_deform_waves_deform (MxDeformTexture   *texture,
    */
   shade = (255 * (1.f - priv->amplitude)) +
           (((sin (turn_angle) * 96) + 159) * priv->amplitude);
-  vertex->color.red = shade;
-  vertex->color.green = shade;
-  vertex->color.blue = shade;
+  cogl_color_set_from_4ub (&vertex->color, shade, shade, shade, 0xff);
 
   /* Make the wave amplitude lower as its distance from the curl ray increases.
    * Not really necessary, but looks a little nicer I think.
