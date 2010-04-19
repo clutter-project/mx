@@ -21,6 +21,14 @@
  *
  */
 
+/**
+ * SECTION:mx-deform-texture
+ * @short_description: Deformable texture abstract-widget
+ *
+ * An abstract widget that provides the interface for producing mesh
+ * deformation effects with a texture.
+ */
+
 #include "mx-deform-texture.h"
 #include "mx-offscreen.h"
 #include "mx-private.h"
@@ -644,6 +652,14 @@ mx_deform_texture_set_textures (MxDeformTexture *texture,
   clutter_actor_queue_relayout (CLUTTER_ACTOR (texture));
 }
 
+/**
+ * mx_deform_texture_get_textures:
+ * @texture: A #MxDeformTexture
+ * @front: (out) (transfer none) (allow-none): The front-facing texture
+ * @back: (out) (transfer none) (allow-none): The back-facing texture
+ *
+ * Retrieves the textures used by @texture.
+ */
 void
 mx_deform_texture_get_textures (MxDeformTexture  *texture,
                                 ClutterTexture  **front,
@@ -657,6 +673,15 @@ mx_deform_texture_get_textures (MxDeformTexture  *texture,
     *back = (ClutterTexture *)priv->back;
 }
 
+/**
+ * mx_deform_texture_get_resolution:
+ * @texture: A #MxDeformTexture
+ * @tiles_x: (out) (allow-none): The horizontal resolution
+ * @tiles_y: (out) (allow-none): The vertical resolution
+ *
+ * Retrieve the mesh resolution of the texture.
+ * See mx_deform_texture_set_resolution().
+ */
 void
 mx_deform_texture_get_resolution (MxDeformTexture *texture,
                                   gint            *tiles_x,
@@ -670,6 +695,15 @@ mx_deform_texture_get_resolution (MxDeformTexture *texture,
     *tiles_y = priv->tiles_y;
 }
 
+/**
+ * mx_deform_texture_set_resolution:
+ * @texture: A #MxDeformTexture
+ * @tiles_x: The horizontal resolution
+ * @tiles_y: The vertical resolution
+ *
+ * Sets the amount of sub-divisions used on each axis when generating
+ * the mesh, where a value of 1 for each axis will produce a single quad.
+ */
 void
 mx_deform_texture_set_resolution (MxDeformTexture *texture,
                                   gint             tiles_x,
@@ -701,6 +735,12 @@ mx_deform_texture_set_resolution (MxDeformTexture *texture,
     }
 }
 
+/**
+ * mx_deform_texture_invalidate:
+ * @texture: A #MxDeformTexture
+ *
+ * Make @texture re-calculate its vertices and redraw itself.
+ */
 void
 mx_deform_texture_invalidate (MxDeformTexture *texture)
 {
