@@ -173,12 +173,12 @@ mx_texture_frame_paint (ClutterActor *self)
   ty2 = (tex_height - priv->bottom) / tex_height;
 
   ex = width - priv->right;
-  if (ex < priv->right)
-    ex = priv->right;           /* FIXME ? */
+  if (ex < priv->left)
+    ex = priv->left;
 
   ey = height - priv->bottom;
-  if (ey < priv->bottom)
-    ey = priv->bottom;          /* FIXME ? */
+  if (ey < priv->top)
+    ey = priv->top;
 
   opacity = clutter_actor_get_paint_opacity (self);
 
