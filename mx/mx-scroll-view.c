@@ -456,7 +456,7 @@ mx_scroll_view_scroll_event (ClutterActor       *self,
       break;
     case CLUTTER_SCROLL_LEFT:
     case CLUTTER_SCROLL_RIGHT:
-      if (vadjustment)
+      if (hadjustment)
         g_object_get (hadjustment,
                       "lower", &lower,
                       "step-increment", &step,
