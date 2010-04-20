@@ -80,13 +80,6 @@ GType mx_icon_get_type (void);
 
 ClutterActor* mx_icon_new (void);
 
-#ifndef MX_DISABLE_DEPRECATED
-G_GNUC_DEPRECATED const gchar *mx_icon_get_name (MxIcon *icon);
-G_GNUC_DEPRECATED void         mx_icon_set_name (MxIcon *icon, const gchar *icon_name);
-
-G_GNUC_DEPRECATED gint         mx_icon_get_size (MxIcon *icon);
-G_GNUC_DEPRECATED void         mx_icon_set_size (MxIcon *icon, gint size);
-#endif
 
 
 const gchar *mx_icon_get_icon_name (MxIcon *icon);

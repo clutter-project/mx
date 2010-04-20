@@ -843,17 +843,6 @@ mx_combo_box_remove_text (MxComboBox *box,
  * Set the text displayed in the combo box
  *
  */
-#ifndef MX_DISABLE_DEPRECATED
-void
-mx_combo_box_set_title (MxComboBox  *box,
-                        const gchar *title)
-{
-  g_warning ("mx_combo_box_set_title is deprecated."
-             " Use mx_combo_box_set_active_text instead");
-
-  mx_combo_box_set_active_text (box, title);
-}
-#endif
 
 void
 mx_combo_box_set_active_text (MxComboBox  *box,
@@ -877,15 +866,6 @@ mx_combo_box_set_active_text (MxComboBox  *box,
  *
  * Returns: the text string, owned by the combo box
  */
-#ifndef MX_DISABLE_DEPRECATED
-const gchar*
-mx_combo_box_get_title (MxComboBox *box)
-{
-  g_warning ("mx_combo_box_get_title is deprecated."
-             " Use mx_combo_box_get_title instead.");
-  return mx_combo_box_get_active_text (box);
-}
-#endif
 
 const gchar*
 mx_combo_box_get_active_text (MxComboBox *box)

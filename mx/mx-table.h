@@ -75,11 +75,6 @@ GType mx_table_get_type (void) G_GNUC_CONST;
 
 ClutterActor *mx_table_new (void);
 
-#ifndef MX_DISABLE_DEPRECATED
-G_GNUC_DEPRECATED void mx_table_set_col_spacing (MxTable *table,
-                                                 gint     spacing);
-G_GNUC_DEPRECATED gint mx_table_get_col_spacing (MxTable *table);
-#endif
 
 void mx_table_set_column_spacing (MxTable      *table,
                                   gint          spacing);

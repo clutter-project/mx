@@ -88,11 +88,6 @@ struct _MxGrid
 GType mx_grid_get_type (void) G_GNUC_CONST;
 
 ClutterActor  *mx_grid_new                    (void);
-#ifndef MX_DISABLE_DEPRECATED
-G_GNUC_DEPRECATED void     mx_grid_set_end_align (MxGrid   *self,
-                                                  gboolean  value);
-G_GNUC_DEPRECATED gboolean mx_grid_get_end_align (MxGrid   *self);
-#endif
 void           mx_grid_set_line_alignment     (MxGrid   *self,
                                                MxAlign  value);
 gboolean       mx_grid_get_line_alignment     (MxGrid   *self);
@@ -102,11 +97,7 @@ gboolean       mx_grid_get_homogenous_rows    (MxGrid   *self);
 void           mx_grid_set_homogenous_columns (MxGrid   *self,
                                                gboolean  value);
 gboolean       mx_grid_get_homogenous_columns (MxGrid   *self);
-#ifndef MX_DISABLE_DEPRECATED
-G_GNUC_DEPRECATED void     mx_grid_set_vertical (MxGrid   *self,
-                                                 gboolean  value);
-G_GNUC_DEPRECATED gboolean mx_grid_get_vertical (MxGrid   *self);
-#endif
+
 void           mx_grid_set_orientation        (MxGrid        *grid,
                                                MxOrientation  orientation);
 MxOrientation  mx_grid_get_orientation        (MxGrid        *grid);
@@ -117,14 +108,6 @@ gfloat         mx_grid_get_row_spacing        (MxGrid   *self);
 void           mx_grid_set_column_spacing     (MxGrid   *self,
                                                gfloat    value);
 gfloat         mx_grid_get_column_spacing     (MxGrid   *self);
-#ifndef MX_DISABLE_DEPRECATED
-G_GNUC_DEPRECATED void    mx_grid_set_valign  (MxGrid   *self,
-                                               gdouble   value);
-G_GNUC_DEPRECATED gdouble mx_grid_get_valign  (MxGrid   *self);
-G_GNUC_DEPRECATED void    mx_grid_set_halign  (MxGrid   *self,
-                                               gdouble   value);
-G_GNUC_DEPRECATED gdouble mx_grid_get_halign  (MxGrid   *self);
-#endif
 void           mx_grid_set_child_y_align      (MxGrid   *self,
                                                MxAlign   value);
 MxAlign        mx_grid_get_child_y_align      (MxGrid   *self);

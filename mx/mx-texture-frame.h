@@ -89,18 +89,6 @@ void            mx_texture_frame_get_border_values  (MxTextureFrame *frame,
                                                      gfloat         *right,
                                                      gfloat         *bottom,
                                                      gfloat         *left);
-#ifndef MX_DISABLE_DEPRECATED
-G_GNUC_DEPRECATED void  mx_texture_frame_set_frame  (MxTextureFrame *frame,
-                                                     gfloat          top,
-                                                     gfloat          right,
-                                                     gfloat          bottom,
-                                                     gfloat          left);
-G_GNUC_DEPRECATED void  mx_texture_frame_get_frame  (MxTextureFrame *frame,
-                                                     gfloat         *top,
-                                                     gfloat         *right,
-                                                     gfloat         *bottom,
-                                                     gfloat         *left);
-#endif
 G_END_DECLS
 
 #endif /* __MX_TEXTURE_FRAME_H__ */

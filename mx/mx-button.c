@@ -814,15 +814,6 @@ mx_button_set_label (MxButton    *button,
  *
  * Returns: #TRUE if toggle mode is set, otherwise #FALSE
  */
-#ifndef MX_DISABLE_DEPRECATED
-gboolean
-mx_button_get_toggle_mode (MxButton *button)
-{
-  g_warning ("mx_button_get_toggle_mode is deprecated."
-             " Use mx_button_get_is_toggle instead.");
-  return mx_button_get_is_toggle (button);
-}
-#endif
 gboolean
 mx_button_get_is_toggle (MxButton *button)
 {
@@ -839,16 +830,6 @@ mx_button_get_is_toggle (MxButton *button)
  * Enables or disables toggle mode for the button. In toggle mode, the active
  * state will be "toggled" when the user clicks the button.
  */
-#ifndef MX_DISABLE_DEPRECATED
-void
-mx_button_set_toggle_mode (MxButton *button,
-                           gboolean  toggle)
-{
-  g_warning ("mx_button_set_toggle_mode is deprecated."
-             " Use mx_button_set_is_toggle instead.");
-  mx_button_set_is_toggle (button, toggle);
-}
-#endif
 void
 mx_button_set_is_toggle (MxButton *button,
                          gboolean  toggle)
@@ -868,16 +849,6 @@ mx_button_set_is_toggle (MxButton *button,
  *
  * Returns: #TRUE if the button is toggled, or #FALSE if not
  */
-#ifndef MX_DISABLE_DEPRECATED
-gboolean
-mx_button_get_checked (MxButton *button)
-{
-  g_warning ("mx_button_get_checked is deprecated."
-             " Use mx_button_get_toggled instead.");
-
-  return mx_button_get_toggled (button);
-}
-#endif
 gboolean
 mx_button_get_toggled (MxButton *button)
 {
@@ -894,17 +865,6 @@ mx_button_get_toggled (MxButton *button)
  * Sets the toggled state of the button. This is only really useful if the
  * button has #toggle-mode mode set to #TRUE.
  */
-#ifndef MX_DISABLE_DEPRECATED
-void
-mx_button_set_checked (MxButton *button,
-                       gboolean  checked)
-{
-  g_warning ("mx_button_set_checked is deprecated."
-             " Use mx_button_set_toggled instead.");
-
-  mx_button_set_toggled (button, checked);
-}
-#endif
 void
 mx_button_set_toggled (MxButton *button,
                        gboolean  toggled)

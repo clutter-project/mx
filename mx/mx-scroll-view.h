@@ -77,11 +77,6 @@ GType mx_scroll_view_get_type (void) G_GNUC_CONST;
 ClutterActor *mx_scroll_view_new (void);
 
 
-#ifndef MX_DISABLE_DEPRECATED
-G_GNUC_DEPRECATED void           mx_scroll_view_set_mouse_scrolling (MxScrollView  *scroll,
-                                                   gboolean       enabled);
-G_GNUC_DEPRECATED gboolean       mx_scroll_view_get_mouse_scrolling (MxScrollView  *scroll);
-#endif
 void           mx_scroll_view_set_enable_mouse_scrolling (MxScrollView  *scroll,
                                                           gboolean       enabled);
 gboolean       mx_scroll_view_get_enable_mouse_scrolling (MxScrollView  *scroll);

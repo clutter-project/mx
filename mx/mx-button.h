@@ -78,22 +78,12 @@ struct _MxButtonClass
 
 GType mx_button_get_type (void) G_GNUC_CONST;
 
-#ifndef MX_DISABLE_DEPRECATED
-G_GNUC_DEPRECATED void     mx_button_set_checked     (MxButton    *button,
-                                                      gboolean     checked);
-G_GNUC_DEPRECATED gboolean mx_button_get_checked     (MxButton    *button);
-#endif
 
 ClutterActor         *mx_button_new             (void);
 ClutterActor         *mx_button_new_with_label  (const gchar *text);
 G_CONST_RETURN gchar *mx_button_get_label       (MxButton    *button);
 void                  mx_button_set_label       (MxButton    *button,
                                                  const gchar *text);
-#ifndef MX_DISABLE_DEPRECATED
-G_GNUC_DEPRECATED void mx_button_set_toggle_mode (MxButton    *button,
-                                                  gboolean     toggle);
-G_GNUC_DEPRECATED gboolean mx_button_get_toggle_mode (MxButton    *button);
-#endif
 void                  mx_button_set_is_toggle   (MxButton    *button,
                                                  gboolean     toggle);
 gboolean              mx_button_get_is_toggle   (MxButton    *button);

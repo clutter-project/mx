@@ -1107,26 +1107,6 @@ mx_widget_init (MxWidget *actor)
   mx_stylable_connect_change_notifiers (MX_STYLABLE (actor));
 }
 
-#ifndef MX_DISABLE_DEPRECATED
-/**
- * mx_widget_ensure_style:
- * @widget: A #MxWidget
- *
- * Ensures that @widget has read its style information.
- *
- */
-void
-mx_widget_ensure_style (MxWidget *widget)
-{
-  g_return_if_fail (MX_IS_WIDGET (widget));
-
-  g_warning ("mx_widget_ensure_style is deprecated."
-             " Use mx_stylable_style_changed with the"
-             " MX_STYLE_CHANGED_FORCE flag instead.");
-
-  mx_stylable_style_changed (MX_STYLABLE (widget), MX_STYLE_CHANGED_FORCE);
-}
-#endif
 
 /**
  * mx_widget_get_border_image:

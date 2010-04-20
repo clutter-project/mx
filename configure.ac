@@ -102,13 +102,11 @@ AS_IF([test "x$enable_maintainer_flags" = "xyes"],
                           ["-Werror -Wall -Wshadow -Wcast-align
                             -Wno-uninitialized -Wempty-body -Wformat-security
                             -Winit-self -Wmissing-declarations
-                            -Wredundant-decls
-                            -DMX_DISABLE_DEPRECATED"])
+                            -Wredundant-decls"])
       ],
       [
         AS_COMPILER_FLAGS([MX_MAINTAINER_CFLAGS],
-                          ["-Wall
-                            -DMX_DISABLE_DEPRECATED"])
+                          ["-Wall"])
       ]
 )
 

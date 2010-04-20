@@ -73,11 +73,6 @@ struct _MxTooltipClass
 
 GType mx_tooltip_get_type (void) G_GNUC_CONST;
 
-#ifndef MX_DISABLE_DEPRECATED
-G_GNUC_DEPRECATED G_CONST_RETURN gchar *mx_tooltip_get_label (MxTooltip *tooltip);
-G_GNUC_DEPRECATED void                  mx_tooltip_set_label (MxTooltip *tooltip,
-                                                              const gchar *text);
-#endif
 
 G_CONST_RETURN gchar *mx_tooltip_get_text (MxTooltip   *tooltip);
 void                  mx_tooltip_set_text (MxTooltip   *tooltip,

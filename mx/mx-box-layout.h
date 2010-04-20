@@ -88,11 +88,6 @@ GType mx_box_layout_get_type (void);
 
 ClutterActor *mx_box_layout_new (void);
 
-#ifndef MX_DISABLE_DEPRECATED
-G_GNUC_DEPRECATED void     mx_box_layout_set_vertical   (MxBoxLayout *box,
-                                                         gboolean     vertical);
-G_GNUC_DEPRECATED gboolean mx_box_layout_get_vertical   (MxBoxLayout *box);
-#endif
 
 void          mx_box_layout_set_orientation (MxBoxLayout *box,
                                              MxOrientation orientation);

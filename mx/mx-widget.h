@@ -101,9 +101,6 @@ struct _MxWidgetClass
 
 GType mx_widget_get_type (void) G_GNUC_CONST;
 
-#ifndef MX_DISABLE_DEPRECATED
-G_GNUC_DEPRECATED void mx_widget_ensure_style (MxWidget *widget);
-#endif
 
 void         mx_widget_set_tooltip_text (MxWidget    *widget,
                                          const gchar *text);

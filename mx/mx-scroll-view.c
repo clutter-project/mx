@@ -859,16 +859,6 @@ mx_scroll_view_new (void)
   return g_object_new (MX_TYPE_SCROLL_VIEW, NULL);
 }
 
-#ifndef MX_DISABLE_DEPRECATED
-void
-mx_scroll_view_set_mouse_scrolling (MxScrollView *scroll,
-                                    gboolean      enabled)
-{
-  g_warning ("mx_scroll_view_set_mouse_scrolling is deprecated."
-             " Use mx_scroll_view_set_enable_mouse_scrolling instead");
-  mx_scroll_view_set_enable_mouse_scrolling (scroll, enabled);
-}
-#endif
 void
 mx_scroll_view_set_enable_mouse_scrolling (MxScrollView *scroll,
                                            gboolean      enabled)
@@ -891,15 +881,6 @@ mx_scroll_view_set_enable_mouse_scrolling (MxScrollView *scroll,
     }
 }
 
-#ifndef MX_DISABLE_DEPRECATED
-gboolean
-mx_scroll_view_get_mouse_scrolling (MxScrollView *scroll)
-{
-  g_warning ("mx_scroll_view_get_mouse_scrolling is deprecated,"
-             " Use mx_scroll_view_get_enable_mouse_scrolling instead.");
-  return mx_scroll_view_get_enable_mouse_scrolling (scroll);
-}
-#endif
 gboolean
 mx_scroll_view_get_enable_mouse_scrolling (MxScrollView *scroll)
 {

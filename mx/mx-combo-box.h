@@ -106,11 +106,6 @@ void mx_combo_box_prepend_text (MxComboBox  *box,
 void mx_combo_box_remove_text  (MxComboBox  *box,
                                 gint         position);
 
-#ifndef MX_DISABLE_DEPRECATED
-G_GNUC_DEPRECATED void         mx_combo_box_set_title (MxComboBox  *box,
-                                                       const gchar *title);
-G_GNUC_DEPRECATED const gchar* mx_combo_box_get_title (MxComboBox  *box);
-#endif
 
 void         mx_combo_box_set_active_text (MxComboBox  *box,
                                            const gchar *text);

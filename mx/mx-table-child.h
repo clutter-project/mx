@@ -72,13 +72,6 @@ void     mx_table_child_set_row             (MxTable      *table,
                                              ClutterActor *child,
                                              gint          row);
 
-#ifndef MX_DISABLE_DEPRECATED
-G_GNUC_DEPRECATED gint mx_table_child_get_col_span (MxTable      *table,
-                                                    ClutterActor *child);
-G_GNUC_DEPRECATED void mx_table_child_set_col_span (MxTable      *table,
-                                                    ClutterActor *child,
-                                                    gint          span);
-#endif
 
 gint     mx_table_child_get_column_span     (MxTable      *table,
                                              ClutterActor *child);

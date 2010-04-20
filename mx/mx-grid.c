@@ -713,29 +713,6 @@ mx_grid_finalize (GObject *object)
   G_OBJECT_CLASS (mx_grid_parent_class)->finalize (object);
 }
 
-#ifndef MX_DISABLE_DEPRECATED
-void
-mx_grid_set_end_align (MxGrid   *self,
-                       gboolean  value)
-{
-  g_warning ("mx_grid_set_end_align has been deprecated."
-             " Use mx_grid_set_line_alignment instead.");
-
-  mx_grid_set_line_alignment (self,
-                              (value) ? MX_ALIGN_END : MX_ALIGN_START);
-}
-
-gboolean
-mx_grid_get_end_align (MxGrid *self)
-{
-  g_warning ("mx_grid_get_end_align has been deprecated."
-             " Use mx_grid_get_line_alignment instead.");
-  return (mx_grid_get_line_alignment (self) == MX_ALIGN_END);
-}
-#endif
-
-
-/* XXX: this does not yet support MX_ALIGN_MIDDLE */
 void
 mx_grid_set_line_alignment (MxGrid  *self,
                             MxAlign  value)
@@ -787,22 +764,6 @@ mx_grid_get_homogenous_columns (MxGrid *self)
 }
 
 
-#ifndef MX_DISABLE_DEPRECATED
-void
-mx_grid_set_vertical (MxGrid  *self,
-                      gboolean value)
-{
-
-  g_warning ("mx_grid_set_vertical is deprecated. Use mx_grid_set_orientation"
-             " instead.");
-
-  if (value)
-    mx_grid_set_orientation (self, MX_ORIENTATION_VERTICAL);
-  else
-    mx_grid_set_orientation (self, MX_ORIENTATION_HORIZONTAL);
-}
-#endif
-
 void
 mx_grid_set_orientation (MxGrid *grid,
                          MxOrientation orientation)
@@ -821,16 +782,6 @@ mx_grid_set_orientation (MxGrid *grid,
     }
 }
 
-#ifndef MX_DISABLE_DEPRECATED
-gboolean
-mx_grid_get_vertical (MxGrid *self)
-{
-  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  g_warning ("mx_grid_get_vertical is deprecated. Use mx_grid_get_orientation"
-             " instead");
-  return (priv->orientation == MX_ORIENTATION_VERTICAL);
-}
-#endif
 MxOrientation
 mx_grid_get_orientation (MxGrid *grid)
 {
@@ -873,32 +824,6 @@ mx_grid_get_row_spacing (MxGrid *self)
   return priv->row_spacing;
 }
 
-#ifndef MX_DISABLE_DEPRECATED
-void
-mx_grid_set_valign (MxGrid *self,
-                    gdouble value)
-{
-  g_warning ("mx_grid_set_valign is deprecated."
-             " Use mx_grid_set_child_y_align");
-
-  if (value < 1.0/3.0)
-    mx_grid_set_child_y_align (self, MX_ALIGN_START);
-  else if (value > 2.0/3.0)
-    mx_grid_set_child_y_align (self, MX_ALIGN_END);
-  else
-    mx_grid_set_child_y_align (self, MX_ALIGN_MIDDLE);
-}
-
-gdouble
-mx_grid_get_valign (MxGrid *self)
-{
-  g_warning ("mx_grid_get_valign is deprecated."
-             " Use mx_grid_get_child_y_align");
-
-  return MX_ALIGN_TO_FLOAT (mx_grid_get_child_y_align (self));
-}
-#endif
-
 void
 mx_grid_set_child_y_align (MxGrid  *self,
                            MxAlign  value)
@@ -916,31 +841,6 @@ mx_grid_get_child_y_align (MxGrid *self)
   return priv->child_y_align;
 }
 
-#ifndef MX_DISABLE_DEPRECATED
-void
-mx_grid_set_halign (MxGrid *self,
-                    gdouble value)
-{
-  g_warning ("mx_grid_set_halign is deprecated."
-             " Use mx_grid_set_child_x_align");
-
-  if (value < 1.0/3.0)
-    mx_grid_set_child_x_align (self, MX_ALIGN_START);
-  else if (value > 2.0/3.0)
-    mx_grid_set_child_x_align (self, MX_ALIGN_END);
-  else
-    mx_grid_set_child_x_align (self, MX_ALIGN_MIDDLE);
-}
-
-gdouble
-mx_grid_get_halign (MxGrid *self)
-{
-  g_warning ("mx_grid_get_halign is deprecated."
-             " Use mx_grid_get_child_x_align");
-
-  return MX_ALIGN_TO_FLOAT (mx_grid_get_child_x_align (self));
-}
-#endif
 void
 mx_grid_set_child_x_align (MxGrid  *self,
                            MxAlign  value)

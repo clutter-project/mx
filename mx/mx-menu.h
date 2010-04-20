@@ -94,9 +94,6 @@ void          mx_menu_add_action         (MxMenu   *menu,
                                           MxAction *action);
 void          mx_menu_remove_action      (MxMenu   *menu,
                                           MxAction *action);
-#ifndef MX_DISABLE_DEPRECATED
-G_GNUC_DEPRECATED void mx_menu_clear     (MxMenu   *menu);
-#endif
 void          mx_menu_remove_all         (MxMenu *menu);
 void          mx_menu_show_with_position (MxMenu *menu,
                                           gfloat  x,

@@ -580,16 +580,6 @@ mx_tooltip_update_position (MxTooltip *tooltip)
  *
  * Returns: the text for the tooltip. This must not be freed by the application
  */
-#ifndef MX_DISABLE_DEPRECATED
-G_CONST_RETURN gchar *
-mx_tooltip_get_label (MxTooltip *tooltip)
-{
-  g_warning ("mx_tooltip_get_label is deprecated."
-             " Use mx_tooltip_get_label instead");
-
-  return clutter_text_get_text (CLUTTER_TEXT (tooltip->priv->label));
-}
-#endif
 
 G_CONST_RETURN gchar *
 mx_tooltip_get_text (MxTooltip *tooltip)
@@ -606,16 +596,6 @@ mx_tooltip_get_text (MxTooltip *tooltip)
  *
  * Sets the text displayed on the tooltip
  */
-#ifndef MX_DISABLE_DEPRECATED
-void
-mx_tooltip_set_label (MxTooltip   *tooltip,
-                      const gchar *text)
-{
-  g_warning ("mx_tooltip_set_label is deprecated."
-             " Use mx_tooltip_set_text instead.");
-  mx_tooltip_set_text (tooltip, text);
-}
-#endif
 void
 mx_tooltip_set_text (MxTooltip   *tooltip,
                      const gchar *text)

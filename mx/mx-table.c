@@ -69,9 +69,6 @@ enum
   PROP_0,
 
   PROP_PADDING,
-#ifndef MX_DISABLE_DEPRECATED
-  PROP_COL_SPACING,
-#endif
   PROP_COLUMN_SPACING,
   PROP_ROW_SPACING,
 
@@ -507,11 +504,6 @@ mx_table_set_property (GObject      *gobject,
 
   switch (prop_id)
     {
-#ifndef MX_DISABLE_DEPRECATED
-    case PROP_COL_SPACING:
-      g_warning ("MxTable \"col-spacing\" property is deprecated, please use"
-                 "\"column-spacing\" instead.");
-#endif
     case PROP_COLUMN_SPACING:
       mx_table_set_column_spacing (table, g_value_get_int (value));
       break;
@@ -536,11 +528,6 @@ mx_table_get_property (GObject    *gobject,
 
   switch (prop_id)
     {
-#ifndef MX_DISABLE_DEPRECATED
-    case PROP_COL_SPACING:
-      g_warning ("MxTable \"col-spacing\" property is deprecated, please use"
-                 "\"column-spacing\" instead.");
-#endif
     case PROP_COLUMN_SPACING:
       g_value_set_int (value, priv->col_spacing);
       break;
@@ -1588,16 +1575,6 @@ mx_table_class_init (MxTableClass *klass)
   actor_class->show_all = mx_table_show_all;
   actor_class->hide_all = mx_table_hide_all;
 
-#ifndef MX_DISABLE_DEPRECATED
-  pspec = g_param_spec_int ("col-spacing",
-                            "Column Spacing",
-                            "Spacing between columns",
-                            0, G_MAXINT, 0,
-                            MX_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class,
-                                   PROP_COL_SPACING,
-                                   pspec);
-#endif
 
   pspec = g_param_spec_int ("column-spacing",
                             "Column Spacing",
@@ -1683,16 +1660,6 @@ mx_table_new (void)
  *
  * Sets the amount of spacing between columns.
  */
-#ifndef MX_DISABLE_DEPRECATED
-void
-mx_table_set_col_spacing (MxTable *table,
-                          gint     spacing)
-{
-  g_warning ("mx_table_set_col_spacing() is deprecated, please use"
-             " mx_table_set_column_spacing() instead.");
-  mx_table_set_column_spacing (table, spacing);
-}
-#endif
 void
 mx_table_set_column_spacing (MxTable *table,
                              gint     spacing)
@@ -1769,15 +1736,6 @@ mx_table_get_row_spacing (MxTable *table)
  *
  * Returns: the spacing between columns in device units
  */
-#ifndef MX_DISABLE_DEPRECATED
-gint
-mx_table_get_col_spacing (MxTable *table)
-{
-  g_warning ("mx_table_get_col_spacing() is deprecated, please use"
-             " mx_table_get_column_spacing() instead.");
-  return mx_table_get_column_spacing (table);
-}
-#endif
 gint
 mx_table_get_column_spacing (MxTable *table)
 {

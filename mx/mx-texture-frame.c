@@ -592,19 +592,6 @@ mx_texture_frame_set_parent_texture (MxTextureFrame *frame,
  * widths from the edge of the frame.
  *
  */
-#ifndef MX_DISABLE_DEPRECATED
-void
-mx_texture_frame_set_frame (MxTextureFrame *frame,
-                            gfloat          top,
-                            gfloat          right,
-                            gfloat          bottom,
-                            gfloat          left)
-{
-  g_warning ("mx_texture_frame_set_frame is deprecated."
-             " Use mx_texture_frame_set_border_values instead.");
-  mx_texture_frame_set_border_values (frame, top, right, bottom, left);
-}
-#endif
 void
 mx_texture_frame_set_border_values (MxTextureFrame *frame,
                                     gfloat          top,
@@ -628,19 +615,6 @@ mx_texture_frame_set_border_values (MxTextureFrame *frame,
  * Retrieve the current slice lines from the specified frame.
  *
  */
-#ifndef MX_DISABLE_DEPRECATED
-void
-mx_texture_frame_get_frame (MxTextureFrame *frame,
-                            gfloat         *top,
-                            gfloat         *right,
-                            gfloat         *bottom,
-                            gfloat         *left)
-{
-  g_warning ("mx_texture_frame_get_frame is deprecated."
-             " Use mx_texture_frame_get_border_values instead.");
-  mx_texture_frame_get_border_values (frame, top, right, bottom, left);
-}
-#endif
 void
 mx_texture_frame_get_border_values (MxTextureFrame *frame,
                                     gfloat         *top,

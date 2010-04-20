@@ -242,7 +242,6 @@ Mx-@MX_API_VERSION@.gir: $(INTROSPECTION_SCANNER) libmx-@MX_API_VERSION@.la
 	$(AM_V_GEN)$(INTROSPECTION_SCANNER) -v \
 		--namespace Mx --nsversion=@MX_API_VERSION@ \
 		$(common_includes) \
-		-DMX_DISABLE_DEPRECATED \
 		--c-include="mx/mx.h" \
 		--include=GObject-2.0 \
 		--include=Clutter-1.0 \

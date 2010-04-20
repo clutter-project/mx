@@ -42,14 +42,8 @@
 enum {
   CHILD_PROP_0,
 
-#ifndef MX_DISABLE_DEPRECATED
-  CHILD_PROP_COL,
-#endif
   CHILD_PROP_COLUMN,
   CHILD_PROP_ROW,
-#ifndef MX_DISABLE_DEPRECATED
-  CHILD_PROP_COL_SPAN,
-#endif
   CHILD_PROP_COLUMN_SPAN,
   CHILD_PROP_ROW_SPAN,
   CHILD_PROP_X_EXPAND,
@@ -73,11 +67,6 @@ table_child_set_property (GObject      *gobject,
 
   switch (prop_id)
     {
-#ifndef MX_DISABLE_DEPRECATED
-    case CHILD_PROP_COL:
-      g_warning ("MxTableChild \"col\" property is deprecated, please use "
-                 "\"column\" instead");
-#endif
     case CHILD_PROP_COLUMN:
       child->col = g_value_get_int (value);
       _mx_table_update_row_col (table, -1, child->col);
@@ -88,11 +77,6 @@ table_child_set_property (GObject      *gobject,
       _mx_table_update_row_col (table, child->row, -1);
       clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
-#ifndef MX_DISABLE_DEPRECATED
-    case CHILD_PROP_COL_SPAN:
-      g_warning ("MxTableChild \"col-span\" property is deprecated, please use "
-                 "\"column-span\" instead");
-#endif
     case CHILD_PROP_COLUMN_SPAN:
       child->col_span = g_value_get_int (value);
       clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
@@ -164,22 +148,12 @@ table_child_get_property (GObject    *gobject,
 
   switch (prop_id)
     {
-#ifndef MX_DISABLE_DEPRECATED
-    case CHILD_PROP_COL:
-      g_warning ("MxTableChild \"col\" property is deprecated, please use "
-                 "\"column\" instead");
-#endif
     case CHILD_PROP_COLUMN:
       g_value_set_int (value, child->col);
       break;
     case CHILD_PROP_ROW:
       g_value_set_int (value, child->row);
       break;
-#ifndef MX_DISABLE_DEPRECATED
-    case CHILD_PROP_COL_SPAN:
-      g_warning ("MxTableChild \"col-span\" property is deprecated, please use "
-                 "\"column-span\" instead");
-#endif
     case CHILD_PROP_COLUMN_SPAN:
       g_value_set_int (value, child->col_span);
       break;
@@ -230,16 +204,6 @@ mx_table_child_class_init (MxTableChildClass *klass)
   gobject_class->set_property = table_child_set_property;
   gobject_class->get_property = table_child_get_property;
 
-#ifndef MX_DISABLE_DEPRECATED
-  pspec = g_param_spec_int ("col",
-                            "Column Number",
-                            "The column the widget resides in",
-                            0, G_MAXINT,
-                            0,
-                            MX_PARAM_READWRITE);
-
-  g_object_class_install_property (gobject_class, CHILD_PROP_COL, pspec);
-#endif
 
   pspec = g_param_spec_int ("column",
                             "Column Number",
@@ -268,16 +232,6 @@ mx_table_child_class_init (MxTableChildClass *klass)
 
   g_object_class_install_property (gobject_class, CHILD_PROP_ROW_SPAN, pspec);
 
-#ifndef MX_DISABLE_DEPRECATED
-  pspec = g_param_spec_int ("col-span",
-                            "Column Span",
-                            "The number of columns the widget should span",
-                            1, G_MAXINT,
-                            1,
-                            MX_PARAM_READWRITE);
-
-  g_object_class_install_property (gobject_class, CHILD_PROP_COL_SPAN, pspec);
-#endif
 
   pspec = g_param_spec_int ("column-span",
                             "Column Span",
@@ -385,14 +339,6 @@ get_child_meta (MxTable      *table,
  *
  * Returns: the column span of the child
  */
-#ifndef MX_DISABLE_DEPRECATED
-gint
-mx_table_child_get_col_span (MxTable      *table,
-                             ClutterActor *child)
-{
-  return mx_table_child_get_column_span (table, child);
-}
-#endif
 
 gint
 mx_table_child_get_column_span (MxTable      *table,
@@ -417,15 +363,6 @@ mx_table_child_get_column_span (MxTable      *table,
  * Set the column span of the child.
  *
  */
-#ifndef MX_DISABLE_DEPRECATED
-void
-mx_table_child_set_col_span (MxTable      *table,
-                             ClutterActor *child,
-                             gint          span)
-{
-  mx_table_child_set_column_span (table, child, span);
-}
-#endif
 
 void
 mx_table_child_set_column_span (MxTable      *table,
