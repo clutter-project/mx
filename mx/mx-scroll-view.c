@@ -742,6 +742,8 @@ mx_scroll_view_init (MxScrollView *self)
 
   clutter_actor_set_parent (priv->hscroll, CLUTTER_ACTOR (self));
   clutter_actor_set_parent (priv->vscroll, CLUTTER_ACTOR (self));
+  clutter_actor_hide (priv->hscroll);
+  clutter_actor_hide (priv->vscroll);
 
   /* mouse scroll is enabled by default, so we also need to be reactive */
   priv->mouse_scroll = TRUE;
