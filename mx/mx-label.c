@@ -151,6 +151,8 @@ mx_label_get_preferred_width (ClutterActor *actor,
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
+  for_height -= padding.top + padding.bottom;
+
   clutter_actor_get_preferred_width (priv->label, for_height,
                                      min_width_p,
                                      natural_width_p);
@@ -172,6 +174,8 @@ mx_label_get_preferred_height (ClutterActor *actor,
   MxPadding padding = { 0, };
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
+
+  for_width -= padding.left + padding.right;
 
   clutter_actor_get_preferred_height (priv->label, for_width,
                                       min_height_p,
