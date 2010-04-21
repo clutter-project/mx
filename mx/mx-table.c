@@ -241,7 +241,7 @@ mx_table_move_focus (MxFocusable      *focusable,
     case MX_FOCUS_DIRECTION_DOWN:
       /* move focus down */
 
-      row = child_meta->row + 1;
+      row = child_meta->row + child_meta->row_span;
       column = child_meta->col;
 
       focused = NULL;
@@ -294,7 +294,7 @@ mx_table_move_focus (MxFocusable      *focusable,
       /* move focus right */
 
       row = child_meta->row;
-      column = child_meta->col + 1;
+      column = child_meta->col + child_meta->col_span;
 
       focused = NULL;
 
