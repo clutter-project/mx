@@ -227,11 +227,14 @@ mx_allocate_align_fill (ClutterActor    *child,
 
       child_width = CLAMP (natural_width, min_width, available_width);
 
-      clutter_actor_get_preferred_height (child, child_width,
-                                          &min_height,
-                                          &natural_height);
+      if (!y_fill)
+        {
+          clutter_actor_get_preferred_height (child, child_width,
+                                              &min_height,
+                                              &natural_height);
 
-      child_height = CLAMP (natural_height, min_height, available_height);
+          child_height = CLAMP (natural_height, min_height, available_height);
+        }
     }
   else
     {
@@ -241,11 +244,14 @@ mx_allocate_align_fill (ClutterActor    *child,
 
       child_height = CLAMP (natural_height, min_height, available_height);
 
-      clutter_actor_get_preferred_width (child, child_height,
-                                         &min_width,
-                                         &natural_width);
+      if (!x_fill)
+        {
+          clutter_actor_get_preferred_width (child, child_height,
+                                             &min_width,
+                                             &natural_width);
 
-      child_width = CLAMP (natural_width, min_width, available_width);
+          child_width = CLAMP (natural_width, min_width, available_width);
+        }
     }
 
   if (!x_fill)
