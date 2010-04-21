@@ -229,10 +229,17 @@ mx_table_move_focus (MxFocusable      *focusable,
               focused = mx_focusable_accept_focus (MX_FOCUSABLE (found),
                                                    MX_FOCUS_HINT_FIRST);
               if (focused)
-                priv->last_focus = (MxFocusable *)found;
+                {
+                  priv->last_focus = (MxFocusable *)found;
+                  break;
+                }
             }
 
-          row--;
+          child_meta = (MxTableChild *) clutter_container_get_child_meta
+            (CLUTTER_CONTAINER (focusable), found);
+
+          /* row might not be the top row if @found is a spanned actor */
+          row = child_meta->row - 1;
         }
 
       return focused;
@@ -255,10 +262,16 @@ mx_table_move_focus (MxFocusable      *focusable,
               focused = mx_focusable_accept_focus (MX_FOCUSABLE (found),
                                                    MX_FOCUS_HINT_FIRST);
               if (focused)
-                priv->last_focus = (MxFocusable *)found;
+                {
+                  priv->last_focus = (MxFocusable *)found;
+                  break;
+                }
             }
 
-          row++;
+          child_meta = (MxTableChild *) clutter_container_get_child_meta
+            (CLUTTER_CONTAINER (focusable), found);
+
+          row = child_meta->row + child_meta->row_span;
         }
 
       return focused;
@@ -281,10 +294,17 @@ mx_table_move_focus (MxFocusable      *focusable,
               focused = mx_focusable_accept_focus (MX_FOCUSABLE (found),
                                                    MX_FOCUS_HINT_FIRST);
               if (focused)
-                priv->last_focus = (MxFocusable *)found;
+                {
+                  priv->last_focus = (MxFocusable *)found;
+                  break;
+                }
             }
 
-          column--;
+          child_meta = (MxTableChild *) clutter_container_get_child_meta
+            (CLUTTER_CONTAINER (focusable), found);
+
+          /* col might not be the first column if @found is a spanned actor */
+          column = child_meta->col - 1;
         }
 
       return focused;
@@ -307,10 +327,16 @@ mx_table_move_focus (MxFocusable      *focusable,
               focused = mx_focusable_accept_focus (MX_FOCUSABLE (found),
                                                    MX_FOCUS_HINT_FIRST);
               if (focused)
-                priv->last_focus = (MxFocusable *)found;
+                {
+                  priv->last_focus = (MxFocusable *)found;
+                  break;
+                }
             }
 
-          column++;
+          child_meta = (MxTableChild *) clutter_container_get_child_meta
+            (CLUTTER_CONTAINER (focusable), found);
+
+          column = child_meta->col + child_meta->col_span;
         }
 
       return focused;
