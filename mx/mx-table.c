@@ -83,6 +83,7 @@ typedef struct
 {
   guint expand : 1;
   guint shrink : 1;
+  guint is_visible : 1;
 
   gfloat min_size;
   gfloat pref_size;
@@ -96,6 +97,9 @@ struct _MxTablePrivate
 
   gint    col_spacing;
   gint    row_spacing;
+
+  gint    visible_rows;
+  gint    visible_cols;
 
   gint    n_rows;
   gint    n_cols;
@@ -719,6 +723,11 @@ mx_table_calculate_col_widths (MxTable *table,
 
   for_width -= (int)(padding.left + padding.right);
 
+  /* Reset all the visible attributes for the columns */
+  priv->visible_cols = 0;
+  for (i = 0; i < priv->n_cols; i++)
+    columns[i].is_visible = FALSE;
+
   /* STAGE ONE: calculate column widths for non-spanned children */
   for (l = priv->children; l; l = g_list_next (l))
     {
@@ -739,6 +748,13 @@ mx_table_calculate_col_widths (MxTable *table,
         continue;
 
       col = &columns[meta->col];
+
+      /* If this child is visible, then its column is visible */
+      if (!col->is_visible)
+        {
+          col->is_visible = TRUE;
+          priv->visible_cols++;
+        }
 
       clutter_actor_get_preferred_width (child, -1, &c_min, &c_pref);
 
@@ -788,6 +804,14 @@ mx_table_calculate_col_widths (MxTable *table,
           if (columns[i].expand)
             {
               n_expand++;
+            }
+
+          /* If this child is visible, then the columns it spans
+             are also visible */
+          if (!col->is_visible)
+            {
+              col->is_visible = TRUE;
+              priv->visible_cols++;
             }
         }
       min_width += priv->col_spacing * (meta->col_span - 1);
@@ -987,6 +1011,10 @@ mx_table_calculate_row_heights (MxTable *table,
 
   columns = (DimensionData*) priv->columns->data;
 
+  /* Reset the visible rows */
+  priv->visible_rows = 0;
+  for (i = 0; i < priv->n_rows; i++)
+    rows[i].is_visible = FALSE;
 
   /* STAGE ONE: calculate row heights for non-spanned children */
   for (l = priv->children; l; l = g_list_next (l))
@@ -1008,6 +1036,13 @@ mx_table_calculate_row_heights (MxTable *table,
         continue;
 
       row = &rows[meta->row];
+
+      /* If this child is visible, then its row is visible */
+      if (!row->is_visible)
+        {
+          row->is_visible = TRUE;
+          priv->visible_rows++;
+        }
 
       clutter_actor_get_preferred_height (child, columns[meta->col].final_size,
                                           &c_min, &c_pref);
@@ -1061,6 +1096,13 @@ mx_table_calculate_row_heights (MxTable *table,
           if (rows[i].expand)
             {
               n_expand++;
+            }
+
+          /* If this actor is visible, then all the rows is spans are visible */
+          if (!rows[i].is_visible)
+            {
+              rows[i].is_visible = TRUE;
+              priv->visible_rows++;
             }
         }
       min_height += priv->row_spacing * (meta->row_span - 1);
@@ -1291,7 +1333,6 @@ mx_table_preferred_allocate (ClutterActor          *self,
   rows = (DimensionData *) priv->rows->data;
   columns = (DimensionData *) priv->columns->data;
 
-
   for (list = priv->children; list; list = g_list_next (list))
     {
       gint row, col, row_span, col_span;
@@ -1319,7 +1360,6 @@ mx_table_preferred_allocate (ClutterActor          *self,
       y_align = meta->y_align;
       x_fill = meta->x_fill;
       y_fill = meta->y_fill;
-
 
       /* initialise the width and height */
       col_width = columns[col].final_size;
@@ -1358,16 +1398,26 @@ mx_table_preferred_allocate (ClutterActor          *self,
         }
 
       /* calculate child x */
-      child_x = (int) padding.left
-                + col_spacing * col;
+      child_x = (int) padding.left;
       for (i = 0; i < col; i++)
-        child_x += columns[i].final_size;
+        {
+          if (columns[i].is_visible)
+            {
+              child_x += columns[i].final_size;
+              child_x += col_spacing;
+            }
+        }
 
       /* calculate child y */
-      child_y = (int) padding.top
-                + row_spacing * row;
+      child_y = (int) padding.top;
       for (i = 0; i < row; i++)
-        child_y += rows[i].final_size;
+        {
+          if (rows[i].is_visible)
+            {
+              child_y += rows[i].final_size;
+              child_y += col_spacing;
+            }
+        }
 
       /* set up childbox */
       childbox.x1 = (float) child_x;
@@ -1426,7 +1476,7 @@ mx_table_get_preferred_width (ClutterActor *self,
   columns = (DimensionData*) priv->columns->data;
 
   total_min_width = padding.left + padding.right
-                    + (priv->n_cols - 1) * (float) priv->col_spacing;
+                    + (priv->visible_cols - 1) * (float) priv->col_spacing;
   total_pref_width = total_min_width;
 
   for (i = 0; i < priv->n_cols; i++)
@@ -1467,7 +1517,7 @@ mx_table_get_preferred_height (ClutterActor *self,
   mx_widget_get_padding (MX_WIDGET (self), &padding);
 
   /* start off with padding plus row spacing */
-  total_min_height = padding.top + padding.bottom + (priv->n_rows - 1) *
+  total_min_height = padding.top + padding.bottom + (priv->visible_rows - 1) *
                      (float)(priv->row_spacing);
 
   total_pref_height = total_min_height;
