@@ -19,6 +19,16 @@
  * Written by: Thomas Wood <thomas.wood@intel.com>
  */
 
+/**
+ * SECTION:mx-toolbar
+ * @short_description: A toolbar widget
+ *
+ * An #MxToolbar is an area that contains items at the top of an #MxWindow.
+ * It can optionally include a close button that will close the window.
+ */
+
+
+
 #include "mx-toolbar.h"
 #include "mx-private.h"
 #include "mx-marshal.h"
@@ -337,6 +347,17 @@ mx_toolbar_class_init (MxToolbarClass *klass)
   actor_class->paint = mx_toolbar_paint;
 
 
+  /**
+   * MxToolbar::close-button-clicked:
+   *
+   * Emitted when the close button of the toolbar is clicked.
+   *
+   * Normally, the parent stage will be closed when the close button is
+   * clicked. Return #TRUE from this handler to prevent the stage from being
+   * destroyed.
+   *
+   * Returns: #TRUE to prevent the parent stage being destroyed.
+   */
   pspec = g_param_spec_boolean ("has-close-button",
                                 "Has Close Button",
                                 "Whether to show a close button on the toolbar",
@@ -377,6 +398,14 @@ close_button_click_cb (MxButton  *button,
     clutter_actor_destroy (clutter_actor_get_stage (CLUTTER_ACTOR (toolbar)));
 }
 
+/**
+ * mx_toolbar_new:
+ *
+ * Create a new #MxToolbar. This is not normally necessary if using #MxWindow,
+ * where #mx_window_get_toolbar should be used to retrieve the toolbar instead.
+ *
+ * Returns: A newly allocated #MxToolbar
+ */
 ClutterActor *
 mx_toolbar_new (void)
 {
@@ -384,6 +413,14 @@ mx_toolbar_new (void)
 }
 
 
+/**
+ * mx_toolbar_set_has_close_button:
+ * @toolbar: A #MxToolbar
+ * @has_close_button: #TRUE if a close button should be displayed
+ *
+ * Set the #Mxtoolbar:has-close-button property
+ *
+ */
 void
 mx_toolbar_set_has_close_button (MxToolbar *toolbar,
                                  gboolean   has_close_button)
@@ -424,6 +461,14 @@ mx_toolbar_set_has_close_button (MxToolbar *toolbar,
     }
 }
 
+/**
+ * mx_toolbar_get_has_close_button:
+ * @toolbar: A #MxToolbar
+ *
+ * Get the value of the #MxToolbar:has-close-button property.
+ *
+ * Returns: the current value of the "hast-close-button" property.
+ */
 gboolean
 mx_toolbar_get_has_close_button (MxToolbar *toolbar)
 {
