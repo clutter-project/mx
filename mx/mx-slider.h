@@ -54,7 +54,7 @@ typedef struct _MxSliderClass MxSliderClass;
 typedef struct _MxSliderPrivate MxSliderPrivate;
 
 /**
- * MxTextureFrame:
+ * MxSlider:
  *
  * The contents of this structure are private and should only be accessed
  * through the public API.
