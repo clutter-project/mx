@@ -118,17 +118,6 @@ switch_align (ClutterActor *button, ClutterContainer *table)
 }
 
 static void
-stage_size_notify_cb (ClutterActor *stage,
-                      GParamSpec *pspec,
-                      ClutterActor *table)
-{
-  gfloat width, height;
-
-  clutter_actor_get_size (stage, &width, &height);
-  clutter_actor_set_size (table, width - 10, height - 10);
-}
-
-static void
 toggle_visible (ClutterActor *button)
 {
   clutter_actor_hide (button);
@@ -185,17 +174,10 @@ main (int argc, char *argv[])
 
   window = mx_application_create_window (application);
   stage = (ClutterActor *) mx_window_get_clutter_stage (window);
-  clutter_stage_set_user_resizable (CLUTTER_STAGE (stage), TRUE);
 
   table = mx_table_new ();
   mx_table_set_column_spacing (MX_TABLE (table), 10);
   mx_table_set_row_spacing (MX_TABLE (table), 10);
-
-
-  g_signal_connect (stage, "notify::width",
-                    G_CALLBACK (stage_size_notify_cb), table);
-  g_signal_connect (stage, "notify::height",
-                    G_CALLBACK (stage_size_notify_cb), table);
 
   button1 = mx_button_new_with_label ("button1");
   button2 = clutter_texture_new_from_file ("redhand.png", NULL);
