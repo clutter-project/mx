@@ -541,7 +541,7 @@ mx_expander_foreach (ClutterContainer *container,
 
   child = mx_bin_get_child (MX_BIN (container));
 
-  if (child && priv->expanded)
+  if (child)
     callback (child, user_data);
 }
 
