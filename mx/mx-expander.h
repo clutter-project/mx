@@ -71,7 +71,6 @@ typedef struct {
 
   /* signals */
   void (* expand_complete)   (MxExpander *expander);
-  void (* contract_complete) (MxExpander *expander);
 
   /* padding for future expansion */
   void (*_padding_0) (void);
