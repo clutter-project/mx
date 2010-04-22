@@ -770,10 +770,10 @@ mx_scroll_view_add (ClutterContainer *container,
       mx_scroll_view_parent_iface->add (container, actor);
 
       /* Get adjustments for scroll-bars */
-      g_signal_connect (actor, "notify::hadjustment",
+      g_signal_connect (actor, "notify::horizontal-adjustment",
                         G_CALLBACK (child_hadjustment_notify_cb),
                         container);
-      g_signal_connect (actor, "notify::vadjustment",
+      g_signal_connect (actor, "notify::vertical-adjustment",
                         G_CALLBACK (child_vadjustment_notify_cb),
                         container);
       child_hadjustment_notify_cb (G_OBJECT (actor), NULL, container);
