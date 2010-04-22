@@ -223,105 +223,22 @@ mx_bin_allocate_child (MxBin                 *bin,
 
   if (priv->child)
     {
-      gfloat natural_width, natural_height;
-      gfloat min_width, min_height;
-      gfloat child_width, child_height;
-      gfloat available_width, available_height;
-      ClutterRequestMode request;
+      MxPadding padding;
       ClutterActorBox allocation = { 0, };
-      MxPadding padding = { 0, };
-      gdouble x_align, y_align;
-
-      _mx_bin_get_align_factors (bin, &x_align, &y_align);
 
       mx_widget_get_padding (MX_WIDGET (bin), &padding);
 
-      available_width  = box->x2 - box->x1
-                         - padding.left - padding.right;
-      available_height = box->y2 - box->y1
-                         - padding.top - padding.bottom;
+      allocation.x1 = padding.left;
+      allocation.x2 = box->x2 - box->x1 - padding.right;
+      allocation.y1 = padding.top;
+      allocation.y2 = box->y2 - box->y1 - padding.bottom;
 
-      if (available_width < 0)
-        available_width = 0;
-
-      if (available_height < 0)
-        available_height = 0;
-
-      /* If we have no available space, just bail out. We'll skip
-       * drawing the child.
-       */
-      if (available_width == 0 || available_height == 0)
-        {
-          priv->child_has_space = FALSE;
-          return;
-        }
-      else
-        priv->child_has_space = TRUE;
-
-      if (priv->x_fill)
-        {
-          allocation.x1 = (int) padding.left;
-          allocation.x2 = (int)(allocation.x1 + available_width);
-        }
-
-      if (priv->y_fill)
-        {
-          allocation.y1 = (int) padding.top;
-          allocation.y2 = (int)(allocation.y1 + available_height);
-        }
-
-      /* if we are filling horizontally and vertically then we're done */
-      if (priv->x_fill && priv->y_fill)
-        {
-          clutter_actor_allocate (priv->child, &allocation, flags);
-          return;
-        }
-
-      request = CLUTTER_REQUEST_HEIGHT_FOR_WIDTH;
-      g_object_get (G_OBJECT (priv->child), "request-mode", &request, NULL);
-
-      if (request == CLUTTER_REQUEST_HEIGHT_FOR_WIDTH)
-        {
-          clutter_actor_get_preferred_width (priv->child, available_height,
-                                             &min_width,
-                                             &natural_width);
-
-          child_width = CLAMP (natural_width, min_width, available_width);
-
-          clutter_actor_get_preferred_height (priv->child, child_width,
-                                              &min_height,
-                                              &natural_height);
-
-          child_height = CLAMP (natural_height, min_height, available_height);
-        }
-      else
-        {
-          clutter_actor_get_preferred_height (priv->child, available_width,
-                                              &min_height,
-                                              &natural_height);
-
-          child_height = CLAMP (natural_height, min_height, available_height);
-
-          clutter_actor_get_preferred_width (priv->child, child_height,
-                                             &min_width,
-                                             &natural_width);
-
-          child_width = CLAMP (natural_width, min_width, available_width);
-        }
-
-      if (!priv->x_fill)
-        {
-          allocation.x1 = (int)((available_width - child_width) * x_align
-                                + padding.left);
-          allocation.x2 = allocation.x1 + child_width;
-        }
-
-      if (!priv->y_fill)
-        {
-          allocation.y1 = (int)((available_height - child_height) * y_align
-                                + padding.top);
-          allocation.y2 = allocation.y1 + child_height;
-        }
+      mx_allocate_align_fill (priv->child,
+                              &allocation,
+                              priv->x_align,
+                              priv->y_align,
+                              priv->x_fill,
+                              priv->y_fill);
 
       clutter_actor_allocate (priv->child, &allocation, flags);
     }
