@@ -122,7 +122,7 @@ G_DEFINE_TYPE_WITH_CODE (MxTable, mx_table, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
                                                 mx_focusable_iface_init));
 
-ClutterActor*
+static ClutterActor*
 mx_table_find_actor_at (MxTable *table,
                         int      row,
                         int      column)

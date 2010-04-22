@@ -536,7 +536,6 @@ mx_expander_foreach (ClutterContainer *container,
                      ClutterCallback   callback,
                      gpointer          user_data)
 {
-  MxExpanderPrivate *priv = MX_EXPANDER (container)->priv;
   ClutterActor *child;
 
   child = mx_bin_get_child (MX_BIN (container));

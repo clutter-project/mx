@@ -70,8 +70,6 @@ struct _MxIconThemePrivate
   GKeyFile   *hicolor_file;
 };
 
-static guint signals[LAST_SIGNAL] = { 0, };
-
 enum
 {
   PROP_0,
