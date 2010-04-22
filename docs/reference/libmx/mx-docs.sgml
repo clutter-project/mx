@@ -87,14 +87,6 @@
       <xi:include href="xml/mx-utils.xml"/>
     </chapter>
   </part>
-  <part>
-    <title>Mx for GTK+</title>
-    <chapter>
-      <title>Widgets</title>
-      <xi:include href="xml/mx-gtk-frame.xml"/>
-      <xi:include href="xml/mx-gtk-light-switch.xml"/>
-    </chapter>
-  </part>
 
   <index>
     <title>Index of all symbols</title>
