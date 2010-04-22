@@ -1,0 +1,82 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Tomáš Virgl <tomas@virgl.net>, 2010.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: mx.master\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-04-21 09:42+0000\n"
+"PO-Revision-Date: 2010-04-21 05:24+0200\n"
+"Last-Translator: Tomáš Virgl <tomas@virgl.net>\n"
+"Language-Team: slovak <sk-i18n@lists.linux.sk>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../mx/mx-application.c:311
+msgid "Raise application"
+msgstr ""
+
+#: ../mx-gtk/mx-gtk-light-switch.c:96
+msgid "Unavailable"
+msgstr "Nedostupný"
+
+#: ../mx/mx-utils.c:94
+msgid "Less than a minute ago"
+msgstr "Pred menej ako minútou"
+
+#: ../mx/mx-utils.c:98
+msgid "A few minutes ago"
+msgstr "Pred pár minútami"
+
+#: ../mx/mx-utils.c:102
+msgid "A couple of hours ago"
+msgstr "Pred pár hodinami"
+
+#: ../mx/mx-utils.c:109
+msgid "Earlier today"
+msgstr ""
+
+#: ../mx/mx-utils.c:112
+msgid "Yesterday"
+msgstr "Včera"
+
+#: ../mx/mx-utils.c:120
+#, c-format
+msgid "On %A"
+msgstr ""
+
+#: ../mx/mx-utils.c:126
+msgid "Unknown"
+msgstr "Neznámy"
+
+#: ../mx/mx-utils.c:133
+msgid "Last week"
+msgstr "Minulý týždeň"
+
+#: ../mx/mx-utils.c:136
+msgid "A couple of weeks ago"
+msgstr "Pred pár týždňami"
+
+#: ../mx/mx-utils.c:142
+msgid "This month"
+msgstr "Tento mesiac"
+
+#. Now Jan., last used in Dec.
+#: ../mx/mx-utils.c:146
+msgid "Last month"
+msgstr "Minulý mesiac"
+
+#: ../mx/mx-utils.c:149
+msgid "This year"
+msgstr "Tento rok"
+
+#: ../mx/mx-utils.c:152
+msgid "Last year"
+msgstr "Minulý rok"
+
+#: ../mx/mx-utils.c:154
+msgid "Ages ago"
+msgstr "Pred rokmi"
