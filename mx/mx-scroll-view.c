@@ -346,23 +346,12 @@ mx_scroll_view_allocate (ClutterActor          *actor,
 {
   MxPadding padding;
   ClutterActorBox child_box;
-  ClutterActorClass *parent_parent_class;
   gfloat avail_width, avail_height, sb_width, sb_height;
 
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (actor)->priv;
 
-  /* Chain up to the parent's parent class
-   *
-   * We do this because we do not want MxBin to allocate the child, as we
-   * give it a different allocation later, depending on whether the scrollbars
-   * are visible
-   */
-  parent_parent_class
-    = g_type_class_peek_parent (mx_scroll_view_parent_class);
-
-  CLUTTER_ACTOR_CLASS (parent_parent_class)->
-  allocate (actor, box, flags);
-
+  CLUTTER_ACTOR_CLASS (mx_scroll_view_parent_class)->
+    allocate (actor, box, flags);
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
