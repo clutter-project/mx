@@ -1027,14 +1027,22 @@ interpolation_new_frame_cb (ClutterTimeline *timeline,
                    * progress;
 
       mx_adjustment_set_value (adjustment, dx);
+      priv->interpolation = timeline;
     }
   else
-    mx_adjustment_set_value (adjustment,
-                             priv->old_position +
-                             (priv->new_position - priv->old_position) *
-                             clutter_alpha_get_alpha (priv->interpolate_alpha));
+    {
+      gdouble new_value = priv->old_position +
+                          (priv->new_position - priv->old_position) *
+                          clutter_alpha_get_alpha (priv->interpolate_alpha);
 
-  priv->interpolation = timeline;
+      mx_adjustment_set_value (adjustment, new_value);
+      priv->interpolation = timeline;
+
+      /* Stop the interpolation if we've reached the end of the adjustment */
+      if ((new_value < priv->lower) ||
+          (new_value >= (priv->upper - priv->page_size)))
+        stop_interpolation (adjustment);
+    }
 }
 
 static void
@@ -1087,10 +1095,9 @@ mx_adjustment_interpolate (MxAdjustment *adjustment,
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
 
-  stop_interpolation (adjustment);
-
   if (duration <= 1)
     {
+      stop_interpolation (adjustment);
       mx_adjustment_set_value (adjustment, value);
       return;
     }
@@ -1098,9 +1105,30 @@ mx_adjustment_interpolate (MxAdjustment *adjustment,
   priv->old_position = priv->value;
   priv->new_position = value;
 
-  priv->interpolation = clutter_timeline_new (duration);
+  if (!priv->interpolation)
+    {
+      priv->interpolation = clutter_timeline_new (duration);
 
-  if (priv->elastic)
+      g_signal_connect (priv->interpolation,
+                        "new-frame",
+                        G_CALLBACK (interpolation_new_frame_cb),
+                        adjustment);
+      g_signal_connect (priv->interpolation,
+                        "completed",
+                        G_CALLBACK (interpolation_completed_cb),
+                        adjustment);
+    }
+  else
+    {
+      /* Extend the animation if it gets interrupted, otherwise frequent calls
+       * to this function will end up with no advancements until the calls
+       * finish (as the animation never gets a chance to start).
+       */
+      clutter_timeline_rewind (priv->interpolation);
+      clutter_timeline_set_duration (priv->interpolation, duration);
+    }
+
+  if (priv->elastic && !priv->bounce_alpha)
     priv->bounce_alpha = clutter_alpha_new_full (priv->interpolation,
                                                  CLUTTER_LINEAR);
 
@@ -1109,15 +1137,6 @@ mx_adjustment_interpolate (MxAdjustment *adjustment,
 
   priv->interpolate_alpha = clutter_alpha_new_full (priv->interpolation,
                                                     mode);
-
-  g_signal_connect (priv->interpolation,
-                    "new-frame",
-                    G_CALLBACK (interpolation_new_frame_cb),
-                    adjustment);
-  g_signal_connect (priv->interpolation,
-                    "completed",
-                    G_CALLBACK (interpolation_completed_cb),
-                    adjustment);
 
   clutter_timeline_start (priv->interpolation);
 }
