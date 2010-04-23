@@ -55,6 +55,12 @@ typedef struct _MxDeformBowTie MxDeformBowTie;
 typedef struct _MxDeformBowTieClass MxDeformBowTieClass;
 typedef struct _MxDeformBowTiePrivate MxDeformBowTiePrivate;
 
+/**
+ * MxDeformBowTie:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
 struct _MxDeformBowTie
 {
   MxDeformTexture parent;

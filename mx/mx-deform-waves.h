@@ -51,6 +51,12 @@ G_BEGIN_DECLS
   (G_TYPE_INSTANCE_GET_CLASS ((obj), \
   MX_TYPE_DEFORM_WAVES, MxDeformWavesClass))
 
+/**
+ * MxDeformWaves:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
 typedef struct _MxDeformWaves MxDeformWaves;
 typedef struct _MxDeformWavesClass MxDeformWavesClass;
 typedef struct _MxDeformWavesPrivate MxDeformWavesPrivate;

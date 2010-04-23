@@ -57,6 +57,12 @@ typedef struct _MxToggle MxToggle;
 typedef struct _MxToggleClass MxToggleClass;
 typedef struct _MxTogglePrivate MxTogglePrivate;
 
+/**
+ * MxToggle:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
 struct _MxToggle
 {
   MxWidget parent;

@@ -51,6 +51,12 @@ G_BEGIN_DECLS
   (G_TYPE_INSTANCE_GET_CLASS ((obj), \
   MX_TYPE_DEFORM_PAGE_TURN, MxDeformPageTurnClass))
 
+/**
+ * MxDeformPageTurn:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
 typedef struct _MxDeformPageTurn MxDeformPageTurn;
 typedef struct _MxDeformPageTurnClass MxDeformPageTurnClass;
 typedef struct _MxDeformPageTurnPrivate MxDeformPageTurnPrivate;

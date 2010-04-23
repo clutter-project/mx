@@ -54,6 +54,12 @@ G_BEGIN_DECLS
   (G_TYPE_INSTANCE_GET_CLASS ((obj), \
   MX_TYPE_NOTEBOOK, MxNotebookClass))
 
+/**
+ * MxNotebook:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
 typedef struct _MxNotebook MxNotebook;
 typedef struct _MxNotebookClass MxNotebookClass;
 typedef struct _MxNotebookPrivate MxNotebookPrivate;

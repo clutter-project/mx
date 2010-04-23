@@ -59,6 +59,12 @@ typedef struct _MxDeformTexture MxDeformTexture;
 typedef struct _MxDeformTextureClass MxDeformTextureClass;
 typedef struct _MxDeformTexturePrivate MxDeformTexturePrivate;
 
+/**
+ * MxDeformTexture:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
 struct _MxDeformTexture
 {
   MxWidget parent;

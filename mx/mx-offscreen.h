@@ -55,6 +55,12 @@ G_BEGIN_DECLS
   (G_TYPE_INSTANCE_GET_CLASS ((obj), \
   MX_TYPE_OFFSCREEN, MxOffscreenClass))
 
+/**
+ * MxOffscreen:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
 typedef struct _MxOffscreen MxOffscreen;
 typedef struct _MxOffscreenClass MxOffscreenClass;
 typedef struct _MxOffscreenPrivate MxOffscreenPrivate;

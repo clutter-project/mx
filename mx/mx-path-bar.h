@@ -56,6 +56,12 @@ G_BEGIN_DECLS
   (G_TYPE_INSTANCE_GET_CLASS ((obj), \
   MX_TYPE_PATH_BAR, MxPathBarClass))
 
+/**
+ * MxPathBar:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
 typedef struct _MxPathBar MxPathBar;
 typedef struct _MxPathBarClass MxPathBarClass;
 typedef struct _MxPathBarPrivate MxPathBarPrivate;
