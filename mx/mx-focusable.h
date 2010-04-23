@@ -40,6 +40,11 @@ G_BEGIN_DECLS
 #define MX_FOCUSABLE_GET_INTERFACE(inst) (G_TYPE_INSTANCE_GET_INTERFACE ((inst), MX_TYPE_FOCUSABLE, MxFocusableIface))
 
 
+/**
+ * MxFocusable:
+ *
+ * This is an opaque structure whose members cannot be directly accessed.
+ */
 typedef struct _MxFocusable      MxFocusable; /* dummy */
 typedef struct _MxFocusableIface MxFocusableIface;
 

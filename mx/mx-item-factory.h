@@ -38,6 +38,11 @@
 #define MX_IS_ITEM_FACTORY(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MX_TYPE_ITEM_FACTORY))
 #define MX_ITEM_FACTORY_GET_IFACE(obj) (G_TYPE_INSTANCE_GET_INTERFACE ((obj), MX_TYPE_ITEM_FACTORY, MxItemFactoryIface))
 
+/**
+ * MxItemFactory:
+ *
+ * This is an opaque structure whose members cannot be directly accessed.
+ */
 typedef struct _MxItemFactory MxItemFactory; /* dummy typedef */
 typedef struct _MxItemFactoryIface MxItemFactoryIface;
 

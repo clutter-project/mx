@@ -39,6 +39,11 @@ typedef struct _MxStyle               MxStyle;
 typedef struct _MxStylePrivate        MxStylePrivate;
 typedef struct _MxStyleClass          MxStyleClass;
 
+/**
+ * MxStylable:
+ *
+ * This is an opaque structure whose members cannot be directly accessed.
+ */
 /* forward declaration */
 typedef struct _MxStylable            MxStylable; /* dummy typedef */
 typedef struct _MxStylableIface       MxStylableIface;

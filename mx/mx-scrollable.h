@@ -41,6 +41,11 @@ G_BEGIN_DECLS
 #define MX_IS_SCROLLABLE(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MX_TYPE_SCROLLABLE))
 #define MX_SCROLLABLE_GET_IFACE(inst) (G_TYPE_INSTANCE_GET_INTERFACE ((inst), MX_TYPE_SCROLLABLE, MxScrollableIface))
 
+/**
+ * MxScrollable:
+ *
+ * This is an opaque structure whose members cannot be directly accessed.
+ */
 typedef struct _MxScrollable MxScrollable; /* Dummy object */
 typedef struct _MxScrollableIface MxScrollableIface;
 

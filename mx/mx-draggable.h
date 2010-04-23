@@ -39,6 +39,11 @@ G_BEGIN_DECLS
 #define MX_IS_DRAGGABLE(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MX_TYPE_DRAGGABLE))
 #define MX_DRAGGABLE_GET_IFACE(obj)   (G_TYPE_INSTANCE_GET_INTERFACE ((obj), MX_TYPE_DRAGGABLE, MxDraggableIface))
 
+/**
+ * MxDraggable:
+ *
+ * This is an opaque structure whose members cannot be directly accessed.
+ */
 typedef struct _MxDraggable           MxDraggable; /* dummy typedef */
 typedef struct _MxDraggableIface      MxDraggableIface;
 

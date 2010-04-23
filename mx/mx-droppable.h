@@ -40,6 +40,11 @@ G_BEGIN_DECLS
 #define MX_IS_DROPPABLE(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MX_TYPE_DROPPABLE))
 #define MX_DROPPABLE_GET_IFACE(obj)   (G_TYPE_INSTANCE_GET_INTERFACE ((obj), MX_TYPE_DROPPABLE, MxDroppableIface))
 
+/**
+ * MxDroppable:
+ *
+ * This is an opaque structure whose members cannot be directly accessed.
+ */
 typedef struct _MxDroppable           MxDroppable; /* dummy typedef */
 typedef struct _MxDroppableIface      MxDroppableIface;
 
