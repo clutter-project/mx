@@ -1,5 +1,9 @@
 /* mx-window.h */
 
+#if !defined(MX_H_INSIDE) && !defined(MX_COMPILATION)
+#error "Only <mx/mx.h> can be included directly.h"
+#endif
+
 #ifndef _MX_WINDOW_H
 #define _MX_WINDOW_H
 

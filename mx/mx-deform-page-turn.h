@@ -21,6 +21,10 @@
  *
  */
 
+#if !defined(MX_H_INSIDE) && !defined(MX_COMPILATION)
+#error "Only <mx/mx.h> can be included directly.h"
+#endif
+
 #ifndef _MX_DEFORM_PAGE_TURN_H
 #define _MX_DEFORM_PAGE_TURN_H
 
