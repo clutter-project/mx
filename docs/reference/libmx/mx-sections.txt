@@ -562,26 +562,6 @@ MxItemViewPrivate
 </SECTION>
 
 <SECTION>
-<FILE>mx-subtexture</FILE>
-<TITLE>MxSubtexture</TITLE>
-MxSubtexture
-mx_subtexture_new
-mx_subtexture_set_parent_texture
-mx_subtexture_get_parent_texture
-mx_subtexture_set_frame
-mx_subtexture_get_frame
-<SUBSECTION Standard>
-MX_SUBTEXTURE
-MX_IS_SUBTEXTURE
-MX_TYPE_SUBTEXTURE
-mx_subtexture_get_type
-MX_SUBTEXTURE_CLASS
-MX_IS_SUBTEXTURE_CLASS
-MX_SUBTEXTURE_GET_CLASS
-MxSubtexturePrivate
-</SECTION>
-
-<SECTION>
 <FILE>mx-progress-bar</FILE>
 <TITLE>MxProgressBar</TITLE>
 MxProgressBar
@@ -1038,17 +1018,6 @@ MX_VIEWPORT_CLASS
 MX_IS_VIEWPORT_CLASS
 MX_VIEWPORT_GET_CLASS
 MxViewportPrivate
-</SECTION>
-
-<SECTION>
-<FILE>mx-progress-bar-fill</FILE>
-<SUBSECTION Standard>
-MX_PROGRESS_BAR_FILL
-MX_IS_PROGRESS_BAR_FILL
-MX_TYPE_PROGRESS_BAR_FILL
-MX_PROGRESS_BAR_FILL_CLASS
-MX_IS_PROGRESS_BAR_FILL_CLASS
-MX_PROGRESS_BAR_FILL_GET_CLASS
 </SECTION>
 
 <SECTION>

@@ -63,6 +63,10 @@ IGNORE_HFILES= \
 	mx-marshal.c \
 	mx-marshal.h \
 	mx-private.h \
+	mx-progress-bar-fill.c \
+	mx-progress-bar-fill.h \
+	mx-subtexture.c \
+	mx-subtexture.h \
 	stamp-mx-enum-types.h \
 	stamp-mx-marshal.h
 
