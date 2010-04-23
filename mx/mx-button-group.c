@@ -149,7 +149,6 @@ mx_button_group_init (MxButtonGroup *self)
 
 /**
  * mx_button_group_new:
- * @void: A #mx_button_group_new
  *
  * Create a new #MxButtonGroup.
  *

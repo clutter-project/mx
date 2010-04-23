@@ -308,7 +308,7 @@ mx_focus_manager_get_focused (MxFocusManager *manager)
 /**
  * mx_focus_manager_push_focus:
  * @manager: the focus manager
- * @focused: the object to set focus on
+ * @focusable: the object to set focus on
  *
  * Note: the final focused object may not be the same as @focusable if
  * @focusable does not accept focus directly.

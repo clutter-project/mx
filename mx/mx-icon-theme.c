@@ -314,7 +314,6 @@ mx_icon_theme_init (MxIconTheme *self)
 
 /**
  * mx_icon_theme_new:
- * @void: A #mx_icon_theme_new
  *
  * Create a new #MxIconTheme. In most cicumstances, it is more useful to use
  * #mx_icon_theme_get_default to load the default icon theme.

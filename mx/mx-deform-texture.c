@@ -602,6 +602,7 @@ mx_deform_texture_init (MxDeformTexture *self)
 }
 /**
  * mx_deform_texture_set_textures:
+ * @texture: an #MxDeformTexture
  * @front: (allow-none): #ClutterTexture to use for the front-face.
  * @back: (allow-none): #ClutterTexture to use for the back-face.
  *
