@@ -53,9 +53,10 @@ struct _MxWidgetPrivate
   MxPadding     border;
   MxPadding     padding;
 
-  MxStyle      *style;
-  gchar        *pseudo_class;
-  gchar        *style_class;
+  MxStyle       *style;
+  gchar         *pseudo_class;
+  gchar         *style_class;
+  MxBorderImage *mx_border_image;
 
   ClutterActor *border_image;
   ClutterActor *old_border_image;
@@ -250,6 +251,12 @@ mx_widget_finalize (GObject *gobject)
 
   g_free (priv->style_class);
   g_free (priv->pseudo_class);
+
+  if (priv->mx_border_image)
+    {
+      g_boxed_free (MX_TYPE_BORDER_IMAGE, priv->mx_border_image);
+      priv->mx_border_image = NULL;
+    }
 
   clutter_color_free (priv->bg_color);
 
@@ -492,6 +499,38 @@ old_background_faded_cb (ClutterAnimation *animation, ClutterActor *self)
   clutter_actor_unparent (self);
 }
 
+/* TODO: move to mx-types.c */
+static gboolean
+mx_border_image_equal (MxBorderImage *v1,
+                       MxBorderImage *v2)
+{
+  if (v1 == v2)
+    return FALSE;
+
+  if (!v1 && v2)
+    return TRUE;
+
+  if (!v2 && v1)
+    return TRUE;
+
+  if (g_strcmp0 (v1->uri, v2->uri))
+    return TRUE;
+
+  if (v1->top != v2->top)
+    return TRUE;
+
+  if (v1->right != v2->right)
+    return TRUE;
+
+  if (v1->bottom != v2->bottom)
+    return TRUE;
+
+  if (v1->left != v2->left)
+    return TRUE;
+
+  return FALSE;
+}
+
 static void
 mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
 {
@@ -505,6 +544,7 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
   gboolean has_changed = FALSE;
   ClutterColor *color;
   guint duration;
+  gboolean border_image_changed = FALSE;
 
   /* cache these values for use in the paint function */
   mx_stylable_get (self,
@@ -555,7 +595,15 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
       g_boxed_free (MX_TYPE_PADDING, padding);
     }
 
-  if (priv->border_image)
+
+  /* border-image property */
+
+  /* check whether the border-image has changed */
+  border_image_changed = mx_border_image_equal (priv->mx_border_image,
+                                                border_image);
+
+  /* remove the old border-image if it has changed */
+  if (border_image_changed && priv->border_image)
     {
       if (duration == 0)
         {
@@ -585,24 +633,14 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
 
       priv->border_image = NULL;
     }
-
-  if (priv->background_image)
-    {
-      clutter_actor_unparent (priv->background_image);
-      priv->background_image = NULL;
-    }
-
   texture_cache = mx_texture_cache_get_default ();
 
-  /* Check if the URL is actually present, not garbage in the property */
-  if (border_image && border_image->uri)
+  /* apply the new border-image, as long as there is a valid URI */
+  if (border_image_changed && border_image && border_image->uri)
     {
       gint border_left, border_right, border_top, border_bottom;
       gint width, height;
 
-      /* `border-image' takes precedence over `background-image'.
-       * Firefox lets the background-image shine thru when border-image has
-       * alpha an channel, maybe that would be an option for the future. */
       texture = mx_texture_cache_get_texture (texture_cache,
                                               border_image->uri);
 
@@ -625,10 +663,20 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
       relayout_needed = TRUE;
     }
 
-  /* Might get a border-image: none */
-  if (border_image)
+  /* if the border-image has changed, free the old one and store the new one */
+  if (border_image_changed)
     {
-      g_boxed_free (MX_TYPE_BORDER_IMAGE, border_image);
+      if (priv->mx_border_image)
+        g_boxed_free (MX_TYPE_BORDER_IMAGE, priv->mx_border_image);
+
+      priv->mx_border_image = border_image;
+    }
+
+  /* background-image property */
+  if (priv->background_image)
+    {
+      clutter_actor_unparent (priv->background_image);
+      priv->background_image = NULL;
     }
 
   if (background_image)
