@@ -69,12 +69,6 @@ MxEntry:disabled
   border-image: url("entry-disabled.png") 5;
 }
 
-MxScrollBar
-{
-  background-color: #dee2e5;
-  padding: 0;
-}
-
 MxScrollView
 {
   -mx-scrollbar-width: 22;
@@ -128,6 +122,25 @@ MxButton#down-stepper:active
 {
   -mx-content-image: url("scroll-button-down-hover.png") 5;
 }
+
+/* scroll bars */
+
+
+MxScrollBar
+{
+  padding: 0;
+}
+
+MxScrollBar *.htrough
+{
+  border-image: url("scroll-hbackground.png") 5 5 7 5;
+}
+
+MxScrollBar *.vtrough
+{
+  border-image: url("scroll-vbackground.png") 5 5 7 5;
+}
+
 
 MxScrollBar MxButton#vhandle
 {

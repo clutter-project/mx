@@ -1074,7 +1074,7 @@ mx_scroll_bar_init (MxScrollBar *self)
 
   self->priv->trough = mx_frame_new ();
   clutter_actor_set_reactive ((ClutterActor *) self->priv->trough, TRUE);
-  clutter_actor_set_name (CLUTTER_ACTOR (self->priv->trough), "trough");
+  mx_stylable_set_style_class (MX_STYLABLE (self->priv->trough), "htrough");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->trough),
                             CLUTTER_ACTOR (self));
   g_signal_connect (self->priv->trough, "button-press-event",
@@ -1213,6 +1213,8 @@ mx_scroll_bar_set_orientation (MxScrollBar   *bar,
                                   "down-stepper");
           clutter_actor_set_name (CLUTTER_ACTOR (priv->handle),
                                   "vhandle");
+          mx_stylable_set_style_class (MX_STYLABLE (priv->trough),
+                                       "vtrough");
         }
       else
         {
@@ -1222,6 +1224,8 @@ mx_scroll_bar_set_orientation (MxScrollBar   *bar,
                                   "backward-stepper");
           clutter_actor_set_name (CLUTTER_ACTOR (priv->handle),
                                   "hhandle");
+          mx_stylable_set_style_class (MX_STYLABLE (priv->trough),
+                                       "htrough");
         }
 
       clutter_actor_queue_relayout (CLUTTER_ACTOR (bar));

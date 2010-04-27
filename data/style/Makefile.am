@@ -46,6 +46,10 @@ dist_style_DATA = \
 		expander-open-active.png \
 		expander-open-disabled.png \
 		resize-grip.png \
+		scroll-hbackground.png \
+		scroll-hbackground-disabled.png \
+		scroll-vbackground.png \
+		scroll-vbackground-disabled.png \
 		scroll-button-down-hover.png \
 		scroll-button-down.png \
 		scroll-button-up-hover.png \
