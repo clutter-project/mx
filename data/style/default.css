@@ -11,10 +11,9 @@ MxIcon.ResizeGrip
 
 MxButton
 {
-  color: #009bce;
   -mx-border-image-transition-duration: 120;
   padding: 5;
-  border-image: url("button.png") 10;
+  border-image: url("button.png") 11 5 13 5;
 }
 
 MxButton:disabled
@@ -28,6 +27,12 @@ MxButton:hover
 {
   -mx-border-image-transition-duration: 0;
   border-image: url("button-hover.png") 10;
+}
+
+MxButton:focus
+{
+  -mx-border-image-transition-duration: 0;
+  border-image: url("button-focus.png") 10;
 }
 
 MxButton:active, MxButton:checked
@@ -45,7 +50,7 @@ MxEntry
 
 MxEntry:focus
 {
-  border-image: url("entry-active.png") 5;
+  border-image: url("entry-focus.png") 5;
 }
 
 MxEntry:hover
@@ -152,7 +157,7 @@ MxScrollBar MxButton#hhandle:hover
 MxExpander {
   font-weight: bold;
   border-image: url('expander-closed.png') 6;
-  padding: 3 12;
+  padding: 7 8;
 }
 
 MxExpander:hover {
@@ -170,20 +175,20 @@ MxExpander:disabled {
 
 
 MxExpander.open-expander {
-  border-image: url('expander-open.png') 28 6 6 6;
+  border-image: url('expander-open.png') 31 5 7 5;
 }
 
 MxExpander.open-expander:hover {
-  border-image: url('expander-open-hover.png') 28 6 6 6;
+  border-image: url('expander-open-hover.png') 31 5 7 5;
 }
 
 MxExpander.open-expander:active {
-  border-image: url('expander-open-active.png') 28 6 6 6;
+  border-image: url('expander-open-active.png') 31 5 7 5;
 }
 
 MxExpander.open-expander:disabled {
   color: #adaead;
-  border-image: url('expander-open-disabled.png') 28 6 6 6;
+  border-image: url('expander-open-disabled.png') 31 5 7 5;
 }
 
 MxExpander > MxIcon#mx-expander-arrow-closed {
@@ -219,8 +224,7 @@ MxTooltip {
 
 
 MxProgressBar {
-  padding: 0 0 3 0;
-  border-image: url('progress-bar-background.png') 3 3 6 3;
+  border-image: url('progress-bar-background.png') 4 4 6 4;
 }
 
 MxProgressBar MxProgressBarFill {
@@ -229,7 +233,6 @@ MxProgressBar MxProgressBarFill {
 }
 
 MxComboBox {
-  color: #009bce;
   padding: 5 11 5 5;
   border-image: url('combobox.png') 4 32 4 4;
   -mx-marker-image: url('combobox-marker.png');
@@ -241,6 +244,11 @@ MxComboBox MxIcon {
 
 MxComboBox:hover {
   border-image: url('combobox-hover.png') 4 32 4 4;
+  -mx-marker-image: url('combobox-marker-hover.png');
+}
+
+MxComboBox:focus {
+  border-image: url('combobox-focus.png') 4 32 4 4;
   -mx-marker-image: url('combobox-marker-hover.png');
 }
 
@@ -256,8 +264,8 @@ MxComboBox:disabled {
 }
 
 MxMenu {
-  padding: 3;
-  border-image: url('menu.png') 2;
+  padding: 3 3 5 3;
+  border-image: url('menu.png') 5;
 }
 
 MxMenu > MxBoxLayout {
@@ -395,7 +403,7 @@ MxSlider {
 }
 
 MxSlider *#trough-background {
-  border-image: url('slider-background.png') 1;
+  border-image: url('slider-background.png') 2 3 3 3;
 }
 
 MxSlider *#fill {
@@ -429,7 +437,7 @@ MxToolbar MxSlider > MxButton:disabled
 }
 
 MxPathBar {
-  -mx-overlap: 19;
+  -mx-overlap: 16;
 }
 
 MxPathBar > MxEntry {
@@ -438,20 +446,25 @@ MxPathBar > MxEntry {
 
 MxPathBarButton,
 MxToolbar MxPathBarButton {
-  color: #009bce;
-  border-image: url('pathbar-button.png') 4 13 4 4;
+  border-image: url('pathbar-button.png') 3 14 4 5;
   padding: 4 24;
 }
 
 MxPathBarButton:hover,
 MxToolbar MxPathBarButton:hover {
-  border-image: url('pathbar-button-hover.png') 4 13 4 4;
+  border-image: url('pathbar-button-hover.png') 3 14 4 5;
   padding: 4 24;
 }
 
 MxPathBarButton:active,
 MxToolbar MxPathBarButton:active {
   border-image: url('pathbar-button-active.png') 4 13 4 4;
+  padding: 4 24;
+}
+
+MxPathBarButton:focus,
+MxToolbar MxPathBarButton:hover {
+  border-image: url('pathbar-button-focus.png') 4 14 6 5;
   padding: 4 24;
 }
 
@@ -470,9 +483,18 @@ MxToolbar MxPathBarButton.End:active {
   border-image: url('pathbar-button-last-active.png') 5;
 }
 
+MxPathBarButton.End:focus,
+MxToolbar MxPathBarButton.End:hover {
+  border-image: url('pathbar-button-last-focus.png') 5;
+}
+
 MxButton.check-box {
   padding: 9;
   border-image: url('checkbox-background.png') 5;
+}
+
+MxButton.check-box:focus {
+  border-image: url('checkbox-background-focus.png') 5;
 }
 
 MxButton.check-box:hover,

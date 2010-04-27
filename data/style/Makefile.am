@@ -3,6 +3,7 @@ dist_style_DATA = \
 		button-disabled.png \
 		button-active.png \
 		button-hover.png \
+		button-focus.png \
 		button.png \
 		checkbox-background.png \
 		checkbox-background-active.png \
@@ -12,6 +13,7 @@ dist_style_DATA = \
 		checkbox-check.png \
 		checkbox-check-disabled.png \
 		combobox.png \
+		combobox-focus.png \
 		combobox-hover.png \
 		combobox-active.png \
 		combobox-disabled.png \
@@ -25,6 +27,7 @@ dist_style_DATA = \
 		close-hover.png \
 		default.css \
 		entry.png \
+		entry-focus.png \
 		entry-active.png \
 		entry-disabled.png \
 		entry-hover.png \
