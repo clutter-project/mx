@@ -279,8 +279,6 @@ mx_viewport_allocate (ClutterActor          *self,
   /* Refresh adjustments */
   if (priv->sync_adjustments)
     {
-      gdouble prev_value;
-
       if (priv->hadjustment)
         {
           g_object_set (G_OBJECT (priv->hadjustment),
@@ -290,10 +288,6 @@ mx_viewport_allocate (ClutterActor          *self,
                         "page-increment", available_width / 3,
                         "step-increment", available_width / 12,
                         NULL);
-
-          /* Make sure value is clamped */
-          prev_value = mx_adjustment_get_value (priv->hadjustment);
-          mx_adjustment_set_value (priv->hadjustment, prev_value);
         }
 
       if (priv->vadjustment)
@@ -305,9 +299,6 @@ mx_viewport_allocate (ClutterActor          *self,
                         "page-increment", available_height / 3,
                         "step-increment", available_height / 12,
                         NULL);
-
-          prev_value = mx_adjustment_get_value (priv->vadjustment);
-          mx_adjustment_set_value (priv->vadjustment, prev_value);
         }
     }
 }
