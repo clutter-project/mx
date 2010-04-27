@@ -1,0 +1,82 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: mx\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-04-26 09:42+0000\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Salvador Cabrera Lozano <salvadorcabrera@gmail.com>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n!=1; \n"
+"X-Poedit-Language: Spanish\n"
+"X-Poedit-Country: MEXICO\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: ../mx/mx-application.c:311
+msgid "Raise application"
+msgstr "Restaurar aplicación"
+
+#: ../mx-gtk/mx-gtk-light-switch.c:96
+msgid "Unavailable"
+msgstr "No disponible"
+
+#: ../mx/mx-utils.c:94
+msgid "Less than a minute ago"
+msgstr "Hace menos de un minuto"
+
+#: ../mx/mx-utils.c:98
+msgid "A few minutes ago"
+msgstr "Hace unos pocos minutos"
+
+#: ../mx/mx-utils.c:102
+msgid "A couple of hours ago"
+msgstr "Hace un par de horas"
+
+#: ../mx/mx-utils.c:109
+msgid "Earlier today"
+msgstr "Hoy mas temprano"
+
+#: ../mx/mx-utils.c:112
+msgid "Yesterday"
+msgstr "Ayer"
+
+#: ../mx/mx-utils.c:120
+#, c-format
+msgid "On %A"
+msgstr "El %A"
+
+#: ../mx/mx-utils.c:126
+msgid "Unknown"
+msgstr "Desconocido"
+
+#: ../mx/mx-utils.c:133
+msgid "Last week"
+msgstr "La semana pasada"
+
+#: ../mx/mx-utils.c:136
+msgid "A couple of weeks ago"
+msgstr "Hace un par de semanas"
+
+#: ../mx/mx-utils.c:142
+msgid "This month"
+msgstr "Este mes"
+
+#. Now Jan., last used in Dec.
+#: ../mx/mx-utils.c:146
+msgid "Last month"
+msgstr "El mes pasado"
+
+#: ../mx/mx-utils.c:149
+msgid "This year"
+msgstr "Este año"
+
+#: ../mx/mx-utils.c:152
+msgid "Last year"
+msgstr "El año pasado"
+
+#: ../mx/mx-utils.c:154
+msgid "Ages ago"
+msgstr "Hace mucho tiempo"
+
