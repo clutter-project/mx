@@ -356,8 +356,9 @@ mx_icon_update (MxIcon *icon)
         mx_icon_theme_lookup_texture (theme, priv->icon_name, priv->icon_size);
       if (priv->icon_texture)
         clutter_actor_set_parent (priv->icon_texture, CLUTTER_ACTOR (icon));
-      else
-        g_warning ("Failed to lookup icon '%s'", priv->icon_name);
+      /* else TODO: Consider loading a fall-back icon or emitting an
+       * error signal.
+       */
     }
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (icon));
