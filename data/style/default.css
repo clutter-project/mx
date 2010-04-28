@@ -425,28 +425,25 @@ MxSlider *#fill {
 MxSlider > MxButton,
 MxToolbar MxSlider > MxButton
 {
-  padding: 10;
-  border-image: url("slider-handle.png") 10;
+  border-image: url("slider-handle.png") 4 5 6 5;
 }
 
 MxSlider > MxButton:hover,
 MxToolbar MxSlider > MxButton:hover
 {
-  border-image: url("slider-handle-hover.png") 10;
+  border-image: url("slider-handle-hover.png") 4 5 6 5;
 }
 
 MxSlider > MxButton:active,
 MxToolbar MxSlider > MxButton:active
 {
-  padding: 11 9 9 11;
-  border-image: url("slider-handle-active.png") 10;
+  border-image: url("slider-handle-active.png") 4 5 6 5;
 }
 
 MxSlider > MxButton:disabled,
 MxToolbar MxSlider > MxButton:disabled
 {
-  padding: 11 9 9 11;
-  border-image: url("slider-handle-disabled.png") 10;
+  border-image: url("slider-handle-disabled.png") 4 5 6 5;
 }
 
 MxPathBar {
