@@ -522,7 +522,8 @@ static GList *
 mx_icon_theme_theme_load_icon (MxIconTheme *self,
                                GKeyFile    *theme_file,
                                const gchar *icon,
-                               GIcon       *store_icon)
+                               GIcon       *store_icon,
+                               gboolean     store_fail)
 {
   gchar *dirs;
   const gchar *theme;
@@ -686,7 +687,7 @@ mx_icon_theme_theme_load_icon (MxIconTheme *self,
       g_free (dirs);
     }
 
-  if (data)
+  if (data || store_fail)
     {
       data = g_list_reverse (data);
       if (!store_icon)
@@ -711,7 +712,7 @@ mx_icon_theme_load_icon (MxIconTheme *theme,
   /* Try the set theme */
   if (priv->theme_file &&
       (data = mx_icon_theme_theme_load_icon (theme, priv->theme_file,
-                                             icon_name, store_icon)))
+                                             icon_name, store_icon, FALSE)))
     return data;
 
   /* Try the inherited themes */
@@ -719,14 +720,14 @@ mx_icon_theme_load_icon (MxIconTheme *theme,
     {
       GKeyFile *theme_file = f->data;
       if ((data = mx_icon_theme_theme_load_icon (theme, theme_file, icon_name,
-                                                 store_icon)))
+                                                 store_icon, FALSE)))
         return data;
     }
 
   /* Try the hicolor theme */
   if (priv->hicolor_file &&
       (data = mx_icon_theme_theme_load_icon (theme, priv->hicolor_file,
-                                             icon_name, store_icon)))
+                                             icon_name, store_icon, TRUE)))
     return data;
 
   return NULL;
@@ -773,20 +774,25 @@ mx_icon_theme_get_icons (MxIconTheme *theme,
     {
       /* See if we've loaded this before */
       GIcon *single_icon = g_themed_icon_new (names[i]);
-      data = g_hash_table_lookup (priv->icon_hash, single_icon);
+      gboolean success = g_hash_table_lookup_extended (priv->icon_hash,
+                                                       single_icon,
+                                                       NULL,
+                                                       (gpointer *)&data);
+
       g_object_unref (single_icon);
 
       /* Found in cache on first hit, break */
-      if (data && (i == 0))
+      if (success && (i == 0))
         break;
 
       /* Found in cache after searching the disk, store again as a new icon */
-      if (data)
+      if (success)
         {
           /* If we found this as a fallback, store it so we don't look on
            * disk again.
            */
-          data = mx_icon_theme_copy_data_list (data);
+          if (data)
+            data = mx_icon_theme_copy_data_list (data);
           g_hash_table_insert (priv->icon_hash, g_object_ref (icon), data);
 
           break;
