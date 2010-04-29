@@ -1415,7 +1415,7 @@ mx_table_preferred_allocate (ClutterActor          *self,
           if (rows[i].is_visible)
             {
               child_y += rows[i].final_size;
-              child_y += col_spacing;
+              child_y += row_spacing;
             }
         }
 
