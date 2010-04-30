@@ -81,10 +81,14 @@ MxButton#backward-stepper
   -mx-content-image: url("scroll-button-left.png");
 }
 
-MxButton#backward-stepper:hover,
-MxButton#backward-stepper:active
+MxButton#backward-stepper:hover
 {
   -mx-content-image: url("scroll-button-left-hover.png") 5;
+}
+
+MxButton#backward-stepper:active
+{
+  -mx-content-image: url("scroll-button-left-active.png") 5;
 }
 
 MxButton#forward-stepper
@@ -93,10 +97,14 @@ MxButton#forward-stepper
   -mx-content-image: url("scroll-button-right.png") 5;
 }
 
-MxButton#forward-stepper:hover,
-MxButton#forward-stepper:active
+MxButton#forward-stepper:hover
 {
   -mx-content-image: url("scroll-button-right-hover.png") 5;
+}
+
+MxButton#forward-stepper:active
+{
+  -mx-content-image: url("scroll-button-right-active.png") 5;
 }
 
 MxButton#up-stepper
@@ -105,10 +113,14 @@ MxButton#up-stepper
   -mx-content-image: url("scroll-button-up.png") 5;
 }
 
-MxButton#up-stepper:hover,
-MxButton#up-stepper:active
+MxButton#up-stepper:hover
 {
   -mx-content-image: url("scroll-button-up-hover.png") 5;
+}
+
+MxButton#up-stepper:active
+{
+  -mx-content-image: url("scroll-button-up-active.png") 5;
 }
 
 MxButton#down-stepper
@@ -117,10 +129,14 @@ MxButton#down-stepper
   -mx-content-image: url("scroll-button-down.png") 5;
 }
 
-MxButton#down-stepper:hover,
-MxButton#down-stepper:active
+MxButton#down-stepper:hover
 {
   -mx-content-image: url("scroll-button-down-hover.png") 5;
+}
+
+MxButton#down-stepper:active
+{
+  -mx-content-image: url("scroll-button-down-active.png") 5;
 }
 
 /* scroll bars */
@@ -153,6 +169,11 @@ MxScrollBar MxButton#vhandle:hover
   border-image: url("scroll-vhandle-hover.png") 5;
 }
 
+MxScrollBar MxButton#vhandle:active
+{
+  border-image: url("scroll-vhandle-active.png") 5;
+}
+
 MxScrollBar MxButton#hhandle
 {
   border-image: url("scroll-hhandle.png") 5;
@@ -164,6 +185,10 @@ MxScrollBar MxButton#hhandle:hover
   border-image: url("scroll-hhandle-hover.png") 5;
 }
 
+MxScrollBar MxButton#hhandle:active
+{
+  border-image: url("scroll-hhandle-active.png") 5;
+}
 
 /*
  * Expander

@@ -758,10 +758,14 @@ handle_capture_event_cb (ClutterActor *trough,
                                                ((ClutterButtonEvent*) event)->y);
       if (target != bar->priv->handle)
         {
-          mx_stylable_set_style_pseudo_class (MX_STYLABLE (bar->priv->handle), NULL);
+          mx_stylable_set_style_pseudo_class (MX_STYLABLE (bar->priv->handle),
+                                              NULL);
         }
-
-
+      else
+        {
+          /* send the release event to the button to process */
+          clutter_actor_event (target, event, TRUE);
+        }
     }
 
   return TRUE;
@@ -798,7 +802,7 @@ handle_button_press_event_cb (ClutterActor       *actor,
     bar);
   g_signal_emit (bar, signals[SCROLL_START], 0);
 
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean
@@ -1012,7 +1016,7 @@ stepper_button_press_event_cb (ClutterActor       *actor,
                                            stepper_button_repeat_timeout,
                                            priv);
 
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean
