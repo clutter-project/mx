@@ -145,6 +145,7 @@ MxScrollBar *.vtrough
 MxScrollBar MxButton#vhandle
 {
   border-image: url("scroll-vhandle.png") 5;
+  padding: 0;
 }
 
 MxScrollBar MxButton#vhandle:hover
@@ -155,6 +156,7 @@ MxScrollBar MxButton#vhandle:hover
 MxScrollBar MxButton#hhandle
 {
   border-image: url("scroll-hhandle.png") 5;
+  padding: 0;
 }
 
 MxScrollBar MxButton#hhandle:hover
