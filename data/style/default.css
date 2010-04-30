@@ -38,7 +38,7 @@ MxButton:focus
 MxButton:active, MxButton:checked
 {
   -mx-border-image-transition-duration: 0;
-  padding: 6 5 4 5;
+  padding: 6 13 4 13;
   border-image: url("button-active.png") 10;
 }
 
