@@ -800,6 +800,9 @@ mx_button_set_label (MxButton    *button,
                             "ellipsize", PANGO_ELLIPSIZE_END,
                             NULL);
       mx_bin_set_child ((MxBin*) button, label);
+      if (CLUTTER_ACTOR_IS_MAPPED (button))
+        mx_stylable_apply_clutter_text_attributes (MX_STYLABLE (button),
+                                                   CLUTTER_TEXT (label));
     }
 
   g_object_notify (G_OBJECT (button), "label");
