@@ -12,7 +12,7 @@ MxIcon.ResizeGrip
 MxButton
 {
   -mx-border-image-transition-duration: 120;
-  padding: 5;
+  padding: 5 13 5 13;
   border-image: url("button.png") 11 5 13 5;
 }
 
@@ -246,9 +246,10 @@ MxProgressBar MxProgressBarFill {
 }
 
 MxComboBox {
-  padding: 5 11 5 5;
+  padding: 5 13 5 13;
   border-image: url('combobox.png') 4 32 4 4;
   -mx-marker-image: url('combobox-marker.png');
+  -mx-spacing: 13;
 }
 
 MxComboBox MxIcon {
