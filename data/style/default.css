@@ -433,6 +433,12 @@ MxPathBarButton:focus
   padding: 4 24;
 }
 
+MxPathBarButton:disabled
+{
+  border-image: url('pathbar-button-disabled.png') 4 14 6 5;
+  padding: 4 24;
+}
+
 MxPathBarButton.End
 {
   border-image: url('pathbar-button-last.png') 5;
@@ -451,6 +457,11 @@ MxPathBarButton.End:active
 MxPathBarButton.End:focus
 {
   border-image: url('pathbar-button-last-focus.png') 5;
+}
+
+MxPathBarButton.End:disabled
+{
+  border-image: url('pathbar-button-last-disabled.png') 5;
 }
 
 MxButton.check-box {

@@ -78,14 +78,16 @@ dist_style_DATA = \
 		slider-handle.png \
 		menu-item.png \
 		menu.png \
-		pathbar-button.png \
 		pathbar-button-active.png \
+		pathbar-button-disabled.png \
 		pathbar-button-focus.png \
 		pathbar-button-hover.png \
-		pathbar-button-last.png \
+		pathbar-button.png \
 		pathbar-button-last-active.png \
+		pathbar-button-last-disabled.png \
 		pathbar-button-last-focus.png \
 		pathbar-button-last-hover.png \
+		pathbar-button-last.png \
 		progress-bar-background.png \
 		progress-bar-bar.png \
 		toggle-background-active.png \
