@@ -21,8 +21,6 @@ dist_style_DATA = \
 		combobox-marker-hover.png \
 		combobox-marker-active.png \
 		combobox-marker-disabled.png \
-		combobox-toolbar.png \
-		combobox-toolbar-marker.png \
 		close.png \
 		close-hover.png \
 		default.css \
@@ -80,7 +78,6 @@ dist_style_DATA = \
 		slider-handle.png \
 		menu-item.png \
 		menu.png \
-		menu-toolbar.png \
 		pathbar-button.png \
 		pathbar-button-active.png \
 		pathbar-button-focus.png \
@@ -96,7 +93,7 @@ dist_style_DATA = \
 		toggle-background.png \
 		toggle-handle.png \
 		toggle-handle-disabled.png \
-		toolbar-button-hover.png \
+		toolbar-background.png \
 		tooltip-background.png
 
 -include $(top_srcdir)/git.mk

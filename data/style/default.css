@@ -351,92 +351,23 @@ MxToggleHandle:disabled {
 
 
 MxToolbar {
-  background-color: #333;
-  padding: 6;
-}
-
-MxToolbar MxButton {
-  color: white;
-  border-image: none;
-  padding: 2 4;
-}
-
-MxToolbar MxButton:hover {
-  border-image: url('toolbar-button-hover.png') 5;
-  padding: 2 4;
-}
-
-MxToolbar MxButton:active {
-  border-image: url('toolbar-button-hover.png') 5;
-  padding: 3 3 1 5;
+  border-image: url("toolbar-background.png") 0;
+  padding: 16;
 }
 
 MxToolbar MxButton#close-button {
-  -mx-icon-name: window-close-normal;
-  -mx-icon-size: 48;
+  -mx-icon-name: window-close;
+  -mx-icon-size: 16;
+  padding: 5 7 7 7;
 }
 
 MxToolbar MxButton#close-button:hover {
-  -mx-icon-name: window-close-hover;
-  -mx-icon-size: 48;
+  -mx-icon-size: 16;
 }
 
 MxToolbar MxButton#close-button:active {
-  -mx-icon-name: window-close-active;
-  -mx-icon-size: 48;
-}
-
-/* The following two rules would restore the old-style close-button
- * styling (if the above three are commented out)
- */
-/*
-MxToolbar MxButton#close-button {
-  border-image: url('close.png') 0;
-  padding: 51 57 0 0;
-}
-
-MxToolbar MxButton#close-button:hover, MxToolbar MxButton#close-button:active {
-  border-image: url('close-hover.png') 0;
-  padding: 51 57 0 0;
-}*/
-
-MxToolbar MxComboBox {
-  color: #dadada;
-  border-image: url('combobox-toolbar.png') 4 32 4 4;
-  -mx-marker-image: url('combobox-toolbar-marker.png');
-  padding: 12 14;
-  font-size: 15;
-}
-
-MxToolbar MxComboBox:hover {
-  color: #dadada;
-  border-image: url('combobox-toolbar.png') 4 32 4 4;
-  -mx-marker-image: url('combobox-toolbar-marker.png');
-  padding: 12 14;
-  font-size: 15;
-}
-
-MxToolbar MxMenu {
-  font-size: 15;
-  border-image: url('menu-toolbar.png') 4 4 7 4;
-  padding: 12;
-}
-
-MxToolbar MxMenu > MxBoxLayout > MxLabel {
-  font-size: 15;
-  color: #dadada;
-}
-
-MxToolbar MxMenu > MxBoxLayout:hover,
-MxToolbar MxMenu > MxBoxLayout:active {
-  border-image: none;
-}
-
-MxToolbar MxMenu > MxBoxLayout:hover > MxLabel,
-MxToolbar MxMenu > MxBoxLayout:active > MxLabel
-{
-  font-size: 15;
-  color: #44b6e8;
+  -mx-icon-size: 16;
+  padding: 5 7;
 }
 
 MxSlider {
@@ -450,26 +381,22 @@ MxSlider *#trough-background {
 MxSlider *#fill {
 }
 
-MxSlider > MxButton,
-MxToolbar MxSlider > MxButton
+MxSlider > MxButton
 {
   border-image: url("slider-handle.png") 4 5 6 5;
 }
 
-MxSlider > MxButton:hover,
-MxToolbar MxSlider > MxButton:hover
+MxSlider > MxButton:hover
 {
   border-image: url("slider-handle-hover.png") 4 5 6 5;
 }
 
-MxSlider > MxButton:active,
-MxToolbar MxSlider > MxButton:active
+MxSlider > MxButton:active
 {
   border-image: url("slider-handle-active.png") 4 5 6 5;
 }
 
-MxSlider > MxButton:disabled,
-MxToolbar MxSlider > MxButton:disabled
+MxSlider > MxButton:disabled
 {
   border-image: url("slider-handle-disabled.png") 4 5 6 5;
 }
@@ -482,47 +409,47 @@ MxPathBar > MxEntry {
   padding: 4 10 4 24;
 }
 
-MxPathBarButton,
-MxToolbar MxPathBarButton {
+MxPathBarButton
+{
   border-image: url('pathbar-button.png') 3 14 4 5;
   padding: 4 24;
 }
 
-MxPathBarButton:hover,
-MxToolbar MxPathBarButton:hover {
+MxPathBarButton:hover
+{
   border-image: url('pathbar-button-hover.png') 3 14 4 5;
   padding: 4 24;
 }
 
-MxPathBarButton:active,
-MxToolbar MxPathBarButton:active {
+MxPathBarButton:active
+{
   border-image: url('pathbar-button-active.png') 4 13 4 4;
   padding: 4 24;
 }
 
-MxPathBarButton:focus,
-MxToolbar MxPathBarButton:hover {
+MxPathBarButton:focus
+{
   border-image: url('pathbar-button-focus.png') 4 14 6 5;
   padding: 4 24;
 }
 
-MxPathBarButton.End,
-MxToolbar MxPathBarButton.End {
+MxPathBarButton.End
+{
   border-image: url('pathbar-button-last.png') 5;
 }
 
-MxPathBarButton.End:hover,
-MxToolbar MxPathBarButton.End:hover {
+MxPathBarButton.End:hover
+{
   border-image: url('pathbar-button-last-hover.png') 5;
 }
 
-MxPathBarButton.End:active,
-MxToolbar MxPathBarButton.End:active {
+MxPathBarButton.End:active
+{
   border-image: url('pathbar-button-last-active.png') 5;
 }
 
-MxPathBarButton.End:focus,
-MxToolbar MxPathBarButton.End:hover {
+MxPathBarButton.End:focus
+{
   border-image: url('pathbar-button-last-focus.png') 5;
 }
 
