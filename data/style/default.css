@@ -378,6 +378,10 @@ MxSlider *#trough-background {
   border-image: url('slider-background.png') 2 3 3 3;
 }
 
+MxSlider *#trough-background:disabled {
+  border-image: url('slider-background-disabled.png') 2 3 3 3;
+}
+
 MxSlider *#fill {
 }
 
