@@ -1,0 +1,86 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: MeeGo 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-05-03 09:40+0000\n"
+"PO-Revision-Date: 2010-05-04 15:27+0100\n"
+"Last-Translator: Jean Cayron <jean.cayron@gmail.com>\n"
+"Language-Team: Walloon <linux-wa@walon.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n!=1;\n"
+"X-Poedit-Language: Walloon\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: ../mx/mx-application.c:311
+msgid "Raise application"
+msgstr "Monter programe"
+
+#: ../mx-gtk/mx-gtk-light-switch.c:96
+msgid "Unavailable"
+msgstr "Nén disponibe"
+
+#: ../mx/mx-utils.c:94
+msgid "Less than a minute ago"
+msgstr "I gn a moens d' ene munute"
+
+#: ../mx/mx-utils.c:98
+msgid "A few minutes ago"
+msgstr "I gn a kékès munutes"
+
+#: ../mx/mx-utils.c:102
+msgid "A couple of hours ago"
+msgstr "I gn a deus eures"
+
+#: ../mx/mx-utils.c:109
+msgid "Earlier today"
+msgstr "Pus timpe ouy"
+
+#: ../mx/mx-utils.c:112
+msgid "Yesterday"
+msgstr "Ayir"
+
+#: ../mx/mx-utils.c:120
+#, c-format
+msgid "On %A"
+msgstr "%A"
+
+#: ../mx/mx-utils.c:126
+msgid "Unknown"
+msgstr "Nén cnoxhou"
+
+#: ../mx/mx-utils.c:133
+msgid "Last week"
+msgstr "Li samwinne passêye"
+
+#: ../mx/mx-utils.c:136
+msgid "A couple of weeks ago"
+msgstr "I gn a deus samwinnes"
+
+#: ../mx/mx-utils.c:142
+msgid "This month"
+msgstr "Ci moes ci"
+
+#. Now Jan., last used in Dec.
+#: ../mx/mx-utils.c:146
+msgid "Last month"
+msgstr "Li moes passé"
+
+#: ../mx/mx-utils.c:149
+msgid "This year"
+msgstr "Ciste anêye"
+
+#: ../mx/mx-utils.c:152
+msgid "Last year"
+msgstr "L' anêye passêye"
+
+#: ../mx/mx-utils.c:154
+msgid "Ages ago"
+msgstr "I gn a des ans et des razans"
+
