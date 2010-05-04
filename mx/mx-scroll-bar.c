@@ -1053,8 +1053,8 @@ mx_scroll_bar_init (MxScrollBar *self)
   self->priv = MX_SCROLL_BAR_GET_PRIVATE (self);
 
   self->priv->bw_stepper = (ClutterActor *) mx_button_new ();
-  clutter_actor_set_name (CLUTTER_ACTOR (self->priv->bw_stepper),
-                          "backward-stepper");
+  mx_stylable_set_style_class (MX_STYLABLE (self->priv->bw_stepper),
+                               "backward-stepper");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->bw_stepper),
                             CLUTTER_ACTOR (self));
   g_signal_connect (self->priv->bw_stepper, "button-press-event",
@@ -1065,8 +1065,8 @@ mx_scroll_bar_init (MxScrollBar *self)
                     G_CALLBACK (stepper_button_release_cb), self);
 
   self->priv->fw_stepper = (ClutterActor *) mx_button_new ();
-  clutter_actor_set_name (CLUTTER_ACTOR (self->priv->fw_stepper),
-                          "forward-stepper");
+  mx_stylable_set_style_class (MX_STYLABLE (self->priv->fw_stepper),
+                               "forward-stepper");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->fw_stepper),
                             CLUTTER_ACTOR (self));
   g_signal_connect (self->priv->fw_stepper, "button-press-event",
@@ -1089,7 +1089,7 @@ mx_scroll_bar_init (MxScrollBar *self)
                     G_CALLBACK (trough_leave_event_cb), self);
 
   self->priv->handle = (ClutterActor *) mx_button_new ();
-  clutter_actor_set_name (CLUTTER_ACTOR (self->priv->handle), "hhandle");
+  mx_stylable_set_style_class (MX_STYLABLE (self->priv->handle), "hhandle");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->handle),
                             self->priv->trough);
   g_signal_connect (self->priv->handle, "button-press-event",
@@ -1211,23 +1211,23 @@ mx_scroll_bar_set_orientation (MxScrollBar   *bar,
 
       if (bar->priv->orientation)
         {
-          clutter_actor_set_name (CLUTTER_ACTOR (priv->bw_stepper),
-                                  "up-stepper");
-          clutter_actor_set_name (CLUTTER_ACTOR (priv->fw_stepper),
-                                  "down-stepper");
-          clutter_actor_set_name (CLUTTER_ACTOR (priv->handle),
-                                  "vhandle");
+          mx_stylable_set_style_class (MX_STYLABLE (priv->bw_stepper),
+                                       "up-stepper");
+          mx_stylable_set_style_class (MX_STYLABLE (priv->fw_stepper),
+                                       "down-stepper");
+          mx_stylable_set_style_class (MX_STYLABLE (priv->handle),
+                                       "vhandle");
           mx_stylable_set_style_class (MX_STYLABLE (priv->trough),
                                        "vtrough");
         }
       else
         {
-          clutter_actor_set_name (CLUTTER_ACTOR (priv->fw_stepper),
-                                  "forward-stepper");
-          clutter_actor_set_name (CLUTTER_ACTOR (priv->bw_stepper),
-                                  "backward-stepper");
-          clutter_actor_set_name (CLUTTER_ACTOR (priv->handle),
-                                  "hhandle");
+          mx_stylable_set_style_class (MX_STYLABLE (priv->fw_stepper),
+                                       "forward-stepper");
+          mx_stylable_set_style_class (MX_STYLABLE (priv->bw_stepper),
+                                       "backward-stepper");
+          mx_stylable_set_style_class (MX_STYLABLE (priv->handle),
+                                       "hhandle");
           mx_stylable_set_style_class (MX_STYLABLE (priv->trough),
                                        "htrough");
         }

@@ -49,23 +49,29 @@ dist_style_DATA = \
 		scroll-vbackground.png \
 		scroll-vbackground-disabled.png \
 		scroll-button-down-active.png \
+		scroll-button-down-disabled.png \
 		scroll-button-down-hover.png \
 		scroll-button-down.png \
 		scroll-button-up-active.png \
+		scroll-button-up-disabled.png \
 		scroll-button-up-hover.png \
 		scroll-button-up.png \
 		scroll-button-left-active.png \
+		scroll-button-left-disabled.png \
 		scroll-button-left-hover.png \
 		scroll-button-left.png \
 		scroll-button-right-active.png \
+		scroll-button-right-disabled.png \
 		scroll-button-right-hover.png \
 		scroll-button-right.png \
 		scroll-hhandle.png \
 		scroll-hhandle-hover.png \
 		scroll-hhandle-active.png \
+		scroll-hhandle-disabled.png \
 		scroll-vhandle.png \
 		scroll-vhandle-hover.png \
 		scroll-vhandle-active.png \
+		scroll-vhandle-disabled.png \
 		slider-background-active.png \
 		slider-background-disabled.png \
 		slider-background-focus.png \
