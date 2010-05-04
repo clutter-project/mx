@@ -118,7 +118,7 @@ main (int argc, char *argv[])
   mx_table_add_actor_with_properties (MX_TABLE (table),
                                       texture,
                                       0, 0,
-                                      "col-span", 3,
+                                      "column-span", 3,
                                       NULL);
 
   label = mx_label_new_with_text ("Period");
@@ -132,7 +132,7 @@ main (int argc, char *argv[])
                                       1, 0,
                                       "x-expand", TRUE,
                                       "y-expand", FALSE,
-                                      "x-align", 1.0,
+                                      "x-align", MX_ALIGN_END,
                                       "y-fill", FALSE,
                                       "x-fill", TRUE,
                                       NULL);
@@ -141,7 +141,7 @@ main (int argc, char *argv[])
                                       1, 1,
                                       "x-expand", TRUE,
                                       "y-expand", FALSE,
-                                      "x-align", 0.5,
+                                      "x-align", MX_ALIGN_MIDDLE,
                                       "y-fill", FALSE,
                                       "x-fill", FALSE,
                                       NULL);
@@ -150,7 +150,7 @@ main (int argc, char *argv[])
                                       1, 2,
                                       "x-expand", TRUE,
                                       "y-expand", FALSE,
-                                      "x-align", 0.5,
+                                      "x-align", MX_ALIGN_MIDDLE,
                                       "y-fill", FALSE,
                                       "x-fill", FALSE,
                                       NULL);
@@ -166,7 +166,7 @@ main (int argc, char *argv[])
                                       2, 0,
                                       "x-expand", TRUE,
                                       "y-expand", TRUE,
-                                      "x-align", 1.0,
+                                      "x-align", MX_ALIGN_END,
                                       "y-expand", FALSE,
                                       "y-fill", FALSE,
                                       "x-fill", TRUE,
@@ -176,7 +176,7 @@ main (int argc, char *argv[])
                                       2, 1,
                                       "x-expand", TRUE,
                                       "y-expand", FALSE,
-                                      "x-align", 0.5,
+                                      "x-align", MX_ALIGN_MIDDLE,
                                       "y-fill", FALSE,
                                       "x-fill", FALSE,
                                       NULL);
@@ -185,7 +185,7 @@ main (int argc, char *argv[])
                                       2, 2,
                                       "x-expand", TRUE,
                                       "y-expand", FALSE,
-                                      "x-align", 0.5,
+                                      "x-align", MX_ALIGN_MIDDLE,
                                       "y-fill", FALSE,
                                       "x-fill", FALSE,
                                       NULL);
@@ -202,7 +202,7 @@ main (int argc, char *argv[])
                                       3, 0,
                                       "x-expand", TRUE,
                                       "y-expand", TRUE,
-                                      "x-align", 1.0,
+                                      "x-align", MX_ALIGN_END,
                                       "y-expand", FALSE,
                                       "y-fill", FALSE,
                                       "x-fill", TRUE,
@@ -212,7 +212,7 @@ main (int argc, char *argv[])
                                       3, 1,
                                       "x-expand", TRUE,
                                       "y-expand", FALSE,
-                                      "x-align", 0.5,
+                                      "x-align", MX_ALIGN_MIDDLE,
                                       "y-fill", FALSE,
                                       "x-fill", FALSE,
                                       NULL);
@@ -221,7 +221,7 @@ main (int argc, char *argv[])
                                       3, 2,
                                       "x-expand", TRUE,
                                       "y-expand", FALSE,
-                                      "x-align", 0.5,
+                                      "x-align", MX_ALIGN_MIDDLE,
                                       "y-fill", FALSE,
                                       "x-fill", FALSE,
                                       NULL);
