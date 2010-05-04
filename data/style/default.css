@@ -385,6 +385,18 @@ MxToggleHandle {
   background-image: url("toggle-handle.png");
 }
 
+MxToggleHandle:active {
+  background-image: url("toggle-handle-active.png");
+}
+
+MxToggleHandle:focus {
+  background-image: url("toggle-handle-focus.png");
+}
+
+MxToggleHandle:hover {
+  background-image: url("toggle-handle-hover.png");
+}
+
 MxToggleHandle:disabled {
   background-image: url("toggle-handle-disabled.png");
 }

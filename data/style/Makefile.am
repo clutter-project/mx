@@ -100,6 +100,9 @@ dist_style_DATA = \
 		toggle-background-disabled.png \
 		toggle-background.png \
 		toggle-handle.png \
+		toggle-handle-active.png \
+		toggle-handle-focus.png \
+		toggle-handle-hover.png \
 		toggle-handle-disabled.png \
 		toolbar-background.png \
 		tooltip-background.png
