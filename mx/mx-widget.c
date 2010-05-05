@@ -671,6 +671,12 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
 
       priv->mx_border_image = border_image;
     }
+  else
+    {
+      /* If it's not changed just free the one we've requested */
+      if (border_image)
+        g_boxed_free (MX_TYPE_BORDER_IMAGE, border_image);
+    }
 
   /* background-image property */
   if (priv->background_image)
