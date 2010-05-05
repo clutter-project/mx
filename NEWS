@@ -1,3 +1,83 @@
+1.0.0
+=====
+
+Changes since 0.99.0:
+
+ * Updated documentation
+ * Fix build issues with GTK+ 2.20
+ * Updated visual design
+ * Add "disabled" state support to widgets
+ * Implement up/down/left/right focus support
+ * Improved key focus management support
+ * Improved key focus support in table and box-layout widgets
+ * Prevent unwanted artifacts when resizing a texture frame beyond its
+   smallest dimensions
+ * Fix placement of combobox popup menu when near the bottom edge of the window
+ * Fix issues building with Clutter 1.3
+ * Remove some unused and undefined API
+ * Remove API marked as deprecated
+ * Optimise the border-image property so that it does not load texture
+   unnecessarily.
+ * Optimise align/fill allocations so that they do not request size information
+   unnecessarily.
+
+
+Fixed bugs (from bugs.meego.com):
+  #909  mx_table_find_actor_at did not use row/col span to work out where an
+        actor was
+  #896  MxTable takes hidden rows/columns into consideration when calculating
+        allocations
+  #848  Build fails as code tries to set CoglColor members (red, green, blue)
+        which don't exist
+  #702  MxWidget paints outside of its allocation if border-image geometry is
+        bigger than the widget size
+  #597  Checkbox style for MX toggle button
+  #345  [MxScrollView]The cross area of h bar and v bar is colored once the
+        scroll view is launched
+  #343  [MxScrollView] the function
+        mx_scroll_view_set_enable_mouse_scrolling() does not take effect
+  #1779 Memory leak in MxWidget when border-image hasn't changed
+  #1570 Setting a label on a mapped MxButton that has had no label previously
+        set results in an incorrect style
+  #1514 Incorrect padding on email update tile
+  #1201 [MxExpander] foreach() callback for expander only works when the
+        expander is expanded
+  #1200 [MxExpander] the constract_complete signal definition can be removed
+  #1198 MxScrollView connects to non-existent property names (due to a rename)
+  #1140 Unnecessary measurement causes performance issues
+  #1139 MxLabel doesn't ask for enough width/height when it has padding
+  #1138 Table: Focus can get trapped when moving right or down from a spanned
+        actor
+  #1053 MxScrollView will show scroll-bars when they aren't necessary
+  #1052 Possible NULL pointer access in MxScrollView
+
+New and updated translations:
+
+  Walloon
+  Mexican Spanish
+  Slovak
+  Danish
+  English (United Kingdom) (en_GB)
+  Korean (ko)
+  Italian (it)
+  Finnish (fi)
+  Polish (pl)
+  Brazilian Portuguese (pt_BR)
+  French (fr)
+  Chinese (China) (zh_CN)
+  Russian (ru)
+  Japanese (ja)
+
+Many thanks to:
+
+  Chris Lord
+  Damien Lespiau
+  Evan Nemerson
+  iain
+  José Dapena Paz
+  Thomas Wood
+
+
 0.99.0
 ======
 
