@@ -234,18 +234,6 @@ mx_button_style_changed (MxWidget *widget)
       g_boxed_free (MX_TYPE_BORDER_IMAGE, content_image);
       g_free (icon_name);
 
-      if (icon_name)
-        g_warning ("The \"-mx-icon-name\" property is ignored when"
-                   " \"-mx-content-image\" is set");
-
-      if (mx_widget_get_background_image (widget))
-        g_warning ("The \"background-image\" property is ignored when"
-                   " \"-mx-content-image\" is set");
-
-      if (mx_widget_get_border_image (widget))
-        g_warning ("The \"border-image\" property is ignored when"
-                   " \"-mx-content-image\" is set");
-
       return;
     }
 
