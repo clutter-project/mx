@@ -485,6 +485,9 @@ mx_combo_box_action_activated_cb (ClutterActor *menu,
 
   index = GPOINTER_TO_INT (g_object_get_data ((GObject*) action, "index"));
   mx_combo_box_set_index (box, index);
+
+  /* reset the combobox style */
+  mx_stylable_set_style_pseudo_class (MX_STYLABLE (box), NULL);
 }
 
 static void

@@ -763,8 +763,8 @@ handle_capture_event_cb (ClutterActor *trough,
         }
       else
         {
-          /* send the release event to the button to process */
-          clutter_actor_event (target, event, TRUE);
+          /* allow the release event to continue to the handle for processing */
+          return FALSE;
         }
     }
 
