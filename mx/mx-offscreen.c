@@ -50,9 +50,9 @@ enum
 
   PROP_CHILD,
   PROP_PICK_CHILD,
-  PROP_COGL_PROGRAM,
   PROP_AUTO_UPDATE,
-  PROP_REDIRECT_ENABLED
+  PROP_REDIRECT_ENABLED,
+  PROP_BUFFER
 };
 
 
@@ -116,6 +116,10 @@ mx_offscreen_get_property (GObject    *object,
 
     case PROP_REDIRECT_ENABLED:
       g_value_set_boolean (value, mx_offscreen_get_redirect_enabled (self));
+      break;
+
+    case PROP_BUFFER:
+      g_value_set_pointer (value, mx_offscreen_get_buffer (self));
       break;
 
     default:
@@ -291,6 +295,45 @@ mx_offscreen_toggle_shaders (MxOffscreen  *offscreen,
     }
 }
 
+static gboolean
+mx_offscreen_ensure_buffers (MxOffscreen *offscreen)
+{
+#if CLUTTER_CHECK_VERSION(1,2,0)
+  CoglHandle texture;
+  gboolean sync_size;
+  gfloat width, height;
+
+  MxOffscreenPrivate *priv = offscreen->priv;
+
+  clutter_actor_get_size (priv->child, &width, &height);
+  sync_size = clutter_texture_get_sync_size (CLUTTER_TEXTURE (offscreen));
+
+  /* Check our texture exists and is the correct size */
+  texture = clutter_texture_get_cogl_texture (CLUTTER_TEXTURE (offscreen));
+  if (!texture ||
+      (sync_size && ((cogl_texture_get_width (texture) != (guint)width) ||
+                     (cogl_texture_get_height (texture) != (guint)height))))
+    {
+      texture = cogl_texture_new_with_size ((guint)width,
+                                            (guint)height,
+                                            COGL_TEXTURE_NO_SLICING,
+                                            COGL_PIXEL_FORMAT_RGBA_8888_PRE);
+      clutter_texture_set_cogl_texture (CLUTTER_TEXTURE (offscreen), texture);
+      if (texture)
+        cogl_handle_unref (texture);
+    }
+
+  /* The notification of setting a texture will trigger a callback that
+   * creates the fbo. Doing it this ways lets the texture be overriden
+   * externally.
+   */
+  if (texture && priv->fbo)
+    return TRUE;
+  else
+#endif
+    return FALSE;
+}
+
 static void
 mx_offscreen_paint (ClutterActor *actor)
 {
@@ -413,6 +456,12 @@ mx_offscreen_class_init (MxOffscreenClass *klass)
                                 TRUE,
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_REDIRECT_ENABLED, pspec);
+
+  pspec = g_param_spec_pointer ("buffer",
+                                "Buffer",
+                                "The off-screen buffer used to draw the child.",
+                                MX_PARAM_READABLE);
+  g_object_class_install_property (object_class, PROP_BUFFER, pspec);
 }
 
 #if CLUTTER_CHECK_VERSION(1,2,0)
@@ -475,6 +524,8 @@ mx_offscreen_cogl_texture_notify (MxOffscreen *self)
   cogl_set_modelview_matrix (&matrix);
 
   cogl_pop_framebuffer ();
+
+  g_object_notify (G_OBJECT (self), "buffer");
 }
 #endif
 
@@ -587,69 +638,41 @@ void
 mx_offscreen_update (MxOffscreen *offscreen)
 {
 #if CLUTTER_CHECK_VERSION(1,2,0)
-  CoglHandle texture;
-  gboolean sync_size;
-  gfloat width, height;
   CoglColor zero_colour;
   GList *disabled_shaders;
-#endif
 
   MxOffscreenPrivate *priv = offscreen->priv;
 
-  if (!priv->child)
-    return;
+  if (!mx_offscreen_ensure_buffers (offscreen))
+    {
+      g_warning (G_STRLOC ": Unable to create necessary buffers");
+      return;
+    }
 
-#if CLUTTER_CHECK_VERSION(1,2,0)
   /* Disable shaders when we paint our off-screen children */
   mx_offscreen_toggle_shaders (offscreen, &disabled_shaders, FALSE);
-
-  clutter_actor_get_size (priv->child, &width, &height);
-  sync_size = clutter_texture_get_sync_size (CLUTTER_TEXTURE (offscreen));
-
-  /* Check our texture is the correct size */
-  texture = clutter_texture_get_cogl_texture (CLUTTER_TEXTURE (offscreen));
-  if (!texture ||
-      (sync_size && ((cogl_texture_get_width (texture) != (guint)width) ||
-                     (cogl_texture_get_height (texture) != (guint)height))))
-    {
-      texture = cogl_texture_new_with_size ((guint)width,
-                                            (guint)height,
-                                            COGL_TEXTURE_NO_SLICING,
-                                            COGL_PIXEL_FORMAT_RGBA_8888_PRE);
-      clutter_texture_set_cogl_texture (CLUTTER_TEXTURE (offscreen), texture);
-      cogl_handle_unref (texture);
-    }
-
-  if (!texture)
-    {
-      g_warning (G_STRLOC ": Unable to create texture for actor");
-      return;
-    }
-
-  /* Check if fbo creation was successful */
-  if (!priv->fbo)
-    {
-      g_warning (G_STRLOC ": Unable to create offscreen buffer for actor");
-      return;
-    }
 
   /* Start drawing */
   cogl_push_framebuffer (priv->fbo);
   cogl_push_matrix ();
 
-  /* Draw actor */
+  /* Clear */
   cogl_color_set_from_4ub (&zero_colour, 0x00, 0x00, 0x00, 0x00);
   cogl_clear (&zero_colour,
               COGL_BUFFER_BIT_COLOR |
               COGL_BUFFER_BIT_STENCIL |
               COGL_BUFFER_BIT_DEPTH);
+
+  /* Draw actor */
   MX_OFFSCREEN_GET_CLASS (offscreen)->paint_child (offscreen);
 
   /* Restore state */
   cogl_pop_matrix ();
   cogl_pop_framebuffer ();
 
+  /* Re-enable shaders */
   mx_offscreen_toggle_shaders (offscreen, &disabled_shaders, TRUE);
+
 #else
   static gboolean warned = FALSE;
   if (warned)
@@ -687,3 +710,10 @@ mx_offscreen_get_redirect_enabled (MxOffscreen *offscreen)
   return offscreen->priv->redirect_enabled;
 }
 
+CoglHandle
+mx_offscreen_get_buffer (MxOffscreen *offscreen)
+{
+  g_return_val_if_fail (MX_IS_OFFSCREEN (offscreen), NULL);
+  mx_offscreen_ensure_buffers (offscreen);
+  return offscreen->priv->fbo;
+}

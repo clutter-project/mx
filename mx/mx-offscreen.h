@@ -105,6 +105,8 @@ void     mx_offscreen_set_redirect_enabled (MxOffscreen *offscreen,
                                             gboolean     enabled);
 gboolean mx_offscreen_get_redirect_enabled (MxOffscreen *offscreen);
 
+CoglHandle mx_offscreen_get_buffer (MxOffscreen *offscreen);
+
 void mx_offscreen_update (MxOffscreen *offscreen);
 
 G_END_DECLS
