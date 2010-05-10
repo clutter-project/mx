@@ -1,22 +1,59 @@
 
 #include <mx/mx.h>
 
-static gchar *blur =
-"uniform sampler2D tex;\n"
-"uniform int radius;\n"
-"uniform float x_step, y_step;\n"
+#ifdef HAVE_COGL_GLES2
 
-"void main ()\n"
-"  {\n"
-"    float u, v;\n"
-"    vec4 color = vec4 (0, 0, 0, 1);\n"
-"    for (u = -radius; u <= radius; u++)\n"
-"      for (v = -radius; v <= radius; v++)\n"
-"        color += texture2D (tex, vec2 (gl_TexCoord[0].s + u * x_step,\n"
-"                                       gl_TexCoord[0].t + v * y_step));\n"
-"    color.rgba /= (radius + 1) * (radius + 1) * 4;\n"
-"    gl_FragColor = color * gl_Color;\n"
-"  }\n";
+#define GLES2_VARS \
+  "precision mediump float;\n" \
+  "varying vec2 tex_coord;\n" \
+  "varying vec4 frag_color;\n"
+#define TEX_COORD "tex_coord"
+#define COLOR_VAR "frag_color"
+
+#else
+
+#define GLES2_VARS ""
+#define TEX_COORD "gl_TexCoord[0]"
+#define COLOR_VAR "gl_Color"
+
+#endif
+
+static gchar *blur =
+  GLES2_VARS
+  "uniform sampler2D tex;\n"
+  "uniform float x_step, y_step, x_radius, y_radius;\n"
+
+  "void\n"
+  "main ()\n"
+  "  {\n"
+  "    float u, v, samples;\n"
+  "    vec4 color = vec4 (0, 0, 0, 0);\n"
+
+  "    samples = 0;\n"
+  "    for (v = floor (-y_radius); v < ceil (y_radius); v++)\n"
+  "      for (u = floor (-x_radius); u < ceil (x_radius); u++)\n"
+  "        {\n"
+  "          float s, t, mult;\n"
+
+  "          mult = 1.0;\n"
+
+  "          if (u < x_radius)\n"
+  "            mult *= x_radius - u;\n"
+  "          if (u > x_radius)\n"
+  "            mult *= u - x_radius;\n"
+  "          if (v < y_radius)\n"
+  "            mult *= y_radius - v;\n"
+  "          if (v > y_radius)\n"
+  "            mult *= v - y_radius;\n"
+
+  "          color += texture2D (tex, vec2("TEX_COORD".s + u * x_step,\n"
+  "                                        "TEX_COORD".y + v * y_step)) *\n"
+  "                   mult;\n"
+  "          samples += mult;\n"
+  "        }\n"
+  "    color.rgba /= samples;\n"
+  "    gl_FragColor = color * "COLOR_VAR";\n"
+  "  }\n";
 
 static int
 next_p2 (gint a)
@@ -47,12 +84,8 @@ value_cb (MxSlider     *slider,
              ClutterActor *actor)
 {
   gdouble value = mx_slider_get_value (slider);
-  if (value < 1.0/3.0)
-    clutter_actor_set_shader_param_int (actor, "radius", 1);
-  else if (value > 2.0/3.0)
-    clutter_actor_set_shader_param_int (actor, "radius", 3);
-  else
-    clutter_actor_set_shader_param_int (actor, "radius", 2);
+  clutter_actor_set_shader_param_float (actor, "x_radius", (value * 3.f) + 1.f);
+  clutter_actor_set_shader_param_float (actor, "y_radius", (value * 3.f) + 1.f);
 }
 
 int
@@ -94,8 +127,10 @@ main (int argc, char **argv)
   /* Set shader parameters */
   clutter_actor_set_shader_param_int (texture, "tex", 0);
   clutter_actor_set_shader_param_int (offscreen, "tex", 0);
-  clutter_actor_set_shader_param_int (texture, "radius", 1);
-  clutter_actor_set_shader_param_int (offscreen, "radius", 1);
+  clutter_actor_set_shader_param_float (texture, "x_radius", 1.f);
+  clutter_actor_set_shader_param_float (texture, "y_radius", 1.f);
+  clutter_actor_set_shader_param_float (offscreen, "x_radius", 1.f);
+  clutter_actor_set_shader_param_float (offscreen, "y_radius", 1.f);
 
   /* Hook onto texture size change for step parameters */
   g_signal_connect (texture, "size-change",
