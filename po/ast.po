@@ -1,0 +1,91 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: mx.master\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-05-12 09:42+0000\n"
+"PO-Revision-Date: \n"
+"Last-Translator: astur <malditoastur@gmail.com>\n"
+"Language-Team: asturian <alministradores@softastur.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: asturian\n"
+"X-Poedit-SourceCharset: utf-8\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+# This string is used by the action which brings the application to the
+# foreground. For example, if the application was minimised, or obscured by other windows, it would raise the application window to the foreground. This is the same as "Restaure application".
+#: ../mx/mx-application.c:311
+msgid "Raise application"
+msgstr "Restaurar l'aplicación"
+
+#: ../mx-gtk/mx-gtk-light-switch.c:96
+msgid "Unavailable"
+msgstr "Non disponible"
+
+#: ../mx/mx-utils.c:94
+msgid "Less than a minute ago"
+msgstr "Fai menos d'un minutu"
+
+#: ../mx/mx-utils.c:98
+msgid "A few minutes ago"
+msgstr "Fai unos minutos"
+
+#: ../mx/mx-utils.c:102
+msgid "A couple of hours ago"
+msgstr "Fai un par d'hores"
+
+#: ../mx/mx-utils.c:109
+msgid "Earlier today"
+msgstr "Güei, ceo"
+
+#: ../mx/mx-utils.c:112
+msgid "Yesterday"
+msgstr "Ayeri"
+
+# <on + date, like "On July 4">
+#: ../mx/mx-utils.c:120
+#, c-format
+msgid "On %A"
+msgstr "El %A"
+
+#: ../mx/mx-utils.c:126
+msgid "Unknown"
+msgstr "Desconocíu"
+
+#: ../mx/mx-utils.c:133
+msgid "Last week"
+msgstr "La selmana pasada"
+
+#: ../mx/mx-utils.c:136
+msgid "A couple of weeks ago"
+msgstr "Fai un par de selmanes"
+
+#: ../mx/mx-utils.c:142
+msgid "This month"
+msgstr "Esti mes"
+
+#. Now Jan., last used in Dec.
+#: ../mx/mx-utils.c:146
+msgid "Last month"
+msgstr "El mes pasáu"
+
+#: ../mx/mx-utils.c:149
+msgid "This year"
+msgstr "Esti añu"
+
+#: ../mx/mx-utils.c:152
+msgid "Last year"
+msgstr "L'añu pasáu"
+
+# Long time ago
+#: ../mx/mx-utils.c:154
+msgid "Ages ago"
+msgstr "Fai años"
+
+#~ msgid "On"
+#~ msgstr "Activáu"
+#~ msgid "Off"
+#~ msgstr "Desactiváu"
+
