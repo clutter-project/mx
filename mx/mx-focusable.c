@@ -143,7 +143,11 @@ mx_focusable_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 {
   MxFocusableIface *iface;
 
-  g_return_val_if_fail (MX_IS_FOCUSABLE (focusable), FALSE);
+  g_return_val_if_fail (MX_IS_FOCUSABLE (focusable), NULL);
+
+  /* hidden actors should not accept focus */
+  if (!CLUTTER_ACTOR_IS_VISIBLE (focusable))
+    return NULL;
 
   iface = MX_FOCUSABLE_GET_INTERFACE (focusable);
 
