@@ -202,11 +202,13 @@ draw (GtkWidget *lightswitch,
 
   gint on_label_x;
   gint off_label_x;
+/*
   gint label_width;
   gint label_height;
+*/
   GtkStyle *style;
-  PangoLayout *layout;
-  PangoContext *context;
+//  PangoLayout *layout;
+//  PangoContext *context;
   GtkStateType state_type;
 
   priv = MX_GTK_LIGHT_SWITCH_GET_PRIVATE (lightswitch);
@@ -234,6 +236,9 @@ draw (GtkWidget *lightswitch,
                  (priv->trough_width),
                  priv->switch_height);
 
+  if (state_type == GTK_STATE_INSENSITIVE)
+    return;
+#if 0
   if (state_type == GTK_STATE_INSENSITIVE)
     {
       context = gdk_pango_context_get ();
@@ -289,7 +294,8 @@ draw (GtkWidget *lightswitch,
                     (priv->switch_height
                      - (label_height / PANGO_SCALE)) / 2,
                     layout);
-
+  g_object_unref (layout);
+#endif
   /* draw the switch itself */
   gtk_paint_box (style,
                  lightswitch->window,
@@ -307,7 +313,6 @@ draw (GtkWidget *lightswitch,
                  priv->switch_width - style->xthickness * 2,
                  priv->switch_height - style->ythickness * 2);
 
-  g_object_unref (layout);
 }
 
 static void
@@ -336,7 +341,10 @@ mx_gtk_light_switch_style_set (GtkWidget *lightswitch,
   /* MxToggle is 105x39, so make sure light-switch is at least this size */
   priv->trough_width = MAX (103, label_width);
   priv->switch_width = (priv->trough_width / 2) * 1.1;
-  priv->switch_height = MAX (39, label_height);
+  //priv->switch_height = MAX (39, label_height);
+  priv->switch_height = 24;
+  priv->switch_width = 50;
+  priv->trough_width = 98;
 }
 
 static gboolean
