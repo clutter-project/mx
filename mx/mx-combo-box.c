@@ -830,9 +830,14 @@ mx_combo_box_remove_text (MxComboBox *box,
   GSList *item;
 
   g_return_if_fail (MX_IS_COMBO_BOX (box));
+  g_return_if_fail (position >= 0);
 
   /* find the item, free the string and remove it from the list */
   item = g_slist_nth (box->priv->actions, position);
+
+  if (!item)
+    return;
+
   g_object_unref (G_OBJECT (item->data));
   box->priv->actions = g_slist_delete_link (box->priv->actions, item);
   mx_combo_box_update_menu (box);
