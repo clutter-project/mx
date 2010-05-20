@@ -88,7 +88,8 @@ enum {
   PROP_HADJUST,
   PROP_VADJUST,
 
-  PROP_ENABLE_ANIMATIONS
+  PROP_ENABLE_ANIMATIONS,
+  PROP_SCROLL_TO_FOCUSED
 };
 
 struct _MxBoxLayoutPrivate
@@ -108,6 +109,7 @@ struct _MxBoxLayoutPrivate
   ClutterAlpha    *alpha;
   guint            is_animating : 1;
   guint            enable_animations : 1;
+  guint            scroll_to_focused : 1;
 
   MxOrientation orientation;
 
@@ -469,6 +471,9 @@ update_adjustments (MxBoxLayout *self,
   ClutterActorBox box = { 0, };
   clutter_actor_get_allocation_box (CLUTTER_ACTOR (focusable), &box);
 
+  if (!priv->scroll_to_focused)
+    return;
+
   if (priv->vadjustment)
     {
       mx_adjustment_get_values (priv->vadjustment,
@@ -682,6 +687,10 @@ mx_box_layout_get_property (GObject    *object,
       g_value_set_boolean (value, priv->enable_animations);
       break;
 
+    case PROP_SCROLL_TO_FOCUSED:
+      g_value_set_boolean (value, priv->scroll_to_focused);
+      break;
+
     case PROP_HADJUST:
       scrollable_get_adjustments (MX_SCROLLABLE (object), &adjustment, NULL);
       g_value_set_object (value, adjustment);
@@ -729,6 +738,10 @@ mx_box_layout_set_property (GObject      *object,
       scrollable_set_adjustments (MX_SCROLLABLE (object),
                                   box->priv->hadjustment,
                                   g_value_get_object (value));
+      break;
+
+    case PROP_SCROLL_TO_FOCUSED:
+      mx_box_layout_set_scroll_to_focused (box, g_value_get_boolean (value));
       break;
 
     default:
@@ -1422,6 +1435,13 @@ mx_box_layout_class_init (MxBoxLayoutClass *klass)
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_ENABLE_ANIMATIONS, pspec);
 
+  pspec = g_param_spec_boolean ("scroll-to-focused",
+                                "Scroll to focused",
+                                "Automatically scroll to the focused actor",
+                                TRUE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_SCROLL_TO_FOCUSED, pspec);
+
   /* MxScrollable properties */
   g_object_class_override_property (object_class,
                                     PROP_HADJUST,
@@ -1475,6 +1495,7 @@ mx_box_layout_init (MxBoxLayout *self)
   g_signal_connect (self, "style-changed",
                     G_CALLBACK (mx_box_layout_style_changed), NULL);
 
+  self->priv->scroll_to_focused = TRUE;
 }
 
 /**
@@ -1769,4 +1790,43 @@ mx_box_layout_add_actor_with_properties (MxBoxLayout  *box,
   va_start (var_args, first_property);
   mx_box_layout_set_property_valist (box, actor, first_property, var_args);
   va_end (var_args);
+}
+
+/**
+ * mx_box_layout_set_scroll_to_focused:
+ * @box: A #MxBoxLayout
+ * @scroll_to_focused: #TRUE to enable automatically scrolling to the
+ *   focused actor
+ *
+ * Enables or disables automatic scrolling to the focused actor.
+ */
+void
+mx_box_layout_set_scroll_to_focused (MxBoxLayout *box,
+                                     gboolean     scroll_to_focused)
+{
+  MxBoxLayoutPrivate *priv;
+
+  g_return_if_fail (MX_IS_BOX_LAYOUT (box));
+
+  priv = box->priv;
+  if (priv->scroll_to_focused != scroll_to_focused)
+    {
+      priv->scroll_to_focused = scroll_to_focused;
+      g_object_notify (G_OBJECT (box), "scroll-to-focused");
+    }
+}
+
+/**
+ * mx_box_layout_get_scroll_to_focused:
+ * @box: A #MxBoxLayout
+ *
+ * Get the value of the #MxBoxLayout:scroll-to-focused property.
+ *
+ * Returns: #TRUE if automatically scrolling to the focused actor is enabled
+ */
+gboolean
+mx_box_layout_get_scroll_to_focused (MxBoxLayout *box)
+{
+  g_return_val_if_fail (MX_IS_BOX_LAYOUT (box), FALSE);
+  return box->priv->scroll_to_focused;
 }

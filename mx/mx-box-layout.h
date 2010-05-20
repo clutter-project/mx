@@ -109,6 +109,10 @@ void          mx_box_layout_add_actor_with_properties (MxBoxLayout  *box,
                                                        const char   *first_property,
                                                        ...);
 
+void         mx_box_layout_set_scroll_to_focused (MxBoxLayout *box,
+                                                  gboolean     scroll_to_focused);
+gboolean     mx_box_layout_get_scroll_to_focused (MxBoxLayout *box);
+
 G_END_DECLS
 
 #endif /* _MX_BOX_LAYOUT_H */
