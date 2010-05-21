@@ -3,18 +3,21 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-02-26 12:45+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Ceyhun Alyesil <ceyhunalyesil@gmail.com>\n"
-"Language-Team: \n"
+"PO-Revision-Date: 2010-05-21 10:03-0500\n"
+"Last-Translator: Ahmet Özgür Erdemli <dbl2010@gmail.com>\n"
+"Language-Team: MeeGo Türkçe\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Poedit-Language: Turkish\n"
+"X-Poedit-Country: TURKEY\n"
+"X-Poedit-SourceCharset: utf-8\n"
 
 #: mx/mx-gtk-light-switch.c:232
 msgid "Unavailable"
@@ -23,7 +26,8 @@ msgstr "Kullanılamaz"
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the MEDIUM VERTICAL BAR unicode character
 #. * instead
-#: mx/mx-gtk-light-switch.c:252 mx/mx-gtk-light-switch.c:326
+#: mx/mx-gtk-light-switch.c:252
+#: mx/mx-gtk-light-switch.c:326
 msgid "On"
 msgstr "Açık"
 
@@ -31,7 +35,8 @@ msgstr "Açık"
 #. TRANSLATORS: If this string takes more than four or five characters in
 #. * your language, please use the WHITE CIRCLE U+25CB unicode character
 #. * instead
-#: mx/mx-gtk-light-switch.c:271 mx/mx-gtk-light-switch.c:324
+#: mx/mx-gtk-light-switch.c:271
+#: mx/mx-gtk-light-switch.c:324
 msgid "Off"
 msgstr "Kapalı"
 
@@ -92,3 +97,4 @@ msgstr "Geçen yıl"
 #: mx/mx-utils.c:153
 msgid "Ages ago"
 msgstr "Asırlar önce"
+
