@@ -65,18 +65,6 @@ struct _MxWidget
   ClutterActor parent_instance;
 
   MxWidgetPrivate *priv;
-
-  /* padding for future expansion */
-  void (*_padding_0) (void);
-  void (*_padding_1) (void);
-  void (*_padding_2) (void);
-  void (*_padding_3) (void);
-  void (*_padding_4) (void);
-  void (*_padding_5) (void);
-  void (*_padding_6) (void);
-  void (*_padding_7) (void);
-  void (*_padding_8) (void);
-  void (*_padding_9) (void);
 };
 
 /**
@@ -97,6 +85,19 @@ struct _MxWidgetClass
                            MxLongPressAction  action,
                            gfloat             x,
                            gfloat             y);
+
+  /*< private >*/
+  /* padding for future expansion */
+  void (*_padding_0) (void);
+  void (*_padding_1) (void);
+  void (*_padding_2) (void);
+  void (*_padding_3) (void);
+  void (*_padding_4) (void);
+  void (*_padding_5) (void);
+  void (*_padding_6) (void);
+  void (*_padding_7) (void);
+  void (*_padding_8) (void);
+  void (*_padding_9) (void);
 };
 
 GType mx_widget_get_type (void) G_GNUC_CONST;
