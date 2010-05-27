@@ -109,6 +109,12 @@ CoglHandle mx_offscreen_get_buffer (MxOffscreen *offscreen);
 
 void mx_offscreen_update (MxOffscreen *offscreen);
 
+void mx_offscreen_set_accumulation_enabled (MxOffscreen *offscreen,
+                                           gboolean     enable);
+gboolean mx_offscreen_get_accumulation_enabled (MxOffscreen *offscreen);
+
+CoglHandle mx_offscreen_get_accumulation_material (MxOffscreen *offscreen);
+
 G_END_DECLS
 
 #endif /* _MX_OFFSCREEN_H */

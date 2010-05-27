@@ -39,9 +39,14 @@ struct _MxOffscreenPrivate
   guint         auto_update : 1;
   guint         redirect_enabled     : 1;
 
+  guint         acc_enabled : 1;
+  guint         blend_set   : 1;
+
   ClutterActor *child;
 
   CoglHandle    fbo;
+  CoglHandle    acc_material;
+  CoglHandle    acc_fbo;
 };
 
 enum
@@ -52,7 +57,9 @@ enum
   PROP_PICK_CHILD,
   PROP_AUTO_UPDATE,
   PROP_REDIRECT_ENABLED,
-  PROP_BUFFER
+  PROP_BUFFER,
+  PROP_ACC_ENABLED,
+  PROP_ACC_MATERIAL
 };
 
 
@@ -122,6 +129,15 @@ mx_offscreen_get_property (GObject    *object,
       g_value_set_pointer (value, mx_offscreen_get_buffer (self));
       break;
 
+    case PROP_ACC_ENABLED:
+      g_value_set_boolean (value, mx_offscreen_get_accumulation_enabled (self));
+      break;
+
+    case PROP_ACC_MATERIAL:
+      g_value_set_pointer (value,
+                           mx_offscreen_get_accumulation_material (self));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -153,6 +169,10 @@ mx_offscreen_set_property (GObject      *object,
       mx_offscreen_set_redirect_enabled (self, g_value_get_boolean (value));
       break;
 
+    case PROP_ACC_ENABLED:
+      mx_offscreen_set_accumulation_enabled (self, g_value_get_boolean (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -182,6 +202,18 @@ mx_offscreen_dispose (GObject *object)
     {
       cogl_handle_unref (priv->fbo);
       priv->fbo = NULL;
+    }
+
+  if (priv->acc_material)
+    {
+      cogl_handle_unref (priv->acc_material);
+      priv->acc_material = NULL;
+    }
+
+  if (priv->acc_fbo)
+    {
+      cogl_handle_unref (priv->acc_fbo);
+      priv->acc_fbo = NULL;
     }
 
   G_OBJECT_CLASS (mx_offscreen_parent_class)->dispose (object);
@@ -334,6 +366,69 @@ mx_offscreen_ensure_buffers (MxOffscreen *offscreen)
     return FALSE;
 }
 
+static CoglHandle
+mx_offscreen_material_get_texture (CoglHandle material, gint layer_n)
+{
+  const GList *layers = cogl_material_get_layers (material);
+  CoglHandle layer = g_list_nth_data ((GList *)layers, layer_n);
+  return layer ? cogl_material_layer_get_texture (layer) : NULL;
+}
+
+static gboolean
+mx_offscreen_ensure_accumulation_buffer (MxOffscreen *offscreen)
+{
+  guint width, height;
+  CoglHandle texture, acc_texture;
+  MxOffscreenPrivate *priv = offscreen->priv;
+
+  texture = clutter_texture_get_cogl_texture (CLUTTER_TEXTURE (offscreen));
+  if (!texture)
+    return FALSE;
+
+  acc_texture = mx_offscreen_material_get_texture (priv->acc_material, 0);
+
+  width = cogl_texture_get_width (texture);
+  height = cogl_texture_get_height (texture);
+
+  if (!acc_texture ||
+      (cogl_texture_get_width (acc_texture) != width) ||
+      (cogl_texture_get_height (acc_texture) != height))
+    {
+      if (priv->acc_fbo)
+        {
+          cogl_handle_unref (priv->acc_fbo);
+          priv->acc_fbo = NULL;
+        }
+
+      texture = cogl_texture_new_with_size (width,
+                                            height,
+                                            COGL_TEXTURE_NO_SLICING,
+                                            COGL_PIXEL_FORMAT_RGBA_8888_PRE);
+      cogl_material_set_layer (priv->acc_material, 0, texture);
+
+      if (texture)
+        {
+          CoglColor color;
+
+          priv->acc_fbo = cogl_offscreen_new_to_texture (texture);
+
+          /* Clear the newly created texture */
+          cogl_color_set_from_4ub (&color, 0, 0, 0, 0);
+          cogl_push_framebuffer (priv->acc_fbo);
+          cogl_clear (&color, COGL_BUFFER_BIT_COLOR);
+          cogl_pop_framebuffer ();
+
+          cogl_handle_unref (texture);
+
+          return TRUE;
+        }
+
+      return FALSE;
+    }
+
+  return TRUE;
+}
+
 static void
 mx_offscreen_paint (ClutterActor *actor)
 {
@@ -357,7 +452,31 @@ mx_offscreen_paint (ClutterActor *actor)
       if (priv->auto_update)
         mx_offscreen_update (self);
 
-      CLUTTER_ACTOR_CLASS (mx_offscreen_parent_class)->paint (actor);
+      if (priv->acc_enabled && mx_offscreen_ensure_accumulation_buffer (self))
+        {
+          gfloat width, height;
+          CoglColor zero_color;
+
+          CoglHandle material =
+            clutter_texture_get_cogl_material (CLUTTER_TEXTURE (actor));
+
+          /* Blend the texture onto the accumulation buffer */
+          cogl_push_framebuffer (priv->acc_fbo);
+          cogl_color_set_from_4ub (&zero_color, 0, 0, 0, 0);
+          cogl_clear (&zero_color,
+                      COGL_BUFFER_BIT_STENCIL |
+                      COGL_BUFFER_BIT_DEPTH);
+          cogl_set_source (material);
+          cogl_rectangle (-1, 1, 1, -1);
+          cogl_pop_framebuffer ();
+
+          /* Draw the accumulation buffer */
+          clutter_actor_get_size (actor, &width, &height);
+          cogl_set_source (priv->acc_material);
+          cogl_rectangle (0, 0, width, height);
+        }
+      else
+        CLUTTER_ACTOR_CLASS (mx_offscreen_parent_class)->paint (actor);
     }
 }
 
@@ -462,6 +581,20 @@ mx_offscreen_class_init (MxOffscreenClass *klass)
                                 "The off-screen buffer used to draw the child.",
                                 MX_PARAM_READABLE);
   g_object_class_install_property (object_class, PROP_BUFFER, pspec);
+
+  pspec = g_param_spec_boolean ("accumulation-enabled",
+                                "Accumulation enabled",
+                                "Enable an accumulation buffer via a "
+                                "secondary buffer.",
+                                FALSE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_ACC_ENABLED, pspec);
+
+  pspec = g_param_spec_pointer ("accumulation-material",
+                                "Accumulation material",
+                                "Material used for the accumulation buffer.",
+                                MX_PARAM_READABLE);
+  g_object_class_install_property (object_class, PROP_ACC_MATERIAL, pspec);
 }
 
 #if CLUTTER_CHECK_VERSION(1,2,0)
@@ -697,6 +830,20 @@ mx_offscreen_set_redirect_enabled (MxOffscreen *offscreen,
     {
       priv->redirect_enabled = enabled;
 
+      if (enabled && priv->acc_fbo)
+        {
+          CoglColor color;
+
+          /* Clear the accumulation buffer when the offscreen is
+           * enabled. As the child has been drawn without updating,
+           * the contents of the accumulation buffer is invalid.
+           */
+          cogl_color_set_from_4ub (&color, 0, 0, 0, 0);
+          cogl_push_framebuffer (priv->fbo);
+          cogl_clear (&color, COGL_BUFFER_BIT_COLOR);
+          cogl_pop_framebuffer ();
+        }
+
       g_object_notify (G_OBJECT (offscreen), "enabled");
 
       clutter_actor_queue_redraw (CLUTTER_ACTOR (offscreen));
@@ -716,4 +863,78 @@ mx_offscreen_get_buffer (MxOffscreen *offscreen)
   g_return_val_if_fail (MX_IS_OFFSCREEN (offscreen), NULL);
   mx_offscreen_ensure_buffers (offscreen);
   return offscreen->priv->fbo;
+}
+
+void
+mx_offscreen_set_accumulation_enabled (MxOffscreen *offscreen,
+                                       gboolean     enable)
+{
+  MxOffscreenPrivate *priv;
+
+  g_return_if_fail (MX_IS_OFFSCREEN (offscreen));
+
+  priv = offscreen->priv;
+  if (priv->acc_enabled != enable)
+    {
+      CoglHandle material =
+        clutter_texture_get_cogl_material (CLUTTER_TEXTURE (offscreen));
+
+      priv->acc_enabled = enable;
+
+      if (enable)
+        {
+          CoglColor blend_color;
+
+          GError *error = NULL;
+
+          priv->acc_material = cogl_material_new ();
+
+          /* Set the default blend string/level for accumulation */
+          cogl_color_set_from_4ub (&blend_color, 128, 128, 128, 128);
+          cogl_material_set_blend_constant (material, &blend_color);
+
+          if (!cogl_material_set_blend (material,
+                                        "RGBA=ADD(SRC_COLOR*(CONSTANT[A]),"
+                                                 "DST_COLOR*(1-CONSTANT[A]))",
+                                        &error))
+            {
+              g_warning (G_STRLOC ": Error setting blend string: %s",
+                         error->message);
+              g_error_free (error);
+            }
+        }
+      else
+        {
+          cogl_handle_unref (priv->acc_material);
+          priv->acc_material = NULL;
+
+          if (priv->acc_fbo)
+            {
+              cogl_handle_unref (priv->acc_fbo);
+              priv->acc_fbo = NULL;
+            }
+
+          /* Reset to the default blend string */
+          cogl_material_set_blend (material,
+                                   "RGBA=ADD(SRC_COLOR,"
+                                   "DST_COLOR*(1-SRC_COLOR[A]))",
+                                   NULL);
+        }
+
+      g_object_notify (G_OBJECT (offscreen), "accumulation-enabled");
+    }
+}
+
+gboolean
+mx_offscreen_get_accumulation_enabled (MxOffscreen *offscreen)
+{
+  g_return_val_if_fail (MX_IS_OFFSCREEN (offscreen), FALSE);
+  return offscreen->priv->acc_enabled;
+}
+
+CoglHandle
+mx_offscreen_get_accumulation_material (MxOffscreen *offscreen)
+{
+  g_return_val_if_fail (MX_IS_OFFSCREEN (offscreen), NULL);
+  return offscreen->priv->acc_material;
 }
