@@ -35,9 +35,11 @@ G_DEFINE_TYPE_WITH_CODE (MxOffscreen, mx_offscreen, CLUTTER_TYPE_TEXTURE,
 
 struct _MxOffscreenPrivate
 {
+  guint         pick_child  : 1;
+  guint         auto_update : 1;
+  guint         redirect_enabled     : 1;
+
   ClutterActor *child;
-  gboolean      pick_child;
-  gboolean      auto_update;
 
   CoglHandle    fbo;
 };
@@ -49,7 +51,8 @@ enum
   PROP_CHILD,
   PROP_PICK_CHILD,
   PROP_COGL_PROGRAM,
-  PROP_AUTO_UPDATE
+  PROP_AUTO_UPDATE,
+  PROP_REDIRECT_ENABLED
 };
 
 
@@ -111,6 +114,10 @@ mx_offscreen_get_property (GObject    *object,
       g_value_set_boolean (value, mx_offscreen_get_auto_update (self));
       break;
 
+    case PROP_REDIRECT_ENABLED:
+      g_value_set_boolean (value, mx_offscreen_get_redirect_enabled (self));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -136,6 +143,10 @@ mx_offscreen_set_property (GObject      *object,
 
     case PROP_AUTO_UPDATE:
       mx_offscreen_set_auto_update (self, g_value_get_boolean (value));
+      break;
+
+    case PROP_REDIRECT_ENABLED:
+      mx_offscreen_set_redirect_enabled (self, g_value_get_boolean (value));
       break;
 
     default:
@@ -249,6 +260,38 @@ mx_offscreen_allocate (ClutterActor           *actor,
 }
 
 static void
+mx_offscreen_toggle_shaders (MxOffscreen  *offscreen,
+                             GList       **disabled_shaders,
+                             gboolean      enable)
+{
+  ClutterActor *actor = (ClutterActor *)offscreen;
+
+  if (enable)
+    {
+      GList *s;
+
+      for (s = *disabled_shaders; s; s = s->next)
+        clutter_shader_set_is_enabled ((ClutterShader *)s->data, TRUE);
+
+      g_list_free (*disabled_shaders);
+      *disabled_shaders = NULL;
+    }
+  else
+    {
+      *disabled_shaders = NULL;
+      do
+        {
+          ClutterShader *shader = clutter_actor_get_shader (actor);
+          if (shader && clutter_shader_get_is_enabled (shader))
+            {
+              clutter_shader_set_is_enabled (shader, FALSE);
+              *disabled_shaders = g_list_prepend (*disabled_shaders, shader);
+            }
+        } while ((actor = clutter_actor_get_parent (actor)));
+    }
+}
+
+static void
 mx_offscreen_paint (ClutterActor *actor)
 {
   MxOffscreen *self = MX_OFFSCREEN (actor);
@@ -257,10 +300,22 @@ mx_offscreen_paint (ClutterActor *actor)
   if (!priv->child)
     return;
 
-  if (priv->auto_update)
-    mx_offscreen_update (self);
+  if (!priv->redirect_enabled)
+    {
+      GList *disabled_shaders;
 
-  CLUTTER_ACTOR_CLASS (mx_offscreen_parent_class)->paint (actor);
+      /* Disable our shader when we paint with pass-through. */
+      mx_offscreen_toggle_shaders (self, &disabled_shaders, FALSE);
+      clutter_actor_paint (priv->child);
+      mx_offscreen_toggle_shaders (self, &disabled_shaders, TRUE);
+    }
+  else
+    {
+      if (priv->auto_update)
+        mx_offscreen_update (self);
+
+      CLUTTER_ACTOR_CLASS (mx_offscreen_parent_class)->paint (actor);
+    }
 }
 
 static void
@@ -350,6 +405,14 @@ mx_offscreen_class_init (MxOffscreenClass *klass)
                                 TRUE,
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_AUTO_UPDATE, pspec);
+
+  pspec = g_param_spec_boolean ("redirect-enabled",
+                                "Redirect Enabled",
+                                "Enable redirection of the child actor to "
+                                "the off-screen surface.",
+                                TRUE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_REDIRECT_ENABLED, pspec);
 }
 
 #if CLUTTER_CHECK_VERSION(1,2,0)
@@ -359,7 +422,7 @@ mx_offscreen_cogl_texture_notify (MxOffscreen *self)
   CoglMatrix matrix;
   ClutterActor *stage;
   ClutterPerspective perspective;
-  gfloat z_camera, width, height, tex_width, tex_height;
+  gfloat z_camera, width, height;
 
   MxOffscreenPrivate *priv = self->priv;
   CoglHandle texture =
@@ -392,13 +455,10 @@ mx_offscreen_cogl_texture_notify (MxOffscreen *self)
   stage = clutter_actor_get_stage (priv->child);
   clutter_stage_get_perspective (CLUTTER_STAGE (stage), &perspective);
 
-  clutter_actor_get_size (stage, &width, &height);
-  tex_width = cogl_texture_get_width (texture);
-  tex_height = cogl_texture_get_height (texture);
-  width /= width / tex_width;
-  height /= height / tex_height;
+  width = cogl_texture_get_width (texture);
+  height = cogl_texture_get_height (texture);
 
-  cogl_set_viewport (0, 0, tex_width, tex_height);
+  cogl_set_viewport (0, 0, width, height);
   cogl_perspective (perspective.fovy,
                     perspective.aspect,
                     perspective.z_near,
@@ -424,6 +484,7 @@ mx_offscreen_init (MxOffscreen *self)
   MxOffscreenPrivate *priv = self->priv = OFFSCREEN_PRIVATE (self);
 
   priv->auto_update = TRUE;
+  priv->redirect_enabled = TRUE;
 
 #if CLUTTER_CHECK_VERSION(1,2,0)
   g_signal_connect (self, "notify::cogl-texture",
@@ -528,10 +589,9 @@ mx_offscreen_update (MxOffscreen *offscreen)
 #if CLUTTER_CHECK_VERSION(1,2,0)
   CoglHandle texture;
   gboolean sync_size;
-  ClutterActor *actor;
   gfloat width, height;
   CoglColor zero_colour;
-  GList *s, *disabled_shaders;
+  GList *disabled_shaders;
 #endif
 
   MxOffscreenPrivate *priv = offscreen->priv;
@@ -541,17 +601,7 @@ mx_offscreen_update (MxOffscreen *offscreen)
 
 #if CLUTTER_CHECK_VERSION(1,2,0)
   /* Disable shaders when we paint our off-screen children */
-  actor = (ClutterActor *)offscreen;
-  disabled_shaders = NULL;
-  do
-    {
-      ClutterShader *shader = clutter_actor_get_shader (actor);
-      if (shader && clutter_shader_get_is_enabled (shader))
-        {
-          clutter_shader_set_is_enabled (shader, FALSE);
-          disabled_shaders = g_list_prepend (disabled_shaders, shader);
-        }
-    } while ((actor = clutter_actor_get_parent (actor)));
+  mx_offscreen_toggle_shaders (offscreen, &disabled_shaders, FALSE);
 
   clutter_actor_get_size (priv->child, &width, &height);
   sync_size = clutter_texture_get_sync_size (CLUTTER_TEXTURE (offscreen));
@@ -599,9 +649,7 @@ mx_offscreen_update (MxOffscreen *offscreen)
   cogl_pop_matrix ();
   cogl_pop_framebuffer ();
 
-  for (s = disabled_shaders; s; s = s->next)
-    clutter_shader_set_is_enabled ((ClutterShader *)s->data, TRUE);
-  g_list_free (disabled_shaders);
+  mx_offscreen_toggle_shaders (offscreen, &disabled_shaders, TRUE);
 #else
   static gboolean warned = FALSE;
   if (warned)
@@ -611,5 +659,31 @@ mx_offscreen_update (MxOffscreen *offscreen)
       warned = TRUE;
     }
 #endif
+}
+
+void
+mx_offscreen_set_redirect_enabled (MxOffscreen *offscreen,
+                                   gboolean     enabled)
+{
+  MxOffscreenPrivate *priv;
+
+  g_return_if_fail (MX_IS_OFFSCREEN (offscreen));
+
+  priv = offscreen->priv;
+  if (priv->redirect_enabled != enabled)
+    {
+      priv->redirect_enabled = enabled;
+
+      g_object_notify (G_OBJECT (offscreen), "enabled");
+
+      clutter_actor_queue_redraw (CLUTTER_ACTOR (offscreen));
+    }
+}
+
+gboolean
+mx_offscreen_get_redirect_enabled (MxOffscreen *offscreen)
+{
+  g_return_val_if_fail (MX_IS_OFFSCREEN (offscreen), FALSE);
+  return offscreen->priv->redirect_enabled;
 }
 
