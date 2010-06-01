@@ -64,6 +64,7 @@
 static void mx_box_container_iface_init (ClutterContainerIface *iface);
 static void mx_box_scrollable_interface_init (MxScrollableIface *iface);
 static void mx_box_focusable_iface_init (MxFocusableIface *iface);
+static void mx_box_stylable_iface_init (MxStylableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxBoxLayout, mx_box_layout, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
@@ -71,7 +72,9 @@ G_DEFINE_TYPE_WITH_CODE (MxBoxLayout, mx_box_layout, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_SCROLLABLE,
                                                 mx_box_scrollable_interface_init)
                          G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
-                                                mx_box_focusable_iface_init));
+                                                mx_box_focusable_iface_init)
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
+                                                mx_box_stylable_iface_init));
 
 #define BOX_LAYOUT_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_BOX_LAYOUT, MxBoxLayoutPrivate))
@@ -92,6 +95,9 @@ struct _MxBoxLayoutPrivate
 {
   GList        *children;
 
+  guint         ignore_css_spacing : 1; /* Should we ignore spacing from
+                                           the CSS because the application
+                                           set it via set_spacing */
   guint         spacing;
 
   MxAdjustment *hadjustment;
@@ -632,6 +638,26 @@ mx_box_focusable_iface_init (MxFocusableIface *iface)
   iface->accept_focus = mx_box_layout_accept_focus;
 }
 
+/* Stylable inplementation */
+static void
+mx_box_stylable_iface_init (MxStylableIface *iface)
+{
+  static gboolean is_initialized = FALSE;
+
+  if (G_UNLIKELY (!is_initialized))
+    {
+      GParamSpec *pspec;
+
+      is_initialized = TRUE;
+
+      pspec = g_param_spec_uint ("x-mx-spacing",
+                                 "Spacing",
+                                 "The size of the spacing",
+                                 0, G_MAXUINT, 0,
+                                 MX_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_BOX_LAYOUT, pspec);
+    }
+}
 
 static void
 mx_box_layout_get_property (GObject    *object,
@@ -1414,6 +1440,27 @@ mx_box_layout_free_allocation (ClutterActorBox *box)
 }
 
 static void
+mx_box_layout_style_changed (MxWidget *widget,
+                             gpointer  userdata)
+{
+  MxBoxLayout *layout = MX_BOX_LAYOUT (widget);
+  MxBoxLayoutPrivate *priv = layout->priv;
+  guint spacing;
+
+  mx_stylable_get (MX_STYLABLE (widget),
+                   "x-mx-spacing", &spacing,
+                   NULL);
+
+  if (!priv->ignore_css_spacing && (priv->spacing != spacing))
+    {
+      priv->spacing = spacing;
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (widget));
+    }
+
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (widget));
+}
+
+static void
 mx_box_layout_init (MxBoxLayout *self)
 {
   self->priv = BOX_LAYOUT_PRIVATE (self);
@@ -1424,6 +1471,9 @@ mx_box_layout_init (MxBoxLayout *self)
                                                          NULL,
                                                          (GDestroyNotify)
                                                          mx_box_layout_free_allocation);
+
+  g_signal_connect (self, "style-changed",
+                    G_CALLBACK (mx_box_layout_style_changed), NULL);
 
 }
 
@@ -1501,6 +1551,7 @@ mx_box_layout_set_spacing (MxBoxLayout *box,
   if (priv->spacing != spacing)
     {
       priv->spacing = spacing;
+      priv->ignore_css_spacing = TRUE;
 
       clutter_actor_queue_relayout (CLUTTER_ACTOR (box));
 

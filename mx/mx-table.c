@@ -95,6 +95,8 @@ struct _MxTablePrivate
 {
   GList *children;
 
+  guint   ignore_css_col_spacing : 1;
+  guint   ignore_css_row_spacing : 1;
   gint    col_spacing;
   gint    row_spacing;
 
@@ -115,10 +117,13 @@ struct _MxTablePrivate
 
 static void mx_container_iface_init (ClutterContainerIface *iface);
 static void mx_focusable_iface_init (MxFocusableIface *iface);
+static void mx_stylable_iface_init (MxStylableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxTable, mx_table, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
                                                 mx_container_iface_init)
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
+                                                mx_stylable_iface_init)
                          G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
                                                 mx_focusable_iface_init));
 
@@ -520,6 +525,34 @@ mx_container_iface_init (ClutterContainerIface *iface)
   iface->raise = mx_container_raise;
   iface->sort_depth_order = mx_container_sort_depth_order;
   iface->child_meta_type = MX_TYPE_TABLE_CHILD;
+}
+
+/* MxStylable implementation */
+static void
+mx_stylable_iface_init (MxStylableIface *iface)
+{
+  static gboolean is_initialized = FALSE;
+
+  if (G_UNLIKELY (is_initialized == FALSE))
+    {
+      GParamSpec *pspec;
+
+      is_initialized = TRUE;
+
+      pspec = g_param_spec_uint ("x-mx-column-spacing",
+                                 "Column Spacing",
+                                 "The size of the column spacing",
+                                 0, G_MAXUINT, 0,
+                                 MX_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_TABLE, pspec);
+
+      pspec = g_param_spec_uint ("x-mx-row-spacing",
+                                 "Row Spacing",
+                                 "The size of the row spacing",
+                                 0, G_MAXUINT, 0,
+                                 MX_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_TABLE, pspec);
+    }
 }
 
 /* MxTable Class Implementation */
@@ -1610,6 +1643,26 @@ mx_table_class_init (MxTableClass *klass)
 }
 
 static void
+mx_table_style_changed (MxWidget *widget,
+                        gpointer  userdata)
+{
+  MxTable *table = MX_TABLE (widget);
+  MxTablePrivate *priv = table->priv;
+  guint row_spacing, col_spacing;
+
+  mx_stylable_get (MX_STYLABLE (widget),
+                   "x-mx-column-spacing", &col_spacing,
+                   "x-mx-row-spacing", &row_spacing,
+                   NULL);
+
+  if (!priv->ignore_css_col_spacing)
+    priv->col_spacing = col_spacing;
+
+  if (!priv->ignore_css_row_spacing)
+    priv->row_spacing = row_spacing;
+}
+
+static void
 mx_table_init (MxTable *table)
 {
   table->priv = MX_TABLE_GET_PRIVATE (table);
@@ -1619,6 +1672,9 @@ mx_table_init (MxTable *table)
 
   table->priv->columns = g_array_new (FALSE, TRUE, sizeof (DimensionData));
   table->priv->rows = g_array_new (FALSE, TRUE, sizeof (DimensionData));
+
+  g_signal_connect (table, "style-changed",
+                    G_CALLBACK (mx_table_style_changed), NULL);
 }
 
 /* used by MxTableChild to update row/column count */
@@ -1671,6 +1727,8 @@ mx_table_set_column_spacing (MxTable *table,
     {
       priv->col_spacing = spacing;
 
+      priv->ignore_css_col_spacing = TRUE;
+
       clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
 
       g_object_notify (G_OBJECT (table), "column-spacing");
@@ -1698,6 +1756,8 @@ mx_table_set_row_spacing (MxTable *table,
   if (priv->row_spacing != spacing)
     {
       priv->row_spacing = spacing;
+
+      priv->ignore_css_row_spacing = TRUE;
 
       clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
 
