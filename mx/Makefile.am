@@ -50,6 +50,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-scroll-bar.h 		\
 	$(top_srcdir)/mx/mx-scroll-view.h 		\
 	$(top_srcdir)/mx/mx-scrollable.h 		\
+	$(top_srcdir)/mx/mx-settings.h		\
 	$(top_srcdir)/mx/mx-slider.h 		\
 	$(top_srcdir)/mx/mx-stylable.h 		\
 	$(top_srcdir)/mx/mx-style.h 		\
@@ -116,6 +117,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-scroll-bar.c 		\
 	$(top_srcdir)/mx/mx-scroll-view.c		\
 	$(top_srcdir)/mx/mx-scrollable.c 		\
+	$(top_srcdir)/mx/mx-settings.c		\
 	$(top_srcdir)/mx/mx-slider.c 		\
 	$(top_srcdir)/mx/mx-stylable.c 		\
 	$(top_srcdir)/mx/mx-style.c 		\
