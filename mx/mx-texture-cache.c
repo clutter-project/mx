@@ -420,4 +420,6 @@ mx_texture_cache_load_cache (MxTextureCache *self,
           g_hash_table_insert (priv->cache, element->filename, element);
         }
     }
+
+  fclose (file);
 }
