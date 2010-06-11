@@ -844,7 +844,7 @@ mx_offscreen_set_redirect_enabled (MxOffscreen *offscreen,
           cogl_pop_framebuffer ();
         }
 
-      g_object_notify (G_OBJECT (offscreen), "enabled");
+      g_object_notify (G_OBJECT (offscreen), "redirect-enabled");
 
       clutter_actor_queue_redraw (CLUTTER_ACTOR (offscreen));
     }
