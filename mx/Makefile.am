@@ -75,6 +75,8 @@ source_h_priv = \
 	$(top_srcdir)/mx/mx-progress-bar-fill.h	\
 	$(top_srcdir)/mx/mx-private.h		\
 	$(top_srcdir)/mx/mx-subtexture.h	\
+	$(top_srcdir)/mx/xsettings-client.h	\
+	$(top_srcdir)/mx/xsettings-common.h	\
 	$(NULL)
 
 source_c = \
@@ -135,6 +137,8 @@ source_c = \
 	$(top_srcdir)/mx/mx-widget.c		\
 	$(top_srcdir)/mx/mx-window.c		\
 	$(top_srcdir)/mx/mx-floating-widget.c	\
+	$(top_srcdir)/mx/xsettings-client.c	\
+	$(top_srcdir)/mx/xsettings-common.c	\
 	$(NULL)
 
 EXTRA_DIST = \

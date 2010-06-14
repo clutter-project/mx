@@ -24,6 +24,11 @@
 #include "mx-settings.h"
 #include "mx-private.h"
 
+#include "xsettings-client.h"
+
+#include <string.h>
+#include <clutter/x11/clutter-x11.h>
+
 G_DEFINE_TYPE (MxSettings, mx_settings, G_TYPE_OBJECT)
 
 #define SETTINGS_PRIVATE(o) \
@@ -34,6 +39,8 @@ struct _MxSettingsPrivate
   gchar *icon_theme;
   gchar *font_name;
   guint  long_press_timeout;
+
+  XSettingsClient *client;
 };
 
 enum
@@ -123,6 +130,12 @@ mx_settings_finalize (GObject *object)
       priv->font_name = NULL;
     }
 
+  if (priv->client)
+    {
+      xsettings_client_destroy (priv->client);
+      priv->client = NULL;
+    }
+
   G_OBJECT_CLASS (mx_settings_parent_class)->finalize (object);
 }
 
@@ -165,9 +178,39 @@ mx_settings_class_init (MxSettingsClass *klass)
 }
 
 static void
+xsettings_notify_func (const char       *name,
+                       XSettingsAction   action,
+                       XSettingsSetting *setting,
+                       void             *cb_data)
+{
+  MxSettingsPrivate *priv = MX_SETTINGS (cb_data)->priv;
+
+  if (!name)
+    return;
+
+  if (!strcmp (name, "Net/IconThemeName"))
+    {
+      g_free (priv->icon_theme);
+      priv->icon_theme = g_strdup (setting->data.v_string);
+    }
+  else if (!strcmp (name, "Gtk/FontName"))
+    {
+      g_free (priv->font_name);
+      priv->font_name = g_strdup (setting->data.v_string);
+    }
+
+}
+
+static void
 mx_settings_init (MxSettings *self)
 {
   self->priv = SETTINGS_PRIVATE (self);
+
+  self->priv->client = xsettings_client_new (clutter_x11_get_default_display (),
+                                             clutter_x11_get_default_screen (),
+                                             xsettings_notify_func,
+                                             NULL,
+                                             self);
 }
 
 /**
