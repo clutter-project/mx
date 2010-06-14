@@ -818,6 +818,10 @@ mx_stylable_connect_change_notifiers (MxStylable *stylable)
                     G_CALLBACK (mx_stylable_property_changed_notify), NULL);
   g_signal_connect (stylable, "notify::style-pseudo-class",
                     G_CALLBACK (mx_stylable_property_changed_notify), NULL);
+
+  g_signal_connect_swapped (mx_stylable_get_style (stylable), "changed",
+                            G_CALLBACK (mx_stylable_property_changed_notify),
+                            stylable);
 }
 
 void
