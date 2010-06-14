@@ -785,6 +785,13 @@ mx_path_bar_get_level (MxPathBar *bar)
   return bar->priv->current_level;
 }
 
+/**
+ * mx_path_bar_clear:
+ * @bar: An #MxPathBar
+ *
+ * Remove all the current buttons
+ *
+ */
 void
 mx_path_bar_clear (MxPathBar *bar)
 {
@@ -794,6 +801,14 @@ mx_path_bar_clear (MxPathBar *bar)
     mx_path_bar_pop (bar);
 }
 
+/**
+ * mx_path_bar_get_editable:
+ * @bar: A #MxPathBar
+ *
+ * Get the value of the #MxPathBar:editable property.
+ *
+ * Returns: the current value of the "editable" property.
+ */
 gboolean
 mx_path_bar_get_editable (MxPathBar *bar)
 {
@@ -814,6 +829,14 @@ mx_path_bar_entry_faded_cb (ClutterAnimation *animation,
   clutter_actor_queue_relayout (CLUTTER_ACTOR (bar));
 }
 
+/**
+ * mx_path_bar_set_editable:
+ * @bar: A #MxPathBar
+ * @editable: #TRUE if the path bar should be editable
+ *
+ * Set the value of the #MxPathBar:editable property.
+ *
+ */
 void
 mx_path_bar_set_editable (MxPathBar *bar, gboolean editable)
 {
@@ -880,6 +903,15 @@ mx_path_bar_get_label (MxPathBar *bar, gint level)
     return NULL;
 }
 
+/**
+ * mx_path_bar_set_label:
+ * @bar: A #MxPathBar
+ * @level: A #gint
+ * @label: A #gchar
+ *
+ * Set the text on the button specified by @level
+ *
+ */
 void
 mx_path_bar_set_label (MxPathBar   *bar,
                        gint         level,
@@ -909,6 +941,14 @@ mx_path_bar_get_text (MxPathBar *bar)
   return mx_entry_get_text (MX_ENTRY (bar->priv->entry));
 }
 
+/**
+ * mx_path_bar_set_text:
+ * @bar: A #MxPathBar
+ * @text: string to set the editable text to.
+ *
+ * Set the text in the editable area of the #MxPathBar
+ *
+ */
 void
 mx_path_bar_set_text (MxPathBar *bar, const gchar *text)
 {
@@ -920,6 +960,14 @@ mx_path_bar_set_text (MxPathBar *bar, const gchar *text)
   mx_entry_set_text (MX_ENTRY (bar->priv->entry), text);
 }
 
+/**
+ * mx_path_bar_get_entry:
+ * @bar: A #MxPathBar
+ *
+ * Get the MxEntry used as the editable area in the MxPathBar.
+ *
+ * Returns: MxEntry *
+ */
 MxEntry *
 mx_path_bar_get_entry (MxPathBar *bar)
 {
@@ -928,6 +976,14 @@ mx_path_bar_get_entry (MxPathBar *bar)
   return (MxEntry *)bar->priv->entry;
 }
 
+/**
+ * mx_path_bar_get_clear_on_change:
+ * @bar: A #MxPathBar
+ *
+ * Get the value of the #MxPathBar:clear-on-change property
+ *
+ * Returns: the value of the "clear-on-change" property
+ */
 gboolean
 mx_path_bar_get_clear_on_change (MxPathBar *bar)
 {
@@ -936,6 +992,14 @@ mx_path_bar_get_clear_on_change (MxPathBar *bar)
   return bar->priv->clear_on_change;
 }
 
+/**
+ * mx_path_bar_set_clear_on_change:
+ * @bar: A #MxPathBar
+ * @clear_on_change: the new value of the property
+ *
+ * Set theh value of the #MxPathBar:clear-on-change property
+ *
+ */
 void
 mx_path_bar_set_clear_on_change (MxPathBar *bar,
                                  gboolean   clear_on_change)
