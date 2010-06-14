@@ -273,26 +273,13 @@ static void
 mx_entry_style_changed (MxWidget *self)
 {
   MxEntryPrivate *priv = MX_ENTRY_PRIV (self);
-  ClutterColor *color = NULL;
   ClutterColor *caret_color = NULL;
   ClutterColor *selection_background_color = NULL;
-  gchar *font_name;
-  gchar *font_string;
-  gint font_size;
 
   mx_stylable_get (MX_STYLABLE (self),
-                   "color", &color,
                    "caret-color", &caret_color,
                    "selection-background-color", &selection_background_color,
-                   "font-family", &font_name,
-                   "font-size", &font_size,
                    NULL);
-
-  if (color)
-    {
-      clutter_text_set_color (CLUTTER_TEXT (priv->entry), color);
-      clutter_color_free (color);
-    }
 
   if (caret_color)
     {
@@ -307,24 +294,8 @@ mx_entry_style_changed (MxWidget *self)
       clutter_color_free (selection_background_color);
     }
 
-  if (font_name || font_size)
-    {
-      if (font_name && font_size)
-        {
-          font_string = g_strdup_printf ("%s %dpx", font_name, font_size);
-          g_free (font_name);
-        }
-      else
-        {
-          if (font_size)
-            font_string = g_strdup_printf ("%dpx", font_size);
-          else
-            font_string = font_name;
-        }
-
-      clutter_text_set_font_name (CLUTTER_TEXT (priv->entry), font_string);
-      g_free (font_string);
-    }
+  mx_stylable_apply_clutter_text_attributes (MX_STYLABLE (self),
+                                             CLUTTER_TEXT (priv->entry));
 }
 
 static void
