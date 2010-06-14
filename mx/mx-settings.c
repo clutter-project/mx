@@ -190,15 +190,42 @@ xsettings_notify_func (const char       *name,
 
   if (!strcmp (name, "Net/IconThemeName"))
     {
-      g_free (priv->icon_theme);
-      priv->icon_theme = g_strdup (setting->data.v_string);
+      /* check icon theme name has changed */
+      if (g_strcmp0 (priv->icon_theme, setting->data.v_string))
+        {
+          g_free (priv->icon_theme);
+          priv->icon_theme = g_strdup (setting->data.v_string);
+
+          g_object_notify (G_OBJECT (cb_data), "icon-theme");
+        }
     }
   else if (!strcmp (name, "Gtk/FontName"))
     {
-      g_free (priv->font_name);
-      priv->font_name = g_strdup (setting->data.v_string);
+      /* check if the font name has changed */
+      if (g_strcmp0 (priv->font_name, setting->data.v_string))
+        {
+          g_free (priv->font_name);
+          priv->font_name = g_strdup (setting->data.v_string);
+
+          g_object_notify (G_OBJECT (cb_data), "font-name");
+
+          g_signal_emit_by_name (mx_style_get_default (), "changed", 0, NULL);
+        }
     }
 
+}
+
+static ClutterX11FilterReturn
+mx_settings_event_filter (XEvent       *xev,
+                          ClutterEvent *cev,
+                          void         *data)
+{
+  MxSettingsPrivate *priv = MX_SETTINGS (data)->priv;
+
+  if (xsettings_client_process_event (priv->client, xev))
+    return CLUTTER_X11_FILTER_REMOVE;
+  else
+    return CLUTTER_X11_FILTER_CONTINUE;
 }
 
 static void
@@ -211,6 +238,8 @@ mx_settings_init (MxSettings *self)
                                              xsettings_notify_func,
                                              NULL,
                                              self);
+
+  clutter_x11_add_filter (mx_settings_event_filter, self);
 }
 
 /**
@@ -228,5 +257,5 @@ mx_settings_get_default (void)
   if (settings)
     return settings;
   else
-    return g_object_new (MX_TYPE_SETTINGS, NULL);
+    return settings = g_object_new (MX_TYPE_SETTINGS, NULL);
 }
