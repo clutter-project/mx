@@ -78,6 +78,7 @@
       <xi:include href="xml/mx-bin.xml"/>
       <xi:include href="xml/mx-clipboard.xml"/>
       <xi:include href="xml/mx-deform-texture.xml"/>
+      <xi:include href="xml/mx-focus-manager.xml"/>
       <xi:include href="xml/mx-floating-widget.xml"/>
       <xi:include href="xml/mx-icon-theme.xml"/>
       <xi:include href="xml/mx-style.xml"/>

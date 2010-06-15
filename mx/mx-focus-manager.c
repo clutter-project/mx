@@ -258,6 +258,15 @@ mx_focus_manager_event_cb (ClutterStage   *stage,
     return TRUE;
 }
 
+/**
+ * mx_focus_manager_get_for_stage:
+ * @stage: A #ClutterStage
+ *
+ * Get the MxFocusManager associated with a stage, or create one if none exist
+ * for the specified stage.
+ *
+ * Returns: (transfer none): An #MxFocusManager
+ */
 MxFocusManager *
 mx_focus_manager_get_for_stage (ClutterStage *stage)
 {
@@ -289,6 +298,14 @@ mx_focus_manager_get_for_stage (ClutterStage *stage)
   return manager;
 }
 
+/**
+ * mx_focus_manager_get_stage:
+ * @manager: A #MxFocusManager
+ *
+ * Get the stage the MxFocusManager is associated with
+ *
+ * Returns: (transfer none): A #ClutterStage
+ */
 ClutterStage*
 mx_focus_manager_get_stage (MxFocusManager *manager)
 {
@@ -297,6 +314,14 @@ mx_focus_manager_get_stage (MxFocusManager *manager)
   return CLUTTER_STAGE (manager->priv->stage);
 }
 
+/**
+ * mx_focus_manager_get_focused:
+ * @manager: A #MxFocusManager
+ *
+ * Get the currently focused #MxFocusable
+ *
+ * Returns: (transfer none): MxFocusable
+ */
 MxFocusable*
 mx_focus_manager_get_focused (MxFocusManager *manager)
 {
