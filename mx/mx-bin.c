@@ -23,12 +23,18 @@
 
 /**
  * SECTION:mx-bin
- * @short_description: a simple container with one actor
+ * @short_description: a simple container with one actor.
  *
- * #MxBin is a simple container capable of having only one
- * #ClutterActor as a child.
+ * #MxBin is a simple abstract container capable of having only one
+ * #ClutterActor as a child. #MxBin does not allocate the child itself,
+ * therefore any subclasses are required to implement the
+ * #ClutterActorClass.allocate function.
+ * #mx_bin_allocate_child() can be used if no special allocation requirements
+ * are needed.
  *
- * #MxBin inherits from #MxWidget, so it is fully themable.
+ * #MxFrame is a simple implementation of #MxBin that can be used as a single
+ * actor container that implements alignment and padding.
+ *
  */
 
 #ifdef HAVE_CONFIG_H
