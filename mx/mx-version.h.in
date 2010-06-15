@@ -38,21 +38,21 @@
 /**
  * MX_MAJOR_VERSION:
  *
- * The major version of the Mx clibrary (1 if %MX_VERSION is 1.2.3)
+ * The major version of the Mx clibrary (1 if version is 1.2.3)
  */
 #define MX_MAJOR_VERSION              (@MX_MAJOR_VERSION@)
 
 /**
  * MX_MINOR_VERSION:
  *
- * The minor version of the Mx library (2, if %MX_VERSION is 1.2.3)
+ * The minor version of the Mx library (2, if version is 1.2.3)
  */
 #define MX_MINOR_VERSION              (@MX_MINOR_VERSION@)
 
 /**
  * MX_MICRO_VERSION:
  *
- * The micro version of the Mx library (3, if %MX_VERSION is 1.2.3)
+ * The micro version of the Mx library (3, if version is 1.2.3)
  */
 #define MX_MICRO_VERSION              (@MX_MICRO_VERSION@)
 

@@ -1134,7 +1134,7 @@ mx_window_new (void)
  *
  * Creates a new #MxWindow, using @stage as the backing #ClutterStage. This
  * function is meant for use primarily for embedding a #MxWindow into
- * a foreign stage when using a #Clutter toolkit integration library.
+ * a foreign stage when using a Clutter toolkit integration library.
  *
  * Returns: A #MxWindow
  */

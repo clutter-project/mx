@@ -28,7 +28,7 @@
  *
  * #MxListView is a box layout container driven by a #ClutterModel. Children
  * are created for each row in the model, either by creating actors from the
- * supplied #ClutterActor derived type, or from a #MxItemFactor.
+ * supplied #ClutterActor derived type, or from a #MxItemFactory.
  *
  * Data is set on the children by mapping columns in the model to object
  * properties on the children.

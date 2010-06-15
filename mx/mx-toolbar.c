@@ -418,7 +418,7 @@ mx_toolbar_new (void)
  * @toolbar: A #MxToolbar
  * @has_close_button: #TRUE if a close button should be displayed
  *
- * Set the #Mxtoolbar:has-close-button property
+ * Set the #MxToolbar:has-close-button property
  *
  */
 void

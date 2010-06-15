@@ -28,7 +28,7 @@
  *
  * #MxTooltip implements a single tooltip. It should not normally be created
  * by the application but by the widget implementing tooltip capabilities, for
- * example, #mx_button_set_tooltip().
+ * example, #mx_widget_set_tooltip_text.
  */
 
 #ifdef HAVE_CONFIG_H

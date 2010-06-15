@@ -751,7 +751,7 @@ mx_button_get_label (MxButton *button)
 
 /**
  * mx_button_set_label:
- * @button: a #Mxbutton
+ * @button: a #MxButton
  * @text: text to set the label to
  *
  * Sets the text displayed on the button
@@ -814,7 +814,7 @@ mx_button_get_is_toggle (MxButton *button)
 
 /**
  * mx_button_set_is_toggle:
- * @button: a #Mxbutton
+ * @button: a #MxButton
  * @toggle: #TRUE or #FALSE
  *
  * Enables or disables toggle mode for the button. In toggle mode, the active
@@ -849,7 +849,7 @@ mx_button_get_toggled (MxButton *button)
 
 /**
  * mx_button_set_toggled:
- * @button: a #Mxbutton
+ * @button: a #MxButton
  * @toggled: #TRUE or #FALSE
  *
  * Sets the toggled state of the button. This is only really useful if the
