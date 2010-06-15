@@ -25,7 +25,7 @@
  * SECTION:mx-clipboard
  * @short_description: a simple representation of the X clipboard
  *
- * #MxCliboard is a very simple object representation of the clipboard
+ * #MxClipboard is a very simple object representation of the clipboard
  * available to applications. Text is always assumed to be UTF-8 and non-text
  * items are not handled.
  */
@@ -310,7 +310,7 @@ mx_clipboard_get_default (void)
 
 /**
  * mx_clipboard_get_text:
- * @clipboard: A #MxCliboard
+ * @clipboard: A #MxClipboard
  * @callback: function to be called when the text is retreived
  * @user_data: data to be passed to the callback
  *

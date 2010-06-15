@@ -584,7 +584,7 @@ mx_stylable_get_style (MxStylable *stylable)
  *
  * The #MxStylable will take ownership of the passed #MxStyle.
  *
- * After the #MxStle has been set, the MxStylable::style-set signal
+ * After the #MxStyle has been set, the MxStylable::style-set signal
  * will be emitted.
  */
 void
