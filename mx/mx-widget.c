@@ -42,8 +42,7 @@
 #include "mx-texture-frame.h"
 #include "mx-tooltip.h"
 #include "mx-enum-types.h"
-
-#define LONG_PRESS_TIMEOUT 500
+#include "mx-settings.h"
 
 /*
  * Forward declaration for sake of MxWidgetChild
@@ -789,12 +788,16 @@ mx_widget_long_press_query (MxWidget           *widget,
 {
   MxWidgetPrivate *priv = widget->priv;
   gboolean query_result = FALSE;
+  MxSettings *settings = mx_settings_get_default ();
+  guint timeout;
+
+  g_object_get (settings, "long-press-timeout", &timeout, NULL);
 
   g_signal_emit (widget, widget_signals[LONG_PRESS], 0, event->x,
                  event->y, MX_LONG_PRESS_QUERY, &query_result);
 
   if (query_result)
-    priv->long_press_source = g_timeout_add (LONG_PRESS_TIMEOUT,
+    priv->long_press_source = g_timeout_add (timeout,
                                              (GSourceFunc) mx_widget_emit_long_press,
                                              widget);
 }
