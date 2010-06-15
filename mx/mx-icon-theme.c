@@ -27,6 +27,7 @@
 #include "mx-marshal.h"
 #include "mx-texture-cache.h"
 #include "mx-private.h"
+#include "mx-settings.h"
 
 G_DEFINE_TYPE (MxIconTheme, mx_icon_theme, G_TYPE_OBJECT)
 
@@ -306,10 +307,17 @@ mx_icon_theme_init (MxIconTheme *self)
     g_warning ("Error loading fallback icon theme");
 
   theme = g_getenv ("MX_ICON_THEME");
-  if (!theme)
-    theme = "moblin";
+  if (theme)
+    mx_icon_theme_set_theme_name (self, theme);
+  else
+    {
+      gchar *default_theme;
+      g_object_get (mx_settings_get_default (), "icon-theme", &default_theme,
+                    NULL);
+      mx_icon_theme_set_theme_name (self, default_theme);
+      g_free (default_theme);
+    }
 
-  mx_icon_theme_set_theme_name (self, theme);
 }
 
 /**

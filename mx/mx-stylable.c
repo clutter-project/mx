@@ -45,6 +45,7 @@
 #include "mx-marshal.h"
 #include "mx-private.h"
 #include "mx-stylable.h"
+#include "mx-settings.h"
 
 enum
 {
@@ -510,6 +511,57 @@ mx_stylable_get (MxStylable  *stylable,
   va_end (args);
 }
 
+static gboolean
+_set_from_xsettings (GParamSpec *pspec,
+                     GValue     *value)
+{
+  gchar *font_string;
+  gint font_size;
+  PangoFontDescription *descr;
+  MxSettings *settings = mx_settings_get_default ();
+  gboolean result = FALSE;
+
+  if (!strcmp (pspec->name, "font-family")
+      || !strcmp (pspec->name, "font-size"))
+    {
+      const gchar *fn;
+      PangoFontMask set_fields;
+
+      g_object_get (settings, "font-name", &font_string, NULL);
+
+      if (!font_string)
+        return FALSE;
+
+      descr = pango_font_description_from_string (font_string);
+
+      set_fields = pango_font_description_get_set_fields (descr);
+
+      /* font name */
+      if ((set_fields & PANGO_FONT_MASK_FAMILY)
+          && !strcmp (pspec->name, "font-family")
+          && G_VALUE_HOLDS_STRING (value))
+        {
+          fn = pango_font_description_get_family (descr);
+          g_value_set_string (value, fn);
+          result = TRUE;
+        }
+      /* font size */
+      else if ((set_fields & PANGO_FONT_MASK_SIZE)
+               && !strcmp (pspec->name, "font-size")
+               && G_VALUE_HOLDS_INT (value))
+        {
+          font_size = pango_font_description_get_size (descr) / PANGO_SCALE;
+          g_value_set_int (value, font_size);
+          result = TRUE;
+        }
+
+      pango_font_description_free (descr);
+      descr = NULL;
+    }
+
+  return result;
+}
+
 /**
  * mx_stylable_get_default_value:
  * @stylable: a #MxStylable
@@ -548,7 +600,11 @@ mx_stylable_get_default_value (MxStylable  *stylable,
     }
 
   g_value_init (value_out, G_PARAM_SPEC_VALUE_TYPE (pspec));
-  g_param_value_set_default (pspec, value_out);
+
+  /* default font values come from xsettings if possible */
+  if (!_set_from_xsettings (pspec, value_out))
+    g_param_value_set_default (pspec, value_out);
+
   return TRUE;
 }
 
@@ -818,6 +874,10 @@ mx_stylable_connect_change_notifiers (MxStylable *stylable)
                     G_CALLBACK (mx_stylable_property_changed_notify), NULL);
   g_signal_connect (stylable, "notify::style-pseudo-class",
                     G_CALLBACK (mx_stylable_property_changed_notify), NULL);
+
+  g_signal_connect_swapped (mx_stylable_get_style (stylable), "changed",
+                            G_CALLBACK (mx_stylable_property_changed_notify),
+                            stylable);
 }
 
 void
@@ -850,7 +910,7 @@ mx_stylable_apply_clutter_text_attributes (MxStylable  *stylable,
   g_free (font_name);
 
   /* font size */
-  pango_font_description_set_absolute_size (descr, font_size * PANGO_SCALE);
+  pango_font_description_set_size (descr, font_size * PANGO_SCALE);
 
   /* font weight */
   switch (font_weight)

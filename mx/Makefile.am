@@ -50,6 +50,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-scroll-bar.h 		\
 	$(top_srcdir)/mx/mx-scroll-view.h 		\
 	$(top_srcdir)/mx/mx-scrollable.h 		\
+	$(top_srcdir)/mx/mx-settings.h		\
 	$(top_srcdir)/mx/mx-slider.h 		\
 	$(top_srcdir)/mx/mx-stylable.h 		\
 	$(top_srcdir)/mx/mx-style.h 		\
@@ -74,6 +75,8 @@ source_h_priv = \
 	$(top_srcdir)/mx/mx-progress-bar-fill.h	\
 	$(top_srcdir)/mx/mx-private.h		\
 	$(top_srcdir)/mx/mx-subtexture.h	\
+	$(top_srcdir)/mx/xsettings-client.h	\
+	$(top_srcdir)/mx/xsettings-common.h	\
 	$(NULL)
 
 source_c = \
@@ -116,6 +119,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-scroll-bar.c 		\
 	$(top_srcdir)/mx/mx-scroll-view.c		\
 	$(top_srcdir)/mx/mx-scrollable.c 		\
+	$(top_srcdir)/mx/mx-settings.c		\
 	$(top_srcdir)/mx/mx-slider.c 		\
 	$(top_srcdir)/mx/mx-stylable.c 		\
 	$(top_srcdir)/mx/mx-style.c 		\
@@ -132,6 +136,8 @@ source_c = \
 	$(top_srcdir)/mx/mx-widget.c		\
 	$(top_srcdir)/mx/mx-window.c		\
 	$(top_srcdir)/mx/mx-floating-widget.c	\
+	$(top_srcdir)/mx/xsettings-client.c	\
+	$(top_srcdir)/mx/xsettings-common.c	\
 	$(NULL)
 
 EXTRA_DIST = \

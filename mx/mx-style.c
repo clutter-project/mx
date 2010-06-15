@@ -337,6 +337,7 @@ mx_style_transform_css_value (MxStyleSheetValue *css_value,
     }
 }
 
+
 static const gchar*
 mx_style_normalize_property_name (const gchar *name)
 {
@@ -392,9 +393,7 @@ mx_style_get_property (MxStyle    *style,
 
       if (!css_value)
         {
-          /* get the default value */
-          g_value_init (value, G_PARAM_SPEC_VALUE_TYPE (pspec));
-          g_param_value_set_default (pspec, value);
+          mx_stylable_get_default_value (stylable, pspec->name, value);
         }
       else
         mx_style_transform_css_value (css_value, stylable, pspec, value);
@@ -459,9 +458,7 @@ mx_style_get_valist (MxStyle     *style,
 
           if (!css_value)
             {
-              /* get the default value */
-              g_value_init (&value, G_PARAM_SPEC_VALUE_TYPE (pspec));
-              g_param_value_set_default (pspec, &value);
+              mx_stylable_get_default_value (stylable, pspec->name, &value);
             }
           else
             mx_style_transform_css_value (css_value, stylable, pspec, &value);
