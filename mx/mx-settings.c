@@ -233,6 +233,12 @@ mx_settings_init (MxSettings *self)
 {
   self->priv = SETTINGS_PRIVATE (self);
 
+  /* setup defaults */
+  self->priv->long_press_timeout = 500;
+  self->priv->icon_theme = g_strdup ("hicolor");
+  self->priv->font_name = g_strdup ("Sans 10");
+
+  /* setup xsettings client */
   self->priv->client = xsettings_client_new (clutter_x11_get_default_display (),
                                              clutter_x11_get_default_screen (),
                                              xsettings_notify_func,
