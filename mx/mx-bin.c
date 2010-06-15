@@ -210,10 +210,27 @@ mx_bin_pick (ClutterActor       *self,
     clutter_actor_paint (priv->child);
 }
 
+/**
+ * mx_bin_allocate_child:
+ * @bin: An #MxBin
+ * @box: The box to allocate the child within
+ * @flags: #ClutterAllocationFlags, usually provided by the.
+ * clutter_actor_allocate function.
+ *
+ * Allocates the child of an #MxBin inside the given box. This function should
+ * usually only be called by subclasses of #MxBin.
+ *
+ * This function can be used to allocate the child of an #MxBin if no special
+ * allocation requirements are needed. It is similar to
+ * #mx_allocate_align_fill, except that it reads the alignment, padding and
+ * fill values from the #MxBin, and will call #clutter_actor_allocate on the
+ * child.
+ *
+ */
 void
-mx_bin_allocate_child (MxBin                 *bin,
-                       const ClutterActorBox *box,
-                       ClutterAllocationFlags flags)
+mx_bin_allocate_child (MxBin                  *bin,
+                       const ClutterActorBox  *box,
+                       ClutterAllocationFlags  flags)
 {
   MxBinPrivate *priv;
 
