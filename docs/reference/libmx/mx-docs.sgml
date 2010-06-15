@@ -18,6 +18,7 @@
   </bookinfo>
 
   <part>
+    <xi:include href="xml/annotation-glossary.xml"><xi:fallback /></xi:include>
     <title>Clutter Actors and Utilities</title>
     <chapter>
       <title>Widgets</title>
