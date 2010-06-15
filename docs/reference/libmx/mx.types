@@ -25,7 +25,6 @@ mx_draggable_get_type
 mx_scrollable_get_type
 mx_item_view_get_type
 mx_gtk_frame_get_type
-mx_subtexture_get_type
 mx_progress_bar_get_type
 mx_stylable_get_type
 mx_adjustment_get_type
