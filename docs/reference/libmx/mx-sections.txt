@@ -275,6 +275,7 @@ mx_window_set_small_screen
 mx_window_get_window_position
 mx_window_set_window_position
 mx_window_set_icon_name
+mx_window_set_icon_from_cogl_texture
 mx_window_get_icon_name
 mx_window_get_clutter_stage
 <SUBSECTION Standard>
@@ -398,6 +399,8 @@ mx_widget_get_border_image
 mx_widget_get_padding
 mx_widget_paint_background
 mx_widget_get_available_area
+mx_widget_get_disabled
+mx_widget_set_disabled
 <SUBSECTION Standard>
 MX_WIDGET
 MX_IS_WIDGET
@@ -505,10 +508,6 @@ mx_draggable_set_axis
 mx_draggable_get_axis
 mx_draggable_set_drag_threshold
 mx_draggable_get_drag_threshold
-mx_draggable_set_containment_type
-mx_draggable_get_containment_type
-mx_draggable_set_containment_area
-mx_draggable_get_containment_area
 mx_draggable_set_drag_actor
 mx_draggable_get_drag_actor
 mx_draggable_disable
