@@ -548,7 +548,6 @@ mx_window_pre_paint_cb (ClutterActor *actor,
               stage_height = height;
             }
         }
-#if CLUTTER_CHECK_VERSION(1,2,0)
       else
         {
           /* Update minimum size */
@@ -561,7 +560,6 @@ mx_window_pre_paint_cb (ClutterActor *actor,
                                           (guint)width,
                                           (guint)height);
         }
-#endif
     }
 
   if (!priv->has_toolbar || priv->small_screen ||
@@ -856,19 +854,7 @@ mx_window_motion_event_cb (ClutterActor       *actor,
       width = MIN (x, width - priv->drag_win_x_start);
       height = MIN (y, height - priv->drag_win_y_start);
 
-#if !CLUTTER_CHECK_VERSION(1,2,0)
-      /* Set the natural width/height so ClutterStageX11 won't try to
-       * resize us back to our minimum size.
-       */
-      priv->natural_width = width;
-      priv->natural_height = height;
-
-      XMoveResizeWindow (dpy, win,
-                         priv->drag_win_x_start, priv->drag_win_y_start,
-                         width, height);
-#else
       clutter_actor_set_size (actor, width, height);
-#endif
     }
   else
     XMoveWindow (dpy, win,
@@ -1017,9 +1003,7 @@ mx_window_constructed (GObject *object)
   g_signal_connect (priv->stage, "actor-removed",
                     G_CALLBACK (mx_window_actor_removed_cb), self);
 
-#if CLUTTER_CHECK_VERSION(1,2,0)
   g_object_set (G_OBJECT (priv->stage), "use-alpha", TRUE, NULL);
-#endif
 }
 
 static void
