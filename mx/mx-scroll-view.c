@@ -204,16 +204,144 @@ mx_scroll_view_finalize (GObject *object)
 static void
 mx_scroll_view_paint (ClutterActor *actor)
 {
+  ClutterActorBox box;
+  gfloat w, h;
+  gboolean horizontal = FALSE, vertical = FALSE;
+  MxAdjustment *vadjustment = NULL, *hadjustment = NULL;
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (actor)->priv;
+
+  const gfloat r = 0.4, g = 0.4, b = 0.4;
+  const gint shadow = 10;
 
   /* MxBin will paint the child */
   CLUTTER_ACTOR_CLASS (mx_scroll_view_parent_class)->paint (actor);
 
+
+  clutter_actor_get_allocation_box (actor, &box);
+
+  w = box.x2 - box.x1;
+  h = box.y2 - box.y1;
+
   /* paint our custom children */
   if (CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
-    clutter_actor_paint (priv->hscroll);
+    {
+      clutter_actor_paint (priv->hscroll);
+      clutter_actor_get_allocation_box (priv->hscroll, &box);
+      h -= (box.y2 - box.y1);
+      horizontal = TRUE;
+
+      hadjustment = mx_scroll_bar_get_adjustment (MX_SCROLL_BAR(priv->hscroll));
+    }
   if (CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll))
-    clutter_actor_paint (priv->vscroll);
+    {
+      clutter_actor_paint (priv->vscroll);
+      clutter_actor_get_allocation_box (priv->vscroll, &box);
+      w -= (box.x2 - box.x1);
+      vertical = TRUE;
+      vadjustment = mx_scroll_bar_get_adjustment (MX_SCROLL_BAR(priv->vscroll));
+    }
+
+  /* set up the matrial using dummy set source call */
+  cogl_set_source_color4ub (0, 0, 0, 0);
+
+  if (vertical)
+    {
+      gdouble len;
+      if ((len = mx_adjustment_get_value (vadjustment)) > 0)
+        {
+          CoglTextureVertex top[4] = { { 0,}, };
+
+          if (len > shadow)
+            len = shadow;
+
+          top[1].x = w;
+          top[2].x = w;
+          top[2].y = len;
+          top[3].y = len;
+
+          cogl_color_set_from_4f (&top[0].color, r, g, b, 1);
+          cogl_color_set_from_4f (&top[1].color, r, g, b, 1);
+          cogl_color_set_from_4f (&top[2].color, 0, 0, 0, 0);
+          cogl_color_set_from_4f (&top[3].color, 0, 0, 0, 0);
+          cogl_polygon (top, 4, TRUE);
+        }
+
+      if ((len = (mx_adjustment_get_upper (vadjustment)
+                 - mx_adjustment_get_page_size (vadjustment))
+         - mx_adjustment_get_value (vadjustment)) > 0)
+        {
+          CoglTextureVertex bottom[4] = { {0, }, };
+
+          if (len > shadow)
+            len = shadow;
+
+          bottom[0].x = w;
+          bottom[0].y = h;
+          bottom[1].y = h;
+          bottom[2].y = h - len;
+          bottom[3].x = w;
+          bottom[3].y = h - len;
+
+          cogl_color_set_from_4f (&bottom[0].color, r, g, b, 1);
+          cogl_color_set_from_4f (&bottom[1].color, r, g, b, 1);
+          cogl_color_set_from_4f (&bottom[2].color, 0, 0, 0, 0);
+          cogl_color_set_from_4f (&bottom[3].color, 0, 0, 0, 0);
+          cogl_polygon (bottom, 4, TRUE);
+        }
+    }
+
+
+  if (horizontal)
+    {
+      gdouble len;
+
+      if ((len = mx_adjustment_get_value (hadjustment)) > 0)
+        {
+
+          CoglTextureVertex left[4] = { { 0, }, };
+
+          if (len > shadow)
+            len = shadow;
+
+          left[0].y = h;
+          left[2].x = len;
+          left[3].x = len;
+          left[3].y = h;
+
+          cogl_color_set_from_4f (&left[0].color, r, g, b, 1);
+          cogl_color_set_from_4f (&left[1].color, r, g, b, 1);
+          cogl_color_set_from_4f (&left[2].color, 0, 0, 0, 0);
+          cogl_color_set_from_4f (&left[3].color, 0, 0, 0, 0);
+          cogl_polygon (left, 4, TRUE);
+        }
+
+
+      if ((len = (mx_adjustment_get_upper (hadjustment)
+                 - mx_adjustment_get_page_size (hadjustment))
+         - mx_adjustment_get_value (hadjustment)) > 0)
+        {
+          CoglTextureVertex right[4] = { { 0, }, };
+
+          if (len > shadow)
+            len = shadow;
+
+          right[0].x = w;
+          right[1].x = w;
+          right[1].y = h;
+          right[2].x = w - len;
+          right[2].y = h;
+          right[3].x = w - len;
+
+
+          cogl_color_set_from_4f (&right[0].color, r, g, b, 1);
+          cogl_color_set_from_4f (&right[1].color, r, g, b, 1);
+          cogl_color_set_from_4f (&right[2].color, 0, 0, 0, 0);
+          cogl_color_set_from_4f (&right[3].color, 0, 0, 0, 0);
+          cogl_polygon (right, 4, TRUE);
+        }
+    }
+
+
 }
 
 static void
