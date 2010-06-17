@@ -209,9 +209,17 @@ mx_scroll_view_paint (ClutterActor *actor)
   gboolean horizontal = FALSE, vertical = FALSE;
   MxAdjustment *vadjustment = NULL, *hadjustment = NULL;
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (actor)->priv;
+  ClutterColor *color;
 
-  const gfloat r = 0.4, g = 0.4, b = 0.4;
-  const gint shadow = 10;
+  guint8 r, g, b;
+  const gint shadow = 15;
+
+  mx_stylable_get (MX_STYLABLE (actor), "background-color", &color, NULL);
+
+  r = color->red;
+  g = color->green;
+  b = color->blue;
+  clutter_color_free (color);
 
   /* MxBin will paint the child */
   CLUTTER_ACTOR_CLASS (mx_scroll_view_parent_class)->paint (actor);
@@ -259,10 +267,10 @@ mx_scroll_view_paint (ClutterActor *actor)
           top[2].y = len;
           top[3].y = len;
 
-          cogl_color_set_from_4f (&top[0].color, r, g, b, 1);
-          cogl_color_set_from_4f (&top[1].color, r, g, b, 1);
-          cogl_color_set_from_4f (&top[2].color, 0, 0, 0, 0);
-          cogl_color_set_from_4f (&top[3].color, 0, 0, 0, 0);
+          cogl_color_set_from_4ub (&top[0].color, r, g, b, 0xff);
+          cogl_color_set_from_4ub (&top[1].color, r, g, b, 0xff);
+          cogl_color_set_from_4ub (&top[2].color, 0, 0, 0, 0);
+          cogl_color_set_from_4ub (&top[3].color, 0, 0, 0, 0);
           cogl_polygon (top, 4, TRUE);
         }
 
@@ -282,10 +290,10 @@ mx_scroll_view_paint (ClutterActor *actor)
           bottom[3].x = w;
           bottom[3].y = h - len;
 
-          cogl_color_set_from_4f (&bottom[0].color, r, g, b, 1);
-          cogl_color_set_from_4f (&bottom[1].color, r, g, b, 1);
-          cogl_color_set_from_4f (&bottom[2].color, 0, 0, 0, 0);
-          cogl_color_set_from_4f (&bottom[3].color, 0, 0, 0, 0);
+          cogl_color_set_from_4ub (&bottom[0].color, r, g, b, 0xff);
+          cogl_color_set_from_4ub (&bottom[1].color, r, g, b, 0xff);
+          cogl_color_set_from_4ub (&bottom[2].color, 0, 0, 0, 0);
+          cogl_color_set_from_4ub (&bottom[3].color, 0, 0, 0, 0);
           cogl_polygon (bottom, 4, TRUE);
         }
     }
@@ -308,10 +316,10 @@ mx_scroll_view_paint (ClutterActor *actor)
           left[3].x = len;
           left[3].y = h;
 
-          cogl_color_set_from_4f (&left[0].color, r, g, b, 1);
-          cogl_color_set_from_4f (&left[1].color, r, g, b, 1);
-          cogl_color_set_from_4f (&left[2].color, 0, 0, 0, 0);
-          cogl_color_set_from_4f (&left[3].color, 0, 0, 0, 0);
+          cogl_color_set_from_4ub (&left[0].color, r, g, b, 0xff);
+          cogl_color_set_from_4ub (&left[1].color, r, g, b, 0xff);
+          cogl_color_set_from_4ub (&left[2].color, 0, 0, 0, 0);
+          cogl_color_set_from_4ub (&left[3].color, 0, 0, 0, 0);
           cogl_polygon (left, 4, TRUE);
         }
 
@@ -333,10 +341,10 @@ mx_scroll_view_paint (ClutterActor *actor)
           right[3].x = w - len;
 
 
-          cogl_color_set_from_4f (&right[0].color, r, g, b, 1);
-          cogl_color_set_from_4f (&right[1].color, r, g, b, 1);
-          cogl_color_set_from_4f (&right[2].color, 0, 0, 0, 0);
-          cogl_color_set_from_4f (&right[3].color, 0, 0, 0, 0);
+          cogl_color_set_from_4ub (&right[0].color, r, g, b, 0xff);
+          cogl_color_set_from_4ub (&right[1].color, r, g, b, 0xff);
+          cogl_color_set_from_4ub (&right[2].color, 0, 0, 0, 0);
+          cogl_color_set_from_4ub (&right[3].color, 0, 0, 0, 0);
           cogl_polygon (right, 4, TRUE);
         }
     }
