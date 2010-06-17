@@ -56,6 +56,14 @@ icon_cb (MxToggle   *toggle,
     mx_window_set_icon_name (window, "window-new");
 }
 
+static void
+resizable_cb (MxToggle     *toggle,
+              GParamSpec   *pspec,
+              ClutterStage *stage)
+{
+  clutter_stage_set_user_resizable (stage, mx_toggle_get_active (toggle));
+}
+
 int
 main (int argc, char **argv)
 {
@@ -130,6 +138,27 @@ main (int argc, char **argv)
   mx_table_add_actor_with_properties (MX_TABLE (table),
                                       label,
                                       2, 1,
+                                      "x-expand", TRUE,
+                                      "x-align", MX_ALIGN_START,
+                                      "y-fill", FALSE,
+                                      "x-fill", FALSE,
+                                      NULL);
+
+  toggle = mx_toggle_new ();
+  mx_toggle_set_active (MX_TOGGLE (toggle), TRUE);
+  label = mx_label_new_with_text ("Toggle user-resizable");
+  g_signal_connect (toggle, "notify::active",
+                    G_CALLBACK (resizable_cb), stage);
+  mx_table_add_actor_with_properties (MX_TABLE (table),
+                                      toggle,
+                                      3, 0,
+                                      "x-expand", TRUE,
+                                      "x-align", MX_ALIGN_END,
+                                      "x-fill", FALSE,
+                                      NULL);
+  mx_table_add_actor_with_properties (MX_TABLE (table),
+                                      label,
+                                      3, 1,
                                       "x-expand", TRUE,
                                       "x-align", MX_ALIGN_START,
                                       "y-fill", FALSE,
