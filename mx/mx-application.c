@@ -666,7 +666,7 @@ mx_application_new (gint                *argc,
   MxApplication *app;
 
   /* initialise clutter and the type system */
-  clutter_init (argc, argv);
+  clutter_init_with_args (argc, argv, name, NULL, NULL, NULL);
 
   mx_set_locale ();
 
