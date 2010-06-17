@@ -250,28 +250,88 @@ mx_viewport_allocate (ClutterActor          *self,
                       ClutterAllocationFlags flags)
 {
   MxViewportPrivate *priv = MX_VIEWPORT (self)->priv;
+  MxPadding padding;
   ClutterActor *child;
-  gfloat natural_width, natural_height;
+  gfloat width, height;
   gfloat available_width, available_height;
 
   /* Chain up. */
   CLUTTER_ACTOR_CLASS (mx_viewport_parent_class)-> allocate (self, box, flags);
 
-  available_width = box->x2 - box->x1;
-  available_height = box->y2 - box->y1;
+  mx_widget_get_padding (MX_WIDGET (self), &padding);
+  available_width = box->x2 - box->x1 - padding.left - padding.right;
+  available_height = box->y2 - box->y1 - padding.top - padding.bottom;
 
   child = mx_bin_get_child (MX_BIN (self));
 
   if (child)
     {
-      clutter_actor_allocate_preferred_size (child, flags);
+      gfloat natural_width, natural_height;
+      ClutterActorBox child_box;
+      MxAlign x_align, y_align;
+      gboolean x_fill, y_fill;
+
       clutter_actor_get_preferred_size (child, NULL, NULL, &natural_width,
                                         &natural_height);
+      mx_bin_get_fill (MX_BIN (self), &x_fill, &y_fill);
+
+      if (x_fill && (available_width > natural_width))
+        width = available_width;
+      else
+        width = natural_width;
+
+      if (y_fill && (available_height > natural_height))
+        height = available_height;
+      else
+        height = natural_height;
+
+      mx_bin_get_alignment (MX_BIN (self), &x_align, &y_align);
+
+      if (!x_fill && width < available_width)
+        {
+          switch (x_align)
+            {
+            case MX_ALIGN_START:
+              child_box.x1 = padding.left;
+              break;
+            case MX_ALIGN_MIDDLE:
+              child_box.x1 = padding.left + (available_width - width) / 2.f;
+              break;
+            case MX_ALIGN_END:
+              child_box.x1 = box->x2 - box->x1 - padding.right - width;
+              break;
+            }
+        }
+      else
+        child_box.x1 = padding.left;
+
+      if (!y_fill && height < available_height)
+        {
+          switch (y_align)
+            {
+            case MX_ALIGN_START:
+              child_box.y1 = padding.top;
+              break;
+            case MX_ALIGN_MIDDLE:
+              child_box.y1 = padding.top + (available_height - height) / 2.f;
+              break;
+            case MX_ALIGN_END:
+              child_box.y1 = box->y2 - box->y1 - padding.bottom - height;
+              break;
+            }
+        }
+      else
+        child_box.y1 = padding.top;
+
+      child_box.x2 = child_box.x1 + width;
+      child_box.y2 = child_box.y1 + height;
+
+      clutter_actor_allocate (child, &child_box, flags);
     }
   else
     {
-      natural_height = 0;
-      natural_width = 0;
+      width = 0;
+      height = 0;
     }
 
 
@@ -284,7 +344,7 @@ mx_viewport_allocate (ClutterActor          *self,
           g_object_set (G_OBJECT (priv->hadjustment),
                         "lower", 0.0,
                         "page-size", available_width,
-                        "upper", natural_width,
+                        "upper", width,
                         "page-increment", available_width / 3,
                         "step-increment", available_width / 12,
                         NULL);
@@ -295,7 +355,7 @@ mx_viewport_allocate (ClutterActor          *self,
           g_object_set (G_OBJECT (priv->vadjustment),
                         "lower", 0.0,
                         "page-size", available_height,
-                        "upper", natural_height,
+                        "upper", height,
                         "page-increment", available_height / 3,
                         "step-increment", available_height / 12,
                         NULL);
@@ -513,8 +573,12 @@ mx_viewport_init (MxViewport *self)
 
   self->priv->sync_adjustments = TRUE;
 
-  g_object_set (G_OBJECT (self), "reactive", FALSE,
-                "clip-to-allocation", TRUE, NULL);
+  g_object_set (G_OBJECT (self),
+                "reactive", FALSE,
+                "clip-to-allocation", TRUE,
+                "x-align", MX_ALIGN_START,
+                "y-align", MX_ALIGN_START,
+                NULL);
 }
 
 ClutterActor *
