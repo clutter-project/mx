@@ -721,6 +721,7 @@ mx_window_captured_event_cb (ClutterActor *actor,
       /* Check if we're over the resize handle */
       if ((priv->is_moving == -1) && priv->has_toolbar && !priv->small_screen &&
           !clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)) &&
+          clutter_stage_get_user_resizable (CLUTTER_STAGE (actor)) &&
           priv->resize_grip)
         {
           gint x, y;
@@ -898,7 +899,8 @@ mx_window_fullscreen_set_cb (ClutterStage *stage,
     {
       if (priv->small_screen)
         priv->has_mapped = FALSE;
-      else if (priv->resize_grip && priv->has_toolbar)
+      else if (priv->resize_grip && priv->has_toolbar &&
+               clutter_stage_get_user_resizable (stage))
         {
           clutter_actor_show (priv->resize_grip);
           if (priv->child)
@@ -946,13 +948,38 @@ mx_window_actor_removed_cb (ClutterContainer *container,
 }
 
 static void
+mx_window_user_resizable_cb (ClutterStage *stage,
+                             GParamSpec   *pspec,
+                             MxWindow     *self)
+{
+  MxWindowPrivate *priv = self->priv;
+
+  if (!clutter_stage_get_user_resizable (stage))
+    clutter_actor_hide (priv->resize_grip);
+  else
+    {
+      if (!clutter_stage_get_fullscreen (stage) &&
+          !priv->small_screen &&
+          priv->has_toolbar)
+        {
+          clutter_actor_show (priv->resize_grip);
+          if (priv->child)
+            clutter_actor_raise (priv->resize_grip, priv->child);
+        }
+    }
+}
+
+static void
 mx_window_constructed (GObject *object)
 {
   MxWindow *self = MX_WINDOW (object);
   MxWindowPrivate *priv = self->priv;
 
   if (!priv->stage)
-    priv->stage = clutter_stage_new ();
+    {
+      priv->stage = clutter_stage_new ();
+      clutter_stage_set_user_resizable ((ClutterStage *)priv->stage, TRUE);
+    }
   g_object_add_weak_pointer (G_OBJECT (priv->stage),
                              (gpointer *)&priv->stage);
   g_object_set_qdata (G_OBJECT (priv->stage), window_quark, self);
@@ -968,6 +995,7 @@ mx_window_constructed (GObject *object)
   clutter_container_add_actor (CLUTTER_CONTAINER (priv->stage),
                                priv->resize_grip);
   if (clutter_stage_get_fullscreen (CLUTTER_STAGE (priv->stage)) ||
+      !clutter_stage_get_user_resizable (CLUTTER_STAGE (priv->stage)) ||
       !priv->has_toolbar)
     clutter_actor_hide (priv->resize_grip);
   g_object_add_weak_pointer (G_OBJECT (priv->resize_grip),
@@ -1002,6 +1030,8 @@ mx_window_constructed (GObject *object)
                     G_CALLBACK (mx_window_actor_added_cb), self);
   g_signal_connect (priv->stage, "actor-removed",
                     G_CALLBACK (mx_window_actor_removed_cb), self);
+  g_signal_connect (priv->stage, "notify::user-resizable",
+                    G_CALLBACK (mx_window_user_resizable_cb), self);
 
   g_object_set (G_OBJECT (priv->stage), "use-alpha", TRUE, NULL);
 }
@@ -1230,7 +1260,8 @@ mx_window_set_has_toolbar (MxWindow *window,
       else
         {
           clutter_actor_show (priv->toolbar);
-          clutter_actor_show (priv->resize_grip);
+          if (clutter_stage_get_user_resizable ((ClutterStage *)priv->stage))
+            clutter_actor_show (priv->resize_grip);
         }
 
       g_object_notify (G_OBJECT (window), "has-toolbar");
@@ -1384,7 +1415,8 @@ mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
                                   priv->last_width,
                                   priv->last_height);
 
-          if (priv->resize_grip && priv->has_toolbar)
+          if (priv->resize_grip && priv->has_toolbar &&
+              clutter_stage_get_user_resizable (CLUTTER_STAGE (priv->stage)))
             {
               clutter_actor_show (priv->resize_grip);
               if (priv->child)
