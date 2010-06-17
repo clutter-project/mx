@@ -206,7 +206,6 @@ mx_scroll_view_paint (ClutterActor *actor)
 {
   ClutterActorBox box;
   gfloat w, h;
-  gboolean horizontal = FALSE, vertical = FALSE;
   MxAdjustment *vadjustment = NULL, *hadjustment = NULL;
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (actor)->priv;
   ClutterColor *color;
@@ -236,7 +235,6 @@ mx_scroll_view_paint (ClutterActor *actor)
       clutter_actor_paint (priv->hscroll);
       clutter_actor_get_allocation_box (priv->hscroll, &box);
       h -= (box.y2 - box.y1);
-      horizontal = TRUE;
 
       hadjustment = mx_scroll_bar_get_adjustment (MX_SCROLL_BAR(priv->hscroll));
     }
@@ -245,14 +243,13 @@ mx_scroll_view_paint (ClutterActor *actor)
       clutter_actor_paint (priv->vscroll);
       clutter_actor_get_allocation_box (priv->vscroll, &box);
       w -= (box.x2 - box.x1);
-      vertical = TRUE;
       vadjustment = mx_scroll_bar_get_adjustment (MX_SCROLL_BAR(priv->vscroll));
     }
 
   /* set up the matrial using dummy set source call */
   cogl_set_source_color4ub (0, 0, 0, 0);
 
-  if (vertical)
+  if (vadjustment)
     {
       gdouble len;
       if ((len = mx_adjustment_get_value (vadjustment)) > 0)
@@ -299,7 +296,7 @@ mx_scroll_view_paint (ClutterActor *actor)
     }
 
 
-  if (horizontal)
+  if (hadjustment)
     {
       gdouble len;
 
