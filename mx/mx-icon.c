@@ -62,6 +62,8 @@ struct _MxIconPrivate
   gint          icon_size;
 };
 
+static void mx_icon_update (MxIcon *icon);
+
 static void
 mx_stylable_iface_init (MxStylableIface *iface)
 {
@@ -145,14 +147,30 @@ mx_icon_get_property (GObject    *gobject,
 }
 
 static void
+mx_icon_notify_theme_name_cb (MxIconTheme *theme,
+                              GParamSpec  *pspec,
+                              MxIcon      *self)
+{
+  mx_icon_update (self);
+}
+
+static void
 mx_icon_dispose (GObject *gobject)
 {
+  MxIconTheme *theme;
   MxIconPrivate *priv = MX_ICON (gobject)->priv;
 
   if (priv->icon_texture)
     {
       clutter_actor_destroy (priv->icon_texture);
       priv->icon_texture = NULL;
+    }
+
+  if ((theme = mx_icon_theme_get_default ()))
+    {
+      g_signal_handlers_disconnect_by_func (mx_icon_theme_get_default (),
+                                            mx_icon_notify_theme_name_cb,
+                                            gobject);
     }
 
   G_OBJECT_CLASS (mx_icon_parent_class)->dispose (gobject);
@@ -339,7 +357,12 @@ mx_icon_update (MxIcon *icon)
 {
   MxIconPrivate *priv = icon->priv;
 
-  priv->is_content_image = FALSE;
+  if (priv->is_content_image)
+    {
+      priv->is_content_image = FALSE;
+      g_signal_connect (mx_icon_theme_get_default (), "notify::theme-name",
+                        G_CALLBACK (mx_icon_notify_theme_name_cb), icon);
+    }
 
   /* Get rid of the old one */
   if (priv->icon_texture)
@@ -356,9 +379,8 @@ mx_icon_update (MxIcon *icon)
         mx_icon_theme_lookup_texture (theme, priv->icon_name, priv->icon_size);
       if (priv->icon_texture)
         clutter_actor_set_parent (priv->icon_texture, CLUTTER_ACTOR (icon));
-      /* else TODO: Consider loading a fall-back icon or emitting an
-       * error signal.
-       */
+      else
+        g_warning ("Failed to lookup icon '%s'", priv->icon_name);
     }
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (icon));
@@ -389,6 +411,9 @@ mx_icon_style_changed_cb (MxWidget *widget)
       GError *error = NULL;
 
       priv->is_content_image = TRUE;
+      g_signal_handlers_disconnect_by_func (mx_icon_theme_get_default (),
+                                            mx_icon_notify_theme_name_cb,
+                                            self);
 
       if (priv->icon_texture)
         clutter_actor_destroy (priv->icon_texture);
@@ -444,6 +469,10 @@ mx_icon_init (MxIcon *self)
 
   /* make sure we are not reactive */
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), FALSE);
+
+  /* Reload the icon when the theme changes */
+  g_signal_connect (mx_icon_theme_get_default (), "notify::theme-name",
+                    G_CALLBACK (mx_icon_notify_theme_name_cb), self);
 }
 
 /**
