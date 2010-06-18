@@ -318,6 +318,18 @@ mx_icon_theme_load_fallbacks (MxIconTheme *theme,
 }
 
 static void
+mx_icon_theme_changed_cb (MxSettings  *settings,
+                          GParamSpec  *pspec,
+                          MxIconTheme *self)
+{
+  gchar *theme;
+
+  g_object_get (settings, "icon-theme", &theme, NULL);
+  mx_icon_theme_set_theme_name (self, theme);
+  g_free (theme);
+}
+
+static void
 mx_icon_theme_init (MxIconTheme *self)
 {
   gint i;
@@ -370,11 +382,10 @@ mx_icon_theme_init (MxIconTheme *self)
     mx_icon_theme_set_theme_name (self, theme);
   else
     {
-      gchar *default_theme;
-      g_object_get (mx_settings_get_default (), "icon-theme", &default_theme,
-                    NULL);
-      mx_icon_theme_set_theme_name (self, default_theme);
-      g_free (default_theme);
+      MxSettings *settings = mx_settings_get_default ();
+      g_signal_connect (settings, "notify::icon-theme",
+                        G_CALLBACK (mx_icon_theme_changed_cb), self);
+      mx_icon_theme_changed_cb (settings, NULL, self);
     }
 
 }
