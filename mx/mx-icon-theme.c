@@ -258,6 +258,65 @@ mx_icon_theme_hash (GThemedIcon *icon)
   return g_str_hash (names[0]);
 }
 
+static gboolean
+mx_icon_theme_find_name_cb (gpointer key,
+                            gpointer value,
+                            gpointer user_data)
+{
+  gchar *name1 = (gchar *)value;
+  gchar *name2 = (gchar *)user_data;
+  return g_str_equal (name1, name2);
+}
+
+static void
+mx_icon_theme_load_fallbacks (MxIconTheme *theme,
+                              GKeyFile    *theme_file,
+                              gboolean     root)
+{
+  MxIconThemePrivate *priv = theme->priv;
+  gchar *fallbacks = g_key_file_get_string (theme_file,
+                                            "Icon Theme",
+                                            "Inherits",
+                                            NULL);
+
+  /* If this isn't the root theme, add it to the list of fallbacks */
+  if (!root)
+    priv->theme_fallbacks = g_list_append (priv->theme_fallbacks,
+                                           theme_file);
+
+  /* Check the list of fallbacks in this theme and add any that we haven't
+   * already.
+   */
+  if (fallbacks)
+    {
+      gint i = 0;
+      gint fallbacks_len = strlen (fallbacks);
+      while (i < fallbacks_len)
+        {
+          gchar *fallback = fallbacks + i;
+          i += strlen (fallback) + 1;
+
+          /* Skip hicolor, we keep it loaded all the time */
+          if (g_str_equal (fallback, "hicolor"))
+            continue;
+
+          /* Skip if we've already loaded this theme */
+          if (g_hash_table_find (priv->theme_path_hash,
+                                 mx_icon_theme_find_name_cb,
+                                 fallback))
+            continue;
+
+          /* Load this theme and store itself and its fallbacks in the
+           * list of fallbacks.
+           */
+          theme_file = mx_icon_theme_load_theme (theme, fallback);
+          if (theme_file)
+            mx_icon_theme_load_fallbacks (theme, theme_file, FALSE);
+        }
+      g_free (fallbacks);
+    }
+}
+
 static void
 mx_icon_theme_init (MxIconTheme *self)
 {
@@ -383,7 +442,6 @@ void
 mx_icon_theme_set_theme_name (MxIconTheme *theme,
                               const gchar *theme_name)
 {
-  gchar *fallbacks;
   MxIconThemePrivate *priv;
 
   g_return_if_fail (MX_IS_ICON_THEME (theme));
@@ -427,32 +485,7 @@ mx_icon_theme_set_theme_name (MxIconTheme *theme,
     }
 
   /* Load fallbacks */
-  fallbacks = g_key_file_get_string (priv->theme_file,
-                                     "Icon Theme",
-                                     "Inherits",
-                                     NULL);
-  if (fallbacks)
-    {
-      gint i = 0;
-      gint fallbacks_len = strlen (fallbacks);
-      while (i < fallbacks_len)
-        {
-          GKeyFile *theme_file;
-
-          gchar *fallback = fallbacks + i;
-          i += strlen (fallback) + 1;
-
-          /* Skip hicolor, we keep it loaded all the time */
-          if (g_str_equal (fallback, "hicolor"))
-            continue;
-
-          theme_file = mx_icon_theme_load_theme (theme, fallback);
-          if (theme_file)
-            priv->theme_fallbacks = g_list_append (priv->theme_fallbacks,
-                                                   theme_file);
-        }
-      g_free (fallbacks);
-    }
+  mx_icon_theme_load_fallbacks (theme, priv->theme_file, TRUE);
 
   g_object_notify (G_OBJECT (theme), "theme-name");
 }
