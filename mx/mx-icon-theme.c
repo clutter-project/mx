@@ -290,6 +290,9 @@ mx_icon_theme_load_fallbacks (MxIconTheme *theme,
     {
       gint i = 0;
       gint fallbacks_len = strlen (fallbacks);
+
+      g_strdelimit (fallbacks, ",", '\0');
+
       while (i < fallbacks_len)
         {
           gchar *fallback = fallbacks + i;
