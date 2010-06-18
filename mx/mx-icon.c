@@ -377,10 +377,16 @@ mx_icon_update (MxIcon *icon)
       MxIconTheme *theme = mx_icon_theme_get_default ();
       priv->icon_texture = (ClutterActor *)
         mx_icon_theme_lookup_texture (theme, priv->icon_name, priv->icon_size);
+
+      /* If the icon is missing, use the image-missing icon */
+      if (!priv->icon_texture)
+        priv->icon_texture = (ClutterActor *)
+          mx_icon_theme_lookup_texture (theme,
+                                        "image-missing",
+                                        priv->icon_size);
+
       if (priv->icon_texture)
         clutter_actor_set_parent (priv->icon_texture, CLUTTER_ACTOR (icon));
-      else
-        g_warning ("Failed to lookup icon '%s'", priv->icon_name);
     }
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (icon));
