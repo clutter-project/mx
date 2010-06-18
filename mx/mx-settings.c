@@ -140,6 +140,58 @@ mx_settings_finalize (GObject *object)
 }
 
 static void
+xsettings_notify_func (const char       *name,
+                       XSettingsAction   action,
+                       XSettingsSetting *setting,
+                       void             *cb_data);
+static ClutterX11FilterReturn
+mx_settings_event_filter (XEvent       *xev,
+                          ClutterEvent *cev,
+                          void         *data);
+
+static void
+mx_settings_constructed (GObject *object)
+{
+  MxSettings *self = (MxSettings*) object;
+
+  /* setup xsettings client */
+  /* This needs to be done after the construction of the object
+   * to prevent recursion because creating a new xsettings client will
+   * cause the notify function to be called, which in turn may cause the
+   * style-changed signal to be emitted on MxStyle. Handlers of the
+   * style-changed signal may need an MxSettings object.
+   */
+  self->priv->client = xsettings_client_new (clutter_x11_get_default_display (),
+                                             clutter_x11_get_default_screen (),
+                                             xsettings_notify_func,
+                                             NULL,
+                                             self);
+
+  clutter_x11_add_filter (mx_settings_event_filter, self);
+}
+
+static GObject *
+mx_settings_constructor (GType type,
+                         guint n_construct_params,
+                         GObjectConstructParam *construct_params)
+{
+  static MxSettings *the_singleton = NULL;
+  GObject *object;
+
+  if (!the_singleton)
+    {
+      object = G_OBJECT_CLASS (mx_settings_parent_class)->constructor (type,
+                                                           n_construct_params,
+                                                           construct_params);
+      the_singleton = MX_SETTINGS (object);
+    }
+  else
+    object = (G_OBJECT (the_singleton));
+
+  return object;
+}
+
+static void
 mx_settings_class_init (MxSettingsClass *klass)
 {
   GParamSpec *pspec;
@@ -151,6 +203,8 @@ mx_settings_class_init (MxSettingsClass *klass)
   object_class->set_property = mx_settings_set_property;
   object_class->dispose = mx_settings_dispose;
   object_class->finalize = mx_settings_finalize;
+  object_class->constructed = mx_settings_constructed;
+  object_class->constructor = mx_settings_constructor;
 
   pspec = g_param_spec_string ("icon-theme",
                                "Icon Theme",
@@ -237,15 +291,6 @@ mx_settings_init (MxSettings *self)
   self->priv->long_press_timeout = 500;
   self->priv->icon_theme = g_strdup ("hicolor");
   self->priv->font_name = g_strdup ("Sans 10");
-
-  /* setup xsettings client */
-  self->priv->client = xsettings_client_new (clutter_x11_get_default_display (),
-                                             clutter_x11_get_default_screen (),
-                                             xsettings_notify_func,
-                                             NULL,
-                                             self);
-
-  clutter_x11_add_filter (mx_settings_event_filter, self);
 }
 
 /**
@@ -258,10 +303,5 @@ mx_settings_init (MxSettings *self)
 MxSettings *
 mx_settings_get_default (void)
 {
-  static MxSettings *settings = NULL;
-
-  if (settings)
-    return settings;
-  else
-    return settings = g_object_new (MX_TYPE_SETTINGS, NULL);
+  return g_object_new (MX_TYPE_SETTINGS, NULL);
 }
