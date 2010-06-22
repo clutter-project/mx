@@ -371,8 +371,8 @@ mx_focus_manager_push_focus (MxFocusManager *manager,
  * Moves the current focus in the given direction.
  */
 void
-mx_focus_manager_move_focus  (MxFocusManager   *manager,
-                              MxFocusDirection  direction)
+mx_focus_manager_move_focus (MxFocusManager   *manager,
+                             MxFocusDirection  direction)
 {
   MxFocusable *old_focus;
   MxFocusManagerPrivate *priv;
@@ -391,7 +391,7 @@ mx_focus_manager_move_focus  (MxFocusManager   *manager,
   if (!priv->focused)
     {
       /* If we're going next or previous, we wrap around, otherwise
-       * we lose focus.
+       * re-focus the last actor.
        */
       switch (direction)
         {
@@ -414,6 +414,13 @@ mx_focus_manager_move_focus  (MxFocusManager   *manager,
           break;
 
         default:
+          /* re-focus the original */
+          if (old_focus)
+            priv->focused = mx_focusable_accept_focus (old_focus, 0);
+          else
+            mx_focus_manager_ensure_focused (manager,
+                                             CLUTTER_STAGE (priv->stage),
+                                             MX_FOCUS_HINT_FIRST);
           break;
         }
     }
