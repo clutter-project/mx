@@ -74,7 +74,6 @@ source_h_priv = \
 	$(top_srcdir)/mx/mx-path-bar-button.h	\
 	$(top_srcdir)/mx/mx-progress-bar-fill.h	\
 	$(top_srcdir)/mx/mx-private.h		\
-	$(top_srcdir)/mx/mx-subtexture.h	\
 	$(top_srcdir)/mx/xsettings-client.h	\
 	$(top_srcdir)/mx/xsettings-common.h	\
 	$(NULL)
