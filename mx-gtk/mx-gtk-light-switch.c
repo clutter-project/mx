@@ -212,19 +212,15 @@ draw (GtkWidget *lightswitch,
   GtkStateType state_type;
 
   priv = MX_GTK_LIGHT_SWITCH_GET_PRIVATE (lightswitch);
-  style = lightswitch->style;
-#if GTK_CHECK_VERSION (2,19,5)
+  style = gtk_widget_get_style (lightswitch);
   state_type = gtk_widget_get_state (lightswitch);
-#else
-  state_type = GTK_WIDGET_STATE (lightswitch);
-#endif
 
   on_label_x = (priv->trough_width / 5) * 0.75;
   off_label_x = (priv->trough_width / 8) * 5;
 
   /* draw the trough */
   gtk_paint_box (style,
-                 lightswitch->window,
+                 gtk_widget_get_window (lightswitch),
                  (state_type != GTK_STATE_INSENSITIVE && priv->active)
                  ? GTK_STATE_SELECTED : state_type,
                  GTK_SHADOW_IN,
@@ -298,12 +294,8 @@ draw (GtkWidget *lightswitch,
 #endif
   /* draw the switch itself */
   gtk_paint_box (style,
-                 lightswitch->window,
-#if GTK_CHECK_VERSION (2,19,5)
+                 gtk_widget_get_window (lightswitch),
                  gtk_widget_get_state (lightswitch),
-#else
-                 GTK_WIDGET_STATE (lightswitch),
-#endif
                  GTK_SHADOW_OUT,
                  NULL,
                  NULL,
@@ -366,7 +358,7 @@ mx_gtk_light_switch_expose (GtkWidget      *lightswitch,
                             GdkEventExpose *event)
 {
   cairo_t *cr;
-  cr = gdk_cairo_create (lightswitch->window);
+  cr = gdk_cairo_create (gtk_widget_get_window (lightswitch));
 
   cairo_rectangle (cr,
                    event->area.x,
