@@ -1,3 +1,27 @@
+1.0.3
+=====
+
+Changes since 1.0.2:
+
+ * Updated documentation
+ * Fix compilation with recent versions of GTK+
+ * Require GTK+ 2.20
+
+1.0.2
+=====
+
+Changes since 1.0.1:
+
+ * MxWidget: Move padding into the correct struct
+ * Reduce the libtool version age to indicate ABI change
+
+1.0.1
+=====
+
+Changes since 1.0.0:
+
+ * Fix GtkLightSwitch size and remove labels
+
 1.0.0
 =====
 
