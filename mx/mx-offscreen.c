@@ -350,9 +350,12 @@ mx_offscreen_ensure_buffers (MxOffscreen *offscreen)
                                             (guint)height,
                                             COGL_TEXTURE_NO_SLICING,
                                             COGL_PIXEL_FORMAT_RGBA_8888_PRE);
-      clutter_texture_set_cogl_texture (CLUTTER_TEXTURE (offscreen), texture);
+
       if (texture)
-        cogl_handle_unref (texture);
+        {
+          clutter_texture_set_cogl_texture (CLUTTER_TEXTURE (offscreen), texture);
+          cogl_handle_unref (texture);
+        }
     }
 
   /* The notification of setting a texture will trigger a callback that
