@@ -551,6 +551,12 @@ _set_from_xsettings (GParamSpec *pspec,
                && G_VALUE_HOLDS_INT (value))
         {
           font_size = pango_font_description_get_size (descr) / PANGO_SCALE;
+          if (!pango_font_description_get_size_is_absolute (descr))
+            {
+              ClutterBackend *backend = clutter_get_default_backend ();
+              gdouble res = clutter_backend_get_resolution (backend);
+              font_size = font_size * res / 72.0;
+            }
           g_value_set_int (value, font_size);
           result = TRUE;
         }
@@ -910,7 +916,7 @@ mx_stylable_apply_clutter_text_attributes (MxStylable  *stylable,
   g_free (font_name);
 
   /* font size */
-  pango_font_description_set_size (descr, font_size * PANGO_SCALE);
+  pango_font_description_set_absolute_size (descr, font_size * PANGO_SCALE);
 
   /* font weight */
   switch (font_weight)

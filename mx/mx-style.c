@@ -266,7 +266,19 @@ mx_style_transform_css_value (MxStyleSheetValue *css_value,
       g_value_init (value, pspec->value_type);
 
       if (css_value->string)
-        g_value_set_int (value, atoi (css_value->string));
+        {
+          gint number = atoi (css_value->string);
+
+          if (g_str_equal (g_param_spec_get_name (pspec), "font-size") &&
+              g_str_has_suffix (css_value->string, "pt"))
+            {
+              ClutterBackend *backend = clutter_get_default_backend ();
+              gdouble res = clutter_backend_get_resolution (backend);
+              number = number * res / 72.0;
+            }
+
+          g_value_set_int (value, number);
+        }
       else
         g_value_set_int (value, 0);
     }
