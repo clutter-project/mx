@@ -545,3 +545,13 @@ MxButton.check-box:checked {
   background-image: url('checkbox-check.png');
   border-image: url('checkbox-background.png') 5;
 }
+
+MxModalFrame {
+  background-color: #000000a0;
+}
+
+MxModalFrame > MxFrame {
+  padding: 12;
+  border-image: url("entry.png") 5;
+}
+
