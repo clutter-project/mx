@@ -24,6 +24,8 @@
 void
 scroll_view_main (ClutterContainer *stage)
 {
+  gint width, height;
+  MxAdjustment *hadjust, *vadjust;
   ClutterActor *scroll, *view, *texture;
 /*
   scroll = mx_scroll_view_new ();
@@ -45,14 +47,14 @@ scroll_view_main (ClutterContainer *stage)
 
 
 
-  scroll = mx_finger_scroll_new (1);
-  mx_scroll_view_set_enable_gestures (MX_SCROLL_VIEW (scroll), TRUE);
+  scroll = mx_finger_scroll_new (MX_FINGER_SCROLL_MODE_KINETIC);
 
   clutter_container_add_actor (stage, scroll);
   clutter_actor_set_position (scroll, 10, 10);
   clutter_actor_set_size (scroll, 300, 300);
 
-  view = (ClutterActor *) mx_viewport_new ();
+  view = mx_viewport_new ();
+  mx_viewport_set_sync_adjustments (MX_VIEWPORT (view), FALSE);
   clutter_container_add_actor (CLUTTER_CONTAINER (scroll), view);
 
 
@@ -61,4 +63,22 @@ scroll_view_main (ClutterContainer *stage)
   g_object_set (texture, "repeat-x", TRUE, "repeat-y", TRUE, NULL);
   clutter_actor_set_size (texture, 1280, 1280);
 
+  clutter_texture_get_base_size (CLUTTER_TEXTURE (texture),
+                                 &width, &height);
+  mx_scrollable_get_adjustments (MX_SCROLLABLE (view),
+                                 &hadjust, &vadjust);
+  mx_adjustment_set_values (hadjust,
+                            0,
+                            0,
+                            1280,
+                            width,
+                            width * 3,
+                            300);
+  mx_adjustment_set_values (vadjust,
+                            0,
+                            0,
+                            1280,
+                            height,
+                            height * 3,
+                            300);
 }
