@@ -551,7 +551,7 @@ MxModalFrame {
 }
 
 MxModalFrame > MxFrame {
-  padding: 12;
-  border-image: url("entry.png") 5;
+  padding: 14 15;
+  border-image: url('frame-background.png') 8 9 10;
 }
 
