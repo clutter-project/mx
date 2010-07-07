@@ -46,16 +46,16 @@ struct _MxFingerScrollPrivate
 {
   /* Scroll mode */
   MxFingerScrollMode mode;
-  
+
   GArray                *motion_buffer;
   guint                  last_motion;
-  
+
   /* Variables for storing acceleration information for kinetic mode */
   ClutterTimeline       *deceleration_timeline;
   gfloat            dx;
   gfloat            dy;
   gdouble           decel_rate;
-  
+
   /* Variables to fade in/out scroll-bars */
   //ClutterEffectTemplate *template;
   ClutterTimeline       *hscroll_timeline;
@@ -73,7 +73,7 @@ mx_finger_scroll_get_property (GObject *object, guint property_id,
                                  GValue *value, GParamSpec *pspec)
 {
   MxFingerScrollPrivate *priv = MX_FINGER_SCROLL (object)->priv;
-  
+
   switch (property_id)
     {
     case PROP_MODE :
@@ -95,7 +95,7 @@ mx_finger_scroll_set_property (GObject *object, guint property_id,
                                  const GValue *value, GParamSpec *pspec)
 {
   MxFingerScrollPrivate *priv = MX_FINGER_SCROLL (object)->priv;
-  
+
   switch (property_id)
     {
     case PROP_MODE :
@@ -126,14 +126,14 @@ mx_finger_scroll_dispose (GObject *object)
       g_object_unref (priv->deceleration_timeline);
       priv->deceleration_timeline = NULL;
     }
-  
+
   if (priv->hscroll_timeline)
     {
       clutter_timeline_stop (priv->hscroll_timeline);
       g_object_unref (priv->hscroll_timeline);
       priv->hscroll_timeline = NULL;
     }
-  
+
   if (priv->vscroll_timeline)
     {
       clutter_timeline_stop (priv->vscroll_timeline);
@@ -156,7 +156,7 @@ mx_finger_scroll_finalize (GObject *object)
   MxFingerScrollPrivate *priv = MX_FINGER_SCROLL (object)->priv;
 
   g_array_free (priv->motion_buffer, TRUE);
-  
+
   G_OBJECT_CLASS (mx_finger_scroll_parent_class)->finalize (object);
 }
 
@@ -210,7 +210,7 @@ motion_event_cb (ClutterActor *actor,
                  MxFingerScroll *scroll)
 {
   gfloat x, y;
-  
+
   MxFingerScrollPrivate *priv = scroll->priv;
 
   if (clutter_actor_transform_stage_point (actor,
@@ -221,12 +221,12 @@ motion_event_cb (ClutterActor *actor,
       MxFingerScrollMotion *motion;
       ClutterActor *child =
         mx_bin_get_child (MX_BIN (scroll));
-      
+
       if (child)
         {
           gdouble dx, dy;
           MxAdjustment *hadjust, *vadjust;
-          
+
           mx_scrollable_get_adjustments (MX_SCROLLABLE (child),
                                            &hadjust,
                                            &vadjust);
@@ -235,11 +235,11 @@ motion_event_cb (ClutterActor *actor,
                                    MxFingerScrollMotion, priv->last_motion);
           dx = (motion->x - x) + mx_adjustment_get_value (hadjust);
           dy = (motion->y - y) + mx_adjustment_get_value (vadjust);
-          
+
           mx_adjustment_set_value (hadjust, dx);
           mx_adjustment_set_value (vadjust, dy);
         }
-      
+
       priv->last_motion ++;
       if (priv->last_motion == priv->motion_buffer->len)
         {
@@ -247,7 +247,7 @@ motion_event_cb (ClutterActor *actor,
           g_array_set_size (priv->motion_buffer, priv->last_motion);
           priv->last_motion --;
         }
-      
+
       motion = &g_array_index (priv->motion_buffer,
                                MxFingerScrollMotion, priv->last_motion);
       motion->x = x;
@@ -275,14 +275,14 @@ show_scrollbars (MxFingerScroll *scroll, gboolean show)
 {
   //ClutterActor *hscroll, *vscroll;
   MxFingerScrollPrivate *priv = scroll->priv;
-  
+
   /* Stop current timelines */
   if (priv->hscroll_timeline)
     {
       clutter_timeline_stop (priv->hscroll_timeline);
       g_object_unref (priv->hscroll_timeline);
     }
-  
+
   if (priv->vscroll_timeline)
     {
       clutter_timeline_stop (priv->vscroll_timeline);
@@ -291,7 +291,7 @@ show_scrollbars (MxFingerScroll *scroll, gboolean show)
 
   //hscroll = mx_scroll_view_get_hscroll_bar (MX_SCROLL_VIEW (scroll));
   //vscroll = mx_scroll_view_get_vscroll_bar (MX_SCROLL_VIEW (scroll));
-  
+
   /* Create new ones */
   /*
   if (!CLUTTER_ACTOR_IS_REACTIVE (hscroll))
@@ -316,38 +316,38 @@ static void
 clamp_adjustments (MxFingerScroll *scroll)
 {
   ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
-  
+
   if (child)
     {
       guint fps, n_frames;
       MxAdjustment *hadj, *vadj;
       gboolean snap;
-      
+
       mx_scrollable_get_adjustments (MX_SCROLLABLE (child),
                                        &hadj, &vadj);
-      
+
       /* FIXME: Hard-coded value here */
       fps = clutter_get_default_frame_rate ();
       n_frames = fps / 6;
-      
+
       snap = FALSE;
       /*
       if (mx_adjustment_get_elastic (hadj))
         snap = !mx_adjustment_clamp (hadj, TRUE, n_frames, fps);
         */
-      
+
       /* Snap to the nearest step increment on hadjustment */
       if (snap)
         {
           gdouble d, value, lower, step_increment;
-          
+
           mx_adjustment_get_values (hadj, &value, &lower, NULL,
                                       &step_increment, NULL, NULL);
           d = (rint ((value - lower) / step_increment) *
               step_increment) + lower;
           mx_adjustment_set_value (hadj, d);
         }
-      
+
       snap = FALSE;
       /*
       if (mx_adjustment_get_elastic (vadj))
@@ -358,7 +358,7 @@ clamp_adjustments (MxFingerScroll *scroll)
       if (snap)
         {
           gdouble d, value, lower, step_increment;
-          
+
           mx_adjustment_get_values (vadj, &value, &lower, NULL,
                                       &step_increment, NULL, NULL);
           d = (rint ((value - lower) / step_increment) *
@@ -392,7 +392,7 @@ deceleration_new_frame_cb (ClutterTimeline *timeline,
       MxAdjustment *hadjust, *vadjust;
       gint i;
       gboolean stop = TRUE;
-      
+
       mx_scrollable_get_adjustments (MX_SCROLLABLE (child),
                                        &hadjust,
                                        &vadjust);
@@ -411,14 +411,14 @@ deceleration_new_frame_cb (ClutterTimeline *timeline,
           /*
         }
         */
-      
+
       /* Check if we've hit the upper or lower bounds and stop the timeline */
       mx_adjustment_get_values (hadjust, &value, &lower, &upper,
                                 NULL, NULL, &page_size);
       if (((priv->dx > 0) && (value < upper - page_size)) ||
           ((priv->dx < 0) && (value > lower)))
         stop = FALSE;
-      
+
       if (stop)
         {
           mx_adjustment_get_values (vadjust, &value, &lower, &upper,
@@ -427,7 +427,7 @@ deceleration_new_frame_cb (ClutterTimeline *timeline,
               ((priv->dy < 0) && (value > lower)))
             stop = FALSE;
         }
-      
+
       if (stop)
         {
           clutter_timeline_stop (timeline);
@@ -447,20 +447,20 @@ button_release_event_cb (ClutterActor *actor,
 
   if (event->button != 1)
     return FALSE;
-  
+
   g_signal_handlers_disconnect_by_func (actor,
                                         motion_event_cb,
                                         scroll);
   g_signal_handlers_disconnect_by_func (actor,
                                         button_release_event_cb,
                                         scroll);
-  
+
   clutter_ungrab_pointer ();
 
   if ((priv->mode == MX_FINGER_SCROLL_MODE_KINETIC) && (child))
     {
       gfloat x, y;
-      
+
       if (clutter_actor_transform_stage_point (actor, event->x, event->y, &x,
                                                &y))
         {
@@ -469,10 +469,10 @@ button_release_event_cb (ClutterActor *actor,
           MxAdjustment *hadjust, *vadjust;
           glong time_diff;
           gint i;
-          
+
           /* Get time delta */
           g_get_current_time (&release_time);
-          
+
           /* Get average position/time of last x mouse events */
           priv->last_motion ++;
           x_origin = y_origin = 0;
@@ -481,7 +481,7 @@ button_release_event_cb (ClutterActor *actor,
             {
               MxFingerScrollMotion *motion =
                 &g_array_index (priv->motion_buffer, MxFingerScrollMotion, i);
-              
+
               /* FIXME: This doesn't guard against overflows - Should
                *        either fix that, or calculate the correct maximum
                *        value for the buffer size
@@ -495,20 +495,20 @@ button_release_event_cb (ClutterActor *actor,
           y_origin = y_origin / priv->last_motion;
           motion_time.tv_sec /= priv->last_motion;
           motion_time.tv_usec /= priv->last_motion;
-          
+
           if (motion_time.tv_sec == release_time.tv_sec)
             time_diff = release_time.tv_usec - motion_time.tv_usec;
           else
             time_diff = release_time.tv_usec +
                         (G_USEC_PER_SEC - motion_time.tv_usec);
-          
+
           /* Work out the fraction of 1/60th of a second that has elapsed */
           frac = (time_diff/1000.0) / (1000.0/60.0);
-          
+
           /* See how many units to move in 1/60th of a second */
           priv->dx = (x_origin - x) / frac;
           priv->dy = (y_origin - y) / frac;
-          
+
           /* Get adjustments to do step-increment snapping */
           mx_scrollable_get_adjustments (MX_SCROLLABLE (child),
                                            &hadjust,
@@ -518,9 +518,9 @@ button_release_event_cb (ClutterActor *actor,
               ABS(priv->dy) > 1)
             {
               gdouble value, lower, step_increment, d, a, x, y, n;
-              
+
               /* TODO: Convert this all to fixed point? */
-              
+
               /* We want n, where x / y^n < z,
                * x = Distance to move per frame
                * y = Deceleration rate
@@ -555,7 +555,7 @@ button_release_event_cb (ClutterActor *actor,
                *
                * x = d / a
                */
-              
+
               /* Get adjustments, work out y^n */
               a = (1.0 - 1.0 / pow (y, n + 1)) / (1.0 - 1.0 / y);
 
@@ -580,25 +580,25 @@ button_release_event_cb (ClutterActor *actor,
           else
             {
               gdouble value, lower, step_increment, d, a, y;
-              
+
               /* Start a short effects timeline to snap to the nearest step 
                * boundary (see equations above)
                */
               y = priv->decel_rate;
               a = (1.0 - 1.0 / pow (y, 4 + 1)) / (1.0 - 1.0 / y);
-              
+
               mx_adjustment_get_values (hadjust, &value, &lower, NULL,
                                           &step_increment, NULL, NULL);
               d = ((rint ((value - lower) / step_increment) *
                     step_increment) + lower) - value;
               priv->dx = d / a;
-              
+
               mx_adjustment_get_values (vadjust, &value, &lower, NULL,
                                           &step_increment, NULL, NULL);
               d = ((rint ((value - lower) / step_increment) *
                     step_increment) + lower) - value;
               priv->dy = d / a;
-              
+
               priv->deceleration_timeline = clutter_timeline_new (4 * 60);
             }
 
@@ -613,18 +613,18 @@ button_release_event_cb (ClutterActor *actor,
 
   /* Reset motion event buffer */
   priv->last_motion = 0;
-  
+
   if (!decelerating)
     {
       show_scrollbars (scroll, FALSE);
       clamp_adjustments (scroll);
     }
-  
+
   /* Pass through events to children.
    * FIXME: this probably breaks click-count.
    */
   clutter_event_put ((ClutterEvent *)event);
-  
+
   return TRUE;
 }
 
@@ -643,7 +643,7 @@ after_event_cb (MxFingerScroll *scroll)
                                             button_release_event_cb,
                                             scroll);
     }
-  
+
   return FALSE;
 }
 
@@ -653,34 +653,34 @@ captured_event_cb (ClutterActor     *actor,
                    MxFingerScroll *scroll)
 {
   MxFingerScrollPrivate *priv = scroll->priv;
-  
+
   if (event->type == CLUTTER_BUTTON_PRESS)
     {
       MxFingerScrollMotion *motion;
       ClutterButtonEvent *bevent = (ClutterButtonEvent *)event;
-      
+
       /* Reset motion buffer */
       priv->last_motion = 0;
       motion = &g_array_index (priv->motion_buffer, MxFingerScrollMotion, 0);
-      
+
       if ((bevent->button == 1) &&
           (clutter_actor_transform_stage_point (actor, bevent->x, bevent->y,
                                                 &motion->x, &motion->y)))
         {
           g_get_current_time (&motion->time);
-          
+
           if (priv->deceleration_timeline)
             {
               clutter_timeline_stop (priv->deceleration_timeline);
               g_object_unref (priv->deceleration_timeline);
               priv->deceleration_timeline = NULL;
             }
-          
+
           /* Fade in scroll-bars */
           show_scrollbars (scroll, TRUE);
-          
+
           clutter_grab_pointer (actor);
-          
+
           /* Add a high priority idle to check the grab after the event
            * emission is finished.
            */
@@ -688,7 +688,7 @@ captured_event_cb (ClutterActor     *actor,
                            (GSourceFunc)after_event_cb,
                            scroll,
                            NULL);
-          
+
           g_signal_connect (actor,
                             "motion-event",
                             G_CALLBACK (motion_event_cb),
@@ -699,7 +699,7 @@ captured_event_cb (ClutterActor     *actor,
                             scroll);
         }
     }
-  
+
   return FALSE;
 }
 
@@ -709,7 +709,7 @@ hscroll_notify_reactive_cb (ClutterActor     *bar,
                             MxFingerScroll *scroll)
 {
   MxFingerScrollPrivate *priv;
-  
+
   priv = scroll->priv;
   if (CLUTTER_ACTOR_IS_REACTIVE (bar))
     {
@@ -729,7 +729,7 @@ vscroll_notify_reactive_cb (ClutterActor     *bar,
                             MxFingerScroll *scroll)
 {
   MxFingerScrollPrivate *priv;
-  
+
   priv = scroll->priv;
   if (CLUTTER_ACTOR_IS_REACTIVE (bar))
     {
@@ -748,18 +748,18 @@ mx_finger_scroll_init (MxFingerScroll *self)
 {
   //ClutterActor *scrollbar;
   MxFingerScrollPrivate *priv = self->priv = FINGER_SCROLL_PRIVATE (self);
-  
+
   priv->motion_buffer = g_array_sized_new (FALSE, TRUE,
                                            sizeof (MxFingerScrollMotion), 3);
   g_array_set_size (priv->motion_buffer, 3);
   priv->decel_rate = 1.1f;
-  
+
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
   g_signal_connect (CLUTTER_ACTOR (self),
                     "captured-event",
                     G_CALLBACK (captured_event_cb),
                     self);
-  
+
   /* Make the scroll-bars unreactive and set their opacity - we'll fade them 
    * in/out when we scroll.
    * Also, hook onto notify::reactive and don't fade in/out when the bars are 
@@ -794,9 +794,9 @@ void
 mx_finger_scroll_stop (MxFingerScroll *scroll)
 {
   MxFingerScrollPrivate *priv;
-  
+
   g_return_if_fail (MX_IS_FINGER_SCROLL (scroll));
-  
+
   priv = scroll->priv;
 
   if (priv->deceleration_timeline)

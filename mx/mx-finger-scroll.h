@@ -55,7 +55,7 @@ struct _MxFingerScroll
 {
   /*< private >*/
   MxScrollView parent_instance;
-  
+
   MxFingerScrollPrivate *priv;
 };
 
