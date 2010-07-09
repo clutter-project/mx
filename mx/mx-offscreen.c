@@ -702,7 +702,7 @@ mx_offscreen_init (MxOffscreen *self)
                     G_CALLBACK (mx_offscreen_cogl_texture_notify), NULL);
 }
 
-static void
+static gboolean
 mx_offscreen_pre_paint_cb (ClutterActor *actor,
                            MxOffscreen  *offscreen)
 {
@@ -713,7 +713,7 @@ mx_offscreen_pre_paint_cb (ClutterActor *actor,
   if (!mx_offscreen_ensure_buffers (offscreen))
     {
       g_warning (G_STRLOC ": Unable to create necessary buffers");
-      return;
+      return FALSE;
     }
 
   /* Disable shaders when we paint our off-screen children */
@@ -729,6 +729,8 @@ mx_offscreen_pre_paint_cb (ClutterActor *actor,
               COGL_BUFFER_BIT_COLOR |
               COGL_BUFFER_BIT_STENCIL |
               COGL_BUFFER_BIT_DEPTH);
+
+  return TRUE;
 }
 
 static void
@@ -736,6 +738,9 @@ mx_offscreen_post_paint_cb (ClutterActor *actor,
                             MxOffscreen  *offscreen)
 {
   MxOffscreenPrivate *priv = offscreen->priv;
+
+  if (!priv->fbo)
+    return;
 
   /* Restore state */
   cogl_pop_matrix ();
@@ -893,7 +898,8 @@ mx_offscreen_update (MxOffscreen *offscreen)
                  (ClutterActor *)offscreen);
 
   if (child_owned)
-    mx_offscreen_pre_paint_cb (priv->child, offscreen);
+    if (!mx_offscreen_pre_paint_cb (priv->child, offscreen))
+      return;
 
   /* Draw actor */
   MX_OFFSCREEN_GET_CLASS (offscreen)->paint_child (offscreen);
