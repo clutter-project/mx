@@ -47,6 +47,8 @@ struct _MxOffscreenPrivate
   CoglHandle    fbo;
   CoglHandle    acc_material;
   CoglHandle    acc_fbo;
+
+  GList        *disabled_shaders;
 };
 
 enum
@@ -67,6 +69,19 @@ static void
 mx_offscreen_add (ClutterContainer *container,
                   ClutterActor     *actor)
 {
+  /* Warn and return early if the actor already has a parent.
+   * Calling mx_offscreen_set_child with an actor that is
+   * already parented will cause us to mirror that actor without
+   * parenting it, which is not the intention of the ClutterContainer
+   * interface.
+   */
+  if (clutter_actor_get_parent (actor))
+    {
+      g_warning (G_STRLOC ": Actor '%s' already has a parent",
+                 G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (actor)));
+      return;
+    }
+
   mx_offscreen_set_child (MX_OFFSCREEN (container), actor);
 }
 
@@ -75,6 +90,13 @@ mx_offscreen_remove (ClutterContainer *container,
                      ClutterActor     *actor)
 {
   MxOffscreen *self = MX_OFFSCREEN (container);
+
+  if (clutter_actor_get_parent (actor) != (ClutterActor *)container)
+    {
+      g_warning (G_STRLOC ": Actor '%s' is not parented to this container",
+                 G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (actor)));
+      return;
+    }
 
   if (self->priv->child == actor)
     mx_offscreen_set_child (self, NULL);
@@ -87,7 +109,8 @@ mx_offscreen_foreach (ClutterContainer *container,
 {
   MxOffscreenPrivate *priv = MX_OFFSCREEN (container)->priv;
 
-  if (priv->child)
+  if (priv->child &&
+      (clutter_actor_get_parent (priv->child) == (ClutterActor *)container))
     callback (priv->child, user_data);
 }
 
@@ -183,7 +206,7 @@ mx_offscreen_destroy (ClutterActor *actor)
 {
   MxOffscreenPrivate *priv = MX_OFFSCREEN (actor)->priv;
 
-  if (priv->child)
+  if (priv->child && (clutter_actor_get_parent (priv->child) == actor))
     {
       clutter_actor_destroy (priv->child);
       priv->child = NULL;
@@ -196,7 +219,12 @@ mx_offscreen_destroy (ClutterActor *actor)
 static void
 mx_offscreen_dispose (GObject *object)
 {
-  MxOffscreenPrivate *priv = MX_OFFSCREEN (object)->priv;
+  MxOffscreen *self = MX_OFFSCREEN (object);
+  MxOffscreenPrivate *priv = self->priv;
+
+  if (priv->child &&
+      (clutter_actor_get_parent (priv->child) != (ClutterActor *)self))
+    mx_offscreen_set_child (self, NULL);
 
   if (priv->fbo)
     {
@@ -282,7 +310,7 @@ mx_offscreen_allocate (ClutterActor           *actor,
 
   CLUTTER_ACTOR_CLASS (mx_offscreen_parent_class)->allocate (actor, box, flags);
 
-  if (priv->child)
+  if (priv->child && (clutter_actor_get_parent (priv->child) == actor))
     {
       ClutterActorBox child_box;
 
@@ -330,7 +358,6 @@ mx_offscreen_toggle_shaders (MxOffscreen  *offscreen,
 static gboolean
 mx_offscreen_ensure_buffers (MxOffscreen *offscreen)
 {
-#if CLUTTER_CHECK_VERSION(1,2,0)
   CoglHandle texture;
   gboolean sync_size;
   gfloat width, height;
@@ -365,7 +392,6 @@ mx_offscreen_ensure_buffers (MxOffscreen *offscreen)
   if (texture && priv->fbo)
     return TRUE;
   else
-#endif
     return FALSE;
 }
 
@@ -452,7 +478,8 @@ mx_offscreen_paint (ClutterActor *actor)
     }
   else
     {
-      if (priv->auto_update)
+      if (priv->auto_update &&
+          (clutter_actor_get_parent (priv->child) == actor))
         mx_offscreen_update (self);
 
       if (priv->acc_enabled && mx_offscreen_ensure_accumulation_buffer (self))
@@ -499,7 +526,7 @@ mx_offscreen_map (ClutterActor *actor)
 
   CLUTTER_ACTOR_CLASS (mx_offscreen_parent_class)->map (actor);
 
-  if (priv->child)
+  if (priv->child && (clutter_actor_get_parent (priv->child) == actor))
     clutter_actor_map (priv->child);
 }
 
@@ -508,7 +535,7 @@ mx_offscreen_unmap (ClutterActor *actor)
 {
   MxOffscreenPrivate *priv = MX_OFFSCREEN (actor)->priv;
 
-  if (priv->child)
+  if (priv->child && (clutter_actor_get_parent (priv->child) == actor))
     clutter_actor_unmap (priv->child);
 
   CLUTTER_ACTOR_CLASS (mx_offscreen_parent_class)->unmap (actor);
@@ -600,7 +627,6 @@ mx_offscreen_class_init (MxOffscreenClass *klass)
   g_object_class_install_property (object_class, PROP_ACC_MATERIAL, pspec);
 }
 
-#if CLUTTER_CHECK_VERSION(1,2,0)
 static void
 mx_offscreen_cogl_texture_notify (MxOffscreen *self)
 {
@@ -663,7 +689,6 @@ mx_offscreen_cogl_texture_notify (MxOffscreen *self)
 
   g_object_notify (G_OBJECT (self), "buffer");
 }
-#endif
 
 static void
 mx_offscreen_init (MxOffscreen *self)
@@ -673,10 +698,62 @@ mx_offscreen_init (MxOffscreen *self)
   priv->auto_update = TRUE;
   priv->redirect_enabled = TRUE;
 
-#if CLUTTER_CHECK_VERSION(1,2,0)
   g_signal_connect (self, "notify::cogl-texture",
                     G_CALLBACK (mx_offscreen_cogl_texture_notify), NULL);
-#endif
+}
+
+static void
+mx_offscreen_pre_paint_cb (ClutterActor *actor,
+                           MxOffscreen  *offscreen)
+{
+  CoglColor zero_colour;
+
+  MxOffscreenPrivate *priv = offscreen->priv;
+
+  if (!mx_offscreen_ensure_buffers (offscreen))
+    {
+      g_warning (G_STRLOC ": Unable to create necessary buffers");
+      return;
+    }
+
+  /* Disable shaders when we paint our off-screen children */
+  mx_offscreen_toggle_shaders (offscreen, &priv->disabled_shaders, FALSE);
+
+  /* Start drawing */
+  cogl_push_framebuffer (priv->fbo);
+  cogl_push_matrix ();
+
+  /* Clear */
+  cogl_color_set_from_4ub (&zero_colour, 0x00, 0x00, 0x00, 0x00);
+  cogl_clear (&zero_colour,
+              COGL_BUFFER_BIT_COLOR |
+              COGL_BUFFER_BIT_STENCIL |
+              COGL_BUFFER_BIT_DEPTH);
+}
+
+static void
+mx_offscreen_post_paint_cb (ClutterActor *actor,
+                            MxOffscreen  *offscreen)
+{
+  MxOffscreenPrivate *priv = offscreen->priv;
+
+  /* Restore state */
+  cogl_pop_matrix ();
+  cogl_pop_framebuffer ();
+
+  /* Re-enable shaders */
+  mx_offscreen_toggle_shaders (offscreen, &priv->disabled_shaders, TRUE);
+}
+
+static void
+mx_offscreen_queue_redraw_cb (ClutterActor *source,
+                              ClutterActor *origin,
+                              ClutterActor *offscreen)
+{
+  if (origin == offscreen)
+    return;
+
+  clutter_actor_queue_redraw (offscreen);
 }
 
 ClutterActor *
@@ -700,10 +777,27 @@ mx_offscreen_set_child (MxOffscreen *offscreen, ClutterActor *actor)
     {
       ClutterActor *old_child = g_object_ref (priv->child);
 
-      clutter_actor_unparent (priv->child);
-      priv->child = NULL;
-
-      g_signal_emit_by_name (offscreen, "actor-removed", old_child);
+      if (clutter_actor_get_parent (priv->child) ==
+          (ClutterActor *)offscreen)
+        {
+          clutter_actor_unparent (priv->child);
+          priv->child = NULL;
+          g_signal_emit_by_name (offscreen, "actor-removed", old_child);
+        }
+      else
+        {
+          g_signal_handlers_disconnect_by_func (priv->child,
+                                                mx_offscreen_pre_paint_cb,
+                                                offscreen);
+          g_signal_handlers_disconnect_by_func (priv->child,
+                                                mx_offscreen_post_paint_cb,
+                                                offscreen);
+          g_signal_handlers_disconnect_by_func (priv->child,
+                                                mx_offscreen_queue_redraw_cb,
+                                                offscreen);
+          g_object_unref (priv->child);
+          priv->child = NULL;
+        }
 
       g_object_unref (old_child);
     }
@@ -711,9 +805,25 @@ mx_offscreen_set_child (MxOffscreen *offscreen, ClutterActor *actor)
   if (actor)
     {
       priv->child = actor;
-      clutter_actor_set_parent (actor, CLUTTER_ACTOR (offscreen));
 
-      g_signal_emit_by_name (offscreen, "actor-added", actor);
+      if (!clutter_actor_get_parent (actor) &&
+          !CLUTTER_IS_STAGE (actor))
+        {
+          clutter_actor_set_parent (actor, CLUTTER_ACTOR (offscreen));
+          g_signal_emit_by_name (offscreen, "actor-added", actor);
+        }
+      else
+        {
+          g_signal_connect (priv->child, "paint",
+                            G_CALLBACK (mx_offscreen_pre_paint_cb), offscreen);
+          g_signal_connect_after (priv->child, "paint",
+                                  G_CALLBACK (mx_offscreen_post_paint_cb),
+                                  offscreen);
+          g_signal_connect (priv->child, "queue-redraw",
+                            G_CALLBACK (mx_offscreen_queue_redraw_cb),
+                            offscreen);
+          g_object_ref (priv->child);
+        }
     }
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (offscreen));
@@ -773,51 +883,23 @@ mx_offscreen_get_auto_update (MxOffscreen *offscreen)
 void
 mx_offscreen_update (MxOffscreen *offscreen)
 {
-#if CLUTTER_CHECK_VERSION(1,2,0)
-  CoglColor zero_colour;
-  GList *disabled_shaders;
-
+  gboolean child_owned;
   MxOffscreenPrivate *priv = offscreen->priv;
 
-  if (!mx_offscreen_ensure_buffers (offscreen))
-    {
-      g_warning (G_STRLOC ": Unable to create necessary buffers");
-      return;
-    }
+  if (!priv->child)
+    return;
 
-  /* Disable shaders when we paint our off-screen children */
-  mx_offscreen_toggle_shaders (offscreen, &disabled_shaders, FALSE);
+  child_owned = (clutter_actor_get_parent (priv->child) ==
+                 (ClutterActor *)offscreen);
 
-  /* Start drawing */
-  cogl_push_framebuffer (priv->fbo);
-  cogl_push_matrix ();
-
-  /* Clear */
-  cogl_color_set_from_4ub (&zero_colour, 0x00, 0x00, 0x00, 0x00);
-  cogl_clear (&zero_colour,
-              COGL_BUFFER_BIT_COLOR |
-              COGL_BUFFER_BIT_STENCIL |
-              COGL_BUFFER_BIT_DEPTH);
+  if (child_owned)
+    mx_offscreen_pre_paint_cb (priv->child, offscreen);
 
   /* Draw actor */
   MX_OFFSCREEN_GET_CLASS (offscreen)->paint_child (offscreen);
 
-  /* Restore state */
-  cogl_pop_matrix ();
-  cogl_pop_framebuffer ();
-
-  /* Re-enable shaders */
-  mx_offscreen_toggle_shaders (offscreen, &disabled_shaders, TRUE);
-
-#else
-  static gboolean warned = FALSE;
-  if (warned)
-    {
-      g_warning ("Clutter 1.2.0 is required for the offscreen actor. Consider "
-                 "using clutter_texture_new_from_actor() instead.");
-      warned = TRUE;
-    }
-#endif
+  if (child_owned)
+    mx_offscreen_post_paint_cb (priv->child, offscreen);
 }
 
 void
