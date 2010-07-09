@@ -33,12 +33,15 @@ struct _MxModalFramePrivate
 {
   guint visible          : 1;
   guint needs_allocation : 1;
-  guint in_paint         : 1;
+  guint do_paint         : 1;
 
   guint transition_time;
 
-  ClutterActor  *blur;
-  ClutterShader *shader;
+  ClutterActor    *blur;
+  ClutterShader   *shader;
+
+  ClutterTimeline *timeline;
+  ClutterAlpha    *alpha;
 };
 
 #ifdef HAVE_COGL_GLES2
@@ -156,12 +159,6 @@ mx_modal_frame_paint_cb (ClutterActor *parent,
   MxModalFrame *modal_frame = MX_MODAL_FRAME (self);
   MxModalFramePrivate *priv = modal_frame->priv;
 
-  /* The offscreen could cause recursion - we don't want to draw
-   * ourselves inside the clone, so bail out.
-   */
-  if (priv->in_paint)
-    return;
-
   if (priv->needs_allocation)
     {
       ClutterActorBox box;
@@ -173,6 +170,7 @@ mx_modal_frame_paint_cb (ClutterActor *parent,
                                   modal_frame);
     }
 
+  priv->do_paint = TRUE;
   clutter_actor_paint (self);
 }
 
@@ -255,17 +253,29 @@ mx_modal_frame_paint (ClutterActor *actor)
 {
   MxModalFramePrivate *priv = MX_MODAL_FRAME (actor)->priv;
 
-  if (priv->in_paint)
+  if (!priv->do_paint)
     return;
 
-  priv->in_paint = TRUE;
+  priv->do_paint = FALSE;
 
   if (priv->blur)
-    clutter_actor_paint (priv->blur);
+    {
+      CoglHandle material = cogl_material_new ();
+      CoglHandle texture =
+        clutter_texture_get_cogl_texture (CLUTTER_TEXTURE (priv->blur));
+
+      cogl_material_set_color4ub (material, 0xff, 0xff, 0xff, 0xff);
+      cogl_material_set_layer (material, 0, texture);
+      cogl_set_source (material);
+
+      cogl_rectangle (0, 0,
+                      clutter_actor_get_width (actor),
+                      clutter_actor_get_height (actor));
+
+      clutter_actor_paint (priv->blur);
+    }
 
   CLUTTER_ACTOR_CLASS (mx_modal_frame_parent_class)->paint (actor);
-
-  priv->in_paint = FALSE;
 }
 
 static void
@@ -366,33 +376,28 @@ mx_modal_frame_queue_relayout_cb (ClutterActor *actor,
 }
 
 static void
-mx_modal_frame_init (MxModalFrame *self)
+mx_modal_frame_completed_cb (ClutterTimeline *timeline,
+                             ClutterActor    *self)
 {
-  MxModalFramePrivate *priv = self->priv = MODAL_FRAME_PRIVATE (self);
+  ClutterTimelineDirection direction;
 
-  priv->transition_time = 250;
-
-  g_signal_connect (self, "parent-set",
-                    G_CALLBACK (mx_modal_frame_parent_set_cb), self);
-  g_signal_connect (self, "queue-relayout",
-                    G_CALLBACK (mx_modal_frame_queue_relayout_cb), self);
-
-  clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
-}
-
-ClutterActor *
-mx_modal_frame_new (void)
-{
-  return g_object_new (MX_TYPE_MODAL_FRAME, NULL);
-}
-
-static void
-mx_modal_frame_anim_completed_cb (ClutterAnimation *animation,
-                                  ClutterActor     *self)
-{
   MxModalFramePrivate *priv = MX_MODAL_FRAME (self)->priv;
   ClutterActor *parent = clutter_actor_get_parent (self);
 
+  /* Reverse the direction and rewind the timeline. This means that when
+   * a timeline finishes, its progress stays at 1.0, or 0.0 and it is
+   * ready to start again.
+   */
+  direction = clutter_timeline_get_direction (timeline);
+  clutter_timeline_set_direction (timeline,
+                                  (direction == CLUTTER_TIMELINE_FORWARD) ?
+                                  CLUTTER_TIMELINE_BACKWARD :
+                                  CLUTTER_TIMELINE_FORWARD);
+
+  if (direction == CLUTTER_TIMELINE_FORWARD)
+    return;
+
+  /* Finish hiding */
   clutter_actor_hide (self);
 
   if (priv->blur)
@@ -407,6 +412,52 @@ mx_modal_frame_anim_completed_cb (ClutterAnimation *animation,
                                         mx_modal_frame_pick_cb, self);
   g_signal_handlers_disconnect_by_func (parent,
                                         mx_modal_frame_allocate_cb, self);
+
+}
+
+static void
+mx_modal_frame_new_frame_cb (ClutterTimeline *timeline,
+                             gint             msecs,
+                             MxModalFrame    *frame)
+{
+  MxModalFramePrivate *priv = frame->priv;
+
+  if (priv->blur)
+    {
+      gfloat opacity = clutter_alpha_get_alpha (priv->alpha);
+      clutter_actor_set_opacity (CLUTTER_ACTOR (frame),
+                                 (guint8)(opacity * 255.f));
+    }
+}
+
+static void
+mx_modal_frame_init (MxModalFrame *self)
+{
+  MxModalFramePrivate *priv = self->priv = MODAL_FRAME_PRIVATE (self);
+
+  priv->transition_time = 250;
+  priv->timeline = clutter_timeline_new (priv->transition_time);
+  priv->alpha = clutter_alpha_new_full (priv->timeline,
+                                        CLUTTER_EASE_OUT_QUAD);
+
+  g_signal_connect (priv->timeline, "completed",
+                    G_CALLBACK (mx_modal_frame_completed_cb), self);
+  g_signal_connect (priv->timeline, "new-frame",
+                    G_CALLBACK (mx_modal_frame_new_frame_cb),
+                    self);
+
+  g_signal_connect (self, "parent-set",
+                    G_CALLBACK (mx_modal_frame_parent_set_cb), self);
+  g_signal_connect (self, "queue-relayout",
+                    G_CALLBACK (mx_modal_frame_queue_relayout_cb), self);
+
+  clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
+}
+
+ClutterActor *
+mx_modal_frame_new (void)
+{
+  return g_object_new (MX_TYPE_MODAL_FRAME, NULL);
 }
 
 void
@@ -435,34 +486,28 @@ mx_modal_frame_show (MxModalFrame *modal_frame)
       ClutterActor *self = CLUTTER_ACTOR (modal_frame);
       ClutterActor *child = mx_bin_get_child (MX_BIN (self));
       ClutterActor *parent = clutter_actor_get_parent (self);
-      ClutterAnimation *animation = clutter_actor_get_animation (self);
 
       if (!parent)
         return;
 
       priv->visible = TRUE;
 
-      if (animation)
+      if (clutter_timeline_is_playing (priv->timeline))
         {
-          ClutterTimeline *timeline =
-            clutter_animation_get_timeline (animation);
-          ClutterTimelineDirection direction;
+          ClutterTimelineDirection direction =
+            clutter_timeline_get_direction (priv->timeline);
 
-          g_signal_handlers_disconnect_by_func (animation,
-                                               mx_modal_frame_anim_completed_cb,
-                                               self);
-
-          direction = clutter_timeline_get_direction (timeline);
           direction = (direction == CLUTTER_TIMELINE_FORWARD) ?
             CLUTTER_TIMELINE_BACKWARD : CLUTTER_TIMELINE_FORWARD;
-          clutter_timeline_set_direction (timeline, direction);
+          clutter_timeline_set_direction (priv->timeline, direction);
 
           if (child)
             {
-              animation = clutter_actor_get_animation (child);
+              ClutterAnimation *animation = clutter_actor_get_animation (child);
               if (animation)
                 {
-                  timeline = clutter_animation_get_timeline (animation);
+                  ClutterTimeline *timeline =
+                    clutter_animation_get_timeline (animation);
                   clutter_timeline_set_direction (timeline, direction);
                 }
             }
@@ -488,8 +533,7 @@ mx_modal_frame_show (MxModalFrame *modal_frame)
               clutter_actor_set_parent (priv->blur, self);
               clutter_actor_pop_internal (self);
 
-              clutter_container_add_actor (CLUTTER_CONTAINER (priv->blur),
-                                           clutter_clone_new (parent));
+              mx_offscreen_set_child (MX_OFFSCREEN (priv->blur), parent);
               clutter_actor_set_shader (priv->blur, shader);
               g_object_unref (shader);
 
@@ -499,6 +543,7 @@ mx_modal_frame_show (MxModalFrame *modal_frame)
                                              &width, &height);
               mx_modal_frame_texture_size_change_cb (priv->blur, width, height);
               clutter_actor_set_shader_param_int (priv->blur, "tex", 0);
+
             }
           else
             {
@@ -522,10 +567,8 @@ mx_modal_frame_show (MxModalFrame *modal_frame)
 
       clutter_actor_set_opacity (self, 0x00);
       clutter_actor_show (self);
-
-      clutter_actor_animate (self, CLUTTER_EASE_OUT_QUAD, priv->transition_time,
-                             "opacity", 0xff,
-                             NULL);
+      clutter_alpha_set_mode (priv->alpha, CLUTTER_EASE_OUT_QUAD);
+      clutter_timeline_start (priv->timeline);
 
       if (child)
         {
@@ -556,34 +599,28 @@ mx_modal_frame_hide (MxModalFrame *modal_frame)
       ClutterActor *self = CLUTTER_ACTOR (modal_frame);
       ClutterActor *child = mx_bin_get_child (MX_BIN (self));
       ClutterActor *parent = clutter_actor_get_parent (self);
-      ClutterAnimation *animation = clutter_actor_get_animation (self);
 
       if (!parent)
         return;
 
       priv->visible = FALSE;
 
-      if (animation)
+      if (clutter_timeline_is_playing (priv->timeline))
         {
-          ClutterTimeline *timeline =
-            clutter_animation_get_timeline (animation);
-          ClutterTimelineDirection direction;
+          ClutterTimelineDirection direction =
+            clutter_timeline_get_direction (priv->timeline);
 
-          g_signal_connect (animation, "completed",
-                            G_CALLBACK (mx_modal_frame_anim_completed_cb),
-                            self);
-
-          direction = clutter_timeline_get_direction (timeline);
           direction = (direction == CLUTTER_TIMELINE_FORWARD) ?
             CLUTTER_TIMELINE_BACKWARD : CLUTTER_TIMELINE_FORWARD;
-          clutter_timeline_set_direction (timeline, direction);
+          clutter_timeline_set_direction (priv->timeline, direction);
 
           if (child)
             {
-              animation = clutter_actor_get_animation (child);
+              ClutterAnimation *animation = clutter_actor_get_animation (child);
               if (animation)
                 {
-                  timeline = clutter_animation_get_timeline (animation);
+                  ClutterTimeline *timeline =
+                    clutter_animation_get_timeline (animation);
                   clutter_timeline_set_direction (timeline, direction);
                 }
             }
@@ -598,11 +635,10 @@ mx_modal_frame_hide (MxModalFrame *modal_frame)
                                "scale-y", 1.5f,
                                "fixed::scale-gravity", CLUTTER_GRAVITY_CENTER,
                                NULL);
-      clutter_actor_animate (self, CLUTTER_EASE_OUT_QUAD, priv->transition_time,
-                             "opacity", 0x00,
-                             "signal::completed",
-                             mx_modal_frame_anim_completed_cb, self,
-                             NULL);
+
+      /* The timeline is running in reverse, so use ease-in quad */
+      clutter_alpha_set_mode (priv->alpha, CLUTTER_EASE_IN_QUAD);
+      clutter_timeline_start (priv->timeline);
     }
 }
 
