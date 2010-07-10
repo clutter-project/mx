@@ -24,7 +24,7 @@
 #define __MX_FINGER_SCROLL_H__
 
 #include <glib-object.h>
-#include <mx/mx-scroll-view.h>
+#include <mx/mx-bin.h>
 
 G_BEGIN_DECLS
 
@@ -54,14 +54,14 @@ typedef struct _MxFingerScrollClass     MxFingerScrollClass;
 struct _MxFingerScroll
 {
   /*< private >*/
-  MxScrollView parent_instance;
+  MxBin                  parent_instance;
 
   MxFingerScrollPrivate *priv;
 };
 
 struct _MxFingerScrollClass
 {
-  MxScrollViewClass parent_class;
+  MxBinClass parent_class;
 };
 
 GType mx_finger_scroll_get_type (void) G_GNUC_CONST;

@@ -23,13 +23,15 @@
 #include "mx-finger-scroll.h"
 #include "mx-enum-types.h"
 #include "mx-marshal.h"
-#include "mx-scroll-bar.h"
+#include "mx-private.h"
 #include "mx-scrollable.h"
-#include "mx-scroll-view.h"
-#include <clutter/clutter.h>
 #include <math.h>
 
-G_DEFINE_TYPE (MxFingerScroll, mx_finger_scroll, MX_TYPE_SCROLL_VIEW)
+static void mx_scrollable_iface_init (MxScrollableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE (MxFingerScroll, mx_finger_scroll, MX_TYPE_BIN,
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_SCROLLABLE,
+                                                mx_scrollable_iface_init))
 
 #define FINGER_SCROLL_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), \
                                   MX_TYPE_FINGER_SCROLL, \
@@ -37,42 +39,91 @@ G_DEFINE_TYPE (MxFingerScroll, mx_finger_scroll, MX_TYPE_SCROLL_VIEW)
 
 typedef struct {
   /* Units to store the origin of a click when scrolling */
-  gfloat x;
-  gfloat y;
-  GTimeVal    time;
+  gfloat   x;
+  gfloat   y;
+  GTimeVal time;
 } MxFingerScrollMotion;
 
 struct _MxFingerScrollPrivate
 {
-  /* Scroll mode */
-  MxFingerScrollMode mode;
+  ClutterActor          *child;
 
+  /* Scroll mode */
+  MxFingerScrollMode     mode;
+
+  /* Mouse motion event information */
   GArray                *motion_buffer;
   guint                  last_motion;
 
   /* Variables for storing acceleration information for kinetic mode */
   ClutterTimeline       *deceleration_timeline;
-  gfloat            dx;
-  gfloat            dy;
-  gdouble           decel_rate;
-  gdouble           accumulated_delta;
-
-  /* Variables to fade in/out scroll-bars */
-  //ClutterEffectTemplate *template;
-  ClutterTimeline       *hscroll_timeline;
-  ClutterTimeline       *vscroll_timeline;
+  gfloat                 dx;
+  gfloat                 dy;
+  gdouble                decel_rate;
+  gdouble                accumulated_delta;
 };
 
 enum {
-  PROP_MODE = 1,
+  PROP_0,
+
+  PROP_MODE,
   PROP_DECEL_RATE,
   PROP_BUFFER,
+  PROP_HADJUST,
+  PROP_VADJUST
 };
+
+/* MxScrollableIface implementation */
+
+static void
+mx_finger_scroll_set_adjustments (MxScrollable *scrollable,
+                                  MxAdjustment *hadjustment,
+                                  MxAdjustment *vadjustment)
+{
+  MxFingerScrollPrivate *priv = MX_FINGER_SCROLL (scrollable)->priv;
+
+  if (priv->child)
+    mx_scrollable_set_adjustments (MX_SCROLLABLE (priv->child),
+                                   hadjustment,
+                                   vadjustment);
+}
+
+static void
+mx_finger_scroll_get_adjustments (MxScrollable  *scrollable,
+                                  MxAdjustment **hadjustment,
+                                  MxAdjustment **vadjustment)
+{
+  MxFingerScrollPrivate *priv = MX_FINGER_SCROLL (scrollable)->priv;
+
+  if (priv->child)
+    {
+      mx_scrollable_get_adjustments (MX_SCROLLABLE (priv->child),
+                                     hadjustment,
+                                     vadjustment);
+    }
+  else
+    {
+      if (hadjustment)
+        *hadjustment = NULL;
+      if (vadjustment)
+        *vadjustment = NULL;
+    }
+}
+
+static void
+mx_scrollable_iface_init (MxScrollableIface *iface)
+{
+  iface->set_adjustments = mx_finger_scroll_set_adjustments;
+  iface->get_adjustments = mx_finger_scroll_get_adjustments;
+}
+
+/* Object implementation */
 
 static void
 mx_finger_scroll_get_property (GObject *object, guint property_id,
                                  GValue *value, GParamSpec *pspec)
 {
+  MxAdjustment *adjustment;
   MxFingerScrollPrivate *priv = MX_FINGER_SCROLL (object)->priv;
 
   switch (property_id)
@@ -80,12 +131,27 @@ mx_finger_scroll_get_property (GObject *object, guint property_id,
     case PROP_MODE :
       g_value_set_enum (value, priv->mode);
       break;
+
     case PROP_DECEL_RATE :
       g_value_set_double (value, priv->decel_rate);
       break;
+
     case PROP_BUFFER :
       g_value_set_uint (value, priv->motion_buffer->len);
       break;
+
+    case PROP_HADJUST:
+      mx_finger_scroll_get_adjustments (MX_SCROLLABLE (object),
+                                        &adjustment, NULL);
+      g_value_set_object (value, adjustment);
+      break;
+
+    case PROP_VADJUST:
+      mx_finger_scroll_get_adjustments (MX_SCROLLABLE (object),
+                                        NULL, &adjustment);
+      g_value_set_object (value, adjustment);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -95,6 +161,8 @@ static void
 mx_finger_scroll_set_property (GObject *object, guint property_id,
                                  const GValue *value, GParamSpec *pspec)
 {
+  MxAdjustment *adjustment;
+  MxScrollable *scrollable;
   MxFingerScrollPrivate *priv = MX_FINGER_SCROLL (object)->priv;
 
   switch (property_id)
@@ -103,14 +171,33 @@ mx_finger_scroll_set_property (GObject *object, guint property_id,
       priv->mode = g_value_get_enum (value);
       g_object_notify (object, "mode");
       break;
+
     case PROP_DECEL_RATE :
       priv->decel_rate = g_value_get_double (value);
       g_object_notify (object, "decel-rate");
       break;
+
     case PROP_BUFFER :
       g_array_set_size (priv->motion_buffer, g_value_get_uint (value));
       g_object_notify (object, "motion-buffer");
       break;
+
+    case PROP_HADJUST:
+      scrollable = MX_SCROLLABLE (object);
+      mx_finger_scroll_get_adjustments (scrollable, NULL, &adjustment);
+      mx_finger_scroll_set_adjustments (scrollable,
+                                        g_value_get_object (value),
+                                        adjustment);
+      break;
+
+    case PROP_VADJUST:
+      scrollable = MX_SCROLLABLE (object);
+      mx_finger_scroll_get_adjustments (scrollable, &adjustment, NULL);
+      mx_finger_scroll_set_adjustments (scrollable,
+                                        adjustment,
+                                        g_value_get_object (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -128,26 +215,6 @@ mx_finger_scroll_dispose (GObject *object)
       priv->deceleration_timeline = NULL;
     }
 
-  if (priv->hscroll_timeline)
-    {
-      clutter_timeline_stop (priv->hscroll_timeline);
-      g_object_unref (priv->hscroll_timeline);
-      priv->hscroll_timeline = NULL;
-    }
-
-  if (priv->vscroll_timeline)
-    {
-      clutter_timeline_stop (priv->vscroll_timeline);
-      g_object_unref (priv->vscroll_timeline);
-      priv->vscroll_timeline = NULL;
-    }
-  /*
-  if (priv->template)
-    {
-      g_object_unref (priv->template);
-      priv->template = NULL;
-    }
-  */
   G_OBJECT_CLASS (mx_finger_scroll_parent_class)->dispose (object);
 }
 
@@ -161,11 +228,60 @@ mx_finger_scroll_finalize (GObject *object)
   G_OBJECT_CLASS (mx_finger_scroll_parent_class)->finalize (object);
 }
 
+static void
+mx_finger_scroll_get_preferred_width (ClutterActor *actor,
+                                      gfloat        for_height,
+                                      gfloat       *min_width_p,
+                                      gfloat       *nat_width_p)
+{
+  CLUTTER_ACTOR_CLASS (mx_finger_scroll_parent_class)->
+    get_preferred_width (actor, for_height, NULL, nat_width_p);
+
+  if (min_width_p)
+    {
+      MxPadding padding;
+
+      mx_widget_get_padding (MX_WIDGET (actor), &padding);
+      *min_width_p = padding.left + padding.right;
+    }
+}
+
+static void
+mx_finger_scroll_get_preferred_height (ClutterActor *actor,
+                                       gfloat        for_width,
+                                       gfloat       *min_height_p,
+                                       gfloat       *nat_height_p)
+{
+  CLUTTER_ACTOR_CLASS (mx_finger_scroll_parent_class)->
+    get_preferred_height (actor, for_width, NULL, nat_height_p);
+
+  if (min_height_p)
+    {
+      MxPadding padding;
+
+      mx_widget_get_padding (MX_WIDGET (actor), &padding);
+      *min_height_p = padding.top + padding.bottom;
+    }
+}
+
+static void
+mx_finger_scroll_allocate (ClutterActor           *actor,
+                           const ClutterActorBox  *box,
+                           ClutterAllocationFlags  flags)
+{
+  CLUTTER_ACTOR_CLASS (mx_finger_scroll_parent_class)->
+    allocate (actor, box, flags);
+
+  mx_bin_allocate_child (MX_BIN (actor), box, flags);
+}
 
 static void
 mx_finger_scroll_class_init (MxFingerScrollClass *klass)
 {
+  GParamSpec *pspec;
+
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
 
   g_type_class_add_private (klass, sizeof (MxFingerScrollPrivate));
 
@@ -174,35 +290,41 @@ mx_finger_scroll_class_init (MxFingerScrollClass *klass)
   object_class->dispose = mx_finger_scroll_dispose;
   object_class->finalize = mx_finger_scroll_finalize;
 
-  g_object_class_install_property (object_class,
-                                   PROP_MODE,
-                                   g_param_spec_enum ("mode",
-                                                      "MxFingerScrollMode",
-                                                      "Scrolling mode",
-                                                      MX_TYPE_FINGER_SCROLL_MODE,
-                                                      MX_FINGER_SCROLL_MODE_PUSH,
-                                                      G_PARAM_READWRITE));
+  actor_class->get_preferred_width = mx_finger_scroll_get_preferred_width;
+  actor_class->get_preferred_height = mx_finger_scroll_get_preferred_height;
+  actor_class->allocate = mx_finger_scroll_allocate;
 
-  g_object_class_install_property (object_class,
-                                   PROP_DECEL_RATE,
-                                   g_param_spec_double ("decel-rate",
-                                                        "Deceleration rate",
-                                                        "Rate at which the view "
-                                                        "will decelerate in "
-                                                        "kinetic mode.",
-                                                        1.1,
-                                                        G_MAXDOUBLE,
-                                                        1.1,
-                                                        G_PARAM_READWRITE));
+  pspec = g_param_spec_enum ("mode",
+                             "Mode",
+                             "Scrolling mode",
+                             MX_TYPE_FINGER_SCROLL_MODE,
+                             MX_FINGER_SCROLL_MODE_PUSH,
+                             MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_MODE, pspec);
 
-  g_object_class_install_property (object_class,
-                                   PROP_BUFFER,
-                                   g_param_spec_uint ("motion-buffer",
-                                                      "Motion buffer",
-                                                      "Amount of motion "
-                                                      "events to buffer",
-                                                      1, G_MAXUINT, 3,
-                                                      G_PARAM_READWRITE));
+  pspec = g_param_spec_double ("decel-rate",
+                               "Deceleration rate",
+                               "Rate at which the view will decelerate in "
+                               "kinetic mode.",
+                               1.1, G_MAXDOUBLE, 1.1,
+                               MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_DECEL_RATE, pspec);
+
+  pspec = g_param_spec_uint ("motion-buffer",
+                             "Motion buffer",
+                             "Amount of motion events to buffer",
+                             1, G_MAXUINT, 3,
+                             MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_BUFFER, pspec);
+
+  /* MxScrollable properties */
+  g_object_class_override_property (object_class,
+                                    PROP_HADJUST,
+                                    "horizontal-adjustment");
+
+  g_object_class_override_property (object_class,
+                                    PROP_VADJUST,
+                                    "vertical-adjustment");
 }
 
 static gboolean
@@ -260,60 +382,6 @@ motion_event_cb (ClutterActor *actor,
 }
 
 static void
-hfade_complete_cb (ClutterActor *scrollbar, MxFingerScroll *scroll)
-{
-  scroll->priv->hscroll_timeline = NULL;
-}
-
-static void
-vfade_complete_cb (ClutterActor *scrollbar, MxFingerScroll *scroll)
-{
-  scroll->priv->vscroll_timeline = NULL;
-}
-
-static void
-show_scrollbars (MxFingerScroll *scroll, gboolean show)
-{
-  //ClutterActor *hscroll, *vscroll;
-  MxFingerScrollPrivate *priv = scroll->priv;
-
-  /* Stop current timelines */
-  if (priv->hscroll_timeline)
-    {
-      clutter_timeline_stop (priv->hscroll_timeline);
-      g_object_unref (priv->hscroll_timeline);
-    }
-
-  if (priv->vscroll_timeline)
-    {
-      clutter_timeline_stop (priv->vscroll_timeline);
-      g_object_unref (priv->vscroll_timeline);
-    }
-
-  //hscroll = mx_scroll_view_get_hscroll_bar (MX_SCROLL_VIEW (scroll));
-  //vscroll = mx_scroll_view_get_vscroll_bar (MX_SCROLL_VIEW (scroll));
-
-  /* Create new ones */
-  /*
-  if (!CLUTTER_ACTOR_IS_REACTIVE (hscroll))
-    priv->hscroll_timeline = clutter_effect_fade (
-                               priv->template,
-                               hscroll,
-                               show ? 0xFF : 0x00,
-                               (ClutterEffectCompleteFunc)hfade_complete_cb,
-                               scroll);
-
-  if (!CLUTTER_ACTOR_IS_REACTIVE (vscroll))
-    priv->vscroll_timeline = clutter_effect_fade (
-                               priv->template,
-                               vscroll,
-                               show ? 0xFF : 0x00,
-                               (ClutterEffectCompleteFunc)vfade_complete_cb,
-                               scroll);
-  */
-}
-
-static void
 clamp_adjustments (MxFingerScroll *scroll)
 {
   ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
@@ -346,7 +414,6 @@ static void
 deceleration_completed_cb (ClutterTimeline *timeline,
                            MxFingerScroll *scroll)
 {
-  show_scrollbars (scroll, FALSE);
   clamp_adjustments (scroll);
   g_object_unref (timeline);
   scroll->priv->deceleration_timeline = NULL;
@@ -580,7 +647,6 @@ button_release_event_cb (ClutterActor *actor,
 
   if (!decelerating)
     {
-      show_scrollbars (scroll, FALSE);
       clamp_adjustments (scroll);
     }
 
@@ -640,9 +706,6 @@ captured_event_cb (ClutterActor     *actor,
               priv->deceleration_timeline = NULL;
             }
 
-          /* Fade in scroll-bars */
-          show_scrollbars (scroll, TRUE);
-
           clutter_grab_pointer (actor);
 
           /* Add a high priority idle to check the grab after the event
@@ -668,49 +731,31 @@ captured_event_cb (ClutterActor     *actor,
 }
 
 static void
-hscroll_notify_reactive_cb (ClutterActor     *bar,
-                            GParamSpec       *pspec,
-                            MxFingerScroll *scroll)
+mx_finger_scroll_actor_added_cb (ClutterContainer *container,
+                                 ClutterActor     *actor)
 {
-  MxFingerScrollPrivate *priv;
+  MxFingerScrollPrivate *priv = MX_FINGER_SCROLL (container)->priv;
 
-  priv = scroll->priv;
-  if (CLUTTER_ACTOR_IS_REACTIVE (bar))
-    {
-      if (priv->hscroll_timeline)
-        {
-          clutter_timeline_stop (priv->hscroll_timeline);
-          g_object_unref (priv->hscroll_timeline);
-          priv->hscroll_timeline = NULL;
-        }
-      clutter_actor_set_opacity (bar, 0xFF);
-    }
+  if (MX_IS_SCROLLABLE (actor))
+    priv->child = actor;
+  else
+    g_warning ("Attempting to add an actor of type %s to "
+               "a MxFingerScroll, but the actor does "
+               "not implement MxScrollable.",
+               g_type_name (G_OBJECT_TYPE (actor)));
 }
 
 static void
-vscroll_notify_reactive_cb (ClutterActor     *bar,
-                            GParamSpec       *pspec,
-                            MxFingerScroll *scroll)
+mx_finger_scroll_actor_removed_cb (ClutterContainer *container,
+                                   ClutterActor     *actor)
 {
-  MxFingerScrollPrivate *priv;
-
-  priv = scroll->priv;
-  if (CLUTTER_ACTOR_IS_REACTIVE (bar))
-    {
-      if (priv->vscroll_timeline)
-        {
-          clutter_timeline_stop (priv->vscroll_timeline);
-          g_object_unref (priv->vscroll_timeline);
-          priv->vscroll_timeline = NULL;
-        }
-      clutter_actor_set_opacity (bar, 0xFF);
-    }
+  MxFingerScrollPrivate *priv = MX_FINGER_SCROLL (container)->priv;
+  priv->child = NULL;
 }
 
 static void
 mx_finger_scroll_init (MxFingerScroll *self)
 {
-  //ClutterActor *scrollbar;
   MxFingerScrollPrivate *priv = self->priv = FINGER_SCROLL_PRIVATE (self);
 
   priv->motion_buffer = g_array_sized_new (FALSE, TRUE,
@@ -719,39 +764,20 @@ mx_finger_scroll_init (MxFingerScroll *self)
   priv->decel_rate = 1.1f;
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
-  g_signal_connect (CLUTTER_ACTOR (self),
-                    "captured-event",
-                    G_CALLBACK (captured_event_cb),
-                    self);
+  g_signal_connect (self, "captured-event",
+                    G_CALLBACK (captured_event_cb), self);
+  g_signal_connect (self, "actor-added",
+                    G_CALLBACK (mx_finger_scroll_actor_added_cb), self);
+  g_signal_connect (self, "actor-removed",
+                    G_CALLBACK (mx_finger_scroll_actor_removed_cb), self);
 
-  /* Make the scroll-bars unreactive and set their opacity - we'll fade them 
-   * in/out when we scroll.
-   * Also, hook onto notify::reactive and don't fade in/out when the bars are 
-   * set reactive (which you might want to do if you want finger-scrolling 
-   * *and* a scroll bar.
-   */
-  /*
-  scrollbar = mx_scroll_view_get_hscroll_bar (MX_SCROLL_VIEW (self));
-  clutter_actor_set_reactive (scrollbar, FALSE);
-  clutter_actor_set_opacity (scrollbar, 0x00);
-  g_signal_connect (scrollbar, "notify::reactive",
-                    G_CALLBACK (hscroll_notify_reactive_cb), self);
-
-  scrollbar = mx_scroll_view_get_vscroll_bar (MX_SCROLL_VIEW (self));
-  clutter_actor_set_reactive (scrollbar, FALSE);
-  clutter_actor_set_opacity (scrollbar, 0x00);
-  g_signal_connect (scrollbar, "notify::reactive",
-                    G_CALLBACK (vscroll_notify_reactive_cb), self);
-  */
-  //priv->template = clutter_effect_template_new_for_duration (250,
-  //                                              CLUTTER_ALPHA_RAMP_INC);
+  mx_bin_set_alignment (MX_BIN (self), MX_ALIGN_START, MX_ALIGN_START);
 }
 
 ClutterActor *
 mx_finger_scroll_new (MxFingerScrollMode mode)
 {
-  return CLUTTER_ACTOR (g_object_new (MX_TYPE_FINGER_SCROLL,
-                                      "mode", mode, NULL));
+  return g_object_new (MX_TYPE_FINGER_SCROLL, "mode", mode, NULL);
 }
 
 void
