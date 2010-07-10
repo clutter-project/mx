@@ -114,6 +114,8 @@ struct _MxEntryPrivate
   gboolean  pause_undo;
   GQueue   *undo_history;
   gulong    undo_timeout_source;
+
+  gboolean scrolling;
 };
 
 static guint entry_signals[LAST_SIGNAL] = { 0, };
@@ -412,7 +414,7 @@ mx_entry_allocate (ClutterActor          *actor,
   ClutterActorBox child_box, icon_box;
   MxPadding padding;
   gfloat icon_w, icon_h;
-  gfloat entry_h, min_h, pref_h, avail_h;
+  gfloat entry_h, min_h, pref_h, avail_h, pref_w;
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
@@ -471,6 +473,10 @@ mx_entry_allocate (ClutterActor          *actor,
 
   entry_h = CLAMP (pref_h, min_h, avail_h);
 
+  clutter_actor_get_preferred_width (priv->entry, entry_h, NULL, &pref_w);
+
+  priv->scrolling = (pref_w > (child_box.x2 - child_box.x1));
+
   child_box.y1 = (int)(padding.top + avail_h / 2 - entry_h / 2);
   child_box.y2 = child_box.y1 + entry_h;
 
@@ -505,6 +511,9 @@ clutter_text_focus_out_cb (ClutterText  *text,
 {
   MxEntryPrivate *priv = MX_ENTRY_PRIV (actor);
 
+  /* move the cursor back to the beginning of the entry */
+  clutter_text_set_cursor_position (CLUTTER_TEXT (priv->entry), 0);
+
   /* add a hint if the entry is empty */
   if (priv->hint && !strcmp (clutter_text_get_text (text), ""))
     {
@@ -530,6 +539,7 @@ mx_entry_paint (ClutterActor *actor)
 {
   MxEntryPrivate *priv = MX_ENTRY_PRIV (actor);
   ClutterActorClass *parent_class;
+  ClutterStage *stage;
 
   parent_class = CLUTTER_ACTOR_CLASS (mx_entry_parent_class);
   parent_class->paint (actor);
@@ -541,6 +551,45 @@ mx_entry_paint (ClutterActor *actor)
 
   if (priv->secondary_icon)
     clutter_actor_paint (priv->secondary_icon);
+
+
+  /* draw a shadow if the entry is not focused and the text is scrolling */
+  stage = (ClutterStage *) clutter_actor_get_stage (priv->entry);
+
+  if (clutter_stage_get_key_focus (stage) != priv->entry && priv->scrolling)
+    {
+      ClutterGeometry geo;
+      CoglTextureVertex top[4] = { { 0,}, };
+      ClutterColor *color;
+      guint8 r, g, b;
+
+
+      mx_stylable_get (MX_STYLABLE (actor), "background-color", &color, NULL);
+
+      r = color->red;
+      g = color->green;
+      b = color->blue;
+      clutter_color_free (color);
+
+      cogl_set_source_color4ub (0, 0, 0, 0);
+
+      clutter_actor_get_allocation_geometry (priv->entry, &geo);
+
+      top[0].x = geo.x + geo.width;
+      top[0].y = geo.y + geo.height;
+      top[1].x = geo.x + geo.width;
+      top[1].y = geo.x;
+      top[2].x = geo.x + geo.width - 30;
+      top[2].y = geo.y;
+      top[3].x = geo.x + geo.width - 30;
+      top[3].y = geo.y + geo.height;
+
+      cogl_color_set_from_4ub (&top[0].color, r, g, b, 0xff);
+      cogl_color_set_from_4ub (&top[1].color, r, g, b, 0xff);
+      cogl_color_set_from_4ub (&top[2].color, 0, 0, 0, 0);
+      cogl_color_set_from_4ub (&top[3].color, 0, 0, 0, 0);
+      cogl_polygon (top, 4, TRUE);
+    }
 }
 
 static void
