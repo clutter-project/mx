@@ -21,6 +21,15 @@
  *
  */
 
+/**
+ * SECTION:mx-modal-frame
+ * @short_description: a modal, single-widget container
+ *
+ * #MxModalFrame is a single-widget container. When presented, it performs a
+ * suitable transition animation and blocks input to the actors beneath it
+ * until it is hidden again.
+ */
+
 #include "mx-modal-frame.h"
 #include "mx-offscreen.h"
 
@@ -454,12 +463,27 @@ mx_modal_frame_init (MxModalFrame *self)
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
 }
 
+/**
+ * mx_modal_frame_new:
+ *
+ * Creates a new #MxModalFrame.
+ *
+ * Returns: A newly allocated #MxModalFrame
+ */
 ClutterActor *
 mx_modal_frame_new (void)
 {
   return g_object_new (MX_TYPE_MODAL_FRAME, NULL);
 }
 
+/**
+ * mx_modal_frame_set_transient_parent:
+ * @modal_frame: A #MxModalFrame
+ * @actor: A #ClutterActor
+ *
+ * Sets the parent of the #MxModalFrame. This is the actor over which the
+ * modal frame will appear when mx_modal_frame_show() is called.
+ */
 void
 mx_modal_frame_set_transient_parent (MxModalFrame *modal_frame,
                                      ClutterActor *actor)
@@ -472,6 +496,13 @@ mx_modal_frame_set_transient_parent (MxModalFrame *modal_frame,
   clutter_actor_pop_internal (actor);
 }
 
+/**
+ * mx_modal_frame_show:
+ * @modal_frame: A #MxModalFrame
+ *
+ * Shows the #MxModalFrame. When the frame is visible, it will block input
+ * to its parent.
+ */
 void
 mx_modal_frame_show (MxModalFrame *modal_frame)
 {
@@ -585,6 +616,12 @@ mx_modal_frame_show (MxModalFrame *modal_frame)
     }
 }
 
+/**
+ * mx_modal_frame_hide:
+ * @modal_frame: A #MxModalFrame
+ *
+ * Hides the #MxModalFrame.
+ */
 void
 mx_modal_frame_hide (MxModalFrame *modal_frame)
 {

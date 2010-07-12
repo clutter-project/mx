@@ -433,6 +433,25 @@ MxFramePrivate
 </SECTION>
 
 <SECTION>
+<FILE>mx-modal-frame</FILE>
+<TITLE>MxModalFrame</TITLE>
+MxModalFrame
+mx_modal_frame_new
+mx_modal_frame_set_transient_parent
+mx_modal_frame_show
+mx_modal_frame_hide
+<SUBSECTION Standard>
+MX_MODAL_FRAME
+MX_IS_MODAL_FRAME
+MX_TYPE_MODAL_FRAME
+mx_modal_frame_get_type
+MX_MODAL_FRAME_CLASS
+MX_IS_MODAL_FRAME_CLASS
+MX_MODAL_FRAME_GET_CLASS
+MxModalFramePrivate
+</SECTION>
+
+<SECTION>
 <FILE>mx-menu</FILE>
 <TITLE>MxMenu</TITLE>
 MxMenu
