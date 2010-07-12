@@ -21,6 +21,18 @@
  *
  */
 
+/**
+ * SECTION:mx-offscreen
+ * @short_description: an offscreen container widget
+ *
+ * #MxOffscreen allows you to redirect the painting of a #ClutterActor to
+ * a texture. It can either contain this actor, or optionally, it can
+ * redirect the painting of an actor that it does not contain.
+ *
+ * This is often useful for applying a #ClutterShader effect to an actor
+ * or group of actors that is not a texture.
+ */
+
 #include "mx-offscreen.h"
 #include "mx-private.h"
 
@@ -761,12 +773,29 @@ mx_offscreen_queue_redraw_cb (ClutterActor *source,
   clutter_actor_queue_redraw (offscreen);
 }
 
+/**
+ * mx_offscreen_new:
+ *
+ * Creates a new #MxOffscreen.
+ *
+ * Returns: a newly allocated #MxOffscreen
+ */
 ClutterActor *
 mx_offscreen_new (void)
 {
   return g_object_new (MX_TYPE_OFFSCREEN, NULL);
 }
 
+/**
+ * mx_offscreen_set_child:
+ * @offscreen: A #MxOffscreen
+ * @actor: A #ClutterActor
+ *
+ * Redirects the painting of @actor to the offscreen surface owned by
+ * @offscreen. In the event that @actor is unparented, it will be parented
+ * to @offscreen. Note that when you redirect the painting of @actor, it
+ * will no longer be painted in its original position in the scenegraph.
+ */
 void
 mx_offscreen_set_child (MxOffscreen *offscreen, ClutterActor *actor)
 {
@@ -836,6 +865,14 @@ mx_offscreen_set_child (MxOffscreen *offscreen, ClutterActor *actor)
   g_object_notify (G_OBJECT (offscreen), "child");
 }
 
+/**
+ * mx_offscreen_get_child:
+ * @offscreen: A #MxOffscreen
+ *
+ * Gets the value of the #MxOffscreen:child property.
+ *
+ * Returns: The child of the offscreen widget
+ */
 ClutterActor *
 mx_offscreen_get_child (MxOffscreen *offscreen)
 {
@@ -843,6 +880,13 @@ mx_offscreen_get_child (MxOffscreen *offscreen)
   return offscreen->priv->child;
 }
 
+/**
+ * mx_offscreen_set_pick_child:
+ * @offscreen: A #MxOffscreen
+ * @pick: #TRUE to enable picking of the child actor
+ *
+ * Enable picking of the child actor.
+ */
 void
 mx_offscreen_set_pick_child (MxOffscreen *offscreen, gboolean pick)
 {
@@ -855,6 +899,14 @@ mx_offscreen_set_pick_child (MxOffscreen *offscreen, gboolean pick)
     }
 }
 
+/**
+ * mx_offscreen_get_pick_child:
+ * @offscreen: A #MxOffscreen
+ *
+ * Gets the value of the #MxOffscreen:pick-child property.
+ *
+ * Returns: #TRUE if picking of the child is enabled.
+ */
 gboolean
 mx_offscreen_get_pick_child (MxOffscreen *offscreen)
 {
@@ -862,6 +914,14 @@ mx_offscreen_get_pick_child (MxOffscreen *offscreen)
   return offscreen->priv->pick_child;
 }
 
+/**
+ * mx_offscreen_set_auto_update:
+ * @offscreen: A #MxOffscreen
+ * @auto_update: #TRUE if the offscreen surface should be automatically updated
+ *
+ * Enable automatic updating of the offscreen surface when the child is
+ * updated.
+ */
 void
 mx_offscreen_set_auto_update (MxOffscreen *offscreen, gboolean auto_update)
 {
@@ -878,6 +938,14 @@ mx_offscreen_set_auto_update (MxOffscreen *offscreen, gboolean auto_update)
     }
 }
 
+/**
+ * mx_offscreen_get_auto_update:
+ * @offscreen: A #MxOffscreen
+ *
+ * Gets the value of the #MxOffscreen:auto-update property.
+ *
+ * Returns: #TRUE if automatic updating of the offscreen surface is enabled
+ */
 gboolean
 mx_offscreen_get_auto_update (MxOffscreen *offscreen)
 {
@@ -885,6 +953,13 @@ mx_offscreen_get_auto_update (MxOffscreen *offscreen)
   return offscreen->priv->auto_update;
 }
 
+/**
+ * mx_offscreen_update:
+ * @offscreen: A #MxOffscreen
+ *
+ * Updates the offscreen surface. This causes the child of @offscreen to be
+ * drawn into the texture of @offscreen.
+ */
 void
 mx_offscreen_update (MxOffscreen *offscreen)
 {
@@ -908,6 +983,15 @@ mx_offscreen_update (MxOffscreen *offscreen)
     mx_offscreen_post_paint_cb (priv->child, offscreen);
 }
 
+/**
+ * mx_offscreen_set_redirect_enabled
+ * @offscreen: A #MxOffscreen
+ * @enabled: #TRUE if redirection to the offscreen surface should be enabled
+ *
+ * Sets the value of the #MxOffscreen:redirect-enabled property. When
+ * redirection is enabled, the painting of the child of @offscreen will be
+ * redirected to the texture of @offscreen.
+ */
 void
 mx_offscreen_set_redirect_enabled (MxOffscreen *offscreen,
                                    gboolean     enabled)
@@ -941,6 +1025,14 @@ mx_offscreen_set_redirect_enabled (MxOffscreen *offscreen,
     }
 }
 
+/**
+ * mx_offscreen_get_redirect_enabled:
+ * @offscreen: A #MxOffscreen
+ *
+ * Gets the value of the #MxOffscreen:redirect-enabled property.
+ *
+ * Returns: #TRUE if offscreen redirection is enabled
+ */
 gboolean
 mx_offscreen_get_redirect_enabled (MxOffscreen *offscreen)
 {
@@ -948,6 +1040,14 @@ mx_offscreen_get_redirect_enabled (MxOffscreen *offscreen)
   return offscreen->priv->redirect_enabled;
 }
 
+/**
+ * mx_offscreen_get_buffer:
+ * @offscreen: A #MxOffscreen
+ *
+ * Gets the value of the #MxOffscreen:buffer property.
+ *
+ * Returns: the #CoglHandle for the offscreen buffer object
+ */
 CoglHandle
 mx_offscreen_get_buffer (MxOffscreen *offscreen)
 {
@@ -956,6 +1056,18 @@ mx_offscreen_get_buffer (MxOffscreen *offscreen)
   return offscreen->priv->fbo;
 }
 
+/**
+ * mx_offscreen_set_accumulation_enabled:
+ * @offscreen: A #MxOffscreen
+ * @enable: #TRUE to enable an accumulation buffer
+ *
+ * Sets whether the accumulation buffer is enabled. When enabled, an extra
+ * offscreen buffer is allocated, and the contents of the offscreen texture
+ * are blended with this accumulation buffer. By default, the blend function
+ * is set to blend the contents of the offscreen texture with the accumulation
+ * buffer at the opacity specified in the alpha component of the blend
+ * constant. This opacity is 50% by default.
+ */
 void
 mx_offscreen_set_accumulation_enabled (MxOffscreen *offscreen,
                                        gboolean     enable)
@@ -1016,6 +1128,14 @@ mx_offscreen_set_accumulation_enabled (MxOffscreen *offscreen,
     }
 }
 
+/**
+ * mx_offscreen_get_accumulation_enabled:
+ * @offscreen: A #MxOffscreen
+ *
+ * Gets the value of the #MxOffscreen:accumulation-enabled property.
+ *
+ * Returns: #TRUE if the accumulation buffer is enabled
+ */
 gboolean
 mx_offscreen_get_accumulation_enabled (MxOffscreen *offscreen)
 {
@@ -1023,6 +1143,14 @@ mx_offscreen_get_accumulation_enabled (MxOffscreen *offscreen)
   return offscreen->priv->acc_enabled;
 }
 
+/**
+ * mx_offscreen_get_accumulation_material:
+ * @offscreen: A #MxOffscreen
+ *
+ * Gets the #MxOffscreen:accumulation-material property.
+ *
+ * Returns: The #CoglHandle for the material used for the accumulation buffer
+ */
 CoglHandle
 mx_offscreen_get_accumulation_material (MxOffscreen *offscreen)
 {

@@ -684,6 +684,9 @@ mx_offscreen_get_pick_child
 mx_offscreen_set_auto_update
 mx_offscreen_get_auto_update
 mx_offscreen_update
+mx_offscreen_set_accumulation_enabled
+mx_offscreen_get_accumulation_enabled
+mx_offscreen_get_accumulation_material
 <SUBSECTION Standard>
 MX_OFFSCREEN
 MX_IS_OFFSCREEN
