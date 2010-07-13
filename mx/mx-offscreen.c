@@ -21,6 +21,18 @@
  *
  */
 
+/**
+ * SECTION:mx-offscreen
+ * @short_description: an offscreen container widget
+ *
+ * #MxOffscreen allows you to redirect the painting of a #ClutterActor to
+ * a texture. It can either contain this actor, or optionally, it can
+ * redirect the painting of an actor that it does not contain.
+ *
+ * This is often useful for applying a #ClutterShader effect to an actor
+ * or group of actors that is not a texture.
+ */
+
 #include "mx-offscreen.h"
 #include "mx-private.h"
 
@@ -47,6 +59,8 @@ struct _MxOffscreenPrivate
   CoglHandle    fbo;
   CoglHandle    acc_material;
   CoglHandle    acc_fbo;
+
+  GList        *disabled_shaders;
 };
 
 enum
@@ -67,6 +81,19 @@ static void
 mx_offscreen_add (ClutterContainer *container,
                   ClutterActor     *actor)
 {
+  /* Warn and return early if the actor already has a parent.
+   * Calling mx_offscreen_set_child with an actor that is
+   * already parented will cause us to mirror that actor without
+   * parenting it, which is not the intention of the ClutterContainer
+   * interface.
+   */
+  if (clutter_actor_get_parent (actor))
+    {
+      g_warning (G_STRLOC ": Actor '%s' already has a parent",
+                 G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (actor)));
+      return;
+    }
+
   mx_offscreen_set_child (MX_OFFSCREEN (container), actor);
 }
 
@@ -75,6 +102,13 @@ mx_offscreen_remove (ClutterContainer *container,
                      ClutterActor     *actor)
 {
   MxOffscreen *self = MX_OFFSCREEN (container);
+
+  if (clutter_actor_get_parent (actor) != (ClutterActor *)container)
+    {
+      g_warning (G_STRLOC ": Actor '%s' is not parented to this container",
+                 G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (actor)));
+      return;
+    }
 
   if (self->priv->child == actor)
     mx_offscreen_set_child (self, NULL);
@@ -87,7 +121,8 @@ mx_offscreen_foreach (ClutterContainer *container,
 {
   MxOffscreenPrivate *priv = MX_OFFSCREEN (container)->priv;
 
-  if (priv->child)
+  if (priv->child &&
+      (clutter_actor_get_parent (priv->child) == (ClutterActor *)container))
     callback (priv->child, user_data);
 }
 
@@ -183,7 +218,7 @@ mx_offscreen_destroy (ClutterActor *actor)
 {
   MxOffscreenPrivate *priv = MX_OFFSCREEN (actor)->priv;
 
-  if (priv->child)
+  if (priv->child && (clutter_actor_get_parent (priv->child) == actor))
     {
       clutter_actor_destroy (priv->child);
       priv->child = NULL;
@@ -196,7 +231,12 @@ mx_offscreen_destroy (ClutterActor *actor)
 static void
 mx_offscreen_dispose (GObject *object)
 {
-  MxOffscreenPrivate *priv = MX_OFFSCREEN (object)->priv;
+  MxOffscreen *self = MX_OFFSCREEN (object);
+  MxOffscreenPrivate *priv = self->priv;
+
+  if (priv->child &&
+      (clutter_actor_get_parent (priv->child) != (ClutterActor *)self))
+    mx_offscreen_set_child (self, NULL);
 
   if (priv->fbo)
     {
@@ -282,7 +322,7 @@ mx_offscreen_allocate (ClutterActor           *actor,
 
   CLUTTER_ACTOR_CLASS (mx_offscreen_parent_class)->allocate (actor, box, flags);
 
-  if (priv->child)
+  if (priv->child && (clutter_actor_get_parent (priv->child) == actor))
     {
       ClutterActorBox child_box;
 
@@ -330,7 +370,6 @@ mx_offscreen_toggle_shaders (MxOffscreen  *offscreen,
 static gboolean
 mx_offscreen_ensure_buffers (MxOffscreen *offscreen)
 {
-#if CLUTTER_CHECK_VERSION(1,2,0)
   CoglHandle texture;
   gboolean sync_size;
   gfloat width, height;
@@ -365,7 +404,6 @@ mx_offscreen_ensure_buffers (MxOffscreen *offscreen)
   if (texture && priv->fbo)
     return TRUE;
   else
-#endif
     return FALSE;
 }
 
@@ -452,7 +490,8 @@ mx_offscreen_paint (ClutterActor *actor)
     }
   else
     {
-      if (priv->auto_update)
+      if (priv->auto_update &&
+          (clutter_actor_get_parent (priv->child) == actor))
         mx_offscreen_update (self);
 
       if (priv->acc_enabled && mx_offscreen_ensure_accumulation_buffer (self))
@@ -499,7 +538,7 @@ mx_offscreen_map (ClutterActor *actor)
 
   CLUTTER_ACTOR_CLASS (mx_offscreen_parent_class)->map (actor);
 
-  if (priv->child)
+  if (priv->child && (clutter_actor_get_parent (priv->child) == actor))
     clutter_actor_map (priv->child);
 }
 
@@ -508,7 +547,7 @@ mx_offscreen_unmap (ClutterActor *actor)
 {
   MxOffscreenPrivate *priv = MX_OFFSCREEN (actor)->priv;
 
-  if (priv->child)
+  if (priv->child && (clutter_actor_get_parent (priv->child) == actor))
     clutter_actor_unmap (priv->child);
 
   CLUTTER_ACTOR_CLASS (mx_offscreen_parent_class)->unmap (actor);
@@ -600,7 +639,6 @@ mx_offscreen_class_init (MxOffscreenClass *klass)
   g_object_class_install_property (object_class, PROP_ACC_MATERIAL, pspec);
 }
 
-#if CLUTTER_CHECK_VERSION(1,2,0)
 static void
 mx_offscreen_cogl_texture_notify (MxOffscreen *self)
 {
@@ -663,7 +701,6 @@ mx_offscreen_cogl_texture_notify (MxOffscreen *self)
 
   g_object_notify (G_OBJECT (self), "buffer");
 }
-#endif
 
 static void
 mx_offscreen_init (MxOffscreen *self)
@@ -673,18 +710,92 @@ mx_offscreen_init (MxOffscreen *self)
   priv->auto_update = TRUE;
   priv->redirect_enabled = TRUE;
 
-#if CLUTTER_CHECK_VERSION(1,2,0)
   g_signal_connect (self, "notify::cogl-texture",
                     G_CALLBACK (mx_offscreen_cogl_texture_notify), NULL);
-#endif
 }
 
+static gboolean
+mx_offscreen_pre_paint_cb (ClutterActor *actor,
+                           MxOffscreen  *offscreen)
+{
+  CoglColor zero_colour;
+
+  MxOffscreenPrivate *priv = offscreen->priv;
+
+  if (!mx_offscreen_ensure_buffers (offscreen))
+    {
+      g_warning (G_STRLOC ": Unable to create necessary buffers");
+      return FALSE;
+    }
+
+  /* Disable shaders when we paint our off-screen children */
+  mx_offscreen_toggle_shaders (offscreen, &priv->disabled_shaders, FALSE);
+
+  /* Start drawing */
+  cogl_push_framebuffer (priv->fbo);
+  cogl_push_matrix ();
+
+  /* Clear */
+  cogl_color_set_from_4ub (&zero_colour, 0x00, 0x00, 0x00, 0x00);
+  cogl_clear (&zero_colour,
+              COGL_BUFFER_BIT_COLOR |
+              COGL_BUFFER_BIT_STENCIL |
+              COGL_BUFFER_BIT_DEPTH);
+
+  return TRUE;
+}
+
+static void
+mx_offscreen_post_paint_cb (ClutterActor *actor,
+                            MxOffscreen  *offscreen)
+{
+  MxOffscreenPrivate *priv = offscreen->priv;
+
+  if (!priv->fbo)
+    return;
+
+  /* Restore state */
+  cogl_pop_matrix ();
+  cogl_pop_framebuffer ();
+
+  /* Re-enable shaders */
+  mx_offscreen_toggle_shaders (offscreen, &priv->disabled_shaders, TRUE);
+}
+
+static void
+mx_offscreen_queue_redraw_cb (ClutterActor *source,
+                              ClutterActor *origin,
+                              ClutterActor *offscreen)
+{
+  if (origin == offscreen)
+    return;
+
+  clutter_actor_queue_redraw (offscreen);
+}
+
+/**
+ * mx_offscreen_new:
+ *
+ * Creates a new #MxOffscreen.
+ *
+ * Returns: a newly allocated #MxOffscreen
+ */
 ClutterActor *
 mx_offscreen_new (void)
 {
   return g_object_new (MX_TYPE_OFFSCREEN, NULL);
 }
 
+/**
+ * mx_offscreen_set_child:
+ * @offscreen: A #MxOffscreen
+ * @actor: A #ClutterActor
+ *
+ * Redirects the painting of @actor to the offscreen surface owned by
+ * @offscreen. In the event that @actor is unparented, it will be parented
+ * to @offscreen. Note that when you redirect the painting of @actor, it
+ * will no longer be painted in its original position in the scenegraph.
+ */
 void
 mx_offscreen_set_child (MxOffscreen *offscreen, ClutterActor *actor)
 {
@@ -700,10 +811,27 @@ mx_offscreen_set_child (MxOffscreen *offscreen, ClutterActor *actor)
     {
       ClutterActor *old_child = g_object_ref (priv->child);
 
-      clutter_actor_unparent (priv->child);
-      priv->child = NULL;
-
-      g_signal_emit_by_name (offscreen, "actor-removed", old_child);
+      if (clutter_actor_get_parent (priv->child) ==
+          (ClutterActor *)offscreen)
+        {
+          clutter_actor_unparent (priv->child);
+          priv->child = NULL;
+          g_signal_emit_by_name (offscreen, "actor-removed", old_child);
+        }
+      else
+        {
+          g_signal_handlers_disconnect_by_func (priv->child,
+                                                mx_offscreen_pre_paint_cb,
+                                                offscreen);
+          g_signal_handlers_disconnect_by_func (priv->child,
+                                                mx_offscreen_post_paint_cb,
+                                                offscreen);
+          g_signal_handlers_disconnect_by_func (priv->child,
+                                                mx_offscreen_queue_redraw_cb,
+                                                offscreen);
+          g_object_unref (priv->child);
+          priv->child = NULL;
+        }
 
       g_object_unref (old_child);
     }
@@ -711,9 +839,25 @@ mx_offscreen_set_child (MxOffscreen *offscreen, ClutterActor *actor)
   if (actor)
     {
       priv->child = actor;
-      clutter_actor_set_parent (actor, CLUTTER_ACTOR (offscreen));
 
-      g_signal_emit_by_name (offscreen, "actor-added", actor);
+      if (!clutter_actor_get_parent (actor) &&
+          !CLUTTER_IS_STAGE (actor))
+        {
+          clutter_actor_set_parent (actor, CLUTTER_ACTOR (offscreen));
+          g_signal_emit_by_name (offscreen, "actor-added", actor);
+        }
+      else
+        {
+          g_signal_connect (priv->child, "paint",
+                            G_CALLBACK (mx_offscreen_pre_paint_cb), offscreen);
+          g_signal_connect_after (priv->child, "paint",
+                                  G_CALLBACK (mx_offscreen_post_paint_cb),
+                                  offscreen);
+          g_signal_connect (priv->child, "queue-redraw",
+                            G_CALLBACK (mx_offscreen_queue_redraw_cb),
+                            offscreen);
+          g_object_ref (priv->child);
+        }
     }
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (offscreen));
@@ -721,6 +865,14 @@ mx_offscreen_set_child (MxOffscreen *offscreen, ClutterActor *actor)
   g_object_notify (G_OBJECT (offscreen), "child");
 }
 
+/**
+ * mx_offscreen_get_child:
+ * @offscreen: A #MxOffscreen
+ *
+ * Gets the value of the #MxOffscreen:child property.
+ *
+ * Returns: The child of the offscreen widget
+ */
 ClutterActor *
 mx_offscreen_get_child (MxOffscreen *offscreen)
 {
@@ -728,6 +880,13 @@ mx_offscreen_get_child (MxOffscreen *offscreen)
   return offscreen->priv->child;
 }
 
+/**
+ * mx_offscreen_set_pick_child:
+ * @offscreen: A #MxOffscreen
+ * @pick: #TRUE to enable picking of the child actor
+ *
+ * Enable picking of the child actor.
+ */
 void
 mx_offscreen_set_pick_child (MxOffscreen *offscreen, gboolean pick)
 {
@@ -740,6 +899,14 @@ mx_offscreen_set_pick_child (MxOffscreen *offscreen, gboolean pick)
     }
 }
 
+/**
+ * mx_offscreen_get_pick_child:
+ * @offscreen: A #MxOffscreen
+ *
+ * Gets the value of the #MxOffscreen:pick-child property.
+ *
+ * Returns: #TRUE if picking of the child is enabled.
+ */
 gboolean
 mx_offscreen_get_pick_child (MxOffscreen *offscreen)
 {
@@ -747,6 +914,14 @@ mx_offscreen_get_pick_child (MxOffscreen *offscreen)
   return offscreen->priv->pick_child;
 }
 
+/**
+ * mx_offscreen_set_auto_update:
+ * @offscreen: A #MxOffscreen
+ * @auto_update: #TRUE if the offscreen surface should be automatically updated
+ *
+ * Enable automatic updating of the offscreen surface when the child is
+ * updated.
+ */
 void
 mx_offscreen_set_auto_update (MxOffscreen *offscreen, gboolean auto_update)
 {
@@ -763,6 +938,14 @@ mx_offscreen_set_auto_update (MxOffscreen *offscreen, gboolean auto_update)
     }
 }
 
+/**
+ * mx_offscreen_get_auto_update:
+ * @offscreen: A #MxOffscreen
+ *
+ * Gets the value of the #MxOffscreen:auto-update property.
+ *
+ * Returns: #TRUE if automatic updating of the offscreen surface is enabled
+ */
 gboolean
 mx_offscreen_get_auto_update (MxOffscreen *offscreen)
 {
@@ -770,56 +953,45 @@ mx_offscreen_get_auto_update (MxOffscreen *offscreen)
   return offscreen->priv->auto_update;
 }
 
+/**
+ * mx_offscreen_update:
+ * @offscreen: A #MxOffscreen
+ *
+ * Updates the offscreen surface. This causes the child of @offscreen to be
+ * drawn into the texture of @offscreen.
+ */
 void
 mx_offscreen_update (MxOffscreen *offscreen)
 {
-#if CLUTTER_CHECK_VERSION(1,2,0)
-  CoglColor zero_colour;
-  GList *disabled_shaders;
-
+  gboolean child_owned;
   MxOffscreenPrivate *priv = offscreen->priv;
 
-  if (!mx_offscreen_ensure_buffers (offscreen))
-    {
-      g_warning (G_STRLOC ": Unable to create necessary buffers");
+  if (!priv->child)
+    return;
+
+  child_owned = (clutter_actor_get_parent (priv->child) ==
+                 (ClutterActor *)offscreen);
+
+  if (child_owned)
+    if (!mx_offscreen_pre_paint_cb (priv->child, offscreen))
       return;
-    }
-
-  /* Disable shaders when we paint our off-screen children */
-  mx_offscreen_toggle_shaders (offscreen, &disabled_shaders, FALSE);
-
-  /* Start drawing */
-  cogl_push_framebuffer (priv->fbo);
-  cogl_push_matrix ();
-
-  /* Clear */
-  cogl_color_set_from_4ub (&zero_colour, 0x00, 0x00, 0x00, 0x00);
-  cogl_clear (&zero_colour,
-              COGL_BUFFER_BIT_COLOR |
-              COGL_BUFFER_BIT_STENCIL |
-              COGL_BUFFER_BIT_DEPTH);
 
   /* Draw actor */
   MX_OFFSCREEN_GET_CLASS (offscreen)->paint_child (offscreen);
 
-  /* Restore state */
-  cogl_pop_matrix ();
-  cogl_pop_framebuffer ();
-
-  /* Re-enable shaders */
-  mx_offscreen_toggle_shaders (offscreen, &disabled_shaders, TRUE);
-
-#else
-  static gboolean warned = FALSE;
-  if (warned)
-    {
-      g_warning ("Clutter 1.2.0 is required for the offscreen actor. Consider "
-                 "using clutter_texture_new_from_actor() instead.");
-      warned = TRUE;
-    }
-#endif
+  if (child_owned)
+    mx_offscreen_post_paint_cb (priv->child, offscreen);
 }
 
+/**
+ * mx_offscreen_set_redirect_enabled
+ * @offscreen: A #MxOffscreen
+ * @enabled: #TRUE if redirection to the offscreen surface should be enabled
+ *
+ * Sets the value of the #MxOffscreen:redirect-enabled property. When
+ * redirection is enabled, the painting of the child of @offscreen will be
+ * redirected to the texture of @offscreen.
+ */
 void
 mx_offscreen_set_redirect_enabled (MxOffscreen *offscreen,
                                    gboolean     enabled)
@@ -853,6 +1025,14 @@ mx_offscreen_set_redirect_enabled (MxOffscreen *offscreen,
     }
 }
 
+/**
+ * mx_offscreen_get_redirect_enabled:
+ * @offscreen: A #MxOffscreen
+ *
+ * Gets the value of the #MxOffscreen:redirect-enabled property.
+ *
+ * Returns: #TRUE if offscreen redirection is enabled
+ */
 gboolean
 mx_offscreen_get_redirect_enabled (MxOffscreen *offscreen)
 {
@@ -860,6 +1040,14 @@ mx_offscreen_get_redirect_enabled (MxOffscreen *offscreen)
   return offscreen->priv->redirect_enabled;
 }
 
+/**
+ * mx_offscreen_get_buffer:
+ * @offscreen: A #MxOffscreen
+ *
+ * Gets the value of the #MxOffscreen:buffer property.
+ *
+ * Returns: the #CoglHandle for the offscreen buffer object
+ */
 CoglHandle
 mx_offscreen_get_buffer (MxOffscreen *offscreen)
 {
@@ -868,6 +1056,18 @@ mx_offscreen_get_buffer (MxOffscreen *offscreen)
   return offscreen->priv->fbo;
 }
 
+/**
+ * mx_offscreen_set_accumulation_enabled:
+ * @offscreen: A #MxOffscreen
+ * @enable: #TRUE to enable an accumulation buffer
+ *
+ * Sets whether the accumulation buffer is enabled. When enabled, an extra
+ * offscreen buffer is allocated, and the contents of the offscreen texture
+ * are blended with this accumulation buffer. By default, the blend function
+ * is set to blend the contents of the offscreen texture with the accumulation
+ * buffer at the opacity specified in the alpha component of the blend
+ * constant. This opacity is 50% by default.
+ */
 void
 mx_offscreen_set_accumulation_enabled (MxOffscreen *offscreen,
                                        gboolean     enable)
@@ -928,6 +1128,14 @@ mx_offscreen_set_accumulation_enabled (MxOffscreen *offscreen,
     }
 }
 
+/**
+ * mx_offscreen_get_accumulation_enabled:
+ * @offscreen: A #MxOffscreen
+ *
+ * Gets the value of the #MxOffscreen:accumulation-enabled property.
+ *
+ * Returns: #TRUE if the accumulation buffer is enabled
+ */
 gboolean
 mx_offscreen_get_accumulation_enabled (MxOffscreen *offscreen)
 {
@@ -935,6 +1143,14 @@ mx_offscreen_get_accumulation_enabled (MxOffscreen *offscreen)
   return offscreen->priv->acc_enabled;
 }
 
+/**
+ * mx_offscreen_get_accumulation_material:
+ * @offscreen: A #MxOffscreen
+ *
+ * Gets the #MxOffscreen:accumulation-material property.
+ *
+ * Returns: The #CoglHandle for the material used for the accumulation buffer
+ */
 CoglHandle
 mx_offscreen_get_accumulation_material (MxOffscreen *offscreen)
 {

@@ -55,6 +55,7 @@
 #include <mx/mx-item-view.h>
 #include <mx/mx-list-view.h>
 #include <mx/mx-label.h>
+#include <mx/mx-modal-frame.h>
 #include <mx/mx-notebook.h>
 #include <mx/mx-offscreen.h>
 #include <mx/mx-path-bar.h>

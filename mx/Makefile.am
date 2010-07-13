@@ -39,6 +39,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-item-factory.h		\
 	$(top_srcdir)/mx/mx-item-view.h 		\
 	$(top_srcdir)/mx/mx-list-view.h 		\
+	$(top_srcdir)/mx/mx-modal-frame.h 	\
 	$(top_srcdir)/mx/mx-offscreen.h 		\
 	$(top_srcdir)/mx/mx-icon.h 			\
 	$(top_srcdir)/mx/mx-icon-theme.h 	\
@@ -108,6 +109,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-item-view.c 		\
 	$(top_srcdir)/mx/mx-list-view.c 		\
 	$(top_srcdir)/mx/mx-label.c 		\
+	$(top_srcdir)/mx/mx-modal-frame.c 	\
 	$(top_srcdir)/mx/mx-notebook.c 		\
 	$(top_srcdir)/mx/mx-offscreen.c 	\
 	$(top_srcdir)/mx/mx-path-bar.c 		\
