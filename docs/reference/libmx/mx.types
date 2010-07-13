@@ -53,3 +53,4 @@ mx_expander_get_type
 mx_deform_texture_get_type
 mx_path_bar_get_type
 mx_entry_get_type
+mx_modal_frame_get_type

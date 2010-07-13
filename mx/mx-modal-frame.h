@@ -51,12 +51,19 @@ G_BEGIN_DECLS
   (G_TYPE_INSTANCE_GET_CLASS ((obj), \
   MX_TYPE_MODAL_FRAME, MxModalFrameClass))
 
+/**
+ * MxModalFrame:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
 typedef struct _MxModalFrame MxModalFrame;
 typedef struct _MxModalFrameClass MxModalFrameClass;
 typedef struct _MxModalFramePrivate MxModalFramePrivate;
 
 struct _MxModalFrame
 {
+  /*< private >*/
   MxBin parent;
 
   MxModalFramePrivate *priv;
