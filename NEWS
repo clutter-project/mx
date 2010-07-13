@@ -1,3 +1,41 @@
+1.1.0
+=====
+
+Changes since 1.0.0:
+
+ * Updated documentation
+ * Fix compilation with recent versions of GTK+
+ * Require GTK+ 2.20
+ * MxWidget: Move padding into the correct struct
+ * Reduce the libtool version age to indicate ABI change
+ * Fix GtkLightSwitch size and remove labels
+ * Focusable: don't accept focus on hidden actors
+ * Allow spacing to be set from CSS in MxTable and MxBoxLayout
+ * MxOffScreen: Add "redirect-enabled" property
+ * MxOffScreen: Add accumulation buffer capability
+ * MxOffScreen: Provide an accessor to the fbo
+ * BoxLayout: add "scroll-to-focused" property
+ * Add MxSettings and support for reading xsettings
+ * Use CoglSubtexture rather than internal subtexture implementation
+ * ScrollView: add shadows to the inside of a scrollview when scrolling
+ * Viewport: respect fill, alignment and padding properties
+ * Window: respect ClutterStage:user-resizable property
+ * Improvements to MxIconTheme
+ * Support pixel (px) and point (pt) font size values in CSS
+ * MxModalFrame: new widget to implement modal dialogs
+
+Updated Translations:
+
+  * Turkish (Ahmet Özgür Erdemli)
+  * Asturian (astur)
+
+Many thanks to:
+  Chris Lord
+  Neil Roberts
+  Thomas Wood
+  iain
+
+
 1.0.0
 =====
 
