@@ -172,7 +172,7 @@ mx_action_class_init (MxActionClass *klass)
                                                         G_PARAM_STATIC_BLURB));
 
   g_object_class_install_property (object_class,
-                                   PROP_DISPLAY_NAME,
+                                   PROP_ICON,
                                    g_param_spec_string ("icon",
                                                         "Icon name",
                                                         "Icon name or path to "
