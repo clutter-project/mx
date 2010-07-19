@@ -120,6 +120,9 @@ static gchar *blur_shader =
   "  }\n";
 #endif
 
+static void mx_modal_frame_show (ClutterActor *self);
+static void mx_modal_frame_hide (ClutterActor *self);
+
 static int
 next_p2 (gint a)
 {
@@ -344,6 +347,8 @@ mx_modal_frame_class_init (MxModalFrameClass *klass)
   actor_class->pick = mx_modal_frame_pick;
   actor_class->map = mx_modal_frame_map;
   actor_class->unmap = mx_modal_frame_unmap;
+  actor_class->show = mx_modal_frame_show;
+  actor_class->hide = mx_modal_frame_hide;
 }
 
 static void
@@ -407,7 +412,8 @@ mx_modal_frame_completed_cb (ClutterTimeline *timeline,
     return;
 
   /* Finish hiding */
-  clutter_actor_hide (self);
+  CLUTTER_ACTOR_SET_FLAGS (self, CLUTTER_ACTOR_VISIBLE);
+  CLUTTER_ACTOR_CLASS (mx_modal_frame_parent_class)->hide (self);
 
   if (priv->blur)
     {
@@ -421,21 +427,28 @@ mx_modal_frame_completed_cb (ClutterTimeline *timeline,
                                         mx_modal_frame_pick_cb, self);
   g_signal_handlers_disconnect_by_func (parent,
                                         mx_modal_frame_allocate_cb, self);
-
 }
 
 static void
 mx_modal_frame_new_frame_cb (ClutterTimeline *timeline,
                              gint             msecs,
-                             MxModalFrame    *frame)
+                             ClutterActor    *self)
 {
+  MxModalFrame *frame = MX_MODAL_FRAME (self);
   MxModalFramePrivate *priv = frame->priv;
 
   if (priv->blur)
     {
+      ClutterActor *parent = clutter_actor_get_parent (self);
       gfloat opacity = clutter_alpha_get_alpha (priv->alpha);
-      clutter_actor_set_opacity (CLUTTER_ACTOR (frame),
-                                 (guint8)(opacity * 255.f));
+
+      clutter_actor_set_opacity (self, (guint8)(opacity * 255.f));
+
+      /* Queue a redraw on the parent, as having our hidden flag set will
+       * short-circuit the redraw queued on ourselves via set_opacity.
+       */
+      if (parent)
+        clutter_actor_queue_redraw (parent);
     }
 }
 
@@ -460,6 +473,7 @@ mx_modal_frame_init (MxModalFrame *self)
   g_signal_connect (self, "queue-relayout",
                     G_CALLBACK (mx_modal_frame_queue_relayout_cb), self);
 
+  g_object_set (G_OBJECT (self), "show-on-set-parent", FALSE, NULL);
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
 }
 
@@ -482,7 +496,7 @@ mx_modal_frame_new (void)
  * @actor: A #ClutterActor
  *
  * Sets the parent of the #MxModalFrame. This is the actor over which the
- * modal frame will appear when mx_modal_frame_show() is called.
+ * modal frame will appear when clutter_actor_show() is called.
  */
 void
 mx_modal_frame_set_transient_parent (MxModalFrame *modal_frame,
@@ -496,25 +510,14 @@ mx_modal_frame_set_transient_parent (MxModalFrame *modal_frame,
   clutter_actor_pop_internal (actor);
 }
 
-/**
- * mx_modal_frame_show:
- * @modal_frame: A #MxModalFrame
- *
- * Shows the #MxModalFrame. When the frame is visible, it will block input
- * to its parent.
- */
-void
-mx_modal_frame_show (MxModalFrame *modal_frame)
+static void
+mx_modal_frame_show (ClutterActor *self)
 {
-  MxModalFramePrivate *priv;
-
-  g_return_if_fail (MX_IS_MODAL_FRAME (modal_frame));
-
-  priv = modal_frame->priv;
+  MxModalFrame *modal_frame = MX_MODAL_FRAME (self);
+  MxModalFramePrivate *priv = modal_frame->priv;
 
   if (!priv->visible)
     {
-      ClutterActor *self = CLUTTER_ACTOR (modal_frame);
       ClutterActor *child = mx_bin_get_child (MX_BIN (self));
       ClutterActor *parent = clutter_actor_get_parent (self);
 
@@ -547,7 +550,8 @@ mx_modal_frame_show (MxModalFrame *modal_frame)
         }
 
       /* Create the blurred background */
-      if (clutter_feature_available (CLUTTER_FEATURE_SHADERS_GLSL))
+      if (clutter_feature_available (CLUTTER_FEATURE_SHADERS_GLSL) &&
+          clutter_feature_available (CLUTTER_FEATURE_OFFSCREEN))
         {
           GError *error = NULL;
           ClutterShader *shader;
@@ -581,6 +585,7 @@ mx_modal_frame_show (MxModalFrame *modal_frame)
               g_warning (G_STRLOC ": Error compiling shader: %s",
                          error->message);
               g_error_free (error);
+              g_object_unref (shader);
             }
         }
 
@@ -597,7 +602,7 @@ mx_modal_frame_show (MxModalFrame *modal_frame)
                               modal_frame);
 
       clutter_actor_set_opacity (self, 0x00);
-      clutter_actor_show (self);
+      CLUTTER_ACTOR_CLASS (mx_modal_frame_parent_class)->show (self);
       clutter_alpha_set_mode (priv->alpha, CLUTTER_EASE_OUT_QUAD);
       clutter_timeline_start (priv->timeline);
 
@@ -616,31 +621,26 @@ mx_modal_frame_show (MxModalFrame *modal_frame)
     }
 }
 
-/**
- * mx_modal_frame_hide:
- * @modal_frame: A #MxModalFrame
- *
- * Hides the #MxModalFrame.
- */
-void
-mx_modal_frame_hide (MxModalFrame *modal_frame)
+static void
+mx_modal_frame_hide (ClutterActor *self)
 {
-  MxModalFramePrivate *priv;
-
-  g_return_if_fail (MX_IS_MODAL_FRAME (modal_frame));
-
-  priv = modal_frame->priv;
+  MxModalFrame *modal_frame = MX_MODAL_FRAME (self);
+  MxModalFramePrivate *priv = modal_frame->priv;
 
   if (priv->visible)
     {
-      ClutterActor *self = CLUTTER_ACTOR (modal_frame);
       ClutterActor *child = mx_bin_get_child (MX_BIN (self));
       ClutterActor *parent = clutter_actor_get_parent (self);
 
-      if (!parent)
-        return;
-
       priv->visible = FALSE;
+
+      if (!parent)
+        {
+          CLUTTER_ACTOR_CLASS (mx_modal_frame_parent_class)->hide (self);
+          return;
+        }
+      else
+        CLUTTER_ACTOR_UNSET_FLAGS (self, CLUTTER_ACTOR_VISIBLE);
 
       if (clutter_timeline_is_playing (priv->timeline))
         {

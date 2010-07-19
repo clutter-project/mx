@@ -40,9 +40,9 @@ modal_frame_main (ClutterContainer *group)
   clutter_container_add (group, launch, NULL);
 
   g_signal_connect_swapped (launch, "clicked",
-                            G_CALLBACK (mx_modal_frame_show), dialog);
+                            G_CALLBACK (clutter_actor_show), dialog);
   g_signal_connect_swapped (close, "clicked",
-                            G_CALLBACK (mx_modal_frame_hide), dialog);
+                            G_CALLBACK (clutter_actor_hide), dialog);
 
   stage = clutter_actor_get_stage (CLUTTER_ACTOR (group));
   mx_modal_frame_set_transient_parent (MX_MODAL_FRAME (dialog),

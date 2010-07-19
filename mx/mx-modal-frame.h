@@ -81,9 +81,6 @@ ClutterActor *mx_modal_frame_new (void);
 void mx_modal_frame_set_transient_parent (MxModalFrame *modal_frame,
                                           ClutterActor *actor);
 
-void mx_modal_frame_show (MxModalFrame *modal_frame);
-void mx_modal_frame_hide (MxModalFrame *modal_frame);
-
 G_END_DECLS
 
 #endif /* _MX_MODAL_FRAME_H */
