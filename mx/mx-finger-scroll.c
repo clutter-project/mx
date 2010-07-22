@@ -50,6 +50,8 @@ struct _MxFingerScrollPrivate
 
   /* Scroll mode */
   MxFingerScrollMode     mode;
+  gboolean               use_captured;
+  guint32                button;
 
   /* Mouse motion event information */
   GArray                *motion_buffer;
@@ -70,7 +72,9 @@ enum {
   PROP_DECEL_RATE,
   PROP_BUFFER,
   PROP_HADJUST,
-  PROP_VADJUST
+  PROP_VADJUST,
+  PROP_BUTTON,
+  PROP_USE_CAPTURED
 };
 
 /* MxScrollableIface implementation */
@@ -152,6 +156,14 @@ mx_finger_scroll_get_property (GObject *object, guint property_id,
       g_value_set_object (value, adjustment);
       break;
 
+    case PROP_BUTTON:
+      g_value_set_uint (value, priv->button);
+      break;
+
+    case PROP_USE_CAPTURED:
+      g_value_set_boolean (value, priv->use_captured);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -163,7 +175,8 @@ mx_finger_scroll_set_property (GObject *object, guint property_id,
 {
   MxAdjustment *adjustment;
   MxScrollable *scrollable;
-  MxFingerScrollPrivate *priv = MX_FINGER_SCROLL (object)->priv;
+  MxFingerScroll *self = MX_FINGER_SCROLL (object);
+  MxFingerScrollPrivate *priv = self->priv;
 
   switch (property_id)
     {
@@ -196,6 +209,14 @@ mx_finger_scroll_set_property (GObject *object, guint property_id,
       mx_finger_scroll_set_adjustments (scrollable,
                                         adjustment,
                                         g_value_get_object (value));
+      break;
+
+    case PROP_BUTTON:
+      mx_finger_scroll_set_mouse_button (self, g_value_get_uint (value));
+      break;
+
+    case PROP_USE_CAPTURED:
+      mx_finger_scroll_set_use_captured (self, g_value_get_boolean (value));
       break;
 
     default:
@@ -317,6 +338,20 @@ mx_finger_scroll_class_init (MxFingerScrollClass *klass)
                              MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_BUFFER, pspec);
 
+  pspec = g_param_spec_uint ("mouse-button",
+                             "Mouse button",
+                             "The mouse button used to control scrolling",
+                             0, G_MAXUINT, 1,
+                             MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_BUTTON, pspec);
+
+  pspec = g_param_spec_boolean ("use-captured",
+                                "Use captured",
+                                "Use captured events to initiate scrolling",
+                                FALSE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_USE_CAPTURED, pspec);
+
   /* MxScrollable properties */
   g_object_class_override_property (object_class,
                                     PROP_HADJUST,
@@ -328,13 +363,17 @@ mx_finger_scroll_class_init (MxFingerScrollClass *klass)
 }
 
 static gboolean
-motion_event_cb (ClutterActor *actor,
+motion_event_cb (ClutterActor       *stage,
                  ClutterMotionEvent *event,
-                 MxFingerScroll *scroll)
+                 MxFingerScroll     *scroll)
 {
   gfloat x, y;
 
   MxFingerScrollPrivate *priv = scroll->priv;
+  ClutterActor *actor = CLUTTER_ACTOR (scroll);
+
+  if (event->type != CLUTTER_MOTION)
+    return FALSE;
 
   if (clutter_actor_transform_stage_point (actor,
                                            event->x,
@@ -479,25 +518,27 @@ deceleration_new_frame_cb (ClutterTimeline *timeline,
 }
 
 static gboolean
-button_release_event_cb (ClutterActor *actor,
+button_release_event_cb (ClutterActor       *stage,
                          ClutterButtonEvent *event,
-                         MxFingerScroll *scroll)
+                         MxFingerScroll     *scroll)
 {
   MxFingerScrollPrivate *priv = scroll->priv;
+  ClutterActor *actor = CLUTTER_ACTOR (scroll);
   ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
   gboolean decelerating = FALSE;
 
-  if (event->button != 1)
+  if ((event->type != CLUTTER_BUTTON_RELEASE) ||
+      (event->button != priv->button))
     return FALSE;
 
-  g_signal_handlers_disconnect_by_func (actor,
+  g_signal_handlers_disconnect_by_func (stage,
                                         motion_event_cb,
                                         scroll);
-  g_signal_handlers_disconnect_by_func (actor,
+  g_signal_handlers_disconnect_by_func (stage,
                                         button_release_event_cb,
                                         scroll);
 
-  clutter_ungrab_pointer ();
+  clutter_set_motion_events_enabled (TRUE);
 
   if ((priv->mode == MX_FINGER_SCROLL_MODE_KINETIC) && (child))
     {
@@ -650,52 +691,30 @@ button_release_event_cb (ClutterActor *actor,
       clamp_adjustments (scroll);
     }
 
-  /* Pass through events to children.
-   * FIXME: this probably breaks click-count.
-   */
-  clutter_event_put ((ClutterEvent *)event);
-
   return TRUE;
 }
 
 static gboolean
-after_event_cb (MxFingerScroll *scroll)
-{
-  /* Check the pointer grab - if something else has grabbed it - for example,
-   * a scroll-bar or some such, don't do our funky stuff.
-   */
-  if (clutter_get_pointer_grab () != CLUTTER_ACTOR (scroll))
-    {
-      g_signal_handlers_disconnect_by_func (scroll,
-                                            motion_event_cb,
-                                            scroll);
-      g_signal_handlers_disconnect_by_func (scroll,
-                                            button_release_event_cb,
-                                            scroll);
-    }
-
-  return FALSE;
-}
-
-static gboolean
-captured_event_cb (ClutterActor     *actor,
-                   ClutterEvent     *event,
-                   MxFingerScroll *scroll)
+button_press_event_cb (ClutterActor     *actor,
+                       ClutterEvent     *event,
+                       MxFingerScroll *scroll)
 {
   MxFingerScrollPrivate *priv = scroll->priv;
+  ClutterButtonEvent *bevent = (ClutterButtonEvent *)event;
+  ClutterActor *stage = clutter_actor_get_stage (actor);
 
-  if (event->type == CLUTTER_BUTTON_PRESS)
+  if ((event->type == CLUTTER_BUTTON_PRESS) &&
+      (bevent->button == priv->button) &&
+      stage)
     {
       MxFingerScrollMotion *motion;
-      ClutterButtonEvent *bevent = (ClutterButtonEvent *)event;
 
       /* Reset motion buffer */
       priv->last_motion = 0;
       motion = &g_array_index (priv->motion_buffer, MxFingerScrollMotion, 0);
 
-      if ((bevent->button == 1) &&
-          (clutter_actor_transform_stage_point (actor, bevent->x, bevent->y,
-                                                &motion->x, &motion->y)))
+      if (clutter_actor_transform_stage_point (actor, bevent->x, bevent->y,
+                                               &motion->x, &motion->y))
         {
           g_get_current_time (&motion->time);
 
@@ -706,22 +725,14 @@ captured_event_cb (ClutterActor     *actor,
               priv->deceleration_timeline = NULL;
             }
 
-          clutter_grab_pointer (actor);
+          clutter_set_motion_events_enabled (FALSE);
 
-          /* Add a high priority idle to check the grab after the event
-           * emission is finished.
-           */
-          g_idle_add_full (G_PRIORITY_HIGH_IDLE,
-                           (GSourceFunc)after_event_cb,
-                           scroll,
-                           NULL);
-
-          g_signal_connect (actor,
-                            "motion-event",
+          g_signal_connect (stage,
+                            "captured-event",
                             G_CALLBACK (motion_event_cb),
                             scroll);
-          g_signal_connect (actor,
-                            "button-release-event",
+          g_signal_connect (stage,
+                            "captured-event",
                             G_CALLBACK (button_release_event_cb),
                             scroll);
         }
@@ -762,10 +773,11 @@ mx_finger_scroll_init (MxFingerScroll *self)
                                            sizeof (MxFingerScrollMotion), 3);
   g_array_set_size (priv->motion_buffer, 3);
   priv->decel_rate = 1.1f;
+  priv->button = 1;
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
-  g_signal_connect (self, "captured-event",
-                    G_CALLBACK (captured_event_cb), self);
+  g_signal_connect (self, "button-press-event",
+                    G_CALLBACK (button_press_event_cb), self);
   g_signal_connect (self, "actor-added",
                     G_CALLBACK (mx_finger_scroll_actor_added_cb), self);
   g_signal_connect (self, "actor-removed",
@@ -795,4 +807,61 @@ mx_finger_scroll_stop (MxFingerScroll *scroll)
       g_object_unref (priv->deceleration_timeline);
       priv->deceleration_timeline = NULL;
     }
+}
+
+void
+mx_finger_scroll_set_mouse_button (MxFingerScroll *scroll,
+                                   guint32         button)
+{
+  MxFingerScrollPrivate *priv;
+
+  g_return_if_fail (MX_IS_FINGER_SCROLL (scroll));
+
+  priv = scroll->priv;
+
+  if (priv->button != button)
+    {
+      priv->button = button;
+      g_object_notify (G_OBJECT (scroll), "mouse-button");
+    }
+}
+
+guint32
+mx_finger_scroll_get_mouse_button (MxFingerScroll *scroll)
+{
+  g_return_val_if_fail (MX_IS_FINGER_SCROLL (scroll), 0);
+  return scroll->priv->button;
+}
+
+void
+mx_finger_scroll_set_use_captured (MxFingerScroll *scroll,
+                                   gboolean        use_captured)
+{
+  MxFingerScrollPrivate *priv;
+
+  g_return_if_fail (MX_IS_FINGER_SCROLL (scroll));
+
+  priv = scroll->priv;
+  if (priv->use_captured != use_captured)
+    {
+      priv->use_captured = use_captured;
+
+      g_signal_handlers_disconnect_by_func (scroll,
+                                            button_press_event_cb,
+                                            scroll);
+
+      g_signal_connect (scroll,
+                        use_captured ? "captured-event" : "button-press-event",
+                        G_CALLBACK (button_press_event_cb),
+                        scroll);
+
+      g_object_notify (G_OBJECT (scroll), "use-captured");
+    }
+}
+
+gboolean
+mx_finger_scroll_get_use_captured (MxFingerScroll *scroll)
+{
+  g_return_val_if_fail (MX_IS_FINGER_SCROLL (scroll), FALSE);
+  return scroll->priv->use_captured;
 }

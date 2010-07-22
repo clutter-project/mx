@@ -70,6 +70,14 @@ ClutterActor *mx_finger_scroll_new  (MxFingerScrollMode mode);
 
 void          mx_finger_scroll_stop (MxFingerScroll *scroll);
 
+void          mx_finger_scroll_set_use_captured (MxFingerScroll *scroll,
+                                                 gboolean        use_captured);
+gboolean      mx_finger_scroll_get_use_captured (MxFingerScroll *scroll);
+
+void          mx_finger_scroll_set_mouse_button (MxFingerScroll *scroll,
+                                                 guint32         button);
+guint32       mx_finger_scroll_get_mouse_button (MxFingerScroll *scroll);
+
 G_END_DECLS
 
 #endif /* __MX_FINGER_SCROLL_H__ */
