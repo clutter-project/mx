@@ -50,6 +50,7 @@ struct _MxOffscreenPrivate
   guint         pick_child  : 1;
   guint         auto_update : 1;
   guint         redirect_enabled     : 1;
+  guint         queued_redraw        : 1;
 
   guint         acc_enabled : 1;
   guint         blend_set   : 1;
@@ -767,10 +768,15 @@ mx_offscreen_queue_redraw_cb (ClutterActor *source,
                               ClutterActor *origin,
                               ClutterActor *offscreen)
 {
-  if (origin == offscreen)
-    return;
+  MxOffscreenPrivate *priv = MX_OFFSCREEN (offscreen)->priv;
 
-  clutter_actor_queue_redraw (offscreen);
+  /* This is to stop possible infinite recursion when cloning. */
+  if (!priv->queued_redraw)
+    {
+      priv->queued_redraw = TRUE;
+      clutter_actor_queue_redraw (offscreen);
+      priv->queued_redraw = FALSE;
+    }
 }
 
 /**
