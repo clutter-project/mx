@@ -69,7 +69,7 @@ enum {
   PROP_0,
 
   PROP_DECEL_RATE,
-  PROP_BUFFER_SIZE,
+/*  PROP_BUFFER_SIZE,*/
   PROP_HADJUST,
   PROP_VADJUST,
   PROP_BUTTON,
@@ -137,9 +137,11 @@ mx_kinetic_scroll_view_get_property (GObject    *object,
       g_value_set_double (value, priv->decel_rate);
       break;
 
+/*
     case PROP_BUFFER_SIZE :
       g_value_set_uint (value, priv->motion_buffer->len);
       break;
+*/
 
     case PROP_HADJUST:
       mx_kinetic_scroll_view_get_adjustments (MX_SCROLLABLE (object),
@@ -182,8 +184,11 @@ mx_kinetic_scroll_view_set_property (GObject      *object,
       mx_kinetic_scroll_view_set_decel_rate (self, g_value_get_double (value));
       break;
 
+/*
     case PROP_BUFFER_SIZE :
+      mx_kinetic_scroll_view_set_buffer_size (self, g_value_get_uint (value));
       break;
+*/
 
     case PROP_HADJUST:
       scrollable = MX_SCROLLABLE (object);
@@ -316,12 +321,14 @@ mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
                                MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_DECEL_RATE, pspec);
 
+  /*
   pspec = g_param_spec_uint ("buffer-size",
                              "Buffer size",
                              "Amount of motion events to buffer",
                              1, G_MAXUINT, 3,
                              MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_BUFFER_SIZE, pspec);
+  */
 
   pspec = g_param_spec_uint ("mouse-button",
                              "Mouse button",
@@ -823,6 +830,7 @@ mx_kinetic_scroll_view_get_decel_rate (MxKineticScrollView *scroll)
   return scroll->priv->decel_rate;
 }
 
+/*
 void
 mx_kinetic_scroll_view_set_buffer_size (MxKineticScrollView *scroll,
                                         guint                size)
@@ -846,6 +854,7 @@ mx_kinetic_scroll_view_get_buffer_size (MxKineticScrollView *scroll)
   g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), 0);
   return scroll->priv->motion_buffer->len;
 }
+*/
 
 void
 mx_kinetic_scroll_view_set_mouse_button (MxKineticScrollView *scroll,
