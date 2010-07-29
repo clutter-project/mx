@@ -69,7 +69,7 @@ enum {
   PROP_0,
 
   PROP_DECEL_RATE,
-  PROP_BUFFER,
+  PROP_BUFFER_SIZE,
   PROP_HADJUST,
   PROP_VADJUST,
   PROP_BUTTON,
@@ -137,7 +137,7 @@ mx_kinetic_scroll_view_get_property (GObject    *object,
       g_value_set_double (value, priv->decel_rate);
       break;
 
-    case PROP_BUFFER :
+    case PROP_BUFFER_SIZE :
       g_value_set_uint (value, priv->motion_buffer->len);
       break;
 
@@ -175,18 +175,14 @@ mx_kinetic_scroll_view_set_property (GObject      *object,
   MxAdjustment *adjustment;
   MxScrollable *scrollable;
   MxKineticScrollView *self = MX_KINETIC_SCROLL_VIEW (object);
-  MxKineticScrollViewPrivate *priv = self->priv;
 
   switch (property_id)
     {
     case PROP_DECEL_RATE :
-      priv->decel_rate = g_value_get_double (value);
-      g_object_notify (object, "decel-rate");
+      mx_kinetic_scroll_view_set_decel_rate (self, g_value_get_double (value));
       break;
 
-    case PROP_BUFFER :
-      g_array_set_size (priv->motion_buffer, g_value_get_uint (value));
-      g_object_notify (object, "motion-buffer");
+    case PROP_BUFFER_SIZE :
       break;
 
     case PROP_HADJUST:
@@ -320,12 +316,12 @@ mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
                                MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_DECEL_RATE, pspec);
 
-  pspec = g_param_spec_uint ("motion-buffer",
-                             "Motion buffer",
+  pspec = g_param_spec_uint ("buffer-size",
+                             "Buffer size",
                              "Amount of motion events to buffer",
                              1, G_MAXUINT, 3,
                              MX_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_BUFFER, pspec);
+  g_object_class_install_property (object_class, PROP_BUFFER_SIZE, pspec);
 
   pspec = g_param_spec_uint ("mouse-button",
                              "Mouse button",
@@ -803,6 +799,55 @@ mx_kinetic_scroll_view_stop (MxKineticScrollView *scroll)
       g_object_unref (priv->deceleration_timeline);
       priv->deceleration_timeline = NULL;
     }
+}
+
+void
+mx_kinetic_scroll_view_set_decel_rate (MxKineticScrollView *scroll,
+                                       gdouble              rate)
+{
+  MxKineticScrollViewPrivate *priv;
+
+  g_return_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll));
+  g_return_if_fail (rate >= 1.1);
+
+  priv = scroll->priv;
+
+  if (priv->decel_rate != rate)
+    {
+      priv->decel_rate = rate;
+      g_object_notify (G_OBJECT (scroll), "decel-rate");
+    }
+}
+
+gdouble
+mx_kinetic_scroll_view_get_decel_rate (MxKineticScrollView *scroll)
+{
+  g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), 0.0);
+  return scroll->priv->decel_rate;
+}
+
+void
+mx_kinetic_scroll_view_set_buffer_size (MxKineticScrollView *scroll,
+                                        guint                size)
+{
+  MxKineticScrollViewPrivate *priv;
+
+  g_return_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll));
+  g_return_if_fail (size > 0);
+
+  priv = scroll->priv;
+  if (priv->motion_buffer->len != size)
+    {
+      g_array_set_size (priv->motion_buffer, size);
+      g_object_notify (G_OBJECT (scroll), "buffer-size");
+    }
+}
+
+guint
+mx_kinetic_scroll_view_get_buffer_size (MxKineticScrollView *scroll)
+{
+  g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), 0);
+  return scroll->priv->motion_buffer->len;
 }
 
 void

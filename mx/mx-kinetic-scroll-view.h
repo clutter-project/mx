@@ -59,6 +59,14 @@ ClutterActor *mx_kinetic_scroll_view_new  (void);
 
 void mx_kinetic_scroll_view_stop (MxKineticScrollView *scroll);
 
+void mx_kinetic_scroll_view_set_decel_rate (MxKineticScrollView *scroll,
+                                            gdouble              rate);
+gdouble mx_kinetic_scroll_view_get_decel_rate (MxKineticScrollView *scroll);
+
+void mx_kinetic_scroll_view_set_buffer_size (MxKineticScrollView *scroll,
+                                             guint                size);
+guint mx_kinetic_scroll_view_get_buffer_size (MxKineticScrollView *scroll);
+
 void mx_kinetic_scroll_view_set_use_captured (MxKineticScrollView *scroll,
                                               gboolean        use_captured);
 gboolean mx_kinetic_scroll_view_get_use_captured (MxKineticScrollView *scroll);
