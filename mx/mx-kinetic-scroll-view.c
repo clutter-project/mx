@@ -21,6 +21,20 @@
  * Written by: Chris Lord <chris@linux.intel.com>
  */
 
+/**
+ * SECTION:mx-kinetic-scroll-view
+ * @short_description: A kinetic scrolling container widget
+ *
+ * #MxKineticScrollView is a single child container for actors that implements
+ * #MxScrollable. It allows the contained child to be dragged to scroll, and
+ * maintains the momentum once the drag is complete. Deceleration after
+ * dragging is configurable, and it will always snap to the
+ * #MxAdjustment:step-increment boundary.
+ *
+ * #MxKineticScrollView also implements #MxScrollable itself, allowing it to
+ * be embedded in an #MxScrollView to provide scroll-bars.
+ */
+
 #include "mx-kinetic-scroll-view.h"
 #include "mx-enum-types.h"
 #include "mx-marshal.h"
@@ -783,12 +797,25 @@ mx_kinetic_scroll_view_init (MxKineticScrollView *self)
   mx_bin_set_alignment (MX_BIN (self), MX_ALIGN_START, MX_ALIGN_START);
 }
 
+/**
+ * mx_kinetic_scroll_view_new:
+ *
+ * Creates a new #MxKineticScrollView.
+ *
+ * Returns: a newly allocated #MxKineticScrollView
+ */
 ClutterActor *
 mx_kinetic_scroll_view_new ()
 {
   return g_object_new (MX_TYPE_KINETIC_SCROLL_VIEW, NULL);
 }
 
+/**
+ * mx_kinetic_scroll_view_stop:
+ * @scroll: A #MxKineticScrollView
+ *
+ * Stops any current movement due to kinetic scrolling.
+ */
 void
 mx_kinetic_scroll_view_stop (MxKineticScrollView *scroll)
 {
@@ -806,6 +833,15 @@ mx_kinetic_scroll_view_stop (MxKineticScrollView *scroll)
     }
 }
 
+/**
+ * mx_kinetic_scroll_view_set_deceleration:
+ * @scroll: A #MxKineticScrollView
+ * @rate: The deceleration rate
+ *
+ * Sets the deceleration rate when a drag is finished on the kinetic
+ * scroll-view. This is the value that the momentum is divided by
+ * every 60th of a second.
+ */
 void
 mx_kinetic_scroll_view_set_deceleration (MxKineticScrollView *scroll,
                                          gdouble              rate)
@@ -824,6 +860,14 @@ mx_kinetic_scroll_view_set_deceleration (MxKineticScrollView *scroll,
     }
 }
 
+/**
+ * mx_kinetic_scroll_view_get_deceleration:
+ * @scroll: A #MxKineticScrollView
+ *
+ * Retrieves the deceleration rate of the kinetic scroll-view.
+ *
+ * Returns: The deceleration rate of the kinetic scroll-view
+ */
 gdouble
 mx_kinetic_scroll_view_get_deceleration (MxKineticScrollView *scroll)
 {
@@ -857,6 +901,14 @@ mx_kinetic_scroll_view_get_buffer_size (MxKineticScrollView *scroll)
 }
 */
 
+/**
+ * mx_kinetic_scroll_view_set_mouse_button:
+ * @scroll: A #MxKineticScrollView
+ * @button: A mouse button number
+ *
+ * Sets the mouse button number used to initiate drag events on the kinetic
+ * scroll-view.
+ */
 void
 mx_kinetic_scroll_view_set_mouse_button (MxKineticScrollView *scroll,
                                          guint32              button)
@@ -874,6 +926,15 @@ mx_kinetic_scroll_view_set_mouse_button (MxKineticScrollView *scroll,
     }
 }
 
+/**
+ * mx_kinetic_scroll_view_get_mouse_button:
+ * @scroll: A #MxKineticScrollView
+ *
+ * Gets the #MxKineticScrollView:mouse-button property
+ *
+ * Returns: The mouse button number used to initiate drag events on the
+ *          kinetic scroll-view
+ */
 guint32
 mx_kinetic_scroll_view_get_mouse_button (MxKineticScrollView *scroll)
 {
@@ -881,6 +942,15 @@ mx_kinetic_scroll_view_get_mouse_button (MxKineticScrollView *scroll)
   return scroll->priv->button;
 }
 
+/**
+ * mx_kinetic_scroll_view_set_use_captured:
+ * @scroll: A #MxKineticScrollView
+ * @use_captured: %TRUE to use captured events
+ *
+ * Sets whether to use captured events to initiate drag events. This can be
+ * used to block events that would initiate scrolling from reaching the child
+ * actor.
+ */
 void
 mx_kinetic_scroll_view_set_use_captured (MxKineticScrollView *scroll,
                                          gboolean             use_captured)
@@ -907,6 +977,14 @@ mx_kinetic_scroll_view_set_use_captured (MxKineticScrollView *scroll,
     }
 }
 
+/**
+ * mx_kinetic_scroll_view_get_use_captured:
+ * @scroll: A #MxKineticScrollView
+ *
+ * Gets the #MxKineticScrollView:use-captured property.
+ *
+ * Returns: %TRUE if captured-events should be used to initiate scrolling
+ */
 gboolean
 mx_kinetic_scroll_view_get_use_captured (MxKineticScrollView *scroll)
 {

@@ -36,6 +36,12 @@ G_BEGIN_DECLS
 #define MX_IS_KINETIC_SCROLL_VIEW_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MX_TYPE_KINETIC_SCROLL_VIEW))
 #define MX_KINETIC_SCROLL_VIEW_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MX_TYPE_KINETIC_SCROLL_VIEW, MxKineticScrollViewClass))
 
+/**
+ * MxKineticScrollView:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
 typedef struct _MxKineticScrollView          MxKineticScrollView;
 typedef struct _MxKineticScrollViewPrivate   MxKineticScrollViewPrivate;
 typedef struct _MxKineticScrollViewClass     MxKineticScrollViewClass;

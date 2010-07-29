@@ -865,6 +865,28 @@ MxScrollViewPrivate
 </SECTION>
 
 <SECTION>
+<FILE>mx-kinetic-scroll-view</FILE>
+<TITLE>MxKineticScrollView</TITLE>
+MxKineticScrollView
+mx_kinetic_scroll_view_new
+mx_kinetic_scroll_view_stop
+mx_kinetic_scroll_view_set_deceleration
+mx_kinetic_scroll_view_get_deceleration
+mx_kinetic_scroll_view_set_use_captured
+mx_kinetic_scroll_view_get_use_captured
+mx_kinetic_scroll_view_set_mouse_button
+mx_kinetic_scroll_view_get_mouse_button
+<SUBSECTION Standard>
+MX_KINETIC_SCROLL_VIEW
+MX_IS_KINETIC_SCROLL_VIEW
+MX_TYPE_KINETIC_SCROLL_VIEW
+mx_kinetic_scroll_view_get_type
+MX_KINETIC_SCROLL_VIEW_CLASS
+MX_KINETIC_SCROLL_VIEW_GET_CLASS
+MxKineticScrollViewPrivate
+</SECTION>
+
+<SECTION>
 <FILE>mx-toggle</FILE>
 <TITLE>MxToggle</TITLE>
 MxToggle
