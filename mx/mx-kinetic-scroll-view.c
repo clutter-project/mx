@@ -579,10 +579,10 @@ button_release_event_cb (ClutterActor        *stage,
           /* If the delta is too low for the equations to work,
            * bump the values up a bit.
            */
-          if (ABS (priv->dx) < 2)
-            priv->dx = (priv->dx > 0) ? 2 : -2;
-          if (ABS (priv->dy) < 2)
-            priv->dy = (priv->dy > 0) ? 2 : -2;
+          if (ABS (priv->dx) < 1)
+            priv->dx = (priv->dx > 0) ? 1 : -1;
+          if (ABS (priv->dy) < 1)
+            priv->dy = (priv->dy > 0) ? 1 : -1;
 
           /* Get adjustments to do step-increment snapping */
           mx_scrollable_get_adjustments (MX_SCROLLABLE (child),
@@ -596,13 +596,10 @@ button_release_event_cb (ClutterActor        *stage,
            *
            * Rearrange to n = log (x / z) / log (y)
            * To simplify, z = 1, so n = log (x) / log (y)
-           *
-           * As z = 1, this will cause stops to be slightly abrupt -
-           * add a constant 15 frames to compensate.
            */
           y = priv->decel_rate;
-          nx = logf (ABS (priv->dx)) / logf (y) + 15.0;
-          ny = logf (ABS (priv->dy)) / logf (y) + 15.0;
+          nx = logf (ABS (priv->dx)) / logf (y);
+          ny = logf (ABS (priv->dy)) / logf (y);
 
           /* Now we have n, adjust dx/dy so that we finish on a step
            * boundary.
@@ -662,7 +659,7 @@ button_release_event_cb (ClutterActor        *stage,
           priv->dy = d / ay;
 
           priv->deceleration_timeline =
-            clutter_timeline_new ((gint)(MAX (nx, ny) * (1000/60.0)));
+            clutter_timeline_new (MAX (1, (gint)(MAX (nx, ny) * (1000/60.0))));
 
           g_signal_connect (priv->deceleration_timeline, "new_frame",
                             G_CALLBACK (deceleration_new_frame_cb), scroll);
