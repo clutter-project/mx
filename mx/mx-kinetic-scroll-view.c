@@ -68,7 +68,7 @@ struct _MxKineticScrollViewPrivate
 enum {
   PROP_0,
 
-  PROP_DECEL_RATE,
+  PROP_DECELERATION,
 /*  PROP_BUFFER_SIZE,*/
   PROP_HADJUST,
   PROP_VADJUST,
@@ -133,7 +133,7 @@ mx_kinetic_scroll_view_get_property (GObject    *object,
 
   switch (property_id)
     {
-    case PROP_DECEL_RATE :
+    case PROP_DECELERATION :
       g_value_set_double (value, priv->decel_rate);
       break;
 
@@ -180,8 +180,9 @@ mx_kinetic_scroll_view_set_property (GObject      *object,
 
   switch (property_id)
     {
-    case PROP_DECEL_RATE :
-      mx_kinetic_scroll_view_set_decel_rate (self, g_value_get_double (value));
+    case PROP_DECELERATION :
+      mx_kinetic_scroll_view_set_deceleration (self,
+                                               g_value_get_double (value));
       break;
 
 /*
@@ -314,12 +315,12 @@ mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
   actor_class->allocate =
     mx_kinetic_scroll_view_allocate;
 
-  pspec = g_param_spec_double ("decel-rate",
-                               "Deceleration rate",
+  pspec = g_param_spec_double ("deceleration",
+                               "Deceleration",
                                "Rate at which the view will decelerate in.",
                                1.1, G_MAXDOUBLE, 1.1,
                                MX_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_DECEL_RATE, pspec);
+  g_object_class_install_property (object_class, PROP_DECELERATION, pspec);
 
   /*
   pspec = g_param_spec_uint ("buffer-size",
@@ -806,8 +807,8 @@ mx_kinetic_scroll_view_stop (MxKineticScrollView *scroll)
 }
 
 void
-mx_kinetic_scroll_view_set_decel_rate (MxKineticScrollView *scroll,
-                                       gdouble              rate)
+mx_kinetic_scroll_view_set_deceleration (MxKineticScrollView *scroll,
+                                         gdouble              rate)
 {
   MxKineticScrollViewPrivate *priv;
 
@@ -819,12 +820,12 @@ mx_kinetic_scroll_view_set_decel_rate (MxKineticScrollView *scroll,
   if (priv->decel_rate != rate)
     {
       priv->decel_rate = rate;
-      g_object_notify (G_OBJECT (scroll), "decel-rate");
+      g_object_notify (G_OBJECT (scroll), "deceleration");
     }
 }
 
 gdouble
-mx_kinetic_scroll_view_get_decel_rate (MxKineticScrollView *scroll)
+mx_kinetic_scroll_view_get_deceleration (MxKineticScrollView *scroll)
 {
   g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), 0.0);
   return scroll->priv->decel_rate;
