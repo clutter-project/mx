@@ -48,8 +48,6 @@ struct _MxFingerScrollPrivate
 {
   ClutterActor          *child;
 
-  /* Scroll mode */
-  MxFingerScrollMode     mode;
   gboolean               use_captured;
   guint32                button;
 
@@ -57,7 +55,7 @@ struct _MxFingerScrollPrivate
   GArray                *motion_buffer;
   guint                  last_motion;
 
-  /* Variables for storing acceleration information for kinetic mode */
+  /* Variables for storing acceleration information */
   ClutterTimeline       *deceleration_timeline;
   gfloat                 dx;
   gfloat                 dy;
@@ -68,7 +66,6 @@ struct _MxFingerScrollPrivate
 enum {
   PROP_0,
 
-  PROP_MODE,
   PROP_DECEL_RATE,
   PROP_BUFFER,
   PROP_HADJUST,
@@ -132,10 +129,6 @@ mx_finger_scroll_get_property (GObject *object, guint property_id,
 
   switch (property_id)
     {
-    case PROP_MODE :
-      g_value_set_enum (value, priv->mode);
-      break;
-
     case PROP_DECEL_RATE :
       g_value_set_double (value, priv->decel_rate);
       break;
@@ -180,11 +173,6 @@ mx_finger_scroll_set_property (GObject *object, guint property_id,
 
   switch (property_id)
     {
-    case PROP_MODE :
-      priv->mode = g_value_get_enum (value);
-      g_object_notify (object, "mode");
-      break;
-
     case PROP_DECEL_RATE :
       priv->decel_rate = g_value_get_double (value);
       g_object_notify (object, "decel-rate");
@@ -315,18 +303,9 @@ mx_finger_scroll_class_init (MxFingerScrollClass *klass)
   actor_class->get_preferred_height = mx_finger_scroll_get_preferred_height;
   actor_class->allocate = mx_finger_scroll_allocate;
 
-  pspec = g_param_spec_enum ("mode",
-                             "Mode",
-                             "Scrolling mode",
-                             MX_TYPE_FINGER_SCROLL_MODE,
-                             MX_FINGER_SCROLL_MODE_PUSH,
-                             MX_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_MODE, pspec);
-
   pspec = g_param_spec_double ("decel-rate",
                                "Deceleration rate",
-                               "Rate at which the view will decelerate in "
-                               "kinetic mode.",
+                               "Rate at which the view will decelerate in.",
                                1.1, G_MAXDOUBLE, 1.1,
                                MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_DECEL_RATE, pspec);
@@ -539,7 +518,7 @@ button_release_event_cb (ClutterActor       *stage,
 
   clutter_set_motion_events_enabled (TRUE);
 
-  if ((priv->mode == MX_FINGER_SCROLL_MODE_KINETIC) && (child))
+  if (child)
     {
       gfloat event_x, event_y;
 
@@ -794,9 +773,9 @@ mx_finger_scroll_init (MxFingerScroll *self)
 }
 
 ClutterActor *
-mx_finger_scroll_new (MxFingerScrollMode mode)
+mx_finger_scroll_new ()
 {
-  return g_object_new (MX_TYPE_FINGER_SCROLL, "mode", mode, NULL);
+  return g_object_new (MX_TYPE_FINGER_SCROLL, NULL);
 }
 
 void

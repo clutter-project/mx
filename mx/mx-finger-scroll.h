@@ -35,18 +35,6 @@ G_BEGIN_DECLS
 #define MX_IS_FINGER_SCROLL_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MX_TYPE_FINGER_SCROLL))
 #define MX_FINGER_SCROLL_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MX_TYPE_FINGER_SCROLL, MxFingerScrollClass))
 
-/**
- * MxFingerScrollMode:
- * @MX_FINGER_SCROLL_MODE_PUSH: Non-kinetic scrolling
- * @MX_FINGER_SCROLL_MODE_KINETIC: Kinetic scrolling
- *
- * Type of scrolling.
- */
-typedef enum {
-  MX_FINGER_SCROLL_MODE_PUSH,
-  MX_FINGER_SCROLL_MODE_KINETIC
-} MxFingerScrollMode;
-
 typedef struct _MxFingerScroll          MxFingerScroll;
 typedef struct _MxFingerScrollPrivate   MxFingerScrollPrivate;
 typedef struct _MxFingerScrollClass     MxFingerScrollClass;
@@ -66,7 +54,7 @@ struct _MxFingerScrollClass
 
 GType mx_finger_scroll_get_type (void) G_GNUC_CONST;
 
-ClutterActor *mx_finger_scroll_new  (MxFingerScrollMode mode);
+ClutterActor *mx_finger_scroll_new  (void);
 
 void          mx_finger_scroll_stop (MxFingerScroll *scroll);
 

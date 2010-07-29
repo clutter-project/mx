@@ -48,7 +48,7 @@ scroll_view_main (ClutterContainer *stage)
 
 
   scroll = mx_scroll_view_new ();
-  finger = mx_finger_scroll_new (MX_FINGER_SCROLL_MODE_KINETIC);
+  finger = mx_finger_scroll_new ();
 
   clutter_container_add_actor (stage, scroll);
   clutter_actor_set_position (scroll, 10, 10);
