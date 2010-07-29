@@ -26,7 +26,7 @@ scroll_view_main (ClutterContainer *stage)
 {
   gint width, height;
   MxAdjustment *hadjust, *vadjust;
-  ClutterActor *scroll, *finger, *view, *texture;
+  ClutterActor *scroll, *kinetic, *view, *texture;
 /*
   scroll = mx_scroll_view_new ();
   mx_scroll_view_set_enable_gestures (MX_SCROLL_VIEW (scroll), TRUE);
@@ -48,7 +48,7 @@ scroll_view_main (ClutterContainer *stage)
 
 
   scroll = mx_scroll_view_new ();
-  finger = mx_finger_scroll_new ();
+  kinetic = mx_kinetic_scroll_view_new ();
 
   clutter_container_add_actor (stage, scroll);
   clutter_actor_set_position (scroll, 10, 10);
@@ -56,8 +56,8 @@ scroll_view_main (ClutterContainer *stage)
 
   view = mx_viewport_new ();
   mx_viewport_set_sync_adjustments (MX_VIEWPORT (view), FALSE);
-  clutter_container_add_actor (CLUTTER_CONTAINER (finger), view);
-  clutter_container_add_actor (CLUTTER_CONTAINER (scroll), finger);
+  clutter_container_add_actor (CLUTTER_CONTAINER (kinetic), view);
+  clutter_container_add_actor (CLUTTER_CONTAINER (scroll), kinetic);
 
 
   texture = clutter_texture_new_from_file ("redhand.png", NULL);

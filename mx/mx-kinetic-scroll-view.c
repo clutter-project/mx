@@ -1,6 +1,7 @@
-/* mx-finger-scroll.c: Finger scrolling container actor
+/* mx-kinetic-scroll-view.c: Kinetic scrolling container actor
  *
  * Copyright (C) 2008 OpenedHand
+ * Copyright (C) 2010 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -12,15 +13,15 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  * Boston, MA 02111-1307, USA.
  *
- * Written by: Chris Lord <chris@openedhand.com>
+ * Written by: Chris Lord <chris@linux.intel.com>
  */
 
-#include "mx-finger-scroll.h"
+#include "mx-kinetic-scroll-view.h"
 #include "mx-enum-types.h"
 #include "mx-marshal.h"
 #include "mx-private.h"
@@ -29,22 +30,23 @@
 
 static void mx_scrollable_iface_init (MxScrollableIface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (MxFingerScroll, mx_finger_scroll, MX_TYPE_BIN,
+G_DEFINE_TYPE_WITH_CODE (MxKineticScrollView,
+                         mx_kinetic_scroll_view, MX_TYPE_BIN,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_SCROLLABLE,
                                                 mx_scrollable_iface_init))
 
-#define FINGER_SCROLL_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), \
-                                  MX_TYPE_FINGER_SCROLL, \
-                                  MxFingerScrollPrivate))
+#define KINETIC_SCROLL_VIEW_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), \
+                                        MX_TYPE_KINETIC_SCROLL_VIEW, \
+                                        MxKineticScrollViewPrivate))
 
 typedef struct {
   /* Units to store the origin of a click when scrolling */
   gfloat   x;
   gfloat   y;
   GTimeVal time;
-} MxFingerScrollMotion;
+} MxKineticScrollViewMotion;
 
-struct _MxFingerScrollPrivate
+struct _MxKineticScrollViewPrivate
 {
   ClutterActor          *child;
 
@@ -77,11 +79,11 @@ enum {
 /* MxScrollableIface implementation */
 
 static void
-mx_finger_scroll_set_adjustments (MxScrollable *scrollable,
-                                  MxAdjustment *hadjustment,
-                                  MxAdjustment *vadjustment)
+mx_kinetic_scroll_view_set_adjustments (MxScrollable *scrollable,
+                                        MxAdjustment *hadjustment,
+                                        MxAdjustment *vadjustment)
 {
-  MxFingerScrollPrivate *priv = MX_FINGER_SCROLL (scrollable)->priv;
+  MxKineticScrollViewPrivate *priv = MX_KINETIC_SCROLL_VIEW (scrollable)->priv;
 
   if (priv->child)
     mx_scrollable_set_adjustments (MX_SCROLLABLE (priv->child),
@@ -90,11 +92,11 @@ mx_finger_scroll_set_adjustments (MxScrollable *scrollable,
 }
 
 static void
-mx_finger_scroll_get_adjustments (MxScrollable  *scrollable,
-                                  MxAdjustment **hadjustment,
-                                  MxAdjustment **vadjustment)
+mx_kinetic_scroll_view_get_adjustments (MxScrollable  *scrollable,
+                                        MxAdjustment **hadjustment,
+                                        MxAdjustment **vadjustment)
 {
-  MxFingerScrollPrivate *priv = MX_FINGER_SCROLL (scrollable)->priv;
+  MxKineticScrollViewPrivate *priv = MX_KINETIC_SCROLL_VIEW (scrollable)->priv;
 
   if (priv->child)
     {
@@ -114,18 +116,20 @@ mx_finger_scroll_get_adjustments (MxScrollable  *scrollable,
 static void
 mx_scrollable_iface_init (MxScrollableIface *iface)
 {
-  iface->set_adjustments = mx_finger_scroll_set_adjustments;
-  iface->get_adjustments = mx_finger_scroll_get_adjustments;
+  iface->set_adjustments = mx_kinetic_scroll_view_set_adjustments;
+  iface->get_adjustments = mx_kinetic_scroll_view_get_adjustments;
 }
 
 /* Object implementation */
 
 static void
-mx_finger_scroll_get_property (GObject *object, guint property_id,
-                                 GValue *value, GParamSpec *pspec)
+mx_kinetic_scroll_view_get_property (GObject    *object,
+                                     guint       property_id,
+                                     GValue     *value,
+                                     GParamSpec *pspec)
 {
   MxAdjustment *adjustment;
-  MxFingerScrollPrivate *priv = MX_FINGER_SCROLL (object)->priv;
+  MxKineticScrollViewPrivate *priv = MX_KINETIC_SCROLL_VIEW (object)->priv;
 
   switch (property_id)
     {
@@ -138,13 +142,13 @@ mx_finger_scroll_get_property (GObject *object, guint property_id,
       break;
 
     case PROP_HADJUST:
-      mx_finger_scroll_get_adjustments (MX_SCROLLABLE (object),
+      mx_kinetic_scroll_view_get_adjustments (MX_SCROLLABLE (object),
                                         &adjustment, NULL);
       g_value_set_object (value, adjustment);
       break;
 
     case PROP_VADJUST:
-      mx_finger_scroll_get_adjustments (MX_SCROLLABLE (object),
+      mx_kinetic_scroll_view_get_adjustments (MX_SCROLLABLE (object),
                                         NULL, &adjustment);
       g_value_set_object (value, adjustment);
       break;
@@ -163,13 +167,15 @@ mx_finger_scroll_get_property (GObject *object, guint property_id,
 }
 
 static void
-mx_finger_scroll_set_property (GObject *object, guint property_id,
-                                 const GValue *value, GParamSpec *pspec)
+mx_kinetic_scroll_view_set_property (GObject      *object,
+                                     guint         property_id,
+                                     const GValue *value,
+                                     GParamSpec   *pspec)
 {
   MxAdjustment *adjustment;
   MxScrollable *scrollable;
-  MxFingerScroll *self = MX_FINGER_SCROLL (object);
-  MxFingerScrollPrivate *priv = self->priv;
+  MxKineticScrollView *self = MX_KINETIC_SCROLL_VIEW (object);
+  MxKineticScrollViewPrivate *priv = self->priv;
 
   switch (property_id)
     {
@@ -185,26 +191,27 @@ mx_finger_scroll_set_property (GObject *object, guint property_id,
 
     case PROP_HADJUST:
       scrollable = MX_SCROLLABLE (object);
-      mx_finger_scroll_get_adjustments (scrollable, NULL, &adjustment);
-      mx_finger_scroll_set_adjustments (scrollable,
+      mx_kinetic_scroll_view_get_adjustments (scrollable, NULL, &adjustment);
+      mx_kinetic_scroll_view_set_adjustments (scrollable,
                                         g_value_get_object (value),
                                         adjustment);
       break;
 
     case PROP_VADJUST:
       scrollable = MX_SCROLLABLE (object);
-      mx_finger_scroll_get_adjustments (scrollable, &adjustment, NULL);
-      mx_finger_scroll_set_adjustments (scrollable,
+      mx_kinetic_scroll_view_get_adjustments (scrollable, &adjustment, NULL);
+      mx_kinetic_scroll_view_set_adjustments (scrollable,
                                         adjustment,
                                         g_value_get_object (value));
       break;
 
     case PROP_BUTTON:
-      mx_finger_scroll_set_mouse_button (self, g_value_get_uint (value));
+      mx_kinetic_scroll_view_set_mouse_button (self, g_value_get_uint (value));
       break;
 
     case PROP_USE_CAPTURED:
-      mx_finger_scroll_set_use_captured (self, g_value_get_boolean (value));
+      mx_kinetic_scroll_view_set_use_captured (self,
+                                               g_value_get_boolean (value));
       break;
 
     default:
@@ -213,9 +220,9 @@ mx_finger_scroll_set_property (GObject *object, guint property_id,
 }
 
 static void
-mx_finger_scroll_dispose (GObject *object)
+mx_kinetic_scroll_view_dispose (GObject *object)
 {
-  MxFingerScrollPrivate *priv = MX_FINGER_SCROLL (object)->priv;
+  MxKineticScrollViewPrivate *priv = MX_KINETIC_SCROLL_VIEW (object)->priv;
 
   if (priv->deceleration_timeline)
     {
@@ -224,26 +231,26 @@ mx_finger_scroll_dispose (GObject *object)
       priv->deceleration_timeline = NULL;
     }
 
-  G_OBJECT_CLASS (mx_finger_scroll_parent_class)->dispose (object);
+  G_OBJECT_CLASS (mx_kinetic_scroll_view_parent_class)->dispose (object);
 }
 
 static void
-mx_finger_scroll_finalize (GObject *object)
+mx_kinetic_scroll_view_finalize (GObject *object)
 {
-  MxFingerScrollPrivate *priv = MX_FINGER_SCROLL (object)->priv;
+  MxKineticScrollViewPrivate *priv = MX_KINETIC_SCROLL_VIEW (object)->priv;
 
   g_array_free (priv->motion_buffer, TRUE);
 
-  G_OBJECT_CLASS (mx_finger_scroll_parent_class)->finalize (object);
+  G_OBJECT_CLASS (mx_kinetic_scroll_view_parent_class)->finalize (object);
 }
 
 static void
-mx_finger_scroll_get_preferred_width (ClutterActor *actor,
-                                      gfloat        for_height,
-                                      gfloat       *min_width_p,
-                                      gfloat       *nat_width_p)
+mx_kinetic_scroll_view_get_preferred_width (ClutterActor *actor,
+                                            gfloat        for_height,
+                                            gfloat       *min_width_p,
+                                            gfloat       *nat_width_p)
 {
-  CLUTTER_ACTOR_CLASS (mx_finger_scroll_parent_class)->
+  CLUTTER_ACTOR_CLASS (mx_kinetic_scroll_view_parent_class)->
     get_preferred_width (actor, for_height, NULL, nat_width_p);
 
   if (min_width_p)
@@ -256,12 +263,12 @@ mx_finger_scroll_get_preferred_width (ClutterActor *actor,
 }
 
 static void
-mx_finger_scroll_get_preferred_height (ClutterActor *actor,
-                                       gfloat        for_width,
-                                       gfloat       *min_height_p,
-                                       gfloat       *nat_height_p)
+mx_kinetic_scroll_view_get_preferred_height (ClutterActor *actor,
+                                             gfloat        for_width,
+                                             gfloat       *min_height_p,
+                                             gfloat       *nat_height_p)
 {
-  CLUTTER_ACTOR_CLASS (mx_finger_scroll_parent_class)->
+  CLUTTER_ACTOR_CLASS (mx_kinetic_scroll_view_parent_class)->
     get_preferred_height (actor, for_width, NULL, nat_height_p);
 
   if (min_height_p)
@@ -274,34 +281,37 @@ mx_finger_scroll_get_preferred_height (ClutterActor *actor,
 }
 
 static void
-mx_finger_scroll_allocate (ClutterActor           *actor,
-                           const ClutterActorBox  *box,
-                           ClutterAllocationFlags  flags)
+mx_kinetic_scroll_view_allocate (ClutterActor           *actor,
+                                 const ClutterActorBox  *box,
+                                 ClutterAllocationFlags  flags)
 {
-  CLUTTER_ACTOR_CLASS (mx_finger_scroll_parent_class)->
+  CLUTTER_ACTOR_CLASS (mx_kinetic_scroll_view_parent_class)->
     allocate (actor, box, flags);
 
   mx_bin_allocate_child (MX_BIN (actor), box, flags);
 }
 
 static void
-mx_finger_scroll_class_init (MxFingerScrollClass *klass)
+mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
 {
   GParamSpec *pspec;
 
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
 
-  g_type_class_add_private (klass, sizeof (MxFingerScrollPrivate));
+  g_type_class_add_private (klass, sizeof (MxKineticScrollViewPrivate));
 
-  object_class->get_property = mx_finger_scroll_get_property;
-  object_class->set_property = mx_finger_scroll_set_property;
-  object_class->dispose = mx_finger_scroll_dispose;
-  object_class->finalize = mx_finger_scroll_finalize;
+  object_class->get_property = mx_kinetic_scroll_view_get_property;
+  object_class->set_property = mx_kinetic_scroll_view_set_property;
+  object_class->dispose = mx_kinetic_scroll_view_dispose;
+  object_class->finalize = mx_kinetic_scroll_view_finalize;
 
-  actor_class->get_preferred_width = mx_finger_scroll_get_preferred_width;
-  actor_class->get_preferred_height = mx_finger_scroll_get_preferred_height;
-  actor_class->allocate = mx_finger_scroll_allocate;
+  actor_class->get_preferred_width =
+    mx_kinetic_scroll_view_get_preferred_width;
+  actor_class->get_preferred_height =
+    mx_kinetic_scroll_view_get_preferred_height;
+  actor_class->allocate =
+    mx_kinetic_scroll_view_allocate;
 
   pspec = g_param_spec_double ("decel-rate",
                                "Deceleration rate",
@@ -342,13 +352,13 @@ mx_finger_scroll_class_init (MxFingerScrollClass *klass)
 }
 
 static gboolean
-motion_event_cb (ClutterActor       *stage,
-                 ClutterMotionEvent *event,
-                 MxFingerScroll     *scroll)
+motion_event_cb (ClutterActor        *stage,
+                 ClutterMotionEvent  *event,
+                 MxKineticScrollView *scroll)
 {
   gfloat x, y;
 
-  MxFingerScrollPrivate *priv = scroll->priv;
+  MxKineticScrollViewPrivate *priv = scroll->priv;
   ClutterActor *actor = CLUTTER_ACTOR (scroll);
 
   if (event->type != CLUTTER_MOTION)
@@ -359,9 +369,8 @@ motion_event_cb (ClutterActor       *stage,
                                            event->y,
                                            &x, &y))
     {
-      MxFingerScrollMotion *motion;
-      ClutterActor *child =
-        mx_bin_get_child (MX_BIN (scroll));
+      MxKineticScrollViewMotion *motion;
+      ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
 
       if (child)
         {
@@ -373,7 +382,7 @@ motion_event_cb (ClutterActor       *stage,
                                            &vadjust);
 
           motion = &g_array_index (priv->motion_buffer,
-                                   MxFingerScrollMotion, priv->last_motion);
+                                   MxKineticScrollViewMotion, priv->last_motion);
           dx = (motion->x - x) + mx_adjustment_get_value (hadjust);
           dy = (motion->y - y) + mx_adjustment_get_value (vadjust);
 
@@ -390,7 +399,7 @@ motion_event_cb (ClutterActor       *stage,
         }
 
       motion = &g_array_index (priv->motion_buffer,
-                               MxFingerScrollMotion, priv->last_motion);
+                               MxKineticScrollViewMotion, priv->last_motion);
       motion->x = x;
       motion->y = y;
       g_get_current_time (&motion->time);
@@ -400,7 +409,7 @@ motion_event_cb (ClutterActor       *stage,
 }
 
 static void
-clamp_adjustments (MxFingerScroll *scroll)
+clamp_adjustments (MxKineticScrollView *scroll)
 {
   ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
 
@@ -429,8 +438,8 @@ clamp_adjustments (MxFingerScroll *scroll)
 }
 
 static void
-deceleration_completed_cb (ClutterTimeline *timeline,
-                           MxFingerScroll *scroll)
+deceleration_completed_cb (ClutterTimeline     *timeline,
+                           MxKineticScrollView *scroll)
 {
   clamp_adjustments (scroll);
   g_object_unref (timeline);
@@ -438,11 +447,11 @@ deceleration_completed_cb (ClutterTimeline *timeline,
 }
 
 static void
-deceleration_new_frame_cb (ClutterTimeline *timeline,
-                           gint frame_num,
-                           MxFingerScroll *scroll)
+deceleration_new_frame_cb (ClutterTimeline     *timeline,
+                           gint                 frame_num,
+                           MxKineticScrollView *scroll)
 {
-  MxFingerScrollPrivate *priv = scroll->priv;
+  MxKineticScrollViewPrivate *priv = scroll->priv;
   ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
 
   if (child)
@@ -496,11 +505,11 @@ deceleration_new_frame_cb (ClutterTimeline *timeline,
 }
 
 static gboolean
-button_release_event_cb (ClutterActor       *stage,
-                         ClutterButtonEvent *event,
-                         MxFingerScroll     *scroll)
+button_release_event_cb (ClutterActor        *stage,
+                         ClutterButtonEvent  *event,
+                         MxKineticScrollView *scroll)
 {
-  MxFingerScrollPrivate *priv = scroll->priv;
+  MxKineticScrollViewPrivate *priv = scroll->priv;
   ClutterActor *actor = CLUTTER_ACTOR (scroll);
   ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
   gboolean decelerating = FALSE;
@@ -541,8 +550,8 @@ button_release_event_cb (ClutterActor       *stage,
           motion_time = (GTimeVal){ 0, 0 };
           for (i = 0; i < priv->last_motion; i++)
             {
-              MxFingerScrollMotion *motion =
-                &g_array_index (priv->motion_buffer, MxFingerScrollMotion, i);
+              MxKineticScrollViewMotion *motion =
+                &g_array_index (priv->motion_buffer, MxKineticScrollViewMotion, i);
 
               /* FIXME: This doesn't guard against overflows - Should
                *        either fix that, or calculate the correct maximum
@@ -681,11 +690,11 @@ button_release_event_cb (ClutterActor       *stage,
 }
 
 static gboolean
-button_press_event_cb (ClutterActor     *actor,
-                       ClutterEvent     *event,
-                       MxFingerScroll *scroll)
+button_press_event_cb (ClutterActor        *actor,
+                       ClutterEvent        *event,
+                       MxKineticScrollView *scroll)
 {
-  MxFingerScrollPrivate *priv = scroll->priv;
+  MxKineticScrollViewPrivate *priv = scroll->priv;
   ClutterButtonEvent *bevent = (ClutterButtonEvent *)event;
   ClutterActor *stage = clutter_actor_get_stage (actor);
 
@@ -693,11 +702,11 @@ button_press_event_cb (ClutterActor     *actor,
       (bevent->button == priv->button) &&
       stage)
     {
-      MxFingerScrollMotion *motion;
+      MxKineticScrollViewMotion *motion;
 
       /* Reset motion buffer */
       priv->last_motion = 0;
-      motion = &g_array_index (priv->motion_buffer, MxFingerScrollMotion, 0);
+      motion = &g_array_index (priv->motion_buffer, MxKineticScrollViewMotion, 0);
 
       if (clutter_actor_transform_stage_point (actor, bevent->x, bevent->y,
                                                &motion->x, &motion->y))
@@ -728,35 +737,36 @@ button_press_event_cb (ClutterActor     *actor,
 }
 
 static void
-mx_finger_scroll_actor_added_cb (ClutterContainer *container,
-                                 ClutterActor     *actor)
+mx_kinetic_scroll_view_actor_added_cb (ClutterContainer *container,
+                                       ClutterActor     *actor)
 {
-  MxFingerScrollPrivate *priv = MX_FINGER_SCROLL (container)->priv;
+  MxKineticScrollViewPrivate *priv = MX_KINETIC_SCROLL_VIEW (container)->priv;
 
   if (MX_IS_SCROLLABLE (actor))
     priv->child = actor;
   else
     g_warning ("Attempting to add an actor of type %s to "
-               "a MxFingerScroll, but the actor does "
+               "a MxKineticScrollView, but the actor does "
                "not implement MxScrollable.",
                g_type_name (G_OBJECT_TYPE (actor)));
 }
 
 static void
-mx_finger_scroll_actor_removed_cb (ClutterContainer *container,
-                                   ClutterActor     *actor)
+mx_kinetic_scroll_view_actor_removed_cb (ClutterContainer *container,
+                                         ClutterActor     *actor)
 {
-  MxFingerScrollPrivate *priv = MX_FINGER_SCROLL (container)->priv;
+  MxKineticScrollViewPrivate *priv = MX_KINETIC_SCROLL_VIEW (container)->priv;
   priv->child = NULL;
 }
 
 static void
-mx_finger_scroll_init (MxFingerScroll *self)
+mx_kinetic_scroll_view_init (MxKineticScrollView *self)
 {
-  MxFingerScrollPrivate *priv = self->priv = FINGER_SCROLL_PRIVATE (self);
+  MxKineticScrollViewPrivate *priv = self->priv =
+    KINETIC_SCROLL_VIEW_PRIVATE (self);
 
-  priv->motion_buffer = g_array_sized_new (FALSE, TRUE,
-                                           sizeof (MxFingerScrollMotion), 3);
+  priv->motion_buffer =
+    g_array_sized_new (FALSE, TRUE, sizeof (MxKineticScrollViewMotion), 3);
   g_array_set_size (priv->motion_buffer, 3);
   priv->decel_rate = 1.1f;
   priv->button = 1;
@@ -765,25 +775,25 @@ mx_finger_scroll_init (MxFingerScroll *self)
   g_signal_connect (self, "button-press-event",
                     G_CALLBACK (button_press_event_cb), self);
   g_signal_connect (self, "actor-added",
-                    G_CALLBACK (mx_finger_scroll_actor_added_cb), self);
+                    G_CALLBACK (mx_kinetic_scroll_view_actor_added_cb), self);
   g_signal_connect (self, "actor-removed",
-                    G_CALLBACK (mx_finger_scroll_actor_removed_cb), self);
+                    G_CALLBACK (mx_kinetic_scroll_view_actor_removed_cb), self);
 
   mx_bin_set_alignment (MX_BIN (self), MX_ALIGN_START, MX_ALIGN_START);
 }
 
 ClutterActor *
-mx_finger_scroll_new ()
+mx_kinetic_scroll_view_new ()
 {
-  return g_object_new (MX_TYPE_FINGER_SCROLL, NULL);
+  return g_object_new (MX_TYPE_KINETIC_SCROLL_VIEW, NULL);
 }
 
 void
-mx_finger_scroll_stop (MxFingerScroll *scroll)
+mx_kinetic_scroll_view_stop (MxKineticScrollView *scroll)
 {
-  MxFingerScrollPrivate *priv;
+  MxKineticScrollViewPrivate *priv;
 
-  g_return_if_fail (MX_IS_FINGER_SCROLL (scroll));
+  g_return_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll));
 
   priv = scroll->priv;
 
@@ -796,12 +806,12 @@ mx_finger_scroll_stop (MxFingerScroll *scroll)
 }
 
 void
-mx_finger_scroll_set_mouse_button (MxFingerScroll *scroll,
-                                   guint32         button)
+mx_kinetic_scroll_view_set_mouse_button (MxKineticScrollView *scroll,
+                                         guint32              button)
 {
-  MxFingerScrollPrivate *priv;
+  MxKineticScrollViewPrivate *priv;
 
-  g_return_if_fail (MX_IS_FINGER_SCROLL (scroll));
+  g_return_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll));
 
   priv = scroll->priv;
 
@@ -813,19 +823,19 @@ mx_finger_scroll_set_mouse_button (MxFingerScroll *scroll,
 }
 
 guint32
-mx_finger_scroll_get_mouse_button (MxFingerScroll *scroll)
+mx_kinetic_scroll_view_get_mouse_button (MxKineticScrollView *scroll)
 {
-  g_return_val_if_fail (MX_IS_FINGER_SCROLL (scroll), 0);
+  g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), 0);
   return scroll->priv->button;
 }
 
 void
-mx_finger_scroll_set_use_captured (MxFingerScroll *scroll,
-                                   gboolean        use_captured)
+mx_kinetic_scroll_view_set_use_captured (MxKineticScrollView *scroll,
+                                         gboolean             use_captured)
 {
-  MxFingerScrollPrivate *priv;
+  MxKineticScrollViewPrivate *priv;
 
-  g_return_if_fail (MX_IS_FINGER_SCROLL (scroll));
+  g_return_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll));
 
   priv = scroll->priv;
   if (priv->use_captured != use_captured)
@@ -846,8 +856,8 @@ mx_finger_scroll_set_use_captured (MxFingerScroll *scroll,
 }
 
 gboolean
-mx_finger_scroll_get_use_captured (MxFingerScroll *scroll)
+mx_kinetic_scroll_view_get_use_captured (MxKineticScrollView *scroll)
 {
-  g_return_val_if_fail (MX_IS_FINGER_SCROLL (scroll), FALSE);
+  g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), FALSE);
   return scroll->priv->use_captured;
 }

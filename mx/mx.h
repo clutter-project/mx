@@ -48,7 +48,7 @@
 #include <mx/mx-focus-manager.h>
 #include <mx/mx-focusable.h>
 #include <mx/mx-frame.h>
-#include <mx/mx-finger-scroll.h>
+#include <mx/mx-kinetic-scroll-view.h>
 #include <mx/mx-grid.h>
 #include <mx/mx-icon.h>
 #include <mx/mx-icon-theme.h>
