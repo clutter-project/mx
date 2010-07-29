@@ -477,16 +477,15 @@ mx_window_post_paint_cb (ClutterActor *actor, MxWindow *window)
 }
 
 static void
-mx_window_pre_paint_cb (ClutterActor *actor,
-                        MxWindow     *window)
+mx_window_allocation_changed_cb (ClutterActor           *actor,
+                                 ClutterActorBox        *box,
+                                 ClutterAllocationFlags  flags,
+                                 MxWindow               *window)
 {
   MxPadding padding;
   MxWindowPrivate *priv;
+  gboolean from_toolbar;
   gfloat width, height, toolbar_height, stage_width, stage_height;
-
-  g_signal_handlers_disconnect_by_func (actor,
-                                        mx_window_pre_paint_cb,
-                                        window);
 
   /* Note, ideally this would happen just before allocate, but there's
    * no signal we can connect to for that without overriding an actor.
@@ -499,6 +498,9 @@ mx_window_pre_paint_cb (ClutterActor *actor,
    */
 
   priv = window->priv;
+
+  from_toolbar = (actor == priv->toolbar);
+  actor = clutter_actor_get_stage (actor);
 
   clutter_actor_get_size (actor, &stage_width, &stage_height);
 
@@ -577,10 +579,14 @@ mx_window_pre_paint_cb (ClutterActor *actor,
                                           padding.right,
                                           NULL, &toolbar_height);
 
-      clutter_actor_set_position (priv->toolbar, padding.left, padding.top);
-      g_object_set (G_OBJECT (priv->toolbar),
-                    "natural-width", stage_width - padding.left - padding.right,
-                    NULL);
+      if (!from_toolbar)
+        {
+          clutter_actor_set_position (priv->toolbar, padding.left, padding.top);
+          g_object_set (G_OBJECT (priv->toolbar),
+                        "natural-width",
+                        stage_width - padding.left - padding.right,
+                        NULL);
+        }
     }
   else
     {
@@ -607,17 +613,6 @@ mx_window_pre_paint_cb (ClutterActor *actor,
                                   stage_width - width - padding.right,
                                   stage_height - height - padding.bottom);
     }
-}
-
-static void
-mx_window_allocation_changed_cb (ClutterActor           *actor,
-                                 ClutterActorBox        *box,
-                                 ClutterAllocationFlags  flags,
-                                 MxWindow               *window)
-{
-  g_signal_connect (actor, "paint",
-                    G_CALLBACK (mx_window_pre_paint_cb),
-                    window);
 }
 
 static gboolean
@@ -1030,6 +1025,8 @@ mx_window_constructed (GObject *object)
                           G_CALLBACK (mx_window_post_paint_cb), self);
   g_signal_connect (priv->stage, "allocation-changed",
                     G_CALLBACK (mx_window_allocation_changed_cb), self);
+  g_signal_connect (priv->toolbar, "allocation-changed",
+                    G_CALLBACK (mx_window_allocation_changed_cb), self);
   g_signal_connect (priv->stage, "button-press-event",
                     G_CALLBACK (mx_window_button_press_event_cb), self);
   g_signal_connect (priv->stage, "button-release-event",
@@ -1223,8 +1220,8 @@ mx_window_set_child (MxWindow     *window,
       priv->child = actor;
       clutter_container_add_actor (CLUTTER_CONTAINER (priv->stage),
                                    priv->child);
-      if (CLUTTER_ACTOR_IS_MAPPED (priv->stage))
-        mx_window_pre_paint_cb (priv->stage, window);
+      /*if (CLUTTER_ACTOR_IS_MAPPED (priv->stage))
+        mx_window_pre_paint_cb (priv->stage, window);*/
     }
 
   g_object_notify (G_OBJECT (window), "child");
