@@ -118,7 +118,36 @@ AC_SUBST(MX_MAINTAINER_CFLAGS)
 
 dnl = Required Packages ====================================================
 
-MX_REQUIRES="clutter-x11-1.0 >= 1.2.0 xrandr >= 1.2.0"
+MX_REQUIRES=""
+
+dnl = Winsys ===============================================================
+
+MX_WINSYS=x11
+AC_ARG_WITH([winsys],
+            [AC_HELP_STRING([--with-winsys=@<:@none/x11@:>@],
+                            [Select the window system backend])],
+            [MX_WINSYS=$with_winsys])
+
+AS_CASE([$MX_WINSYS],
+        [x11],
+        [
+          SUPPORT_X11=yes
+
+          WINSYS_X11_REQUIRES="clutter-x11-1.0 >= 1.2.0 xrandr >= 1.2.0"
+	  MX_REQUIRES="$MX_REQUIRES $WINSYS_X11_REQUIRES"
+        ],
+        [none],
+        [
+          WINSYS_NONE_REQUIRES="clutter-1.0"
+	  MX_REQUIRES="$MX_REQUIRES $WINSYS_NONE_REQUIRES"
+        ],
+        [AC_MSG_ERROR([Invalid winsys: use 'x11' or 'none'])]
+)
+
+AS_IF([test "x$SUPPORT_X11" = "xyes"],
+      [AC_DEFINE([HAVE_X11], [1], [Mx supports the X11 window system])])
+AM_CONDITIONAL([HAVE_X11], [test "x$SUPPORT_X11" = "xyes"])
+AC_SUBST(MX_WINSYS)
 
 dnl = Optional Packages ====================================================
 
@@ -277,4 +306,5 @@ echo "   Clutter-Imcontext:    $with_clutter_imcontext"
 echo "   Clutter-Gesture:      $with_clutter_gesture"
 echo "   Startup Notification: $with_startup_notification"
 echo "   Dbus:                 $with_dbus"
+echo "   Windowing system:     $MX_WINSYS"
 echo ""

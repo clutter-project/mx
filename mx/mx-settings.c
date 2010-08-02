@@ -21,13 +21,20 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "mx-settings.h"
 #include "mx-private.h"
 
 #include "xsettings-client.h"
 
 #include <string.h>
+
+#ifdef HAVE_X11
 #include <clutter/x11/clutter-x11.h>
+#endif
 
 G_DEFINE_TYPE (MxSettings, mx_settings, G_TYPE_OBJECT)
 
@@ -40,7 +47,9 @@ struct _MxSettingsPrivate
   gchar *font_name;
   guint  long_press_timeout;
 
+#ifdef HAVE_X11
   XSettingsClient *client;
+#endif
 };
 
 enum
@@ -130,15 +139,18 @@ mx_settings_finalize (GObject *object)
       priv->font_name = NULL;
     }
 
+#if HAVE_X11
   if (priv->client)
     {
       xsettings_client_destroy (priv->client);
       priv->client = NULL;
     }
+#endif
 
   G_OBJECT_CLASS (mx_settings_parent_class)->finalize (object);
 }
 
+#ifdef HAVE_X11
 static void
 xsettings_notify_func (const char       *name,
                        XSettingsAction   action,
@@ -169,6 +181,7 @@ mx_settings_constructed (GObject *object)
 
   clutter_x11_add_filter (mx_settings_event_filter, self);
 }
+#endif
 
 static GObject *
 mx_settings_constructor (GType type,
@@ -203,7 +216,9 @@ mx_settings_class_init (MxSettingsClass *klass)
   object_class->set_property = mx_settings_set_property;
   object_class->dispose = mx_settings_dispose;
   object_class->finalize = mx_settings_finalize;
+#ifdef HAVE_X11
   object_class->constructed = mx_settings_constructed;
+#endif
   object_class->constructor = mx_settings_constructor;
 
   pspec = g_param_spec_string ("icon-theme",
@@ -231,6 +246,7 @@ mx_settings_class_init (MxSettingsClass *klass)
 
 }
 
+#ifdef HAVE_X11
 static void
 xsettings_notify_func (const char       *name,
                        XSettingsAction   action,
@@ -281,6 +297,7 @@ mx_settings_event_filter (XEvent       *xev,
   else
     return CLUTTER_X11_FILTER_CONTINUE;
 }
+#endif
 
 static void
 mx_settings_init (MxSettings *self)

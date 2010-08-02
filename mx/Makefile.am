@@ -12,6 +12,20 @@ BUILT_SOURCES = 		\
 	mx-marshal.h 		\
 	mx-marshal.c
 
+if HAVE_X11
+WINSYS_SRC = \
+	$(top_srcdir)/mx/mx-clipboard-x11.c	\
+	$(top_srcdir)/mx/xsettings-client.c	\
+	$(top_srcdir)/mx/xsettings-client.h	\
+	$(top_srcdir)/mx/xsettings-common.c	\
+	$(top_srcdir)/mx/xsettings-common.h	\
+	$(NULL)
+else
+WINSYS_SRC = \
+	$(top_srcdir)/mx/mx-clipboard-none.c	\
+	$(NULL)
+endif
+
 # keep sorted alphabetically, please
 source_h = \
 	$(top_srcdir)/mx/mx-action.h		\
@@ -76,8 +90,6 @@ source_h_priv = \
 	$(top_srcdir)/mx/mx-path-bar-button.h	\
 	$(top_srcdir)/mx/mx-progress-bar-fill.h	\
 	$(top_srcdir)/mx/mx-private.h		\
-	$(top_srcdir)/mx/xsettings-client.h	\
-	$(top_srcdir)/mx/xsettings-common.h	\
 	$(NULL)
 
 source_c = \
@@ -97,7 +109,6 @@ source_c = \
 	$(top_srcdir)/mx/mx-deform-waves.c 	\
 	$(top_srcdir)/mx/mx-draggable.c		\
 	$(top_srcdir)/mx/mx-droppable.c		\
-	$(top_srcdir)/mx/mx-clipboard.c 		\
 	$(top_srcdir)/mx/mx-entry.c 		\
 	$(top_srcdir)/mx/mx-expander.c 		\
 	$(top_srcdir)/mx/mx-focus-manager.c 	\
@@ -139,8 +150,6 @@ source_c = \
 	$(top_srcdir)/mx/mx-window.c		\
 	$(top_srcdir)/mx/mx-floating-widget.c	\
 	$(top_srcdir)/mx/mx-kinetic-scroll-view.c \
-	$(top_srcdir)/mx/xsettings-client.c	\
-	$(top_srcdir)/mx/xsettings-common.c	\
 	$(NULL)
 
 EXTRA_DIST = \
@@ -233,6 +242,7 @@ libmx_@MX_API_VERSION@_la_LDFLAGS = $(MX_LT_LDFLAGS) $(common_ldflags)
 
 libmx_@MX_API_VERSION@_la_SOURCES =	\
 	$(BUILT_SOURCES) 		\
+	$(WINSYS_SRC)			\
 	$(source_h)			\
 	$(source_h_priv)		\
 	$(source_c)			\

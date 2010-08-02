@@ -22,16 +22,22 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "mx-window.h"
 #include "mx-toolbar.h"
 #include "mx-focus-manager.h"
 #include "mx-private.h"
 #include "mx-marshal.h"
-#include <clutter/x11/clutter-x11.h>
 
+#ifdef HAVE_X11
+#include <clutter/x11/clutter-x11.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
 #include <X11/cursorfont.h>
+#endif
 
 G_DEFINE_TYPE (MxWindow, mx_window, G_TYPE_OBJECT)
 
@@ -232,9 +238,7 @@ mx_window_finalize (GObject *object)
   G_OBJECT_CLASS (mx_window_parent_class)->finalize (object);
 }
 
-
-
-
+#ifdef HAVE_X11
 static void
 mx_window_get_size (MxWindow *self,
                     gfloat   *width_p,
@@ -440,6 +444,13 @@ mx_window_set_wm_hints (MxWindow *window)
       g_free (data);
     }
 }
+#else /* !HAVE_X11 */
+/* placeholder for the 'none' winsys */
+static void
+mx_window_set_wm_hints (MxWindow *window)
+{
+}
+#endif /* HAVE_X11 */
 
 static void
 mx_window_mapped_notify_cb (ClutterActor *actor,
@@ -507,6 +518,7 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
   /* Don't mess with the window size when we're full-screen, or you
    * get odd race conditions (and you never want to do it anyway)
    */
+#ifdef HAVE_X11
   if (!clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
     {
       if (!priv->has_mapped)
@@ -566,6 +578,7 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
                                           (guint)height);
         }
     }
+#endif
 
   if (!priv->has_toolbar || priv->small_screen ||
       clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
@@ -616,6 +629,7 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
     }
 }
 
+#ifdef HAVE_X11
 static gboolean
 mx_window_button_press_event_cb (ClutterActor       *actor,
                                  ClutterButtonEvent *event,
@@ -910,6 +924,7 @@ mx_window_fullscreen_set_cb (ClutterStage *stage,
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (stage));
 }
+#endif
 
 static void
 mx_window_destroy_cb (ClutterStage *stage, MxWindow *self)
@@ -1004,10 +1019,6 @@ mx_window_constructed (GObject *object)
 
   clutter_stage_set_user_resizable (CLUTTER_STAGE (priv->stage), TRUE);
 
-  g_signal_connect (priv->stage, "notify::fullscreen-set",
-                    G_CALLBACK (mx_window_fullscreen_set_cb), self);
-  g_signal_connect (priv->stage, "realize",
-                    G_CALLBACK (mx_window_realize_cb), self);
   g_signal_connect (priv->stage, "notify::mapped",
                     G_CALLBACK (mx_window_mapped_notify_cb), self);
   g_signal_connect_after (priv->stage, "paint",
@@ -1016,6 +1027,11 @@ mx_window_constructed (GObject *object)
                     G_CALLBACK (mx_window_allocation_changed_cb), self);
   g_signal_connect (priv->toolbar, "allocation-changed",
                     G_CALLBACK (mx_window_allocation_changed_cb), self);
+#ifdef HAVE_X11
+  g_signal_connect (priv->stage, "notify::fullscreen-set",
+                    G_CALLBACK (mx_window_fullscreen_set_cb), self);
+  g_signal_connect (priv->stage, "realize",
+                    G_CALLBACK (mx_window_realize_cb), self);
   g_signal_connect (priv->stage, "button-press-event",
                     G_CALLBACK (mx_window_button_press_event_cb), self);
   g_signal_connect (priv->stage, "button-release-event",
@@ -1024,6 +1040,7 @@ mx_window_constructed (GObject *object)
                     G_CALLBACK (mx_window_captured_event_cb), self);
   g_signal_connect (priv->stage, "motion-event",
                     G_CALLBACK (mx_window_motion_event_cb), self);
+#endif
   g_signal_connect (priv->stage, "destroy",
                     G_CALLBACK (mx_window_destroy_cb), self);
   g_signal_connect (priv->stage, "actor-added",
@@ -1334,6 +1351,7 @@ mx_window_get_small_screen (MxWindow *window)
 void
 mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
 {
+#ifdef HAVE_X11
   MxWindowPrivate *priv;
 
   g_return_if_fail (MX_IS_WINDOW (window));
@@ -1426,6 +1444,7 @@ mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
 
       g_object_notify (G_OBJECT (window), "small-screen");
     }
+#endif
 }
 
 /**
@@ -1439,6 +1458,7 @@ mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
 void
 mx_window_get_window_position (MxWindow *window, gint *x, gint *y)
 {
+#ifdef HAVE_X11
   unsigned int width, height, border_width, depth;
   MxWindowPrivate *priv;
   Window win, root_win;
@@ -1478,6 +1498,12 @@ mx_window_get_window_position (MxWindow *window, gint *x, gint *y)
     *x = win_x;
   if (y)
     *y = win_y;
+#else /* !HAVE_X11 */
+  if (x)
+    *x = 0;
+  if (y)
+    *y = 0;
+#endif /* HAVE_X11 */
 }
 
 /**
@@ -1491,6 +1517,7 @@ mx_window_get_window_position (MxWindow *window, gint *x, gint *y)
 void
 mx_window_set_window_position (MxWindow *window, gint x, gint y)
 {
+#ifdef HAVE_X11
   Window win;
   Display *dpy;
   ClutterStage *stage;
@@ -1513,6 +1540,7 @@ mx_window_set_window_position (MxWindow *window, gint x, gint y)
   dpy = clutter_x11_get_default_display ();
 
   XMoveWindow (dpy, win, x, y);
+#endif
 }
 
 /**

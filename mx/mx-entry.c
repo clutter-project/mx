@@ -66,10 +66,12 @@
 #include "mx-clipboard.h"
 #include "mx-focusable.h"
 
+#ifdef HAVE_X11
 /* for pointer cursor support */
 #include <clutter/x11/clutter-x11.h>
 #include <X11/Xlib.h>
 #include <X11/cursorfont.h>
+#endif
 
 #define HAS_FOCUS(actor) (clutter_actor_get_stage (actor) && clutter_stage_get_key_focus ((ClutterStage *) clutter_actor_get_stage (actor)) == actor)
 
@@ -769,6 +771,7 @@ mx_entry_swallow_crossing_event (ClutterActor         *actor,
                                  ClutterCrossingEvent *event)
 {
 
+#ifdef HAVE_X11
   if (event->source == MX_ENTRY (actor)->priv->entry
       && event->related != NULL)
     {
@@ -789,6 +792,7 @@ mx_entry_swallow_crossing_event (ClutterActor         *actor,
       else
         XUndefineCursor (dpy, wid);
     }
+#endif
 
   /* swallow enter and leave events, since the pseudo-class must not be set to
    * 'hover' because it would loose the 'focus' state.

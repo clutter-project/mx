@@ -20,7 +20,9 @@
  *             Chris Lord  <chris@linux.intel.com>
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "mx-application.h"
 
@@ -28,7 +30,10 @@
 #include "mx-window.h"
 
 #include <glib/gi18n-lib.h>
+
+#ifdef HAVE_X11
 #include <clutter/x11/clutter-x11.h>
+#endif
 
 #ifdef HAVE_STARTUP_NOTIFICATION
 #  define SN_API_NOT_YET_FROZEN
@@ -103,10 +108,12 @@ static guint signals[LAST_SIGNAL] = { 0, };
 
 static MxApplication *app_singleton = NULL;
 
+#ifdef HAVE_X11
 static ClutterX11FilterReturn
 mx_application_x11_filter_func (XEvent       *xevent,
                                 ClutterEvent *cevent,
                                 gpointer      data);
+#endif
 
 static GObject*
 mx_application_constructor (GType                  type,
@@ -432,7 +439,9 @@ mx_application_dispose (GObject *object)
 {
   MxApplicationPrivate *priv = MX_APPLICATION (object)->priv;
 
+#ifdef HAVE_X11
   clutter_x11_remove_filter (mx_application_x11_filter_func, object);
+#endif
 
 #ifdef HAVE_DBUS
   if (priv->proxy)
@@ -492,6 +501,7 @@ mx_application_default_create_window (MxApplication *application)
   return window;
 }
 
+#ifdef HAVE_X11
 static void
 mx_application_default_raise (MxApplication *application)
 {
@@ -545,6 +555,7 @@ mx_application_default_raise (MxApplication *application)
               SubstructureRedirectMask | SubstructureNotifyMask,
               (XEvent *)&xclient);
 }
+#endif
 
 
 static void
@@ -563,7 +574,9 @@ mx_application_class_init (MxApplicationClass *klass)
   object_class->finalize = mx_application_finalize;
 
   klass->create_window = mx_application_default_create_window;
+#ifdef HAVE_X11
   klass->raise = mx_application_default_raise;
+#endif
 
   pspec = g_param_spec_string ("application-name",
                                "Application Name",
@@ -618,7 +631,7 @@ mx_application_window_destroy_cb (MxWindow      *window,
     }
 }
 
-#ifdef HAVE_STARTUP_NOTIFICATION
+#if defined (HAVE_STARTUP_NOTIFICATION) && defined (HAVE_X11)
 static void
 mx_application_window_map_cb (ClutterActor  *actor,
                               GParamSpec    *pspec,
@@ -725,6 +738,7 @@ mx_application_quit (MxApplication *application)
   clutter_main_quit ();
 }
 
+#ifdef HAVE_X11
 static void
 mx_application_refresh_wm_props (MxApplication *self)
 {
@@ -909,6 +923,14 @@ mx_application_init_wm (MxApplication *self)
   /* Read the current properties */
   mx_application_refresh_wm_window (self);
 }
+#else /* !HAVE_X11 */
+/* A placeholder initialization function for the 'none' winsys */
+static void
+mx_application_init_wm (MxApplication *self)
+{
+
+}
+#endif /* HAVE_X11 */
 
 /**
  * mx_application_get_flags:
@@ -956,7 +978,7 @@ mx_application_add_window (MxApplication *application,
    */
   if (first_window)
     {
-#ifdef HAVE_STARTUP_NOTIFICATION
+#if defined (HAVE_X11) && defined (HAVE_STARTUP_NOTIFICATION)
       ClutterStage *stage;
       SnDisplay *display;
       Display *xdisplay;
@@ -967,7 +989,7 @@ mx_application_add_window (MxApplication *application,
 
       mx_application_init_wm (application);
 
-#ifdef HAVE_STARTUP_NOTIFICATION
+#if defined (HAVE_X11) && defined (HAVE_STARTUP_NOTIFICATION)
       xdisplay = clutter_x11_get_default_display ();
       screen = clutter_x11_get_default_screen ();
       stage = mx_window_get_clutter_stage (window);
