@@ -427,31 +427,33 @@ motion_event_cb (ClutterActor        *stage,
 }
 
 static void
-clamp_adjustments (MxKineticScrollView *scroll)
+clamp_adjustments (MxKineticScrollView *scroll, guint duration)
 {
   ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
 
   if (child)
     {
-      gdouble d, value, lower, step_increment;
+      gdouble d, value, lower, upper, step_increment, page_size;
       MxAdjustment *hadj, *vadj;
 
       mx_scrollable_get_adjustments (MX_SCROLLABLE (child),
                                      &hadj, &vadj);
 
       /* Snap to the nearest step increment on hadjustment */
-      mx_adjustment_get_values (hadj, &value, &lower, NULL,
-                                &step_increment, NULL, NULL);
+      mx_adjustment_get_values (hadj, &value, &lower, &upper,
+                                &step_increment, NULL, &page_size);
       d = (rint ((value - lower) / step_increment) *
           step_increment) + lower;
-      mx_adjustment_set_value (hadj, d);
+      d = CLAMP (d, lower, upper - page_size);
+      mx_adjustment_interpolate (hadj, d, duration, CLUTTER_EASE_OUT_QUAD);
 
       /* Snap to the nearest step increment on vadjustment */
-      mx_adjustment_get_values (vadj, &value, &lower, NULL,
-                                &step_increment, NULL, NULL);
+      mx_adjustment_get_values (vadj, &value, &lower, &upper,
+                                &step_increment, NULL, &page_size);
       d = (rint ((value - lower) / step_increment) *
           step_increment) + lower;
-      mx_adjustment_set_value (vadj, d);
+      d = CLAMP (d, lower, upper - page_size);
+      mx_adjustment_interpolate (vadj, d, duration, CLUTTER_EASE_OUT_QUAD);
     }
 }
 
@@ -459,7 +461,7 @@ static void
 deceleration_completed_cb (ClutterTimeline     *timeline,
                            MxKineticScrollView *scroll)
 {
-  clamp_adjustments (scroll);
+  clamp_adjustments (scroll, 10);
   g_object_unref (timeline);
   scroll->priv->deceleration_timeline = NULL;
 }
@@ -552,11 +554,13 @@ button_release_event_cb (ClutterActor        *stage,
       if (clutter_actor_transform_stage_point (actor, event->x, event->y,
                                                &event_x, &event_y))
         {
-          gdouble value, lower, step_increment, d, ax, ay, y, nx, ny;
+          gdouble value, lower, upper, step_increment, page_size,
+                  d, ax, ay, y, nx, ny, n;
           gfloat frac, x_origin, y_origin;
           GTimeVal release_time, motion_time;
           MxAdjustment *hadjust, *vadjust;
           glong time_diff;
+          guint duration;
           gint i;
 
           /* Get time delta */
@@ -622,74 +626,81 @@ button_release_event_cb (ClutterActor        *stage,
           y = priv->decel_rate;
           nx = logf (ABS (priv->dx)) / logf (y);
           ny = logf (ABS (priv->dy)) / logf (y);
+          n = MAX (nx, ny);
 
-          /* Now we have n, adjust dx/dy so that we finish on a step
-           * boundary.
-           *
-           * Distance moved, using the above variable names:
-           *
-           * d = x + x/y + x/y^2 + ... + x/y^n
-           *
-           * Using geometric series,
-           *
-           * d = (1 - 1/y^(n+1))/(1 - 1/y)*x
-           *
-           * Let a = (1 - 1/y^(n+1))/(1 - 1/y),
-           *
-           * d = a * x
-           *
-           * Find d and find its nearest page boundary, then solve for x
-           *
-           * x = d / a
-           */
+          duration = MAX (1, (gint)(MAX (nx, ny) * (1000/60.0)));
 
-          /* Get adjustments, work out y^n */
-          ax = (1.0 - 1.0 / pow (y, nx + 1)) / (1.0 - 1.0 / y);
-          ay = (1.0 - 1.0 / pow (y, ny + 1)) / (1.0 - 1.0 / y);
+          if (duration > 250)
+            {
+              /* Now we have n, adjust dx/dy so that we finish on a step
+               * boundary.
+               *
+               * Distance moved, using the above variable names:
+               *
+               * d = x + x/y + x/y^2 + ... + x/y^n
+               *
+               * Using geometric series,
+               *
+               * d = (1 - 1/y^(n+1))/(1 - 1/y)*x
+               *
+               * Let a = (1 - 1/y^(n+1))/(1 - 1/y),
+               *
+               * d = a * x
+               *
+               * Find d and find its nearest page boundary, then solve for x
+               *
+               * x = d / a
+               */
 
-          /* Solving for dx */
-          mx_adjustment_get_values (hadjust, &value, &lower, NULL,
-                                    &step_increment, NULL, NULL);
+              /* Get adjustments, work out y^n */
+              ax = (1.0 - 1.0 / pow (y, n + 1)) / (1.0 - 1.0 / y);
+              ay = (1.0 - 1.0 / pow (y, n + 1)) / (1.0 - 1.0 / y);
 
-          /* Make sure we pick the next nearest step increment in the
-           * same direction as the push.
-           */
-          priv->dx *= nx;
-          if (ABS (priv->dx) < step_increment / 2)
-            d = round ((value + priv->dx - lower) / step_increment);
-          else if (priv->dx > 0)
-            d = ceil ((value + priv->dx - lower) / step_increment);
-          else
-            d = floor ((value + priv->dx - lower) / step_increment);
+              /* Solving for dx */
+              mx_adjustment_get_values (hadjust, &value, &lower, &upper,
+                                        &step_increment, NULL, &page_size);
 
-          d = ((d * step_increment) + lower) - value;
-          priv->dx = d / ax;
+              /* Make sure we pick the next nearest step increment in the
+               * same direction as the push.
+               */
+              priv->dx *= n;
+              if (ABS (priv->dx) < step_increment / 2)
+                d = round ((value + priv->dx - lower) / step_increment);
+              else if (priv->dx > 0)
+                d = ceil ((value + priv->dx - lower) / step_increment);
+              else
+                d = floor ((value + priv->dx - lower) / step_increment);
 
-          /* Solving for dy */
-          mx_adjustment_get_values (vadjust, &value, &lower, NULL,
-                                    &step_increment, NULL, NULL);
+              d = CLAMP ((d * step_increment) + lower,
+                         lower, upper - page_size) - value;
+              priv->dx = d / ax;
 
-          priv->dy *= ny;
-          if (ABS (priv->dy) < step_increment / 2)
-            d = round ((value + priv->dy - lower) / step_increment);
-          else if (priv->dy > 0)
-            d = ceil ((value + priv->dy - lower) / step_increment);
-          else
-            d = floor ((value + priv->dy - lower) / step_increment);
+              /* Solving for dy */
+              mx_adjustment_get_values (vadjust, &value, &lower, &upper,
+                                        &step_increment, NULL, &page_size);
 
-          d = ((d * step_increment) + lower) - value;
-          priv->dy = d / ay;
+              priv->dy *= n;
+              if (ABS (priv->dy) < step_increment / 2)
+                d = round ((value + priv->dy - lower) / step_increment);
+              else if (priv->dy > 0)
+                d = ceil ((value + priv->dy - lower) / step_increment);
+              else
+                d = floor ((value + priv->dy - lower) / step_increment);
 
-          priv->deceleration_timeline =
-            clutter_timeline_new (MAX (1, (gint)(MAX (nx, ny) * (1000/60.0))));
+              d = CLAMP ((d * step_increment) + lower,
+                         lower, upper - page_size) - value;
+              priv->dy = d / ay;
 
-          g_signal_connect (priv->deceleration_timeline, "new_frame",
-                            G_CALLBACK (deceleration_new_frame_cb), scroll);
-          g_signal_connect (priv->deceleration_timeline, "completed",
-                            G_CALLBACK (deceleration_completed_cb), scroll);
-          priv->accumulated_delta = 0;
-          clutter_timeline_start (priv->deceleration_timeline);
-          decelerating = TRUE;
+              priv->deceleration_timeline = clutter_timeline_new (duration);
+
+              g_signal_connect (priv->deceleration_timeline, "new_frame",
+                                G_CALLBACK (deceleration_new_frame_cb), scroll);
+              g_signal_connect (priv->deceleration_timeline, "completed",
+                                G_CALLBACK (deceleration_completed_cb), scroll);
+              priv->accumulated_delta = 0;
+              clutter_timeline_start (priv->deceleration_timeline);
+              decelerating = TRUE;
+            }
         }
     }
 
@@ -697,9 +708,7 @@ button_release_event_cb (ClutterActor        *stage,
   priv->last_motion = 0;
 
   if (!decelerating)
-    {
-      clamp_adjustments (scroll);
-    }
+    clamp_adjustments (scroll, 250);
 
   return TRUE;
 }
