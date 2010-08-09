@@ -514,8 +514,11 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
           Window win;
           Display *dpy;
 
-          win = clutter_x11_get_stage_window (CLUTTER_STAGE (actor));
           dpy = clutter_x11_get_default_display ();
+          win = clutter_x11_get_stage_window (CLUTTER_STAGE (actor));
+
+          if (!win)
+            return;
 
           priv->has_mapped = TRUE;
 
