@@ -427,7 +427,7 @@ mx_scroll_bar_allocate (ClutterActor          *actor,
 
   if (priv->adjustment)
     {
-      gfloat handle_size, position, avail_size;
+      gfloat handle_size, position, avail_size, handle_pos;
       gdouble value, lower, upper, page_size, increment;
       ClutterActorBox handle_box = { 0, };
       guint min_size, max_size;
@@ -466,10 +466,13 @@ mx_scroll_bar_allocate (ClutterActor          *actor,
           handle_size = CLAMP (handle_size, min_size, max_size);
 
           handle_box.x1 = x;
-          handle_box.y1 = bw_box.y2 + position * (avail_size - handle_size);
+          handle_pos = bw_box.y2 + position * (avail_size - handle_size);
+          handle_box.y1 = CLAMP (handle_pos,
+                                 bw_box.y2, fw_box.y1 - min_size);
 
           handle_box.x2 = handle_box.x1 + width;
-          handle_box.y2 = handle_box.y1 + handle_size;
+          handle_box.y2 = CLAMP (handle_pos + handle_size,
+                                 bw_box.y2 + min_size, fw_box.y1);
         }
       else
         {
@@ -477,10 +480,13 @@ mx_scroll_bar_allocate (ClutterActor          *actor,
           handle_size = increment * avail_size;
           handle_size = CLAMP (handle_size, min_size, max_size);
 
-          handle_box.x1 = bw_box.x2 + position * (avail_size - handle_size);
+          handle_pos = bw_box.x2 + position * (avail_size - handle_size);
+          handle_box.x1 = CLAMP (handle_pos,
+                                 bw_box.x2, fw_box.x1 - min_size);
           handle_box.y1 = y;
 
-          handle_box.x2 = handle_box.x1 + handle_size;
+          handle_box.x2 = CLAMP (handle_pos + handle_size,
+                                 bw_box.x2 + min_size, fw_box.x1);
           handle_box.y2 = handle_box.y1 + height;
         }
 
