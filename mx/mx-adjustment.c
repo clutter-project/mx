@@ -76,8 +76,6 @@ struct _MxAdjustmentPrivate
 
   /* For elasticity */
   gboolean      elastic;
-  guint         bounce_source;
-  ClutterAlpha *bounce_alpha;
 };
 
 enum
@@ -234,18 +232,6 @@ stop_interpolation (MxAdjustment *adjustment)
       clutter_timeline_stop (priv->interpolation);
       g_object_unref (priv->interpolation);
       priv->interpolation = NULL;
-
-      if (priv->bounce_alpha)
-        {
-          g_object_unref (priv->bounce_alpha);
-          priv->bounce_alpha = NULL;
-        }
-    }
-
-  if (priv->bounce_source)
-    {
-      g_source_remove (priv->bounce_source);
-      priv->bounce_source = 0;
     }
 }
 
@@ -1015,34 +1001,23 @@ interpolation_new_frame_cb (ClutterTimeline *timeline,
                             guint            msecs,
                             MxAdjustment    *adjustment)
 {
+  gdouble new_value;
   MxAdjustmentPrivate *priv = adjustment->priv;
 
   priv->interpolation = NULL;
 
-  if (priv->elastic)
-    {
-      gdouble progress = clutter_alpha_get_alpha (priv->bounce_alpha) / 1.0;
-      gdouble dx = priv->old_position
-                   + (priv->new_position - priv->old_position)
-                   * progress;
+  new_value = priv->old_position +
+              (priv->new_position - priv->old_position) *
+              clutter_alpha_get_alpha (priv->interpolate_alpha);
 
-      mx_adjustment_set_value (adjustment, dx);
-      priv->interpolation = timeline;
-    }
-  else
-    {
-      gdouble new_value = priv->old_position +
-                          (priv->new_position - priv->old_position) *
-                          clutter_alpha_get_alpha (priv->interpolate_alpha);
+  mx_adjustment_set_value (adjustment, new_value);
+  priv->interpolation = timeline;
 
-      mx_adjustment_set_value (adjustment, new_value);
-      priv->interpolation = timeline;
-
-      /* Stop the interpolation if we've reached the end of the adjustment */
-      if ((new_value < priv->lower) ||
-          (new_value >= (priv->upper - priv->page_size)))
-        stop_interpolation (adjustment);
-    }
+  /* Stop the interpolation if we've reached the end of the adjustment */
+  if (!priv->elastic &&
+      ((new_value < priv->lower) ||
+       (new_value >= (priv->upper - priv->page_size))))
+    stop_interpolation (adjustment);
 }
 
 static void
@@ -1051,31 +1026,39 @@ interpolation_completed_cb (ClutterTimeline *timeline,
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
 
-  stop_interpolation (adjustment);
-  mx_adjustment_set_value (adjustment, priv->new_position);
+  if (priv->elastic)
+    {
+      if (clutter_timeline_get_direction (priv->interpolation) ==
+            CLUTTER_TIMELINE_FORWARD)
+        {
+          clutter_timeline_set_direction (priv->interpolation,
+                                          CLUTTER_TIMELINE_BACKWARD);
+          clutter_timeline_set_duration (priv->interpolation, 250);
+          clutter_timeline_rewind (priv->interpolation);
+
+          if (priv->new_position < priv->lower)
+            {
+              priv->old_position = priv->lower;
+              clutter_timeline_start (priv->interpolation);
+            }
+          else if (priv->new_position > (priv->upper - priv->page_size))
+            {
+              priv->old_position = priv->upper - priv->page_size;
+              clutter_timeline_start (priv->interpolation);
+            }
+        }
+      else
+        {
+          stop_interpolation (adjustment);
+          mx_adjustment_set_value (adjustment, priv->old_position);
+        }
+    }
+  else
+    {
+      stop_interpolation (adjustment);
+      mx_adjustment_set_value (adjustment, priv->new_position);
+    }
 }
-
-/* Note, there's super-optimal code that does a similar thing in
- * clutter-alpha.c
- *
- * Tried this instead of CLUTTER_ALPHA_SINE_INC, but I think SINE_INC looks
- * better. Leaving code here in case this is revisited.
- */
-/*
-   static guint32
-   bounce_alpha_func (ClutterAlpha *alpha,
-                   gpointer      user_data)
-   {
-   ClutterFixed progress, angle;
-   ClutterTimeline *timeline = clutter_alpha_get_timeline (alpha);
-
-   progress = clutter_timeline_get_progressx (timeline);
-   angle = clutter_qmulx (CFX_PI_2 + CFX_PI_4/2, progress);
-
-   return clutter_sinx (angle) +
-    (CFX_ONE - clutter_sinx (CFX_PI_2 + CFX_PI_4/2));
-   }
- */
 
 /**
  * mx_adjustment_interpolate:
@@ -1124,13 +1107,11 @@ mx_adjustment_interpolate (MxAdjustment *adjustment,
        * to this function will end up with no advancements until the calls
        * finish (as the animation never gets a chance to start).
        */
+      clutter_timeline_set_direction (priv->interpolation,
+                                      CLUTTER_TIMELINE_FORWARD);
       clutter_timeline_rewind (priv->interpolation);
       clutter_timeline_set_duration (priv->interpolation, duration);
     }
-
-  if (priv->elastic && !priv->bounce_alpha)
-    priv->bounce_alpha = clutter_alpha_new_full (priv->interpolation,
-                                                 CLUTTER_LINEAR);
 
   if (priv->interpolate_alpha)
     g_object_unref (priv->interpolate_alpha);
