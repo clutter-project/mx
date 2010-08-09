@@ -51,6 +51,7 @@
       <xi:include href="xml/mx-expander.xml"/>
       <xi:include href="xml/mx-grid.xml"/>
       <xi:include href="xml/mx-scroll-view.xml"/>
+      <xi:include href="xml/mx-kinetic-scroll-view.xml"/>
       <xi:include href="xml/mx-table-child.xml"/>
       <xi:include href="xml/mx-table.xml"/>
       <xi:include href="xml/mx-viewport.xml"/>

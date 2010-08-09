@@ -68,6 +68,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-widget.h		\
 	$(top_srcdir)/mx/mx-window.h		\
 	$(top_srcdir)/mx/mx-floating-widget.h \
+	$(top_srcdir)/mx/mx-kinetic-scroll-view.h \
 	$(NULL)
 
 source_h_priv = \
@@ -137,6 +138,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-widget.c		\
 	$(top_srcdir)/mx/mx-window.c		\
 	$(top_srcdir)/mx/mx-floating-widget.c	\
+	$(top_srcdir)/mx/mx-kinetic-scroll-view.c \
 	$(top_srcdir)/mx/xsettings-client.c	\
 	$(top_srcdir)/mx/xsettings-common.c	\
 	$(NULL)

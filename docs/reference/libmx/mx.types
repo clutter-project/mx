@@ -37,6 +37,7 @@ mx_scroll_bar_get_type
 mx_table_get_type
 mx_notebook_get_type
 mx_scroll_view_get_type
+mx_kinetic_scroll_view_get_type
 mx_gtk_light_switch_get_type
 mx_toggle_get_type
 mx_focus_manager_get_type
