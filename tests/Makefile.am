@@ -45,6 +45,7 @@ test_mx_SOURCES = test-mx.c \
 		  test-mx.h \
 		  test-buttons.c \
 		  test-combo-box.c \
+		  test-dialog.c \
 		  test-entry.c \
 		  test-expander.c \
 		  test-label.c \
