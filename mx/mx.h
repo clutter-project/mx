@@ -26,6 +26,7 @@
 #define MX_H_INSIDE
 
 #include <mx/mx-action.h>
+#include <mx/mx-action-button.h>
 #include <mx/mx-adjustment.h>
 #include <mx/mx-application.h>
 #include <mx/mx-bin.h>
@@ -34,6 +35,7 @@
 #include <mx/mx-button.h>
 #include <mx/mx-button-group.h>
 #include <mx/mx-combo-box.h>
+#include <mx/mx-dialog.h>
 #include <mx/mx-deform-texture.h>
 #include <mx/mx-deform-bow-tie.h>
 #include <mx/mx-deform-page-turn.h>
