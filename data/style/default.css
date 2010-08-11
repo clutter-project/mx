@@ -555,3 +555,7 @@ MxModalFrame > MxFrame {
   border-image: url('frame-background.png') 8 9 10;
 }
 
+MxDialog > MxBoxLayout {
+  padding: 20;
+  border-image: url('frame-background.png') 8 9 10;
+}
