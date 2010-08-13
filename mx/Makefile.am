@@ -14,15 +14,17 @@ BUILT_SOURCES = 		\
 
 if HAVE_X11
 WINSYS_SRC = \
-	$(top_srcdir)/mx/mx-clipboard-x11.c	\
-	$(top_srcdir)/mx/xsettings-client.c	\
-	$(top_srcdir)/mx/xsettings-client.h	\
-	$(top_srcdir)/mx/xsettings-common.c	\
-	$(top_srcdir)/mx/xsettings-common.h	\
+	$(top_srcdir)/mx/x11/mx-clipboard-x11.c	\
+	$(top_srcdir)/mx/x11/mx-settings-x11.c	\
+	$(top_srcdir)/mx/x11/xsettings-client.c	\
+	$(top_srcdir)/mx/x11/xsettings-client.h	\
+	$(top_srcdir)/mx/x11/xsettings-common.c	\
+	$(top_srcdir)/mx/x11/xsettings-common.h	\
 	$(NULL)
 else
 WINSYS_SRC = \
-	$(top_srcdir)/mx/mx-clipboard-none.c	\
+	$(top_srcdir)/mx/none/mx-clipboard-none.c	\
+	$(top_srcdir)/mx/x11/mx-settings-none.c		\
 	$(NULL)
 endif
 
