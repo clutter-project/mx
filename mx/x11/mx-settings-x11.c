@@ -25,8 +25,8 @@
 #include "config.h"
 #endif
 
-#include "mx-settings.h"
 #include "mx-private.h"
+#include "mx-settings.h"
 
 #include "xsettings-client.h"
 
@@ -34,53 +34,12 @@
 
 #include <clutter/x11/clutter-x11.h>
 
-#define MX_TYPE_SETTINGS_X11 mx_settings_get_type()
+G_DEFINE_TYPE (MxSettings, mx_settings, MX_TYPE_SETTINGS_BASE)
 
-#define MX_SETTINGS_X11(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-  MX_TYPE_SETTINGS_X11, MxSettingsX11))
+#define SETTINGS_PRIVATE(o) \
+  (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_SETTINGS, MxSettingsPrivate))
 
-#define MX_SETTINGS_X11_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST ((klass), \
-  MX_TYPE_SETTINGS_X11, MxSettingsX11Class))
-
-#define MX_IS_SETTINGS_X11(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
-  MX_TYPE_SETTINGS_X11))
-
-#define MX_IS_SETTINGS_X11_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE ((klass), \
-  MX_TYPE_SETTINGS_X11))
-
-#define MX_SETTINGS_X11_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-  MX_TYPE_SETTINGS_X11, MxSettingsX11Class))
-
-typedef struct _MxSettingsX11 MxSettingsX11;
-typedef struct _MxSettingsX11Class MxSettingsX11Class;
-typedef struct _MxSettingsX11Private MxSettingsX11Private;
-
-struct _MxSettingsX11
-{
-  MxSettings parent;
-
-  MxSettingsX11Private *priv;
-};
-
-struct _MxSettingsX11Class
-{
-  MxSettingsClass parent_class;
-};
-
-GType mx_settings_x11_get_type (void) G_GNUC_CONST;
-
-
-G_DEFINE_TYPE (MxSettingsX11, mx_settings_x11, MX_TYPE_SETTINGS)
-
-#define SETTINGS_X11_PRIVATE(o) \
-  (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_SETTINGS_X11, MxSettingsX11Private))
-
-struct _MxSettingsX11Private
+struct _MxSettingsPrivate
 {
   gchar *icon_theme;
   gchar *font_name;
@@ -98,12 +57,12 @@ enum
 
 
 static void
-mx_settings_x11_get_property (GObject    *object,
-                              guint       property_id,
-                              GValue     *value,
-                              GParamSpec *pspec)
+mx_settings_get_property (GObject    *object,
+                          guint       property_id,
+                          GValue     *value,
+                          GParamSpec *pspec)
 {
-  MxSettingsX11Private *priv = MX_SETTINGS_X11 (object)->priv;
+  MxSettingsPrivate *priv = MX_SETTINGS (object)->priv;
 
   switch (property_id)
     {
@@ -125,12 +84,12 @@ mx_settings_x11_get_property (GObject    *object,
 }
 
 static void
-mx_settings_x11_set_property (GObject      *object,
-                              guint         property_id,
-                              const GValue *value,
-                              GParamSpec   *pspec)
+mx_settings_set_property (GObject      *object,
+                          guint         property_id,
+                          const GValue *value,
+                          GParamSpec   *pspec)
 {
-  MxSettingsX11Private *priv = MX_SETTINGS_X11 (object)->priv;
+  MxSettingsPrivate *priv = MX_SETTINGS (object)->priv;
 
   switch (property_id)
     {
@@ -154,15 +113,15 @@ mx_settings_x11_set_property (GObject      *object,
 }
 
 static void
-mx_settings_x11_dispose (GObject *object)
+mx_settings_dispose (GObject *object)
 {
-  G_OBJECT_CLASS (mx_settings_x11_parent_class)->dispose (object);
+  G_OBJECT_CLASS (mx_settings_parent_class)->dispose (object);
 }
 
 static void
-mx_settings_x11_finalize (GObject *object)
+mx_settings_finalize (GObject *object)
 {
-  MxSettingsX11Private *priv = MX_SETTINGS_X11 (object)->priv;
+  MxSettingsPrivate *priv = MX_SETTINGS (object)->priv;
 
   if (priv->icon_theme)
     {
@@ -182,7 +141,7 @@ mx_settings_x11_finalize (GObject *object)
       priv->client = NULL;
     }
 
-  G_OBJECT_CLASS (mx_settings_x11_parent_class)->finalize (object);
+  G_OBJECT_CLASS (mx_settings_parent_class)->finalize (object);
 }
 
 static void
@@ -191,21 +150,21 @@ xsettings_notify_func (const char       *name,
                        XSettingsSetting *setting,
                        void             *cb_data);
 static ClutterX11FilterReturn
-mx_settings_x11_event_filter (XEvent       *xev,
-                              ClutterEvent *cev,
-                              void         *data);
+mx_settings_event_filter (XEvent       *xev,
+                          ClutterEvent *cev,
+                          void         *data);
 
 static void
-mx_settings_x11_constructed (GObject *object)
+mx_settings_constructed (GObject *object)
 {
-  MxSettingsX11 *self = (MxSettingsX11*) object;
+  MxSettings *self = (MxSettings*) object;
 
   /* setup xsettings client */
   /* This needs to be done after the construction of the object
    * to prevent recursion because creating a new xsettings client will
    * cause the notify function to be called, which in turn may cause the
    * style-changed signal to be emitted on MxStyle. Handlers of the
-   * style-changed signal may need an MxSettingsX11 object.
+   * style-changed signal may need an MxSettings object.
    */
   self->priv->client = xsettings_client_new (clutter_x11_get_default_display (),
                                              clutter_x11_get_default_screen (),
@@ -213,23 +172,23 @@ mx_settings_x11_constructed (GObject *object)
                                              NULL,
                                              self);
 
-  clutter_x11_add_filter (mx_settings_x11_event_filter, self);
+  clutter_x11_add_filter (mx_settings_event_filter, self);
 }
 
 static GObject *
-mx_settings_x11_constructor (GType                  type,
-                             guint                  n_construct_params,
-                             GObjectConstructParam *construct_params)
+mx_settings_constructor (GType                  type,
+                         guint                  n_construct_params,
+                         GObjectConstructParam *construct_params)
 {
-  static MxSettingsX11 *the_singleton = NULL;
+  static MxSettings *the_singleton = NULL;
   GObject *object;
 
   if (!the_singleton)
     {
-      object = G_OBJECT_CLASS (mx_settings_x11_parent_class)->constructor (type,
-                                                             n_construct_params,
-                                                             construct_params);
-      the_singleton = MX_SETTINGS_X11 (object);
+      object = G_OBJECT_CLASS (mx_settings_parent_class)->constructor (type,
+                                                          n_construct_params,
+                                                          construct_params);
+      the_singleton = MX_SETTINGS (object);
     }
   else
     object = (G_OBJECT (the_singleton));
@@ -238,19 +197,18 @@ mx_settings_x11_constructor (GType                  type,
 }
 
 static void
-mx_settings_x11_class_init (MxSettingsX11Class *klass)
+mx_settings_class_init (MxSettingsClass *klass)
 {
-  GParamSpec *pspec;
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-  g_type_class_add_private (klass, sizeof (MxSettingsX11Private));
+  g_type_class_add_private (klass, sizeof (MxSettingsPrivate));
 
-  object_class->get_property = mx_settings_x11_get_property;
-  object_class->set_property = mx_settings_x11_set_property;
-  object_class->dispose = mx_settings_x11_dispose;
-  object_class->finalize = mx_settings_x11_finalize;
-  object_class->constructed = mx_settings_x11_constructed;
-  object_class->constructor = mx_settings_x11_constructor;
+  object_class->get_property = mx_settings_get_property;
+  object_class->set_property = mx_settings_set_property;
+  object_class->dispose = mx_settings_dispose;
+  object_class->finalize = mx_settings_finalize;
+  object_class->constructed = mx_settings_constructed;
+  object_class->constructor = mx_settings_constructor;
 
   g_object_class_override_property (object_class,
                                     PROP_ICON_THEME,
@@ -269,7 +227,7 @@ xsettings_notify_func (const char       *name,
                        XSettingsSetting *setting,
                        void             *cb_data)
 {
-  MxSettingsX11Private *priv = MX_SETTINGS_X11 (cb_data)->priv;
+  MxSettingsPrivate *priv = MX_SETTINGS (cb_data)->priv;
 
   if (!name)
     return;
@@ -302,11 +260,11 @@ xsettings_notify_func (const char       *name,
 }
 
 static ClutterX11FilterReturn
-mx_settings_x11_event_filter (XEvent       *xev,
-                              ClutterEvent *cev,
-                              void         *data)
+mx_settings_event_filter (XEvent       *xev,
+                          ClutterEvent *cev,
+                          void         *data)
 {
-  MxSettingsX11Private *priv = MX_SETTINGS_X11 (data)->priv;
+  MxSettingsPrivate *priv = MX_SETTINGS (data)->priv;
 
   if (xsettings_client_process_event (priv->client, xev))
     return CLUTTER_X11_FILTER_REMOVE;
@@ -315,9 +273,9 @@ mx_settings_x11_event_filter (XEvent       *xev,
 }
 
 static void
-mx_settings_x11_init (MxSettingsX11 *self)
+mx_settings_init (MxSettings *self)
 {
-  self->priv = SETTINGS_X11_PRIVATE (self);
+  self->priv = SETTINGS_PRIVATE (self);
 
   /* setup defaults */
   self->priv->long_press_timeout = 500;
@@ -328,5 +286,5 @@ mx_settings_x11_init (MxSettingsX11 *self)
 MxSettings *
 mx_settings_get_default (void)
 {
-  return g_object_new (MX_TYPE_SETTINGS_X11, NULL);
+  return g_object_new (MX_TYPE_SETTINGS, NULL);
 }

@@ -19,10 +19,10 @@
  *
  */
 
-#include "mx-settings.h"
+#include "mx-settings-base.h"
 #include "mx-private.h"
 
-G_DEFINE_ABSTRACT_TYPE (MxSettings, mx_settings, G_TYPE_OBJECT)
+G_DEFINE_ABSTRACT_TYPE (MxSettingsBase, mx_settings_base, G_TYPE_OBJECT)
 
 enum
 {
@@ -34,10 +34,10 @@ enum
 };
 
 static void
-mx_settings_get_property (GObject    *object,
-                          guint       property_id,
-                          GValue     *value,
-                          GParamSpec *pspec)
+mx_settings_base_get_property (GObject    *object,
+                               guint       property_id,
+                               GValue     *value,
+                               GParamSpec *pspec)
 {
   switch (property_id)
     {
@@ -59,10 +59,10 @@ mx_settings_get_property (GObject    *object,
 }
 
 static void
-mx_settings_set_property (GObject      *object,
-                          guint         property_id,
-                          const GValue *value,
-                          GParamSpec   *pspec)
+mx_settings_base_set_property (GObject      *object,
+                               guint         property_id,
+                               const GValue *value,
+                               GParamSpec   *pspec)
 {
   switch (property_id)
     {
@@ -77,13 +77,13 @@ mx_settings_set_property (GObject      *object,
 }
 
 static void
-mx_settings_class_init (MxSettingsClass *klass)
+mx_settings_base_class_init (MxSettingsBaseClass *klass)
 {
   GParamSpec *pspec;
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-  object_class->get_property = mx_settings_get_property;
-  object_class->set_property = mx_settings_set_property;
+  object_class->get_property = mx_settings_base_get_property;
+  object_class->set_property = mx_settings_base_set_property;
 
   pspec = g_param_spec_string ("icon-theme",
                                "Icon Theme",
@@ -110,7 +110,7 @@ mx_settings_class_init (MxSettingsClass *klass)
 }
 
 static void
-mx_settings_init (MxSettings *self)
+mx_settings_base_init (MxSettingsBase *self)
 {
 }
 

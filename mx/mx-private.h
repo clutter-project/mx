@@ -61,6 +61,11 @@ struct _MxTableChild
   guint y_fill : 1;
 };
 
+struct _MxSettingsBase
+{
+  GObject parent;
+};
+
 
 ClutterActor *_mx_widget_get_dnd_clone (MxWidget *widget);
 

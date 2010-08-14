@@ -21,52 +21,10 @@
 
 #include "mx-settings.h"
 
-#define MX_TYPE_SETTINGS_NONE mx_settings_none_get_type()
+G_DEFINE_TYPE (MxSettings, mx_settings, MX_TYPE_SETTINGS_BASE)
 
-#define MX_SETTINGS_NONE(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-  MX_TYPE_SETTINGS_NONE, MxSettingsNone))
-
-#define MX_SETTINGS_NONE_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST ((klass), \
-  MX_TYPE_SETTINGS_NONE, MxSettingsNoneClass))
-
-#define MX_IS_SETTINGS_NONE(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
-  MX_TYPE_SETTINGS_NONE))
-
-#define MX_IS_SETTINGS_NONE_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE ((klass), \
-  MX_TYPE_SETTINGS_NONE))
-
-#define MX_SETTINGS_NONE_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-  MX_TYPE_SETTINGS_NONE, MxSettingsNoneClass))
-
-typedef struct _MxSettingsNone MxSettingsNone;
-typedef struct _MxSettingsNoneClass MxSettingsNoneClass;
-typedef struct _MxSettingsNonePrivate MxSettingsNonePrivate;
-
-struct _MxSettingsNone
-{
-  MxSettings parent;
-
-  MxSettingsNonePrivate *priv;
-};
-
-struct _MxSettingsNoneClass
-{
-  MxSettingsClass parent_class;
-};
-
-GType mx_settings_none_get_type (void) G_GNUC_CONST;
-
-MxSettingsNone *mx_settings_none_new (void);
-
-G_DEFINE_ABSTRACT_TYPE (MxSettingsNone, mx_settings_none, MX_TYPE_SETTINGS)
-
-#define SETTINGS_NONE_PRIVATE(o) \
-  (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_SETTINGS_NONE, MxSettingsNonePrivate))
+#define SETTINGS_PRIVATE(o) \
+  (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_SETTINGS, MxSettingsPrivate))
 
 enum
 {
@@ -77,7 +35,7 @@ enum
   PROP_LONG_PRESS_TIMEOUT
 };
 
-struct _MxSettingsNonePrivate
+struct _MxSettingsPrivate
 {
   gchar *icon_theme;
   gchar *font_name;
@@ -86,12 +44,12 @@ struct _MxSettingsNonePrivate
 
 
 static void
-mx_settings_none_get_property (GObject    *object,
+mx_settings_get_property (GObject    *object,
                                guint       property_id,
                                GValue     *value,
                                GParamSpec *pspec)
 {
-  MxSettingsNonePrivate *priv = MX_SETTINGS_NONE (object)->priv;
+  MxSettingsPrivate *priv = MX_SETTINGS (object)->priv;
 
   switch (property_id)
     {
@@ -113,12 +71,12 @@ mx_settings_none_get_property (GObject    *object,
 }
 
 static void
-mx_settings_none_set_property (GObject      *object,
+mx_settings_set_property (GObject      *object,
                                guint         property_id,
                                const GValue *value,
                                GParamSpec   *pspec)
 {
-  MxSettingsNonePrivate *priv = MX_SETTINGS_NONE (object)->priv;
+  MxSettingsPrivate *priv = MX_SETTINGS (object)->priv;
 
   switch (property_id)
     {
@@ -142,26 +100,26 @@ mx_settings_none_set_property (GObject      *object,
 }
 
 static void
-mx_settings_none_finalize (GObject *object)
+mx_settings_finalize (GObject *object)
 {
-  MxSettingsNonePrivate *priv = MX_SETTINGS_NONE (object)->priv;
+  MxSettingsPrivate *priv = MX_SETTINGS (object)->priv;
 
   g_free (priv->icon_theme);
   g_free (priv->font_name);
 
-  G_OBJECT_CLASS (mx_settings_none_parent_class)->finalize (object);
+  G_OBJECT_CLASS (mx_settings_parent_class)->finalize (object);
 }
 
 static void
-mx_settings_none_class_init (MxSettingsNoneClass *klass)
+mx_settings_class_init (MxSettingsClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-  g_type_class_add_private (klass, sizeof (MxSettingsNonePrivate));
+  g_type_class_add_private (klass, sizeof (MxSettingsPrivate));
 
-  object_class->get_property = mx_settings_none_get_property;
-  object_class->set_property = mx_settings_none_set_property;
-  object_class->finalize = mx_settings_none_finalize;
+  object_class->get_property = mx_settings_get_property;
+  object_class->set_property = mx_settings_set_property;
+  object_class->finalize = mx_settings_finalize;
 
   g_object_class_override_property (object_class,
                                     PROP_ICON_THEME,
@@ -175,9 +133,9 @@ mx_settings_none_class_init (MxSettingsNoneClass *klass)
 }
 
 static void
-mx_settings_none_init (MxSettingsNone *self)
+mx_settings_init (MxSettings *self)
 {
-  self->priv = SETTINGS_NONE_PRIVATE (self);
+  self->priv = SETTINGS_PRIVATE (self);
 
   /* setup defaults */
   self->priv->long_press_timeout = 500;
@@ -188,5 +146,5 @@ mx_settings_none_init (MxSettingsNone *self)
 MxSettings *
 mx_settings_get_default (void)
 {
-  return g_object_new (MX_TYPE_SETTINGS_NONE, NULL);
+  return g_object_new (MX_TYPE_SETTINGS, NULL);
 }
