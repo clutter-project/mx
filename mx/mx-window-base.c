@@ -395,7 +395,7 @@ mx_window_base_constructed (GObject *object)
 
   if (!priv->stage)
     {
-      priv->stage = clutter_stage_new ();
+      priv->stage = g_object_new (CLUTTER_TYPE_STAGE, NULL);
       clutter_stage_set_user_resizable ((ClutterStage *)priv->stage, TRUE);
     }
   g_object_add_weak_pointer (G_OBJECT (priv->stage),
