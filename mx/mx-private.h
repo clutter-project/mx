@@ -61,11 +61,6 @@ struct _MxTableChild
   guint y_fill : 1;
 };
 
-struct _MxSettingsBase
-{
-  GObject parent;
-};
-
 
 ClutterActor *_mx_widget_get_dnd_clone (MxWidget *widget);
 
@@ -79,6 +74,10 @@ void _mx_bin_get_align_factors (MxBin   *bin,
 void _mx_table_update_row_col (MxTable *table,
                                gint     row,
                                gint     col);
+
+CoglHandle _mx_window_get_icon_cogl_texture (MxWindow *window);
+
+ClutterActor * _mx_window_get_resize_grip (MxWindow *window);
 
 enum
 {

@@ -1,5 +1,5 @@
 /*
- * mx-settings-base.h: Global settings base class
+ * mx-window-base.h: A top-level window base class
  *
  * Copyright 2010 Intel Corporation.
  *
@@ -17,53 +17,55 @@
  * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  * Boston, MA 02111-1307, USA.
  *
+ * Written by: Thomas Wood <thomas.wood@intel.com>
+ *             Chris Lord <chris@linux.intel.com>
+ *
  */
 
-#ifndef _MX_SETTINGS_BASE_H
-#define _MX_SETTINGS_BASE_H
+#ifndef _MX_WINDOW_BASE_H
+#define _MX_WINDOW_BASE_H
 
 #include <glib-object.h>
 
 G_BEGIN_DECLS
 
-#define MX_TYPE_SETTINGS_BASE mx_settings_base_get_type()
+#define MX_TYPE_WINDOW_BASE mx_window_base_get_type()
 
-#define MX_SETTINGS_BASE(obj) \
+#define MX_WINDOW_BASE(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-  MX_TYPE_SETTINGS_BASE, MxSettingsBase))
+  MX_TYPE_WINDOW_BASE, MxWindowBase))
 
-#define MX_SETTINGS_BASE_CLASS(klass) \
+#define MX_WINDOW_BASE_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_CAST ((klass), \
-  MX_TYPE_SETTINGS_BASE, MxSettingsBaseClass))
+  MX_TYPE_WINDOW_BASE, MxWindowBaseClass))
 
-#define MX_IS_SETTINGS_BASE(obj) \
+#define MX_IS_WINDOW_BASE(obj) \
   (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
-  MX_TYPE_SETTINGS_BASE))
+  MX_TYPE_WINDOW_BASE))
 
-#define MX_IS_SETTINGS_BASE_CLASS(klass) \
+#define MX_IS_WINDOW_BASE_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_TYPE ((klass), \
-  MX_TYPE_SETTINGS_BASE))
+  MX_TYPE_WINDOW_BASE))
 
-#define MX_SETTINGS_BASE_GET_CLASS(obj) \
+#define MX_WINDOW_BASE_GET_CLASS(obj) \
   (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-  MX_TYPE_SETTINGS_BASE, MxSettingsBaseClass))
+  MX_TYPE_WINDOW_BASE, MxWindowBaseClass))
 
-typedef struct _MxSettingsBase MxSettingsBase;
-typedef struct _MxSettingsBaseClass MxSettingsBaseClass;
+typedef struct _MxWindowBase MxWindowBase;
+typedef struct _MxWindowBaseClass MxWindowBaseClass;
 
-struct _MxSettingsBase
+struct _MxWindowBase
 {
   GObject parent;
 };
 
-struct _MxSettingsBaseClass
+struct _MxWindowBaseClass
 {
   GObjectClass parent_class;
 };
 
-
-GType mx_settings_base_get_type (void) G_GNUC_CONST;
+GType mx_window_base_get_type (void) G_GNUC_CONST;
 
 G_END_DECLS
 
-#endif /* _MX_SETTINGS_BASE_H */
+#endif /* _MX_WINDOW_BASE_H */

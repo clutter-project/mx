@@ -16,6 +16,7 @@ if HAVE_X11
 WINSYS_SRC = \
 	$(top_srcdir)/mx/x11/mx-clipboard-x11.c	\
 	$(top_srcdir)/mx/x11/mx-settings-x11.c	\
+	$(top_srcdir)/mx/x11/mx-window-x11.c	\
 	$(top_srcdir)/mx/x11/xsettings-client.c	\
 	$(top_srcdir)/mx/x11/xsettings-client.h	\
 	$(top_srcdir)/mx/x11/xsettings-common.c	\
@@ -24,7 +25,8 @@ WINSYS_SRC = \
 else
 WINSYS_SRC = \
 	$(top_srcdir)/mx/none/mx-clipboard-none.c	\
-	$(top_srcdir)/mx/x11/mx-settings-none.c		\
+	$(top_srcdir)/mx/none/mx-settings-none.c	\
+	$(top_srcdir)/mx/none/mx-window-none.c		\
 	$(NULL)
 endif
 
@@ -84,6 +86,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-viewport.h		\
 	$(top_srcdir)/mx/mx-widget.h		\
 	$(top_srcdir)/mx/mx-window.h		\
+	$(top_srcdir)/mx/mx-window-base.h	\
 	$(top_srcdir)/mx/mx-floating-widget.h \
 	$(top_srcdir)/mx/mx-kinetic-scroll-view.h \
 	$(NULL)
@@ -150,7 +153,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-utils.c 		\
 	$(top_srcdir)/mx/mx-viewport.c 		\
 	$(top_srcdir)/mx/mx-widget.c		\
-	$(top_srcdir)/mx/mx-window.c		\
+	$(top_srcdir)/mx/mx-window-base.c	\
 	$(top_srcdir)/mx/mx-floating-widget.c	\
 	$(top_srcdir)/mx/mx-kinetic-scroll-view.c \
 	$(NULL)

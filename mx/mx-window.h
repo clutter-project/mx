@@ -33,6 +33,7 @@
 
 #include <glib-object.h>
 #include <mx/mx-toolbar.h>
+#include <mx/mx-window-base.h>
 
 G_BEGIN_DECLS
 
@@ -70,15 +71,22 @@ typedef struct _MxWindowPrivate MxWindowPrivate;
 
 struct _MxWindow
 {
-  GObject parent;
+  MxWindowBase parent;
 
   MxWindowPrivate *priv;
 };
 
 struct _MxWindowClass
 {
-  GObjectClass parent_class;
+  MxWindowBaseClass parent_class;
 
+  /* The following signals must be installed on window implementations */
+  /**
+   * MxWindow::destroy:
+   * @window: the object that received the signal
+   *
+   * Emitted when the stage managed by the window is destroyed.
+   */
   void (*destroy) (MxWindow *window);
 
   /* padding for future expansion */
@@ -107,9 +115,6 @@ void       mx_window_set_has_toolbar (MxWindow *window, gboolean  toolbar);
 gboolean   mx_window_get_small_screen (MxWindow *window);
 void       mx_window_set_small_screen (MxWindow *window, gboolean small_screen);
 
-void       mx_window_get_window_position (MxWindow *window, gint *x, gint *y);
-void       mx_window_set_window_position (MxWindow *window, gint  x, gint  y);
-
 void         mx_window_set_icon_name (MxWindow *window, const gchar *icon_name);
 const gchar *mx_window_get_icon_name (MxWindow *window);
 
@@ -117,6 +122,28 @@ void         mx_window_set_icon_from_cogl_texture (MxWindow   *window,
                                                    CoglHandle  texture);
 
 ClutterStage *mx_window_get_clutter_stage (MxWindow *window);
+
+/* The following two methods must be implemented by window implementations */
+
+/**
+ * mx_window_get_window_position:
+ * @window: an #MxWindow
+ * @x: (out): A pointer for the x-coordinate
+ * @y: (out): A pointer for the y-coordinate
+ *
+ * Retrieves the absolute position of the window on the screen.
+ */
+void       mx_window_get_window_position (MxWindow *window, gint *x, gint *y);
+
+/**
+ * mx_window_set_window_position:
+ * @window: A #MxWindow
+ * @x: An x-coordinate
+ * @y: A y-coordinate
+ *
+ * Sets the absolute position of the window on the screen.
+ */
+void       mx_window_set_window_position (MxWindow *window, gint  x, gint  y);
 
 G_END_DECLS
 
