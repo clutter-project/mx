@@ -864,6 +864,13 @@ mx_window_get_window_position (MxWindow *window, gint *x, gint *y)
   klass = MX_WINDOW_GET_CLASS (window);
   if (klass->get_window_position)
     klass->get_window_position (window, x, y);
+  else
+    {
+      if (x)
+        *x = 0;
+      if (y)
+        *y = 0;
+    }
 }
 
 /**
