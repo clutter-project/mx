@@ -32,7 +32,8 @@ enum
 
   PROP_ICON_THEME,
   PROP_FONT_NAME,
-  PROP_LONG_PRESS_TIMEOUT
+  PROP_LONG_PRESS_TIMEOUT,
+  PROP_SMALL_SCREEN
 };
 
 struct _MxSettingsPrivate
@@ -40,6 +41,7 @@ struct _MxSettingsPrivate
   gchar *icon_theme;
   gchar *font_name;
   guint  long_press_timeout;
+  guint  small_screen : 1;
 };
 
 
@@ -63,6 +65,10 @@ mx_settings_get_property (GObject    *object,
 
     case PROP_LONG_PRESS_TIMEOUT:
       g_value_set_uint (value, priv->long_press_timeout);
+      break;
+
+    case PROP_SMALL_SCREEN:
+      g_value_set_boolean (value, priv->small_screen);
       break;
 
     default:
@@ -92,6 +98,10 @@ mx_settings_set_property (GObject      *object,
 
     case PROP_LONG_PRESS_TIMEOUT:
       priv->long_press_timeout = g_value_get_uint (value);
+      break;
+
+    case PROP_SMALL_SCREEN:
+      priv->small_screen = g_value_get_boolean (value);
       break;
 
     default:
@@ -130,6 +140,9 @@ mx_settings_class_init (MxSettingsClass *klass)
   g_object_class_override_property (object_class,
                                     PROP_LONG_PRESS_TIMEOUT,
                                     "long-press-timeout");
+  g_object_class_override_property (object_class,
+                                    PROP_SMALL_SCREEN,
+                                    "small-screen");
 }
 
 static void

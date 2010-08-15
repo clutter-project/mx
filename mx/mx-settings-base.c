@@ -30,7 +30,8 @@ enum
 
   PROP_ICON_THEME,
   PROP_FONT_NAME,
-  PROP_LONG_PRESS_TIMEOUT
+  PROP_LONG_PRESS_TIMEOUT,
+  PROP_SMALL_SCREEN
 };
 
 static void
@@ -53,6 +54,10 @@ mx_settings_base_get_property (GObject    *object,
       g_value_set_uint (value, 500);
       break;
 
+    case PROP_SMALL_SCREEN:
+      g_value_set_boolean (value, FALSE);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -69,6 +74,7 @@ mx_settings_base_set_property (GObject      *object,
     case PROP_ICON_THEME:
     case PROP_FONT_NAME:
     case PROP_LONG_PRESS_TIMEOUT:
+    case PROP_SMALL_SCREEN:
       break;
 
     default:
@@ -107,6 +113,13 @@ mx_settings_base_class_init (MxSettingsBaseClass *klass)
                              MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_LONG_PRESS_TIMEOUT,
                                    pspec);
+
+  pspec = g_param_spec_boolean ("small-screen",
+                                "Small screen",
+                                "MeeGo small-screen mode is active",
+                                FALSE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_SMALL_SCREEN, pspec);
 }
 
 static void
