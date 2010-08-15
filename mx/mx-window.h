@@ -90,9 +90,9 @@ struct _MxWindowClass
   void (*destroy)             (MxWindow *window);
   void (*get_window_position) (MxWindow *window, gint *x, gint *y);
   void (*set_window_position) (MxWindow *window, gint  x, gint  y);
+  void (*raise)               (MxWindow *window);
 
   /* padding for future expansion */
-  void (*_padding_2) (void);
   void (*_padding_3) (void);
   void (*_padding_4) (void);
 };
@@ -125,6 +125,8 @@ ClutterStage *mx_window_get_clutter_stage (MxWindow *window);
 
 void       mx_window_get_window_position (MxWindow *window, gint *x, gint *y);
 void       mx_window_set_window_position (MxWindow *window, gint  x, gint  y);
+
+void       mx_window_raise (MxWindow *window);
 
 G_END_DECLS
 

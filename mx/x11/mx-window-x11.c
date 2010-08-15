@@ -28,7 +28,6 @@
 
 #include "mx-window.h"
 #include "mx-toolbar.h"
-#include "mx-focus-manager.h"
 #include "mx-private.h"
 #include "mx-marshal.h"
 
@@ -36,6 +35,7 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
 #include <X11/cursorfont.h>
+#include <string.h>
 
 G_DEFINE_TYPE (MxWindow, mx_window, MX_TYPE_WINDOW_BASE)
 
@@ -883,6 +883,54 @@ mx_window_real_set_window_position (MxWindow *window, gint x, gint y)
 }
 
 static void
+mx_window_real_raise (MxWindow *window)
+{
+  Window xwindow;
+  Display *display;
+  guint32 timestamp;
+  ClutterStage *stage;
+  XClientMessageEvent xclient;
+
+  stage = mx_window_get_clutter_stage (window);
+
+  /* As with all these arcane, poorly documented X11 things, learnt
+   * how to do this from reading GTK/GDK code.
+   */
+  display = clutter_x11_get_default_display ();
+  xwindow = clutter_x11_get_stage_window (stage);
+  XRaiseWindow (display, xwindow);
+
+  /* These two calls may not be necessary */
+  timestamp = 0x7FFFFFFF;
+  XChangeProperty (display,
+                   xwindow,
+                   XInternAtom (display, "_NET_WM_USER_TIME", False),
+                   XA_CARDINAL,
+                   32,
+                   PropModeReplace,
+                   (guchar *)&timestamp,
+                   1);
+  XMapWindow (display, xwindow);
+
+  memset (&xclient, 0, sizeof (xclient));
+  xclient.type = ClientMessage;
+  xclient.window = xwindow;
+  xclient.message_type = XInternAtom (display, "_NET_ACTIVE_WINDOW", False);
+  xclient.format = 32;
+  xclient.data.l[0] = 1;
+  xclient.data.l[1] = timestamp;
+  xclient.data.l[2] = None;
+  xclient.data.l[3] = 0;
+  xclient.data.l[4] = 0;
+
+  XSendEvent (display,
+              clutter_x11_get_root_window (),
+              False,
+              SubstructureRedirectMask | SubstructureNotifyMask,
+              (XEvent *)&xclient);
+}
+
+static void
 mx_window_class_init (MxWindowClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -893,6 +941,7 @@ mx_window_class_init (MxWindowClass *klass)
 
   klass->get_window_position = mx_window_real_get_window_position;
   klass->set_window_position = mx_window_real_set_window_position;
+  klass->raise = mx_window_real_raise;
 
   signals[DESTROY] = g_signal_new ("destroy",
                                    G_TYPE_FROM_CLASS (klass),

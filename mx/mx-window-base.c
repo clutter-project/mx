@@ -886,3 +886,20 @@ mx_window_set_window_position (MxWindow *window, gint  x, gint  y)
     klass->set_window_position (window, x, y);
 }
 
+/**
+ * mx_window_raise:
+ * @window: A #MxWindow
+ *
+ * Raise the window. The actual behaviour is specific to the window system.
+ */
+void
+mx_window_raise (MxWindow *window)
+{
+  MxWindowClass *klass;
+
+  g_return_if_fail (MX_IS_WINDOW (window));
+
+  klass = MX_WINDOW_GET_CLASS (window);
+  if (klass->raise)
+    klass->raise (window);
+}
