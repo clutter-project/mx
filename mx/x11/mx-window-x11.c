@@ -810,35 +810,8 @@ mx_window_constructed (GObject *object)
                     G_CALLBACK (mx_window_notify_icon_changed_cb), NULL);
 }
 
-static void
-mx_window_class_init (MxWindowClass *klass)
-{
-  GObjectClass *object_class = G_OBJECT_CLASS (klass);
-
-  g_type_class_add_private (klass, sizeof (MxWindowPrivate));
-
-  object_class->constructed = mx_window_constructed;
-
-  signals[DESTROY] = g_signal_new ("destroy",
-                                   G_TYPE_FROM_CLASS (klass),
-                                   G_SIGNAL_RUN_LAST,
-                                   G_STRUCT_OFFSET (MxWindowClass, destroy),
-                                   NULL, NULL,
-                                   _mx_marshal_VOID__VOID,
-                                   G_TYPE_NONE, 0);
-}
-
-static void
-mx_window_init (MxWindow *self)
-{
-  MxWindowPrivate *priv = self->priv = WINDOW_PRIVATE (self);
-
-  priv->is_moving = -1;
-  priv->icon_changed = TRUE;
-}
-
 void
-mx_window_get_window_position (MxWindow *window, gint *x, gint *y)
+mx_window_real_get_window_position (MxWindow *window, gint *x, gint *y)
 {
   unsigned int width, height, border_width, depth;
   MxWindowPrivate *priv;
@@ -882,7 +855,7 @@ mx_window_get_window_position (MxWindow *window, gint *x, gint *y)
 }
 
 void
-mx_window_set_window_position (MxWindow *window, gint x, gint y)
+mx_window_real_set_window_position (MxWindow *window, gint x, gint y)
 {
   Window win;
   Display *dpy;
@@ -907,5 +880,35 @@ mx_window_set_window_position (MxWindow *window, gint x, gint y)
   dpy = clutter_x11_get_default_display ();
 
   XMoveWindow (dpy, win, x, y);
+}
+
+static void
+mx_window_class_init (MxWindowClass *klass)
+{
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+  g_type_class_add_private (klass, sizeof (MxWindowPrivate));
+
+  object_class->constructed = mx_window_constructed;
+
+  klass->get_window_position = mx_window_real_get_window_position;
+  klass->set_window_position = mx_window_real_set_window_position;
+
+  signals[DESTROY] = g_signal_new ("destroy",
+                                   G_TYPE_FROM_CLASS (klass),
+                                   G_SIGNAL_RUN_LAST,
+                                   G_STRUCT_OFFSET (MxWindowClass, destroy),
+                                   NULL, NULL,
+                                   _mx_marshal_VOID__VOID,
+                                   G_TYPE_NONE, 0);
+}
+
+static void
+mx_window_init (MxWindow *self)
+{
+  MxWindowPrivate *priv = self->priv = WINDOW_PRIVATE (self);
+
+  priv->is_moving = -1;
+  priv->icon_changed = TRUE;
 }
 

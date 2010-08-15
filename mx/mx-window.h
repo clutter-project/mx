@@ -87,11 +87,11 @@ struct _MxWindowClass
    *
    * Emitted when the stage managed by the window is destroyed.
    */
-  void (*destroy) (MxWindow *window);
+  void (*destroy)             (MxWindow *window);
+  void (*get_window_position) (MxWindow *window, gint *x, gint *y);
+  void (*set_window_position) (MxWindow *window, gint  x, gint  y);
 
   /* padding for future expansion */
-  void (*_padding_0) (void);
-  void (*_padding_1) (void);
   void (*_padding_2) (void);
   void (*_padding_3) (void);
   void (*_padding_4) (void);
@@ -123,26 +123,7 @@ void         mx_window_set_icon_from_cogl_texture (MxWindow   *window,
 
 ClutterStage *mx_window_get_clutter_stage (MxWindow *window);
 
-/* The following two methods must be implemented by window implementations */
-
-/**
- * mx_window_get_window_position:
- * @window: an #MxWindow
- * @x: (out): A pointer for the x-coordinate
- * @y: (out): A pointer for the y-coordinate
- *
- * Retrieves the absolute position of the window on the screen.
- */
 void       mx_window_get_window_position (MxWindow *window, gint *x, gint *y);
-
-/**
- * mx_window_set_window_position:
- * @window: A #MxWindow
- * @x: An x-coordinate
- * @y: A y-coordinate
- *
- * Sets the absolute position of the window on the screen.
- */
 void       mx_window_set_window_position (MxWindow *window, gint  x, gint  y);
 
 G_END_DECLS

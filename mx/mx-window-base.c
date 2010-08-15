@@ -846,3 +846,43 @@ mx_window_get_clutter_stage (MxWindow *window)
   return (ClutterStage *)WINDOW_BASE_PRIVATE (window)->stage;
 }
 
+/**
+ * mx_window_get_window_position:
+ * @window: an #MxWindow
+ * @x: (out): A pointer for the x-coordinate
+ * @y: (out): A pointer for the y-coordinate
+ *
+ * Retrieves the absolute position of the window on the screen.
+ */
+void
+mx_window_get_window_position (MxWindow *window, gint *x, gint *y)
+{
+  MxWindowClass *klass;
+
+  g_return_if_fail (MX_IS_WINDOW (window));
+
+  klass = MX_WINDOW_GET_CLASS (window);
+  if (klass->get_window_position)
+    klass->get_window_position (window, x, y);
+}
+
+/**
+ * mx_window_set_window_position:
+ * @window: A #MxWindow
+ * @x: An x-coordinate
+ * @y: A y-coordinate
+ *
+ * Sets the absolute position of the window on the screen.
+ */
+void
+mx_window_set_window_position (MxWindow *window, gint  x, gint  y)
+{
+  MxWindowClass *klass;
+
+  g_return_if_fail (MX_IS_WINDOW (window));
+
+  klass = MX_WINDOW_GET_CLASS (window);
+  if (klass->set_window_position)
+    klass->set_window_position (window, x, y);
+}
+
