@@ -967,7 +967,6 @@ mx_window_x11_present (MxNativeWindow *self)
 static void
 _mx_window_x11_class_init (MxWindowX11Class *klass)
 {
-  GParamSpec *pspec;
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
   g_type_class_add_private (klass, sizeof (MxWindowX11Private));
@@ -976,12 +975,7 @@ _mx_window_x11_class_init (MxWindowX11Class *klass)
   object_class->set_property = mx_window_x11_set_property;
   object_class->constructed = mx_window_x11_constructed;
 
-  pspec = g_param_spec_object ("window",
-                               "Window",
-                               "The parent MxWindow",
-                               MX_TYPE_WINDOW,
-                               MX_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
-  g_object_class_install_property (object_class, PROP_WINDOW, pspec);
+  g_object_class_override_property (object_class, PROP_WINDOW, "window");
 }
 
 static void

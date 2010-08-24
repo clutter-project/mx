@@ -28,6 +28,26 @@
 #include "mx-native-window.h"
 #include "mx-private.h"
 
+static void
+mx_native_window_base_init (gpointer g_iface)
+{
+  static gboolean is_initialized = FALSE;
+
+  if (G_UNLIKELY (!is_initialized))
+    {
+      GParamSpec *pspec;
+
+      is_initialized = TRUE;
+
+      pspec = g_param_spec_object ("window",
+                                   "Window",
+                                   "The parent MxWindow",
+                                   MX_TYPE_WINDOW,
+                                   MX_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+      g_object_interface_install_property (g_iface, pspec);
+    }
+}
+
 GType
 _mx_native_window_get_type (void)
 {
@@ -37,7 +57,7 @@ _mx_native_window_get_type (void)
     {
       const GTypeInfo native_window_info = {
         sizeof (MxNativeWindowIface),
-        NULL,
+        mx_native_window_base_init,
         NULL
       };
 
