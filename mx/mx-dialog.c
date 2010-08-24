@@ -47,6 +47,11 @@ enum {
   LAST_SIGNAL,
 };
 
+struct _ActionButton {
+  MxAction *action;
+  ClutterActor *button;
+};
+
 struct _MxDialogPrivate {
   ClutterActor *layout;
   ClutterActor *content;
@@ -67,6 +72,11 @@ mx_dialog_finalize (GObject *object)
 
   if (priv->actions)
     {
+      GList *a;
+
+      for (a = priv->actions; a; a = a->next)
+        g_slice_free (struct _ActionButton, a->data);
+
       g_list_free (priv->actions);
       priv->actions = NULL;
     }
@@ -161,17 +171,22 @@ mx_dialog_add_action (MxDialog *self,
 {
   MxDialogPrivate *priv;
   ClutterActor *button;
+  struct _ActionButton *ab;
 
   g_return_if_fail (MX_IS_DIALOG (self));
   g_return_if_fail (MX_IS_ACTION (action));
 
   priv = self->priv;
 
-  priv->actions = g_list_append (priv->actions, action);
-
   button = mx_action_button_new (action);
   clutter_container_add_actor (CLUTTER_CONTAINER (priv->button_box), button);
   mx_button_group_add (priv->button_group, (MxButton *) button);
+
+  /* So we can maintain the two way relationship between action and button */
+  ab = g_slice_new (struct _ActionButton);
+  ab->action = action;
+  ab->button = button;
+  priv->actions = g_list_append (priv->actions, ab);
 }
 
 /**
@@ -186,13 +201,32 @@ mx_dialog_remove_action (MxDialog *self,
                          MxAction *action)
 {
   MxDialogPrivate *priv;
+  struct _ActionButton *ab = NULL;
+  GList *a;
 
   g_return_if_fail (MX_IS_DIALOG (self));
   g_return_if_fail (MX_IS_ACTION (action));
 
   priv = self->priv;
 
-  priv->actions = g_list_remove (priv->actions, action);
+  for (a = priv->actions; a; a = a->next)
+    {
+      struct _ActionButton *data = (struct _ActionButton *) a->data;
 
-  /* FIXME: Remove button */
+      if (data->action == action)
+        priv->actions = g_list_delete_link (priv->actions, a);
+        ab = data;
+        break;
+    }
+
+  if (ab != NULL)
+    {
+      g_warning ("Action '%s' was not found in dialog",
+                 mx_action_get_name (action));
+      return;
+    }
+
+  mx_button_group_remove (priv->button_group, ab->button);
+  clutter_container_remove_actor (CLUTTER_ACTOR (priv->button_box), ab->button);
+  g_slice_free (struct _ActionButton, ab);
 }
