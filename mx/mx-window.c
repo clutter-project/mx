@@ -1,5 +1,5 @@
 /*
- * mx-window-base.c: A top-level window base class
+ * mx-window.c: A top-level window class
  *
  * Copyright 2010 Intel Corporation.
  *
@@ -26,18 +26,25 @@
 #include "config.h"
 #endif
 
-#include "mx-window-base.h"
+#include "mx-window.h"
+#include "mx-native-window.h"
 #include "mx-toolbar.h"
 #include "mx-focus-manager.h"
 #include "mx-private.h"
 #include "mx-marshal.h"
 
-G_DEFINE_ABSTRACT_TYPE (MxWindowBase, mx_window_base, G_TYPE_OBJECT)
+#ifdef HAVE_X11
+#include "x11/mx-window-x11.h"
+#endif
+
+G_DEFINE_TYPE (MxWindow, mx_window, G_TYPE_OBJECT)
 
 static GQuark window_quark = 0;
 
-typedef struct
+struct _MxWindowPrivate
 {
+  MxNativeWindow *native_window;
+
   guint has_toolbar   : 1;
   guint small_screen  : 1;
 
@@ -48,10 +55,10 @@ typedef struct
   ClutterActor *toolbar;
   ClutterActor *child;
   ClutterActor *resize_grip;
-} MxWindowBasePrivate;
+};
 
-#define WINDOW_BASE_PRIVATE(o) \
-  (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_WINDOW_BASE, MxWindowBasePrivate))
+#define WINDOW_PRIVATE(o) \
+  (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_WINDOW, MxWindowPrivate))
 
 enum
 {
@@ -67,13 +74,22 @@ enum
   PROP_CHILD
 };
 
-static void
-mx_window_base_get_property (GObject    *object,
-                             guint       property_id,
-                             GValue     *value,
-                             GParamSpec *pspec)
+enum
 {
-  MxWindowBasePrivate *priv = WINDOW_BASE_PRIVATE (object);
+  DESTROY,
+
+  LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL] = { 0, };
+
+static void
+mx_window_get_property (GObject    *object,
+                        guint       property_id,
+                        GValue     *value,
+                        GParamSpec *pspec)
+{
+  MxWindowPrivate *priv = MX_WINDOW (object)->priv;
 
   switch (property_id)
     {
@@ -111,25 +127,27 @@ mx_window_base_get_property (GObject    *object,
 }
 
 static void
-mx_window_base_set_property (GObject      *object,
-                             guint         property_id,
-                             const GValue *value,
-                             GParamSpec   *pspec)
+mx_window_set_property (GObject      *object,
+                        guint         property_id,
+                        const GValue *value,
+                        GParamSpec   *pspec)
 {
+  MxWindow *window = MX_WINDOW (object);
+
   switch (property_id)
     {
     case PROP_HAS_TOOLBAR:
-      mx_window_set_has_toolbar (MX_WINDOW (object),
+      mx_window_set_has_toolbar (window,
                                  g_value_get_boolean (value));
       break;
 
     case PROP_SMALL_SCREEN:
-      mx_window_set_small_screen (MX_WINDOW (object),
+      mx_window_set_small_screen (window,
                                   g_value_get_boolean (value));
       break;
 
     case PROP_ICON_NAME:
-      mx_window_set_icon_name (MX_WINDOW (object),
+      mx_window_set_icon_name (window,
                                g_value_get_string (value));
       break;
 
@@ -139,13 +157,11 @@ mx_window_base_set_property (GObject      *object,
       break;
 
     case PROP_CLUTTER_STAGE:
-      WINDOW_BASE_PRIVATE (object)->stage =
-        (ClutterActor *)g_value_get_object (value);
+      window->priv->stage = (ClutterActor *)g_value_get_object (value);
       break;
 
     case PROP_CHILD:
-      mx_window_set_child (MX_WINDOW (object),
-                           (ClutterActor *)g_value_get_object (value));
+      mx_window_set_child (window, (ClutterActor *)g_value_get_object (value));
       break;
 
     default:
@@ -154,9 +170,9 @@ mx_window_base_set_property (GObject      *object,
 }
 
 static void
-mx_window_base_dispose (GObject *object)
+mx_window_dispose (GObject *object)
 {
-  MxWindowBasePrivate *priv = WINDOW_BASE_PRIVATE (object);
+  MxWindowPrivate *priv = MX_WINDOW (object)->priv;
 
   if (priv->icon_texture)
     {
@@ -190,17 +206,23 @@ mx_window_base_dispose (GObject *object)
       clutter_actor_destroy (stage);
     }
 
-  G_OBJECT_CLASS (mx_window_base_parent_class)->dispose (object);
+  if (priv->native_window)
+    {
+      g_object_unref (priv->native_window);
+      priv->native_window = NULL;
+    }
+
+  G_OBJECT_CLASS (mx_window_parent_class)->dispose (object);
 }
 
 static void
-mx_window_base_finalize (GObject *object)
+mx_window_finalize (GObject *object)
 {
-  MxWindowBasePrivate *priv = WINDOW_BASE_PRIVATE (object);
+  MxWindowPrivate *priv = MX_WINDOW (object)->priv;
 
   g_free (priv->icon_name);
 
-  G_OBJECT_CLASS (mx_window_base_parent_class)->finalize (object);
+  G_OBJECT_CLASS (mx_window_parent_class)->finalize (object);
 }
 
 static void
@@ -208,7 +230,7 @@ mx_window_post_paint_cb (ClutterActor *actor, MxWindow *window)
 {
   gfloat width, height;
 
-  MxWindowBasePrivate *priv = WINDOW_BASE_PRIVATE (window);
+  MxWindowPrivate *priv = window->priv;
 
   /* If we're in small-screen or fullscreen mode, or we don't have the toolbar,
    * we don't want a frame or a resize handle.
@@ -237,7 +259,7 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
 {
   MxPadding padding;
   gboolean from_toolbar;
-  MxWindowBasePrivate *priv;
+  MxWindowPrivate *priv;
   gfloat width, height, toolbar_height, stage_width, stage_height;
 
   /* Note, ideally this would happen just before allocate, but there's
@@ -249,7 +271,7 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
    * happens.
    */
 
-  priv = WINDOW_BASE_PRIVATE (window);
+  priv = window->priv;
 
   from_toolbar = (actor == priv->toolbar);
   actor = clutter_actor_get_stage (actor);
@@ -310,7 +332,7 @@ mx_window_fullscreen_set_cb (ClutterStage *stage,
                              GParamSpec   *pspec,
                              MxWindow     *self)
 {
-  MxWindowBasePrivate *priv = WINDOW_BASE_PRIVATE (self);
+  MxWindowPrivate *priv = self->priv;
 
   /* If we're in small-screen mode, make sure the size gets reset
    * correctly.
@@ -332,18 +354,18 @@ mx_window_fullscreen_set_cb (ClutterStage *stage,
 }
 
 static void
-mx_window_destroy_cb (ClutterStage *stage, MxWindowBase *self)
+mx_window_destroy_cb (ClutterStage *stage, MxWindow *self)
 {
-  WINDOW_BASE_PRIVATE (self)->stage = NULL;
-  g_signal_emit_by_name (self, "destroy");
+  self->priv->stage = NULL;
+  g_signal_emit (self, signals[DESTROY], 0);
 }
 
 static void
 mx_window_actor_added_cb (ClutterContainer *container,
                           ClutterActor     *actor,
-                          MxWindowBase     *self)
+                          MxWindow         *self)
 {
-  MxWindowBasePrivate *priv = WINDOW_BASE_PRIVATE (self);
+  MxWindowPrivate *priv = self->priv;
   if (priv->resize_grip && priv->child)
     clutter_actor_raise (priv->resize_grip, priv->child);
 }
@@ -351,9 +373,9 @@ mx_window_actor_added_cb (ClutterContainer *container,
 static void
 mx_window_actor_removed_cb (ClutterContainer *container,
                             ClutterActor     *actor,
-                            MxWindowBase     *self)
+                            MxWindow         *self)
 {
-  MxWindowBasePrivate *priv = WINDOW_BASE_PRIVATE (self);
+  MxWindowPrivate *priv = self->priv;
 
   if (actor == priv->child)
     {
@@ -369,9 +391,9 @@ mx_window_actor_removed_cb (ClutterContainer *container,
 static void
 mx_window_user_resizable_cb (ClutterStage *stage,
                              GParamSpec   *pspec,
-                             MxWindowBase *self)
+                             MxWindow     *self)
 {
-  MxWindowBasePrivate *priv = WINDOW_BASE_PRIVATE (self);
+  MxWindowPrivate *priv = self->priv;
 
   if (!clutter_stage_get_user_resizable (stage))
     clutter_actor_hide (priv->resize_grip);
@@ -389,9 +411,10 @@ mx_window_user_resizable_cb (ClutterStage *stage,
 }
 
 static void
-mx_window_base_constructed (GObject *object)
+mx_window_constructed (GObject *object)
 {
-  MxWindowBasePrivate *priv = WINDOW_BASE_PRIVATE (object);
+  MxWindow *self = MX_WINDOW (object);
+  MxWindowPrivate *priv = self->priv;
 
   if (!priv->stage)
     {
@@ -437,22 +460,26 @@ mx_window_base_constructed (GObject *object)
                     G_CALLBACK (mx_window_user_resizable_cb), object);
 
   g_object_set (G_OBJECT (priv->stage), "use-alpha", TRUE, NULL);
+
+#ifdef HAVE_X11
+  priv->native_window = mx_window_x11_new (self);
+#endif
 }
 
 static void
-mx_window_base_class_init (MxWindowBaseClass *klass)
+mx_window_class_init (MxWindowClass *klass)
 {
   GParamSpec *pspec;
 
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-  g_type_class_add_private (klass, sizeof (MxWindowBasePrivate));
+  g_type_class_add_private (klass, sizeof (MxWindowPrivate));
 
-  object_class->get_property = mx_window_base_get_property;
-  object_class->set_property = mx_window_base_set_property;
-  object_class->dispose = mx_window_base_dispose;
-  object_class->finalize = mx_window_base_finalize;
-  object_class->constructed = mx_window_base_constructed;
+  object_class->get_property = mx_window_get_property;
+  object_class->set_property = mx_window_set_property;
+  object_class->dispose = mx_window_dispose;
+  object_class->finalize = mx_window_finalize;
+  object_class->constructed = mx_window_constructed;
 
   pspec = g_param_spec_boolean ("has-toolbar",
                                 "Has toolbar",
@@ -506,23 +533,38 @@ mx_window_base_class_init (MxWindowBaseClass *klass)
                                MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_CHILD, pspec);
 
+  /**
+   * MxWindow::destroy:
+   * @window: the object that received the signal
+   *
+   * Emitted when the stage managed by the window is destroyed.
+   */
+  signals[DESTROY] = g_signal_new ("destroy",
+                                   G_TYPE_FROM_CLASS (klass),
+                                   G_SIGNAL_RUN_LAST,
+                                   G_STRUCT_OFFSET (MxWindowClass, destroy),
+                                   NULL, NULL,
+                                   _mx_marshal_VOID__VOID,
+                                   G_TYPE_NONE, 0);
+
   window_quark = g_quark_from_static_string ("mx-window");
 }
 
 static void
-mx_window_base_init (MxWindowBase *self)
+mx_window_init (MxWindow *self)
 {
+  self->priv = WINDOW_PRIVATE (self);
 }
 
 CoglHandle
 _mx_window_get_icon_cogl_texture (MxWindow *window)
 {
   CoglHandle texture;
-  MxWindowBasePrivate *priv;
+  MxWindowPrivate *priv;
 
   g_return_val_if_fail (MX_IS_WINDOW (window), COGL_INVALID_HANDLE);
 
-  priv = WINDOW_BASE_PRIVATE (window);
+  priv = window->priv;
   texture = priv->icon_texture;
   priv->icon_texture = NULL;
 
@@ -533,7 +575,7 @@ ClutterActor *
 _mx_window_get_resize_grip (MxWindow *window)
 {
   g_return_val_if_fail (MX_IS_WINDOW (window), NULL);
-  return WINDOW_BASE_PRIVATE (window)->resize_grip;
+  return window->priv->resize_grip;
 }
 
 /**
@@ -593,12 +635,12 @@ void
 mx_window_set_child (MxWindow     *window,
                      ClutterActor *actor)
 {
-  MxWindowBasePrivate *priv;
+  MxWindowPrivate *priv;
 
   g_return_if_fail (MX_IS_WINDOW (window));
   g_return_if_fail (actor == NULL || CLUTTER_IS_ACTOR (actor));
 
-  priv = WINDOW_BASE_PRIVATE (window);
+  priv = window->priv;
   if (!priv->stage)
     return;
 
@@ -634,7 +676,7 @@ mx_window_get_child (MxWindow *window)
 {
   g_return_val_if_fail (MX_IS_WINDOW (window), NULL);
 
-  return WINDOW_BASE_PRIVATE (window)->child;
+  return window->priv->child;
 }
 
 /**
@@ -649,11 +691,11 @@ void
 mx_window_set_has_toolbar (MxWindow *window,
                            gboolean  toolbar)
 {
-  MxWindowBasePrivate *priv;
+  MxWindowPrivate *priv;
 
   g_return_if_fail (MX_IS_WINDOW (window));
 
-  priv = WINDOW_BASE_PRIVATE (window);
+  priv = window->priv;
 
   if (priv->has_toolbar != toolbar)
     {
@@ -688,8 +730,7 @@ gboolean
 mx_window_get_has_toolbar (MxWindow *window)
 {
   g_return_val_if_fail (MX_IS_WINDOW (window), FALSE);
-
-  return WINDOW_BASE_PRIVATE (window)->has_toolbar;
+  return window->priv->has_toolbar;
 }
 
 /**
@@ -704,8 +745,7 @@ MxToolbar *
 mx_window_get_toolbar (MxWindow *window)
 {
   g_return_val_if_fail (MX_IS_WINDOW (window), NULL);
-
-  return (MxToolbar*) WINDOW_BASE_PRIVATE (window)->toolbar;
+  return MX_TOOLBAR (window->priv->toolbar);
 }
 
 /**
@@ -721,7 +761,7 @@ gboolean
 mx_window_get_small_screen (MxWindow *window)
 {
   g_return_val_if_fail (MX_IS_WINDOW (window), FALSE);
-  return WINDOW_BASE_PRIVATE (window)->small_screen;
+  return window->priv->small_screen;
 }
 
 /**
@@ -737,11 +777,11 @@ mx_window_get_small_screen (MxWindow *window)
 void
 mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
 {
-  MxWindowBasePrivate *priv;
+  MxWindowPrivate *priv;
 
   g_return_if_fail (MX_IS_WINDOW (window));
 
-  priv = WINDOW_BASE_PRIVATE (window);
+  priv = window->priv;
   if (priv->small_screen != small_screen)
     {
       priv->small_screen = small_screen;
@@ -760,11 +800,11 @@ mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
 void
 mx_window_set_icon_name (MxWindow *window, const gchar *icon_name)
 {
-  MxWindowBasePrivate *priv;
+  MxWindowPrivate *priv;
 
   g_return_if_fail (MX_IS_WINDOW (window));
 
-  priv = WINDOW_BASE_PRIVATE (window);
+  priv = window->priv;
 
   if (priv->icon_name && icon_name && g_str_equal (priv->icon_name, icon_name))
     return;
@@ -790,7 +830,7 @@ const gchar *
 mx_window_get_icon_name (MxWindow *window)
 {
   g_return_val_if_fail (MX_IS_WINDOW (window), NULL);
-  return WINDOW_BASE_PRIVATE (window)->icon_name;
+  return window->priv->icon_name;
 }
 
 /**
@@ -805,12 +845,12 @@ void
 mx_window_set_icon_from_cogl_texture (MxWindow   *window,
                                       CoglHandle  texture)
 {
-  MxWindowBasePrivate *priv;
+  MxWindowPrivate *priv;
 
   g_return_if_fail (MX_IS_WINDOW (window));
   g_return_if_fail (texture != NULL);
 
-  priv = WINDOW_BASE_PRIVATE (window);
+  priv = window->priv;
 
   if (priv->icon_name)
     {
@@ -843,7 +883,7 @@ ClutterStage *
 mx_window_get_clutter_stage (MxWindow *window)
 {
   g_return_val_if_fail (MX_IS_WINDOW (window), NULL);
-  return (ClutterStage *)WINDOW_BASE_PRIVATE (window)->stage;
+  return CLUTTER_STAGE (window->priv->stage);
 }
 
 /**
@@ -855,15 +895,17 @@ mx_window_get_clutter_stage (MxWindow *window)
  * Retrieves the absolute position of the window on the screen.
  */
 void
-mx_window_get_window_position (MxWindow *window, gint *x, gint *y)
+mx_window_get_window_position (MxWindow *window,
+                               gint     *x,
+                               gint     *y)
 {
-  MxWindowClass *klass;
+  MxWindowPrivate *priv;
 
   g_return_if_fail (MX_IS_WINDOW (window));
 
-  klass = MX_WINDOW_GET_CLASS (window);
-  if (klass->get_window_position)
-    klass->get_window_position (window, x, y);
+  priv = window->priv;
+  if (priv->native_window)
+    _mx_native_window_get_position (priv->native_window, x, y);
   else
     {
       if (x)
@@ -882,31 +924,33 @@ mx_window_get_window_position (MxWindow *window, gint *x, gint *y)
  * Sets the absolute position of the window on the screen.
  */
 void
-mx_window_set_window_position (MxWindow *window, gint  x, gint  y)
+mx_window_set_window_position (MxWindow *window,
+                               gint      x,
+                               gint      y)
 {
-  MxWindowClass *klass;
+  MxWindowPrivate *priv;
 
   g_return_if_fail (MX_IS_WINDOW (window));
 
-  klass = MX_WINDOW_GET_CLASS (window);
-  if (klass->set_window_position)
-    klass->set_window_position (window, x, y);
+  priv = window->priv;
+  if (priv->native_window)
+    _mx_native_window_set_position (priv->native_window, x, y);
 }
 
 /**
- * mx_window_raise:
+ * mx_window_present:
  * @window: A #MxWindow
  *
- * Raise the window. The actual behaviour is specific to the window system.
+ * Present the window. The actual behaviour is specific to the window system.
  */
 void
-mx_window_raise (MxWindow *window)
+mx_window_present (MxWindow *window)
 {
-  MxWindowClass *klass;
+  MxWindowPrivate *priv;
 
   g_return_if_fail (MX_IS_WINDOW (window));
 
-  klass = MX_WINDOW_GET_CLASS (window);
-  if (klass->raise)
-    klass->raise (window);
+  priv = window->priv;
+  if (priv->native_window)
+    _mx_native_window_present (priv->native_window);
 }

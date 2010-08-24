@@ -33,7 +33,6 @@
 
 #include <glib-object.h>
 #include <mx/mx-toolbar.h>
-#include <mx/mx-window-base.h>
 
 G_BEGIN_DECLS
 
@@ -71,28 +70,22 @@ typedef struct _MxWindowPrivate MxWindowPrivate;
 
 struct _MxWindow
 {
-  MxWindowBase parent;
+  GObject parent;
 
   MxWindowPrivate *priv;
 };
 
 struct _MxWindowClass
 {
-  MxWindowBaseClass parent_class;
+  GObjectClass parent_class;
 
-  /* The following signals must be installed on window implementations */
-  /**
-   * MxWindow::destroy:
-   * @window: the object that received the signal
-   *
-   * Emitted when the stage managed by the window is destroyed.
-   */
+  /* signals, not vfuncs */
   void (*destroy)             (MxWindow *window);
-  void (*get_window_position) (MxWindow *window, gint *x, gint *y);
-  void (*set_window_position) (MxWindow *window, gint  x, gint  y);
-  void (*raise)               (MxWindow *window);
 
   /* padding for future expansion */
+  void (*_padding_0) (void);
+  void (*_padding_1) (void);
+  void (*_padding_2) (void);
   void (*_padding_3) (void);
   void (*_padding_4) (void);
 };
@@ -126,7 +119,7 @@ ClutterStage *mx_window_get_clutter_stage (MxWindow *window);
 void       mx_window_get_window_position (MxWindow *window, gint *x, gint *y);
 void       mx_window_set_window_position (MxWindow *window, gint  x, gint  y);
 
-void       mx_window_raise (MxWindow *window);
+void       mx_window_present (MxWindow *window);
 
 G_END_DECLS
 

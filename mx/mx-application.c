@@ -511,7 +511,7 @@ mx_application_default_raise (MxApplication *application)
   if (!priv->windows)
     return;
 
-  mx_window_raise (MX_WINDOW (g_list_last (priv->windows)->data));
+  mx_window_present (MX_WINDOW (g_list_last (priv->windows)->data));
 }
 
 

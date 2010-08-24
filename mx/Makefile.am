@@ -17,6 +17,7 @@ WINSYS_SRC = \
 	$(top_srcdir)/mx/x11/mx-clipboard-x11.c	\
 	$(top_srcdir)/mx/x11/mx-settings-x11.c	\
 	$(top_srcdir)/mx/x11/mx-window-x11.c	\
+	$(top_srcdir)/mx/x11/mx-window-x11.h	\
 	$(top_srcdir)/mx/x11/xsettings-client.c	\
 	$(top_srcdir)/mx/x11/xsettings-client.h	\
 	$(top_srcdir)/mx/x11/xsettings-common.c	\
@@ -86,13 +87,13 @@ source_h = \
 	$(top_srcdir)/mx/mx-viewport.h		\
 	$(top_srcdir)/mx/mx-widget.h		\
 	$(top_srcdir)/mx/mx-window.h		\
-	$(top_srcdir)/mx/mx-window-base.h	\
 	$(top_srcdir)/mx/mx-floating-widget.h \
 	$(top_srcdir)/mx/mx-kinetic-scroll-view.h \
 	$(NULL)
 
 source_h_priv = \
 	$(top_srcdir)/mx/mx-css.h		\
+	$(top_srcdir)/mx/mx-native-window.h	\
 	$(top_srcdir)/mx/mx-path-bar-button.h	\
 	$(top_srcdir)/mx/mx-progress-bar-fill.h	\
 	$(top_srcdir)/mx/mx-private.h		\
@@ -153,7 +154,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-utils.c 		\
 	$(top_srcdir)/mx/mx-viewport.c 		\
 	$(top_srcdir)/mx/mx-widget.c		\
-	$(top_srcdir)/mx/mx-window-base.c	\
+	$(top_srcdir)/mx/mx-window.c		\
 	$(top_srcdir)/mx/mx-floating-widget.c	\
 	$(top_srcdir)/mx/mx-kinetic-scroll-view.c \
 	$(NULL)
@@ -252,8 +253,9 @@ libmx_@MX_API_VERSION@_la_SOURCES =	\
 	$(source_h)			\
 	$(source_h_priv)		\
 	$(source_c)			\
-	mx-private.c			\
-	mx.h 				\
+	$(top_srcdir)/mx/mx-native-window.c	\
+	$(top_srcdir)/mx/mx-private.c	\
+	$(top_srcdir)/mx/mx.h 		\
 	$(NULL)
 
 libmx_@MX_API_VERSION@_la_LIBADD = $(MX_LIBS)
