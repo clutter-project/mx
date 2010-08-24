@@ -1,6 +1,6 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 /*
- * mx-clipboard.c: clipboard object
+ * mx-clipboard-default.c: The default clipboard object
  *
  * Copyright 2010 Intel Corporation.
  *
@@ -18,6 +18,7 @@
  * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Written by: Damien Lespiau <damien.lespiau@intel.com>
+ *             Chris Lord <chris@linux.intel.com>
  *
  */
 
@@ -40,6 +41,7 @@ G_DEFINE_TYPE (MxClipboard, mx_clipboard, G_TYPE_OBJECT)
 
 struct _MxClipboardPrivate
 {
+  gchar *text;
 };
 
 static void
@@ -77,6 +79,10 @@ mx_clipboard_dispose (GObject *object)
 static void
 mx_clipboard_finalize (GObject *object)
 {
+  MxClipboardPrivate *priv = MX_CLIPBOARD (object)->priv;
+
+  g_free (priv->text);
+
   G_OBJECT_CLASS (mx_clipboard_parent_class)->finalize (object);
 }
 
@@ -85,7 +91,7 @@ mx_clipboard_class_init (MxClipboardClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-  /* g_type_class_add_private (klass, sizeof (MxClipboardPrivate)); */
+  g_type_class_add_private (klass, sizeof (MxClipboardPrivate));
 
   object_class->get_property = mx_clipboard_get_property;
   object_class->set_property = mx_clipboard_set_property;
@@ -96,7 +102,7 @@ mx_clipboard_class_init (MxClipboardClass *klass)
 static void
 mx_clipboard_init (MxClipboard *self)
 {
-  /* self->priv = CLIPBOARD_PRIVATE (self); */
+  self->priv = CLIPBOARD_PRIVATE (self);
 }
 
 /**
@@ -120,6 +126,29 @@ mx_clipboard_get_default (void)
   return default_clipboard;
 }
 
+typedef struct
+{
+  MxClipboard             *clipboard;
+  MxClipboardCallbackFunc  callback;
+  gpointer                 user_data;
+} MxClipboardClosure;
+
+static gboolean
+mx_clipboard_get_text_cb (MxClipboardClosure *closure)
+{
+  if (closure->clipboard)
+    {
+      MxClipboardPrivate *priv = closure->clipboard->priv;
+      g_object_remove_weak_pointer (G_OBJECT (closure->clipboard),
+                                    (gpointer *)&closure->clipboard);
+      closure->callback (closure->clipboard, priv->text, closure->user_data);
+    }
+
+  g_slice_free (MxClipboardClosure, closure);
+
+  return FALSE;
+}
+
 /**
  * mx_clipboard_get_text:
  * @clipboard: A #MxClipboard
@@ -135,10 +164,19 @@ mx_clipboard_get_text (MxClipboard            *clipboard,
                        MxClipboardCallbackFunc callback,
                        gpointer                user_data)
 {
+  MxClipboardClosure *closure;
+
   g_return_if_fail (MX_IS_CLIPBOARD (clipboard));
   g_return_if_fail (callback != NULL);
 
-  g_warning ("Write me");
+  closure = g_slice_new (MxClipboardClosure);
+  closure->clipboard = clipboard;
+  closure->callback = callback;
+  closure->user_data = user_data;
+
+  g_object_add_weak_pointer (G_OBJECT (clipboard),
+                             (gpointer *)&closure->clipboard);
+  g_idle_add ((GSourceFunc)mx_clipboard_get_text_cb, closure);
 }
 
 /**
@@ -153,8 +191,12 @@ void
 mx_clipboard_set_text (MxClipboard *clipboard,
                        const gchar *text)
 {
+  MxClipboardPrivate *priv;
+
   g_return_if_fail (MX_IS_CLIPBOARD (clipboard));
   g_return_if_fail (text != NULL);
 
-  g_warning ("Write me");
+  priv = clipboard->priv;
+  g_free (priv->text);
+  priv->text = g_strdup (text);
 }

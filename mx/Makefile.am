@@ -25,9 +25,8 @@ WINSYS_SRC = \
 	$(NULL)
 else
 WINSYS_SRC = \
-	$(top_srcdir)/mx/none/mx-clipboard-none.c	\
+	$(top_srcdir)/mx/mx-clipboard-default.c		\
 	$(top_srcdir)/mx/none/mx-settings-none.c	\
-	$(top_srcdir)/mx/none/mx-window-none.c		\
 	$(NULL)
 endif
 
