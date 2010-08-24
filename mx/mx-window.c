@@ -462,7 +462,7 @@ mx_window_constructed (GObject *object)
   g_object_set (G_OBJECT (priv->stage), "use-alpha", TRUE, NULL);
 
 #ifdef HAVE_X11
-  priv->native_window = mx_window_x11_new (self);
+  priv->native_window = _mx_window_x11_new (self);
 #endif
 }
 

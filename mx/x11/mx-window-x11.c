@@ -39,7 +39,7 @@
 
 static void mx_native_window_iface_init (MxNativeWindowIface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (MxWindowX11, mx_window_x11, G_TYPE_OBJECT,
+G_DEFINE_TYPE_WITH_CODE (MxWindowX11, _mx_window_x11, G_TYPE_OBJECT,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_NATIVE_WINDOW,
                                                 mx_native_window_iface_init))
 
@@ -965,7 +965,7 @@ mx_window_x11_present (MxNativeWindow *self)
 }
 
 static void
-mx_window_x11_class_init (MxWindowX11Class *klass)
+_mx_window_x11_class_init (MxWindowX11Class *klass)
 {
   GParamSpec *pspec;
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -1000,7 +1000,7 @@ mx_native_window_iface_init (MxNativeWindowIface *iface)
 }
 
 static void
-mx_window_x11_init (MxWindowX11 *self)
+_mx_window_x11_init (MxWindowX11 *self)
 {
   MxWindowX11Private *priv = self->priv = WINDOW_X11_PRIVATE (self);
 
@@ -1009,7 +1009,7 @@ mx_window_x11_init (MxWindowX11 *self)
 }
 
 MxNativeWindow *
-mx_window_x11_new (MxWindow *window)
+_mx_window_x11_new (MxWindow *window)
 {
   return g_object_new (MX_TYPE_WINDOW_X11, "window", window, NULL);
 }

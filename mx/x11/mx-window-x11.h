@@ -31,7 +31,7 @@
 
 G_BEGIN_DECLS
 
-#define MX_TYPE_WINDOW_X11 mx_window_x11_get_type()
+#define MX_TYPE_WINDOW_X11 _mx_window_x11_get_type()
 
 #define MX_WINDOW_X11(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
@@ -69,9 +69,9 @@ struct _MxWindowX11Class
   GObjectClass parent_class;
 };
 
-GType mx_window_x11_get_type (void) G_GNUC_CONST;
+GType _mx_window_x11_get_type (void) G_GNUC_CONST;
 
-MxNativeWindow *mx_window_x11_new (MxWindow *window);
+MxNativeWindow *_mx_window_x11_new (MxWindow *window);
 
 G_END_DECLS
 
