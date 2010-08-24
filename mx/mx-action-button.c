@@ -170,6 +170,15 @@ mx_action_button_init (MxActionButton *self)
   mx_box_layout_child_set_y_fill (MX_BOX_LAYOUT (hbox), priv->label, FALSE);
 }
 
+/**
+ * mx_action_button_new:
+ * @action: An #MxAction
+ *
+ * Creates a new #MxActionButton that activates @action when clicked.
+ *
+ * Return value: A newly created #MxActionButton that should be unreffed when
+ * finished with.
+ */
 ClutterActor *
 mx_action_button_new (MxAction *action)
 {
@@ -178,6 +187,14 @@ mx_action_button_new (MxAction *action)
                        NULL);
 }
 
+/**
+ * mx_action_button_set_action:
+ * @button: An #MxButton
+ * @action: An #MxAction
+ *
+ * Sets @action as the action for @button. @Button will take its label and
+ * icon from @action.
+ */
 void
 mx_action_button_set_action (MxActionButton *button,
                              MxAction       *action)
@@ -196,6 +213,14 @@ mx_action_button_set_action (MxActionButton *button,
                      mx_action_get_display_name (action));
 }
 
+/**
+ * mx_action_button_get_action:
+ * @button: An #MxActionButton
+ *
+ * Retrieves the #MxAction associated with @button.
+ *
+ * Return value: An @MxAction
+ */
 MxAction *
 mx_action_button_get_action (MxActionButton *button)
 {
