@@ -118,6 +118,41 @@ mx_settings_x11_get_setting (MxSettingsProvider *self,
     }
 }
 
+static gboolean
+mx_settings_x11_set_setting (MxSettingsProvider *self,
+                             MxSettingsProperty  id,
+                             gpointer            value)
+{
+  MxSettingsX11Private *priv = MX_SETTINGS_X11 (self)->priv;
+
+  switch (id)
+    {
+    case MX_SETTINGS_ICON_THEME:
+      g_free (priv->icon_theme);
+      priv->icon_theme = g_strdup (*((gchar **)value));
+      break;
+
+    case MX_SETTINGS_FONT_NAME:
+      g_free (priv->font_name);
+      priv->font_name = g_strdup (*((gchar **)value));
+      break;
+
+    case MX_SETTINGS_LONG_PRESS_TIMEOUT:
+      priv->long_press_timeout = *((guint *)value);
+      break;
+
+    case MX_SETTINGS_SMALL_SCREEN:
+      priv->small_screen = *((gboolean *)value);
+      break;
+
+    default:
+      return FALSE;
+    }
+
+  _mx_settings_provider_setting_changed (self, id);
+  return TRUE;
+}
+
 static void
 mx_settings_x11_get_property (GObject    *object,
                               guint       property_id,
@@ -216,6 +251,7 @@ mx_settings_provider_iface_init (MxSettingsProviderIface *iface)
       is_initialised = TRUE;
 
       iface->get_setting = mx_settings_x11_get_setting;
+      iface->set_setting = mx_settings_x11_set_setting;
     }
 }
 
