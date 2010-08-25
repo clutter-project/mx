@@ -206,7 +206,7 @@ mx_action_button_set_action (MxActionButton *button,
 
   priv = button->priv;
 
-  priv->action = g_object_ref (action);
+  priv->action = g_object_ref_sink (action);
 
   mx_icon_set_icon_name (MX_ICON (priv->icon), mx_action_get_icon (action));
   mx_label_set_text (MX_LABEL (priv->label),
