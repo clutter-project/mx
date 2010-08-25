@@ -23,7 +23,6 @@
 #define _MX_SETTINGS_H
 
 #include <glib-object.h>
-#include <mx/mx-settings-base.h>
 
 G_BEGIN_DECLS
 
@@ -56,14 +55,14 @@ typedef struct _MxSettingsPrivate MxSettingsPrivate;
 
 struct _MxSettings
 {
-  MxSettingsBase parent;
+  GObject parent;
 
   MxSettingsPrivate *priv;
 };
 
 struct _MxSettingsClass
 {
-  MxSettingsBaseClass parent_class;
+  GObjectClass parent_class;
 
   /*< private >*/
   /* padding for future expansion */

@@ -61,6 +61,14 @@ struct _MxTableChild
   guint y_fill : 1;
 };
 
+typedef enum
+{
+  MX_SETTINGS_ICON_THEME = 1,
+  MX_SETTINGS_FONT_NAME,
+  MX_SETTINGS_LONG_PRESS_TIMEOUT,
+  MX_SETTINGS_SMALL_SCREEN
+} MxSettingsProperty;
+
 
 ClutterActor *_mx_widget_get_dnd_clone (MxWidget *widget);
 

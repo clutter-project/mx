@@ -16,6 +16,7 @@ if HAVE_X11
 WINSYS_SRC = \
 	$(top_srcdir)/mx/x11/mx-clipboard-x11.c	\
 	$(top_srcdir)/mx/x11/mx-settings-x11.c	\
+	$(top_srcdir)/mx/x11/mx-settings-x11.h	\
 	$(top_srcdir)/mx/x11/mx-window-x11.c	\
 	$(top_srcdir)/mx/x11/mx-window-x11.h	\
 	$(top_srcdir)/mx/x11/xsettings-client.c	\
@@ -25,8 +26,7 @@ WINSYS_SRC = \
 	$(NULL)
 else
 WINSYS_SRC = \
-	$(top_srcdir)/mx/mx-clipboard-default.c		\
-	$(top_srcdir)/mx/none/mx-settings-none.c	\
+	$(top_srcdir)/mx/mx-clipboard-default.c	\
 	$(NULL)
 endif
 
@@ -70,7 +70,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-scroll-view.h 		\
 	$(top_srcdir)/mx/mx-scrollable.h 		\
 	$(top_srcdir)/mx/mx-settings.h		\
-	$(top_srcdir)/mx/mx-settings-base.h	\
+	$(top_srcdir)/mx/mx-settings-provider.h	\
 	$(top_srcdir)/mx/mx-slider.h 		\
 	$(top_srcdir)/mx/mx-stylable.h 		\
 	$(top_srcdir)/mx/mx-style.h 		\
@@ -96,6 +96,7 @@ source_h_priv = \
 	$(top_srcdir)/mx/mx-path-bar-button.h	\
 	$(top_srcdir)/mx/mx-progress-bar-fill.h	\
 	$(top_srcdir)/mx/mx-private.h		\
+	$(top_srcdir)/mx/mx-settings-provider.h	\
 	$(NULL)
 
 source_c = \
@@ -138,7 +139,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-scroll-bar.c 		\
 	$(top_srcdir)/mx/mx-scroll-view.c		\
 	$(top_srcdir)/mx/mx-scrollable.c 		\
-	$(top_srcdir)/mx/mx-settings-base.c	\
+	$(top_srcdir)/mx/mx-settings.c	\
 	$(top_srcdir)/mx/mx-slider.c 		\
 	$(top_srcdir)/mx/mx-stylable.c 		\
 	$(top_srcdir)/mx/mx-style.c 		\
@@ -254,6 +255,7 @@ libmx_@MX_API_VERSION@_la_SOURCES =	\
 	$(source_c)			\
 	$(top_srcdir)/mx/mx-native-window.c	\
 	$(top_srcdir)/mx/mx-private.c	\
+	$(top_srcdir)/mx/mx-settings-provider.c	\
 	$(top_srcdir)/mx/mx.h 		\
 	$(NULL)
 
