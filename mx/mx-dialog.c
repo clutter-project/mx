@@ -205,7 +205,7 @@ mx_dialog_move_focus (MxFocusable      *focusable,
 
     case MX_FOCUS_DIRECTION_DOWN:
     case MX_FOCUS_DIRECTION_NEXT:
-      if (priv->child_has_focus)
+      if (priv->child_has_focus && priv->actions)
         {
           priv->child_has_focus = FALSE;
           focusable =
