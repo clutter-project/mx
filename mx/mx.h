@@ -35,11 +35,11 @@
 #include <mx/mx-button.h>
 #include <mx/mx-button-group.h>
 #include <mx/mx-combo-box.h>
-#include <mx/mx-dialog.h>
 #include <mx/mx-deform-texture.h>
 #include <mx/mx-deform-bow-tie.h>
 #include <mx/mx-deform-page-turn.h>
 #include <mx/mx-deform-waves.h>
+#include <mx/mx-dialog.h>
 #include <mx/mx-draggable.h>
 #include <mx/mx-droppable.h>
 #include <mx/mx-clipboard.h>
@@ -58,7 +58,6 @@
 #include <mx/mx-item-view.h>
 #include <mx/mx-list-view.h>
 #include <mx/mx-label.h>
-#include <mx/mx-modal-frame.h>
 #include <mx/mx-notebook.h>
 #include <mx/mx-offscreen.h>
 #include <mx/mx-path-bar.h>

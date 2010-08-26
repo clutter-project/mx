@@ -546,16 +546,17 @@ MxButton.check-box:checked {
   border-image: url('checkbox-background.png') 5;
 }
 
-MxModalFrame {
+MxDialog {
+  padding: 20;
+  -mx-spacing: 12;
   background-color: #000000a0;
 }
 
-MxModalFrame > MxFrame {
-  padding: 14 15;
+MxDialog > MxFrame.MxDialogBackground {
+  padding: 20;
   border-image: url('frame-background.png') 8 9 10;
 }
 
-MxDialog > MxBoxLayout {
-  padding: 20;
-  border-image: url('frame-background.png') 8 9 10;
+MxDialog > MxBoxLayout.MxDialogButtonBox {
+  -mx-spacing: 6;
 }

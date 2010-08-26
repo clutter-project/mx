@@ -1,8 +1,7 @@
-/* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 /*
- * mx-action-button.h: MxAction object
+ * mx-dialog.h
  *
- * Copyright 2009 Intel Corporation.
+ * Copyright 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -18,64 +17,78 @@
  * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  * Boston, MA 02111-1307, USA.
  *
+ * Written by: Chris Lord <chris@linux.intel.com>
+ *             Iain Holmes <iain@linux.intel.com>
+ *
  */
 
-#if !defined(MX_H_INSIDE) && !defined(MX_COMPILATION)
-#error "Only <mx/mx.h> can be included directly"
-#endif
+#ifndef _MX_DIALOG_H
+#define _MX_DIALOG_H
 
-#ifndef __MX_DIALOG_H__
-#define __MX_DIALOG_H__
-
-#include <mx/mx-modal-frame.h>
+#include <glib-object.h>
+#include <mx/mx-bin.h>
 #include <mx/mx-action.h>
 
 G_BEGIN_DECLS
 
-#define MX_TYPE_DIALOG                                                 \
-   (mx_dialog_get_type())
-#define MX_DIALOG(obj)                                                 \
-   (G_TYPE_CHECK_INSTANCE_CAST ((obj),                                  \
-                                MX_TYPE_DIALOG,                        \
-                                MxDialog))
-#define MX_DIALOG_CLASS(klass)                                         \
-   (G_TYPE_CHECK_CLASS_CAST ((klass),                                   \
-                             MX_TYPE_DIALOG,                           \
-                             MxDialogClass))
-#define MX_IS_DIALOG(obj)                                              \
-   (G_TYPE_CHECK_INSTANCE_TYPE ((obj),                                  \
-                                MX_TYPE_DIALOG))
-#define MX_IS_DIALOG_CLASS(klass)                                      \
-   (G_TYPE_CHECK_CLASS_TYPE ((klass),                                   \
-                             MX_TYPE_DIALOG))
-#define MX_DIALOG_GET_CLASS(obj)                                       \
-   (G_TYPE_INSTANCE_GET_CLASS ((obj),                                   \
-                               MX_TYPE_DIALOG,                         \
-                               MxDialogClass))
+#define MX_TYPE_DIALOG mx_dialog_get_type()
 
-typedef struct _MxDialogPrivate MxDialogPrivate;
-typedef struct _MxDialog      MxDialog;
+#define MX_DIALOG(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
+  MX_TYPE_DIALOG, MxDialog))
+
+#define MX_DIALOG_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST ((klass), \
+  MX_TYPE_DIALOG, MxDialogClass))
+
+#define MX_IS_DIALOG(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
+  MX_TYPE_DIALOG))
+
+#define MX_IS_DIALOG_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE ((klass), \
+  MX_TYPE_DIALOG))
+
+#define MX_DIALOG_GET_CLASS(obj) \
+  (G_TYPE_INSTANCE_GET_CLASS ((obj), \
+  MX_TYPE_DIALOG, MxDialogClass))
+
+/**
+ * MxDialog:
+ *
+ * The contents of this structure is private and should only be accessed using
+ * the provided API.
+ */
+typedef struct _MxDialog MxDialog;
 typedef struct _MxDialogClass MxDialogClass;
+typedef struct _MxDialogPrivate MxDialogPrivate;
 
 struct _MxDialog
 {
-    MxModalFrame parent;
+  /*< private >*/
+  MxBin parent;
 
-    MxDialogPrivate *priv;
+  MxDialogPrivate *priv;
 };
 
 struct _MxDialogClass
 {
-    MxModalFrameClass parent_class;
+  MxBinClass parent_class;
 };
 
 GType mx_dialog_get_type (void) G_GNUC_CONST;
+
 ClutterActor *mx_dialog_new (void);
-void mx_dialog_set_content (MxDialog     *self,
-                            ClutterActor *content);
-void mx_dialog_add_action (MxDialog *self,
-                            MxAction  *action);
+
+void mx_dialog_set_transient_parent (MxDialog     *dialog,
+                                     ClutterActor *actor);
+
+void   mx_dialog_add_action    (MxDialog *dialog,
+                                MxAction *action);
+void   mx_dialog_remove_action (MxDialog *dialog,
+                                MxAction *action);
+GList *mx_dialog_get_actions   (MxDialog *dialog);
 
 G_END_DECLS
 
-#endif /* __MX_DIALOG_H__ */
+#endif /* _MX_DIALOG_H */

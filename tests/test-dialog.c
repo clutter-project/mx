@@ -41,14 +41,17 @@ dialog_main (ClutterContainer *group)
   g_signal_connect_swapped (launch, "clicked",
                             G_CALLBACK (clutter_actor_show), dialog);
 
-  label = mx_label_new_with_text ("This is a model dialog");
-  mx_dialog_set_content (MX_DIALOG (dialog), label);
+  label = mx_label_new_with_text ("This is a dialog");
+  mx_bin_set_child (MX_BIN (dialog), label);
 
-  action = mx_action_new_full ("close", "Close dialog",
+  action = mx_action_new_full ("nothing", "Do nothing", NULL, dialog);
+  mx_dialog_add_action (MX_DIALOG (dialog), action);
+
+  action = mx_action_new_full ("close", "Close",
                                G_CALLBACK (close_dialog_cb), dialog);
   mx_dialog_add_action (MX_DIALOG (dialog), action);
 
   stage = clutter_actor_get_stage (CLUTTER_ACTOR (group));
-  mx_modal_frame_set_transient_parent (MX_MODAL_FRAME (dialog),
-                                       stage ? stage : CLUTTER_ACTOR (group));
+  mx_dialog_set_transient_parent (MX_DIALOG (dialog),
+                                  stage ? stage : CLUTTER_ACTOR (group));
 }

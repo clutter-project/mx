@@ -207,8 +207,6 @@ main (int argc, char *argv[])
            (GCallback) scroll_view_main, CLUTTER_CONTAINER (holder));
   add_tab (CLUTTER_CONTAINER (vbox), group, "Styles",
            (GCallback) styles_main, CLUTTER_CONTAINER (holder));
-  add_tab (CLUTTER_CONTAINER (vbox), group, "Modal Frame",
-           (GCallback) modal_frame_main, CLUTTER_CONTAINER (holder));
   add_tab (CLUTTER_CONTAINER (vbox), group, "Dialog",
            (GCallback) dialog_main, CLUTTER_CONTAINER (holder));
 
