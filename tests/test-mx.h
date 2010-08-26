@@ -35,4 +35,4 @@ void scroll_bar_main (ClutterContainer *container);
 void scroll_view_main (ClutterContainer *container);
 void styles_main (ClutterContainer *container);
 void toggle_main (ClutterContainer *container);
-void modal_frame_main (ClutterContainer *container);
+void dialog_main (ClutterContainer *container);

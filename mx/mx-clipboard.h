@@ -21,6 +21,15 @@
  *
  */
 
+/**
+ * SECTION:mx-clipboard
+ * @short_description: a simple representation clipboard
+ *
+ * #MxClipboard is a very simple object representation of the clipboard
+ * available to applications. Text is always assumed to be UTF-8 and non-text
+ * items are not handled.
+ */
+
 #if !defined(MX_H_INSIDE) && !defined(MX_COMPILATION)
 #error "Only <mx/mx.h> can be included directly.h"
 #endif
@@ -97,11 +106,38 @@ typedef void (*MxClipboardCallbackFunc) (MxClipboard *clipboard,
 
 GType mx_clipboard_get_type (void);
 
+/**
+ * mx_clipboard_get_default:
+ *
+ * Get the global #MxClipboard object that represents the clipboard.
+ *
+ * Returns: (transfer none): a #MxClipboard owned by Mx and must not be
+ * unrefferenced or freed.
+ */
 MxClipboard* mx_clipboard_get_default (void);
 
+/**
+ * mx_clipboard_get_text:
+ * @clipboard: A #MxClipboard
+ * @callback: function to be called when the text is retreived
+ * @user_data: data to be passed to the callback
+ *
+ * Request the data from the clipboard in text form. @callback is executed
+ * when the data is retreived.
+ *
+ */
 void mx_clipboard_get_text (MxClipboard             *clipboard,
                             MxClipboardCallbackFunc  callback,
                             gpointer                 user_data);
+
+/**
+ * mx_clipboard_set_text:
+ * @clipboard: A #MxClipboard
+ * @text: text to copy to the clipboard
+ *
+ * Sets text as the current contents of the clipboard.
+ *
+ */
 void mx_clipboard_set_text (MxClipboard             *clipboard,
                             const gchar             *text);
 

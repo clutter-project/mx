@@ -25,13 +25,14 @@
       <xi:include href="xml/mx-widget.xml"/>
       <xi:include href="xml/mx-window.xml"/>
       <xi:include href="xml/mx-button.xml"/>
+      <xi:include href="xml/mx-action-button.xml"/>
       <xi:include href="xml/mx-combo-box.xml"/>
       <xi:include href="xml/mx-entry.xml"/>
       <xi:include href="xml/mx-frame.xml"/>
       <xi:include href="xml/mx-icon.xml"/>
       <xi:include href="xml/mx-label.xml"/>
       <xi:include href="xml/mx-menu.xml"/>
-      <xi:include href="xml/mx-modal-frame.xml"/>
+      <xi:include href="xml/mx-dialog.xml"/>
       <xi:include href="xml/mx-progress-bar.xml"/>
       <xi:include href="xml/mx-path-bar.xml"/>
       <xi:include href="xml/mx-scroll-bar.xml"/>

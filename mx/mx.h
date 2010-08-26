@@ -26,6 +26,7 @@
 #define MX_H_INSIDE
 
 #include <mx/mx-action.h>
+#include <mx/mx-action-button.h>
 #include <mx/mx-adjustment.h>
 #include <mx/mx-application.h>
 #include <mx/mx-bin.h>
@@ -38,6 +39,7 @@
 #include <mx/mx-deform-bow-tie.h>
 #include <mx/mx-deform-page-turn.h>
 #include <mx/mx-deform-waves.h>
+#include <mx/mx-dialog.h>
 #include <mx/mx-draggable.h>
 #include <mx/mx-droppable.h>
 #include <mx/mx-clipboard.h>
@@ -56,7 +58,6 @@
 #include <mx/mx-item-view.h>
 #include <mx/mx-list-view.h>
 #include <mx/mx-label.h>
-#include <mx/mx-modal-frame.h>
 #include <mx/mx-notebook.h>
 #include <mx/mx-offscreen.h>
 #include <mx/mx-path-bar.h>

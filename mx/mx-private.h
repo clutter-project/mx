@@ -61,6 +61,14 @@ struct _MxTableChild
   guint y_fill : 1;
 };
 
+typedef enum
+{
+  MX_SETTINGS_ICON_THEME = 1,
+  MX_SETTINGS_FONT_NAME,
+  MX_SETTINGS_LONG_PRESS_TIMEOUT,
+  MX_SETTINGS_SMALL_SCREEN
+} MxSettingsProperty;
+
 
 ClutterActor *_mx_widget_get_dnd_clone (MxWidget *widget);
 
@@ -74,6 +82,10 @@ void _mx_bin_get_align_factors (MxBin   *bin,
 void _mx_table_update_row_col (MxTable *table,
                                gint     row,
                                gint     col);
+
+CoglHandle _mx_window_get_icon_cogl_texture (MxWindow *window);
+
+ClutterActor * _mx_window_get_resize_grip (MxWindow *window);
 
 enum
 {

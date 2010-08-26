@@ -1,5 +1,5 @@
 /*
- * mx-window.c
+ * mx-window.c: A top-level window class
  *
  * Copyright 2010 Intel Corporation.
  *
@@ -22,41 +22,31 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "mx-window.h"
+#include "mx-native-window.h"
 #include "mx-toolbar.h"
 #include "mx-focus-manager.h"
 #include "mx-private.h"
 #include "mx-marshal.h"
-#include <clutter/x11/clutter-x11.h>
 
-#include <X11/Xlib.h>
-#include <X11/extensions/Xrandr.h>
-#include <X11/cursorfont.h>
+#ifdef HAVE_X11
+#include "x11/mx-window-x11.h"
+#endif
 
 G_DEFINE_TYPE (MxWindow, mx_window, G_TYPE_OBJECT)
-
-#define WINDOW_PRIVATE(o) \
-  (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_WINDOW, MxWindowPrivate))
 
 static GQuark window_quark = 0;
 
 struct _MxWindowPrivate
 {
-  guint is_fullscreen : 1;
+  MxNativeWindow *native_window;
+
   guint has_toolbar   : 1;
-  guint is_resizing   : 1;
   guint small_screen  : 1;
-  guint has_mapped    : 1;
-  guint width_set     : 1;
-  guint height_set    : 1;
-  guint icon_changed  : 1;
-
-  gint  is_moving;
-
-  gfloat     last_width;
-  gfloat     last_height;
-  gfloat     natural_width;
-  gfloat     natural_height;
 
   gchar      *icon_name;
   CoglHandle  icon_texture;
@@ -65,16 +55,10 @@ struct _MxWindowPrivate
   ClutterActor *toolbar;
   ClutterActor *child;
   ClutterActor *resize_grip;
-
-  gint  drag_x_start;
-  gint  drag_y_start;
-  gint  drag_win_x_start;
-  gint  drag_win_y_start;
-  guint drag_width_start;
-  guint drag_height_start;
-
-  MxFocusManager *focus_manager;
 };
+
+#define WINDOW_PRIVATE(o) \
+  (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_WINDOW, MxWindowPrivate))
 
 enum
 {
@@ -125,6 +109,10 @@ mx_window_get_property (GObject    *object,
       g_value_set_string (value, priv->icon_name);
       break;
 
+    case PROP_ICON_COGL_TEXTURE:
+      g_value_set_pointer (value, priv->icon_texture);
+      break;
+
     case PROP_CLUTTER_STAGE:
       g_value_set_object (value, priv->stage);
       break;
@@ -144,20 +132,22 @@ mx_window_set_property (GObject      *object,
                         const GValue *value,
                         GParamSpec   *pspec)
 {
+  MxWindow *window = MX_WINDOW (object);
+
   switch (property_id)
     {
     case PROP_HAS_TOOLBAR:
-      mx_window_set_has_toolbar (MX_WINDOW (object),
+      mx_window_set_has_toolbar (window,
                                  g_value_get_boolean (value));
       break;
 
     case PROP_SMALL_SCREEN:
-      mx_window_set_small_screen (MX_WINDOW (object),
+      mx_window_set_small_screen (window,
                                   g_value_get_boolean (value));
       break;
 
     case PROP_ICON_NAME:
-      mx_window_set_icon_name (MX_WINDOW (object),
+      mx_window_set_icon_name (window,
                                g_value_get_string (value));
       break;
 
@@ -167,13 +157,11 @@ mx_window_set_property (GObject      *object,
       break;
 
     case PROP_CLUTTER_STAGE:
-      MX_WINDOW (object)->priv->stage =
-        (ClutterActor *)g_value_get_object (value);
+      window->priv->stage = (ClutterActor *)g_value_get_object (value);
       break;
 
     case PROP_CHILD:
-      mx_window_set_child (MX_WINDOW (object),
-                           (ClutterActor *)g_value_get_object (value));
+      mx_window_set_child (window, (ClutterActor *)g_value_get_object (value));
       break;
 
     default:
@@ -184,8 +172,7 @@ mx_window_set_property (GObject      *object,
 static void
 mx_window_dispose (GObject *object)
 {
-  MxWindow *self = MX_WINDOW (object);
-  MxWindowPrivate *priv = self->priv;
+  MxWindowPrivate *priv = MX_WINDOW (object)->priv;
 
   if (priv->icon_texture)
     {
@@ -219,6 +206,12 @@ mx_window_dispose (GObject *object)
       clutter_actor_destroy (stage);
     }
 
+  if (priv->native_window)
+    {
+      g_object_unref (priv->native_window);
+      priv->native_window = NULL;
+    }
+
   G_OBJECT_CLASS (mx_window_parent_class)->dispose (object);
 }
 
@@ -230,224 +223,6 @@ mx_window_finalize (GObject *object)
   g_free (priv->icon_name);
 
   G_OBJECT_CLASS (mx_window_parent_class)->finalize (object);
-}
-
-
-
-
-static void
-mx_window_get_size (MxWindow *self,
-                    gfloat   *width_p,
-                    gfloat   *height_p,
-                    gfloat   *pref_width_p,
-                    gfloat   *pref_height_p)
-{
-  gboolean has_border;
-  gfloat width, pref_width;
-  MxWindowPrivate *priv = self->priv;
-
-  pref_width = width = 0;
-
-  if (!priv->stage)
-    return;
-
-  has_border = priv->has_toolbar &&
-               !(priv->small_screen ||
-                 clutter_stage_get_fullscreen (CLUTTER_STAGE (priv->stage)));
-
-  if (priv->toolbar)
-    clutter_actor_get_preferred_width (priv->toolbar,
-                                       -1,
-                                       &width,
-                                       &pref_width);
-
-  if (priv->child)
-    {
-      gfloat child_min_width, child_pref_width;
-      clutter_actor_get_preferred_width (priv->child,
-                                         -1,
-                                         &child_min_width,
-                                         &child_pref_width);
-      if (child_min_width > width)
-        width = child_min_width;
-      if (child_pref_width > pref_width)
-        pref_width = child_pref_width;
-    }
-
-  if (width_p)
-    *width_p = width + (has_border ? 2 : 0);
-  if (pref_width_p)
-    *pref_width_p = pref_width + (has_border ? 2 : 0);
-
-  if (!height_p && !pref_height_p)
-    return;
-
-  if (height_p)
-    *height_p = 0;
-  if (pref_height_p)
-    *pref_height_p = 0;
-
-  if (priv->toolbar)
-    clutter_actor_get_preferred_height (priv->toolbar,
-                                        width,
-                                        height_p,
-                                        pref_height_p);
-
-  if (priv->child)
-    {
-      gfloat child_min_height, child_pref_height;
-      clutter_actor_get_preferred_height (priv->child,
-                                          width,
-                                          &child_min_height,
-                                          &child_pref_height);
-      if (height_p)
-        *height_p += child_min_height;
-      if (pref_height_p)
-        *pref_height_p += child_pref_height;
-    }
-
-  if (has_border)
-    {
-      if (height_p)
-        *height_p += 2;
-      if (pref_height_p)
-        *pref_height_p += 2;
-    }
-}
-
-typedef struct {
-    unsigned long flags;
-    unsigned long functions;
-    unsigned long decorations;
-    long inputMode;
-    unsigned long status;
-} PropMotifWmHints;
-
-static void
-mx_window_set_wm_hints (MxWindow *window)
-{
-  const gchar *icon_name;
-  Display *dpy;
-  Window win;
-
-  static Atom motif_wm_hints_atom = None;
-  static Atom net_wm_icon = None;
-
-  MxWindowPrivate *priv = window->priv;
-
-  if (!priv->stage)
-    return;
-
-  dpy = clutter_x11_get_default_display ();
-  win = clutter_x11_get_stage_window (CLUTTER_STAGE (priv->stage));
-
-  if (win == None)
-    return;
-
-  if (!motif_wm_hints_atom)
-    motif_wm_hints_atom = XInternAtom (dpy, "_MOTIF_WM_HINTS", False);
-
-  /* Remove/add the window decorations */
-  if (motif_wm_hints_atom)
-    {
-      PropMotifWmHints new_hints = {0,};
-      PropMotifWmHints *hints;
-
-      hints = &new_hints;
-
-      hints->flags = 0x2;
-      hints->functions = 0x0;
-      hints->decorations = priv->has_toolbar ? 0x0 : 0x1;
-
-      XChangeProperty (dpy, win, motif_wm_hints_atom, motif_wm_hints_atom,
-                       32, PropModeReplace, (guchar*) hints,
-                       sizeof(PropMotifWmHints)/ sizeof (long));
-    }
-
-  if (!net_wm_icon)
-    net_wm_icon = XInternAtom (dpy, "_NET_WM_ICON", False);
-
-  /* Set the window icon */
-  if (!priv->icon_changed)
-    return;
-
-  priv->icon_changed = FALSE;
-
-  icon_name = priv->icon_name ? priv->icon_name : g_get_prgname ();
-  if ((priv->icon_texture || icon_name) && net_wm_icon)
-    {
-      guint width, height;
-      CoglHandle texture;
-      guchar *data;
-      gint size;
-
-      /* Lookup icon for program name if there's no texture set */
-      if (priv->icon_texture)
-        {
-          texture = priv->icon_texture;
-          priv->icon_texture = NULL;
-        }
-      else
-        {
-          texture = mx_icon_theme_lookup (mx_icon_theme_get_default (),
-                                          icon_name, 32);
-          if (!texture)
-            {
-              /* Remove the window icon */
-              clutter_x11_trap_x_errors ();
-              XDeleteProperty (dpy, win, net_wm_icon);
-              clutter_x11_untrap_x_errors ();
-
-              return;
-            }
-        }
-
-      /* Get window icon size */
-      width = cogl_texture_get_width (texture);
-      height = cogl_texture_get_height (texture);
-      size = cogl_texture_get_data (texture,
-                                    COGL_PIXEL_FORMAT_BGRA_8888,
-                                    width * 4,
-                                    NULL);
-      if (!size)
-        {
-          g_warning ("Unable to get texture data in "
-                     "correct format for window icon");
-          cogl_handle_unref (texture);
-          return;
-        }
-
-      data = g_malloc (size + (sizeof (gulong) * 2));
-      ((gulong *)data)[0] = width;
-      ((gulong *)data)[1] = height;
-
-      /* Get the window icon */
-      if (cogl_texture_get_data (texture,
-                                 COGL_PIXEL_FORMAT_BGRA_8888,
-                                 width * 4,
-                                 data + (sizeof (gulong) * 2)) == size)
-        {
-          /* Set the property */
-          XChangeProperty (dpy, win, net_wm_icon, XA_CARDINAL,
-                           32, PropModeReplace, data,
-                           (width * height) + 2);
-        }
-      else
-        g_warning ("Size mismatch when retrieving texture data "
-                   "for window icon");
-
-      cogl_handle_unref (texture);
-      g_free (data);
-    }
-}
-
-static void
-mx_window_mapped_notify_cb (ClutterActor *actor,
-                            GParamSpec   *pspec,
-                            MxWindow     *window)
-{
-  if (CLUTTER_ACTOR_IS_MAPPED (actor))
-    mx_window_set_wm_hints (window);
 }
 
 static void
@@ -483,18 +258,17 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
                                  MxWindow               *window)
 {
   MxPadding padding;
-  MxWindowPrivate *priv;
   gboolean from_toolbar;
+  MxWindowPrivate *priv;
   gfloat width, height, toolbar_height, stage_width, stage_height;
 
   /* Note, ideally this would happen just before allocate, but there's
    * no signal we can connect to for that without overriding an actor.
    *
-   * Instead, when the allocation is changed, we hook onto pre-paint
-   * and resize/position everything here.
-   *
-   * It will cause another relayout, so everything will lag behind
-   * window size changes by 1 frame, but that's not so bad.
+   * Instead, we do this each time the allocation is changed on the stage
+   * or the toolbar. This shouldn't be a frequent occurence, but
+   * unfortunately can happen multiple times before the actual relayout
+   * happens.
    */
 
   priv = window->priv;
@@ -503,69 +277,6 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
   actor = clutter_actor_get_stage (actor);
 
   clutter_actor_get_size (actor, &stage_width, &stage_height);
-
-  /* Don't mess with the window size when we're full-screen, or you
-   * get odd race conditions (and you never want to do it anyway)
-   */
-  if (!clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
-    {
-      if (!priv->has_mapped)
-        {
-          Window win;
-          Display *dpy;
-
-          dpy = clutter_x11_get_default_display ();
-          win = clutter_x11_get_stage_window (CLUTTER_STAGE (actor));
-
-          if (!win)
-            return;
-
-          priv->has_mapped = TRUE;
-
-          if (priv->small_screen)
-            {
-              XRRScreenResources *res;
-
-              res = XRRGetScreenResourcesCurrent (dpy, win);
-
-              XMoveResizeWindow (dpy, win,
-                                 0, 0,
-                                 res->modes[res->nmode].width,
-                                 res->modes[res->nmode].height);
-
-              XRRFreeScreenResources (res);
-            }
-          else
-            {
-              /* Set the initial size of the window - if the user has set
-               * a dimension, it will be used, otherwise the preferred size
-               * will be used.
-               */
-              mx_window_get_size (window, NULL, NULL, &width, &height);
-
-              if (priv->width_set)
-                width = priv->natural_width + 2;
-              if (priv->height_set)
-                height = priv->natural_height + 2;
-
-              XResizeWindow (dpy, win, width, height);
-              stage_width = width;
-              stage_height = height;
-            }
-        }
-      else
-        {
-          /* Update minimum size */
-          mx_window_get_size (window, &width, &height, NULL, NULL);
-          if (width < 1.0)
-            width = 1.0;
-          if (height < 1.0)
-            height = 1.0;
-          clutter_stage_set_minimum_size (CLUTTER_STAGE (actor),
-                                          (guint)width,
-                                          (guint)height);
-        }
-    }
 
   if (!priv->has_toolbar || priv->small_screen ||
       clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
@@ -616,273 +327,6 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
     }
 }
 
-static gboolean
-mx_window_button_press_event_cb (ClutterActor       *actor,
-                                 ClutterButtonEvent *event,
-                                 MxWindow           *window)
-{
-  unsigned int width, height, border_width, depth, mask;
-  Window win, root, child;
-  int x, y, win_x, win_y;
-  MxWindowPrivate *priv;
-  Display *dpy;
-
-  priv = window->priv;
-
-  /* Bail out early in no-toolbar, small-screen or fullscreen mode */
-  if (!priv->has_toolbar || priv->small_screen ||
-      clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
-    return FALSE;
-
-  /* We're already moving/resizing */
-  if (priv->is_moving != -1)
-    return FALSE;
-
-  /* We only care about the first mouse button */
-  if (event->button != 1)
-    return FALSE;
-
-  priv->is_moving = clutter_input_device_get_device_id (event->device);
-
-  win = clutter_x11_get_stage_window (CLUTTER_STAGE (actor));
-  dpy = clutter_x11_get_default_display ();
-
-  if (win == None)
-    return FALSE;
-
-  /* Get the initial width/height */
-  XGetGeometry (dpy, win, &root, &x, &y, &width, &height,
-                &border_width, &depth);
-
-  priv->drag_win_x_start = x;
-  priv->drag_win_y_start = y;
-  priv->drag_width_start = width;
-  priv->drag_height_start = height;
-
-  /* Get the initial cursor position */
-  XQueryPointer (dpy, root, &root, &child, &x, &y, &win_x, &win_y, &mask);
-
-  priv->drag_x_start = x;
-  priv->drag_y_start = y;
-
-  /* Disable motion events on other actors */
-  clutter_set_motion_events_enabled (FALSE);
-
-  /* Grab the mouse so that we receive the release if the cursor
-   * goes off-stage.
-   */
-  clutter_grab_pointer_for_device (actor, priv->is_moving);
-
-  return TRUE;
-}
-
-static void
-mx_window_button_release (MxWindow *window)
-{
-  MxWindowPrivate *priv = window->priv;
-
-  if (priv->is_moving != -1)
-    {
-      clutter_ungrab_pointer_for_device (priv->is_moving);
-      clutter_set_motion_events_enabled (TRUE);
-      priv->is_moving = -1;
-    }
-}
-
-static gboolean
-mx_window_button_release_event_cb (ClutterActor       *actor,
-                                   ClutterButtonEvent *event,
-                                   MxWindow           *window)
-{
-  MxWindowPrivate *priv = window->priv;
-
-  if ((clutter_input_device_get_device_id (event->device) == priv->is_moving) &&
-      (event->button == 1))
-    {
-      mx_window_button_release (window);
-      return TRUE;
-    }
-
-  return FALSE;
-}
-
-static gboolean
-mx_window_captured_event_cb (ClutterActor *actor,
-                             ClutterEvent *event,
-                             MxWindow     *window)
-{
-  MxWindowPrivate *priv = window->priv;
-
-  switch (event->type)
-    {
-    case CLUTTER_MOTION:
-      /* Check if we're over the resize handle */
-      if ((priv->is_moving == -1) && priv->has_toolbar && !priv->small_screen &&
-          !clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)) &&
-          clutter_stage_get_user_resizable (CLUTTER_STAGE (actor)) &&
-          priv->resize_grip)
-        {
-          gint x, y;
-          Window win;
-          Display *dpy;
-          gfloat height, width, rwidth, rheight;
-
-          static Cursor csoutheast = 0;
-          ClutterMotionEvent *mevent = &event->motion;
-
-          win = clutter_x11_get_stage_window (CLUTTER_STAGE (actor));
-          dpy = clutter_x11_get_default_display ();
-
-          if (win == None)
-            return FALSE;
-
-          clutter_actor_get_size (actor, &width, &height);
-
-          x = mevent->x;
-          y = mevent->y;
-
-          /* Create the resize cursor */
-          if (!csoutheast)
-            csoutheast = XCreateFontCursor (dpy, XC_bottom_right_corner);
-
-          clutter_actor_get_size (priv->resize_grip, &rwidth, &rheight);
-
-          /* Set the cursor if necessary */
-          if (x > width - rwidth && y > height - rheight)
-            {
-              if (!priv->is_resizing)
-                {
-                  XDefineCursor (dpy, win, csoutheast);
-                  priv->is_resizing = TRUE;
-                }
-              return TRUE;
-            }
-          else
-            {
-              if (priv->is_resizing)
-                {
-                  XUndefineCursor (dpy, win);
-                  priv->is_resizing = FALSE;
-                }
-              return FALSE;
-            }
-        }
-      return FALSE;
-
-    case CLUTTER_BUTTON_PRESS:
-      /* We want resizing to happen even if there are active widgets
-       * underneath the resize-handle.
-       */
-      if (priv->is_resizing)
-        return mx_window_button_press_event_cb (actor, &event->button, window);
-      else
-        return FALSE;
-
-    default:
-      return FALSE;
-    }
-}
-
-static gboolean
-mx_window_motion_event_cb (ClutterActor       *actor,
-                           ClutterMotionEvent *event,
-                           MxWindow           *window)
-{
-  gint offsetx, offsety;
-  gint x, y, winx, winy;
-  guint mask;
-  MxWindowPrivate *priv;
-  Window win, root_win, root, child;
-  Display *dpy;
-  gfloat height, width;
-
-  priv = window->priv;
-
-  /* Ignore motion events while in small-screen mode, fullscreen mode,
-   * if we have no toolbar, or if they're not from our grabbed device.
-   */
-  if ((!priv->has_toolbar) ||
-      (priv->small_screen) ||
-      (clutter_stage_get_fullscreen (CLUTTER_STAGE (actor))) ||
-      (clutter_input_device_get_device_id (event->device) != priv->is_moving))
-    return FALSE;
-
-  /* Check if the mouse button is still down - if the user releases the
-   * mouse button while outside of the stage (which can happen), we don't
-   * get the release event.
-   */
-  if (!(event->modifier_state & CLUTTER_BUTTON1_MASK))
-    {
-      mx_window_button_release (window);
-      return TRUE;
-    }
-
-  win = clutter_x11_get_stage_window (CLUTTER_STAGE (actor));
-  dpy = clutter_x11_get_default_display ();
-
-  if (win == None)
-    return FALSE;
-
-  clutter_actor_get_size (actor, &width, &height);
-
-  x = event->x;
-  y = event->y;
-
-  /* Move/resize the window if we're dragging */
-  offsetx = priv->drag_x_start;
-  offsety = priv->drag_y_start;
-
-  root_win = clutter_x11_get_root_window ();
-  XQueryPointer (dpy, root_win, &root, &child, &x, &y, &winx, &winy, &mask);
-
-  if (priv->is_resizing)
-    {
-      XRRScreenResources *res;
-      gfloat min_width, min_height;
-
-      mx_window_get_size (window, &min_width, &min_height, NULL, NULL);
-
-      x = MAX (priv->drag_width_start + (x - priv->drag_x_start), min_width);
-      y = MAX (priv->drag_height_start + (y - priv->drag_y_start), min_height);
-
-      res = XRRGetScreenResourcesCurrent (dpy, win);
-      width = res->modes[res->nmode].width;
-      height = res->modes[res->nmode].height;
-      XRRFreeScreenResources (res);
-
-      width = MIN (x, width - priv->drag_win_x_start);
-      height = MIN (y, height - priv->drag_win_y_start);
-
-      clutter_actor_set_size (actor, width, height);
-    }
-  else
-    XMoveWindow (dpy, win,
-                 MAX (0, priv->drag_win_x_start + x - offsetx),
-                 MAX (0, priv->drag_win_y_start + y - offsety));
-
-  return TRUE;
-}
-
-static void
-mx_window_realize_cb (ClutterActor *actor,
-                      MxWindow     *window)
-{
-  gboolean width_set, height_set;
-
-  MxWindowPrivate *priv = window->priv;
-
-  /* See if the user has set a size on the window to use on initial map */
-  g_object_get (G_OBJECT (actor),
-                "natural-width", &priv->natural_width,
-                "natural-width-set", &width_set,
-                "natural-height", &priv->natural_height,
-                "natural-height-set", &height_set,
-                NULL);
-
-  priv->width_set = width_set;
-  priv->height_set = height_set;
-}
-
 static void
 mx_window_fullscreen_set_cb (ClutterStage *stage,
                              GParamSpec   *pspec,
@@ -895,10 +339,8 @@ mx_window_fullscreen_set_cb (ClutterStage *stage,
    */
   if (!clutter_stage_get_fullscreen (stage))
     {
-      if (priv->small_screen)
-        priv->has_mapped = FALSE;
-      else if (priv->resize_grip && priv->has_toolbar &&
-               clutter_stage_get_user_resizable (stage))
+      if (!priv->small_screen && priv->resize_grip && priv->has_toolbar &&
+          clutter_stage_get_user_resizable (stage))
         {
           clutter_actor_show (priv->resize_grip);
           if (priv->child)
@@ -923,8 +365,9 @@ mx_window_actor_added_cb (ClutterContainer *container,
                           ClutterActor     *actor,
                           MxWindow         *self)
 {
-  if (self->priv->resize_grip && self->priv->child)
-    clutter_actor_raise (self->priv->resize_grip, self->priv->child);
+  MxWindowPrivate *priv = self->priv;
+  if (priv->resize_grip && priv->child)
+    clutter_actor_raise (priv->resize_grip, priv->child);
 }
 
 static void
@@ -975,12 +418,12 @@ mx_window_constructed (GObject *object)
 
   if (!priv->stage)
     {
-      priv->stage = clutter_stage_new ();
+      priv->stage = g_object_new (CLUTTER_TYPE_STAGE, NULL);
       clutter_stage_set_user_resizable ((ClutterStage *)priv->stage, TRUE);
     }
   g_object_add_weak_pointer (G_OBJECT (priv->stage),
                              (gpointer *)&priv->stage);
-  g_object_set_qdata (G_OBJECT (priv->stage), window_quark, self);
+  g_object_set_qdata (G_OBJECT (priv->stage), window_quark, object);
 
   priv->has_toolbar = TRUE;
   priv->toolbar = mx_toolbar_new ();
@@ -999,41 +442,28 @@ mx_window_constructed (GObject *object)
   g_object_add_weak_pointer (G_OBJECT (priv->resize_grip),
                              (gpointer *)&priv->resize_grip);
 
-  priv->focus_manager =
-    mx_focus_manager_get_for_stage (CLUTTER_STAGE (priv->stage));
-
-  clutter_stage_set_user_resizable (CLUTTER_STAGE (priv->stage), TRUE);
-
-  g_signal_connect (priv->stage, "notify::fullscreen-set",
-                    G_CALLBACK (mx_window_fullscreen_set_cb), self);
-  g_signal_connect (priv->stage, "realize",
-                    G_CALLBACK (mx_window_realize_cb), self);
-  g_signal_connect (priv->stage, "notify::mapped",
-                    G_CALLBACK (mx_window_mapped_notify_cb), self);
   g_signal_connect_after (priv->stage, "paint",
-                          G_CALLBACK (mx_window_post_paint_cb), self);
+                          G_CALLBACK (mx_window_post_paint_cb), object);
   g_signal_connect (priv->stage, "allocation-changed",
-                    G_CALLBACK (mx_window_allocation_changed_cb), self);
+                    G_CALLBACK (mx_window_allocation_changed_cb), object);
   g_signal_connect (priv->toolbar, "allocation-changed",
-                    G_CALLBACK (mx_window_allocation_changed_cb), self);
-  g_signal_connect (priv->stage, "button-press-event",
-                    G_CALLBACK (mx_window_button_press_event_cb), self);
-  g_signal_connect (priv->stage, "button-release-event",
-                    G_CALLBACK (mx_window_button_release_event_cb), self);
-  g_signal_connect (priv->stage, "captured-event",
-                    G_CALLBACK (mx_window_captured_event_cb), self);
-  g_signal_connect (priv->stage, "motion-event",
-                    G_CALLBACK (mx_window_motion_event_cb), self);
+                    G_CALLBACK (mx_window_allocation_changed_cb), object);
+  g_signal_connect (priv->stage, "notify::fullscreen-set",
+                    G_CALLBACK (mx_window_fullscreen_set_cb), object);
   g_signal_connect (priv->stage, "destroy",
-                    G_CALLBACK (mx_window_destroy_cb), self);
+                    G_CALLBACK (mx_window_destroy_cb), object);
   g_signal_connect (priv->stage, "actor-added",
-                    G_CALLBACK (mx_window_actor_added_cb), self);
+                    G_CALLBACK (mx_window_actor_added_cb), object);
   g_signal_connect (priv->stage, "actor-removed",
-                    G_CALLBACK (mx_window_actor_removed_cb), self);
+                    G_CALLBACK (mx_window_actor_removed_cb), object);
   g_signal_connect (priv->stage, "notify::user-resizable",
-                    G_CALLBACK (mx_window_user_resizable_cb), self);
+                    G_CALLBACK (mx_window_user_resizable_cb), object);
 
   g_object_set (G_OBJECT (priv->stage), "use-alpha", TRUE, NULL);
+
+#ifdef HAVE_X11
+  priv->native_window = _mx_window_x11_new (self);
+#endif
 }
 
 static void
@@ -1085,7 +515,7 @@ mx_window_class_init (MxWindowClass *klass)
                                "Icon CoglTexture",
                                "CoglTexture to use for the window icon.",
                                NULL,
-                               MX_PARAM_WRITABLE);
+                               MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_ICON_COGL_TEXTURE, pspec);
 
   pspec = g_param_spec_object ("clutter-stage",
@@ -1123,10 +553,29 @@ mx_window_class_init (MxWindowClass *klass)
 static void
 mx_window_init (MxWindow *self)
 {
-  MxWindowPrivate *priv = self->priv = WINDOW_PRIVATE (self);
+  self->priv = WINDOW_PRIVATE (self);
+}
 
-  priv->is_moving = -1;
-  priv->icon_changed = TRUE;
+CoglHandle
+_mx_window_get_icon_cogl_texture (MxWindow *window)
+{
+  CoglHandle texture;
+  MxWindowPrivate *priv;
+
+  g_return_val_if_fail (MX_IS_WINDOW (window), COGL_INVALID_HANDLE);
+
+  priv = window->priv;
+  texture = priv->icon_texture;
+  priv->icon_texture = NULL;
+
+  return texture;
+}
+
+ClutterActor *
+_mx_window_get_resize_grip (MxWindow *window)
+{
+  g_return_val_if_fail (MX_IS_WINDOW (window), NULL);
+  return window->priv->resize_grip;
 }
 
 /**
@@ -1248,9 +697,9 @@ mx_window_set_has_toolbar (MxWindow *window,
 
   priv = window->priv;
 
-  if (window->priv->has_toolbar != toolbar)
+  if (priv->has_toolbar != toolbar)
     {
-      window->priv->has_toolbar = toolbar;
+      priv->has_toolbar = toolbar;
 
       if (!toolbar)
         {
@@ -1265,9 +714,6 @@ mx_window_set_has_toolbar (MxWindow *window,
         }
 
       g_object_notify (G_OBJECT (window), "has-toolbar");
-
-      /* Remove/add window decorations */
-      mx_window_set_wm_hints (window);
     }
 }
 
@@ -1284,7 +730,6 @@ gboolean
 mx_window_get_has_toolbar (MxWindow *window)
 {
   g_return_val_if_fail (MX_IS_WINDOW (window), FALSE);
-
   return window->priv->has_toolbar;
 }
 
@@ -1300,8 +745,7 @@ MxToolbar *
 mx_window_get_toolbar (MxWindow *window)
 {
   g_return_val_if_fail (MX_IS_WINDOW (window), NULL);
-
-  return (MxToolbar*) window->priv->toolbar;
+  return MX_TOOLBAR (window->priv->toolbar);
 }
 
 /**
@@ -1317,7 +761,6 @@ gboolean
 mx_window_get_small_screen (MxWindow *window)
 {
   g_return_val_if_fail (MX_IS_WINDOW (window), FALSE);
-
   return window->priv->small_screen;
 }
 
@@ -1339,180 +782,11 @@ mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
   g_return_if_fail (MX_IS_WINDOW (window));
 
   priv = window->priv;
-
   if (priv->small_screen != small_screen)
     {
-      ClutterStage *stage;
-      Display *dpy;
-      Window win;
-
-      if (!priv->stage)
-        return;
-
-      stage = CLUTTER_STAGE (priv->stage);
-      win = clutter_x11_get_stage_window (stage);
-      dpy = clutter_x11_get_default_display ();
-
       priv->small_screen = small_screen;
-
-      /* If there's no window, we're not mapped yet - we'll resize
-       * on map.
-       */
-      if (win == None)
-        return;
-
-      /* In case we were in the middle of a move/resize */
-      if (priv->is_moving != -1)
-        {
-          clutter_ungrab_pointer_for_device (priv->is_moving);
-          clutter_set_motion_events_enabled (TRUE);
-          priv->is_moving = -1;
-          if (priv->is_resizing)
-            {
-              XUndefineCursor (dpy, win);
-              priv->is_resizing = FALSE;
-            }
-        }
-
-      if (small_screen)
-        {
-          if (!clutter_stage_get_fullscreen (stage))
-            {
-              int width, height;
-              XRRScreenResources *res;
-
-              clutter_actor_get_size (priv->stage,
-                                      &priv->last_width,
-                                      &priv->last_height);
-
-              /* Move/size ourselves to the size of the screen. We could
-               * also set ourselves as not resizable, but a WM that respects
-               * our small-screen mode won't give the user controls to
-               * modify the window, and if it does, just let them.
-               */
-              res = XRRGetScreenResourcesCurrent (dpy, win);
-              width = res->modes[res->nmode].width;
-              height = res->modes[res->nmode].height;
-              XRRFreeScreenResources (res);
-
-              XMoveResizeWindow (dpy, win, 0, 0, width, height);
-            }
-
-          if (priv->resize_grip)
-            clutter_actor_hide (priv->resize_grip);
-        }
-      else
-        {
-          /* If we started off in small-screen mode, our last size won't
-           * be known, so use the preferred size.
-           */
-          if (!priv->last_width && !priv->last_height)
-            mx_window_get_size (window,
-                                NULL, NULL,
-                                &priv->last_width, &priv->last_height);
-
-          clutter_actor_set_size (priv->stage,
-                                  priv->last_width,
-                                  priv->last_height);
-
-          if (priv->resize_grip && priv->has_toolbar &&
-              clutter_stage_get_user_resizable (CLUTTER_STAGE (priv->stage)))
-            {
-              clutter_actor_show (priv->resize_grip);
-              if (priv->child)
-                clutter_actor_raise (priv->resize_grip, priv->child);
-            }
-        }
-
       g_object_notify (G_OBJECT (window), "small-screen");
     }
-}
-
-/**
- * mx_window_get_window_position:
- * @window: an #MxWindow
- * @x: (out): A pointer for the x-coordinate
- * @y: (out): A pointer for the y-coordinate
- *
- * Retrieves the absolute position of the window on the screen.
- */
-void
-mx_window_get_window_position (MxWindow *window, gint *x, gint *y)
-{
-  unsigned int width, height, border_width, depth;
-  MxWindowPrivate *priv;
-  Window win, root_win;
-  ClutterStage *stage;
-  int win_x, win_y;
-  Display *dpy;
-
-  g_return_if_fail (MX_IS_WINDOW (window));
-
-  priv = window->priv;
-
-  if (!priv->stage)
-    return;
-
-  stage = CLUTTER_STAGE (priv->stage);
-
-  if (priv->small_screen || clutter_stage_get_fullscreen (stage))
-    {
-      if (x)
-        *x = 0;
-      if (y)
-        *y = 0;
-      return;
-    }
-
-  win = clutter_x11_get_stage_window (stage);
-  dpy = clutter_x11_get_default_display ();
-
-  XGetGeometry (dpy, win,
-                &root_win,
-                &win_x, &win_y,
-                &width, &height,
-                &border_width,
-                &depth);
-
-  if (x)
-    *x = win_x;
-  if (y)
-    *y = win_y;
-}
-
-/**
- * mx_window_set_window_position:
- * @window: A #MxWindow
- * @x: An x-coordinate
- * @y: A y-coordinate
- *
- * Sets the absolute position of the window on the screen.
- */
-void
-mx_window_set_window_position (MxWindow *window, gint x, gint y)
-{
-  Window win;
-  Display *dpy;
-  ClutterStage *stage;
-  MxWindowPrivate *priv;
-
-  g_return_if_fail (MX_IS_WINDOW (window));
-
-  priv = window->priv;
-
-  if (!priv->stage)
-    return;
-
-  stage = CLUTTER_STAGE (priv->stage);
-
-  /* Don't try to move a full-screen/small-screen window */
-  if (priv->small_screen || clutter_stage_get_fullscreen (stage))
-    return;
-
-  win = clutter_x11_get_stage_window (stage);
-  dpy = clutter_x11_get_default_display ();
-
-  XMoveWindow (dpy, win, x, y);
 }
 
 /**
@@ -1541,9 +815,6 @@ mx_window_set_icon_name (MxWindow *window, const gchar *icon_name)
   priv->icon_name = g_strdup (icon_name);
 
   g_object_notify (G_OBJECT (window), "icon-name");
-
-  priv->icon_changed = TRUE;
-  mx_window_set_wm_hints (window);
 }
 
 /**
@@ -1597,8 +868,7 @@ mx_window_set_icon_from_cogl_texture (MxWindow   *window,
   if (texture)
     priv->icon_texture = cogl_handle_ref (texture);
 
-  priv->icon_changed = TRUE;
-  mx_window_set_wm_hints (window);
+  g_object_notify (G_OBJECT (window), "icon-cogl-texture");
 }
 
 /**
@@ -1613,6 +883,74 @@ ClutterStage *
 mx_window_get_clutter_stage (MxWindow *window)
 {
   g_return_val_if_fail (MX_IS_WINDOW (window), NULL);
-  return (ClutterStage *)window->priv->stage;
+  return CLUTTER_STAGE (window->priv->stage);
 }
 
+/**
+ * mx_window_get_window_position:
+ * @window: an #MxWindow
+ * @x: (out): A pointer for the x-coordinate
+ * @y: (out): A pointer for the y-coordinate
+ *
+ * Retrieves the absolute position of the window on the screen.
+ */
+void
+mx_window_get_window_position (MxWindow *window,
+                               gint     *x,
+                               gint     *y)
+{
+  MxWindowPrivate *priv;
+
+  g_return_if_fail (MX_IS_WINDOW (window));
+
+  priv = window->priv;
+  if (priv->native_window)
+    _mx_native_window_get_position (priv->native_window, x, y);
+  else
+    {
+      if (x)
+        *x = 0;
+      if (y)
+        *y = 0;
+    }
+}
+
+/**
+ * mx_window_set_window_position:
+ * @window: A #MxWindow
+ * @x: An x-coordinate
+ * @y: A y-coordinate
+ *
+ * Sets the absolute position of the window on the screen.
+ */
+void
+mx_window_set_window_position (MxWindow *window,
+                               gint      x,
+                               gint      y)
+{
+  MxWindowPrivate *priv;
+
+  g_return_if_fail (MX_IS_WINDOW (window));
+
+  priv = window->priv;
+  if (priv->native_window)
+    _mx_native_window_set_position (priv->native_window, x, y);
+}
+
+/**
+ * mx_window_present:
+ * @window: A #MxWindow
+ *
+ * Present the window. The actual behaviour is specific to the window system.
+ */
+void
+mx_window_present (MxWindow *window)
+{
+  MxWindowPrivate *priv;
+
+  g_return_if_fail (MX_IS_WINDOW (window));
+
+  priv = window->priv;
+  if (priv->native_window)
+    _mx_native_window_present (priv->native_window);
+}

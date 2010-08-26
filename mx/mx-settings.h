@@ -17,9 +17,8 @@
  * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  * Boston, MA 02111-1307, USA.
  *
- * Written by: Thomas Wood <thomas.wood@intel.com>
- *
  */
+
 #ifndef _MX_SETTINGS_H
 #define _MX_SETTINGS_H
 
@@ -53,6 +52,7 @@ typedef struct _MxSettings MxSettings;
 typedef struct _MxSettingsClass MxSettingsClass;
 typedef struct _MxSettingsPrivate MxSettingsPrivate;
 
+
 struct _MxSettings
 {
   GObject parent;
@@ -75,6 +75,13 @@ struct _MxSettingsClass
 
 GType mx_settings_get_type (void) G_GNUC_CONST;
 
+/**
+ * mx_settings_get_default:
+ *
+ * Get the global MxSettings object.
+ *
+ * Returns: (transfer none): an #MxSettings object
+ */
 MxSettings *mx_settings_get_default (void);
 
 G_END_DECLS

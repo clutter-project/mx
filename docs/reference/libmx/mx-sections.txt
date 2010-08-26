@@ -261,6 +261,24 @@ MxButtonPrivate
 </SECTION>
 
 <SECTION>
+<FILE>mx-action-button</FILE>
+<TITLE>MxActionButton</TITLE>
+MxActionButton
+mx_action_button_new
+mx_action_button_set_action
+mx_action_button_get_action
+<SUBSECTION Standard>
+MX_ACTION_BUTTON
+MX_IS_ACTION_BUTTON
+MX_TYPE_ACTION_BUTTON
+mx_action_button_get_type
+MX_ACTION_BUTTON_CLASS
+MX_IS_ACTION_BUTTON_CLASS
+MX_ACTION_BUTTON_GET_CLASS
+MxActionButtonPrivate
+</SECTION>
+
+<SECTION>
 <FILE>mx-window</FILE>
 <TITLE>MxWindow</TITLE>
 MxWindow
@@ -433,20 +451,23 @@ MxFramePrivate
 </SECTION>
 
 <SECTION>
-<FILE>mx-modal-frame</FILE>
-<TITLE>MxModalFrame</TITLE>
-MxModalFrame
-mx_modal_frame_new
-mx_modal_frame_set_transient_parent
+<FILE>mx-dialog</FILE>
+<TITLE>MxDialog<TITLE>
+MxDialog
+mx_dialog_new
+mx_dialog_set_transient_parent
+mx_dialog_add_action
+mx_dialog_remove_action
+mx_dialog_get_actions
 <SUBSECTION Standard>
-MX_MODAL_FRAME
-MX_IS_MODAL_FRAME
-MX_TYPE_MODAL_FRAME
-mx_modal_frame_get_type
-MX_MODAL_FRAME_CLASS
-MX_IS_MODAL_FRAME_CLASS
-MX_MODAL_FRAME_GET_CLASS
-MxModalFramePrivate
+MX_DIALOG
+MX_IS_DIALOG
+MX_TYPE_DIALOG
+mx_dialog_get_type
+MX_DIALOG_CLASS
+MX_IS_DIALOG_CLASS
+MX_DIALOG_GET_CLASS
+MxDialogPrivate
 </SECTION>
 
 <SECTION>

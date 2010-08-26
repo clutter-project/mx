@@ -12,9 +12,28 @@ BUILT_SOURCES = 		\
 	mx-marshal.h 		\
 	mx-marshal.c
 
+if HAVE_X11
+WINSYS_SRC = \
+	$(top_srcdir)/mx/x11/mx-clipboard-x11.c	\
+	$(top_srcdir)/mx/x11/mx-settings-x11.c	\
+	$(top_srcdir)/mx/x11/mx-settings-x11.h	\
+	$(top_srcdir)/mx/x11/mx-window-x11.c	\
+	$(top_srcdir)/mx/x11/mx-window-x11.h	\
+	$(top_srcdir)/mx/x11/xsettings-client.c	\
+	$(top_srcdir)/mx/x11/xsettings-client.h	\
+	$(top_srcdir)/mx/x11/xsettings-common.c	\
+	$(top_srcdir)/mx/x11/xsettings-common.h	\
+	$(NULL)
+else
+WINSYS_SRC = \
+	$(top_srcdir)/mx/mx-clipboard-default.c	\
+	$(NULL)
+endif
+
 # keep sorted alphabetically, please
 source_h = \
 	$(top_srcdir)/mx/mx-action.h		\
+	$(top_srcdir)/mx/mx-action-button.h	\
 	$(top_srcdir)/mx/mx-adjustment.h		\
 	$(top_srcdir)/mx/mx-application.h	\
 	$(top_srcdir)/mx/mx-bin.h			\
@@ -27,6 +46,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-deform-bow-tie.h 	\
 	$(top_srcdir)/mx/mx-deform-page-turn.h 	\
 	$(top_srcdir)/mx/mx-deform-waves.h 	\
+	$(top_srcdir)/mx/mx-dialog.h 		\
 	$(top_srcdir)/mx/mx-draggable.h 		\
 	$(top_srcdir)/mx/mx-droppable.h 		\
 	$(top_srcdir)/mx/mx-clipboard.h		\
@@ -39,7 +59,6 @@ source_h = \
 	$(top_srcdir)/mx/mx-item-factory.h		\
 	$(top_srcdir)/mx/mx-item-view.h 		\
 	$(top_srcdir)/mx/mx-list-view.h 		\
-	$(top_srcdir)/mx/mx-modal-frame.h 	\
 	$(top_srcdir)/mx/mx-offscreen.h 		\
 	$(top_srcdir)/mx/mx-icon.h 			\
 	$(top_srcdir)/mx/mx-icon-theme.h 	\
@@ -52,6 +71,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-scroll-view.h 		\
 	$(top_srcdir)/mx/mx-scrollable.h 		\
 	$(top_srcdir)/mx/mx-settings.h		\
+	$(top_srcdir)/mx/mx-settings-provider.h	\
 	$(top_srcdir)/mx/mx-slider.h 		\
 	$(top_srcdir)/mx/mx-stylable.h 		\
 	$(top_srcdir)/mx/mx-style.h 		\
@@ -73,16 +93,17 @@ source_h = \
 
 source_h_priv = \
 	$(top_srcdir)/mx/mx-css.h		\
+	$(top_srcdir)/mx/mx-native-window.h	\
 	$(top_srcdir)/mx/mx-path-bar-button.h	\
 	$(top_srcdir)/mx/mx-progress-bar-fill.h	\
 	$(top_srcdir)/mx/mx-private.h		\
-	$(top_srcdir)/mx/xsettings-client.h	\
-	$(top_srcdir)/mx/xsettings-common.h	\
+	$(top_srcdir)/mx/mx-settings-provider.h	\
 	$(NULL)
 
 source_c = \
 	$(top_srcdir)/mx/mx-adjustment.c 		\
 	$(top_srcdir)/mx/mx-action.c 		\
+	$(top_srcdir)/mx/mx-action-button.c	\
 	$(top_srcdir)/mx/mx-application.c	\
 	$(top_srcdir)/mx/mx-bin.c			\
 	$(top_srcdir)/mx/mx-box-layout.c		\
@@ -95,9 +116,9 @@ source_c = \
 	$(top_srcdir)/mx/mx-deform-bow-tie.c 	\
 	$(top_srcdir)/mx/mx-deform-page-turn.c 	\
 	$(top_srcdir)/mx/mx-deform-waves.c 	\
+	$(top_srcdir)/mx/mx-dialog.c 		\
 	$(top_srcdir)/mx/mx-draggable.c		\
 	$(top_srcdir)/mx/mx-droppable.c		\
-	$(top_srcdir)/mx/mx-clipboard.c 		\
 	$(top_srcdir)/mx/mx-entry.c 		\
 	$(top_srcdir)/mx/mx-expander.c 		\
 	$(top_srcdir)/mx/mx-focus-manager.c 	\
@@ -110,7 +131,6 @@ source_c = \
 	$(top_srcdir)/mx/mx-item-view.c 		\
 	$(top_srcdir)/mx/mx-list-view.c 		\
 	$(top_srcdir)/mx/mx-label.c 		\
-	$(top_srcdir)/mx/mx-modal-frame.c 	\
 	$(top_srcdir)/mx/mx-notebook.c 		\
 	$(top_srcdir)/mx/mx-offscreen.c 	\
 	$(top_srcdir)/mx/mx-path-bar.c 		\
@@ -121,7 +141,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-scroll-bar.c 		\
 	$(top_srcdir)/mx/mx-scroll-view.c		\
 	$(top_srcdir)/mx/mx-scrollable.c 		\
-	$(top_srcdir)/mx/mx-settings.c		\
+	$(top_srcdir)/mx/mx-settings.c	\
 	$(top_srcdir)/mx/mx-slider.c 		\
 	$(top_srcdir)/mx/mx-stylable.c 		\
 	$(top_srcdir)/mx/mx-style.c 		\
@@ -139,8 +159,6 @@ source_c = \
 	$(top_srcdir)/mx/mx-window.c		\
 	$(top_srcdir)/mx/mx-floating-widget.c	\
 	$(top_srcdir)/mx/mx-kinetic-scroll-view.c \
-	$(top_srcdir)/mx/xsettings-client.c	\
-	$(top_srcdir)/mx/xsettings-common.c	\
 	$(NULL)
 
 EXTRA_DIST = \
@@ -233,11 +251,14 @@ libmx_@MX_API_VERSION@_la_LDFLAGS = $(MX_LT_LDFLAGS) $(common_ldflags)
 
 libmx_@MX_API_VERSION@_la_SOURCES =	\
 	$(BUILT_SOURCES) 		\
+	$(WINSYS_SRC)			\
 	$(source_h)			\
 	$(source_h_priv)		\
 	$(source_c)			\
-	mx-private.c			\
-	mx.h 				\
+	$(top_srcdir)/mx/mx-native-window.c	\
+	$(top_srcdir)/mx/mx-private.c	\
+	$(top_srcdir)/mx/mx-settings-provider.c	\
+	$(top_srcdir)/mx/mx.h 		\
 	$(NULL)
 
 libmx_@MX_API_VERSION@_la_LIBADD = $(MX_LIBS)

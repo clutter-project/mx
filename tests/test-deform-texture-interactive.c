@@ -17,8 +17,15 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <mx/mx.h>
+
+#ifdef HAVE_X11
 #include <clutter/x11/clutter-x11.h>
+#endif
 
 typedef struct {
   ClutterActor *texture;
@@ -59,7 +66,7 @@ main (int argc, char *argv[])
   ClutterActor *stage, *table, *slider, *label, *texture, *front, *back;
   ClutterColor stage_color = { 0xcc, 0xcc, 0xcc, 0xb0 };
 
-#if CLUTTER_CHECK_VERSION(1,2,0)
+#if defined (HAVE_X11) && CLUTTER_CHECK_VERSION(1,2,0)
   /* Enable argb visuals for coolness with compositors */
   clutter_x11_set_use_argb_visual (TRUE);
 #endif

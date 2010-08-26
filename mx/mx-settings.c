@@ -17,17 +17,19 @@
  * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  * Boston, MA 02111-1307, USA.
  *
- * Written by: Thomas Wood <thomas.wood@intel.com>
- *
  */
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include "mx-settings.h"
 #include "mx-private.h"
+#include "mx-settings-provider.h"
 
-#include "xsettings-client.h"
-
-#include <string.h>
-#include <clutter/x11/clutter-x11.h>
+#ifdef HAVE_X11
+#include "x11/mx-settings-x11.h"
+#endif
 
 G_DEFINE_TYPE (MxSettings, mx_settings, G_TYPE_OBJECT)
 
@@ -36,20 +38,13 @@ G_DEFINE_TYPE (MxSettings, mx_settings, G_TYPE_OBJECT)
 
 struct _MxSettingsPrivate
 {
+  MxSettingsProvider *provider;
+
   gchar *icon_theme;
   gchar *font_name;
   guint  long_press_timeout;
-
-  XSettingsClient *client;
+  guint  small_screen : 1;
 };
-
-enum
-{
-  PROP_ICON_THEME = 1,
-  PROP_FONT_NAME,
-  PROP_LONG_PRESS_TIMEOUT
-};
-
 
 static void
 mx_settings_get_property (GObject    *object,
@@ -57,20 +52,64 @@ mx_settings_get_property (GObject    *object,
                           GValue     *value,
                           GParamSpec *pspec)
 {
+  guint uint_value;
+  gchar *string_value;
+  gboolean boolean_value;
+
   MxSettingsPrivate *priv = MX_SETTINGS (object)->priv;
 
+  /* Check if the settings provider has these settings first */
+  if (priv->provider)
+    {
+      switch (property_id)
+        {
+        case MX_SETTINGS_ICON_THEME:
+        case MX_SETTINGS_FONT_NAME:
+          if (_mx_settings_provider_get_setting (priv->provider, property_id,
+                                                 &string_value))
+            {
+              g_value_set_string (value, string_value);
+              return;
+            }
+          break;
+
+        case MX_SETTINGS_LONG_PRESS_TIMEOUT:
+          if (_mx_settings_provider_get_setting (priv->provider, property_id,
+                                                 &uint_value))
+            {
+              g_value_set_uint (value, uint_value);
+              return;
+            }
+          break;
+
+        case MX_SETTINGS_SMALL_SCREEN:
+          if (_mx_settings_provider_get_setting (priv->provider, property_id,
+                                                 &boolean_value))
+            {
+              g_value_set_boolean (value, boolean_value);
+              return;
+            }
+          break;
+        }
+    }
+
+  /* Check the internal settings */
   switch (property_id)
     {
-    case PROP_ICON_THEME:
+    case MX_SETTINGS_ICON_THEME:
       g_value_set_string (value, priv->icon_theme);
       break;
 
-    case PROP_FONT_NAME:
+    case MX_SETTINGS_FONT_NAME:
       g_value_set_string (value, priv->font_name);
       break;
 
-    case PROP_LONG_PRESS_TIMEOUT:
+    case MX_SETTINGS_LONG_PRESS_TIMEOUT:
       g_value_set_uint (value, priv->long_press_timeout);
+      break;
+
+    case MX_SETTINGS_SMALL_SCREEN:
+      g_value_set_boolean (value, priv->small_screen);
       break;
 
     default:
@@ -84,22 +123,63 @@ mx_settings_set_property (GObject      *object,
                           const GValue *value,
                           GParamSpec   *pspec)
 {
+  guint uint_value;
+  gboolean boolean_value;
+  const gchar *string_value;
+
   MxSettingsPrivate *priv = MX_SETTINGS (object)->priv;
+
+  /* Check if the settings provider can set these settings first */
+  if (priv->provider)
+    {
+      switch (property_id)
+        {
+        case MX_SETTINGS_ICON_THEME:
+        case MX_SETTINGS_FONT_NAME:
+          string_value = g_value_get_string (value);
+          if (_mx_settings_provider_set_setting (priv->provider, property_id,
+                                                 &string_value))
+            return;
+          break;
+
+        case MX_SETTINGS_LONG_PRESS_TIMEOUT:
+          uint_value = g_value_get_uint (value);
+          if (_mx_settings_provider_set_setting (priv->provider, property_id,
+                                                 &uint_value))
+            return;
+          break;
+
+        case MX_SETTINGS_SMALL_SCREEN:
+          boolean_value = g_value_get_boolean (value);
+          if (_mx_settings_provider_set_setting (priv->provider, property_id,
+                                                 &boolean_value))
+            return;
+          break;
+        }
+    }
 
   switch (property_id)
     {
-    case PROP_ICON_THEME:
+    case MX_SETTINGS_ICON_THEME:
       g_free (priv->icon_theme);
       priv->icon_theme = g_value_dup_string (value);
+      g_object_notify (object, "icon-theme");
       break;
 
-    case PROP_FONT_NAME:
+    case MX_SETTINGS_FONT_NAME:
       g_free (priv->font_name);
       priv->font_name = g_value_dup_string (value);
+      g_object_notify (object, "font-name");
       break;
 
-    case PROP_LONG_PRESS_TIMEOUT:
+    case MX_SETTINGS_LONG_PRESS_TIMEOUT:
       priv->long_press_timeout = g_value_get_uint (value);
+      g_object_notify (object, "long-press-timeout");
+      break;
+
+    case MX_SETTINGS_SMALL_SCREEN:
+      priv->small_screen = g_value_get_boolean (value);
+      g_object_notify (object, "small-screen");
       break;
 
     default:
@@ -110,6 +190,14 @@ mx_settings_set_property (GObject      *object,
 static void
 mx_settings_dispose (GObject *object)
 {
+  MxSettingsPrivate *priv = MX_SETTINGS (object)->priv;
+
+  if (priv->provider)
+    {
+      g_object_unref (priv->provider);
+      priv->provider = NULL;
+    }
+
   G_OBJECT_CLASS (mx_settings_parent_class)->dispose (object);
 }
 
@@ -118,61 +206,15 @@ mx_settings_finalize (GObject *object)
 {
   MxSettingsPrivate *priv = MX_SETTINGS (object)->priv;
 
-  if (priv->icon_theme)
-    {
-      g_free (priv->icon_theme);
-      priv->icon_theme = NULL;
-    }
-
-  if (priv->font_name)
-    {
-      g_free (priv->font_name);
-      priv->font_name = NULL;
-    }
-
-  if (priv->client)
-    {
-      xsettings_client_destroy (priv->client);
-      priv->client = NULL;
-    }
+  g_free (priv->icon_theme);
+  g_free (priv->font_name);
 
   G_OBJECT_CLASS (mx_settings_parent_class)->finalize (object);
 }
 
-static void
-xsettings_notify_func (const char       *name,
-                       XSettingsAction   action,
-                       XSettingsSetting *setting,
-                       void             *cb_data);
-static ClutterX11FilterReturn
-mx_settings_event_filter (XEvent       *xev,
-                          ClutterEvent *cev,
-                          void         *data);
-
-static void
-mx_settings_constructed (GObject *object)
-{
-  MxSettings *self = (MxSettings*) object;
-
-  /* setup xsettings client */
-  /* This needs to be done after the construction of the object
-   * to prevent recursion because creating a new xsettings client will
-   * cause the notify function to be called, which in turn may cause the
-   * style-changed signal to be emitted on MxStyle. Handlers of the
-   * style-changed signal may need an MxSettings object.
-   */
-  self->priv->client = xsettings_client_new (clutter_x11_get_default_display (),
-                                             clutter_x11_get_default_screen (),
-                                             xsettings_notify_func,
-                                             NULL,
-                                             self);
-
-  clutter_x11_add_filter (mx_settings_event_filter, self);
-}
-
 static GObject *
-mx_settings_constructor (GType type,
-                         guint n_construct_params,
+mx_settings_constructor (GType                  type,
+                         guint                  n_construct_params,
                          GObjectConstructParam *construct_params)
 {
   static MxSettings *the_singleton = NULL;
@@ -181,8 +223,8 @@ mx_settings_constructor (GType type,
   if (!the_singleton)
     {
       object = G_OBJECT_CLASS (mx_settings_parent_class)->constructor (type,
-                                                           n_construct_params,
-                                                           construct_params);
+                                                          n_construct_params,
+                                                          construct_params);
       the_singleton = MX_SETTINGS (object);
     }
   else
@@ -203,7 +245,6 @@ mx_settings_class_init (MxSettingsClass *klass)
   object_class->set_property = mx_settings_set_property;
   object_class->dispose = mx_settings_dispose;
   object_class->finalize = mx_settings_finalize;
-  object_class->constructed = mx_settings_constructed;
   object_class->constructor = mx_settings_constructor;
 
   pspec = g_param_spec_string ("icon-theme",
@@ -212,94 +253,77 @@ mx_settings_class_init (MxSettingsClass *klass)
                                " icons",
                                "hicolor",
                                MX_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_ICON_THEME, pspec);
+  g_object_class_install_property (object_class, MX_SETTINGS_ICON_THEME, pspec);
 
   pspec = g_param_spec_string ("font-name",
                                "Font Name",
                                "Default font name",
                                "Sans 10",
                                MX_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_FONT_NAME, pspec);
+  g_object_class_install_property (object_class, MX_SETTINGS_FONT_NAME, pspec);
 
   pspec = g_param_spec_uint ("long-press-timeout",
                              "Long Press Timeout",
                              "Long press timeout",
                              0, G_MAXUINT, 500,
                              MX_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_LONG_PRESS_TIMEOUT,
+  g_object_class_install_property (object_class, MX_SETTINGS_LONG_PRESS_TIMEOUT,
                                    pspec);
 
+  pspec = g_param_spec_boolean ("small-screen",
+                                "Small screen",
+                                "MeeGo small-screen mode is active",
+                                FALSE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, MX_SETTINGS_SMALL_SCREEN,
+                                   pspec);
 }
 
+#if defined(HAVE_X11)
 static void
-xsettings_notify_func (const char       *name,
-                       XSettingsAction   action,
-                       XSettingsSetting *setting,
-                       void             *cb_data)
+mx_settings_changed_cb (MxSettingsProvider *provider,
+                        MxSettingsProperty  id,
+                        MxSettings         *self)
 {
-  MxSettingsPrivate *priv = MX_SETTINGS (cb_data)->priv;
-
-  if (!name)
-    return;
-
-  if (!strcmp (name, "Net/IconThemeName"))
+  switch (id)
     {
-      /* check icon theme name has changed */
-      if (g_strcmp0 (priv->icon_theme, setting->data.v_string))
-        {
-          g_free (priv->icon_theme);
-          priv->icon_theme = g_strdup (setting->data.v_string);
+    case MX_SETTINGS_ICON_THEME:
+      g_object_notify (G_OBJECT (self), "icon-theme");
+      return;
 
-          g_object_notify (G_OBJECT (cb_data), "icon-theme");
-        }
+    case MX_SETTINGS_FONT_NAME:
+      g_object_notify (G_OBJECT (self), "font-name");
+      return;
+
+    case MX_SETTINGS_LONG_PRESS_TIMEOUT:
+      g_object_notify (G_OBJECT (self), "long-press-timeout");
+      return;
+
+    case MX_SETTINGS_SMALL_SCREEN:
+      g_object_notify (G_OBJECT (self), "small-screen");
+      return;
     }
-  else if (!strcmp (name, "Gtk/FontName"))
-    {
-      /* check if the font name has changed */
-      if (g_strcmp0 (priv->font_name, setting->data.v_string))
-        {
-          g_free (priv->font_name);
-          priv->font_name = g_strdup (setting->data.v_string);
-
-          g_object_notify (G_OBJECT (cb_data), "font-name");
-
-          g_signal_emit_by_name (mx_style_get_default (), "changed", 0, NULL);
-        }
-    }
-
 }
-
-static ClutterX11FilterReturn
-mx_settings_event_filter (XEvent       *xev,
-                          ClutterEvent *cev,
-                          void         *data)
-{
-  MxSettingsPrivate *priv = MX_SETTINGS (data)->priv;
-
-  if (xsettings_client_process_event (priv->client, xev))
-    return CLUTTER_X11_FILTER_REMOVE;
-  else
-    return CLUTTER_X11_FILTER_CONTINUE;
-}
+#endif
 
 static void
 mx_settings_init (MxSettings *self)
 {
-  self->priv = SETTINGS_PRIVATE (self);
+  MxSettingsPrivate *priv = self->priv = SETTINGS_PRIVATE (self);
 
-  /* setup defaults */
-  self->priv->long_press_timeout = 500;
-  self->priv->icon_theme = g_strdup ("hicolor");
-  self->priv->font_name = g_strdup ("Sans 10");
+  /* Setup defaults */
+  priv->icon_theme = g_strdup ("hicolor");
+  priv->font_name = g_strdup ("Sans 10");
+  priv->long_press_timeout = 500;
+  priv->small_screen = FALSE;
+
+#ifdef HAVE_X11
+  priv->provider = _mx_settings_x11_new (self);
+  g_signal_connect (priv->provider, "setting-changed",
+                    G_CALLBACK (mx_settings_changed_cb), self);
+#endif
 }
 
-/**
- * mx_settings_get_default:
- *
- * Get the global MxSettings object.
- *
- * Returns: (transfer none): an #MxSettings object
- */
 MxSettings *
 mx_settings_get_default (void)
 {

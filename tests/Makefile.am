@@ -45,6 +45,7 @@ test_mx_SOURCES = test-mx.c \
 		  test-mx.h \
 		  test-buttons.c \
 		  test-combo-box.c \
+		  test-dialog.c \
 		  test-entry.c \
 		  test-expander.c \
 		  test-label.c \
@@ -57,7 +58,6 @@ test_mx_SOURCES = test-mx.c \
 		  test-tooltips.c \
 		  test-toggle.c \
 		  test-button-group.c \
-		  test-modal-frame.c \
 		  $(NULL)
 
 test_deform_texture_SOURCES = test-deform-texture.c

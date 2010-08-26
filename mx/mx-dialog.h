@@ -1,5 +1,5 @@
 /*
- * mx-modal-frame.h
+ * mx-dialog.h
  *
  * Copyright 2010 Intel Corporation.
  *
@@ -18,69 +18,77 @@
  * Boston, MA 02111-1307, USA.
  *
  * Written by: Chris Lord <chris@linux.intel.com>
+ *             Iain Holmes <iain@linux.intel.com>
  *
  */
 
-#ifndef _MX_MODAL_FRAME_H
-#define _MX_MODAL_FRAME_H
+#ifndef _MX_DIALOG_H
+#define _MX_DIALOG_H
 
 #include <glib-object.h>
 #include <mx/mx-bin.h>
+#include <mx/mx-action.h>
 
 G_BEGIN_DECLS
 
-#define MX_TYPE_MODAL_FRAME mx_modal_frame_get_type()
+#define MX_TYPE_DIALOG mx_dialog_get_type()
 
-#define MX_MODAL_FRAME(obj) \
+#define MX_DIALOG(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
-  MX_TYPE_MODAL_FRAME, MxModalFrame))
+  MX_TYPE_DIALOG, MxDialog))
 
-#define MX_MODAL_FRAME_CLASS(klass) \
+#define MX_DIALOG_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_CAST ((klass), \
-  MX_TYPE_MODAL_FRAME, MxModalFrameClass))
+  MX_TYPE_DIALOG, MxDialogClass))
 
-#define MX_IS_MODAL_FRAME(obj) \
+#define MX_IS_DIALOG(obj) \
   (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
-  MX_TYPE_MODAL_FRAME))
+  MX_TYPE_DIALOG))
 
-#define MX_IS_MODAL_FRAME_CLASS(klass) \
+#define MX_IS_DIALOG_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_TYPE ((klass), \
-  MX_TYPE_MODAL_FRAME))
+  MX_TYPE_DIALOG))
 
-#define MX_MODAL_FRAME_GET_CLASS(obj) \
+#define MX_DIALOG_GET_CLASS(obj) \
   (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-  MX_TYPE_MODAL_FRAME, MxModalFrameClass))
+  MX_TYPE_DIALOG, MxDialogClass))
 
 /**
- * MxModalFrame:
+ * MxDialog:
  *
  * The contents of this structure is private and should only be accessed using
  * the provided API.
  */
-typedef struct _MxModalFrame MxModalFrame;
-typedef struct _MxModalFrameClass MxModalFrameClass;
-typedef struct _MxModalFramePrivate MxModalFramePrivate;
+typedef struct _MxDialog MxDialog;
+typedef struct _MxDialogClass MxDialogClass;
+typedef struct _MxDialogPrivate MxDialogPrivate;
 
-struct _MxModalFrame
+struct _MxDialog
 {
   /*< private >*/
   MxBin parent;
 
-  MxModalFramePrivate *priv;
+  MxDialogPrivate *priv;
 };
 
-struct _MxModalFrameClass
+struct _MxDialogClass
 {
   MxBinClass parent_class;
 };
 
-GType mx_modal_frame_get_type (void) G_GNUC_CONST;
+GType mx_dialog_get_type (void) G_GNUC_CONST;
 
-ClutterActor *mx_modal_frame_new (void);
+ClutterActor *mx_dialog_new (void);
 
-void mx_modal_frame_set_transient_parent (MxModalFrame *modal_frame,
-                                          ClutterActor *actor);
+void mx_dialog_set_transient_parent (MxDialog     *dialog,
+                                     ClutterActor *actor);
+
+void   mx_dialog_add_action    (MxDialog *dialog,
+                                MxAction *action);
+void   mx_dialog_remove_action (MxDialog *dialog,
+                                MxAction *action);
+GList *mx_dialog_get_actions   (MxDialog *dialog);
 
 G_END_DECLS
 
-#endif /* _MX_MODAL_FRAME_H */
+#endif /* _MX_DIALOG_H */

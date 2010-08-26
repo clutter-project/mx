@@ -20,31 +20,38 @@
 
 #include "test-mx.h"
 
-void
-modal_frame_main (ClutterContainer *group)
+static void
+close_dialog_cb (gpointer      unused,
+                 ClutterActor *dialog)
 {
-  ClutterActor *stage, *launch, *dialog, *frame, *close;
+  clutter_actor_hide (dialog);
+}
+
+void
+dialog_main (ClutterContainer *group)
+{
+  ClutterActor *stage, *launch, *dialog, *label;
+  MxAction *action;
 
   launch = mx_button_new_with_label ("Launch dialog");
-
-  dialog = mx_modal_frame_new ();
-
-  frame = mx_frame_new ();
-  close = mx_button_new_with_label ("Close dialog");
-  mx_bin_set_child (MX_BIN (frame), close);
-
-  mx_bin_set_child (MX_BIN (dialog), frame);
+  dialog = mx_dialog_new ();
 
   clutter_actor_set_position (launch, 50, 50);
-
   clutter_container_add (group, launch, NULL);
-
   g_signal_connect_swapped (launch, "clicked",
                             G_CALLBACK (clutter_actor_show), dialog);
-  g_signal_connect_swapped (close, "clicked",
-                            G_CALLBACK (clutter_actor_hide), dialog);
+
+  label = mx_label_new_with_text ("This is a dialog");
+  mx_bin_set_child (MX_BIN (dialog), label);
+
+  action = mx_action_new_full ("nothing", "Do nothing", NULL, dialog);
+  mx_dialog_add_action (MX_DIALOG (dialog), action);
+
+  action = mx_action_new_full ("close", "Close",
+                               G_CALLBACK (close_dialog_cb), dialog);
+  mx_dialog_add_action (MX_DIALOG (dialog), action);
 
   stage = clutter_actor_get_stage (CLUTTER_ACTOR (group));
-  mx_modal_frame_set_transient_parent (MX_MODAL_FRAME (dialog),
-                                       stage ? stage : CLUTTER_ACTOR (group));
+  mx_dialog_set_transient_parent (MX_DIALOG (dialog),
+                                  stage ? stage : CLUTTER_ACTOR (group));
 }
