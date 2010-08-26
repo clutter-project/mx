@@ -34,7 +34,11 @@
 #include "mx-marshal.h"
 #include <clutter/clutter.h>
 
-G_DEFINE_TYPE (MxToolbar, mx_toolbar, MX_TYPE_BIN)
+static void mx_focusable_iface_init (MxFocusableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE (MxToolbar, mx_toolbar, MX_TYPE_BIN,
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
+                                                mx_focusable_iface_init))
 
 #define TOOLBAR_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_TOOLBAR, MxToolbarPrivate))
@@ -56,9 +60,101 @@ static guint toolbar_signals[LAST_SIGNAL] = { 0, };
 
 struct _MxToolbarPrivate
 {
-  gboolean has_close_button;
+  guint has_close_button : 1;
+  guint child_has_focus  : 1;
+
   ClutterActor *close_button;
 };
+
+
+static MxFocusable *
+mx_toolbar_move_focus (MxFocusable      *self,
+                       MxFocusDirection  direction,
+                       MxFocusable      *from)
+{
+  ClutterActor *child;
+  MxFocusable *focusable;
+  MxToolbarPrivate *priv = MX_TOOLBAR (self)->priv;
+
+  child = mx_bin_get_child (MX_BIN (self));
+  if (child && !MX_IS_FOCUSABLE (child))
+    child = NULL;
+
+  focusable = NULL;
+  switch (direction)
+    {
+    case MX_FOCUS_DIRECTION_LEFT:
+    case MX_FOCUS_DIRECTION_PREVIOUS:
+      if (!priv->child_has_focus && child)
+        {
+          priv->child_has_focus = TRUE;
+          focusable = mx_focusable_accept_focus (MX_FOCUSABLE (child),
+                                                 MX_FOCUS_HINT_LAST);
+        }
+      break;
+
+    case MX_FOCUS_DIRECTION_RIGHT:
+    case MX_FOCUS_DIRECTION_NEXT:
+      if (priv->child_has_focus && priv->has_close_button)
+        {
+          priv->child_has_focus = FALSE;
+          focusable =
+            mx_focusable_accept_focus (MX_FOCUSABLE (priv->close_button),
+                                       MX_FOCUS_HINT_FIRST);
+        }
+
+    default:
+      break;
+    }
+
+  return focusable;
+}
+
+static MxFocusable *
+mx_toolbar_accept_focus (MxFocusable *self,
+                         MxFocusHint  hint)
+{
+  ClutterActor *child;
+  MxFocusable *focusable;
+  MxToolbarPrivate *priv = MX_TOOLBAR (self)->priv;
+
+  child = mx_bin_get_child (MX_BIN (self));
+  if (child && !MX_IS_FOCUSABLE (child))
+    child = NULL;
+
+  focusable = NULL;
+  switch (hint)
+    {
+    case MX_FOCUS_HINT_PRIOR:
+      if (child && priv->child_has_focus)
+        focusable = mx_focusable_accept_focus (MX_FOCUSABLE (child), hint);
+      if (focusable)
+        break;
+
+    case MX_FOCUS_HINT_LAST:
+      priv->child_has_focus = FALSE;
+      if (priv->has_close_button)
+        focusable =
+          mx_focusable_accept_focus (MX_FOCUSABLE (priv->close_button), hint);
+      if (focusable)
+        break;
+
+    case MX_FOCUS_HINT_FIRST:
+      priv->child_has_focus = TRUE;
+      if (child)
+        focusable = mx_focusable_accept_focus (MX_FOCUSABLE (child), hint);
+      break;
+    }
+
+  return focusable;
+}
+
+static void
+mx_focusable_iface_init (MxFocusableIface *iface)
+{
+  iface->move_focus = mx_toolbar_move_focus;
+  iface->accept_focus = mx_toolbar_accept_focus;
+}
 
 static void
 mx_toolbar_get_property (GObject    *object,
