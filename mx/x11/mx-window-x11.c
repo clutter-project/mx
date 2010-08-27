@@ -835,10 +835,12 @@ mx_window_x11_constructed (GObject *object)
 
   g_signal_connect (priv->window, "notify::small-screen",
                     G_CALLBACK (mx_window_x11_notify_small_screen_cb), self);
-  g_signal_connect (priv->window, "notify::icon-name",
-                    G_CALLBACK (mx_window_x11_notify_icon_changed_cb), self);
-  g_signal_connect (priv->window, "notify::icon-cogl-texture",
-                    G_CALLBACK (mx_window_x11_notify_icon_changed_cb), self);
+  g_signal_connect_swapped (priv->window, "notify::icon-name",
+                            G_CALLBACK (mx_window_x11_notify_icon_changed_cb),
+                            self);
+  g_signal_connect_swapped (priv->window, "notify::icon-cogl-texture",
+                            G_CALLBACK (mx_window_x11_notify_icon_changed_cb),
+                            self);
 }
 
 void
