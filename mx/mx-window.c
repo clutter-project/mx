@@ -306,37 +306,9 @@ mx_window_get_size (MxWindow *window, gfloat *width, gfloat *height)
 }
 
 static void
-mx_window_pre_paint_cb (ClutterActor *stage, MxWindow *window)
-{
-  gfloat width, height, stage_width, stage_height;
-  MxWindowPrivate *priv = window->priv;
-
-  clutter_actor_get_size (stage, &stage_width, &stage_height);
-  mx_window_get_size (window, &width, &height);
-
-  /* Make sure the rotated rectangle is centred */
-  cogl_translate ((stage_width - width) / 2.f,
-                  (stage_height - height) / 2.f,
-                  0);
-
-  /* Rotate it about the centre */
-  cogl_translate (width / 2.f, height / 2.f, 0);
-  cogl_rotate (priv->angle, 0, 0, 1);
-  cogl_translate (-width / 2.f, -height / 2.f, 0);
-}
-
-static void
-mx_window_pre_pick_cb (ClutterActor       *stage,
-                       const ClutterColor *color,
-                       MxWindow           *window)
-{
-  mx_window_pre_paint_cb (stage, window);
-}
-
-static void
 mx_window_post_paint_cb (ClutterActor *actor, MxWindow *window)
 {
-  gfloat width, height;
+  gfloat width, height, stage_width, stage_height;
 
   MxWindowPrivate *priv = window->priv;
 
@@ -347,9 +319,19 @@ mx_window_post_paint_cb (ClutterActor *actor, MxWindow *window)
       clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
     return;
 
-  /* paint frame */
-
   mx_window_get_size (window, &width, &height);
+  clutter_actor_get_size (actor, &stage_width, &stage_height);
+
+  /* Adjust for rotation */
+  cogl_translate ((stage_width - width) / 2.f,
+                  (stage_height - height) / 2.f,
+                  0);
+
+  cogl_translate (width / 2.f, height / 2.f, 0);
+  cogl_rotate (priv->angle, 0, 0, 1);
+  cogl_translate (-width / 2.f, -height / 2.f, 0);
+
+  /* paint frame */
   cogl_set_source_color4f (0.2, 0.2, 0.2, 1);
 
   cogl_rectangle (0, 0, width, 1);
@@ -368,7 +350,7 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
   MxPadding padding;
   gboolean from_toolbar;
   MxWindowPrivate *priv;
-  gfloat width, height, toolbar_height, stage_width, stage_height;
+  gfloat x, y, width, height, toolbar_height, stage_width, stage_height;
 
   /* Note, ideally this would happen just before allocate, but there's
    * no signal we can connect to for that without overriding an actor.
@@ -384,7 +366,11 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
   from_toolbar = (actor == priv->toolbar);
   actor = priv->stage;
 
-  mx_window_get_size (window, &stage_width, &stage_height);
+  mx_window_get_size (window, &width, &height);
+  clutter_actor_get_size (actor, &stage_width, &stage_height);
+
+  x = (stage_width - width) / 2.f;
+  y = (stage_height - height) / 2.f;
 
   if (!priv->has_toolbar || priv->small_screen ||
       clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
@@ -395,16 +381,23 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
   if (priv->has_toolbar && priv->toolbar)
     {
       clutter_actor_get_preferred_height (priv->toolbar,
-                                          stage_width - padding.left -
+                                          width - padding.left -
                                           padding.right,
                                           NULL, &toolbar_height);
 
       if (!from_toolbar)
         {
-          clutter_actor_set_position (priv->toolbar, padding.left, padding.top);
+          clutter_actor_set_position (priv->toolbar,
+                                      padding.left + x,
+                                      padding.top + y);
+          clutter_actor_set_rotation (priv->toolbar,
+                                      CLUTTER_Z_AXIS,
+                                      priv->angle,
+                                      width / 2.f - padding.left,
+                                      height / 2.f - padding.top, 0);
           g_object_set (G_OBJECT (priv->toolbar),
                         "natural-width",
-                        stage_width - padding.left - padding.right,
+                        width - padding.left - padding.right,
                         NULL);
         }
     }
@@ -416,12 +409,18 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
   if (priv->child)
     {
       g_object_set (G_OBJECT (priv->child),
-                    "natural-width", stage_width - padding.left - padding.right,
-                    "natural-height", stage_height - toolbar_height -
+                    "natural-width", width - padding.left - padding.right,
+                    "natural-height", height - toolbar_height -
                                       padding.top - padding.bottom,
-                    "x", padding.left,
-                    "y", toolbar_height + padding.top,
+                    "x", padding.left + x,
+                    "y", toolbar_height + padding.top + y,
                     NULL);
+      clutter_actor_set_rotation (priv->child,
+                                  CLUTTER_Z_AXIS,
+                                  priv->angle,
+                                  width / 2.f - padding.left,
+                                  height / 2.f - padding.top - toolbar_height,
+                                  0);
     }
 
   if (priv->resize_grip)
@@ -550,10 +549,6 @@ mx_window_constructed (GObject *object)
   g_object_add_weak_pointer (G_OBJECT (priv->resize_grip),
                              (gpointer *)&priv->resize_grip);
 
-  g_signal_connect (priv->stage, "paint",
-                    G_CALLBACK (mx_window_pre_paint_cb), object);
-  g_signal_connect (priv->stage, "pick",
-                    G_CALLBACK (mx_window_pre_pick_cb), object);
   g_signal_connect_after (priv->stage, "paint",
                           G_CALLBACK (mx_window_post_paint_cb), object);
   g_signal_connect (priv->stage, "allocation-changed",
@@ -686,8 +681,7 @@ mx_window_reallocate (MxWindow *self)
   MxWindowPrivate *priv = self->priv;
 
   clutter_actor_get_allocation_box (priv->stage, &box);
-  g_signal_emit_by_name (priv->stage, "allocation-changed", &box, 0);
-  clutter_actor_queue_redraw (priv->stage);
+  mx_window_allocation_changed_cb (priv->stage, &box, 0, self);
 }
 
 static void
