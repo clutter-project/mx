@@ -721,7 +721,7 @@ mx_window_init (MxWindow *self)
   priv->orientation = MX_ORIENTATION_VERTICAL;
   priv->rotation_timeline = clutter_timeline_new (400);
   priv->rotation_alpha = clutter_alpha_new_full (priv->rotation_timeline,
-                                                 CLUTTER_LINEAR);
+                                                 CLUTTER_EASE_IN_OUT_QUAD);
 
   g_signal_connect (priv->rotation_timeline, "new-frame",
                     G_CALLBACK (mx_window_rotation_new_frame_cb), self);
