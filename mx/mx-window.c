@@ -1132,6 +1132,15 @@ mx_window_present (MxWindow *window)
     _mx_native_window_present (priv->native_window);
 }
 
+/**
+ * mx_window_set_orientation:
+ * @window: A #MxWindow
+ * @orientation: The #MxOrientation
+ * @reverse: %TRUE to rotate the orientation through 180 degrees
+ *
+ * Set the orientation of the window. The default orientation is vertical. The
+ * @reverse parameter lets you rotate the window through an extra 180 degrees.
+ */
 void
 mx_window_set_orientation (MxWindow      *window,
                            MxOrientation  orientation,
@@ -1193,6 +1202,16 @@ mx_window_set_orientation (MxWindow      *window,
     g_object_notify (G_OBJECT (window), "orientation-reversed");
 }
 
+/**
+ * mx_window_get_orientation:
+ * @window: A #MxWindow
+ * @orientation: (out): Pointer to an #MxOrientation, or %NULL
+ * @reverse: (out): Pointer to a #gboolean, or %NULL
+ *
+ * Retrieve the orientation of the window. The default orientation is
+ * vertical. If @reverse is %TRUE, the orientation of the window is
+ * rotated through an extra 180 degrees.
+ */
 void
 mx_window_get_orientation (MxWindow      *window,
                            MxOrientation *orientation,

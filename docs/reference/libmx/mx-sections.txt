@@ -298,6 +298,8 @@ mx_window_set_icon_name
 mx_window_set_icon_from_cogl_texture
 mx_window_get_icon_name
 mx_window_get_clutter_stage
+mx_window_get_orientation
+mx_window_set_orientation
 <SUBSECTION Standard>
 MX_WINDOW
 MX_IS_WINDOW
