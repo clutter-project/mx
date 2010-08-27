@@ -64,12 +64,35 @@ resizable_cb (MxToggle     *toggle,
   clutter_stage_set_user_resizable (stage, mx_toggle_get_active (toggle));
 }
 
+static void
+rotate_clicked_cb (ClutterActor *button,
+                   MxWindow     *window)
+{
+  MxOrientation orientation;
+  gboolean reversed;
+
+  mx_window_get_orientation (window, &orientation, &reversed);
+  switch (orientation)
+    {
+    case MX_ORIENTATION_HORIZONTAL:
+      orientation = MX_ORIENTATION_VERTICAL;
+      reversed = !reversed;
+      break;
+
+    case MX_ORIENTATION_VERTICAL:
+      orientation = MX_ORIENTATION_HORIZONTAL;
+      break;
+    }
+
+  mx_window_set_orientation (window, orientation, reversed);
+}
+
 int
 main (int argc, char **argv)
 {
   MxWindow *window;
   MxApplication *app;
-  ClutterActor *stage, *toggle, *label, *table;
+  ClutterActor *stage, *toggle, *label, *table, *button, *icon;
 
   app = mx_application_new (&argc, &argv, "Test PathBar", 0);
 
@@ -164,6 +187,17 @@ main (int argc, char **argv)
                                       "y-fill", FALSE,
                                       "x-fill", FALSE,
                                       NULL);
+
+  icon = mx_icon_new ();
+  mx_icon_set_icon_name (MX_ICON (icon), "object-rotate-right");
+  mx_icon_set_icon_size (MX_ICON (icon), 16);
+  button = mx_button_new ();
+  mx_bin_set_child (MX_BIN (button), icon);
+  g_signal_connect (button, "clicked", G_CALLBACK (rotate_clicked_cb), window);
+  clutter_container_add_actor (
+    CLUTTER_CONTAINER (mx_window_get_toolbar (window)), button);
+  mx_bin_set_alignment (MX_BIN (mx_window_get_toolbar (window)),
+                        MX_ALIGN_END, MX_ALIGN_MIDDLE);
 
   clutter_actor_show (stage);
 

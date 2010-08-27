@@ -121,6 +121,13 @@ void       mx_window_set_window_position (MxWindow *window, gint  x, gint  y);
 
 void       mx_window_present (MxWindow *window);
 
+void       mx_window_set_orientation (MxWindow      *window,
+                                      MxOrientation  orientation,
+                                      gboolean       reverse);
+void       mx_window_get_orientation (MxWindow      *window,
+                                      MxOrientation *orientation,
+                                      gboolean      *reverse);
+
 G_END_DECLS
 
 #endif /* _MX_WINDOW_H */

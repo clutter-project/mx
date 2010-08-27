@@ -47,6 +47,8 @@ struct _MxWindowPrivate
 
   guint has_toolbar   : 1;
   guint small_screen  : 1;
+  guint reversed      : 1;
+  guint rotate_size   : 1;
 
   gchar      *icon_name;
   CoglHandle  icon_texture;
@@ -55,6 +57,13 @@ struct _MxWindowPrivate
   ClutterActor *toolbar;
   ClutterActor *child;
   ClutterActor *resize_grip;
+
+  MxOrientation    orientation;
+  ClutterTimeline *rotation_timeline;
+  ClutterAlpha    *rotation_alpha;
+  gfloat           start_angle;
+  gfloat           end_angle;
+  gfloat           angle;
 };
 
 #define WINDOW_PRIVATE(o) \
@@ -71,7 +80,9 @@ enum
   PROP_ICON_NAME,
   PROP_ICON_COGL_TEXTURE,
   PROP_CLUTTER_STAGE,
-  PROP_CHILD
+  PROP_CHILD,
+  PROP_ORIENTATION,
+  PROP_ORIENTATION_REVERSED
 };
 
 enum
@@ -121,6 +132,14 @@ mx_window_get_property (GObject    *object,
       g_value_set_object (value, priv->child);
       break;
 
+    case PROP_ORIENTATION:
+      g_value_set_enum (value, priv->orientation);
+      break;
+
+    case PROP_ORIENTATION_REVERSED:
+      g_value_set_boolean (value, priv->reversed);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -162,6 +181,18 @@ mx_window_set_property (GObject      *object,
 
     case PROP_CHILD:
       mx_window_set_child (window, (ClutterActor *)g_value_get_object (value));
+      break;
+
+    case PROP_ORIENTATION:
+      mx_window_set_orientation (window,
+                                 g_value_get_enum (value),
+                                 window->priv->reversed);
+      break;
+
+    case PROP_ORIENTATION_REVERSED:
+      mx_window_set_orientation (window,
+                                 window->priv->orientation,
+                                 g_value_get_boolean (value));
       break;
 
     default:
@@ -212,6 +243,18 @@ mx_window_dispose (GObject *object)
       priv->native_window = NULL;
     }
 
+  if (priv->rotation_alpha)
+    {
+      g_object_unref (priv->rotation_alpha);
+      priv->rotation_alpha = NULL;
+    }
+
+  if (priv->rotation_timeline)
+    {
+      g_object_unref (priv->rotation_timeline);
+      priv->rotation_timeline = NULL;
+    }
+
   G_OBJECT_CLASS (mx_window_parent_class)->dispose (object);
 }
 
@@ -223,6 +266,71 @@ mx_window_finalize (GObject *object)
   g_free (priv->icon_name);
 
   G_OBJECT_CLASS (mx_window_parent_class)->finalize (object);
+}
+
+static void
+mx_window_get_size (MxWindow *window, gfloat *width, gfloat *height)
+{
+  gfloat stage_width, stage_height, scale, angle;
+  MxWindowPrivate *priv = window->priv;
+
+  clutter_actor_get_size (priv->stage, &stage_width, &stage_height);
+
+  /* Normalise the angle */
+  angle = priv->angle;
+  while (angle < 0)
+    angle += 360.f;
+  while (angle >= 360.f)
+    angle -= 360.f;
+
+  /* Interpolate between width and height depending on rotation */
+  if (!clutter_timeline_is_playing (priv->rotation_timeline) ||
+      priv->rotate_size)
+    {
+      if (angle <= 90.f)
+        scale = angle / 90.f;
+      else if (angle <= 180.f)
+        scale = 1.f - (angle - 90.f) / 90.f;
+      else if (angle <= 270.f)
+        scale = (angle - 180.f) / 90.f;
+      else
+        scale = 1.f - (angle - 270.f) / 90.f;
+    }
+  else
+    scale = 0.f;
+
+  if (width)
+    *width = (scale * stage_height) + ((1.f - scale) * stage_width);
+  if (height)
+    *height = (scale * stage_width) + ((1.f - scale) * stage_height);
+}
+
+static void
+mx_window_pre_paint_cb (ClutterActor *stage, MxWindow *window)
+{
+  gfloat width, height, stage_width, stage_height;
+  MxWindowPrivate *priv = window->priv;
+
+  clutter_actor_get_size (stage, &stage_width, &stage_height);
+  mx_window_get_size (window, &width, &height);
+
+  /* Make sure the rotated rectangle is centred */
+  cogl_translate ((stage_width - width) / 2.f,
+                  (stage_height - height) / 2.f,
+                  0);
+
+  /* Rotate it about the centre */
+  cogl_translate (width / 2.f, height / 2.f, 0);
+  cogl_rotate (priv->angle, 0, 0, 1);
+  cogl_translate (-width / 2.f, -height / 2.f, 0);
+}
+
+static void
+mx_window_pre_pick_cb (ClutterActor       *stage,
+                       const ClutterColor *color,
+                       MxWindow           *window)
+{
+  mx_window_pre_paint_cb (stage, window);
 }
 
 static void
@@ -241,7 +349,7 @@ mx_window_post_paint_cb (ClutterActor *actor, MxWindow *window)
 
   /* paint frame */
 
-  clutter_actor_get_size (actor, &width, &height);
+  mx_window_get_size (window, &width, &height);
   cogl_set_source_color4f (0.2, 0.2, 0.2, 1);
 
   cogl_rectangle (0, 0, width, 1);
@@ -274,9 +382,9 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
   priv = window->priv;
 
   from_toolbar = (actor == priv->toolbar);
-  actor = clutter_actor_get_stage (actor);
+  actor = priv->stage;
 
-  clutter_actor_get_size (actor, &stage_width, &stage_height);
+  mx_window_get_size (window, &stage_width, &stage_height);
 
   if (!priv->has_toolbar || priv->small_screen ||
       clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
@@ -442,6 +550,10 @@ mx_window_constructed (GObject *object)
   g_object_add_weak_pointer (G_OBJECT (priv->resize_grip),
                              (gpointer *)&priv->resize_grip);
 
+  g_signal_connect (priv->stage, "paint",
+                    G_CALLBACK (mx_window_pre_paint_cb), object);
+  g_signal_connect (priv->stage, "pick",
+                    G_CALLBACK (mx_window_pre_pick_cb), object);
   g_signal_connect_after (priv->stage, "paint",
                           G_CALLBACK (mx_window_post_paint_cb), object);
   g_signal_connect (priv->stage, "allocation-changed",
@@ -533,6 +645,23 @@ mx_window_class_init (MxWindowClass *klass)
                                MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_CHILD, pspec);
 
+  pspec = g_param_spec_enum ("orientation",
+                             "Orientation",
+                             "The window's orientation.",
+                             MX_TYPE_ORIENTATION,
+                             MX_ORIENTATION_VERTICAL,
+                             MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_ORIENTATION, pspec);
+
+  pspec = g_param_spec_boolean ("orientation-reversed",
+                                "Orientation reversed",
+                                "Whether the window's orientation should be "
+                                "rotated through 180 degrees.",
+                                FALSE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_ORIENTATION_REVERSED,
+                                   pspec);
+
   /**
    * MxWindow::destroy:
    * @window: the object that received the signal
@@ -551,9 +680,59 @@ mx_window_class_init (MxWindowClass *klass)
 }
 
 static void
+mx_window_reallocate (MxWindow *self)
+{
+  ClutterActorBox box;
+  MxWindowPrivate *priv = self->priv;
+
+  clutter_actor_get_allocation_box (priv->stage, &box);
+  g_signal_emit_by_name (priv->stage, "allocation-changed", &box, 0);
+  clutter_actor_queue_redraw (priv->stage);
+}
+
+static void
+mx_window_rotation_new_frame_cb (ClutterTimeline *timeline,
+                                 gint             msecs,
+                                 MxWindow        *self)
+{
+  MxWindowPrivate *priv = self->priv;
+  gfloat alpha = clutter_alpha_get_alpha (priv->rotation_alpha);
+
+  priv->angle = (alpha * priv->end_angle) + ((1.f - alpha) * priv->start_angle);
+  mx_window_reallocate (self);
+}
+
+static void
+mx_window_rotation_completed_cb (ClutterTimeline *timeline,
+                                 MxWindow        *self)
+{
+  MxWindowPrivate *priv = self->priv;
+
+  priv->angle = priv->end_angle;
+  while (priv->angle >= 360.f)
+    priv->angle -= 360.f;
+  while (priv->angle < 0.f)
+    priv->angle += 360.f;
+
+  priv->rotate_size = FALSE;
+
+  mx_window_reallocate (self);
+}
+
+static void
 mx_window_init (MxWindow *self)
 {
-  self->priv = WINDOW_PRIVATE (self);
+  MxWindowPrivate *priv = self->priv = WINDOW_PRIVATE (self);
+
+  priv->orientation = MX_ORIENTATION_VERTICAL;
+  priv->rotation_timeline = clutter_timeline_new (400);
+  priv->rotation_alpha = clutter_alpha_new_full (priv->rotation_timeline,
+                                                 CLUTTER_LINEAR);
+
+  g_signal_connect (priv->rotation_timeline, "new-frame",
+                    G_CALLBACK (mx_window_rotation_new_frame_cb), self);
+  g_signal_connect (priv->rotation_timeline, "completed",
+                    G_CALLBACK (mx_window_rotation_completed_cb), self);
 }
 
 CoglHandle
@@ -656,8 +835,6 @@ mx_window_set_child (MxWindow     *window,
       priv->child = actor;
       clutter_container_add_actor (CLUTTER_CONTAINER (priv->stage),
                                    priv->child);
-      /*if (CLUTTER_ACTOR_IS_MAPPED (priv->stage))
-        mx_window_pre_paint_cb (priv->stage, window);*/
     }
 
   g_object_notify (G_OBJECT (window), "child");
@@ -953,4 +1130,78 @@ mx_window_present (MxWindow *window)
   priv = window->priv;
   if (priv->native_window)
     _mx_native_window_present (priv->native_window);
+}
+
+void
+mx_window_set_orientation (MxWindow      *window,
+                           MxOrientation  orientation,
+                           gboolean       reverse)
+{
+  guint msecs;
+  MxWindowPrivate *priv;
+  gboolean notify_orientation, notify_reverse;
+
+  g_return_if_fail (MX_IS_WINDOW (window));
+
+  priv = window->priv;
+  if ((priv->orientation == orientation) &&
+      (priv->reversed == reverse))
+    return;
+
+  if (priv->orientation != orientation)
+    {
+      priv->orientation = orientation;
+      priv->rotate_size = TRUE;
+      notify_orientation = TRUE;
+    }
+  else
+    notify_orientation = FALSE;
+
+  if (priv->reversed != reverse)
+    {
+      priv->reversed = reverse;
+      notify_reverse = TRUE;
+    }
+  else
+    notify_reverse = FALSE;
+
+  priv->start_angle = priv->angle;
+  switch (orientation)
+    {
+    case MX_ORIENTATION_VERTICAL :
+      priv->end_angle = reverse ? 180.f : 0.f;
+      break;
+
+    case MX_ORIENTATION_HORIZONTAL :
+      priv->end_angle = reverse ? 270.f : 90.f;
+      break;
+    }
+
+  if (priv->end_angle - priv->start_angle > 180.f)
+    priv->end_angle -= 360.f;
+  else if (priv->end_angle - priv->start_angle < -180.f)
+    priv->end_angle += 360.f;
+
+  msecs = (guint)((ABS (priv->end_angle - priv->start_angle) / 90.f) * 400.f);
+  clutter_timeline_rewind (priv->rotation_timeline);
+  clutter_timeline_set_duration (priv->rotation_timeline, msecs);
+  clutter_timeline_start (priv->rotation_timeline);
+
+  if (notify_orientation)
+    g_object_notify (G_OBJECT (window), "orientation");
+  if (notify_reverse)
+    g_object_notify (G_OBJECT (window), "orientation-reversed");
+}
+
+void
+mx_window_get_orientation (MxWindow      *window,
+                           MxOrientation *orientation,
+                           gboolean      *reverse)
+{
+  g_return_if_fail (MX_IS_WINDOW (window));
+
+  if (orientation)
+    *orientation = window->priv->orientation;
+  if (reverse)
+    *reverse = window->priv->reversed;
 }
