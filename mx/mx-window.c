@@ -297,7 +297,7 @@ mx_window_get_size (MxWindow *window, gfloat *width, gfloat *height)
         scale = 1.f - (angle - 270.f) / 90.f;
     }
   else
-    scale = 0.f;
+    scale = (priv->orientation == MX_ORIENTATION_VERTICAL) ? 0 : 1;
 
   if (width)
     *width = (scale * stage_height) + ((1.f - scale) * stage_width);
