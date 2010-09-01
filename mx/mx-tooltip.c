@@ -605,7 +605,12 @@ mx_tooltip_update_position (MxTooltip *tooltip)
         tooltip_x = (int)(stage_w) - tooltip_w;
 
       /* make sure the tooltip is not off screen vertically */
-      if (tooltip_y + tooltip_h > stage_h)
+      if (reversed && (tooltip_y < 0))
+        {
+          priv->actor_below = TRUE;
+          tooltip_y = tip_area->y + tip_area->height;
+        }
+      else if (!reversed && (tooltip_y + tooltip_h > stage_h))
         {
           priv->actor_below = TRUE;
 
