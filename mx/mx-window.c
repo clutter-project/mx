@@ -83,7 +83,7 @@ enum
   PROP_CHILD,
   PROP_ORIENTATION,
   PROP_ORIENTATION_REVERSED,
-  PROP_ORIENTATION_PROGRESS,
+  PROP_ORIENTATION_TIMELINE,
   PROP_ORIENTATION_ANGLE
 };
 
@@ -142,12 +142,8 @@ mx_window_get_property (GObject    *object,
       g_value_set_boolean (value, priv->reversed);
       break;
 
-    case PROP_ORIENTATION_PROGRESS:
-      if (clutter_timeline_is_playing (priv->rotation_timeline))
-        g_value_set_double (value,
-                            clutter_alpha_get_alpha (priv->rotation_alpha));
-      else
-        g_value_set_double (value, 1.0);
+    case PROP_ORIENTATION_TIMELINE:
+      g_value_set_object (value, priv->rotation_timeline);
       break;
 
     case PROP_ORIENTATION_ANGLE:
@@ -671,13 +667,13 @@ mx_window_class_init (MxWindowClass *klass)
   g_object_class_install_property (object_class, PROP_ORIENTATION_REVERSED,
                                    pspec);
 
-  pspec = g_param_spec_double ("orientation-progress",
-                               "Orientation progress",
-                               "The progress of the orientation transition "
-                               "animation.",
-                               0.0, 1.0, 1.0,
+  pspec = g_param_spec_object ("orientation-timeline",
+                               "Orientation timeline",
+                               "The timeline used for the orientation "
+                               "transition animation.",
+                               CLUTTER_TYPE_TIMELINE,
                                MX_PARAM_READABLE);
-  g_object_class_install_property (object_class, PROP_ORIENTATION_PROGRESS,
+  g_object_class_install_property (object_class, PROP_ORIENTATION_TIMELINE,
                                    pspec);
 
   pspec = g_param_spec_float ("orientation-angle",
@@ -717,15 +713,6 @@ mx_window_reallocate (MxWindow *self)
 }
 
 static void
-mx_window_notify_orientation_progress (MxWindow *self)
-{
-  g_object_ref (self);
-  g_object_notify (G_OBJECT (self), "orientation-angle");
-  g_object_notify (G_OBJECT (self), "orientation-progress");
-  g_object_unref (self);
-}
-
-static void
 mx_window_rotation_new_frame_cb (ClutterTimeline *timeline,
                                  gint             msecs,
                                  MxWindow        *self)
@@ -735,7 +722,7 @@ mx_window_rotation_new_frame_cb (ClutterTimeline *timeline,
 
   priv->angle = (alpha * priv->end_angle) + ((1.f - alpha) * priv->start_angle);
   mx_window_reallocate (self);
-  mx_window_notify_orientation_progress (self);
+  g_object_notify (G_OBJECT (self), "orientation-angle");
 }
 
 static void
@@ -753,7 +740,7 @@ mx_window_rotation_completed_cb (ClutterTimeline *timeline,
   priv->rotate_size = FALSE;
 
   mx_window_reallocate (self);
-  mx_window_notify_orientation_progress (self);
+  g_object_notify (G_OBJECT (self), "orientation-angle");
 }
 
 static void
