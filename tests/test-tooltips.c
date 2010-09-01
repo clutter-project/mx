@@ -42,17 +42,17 @@ tooltips_main (ClutterContainer *stage)
   clutter_container_add_actor (CLUTTER_CONTAINER (bin), button);
 
 
-  button = mx_button_new_with_label ("Testing Long Text");
-  mx_widget_set_tooltip_text (MX_WIDGET (button), "Here is some really"
+  button = mx_button_new_with_label ("Testing Long Text on left");
+  mx_widget_set_tooltip_text (MX_WIDGET (button), "Here is some really really"
                               " long text to test the handling in MxTooltip");
   clutter_container_add_actor (stage, button);
-  clutter_actor_set_position (button, 50, 300);
+  clutter_actor_set_position (button, 0, 300);
 
-  button = mx_button_new_with_label ("Testing Long Text");
-  mx_widget_set_tooltip_text (MX_WIDGET (button), "Here is some really"
+  button = mx_button_new_with_label ("Testing Long Text on right");
+  mx_widget_set_tooltip_text (MX_WIDGET (button), "Here is some really really"
                               " long text to test the handling in MxTooltip");
   clutter_container_add_actor (stage, button);
-  clutter_actor_set_position (button, 360, 300);
+  clutter_actor_set_position (button, 460, 300);
 
   button = mx_button_new_with_label ("Crazy");
   mx_widget_set_tooltip_text (MX_WIDGET (button),
@@ -66,5 +66,10 @@ tooltips_main (ClutterContainer *stage)
   button = mx_button_new_with_label ("Bottom");
   mx_widget_set_tooltip_text (MX_WIDGET (button), "Hello Hello Hello");
   clutter_container_add_actor (stage, button);
-  clutter_actor_set_position (button, 250, 430);
+  clutter_actor_set_position (button, 250, 570);
+
+  button = mx_button_new_with_label ("Bottom");
+  mx_widget_set_tooltip_text (MX_WIDGET (button), "Hello Hello Hello");
+  clutter_container_add_actor (stage, button);
+  clutter_actor_set_position (button, 250, 700);
 }
