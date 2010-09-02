@@ -151,6 +151,23 @@ typedef enum /*< prefix=MX_ORIENTATION >*/
   MX_ORIENTATION_VERTICAL
 } MxOrientation;
 
+/**
+ * MxWindowRotation:
+ * @MX_WINDOW_ROTATION_0: Zero degrees of rotation
+ * @MX_WINDOW_ROTATION_90: 90 degrees of rotation
+ * @MX_WINDOW_ROTATION_180: 180 degrees of rotation
+ * @MX_WINDOW_ROTATION_270: 270 degrees of rotation
+ *
+ * Defines the clock-wise rotation angle of a window.
+ */
+typedef enum /*< prefix=MX_WINDOW_ROTATION >*/
+{
+  MX_WINDOW_ROTATION_0,
+  MX_WINDOW_ROTATION_90,
+  MX_WINDOW_ROTATION_180,
+  MX_WINDOW_ROTATION_270
+} MxWindowRotation;
+
 G_END_DECLS
 
 #endif /* __MX_TYPES_H__ */

@@ -269,8 +269,6 @@ mx_widget_allocate (ClutterActor          *actor,
 {
   MxWidgetPrivate *priv = MX_WIDGET (actor)->priv;
   ClutterActorClass *klass;
-  ClutterGeometry area;
-  ClutterVertex in_v, out_v;
 
   klass = CLUTTER_ACTOR_CLASS (mx_widget_parent_class);
   klass->allocate (actor, box, flags);
@@ -278,16 +276,31 @@ mx_widget_allocate (ClutterActor          *actor,
   /* update tooltip position */
   if (priv->tooltip)
     {
-      in_v.x = in_v.y = in_v.z = 0;
-      clutter_actor_apply_transform_to_point (actor, &in_v, &out_v);
-      area.x = out_v.x;
-      area.y = out_v.y;
+      ClutterVertex verts[4];
+      ClutterGeometry area;
+      gfloat x, y, x2, y2;
+      gint i;
 
-      in_v.x = box->x2 - box->x1;
-      in_v.y = box->y2 - box->y1;
-      clutter_actor_apply_transform_to_point (actor, &in_v, &out_v);
-      area.width = out_v.x - area.x;
-      area.height = out_v.y - area.y;
+      clutter_actor_get_abs_allocation_vertices (actor, verts);
+
+      x = y = G_MAXFLOAT;
+      x2 = y2 = -G_MAXFLOAT;
+      for (i = 0; i < G_N_ELEMENTS (verts); i++)
+        {
+          if (verts[i].x < x)
+            x = verts[i].x;
+          if (verts[i].x > x2)
+            x2 = verts[i].x;
+          if (verts[i].y < y)
+            y = verts[i].y;
+          if (verts[i].y > y2)
+            y2 = verts[i].y;
+        }
+
+      area.x = x;
+      area.y = y;
+      area.width = x2 - x;
+      area.height = y2 - y;
 
       mx_tooltip_set_tip_area (priv->tooltip, &area);
     }
@@ -1326,22 +1339,37 @@ mx_widget_get_tooltip_text (MxWidget *widget)
 void
 mx_widget_show_tooltip (MxWidget *widget)
 {
-  gfloat x, y, width, height;
+  gint i;
+  gfloat x, y, x2, y2;
   ClutterGeometry area;
+  ClutterVertex verts[4];
 
   g_return_if_fail (MX_IS_WIDGET (widget));
 
   /* XXX not necceary, but first allocate transform is wrong */
 
-  clutter_actor_get_transformed_position ((ClutterActor*) widget,
-                                          &x, &y);
+  /* Work out the bounding box */
+  clutter_actor_get_abs_allocation_vertices ((ClutterActor*) widget,
+                                             verts);
 
-  clutter_actor_get_size ((ClutterActor*) widget, &width, &height);
+  x = y = G_MAXFLOAT;
+  x2 = y2 = -G_MAXFLOAT;
+  for (i = 0; i < G_N_ELEMENTS (verts); i++)
+    {
+      if (verts[i].x < x)
+        x = verts[i].x;
+      if (verts[i].x > x2)
+        x2 = verts[i].x;
+      if (verts[i].y < y)
+        y = verts[i].y;
+      if (verts[i].y > y2)
+        y2 = verts[i].y;
+    }
 
   area.x = x;
   area.y = y;
-  area.width = width;
-  area.height = height;
+  area.width = x2 - x;
+  area.height = y2 - y;
 
 
   if (widget->priv->tooltip)

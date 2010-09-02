@@ -460,13 +460,16 @@ mx_combo_box_allocate (ClutterActor          *actor,
   stage = clutter_actor_get_stage (actor);
   if (stage != NULL)
     {
-      gfloat trans_x, trans_y, stage_h, combo_h = box->y2 - box->y1;
+      ClutterVertex point = { 0, };
+      gfloat width, height, combo_h = box->y2 - box->y1;
 
-      stage_h = clutter_actor_get_height (stage);
-      clutter_actor_get_transformed_position (actor, &trans_x, &trans_y);
+      clutter_actor_get_size (stage, &width, &height);
+      point.y = combo_h + nat_menu_h;
+      clutter_actor_apply_transform_to_point (actor, &point, &point);
 
-      if ( ((trans_y + nat_menu_h + combo_h) > stage_h) &&
-           (stage_h - combo_h) > 0 )
+      /* If the menu would appear off the stage, flip it around. */
+      if ((point.x < 0) || (point.x >= width) ||
+          (point.y < 0) || (point.y >= height))
         {
           childbox.y1 = -nat_menu_h;
         }

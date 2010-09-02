@@ -47,6 +47,7 @@ struct _MxWindowPrivate
 
   guint has_toolbar   : 1;
   guint small_screen  : 1;
+  guint rotate_size   : 1;
 
   gchar      *icon_name;
   CoglHandle  icon_texture;
@@ -55,6 +56,13 @@ struct _MxWindowPrivate
   ClutterActor *toolbar;
   ClutterActor *child;
   ClutterActor *resize_grip;
+
+  MxWindowRotation  rotation;
+  ClutterTimeline  *rotation_timeline;
+  ClutterAlpha     *rotation_alpha;
+  gfloat            start_angle;
+  gfloat            end_angle;
+  gfloat            angle;
 };
 
 #define WINDOW_PRIVATE(o) \
@@ -71,7 +79,10 @@ enum
   PROP_ICON_NAME,
   PROP_ICON_COGL_TEXTURE,
   PROP_CLUTTER_STAGE,
-  PROP_CHILD
+  PROP_CHILD,
+  PROP_WINDOW_ROTATION,
+  PROP_WINDOW_ROTATION_TIMELINE,
+  PROP_WINDOW_ROTATION_ANGLE
 };
 
 enum
@@ -121,6 +132,18 @@ mx_window_get_property (GObject    *object,
       g_value_set_object (value, priv->child);
       break;
 
+    case PROP_WINDOW_ROTATION:
+      g_value_set_enum (value, priv->rotation);
+      break;
+
+    case PROP_WINDOW_ROTATION_TIMELINE:
+      g_value_set_object (value, priv->rotation_timeline);
+      break;
+
+    case PROP_WINDOW_ROTATION_ANGLE:
+      g_value_set_float (value, priv->angle);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -162,6 +185,10 @@ mx_window_set_property (GObject      *object,
 
     case PROP_CHILD:
       mx_window_set_child (window, (ClutterActor *)g_value_get_object (value));
+      break;
+
+    case PROP_WINDOW_ROTATION:
+      mx_window_set_window_rotation (window, g_value_get_enum (value));
       break;
 
     default:
@@ -212,6 +239,18 @@ mx_window_dispose (GObject *object)
       priv->native_window = NULL;
     }
 
+  if (priv->rotation_alpha)
+    {
+      g_object_unref (priv->rotation_alpha);
+      priv->rotation_alpha = NULL;
+    }
+
+  if (priv->rotation_timeline)
+    {
+      g_object_unref (priv->rotation_timeline);
+      priv->rotation_timeline = NULL;
+    }
+
   G_OBJECT_CLASS (mx_window_parent_class)->dispose (object);
 }
 
@@ -226,9 +265,49 @@ mx_window_finalize (GObject *object)
 }
 
 static void
+mx_window_get_size (MxWindow *window, gfloat *width, gfloat *height)
+{
+  gfloat stage_width, stage_height, scale, angle;
+  MxWindowPrivate *priv = window->priv;
+
+  clutter_actor_get_size (priv->stage, &stage_width, &stage_height);
+
+  /* Normalise the angle */
+  angle = priv->angle;
+  while (angle < 0)
+    angle += 360.f;
+  while (angle >= 360.f)
+    angle -= 360.f;
+
+  /* Interpolate between width and height depending on rotation */
+  if (!clutter_timeline_is_playing (priv->rotation_timeline) ||
+      priv->rotate_size)
+    {
+      if (angle <= 90.f)
+        scale = angle / 90.f;
+      else if (angle <= 180.f)
+        scale = 1.f - (angle - 90.f) / 90.f;
+      else if (angle <= 270.f)
+        scale = (angle - 180.f) / 90.f;
+      else
+        scale = 1.f - (angle - 270.f) / 90.f;
+    }
+  else if ((priv->rotation == MX_WINDOW_ROTATION_0) ||
+           (priv->rotation == MX_WINDOW_ROTATION_180))
+    scale = 0;
+  else
+    scale = 1;
+
+  if (width)
+    *width = (scale * stage_height) + ((1.f - scale) * stage_width);
+  if (height)
+    *height = (scale * stage_width) + ((1.f - scale) * stage_height);
+}
+
+static void
 mx_window_post_paint_cb (ClutterActor *actor, MxWindow *window)
 {
-  gfloat width, height;
+  gfloat width, height, stage_width, stage_height;
 
   MxWindowPrivate *priv = window->priv;
 
@@ -239,9 +318,19 @@ mx_window_post_paint_cb (ClutterActor *actor, MxWindow *window)
       clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
     return;
 
-  /* paint frame */
+  mx_window_get_size (window, &width, &height);
+  clutter_actor_get_size (actor, &stage_width, &stage_height);
 
-  clutter_actor_get_size (actor, &width, &height);
+  /* Adjust for rotation */
+  cogl_translate ((stage_width - width) / 2.f,
+                  (stage_height - height) / 2.f,
+                  0);
+
+  cogl_translate (width / 2.f, height / 2.f, 0);
+  cogl_rotate (priv->angle, 0, 0, 1);
+  cogl_translate (-width / 2.f, -height / 2.f, 0);
+
+  /* paint frame */
   cogl_set_source_color4f (0.2, 0.2, 0.2, 1);
 
   cogl_rectangle (0, 0, width, 1);
@@ -260,7 +349,7 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
   MxPadding padding;
   gboolean from_toolbar;
   MxWindowPrivate *priv;
-  gfloat width, height, toolbar_height, stage_width, stage_height;
+  gfloat x, y, width, height, toolbar_height, stage_width, stage_height;
 
   /* Note, ideally this would happen just before allocate, but there's
    * no signal we can connect to for that without overriding an actor.
@@ -274,9 +363,13 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
   priv = window->priv;
 
   from_toolbar = (actor == priv->toolbar);
-  actor = clutter_actor_get_stage (actor);
+  actor = priv->stage;
 
+  mx_window_get_size (window, &width, &height);
   clutter_actor_get_size (actor, &stage_width, &stage_height);
+
+  x = (stage_width - width) / 2.f;
+  y = (stage_height - height) / 2.f;
 
   if (!priv->has_toolbar || priv->small_screen ||
       clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
@@ -287,16 +380,23 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
   if (priv->has_toolbar && priv->toolbar)
     {
       clutter_actor_get_preferred_height (priv->toolbar,
-                                          stage_width - padding.left -
+                                          width - padding.left -
                                           padding.right,
                                           NULL, &toolbar_height);
 
       if (!from_toolbar)
         {
-          clutter_actor_set_position (priv->toolbar, padding.left, padding.top);
+          clutter_actor_set_position (priv->toolbar,
+                                      padding.left + x,
+                                      padding.top + y);
+          clutter_actor_set_rotation (priv->toolbar,
+                                      CLUTTER_Z_AXIS,
+                                      priv->angle,
+                                      width / 2.f - padding.left,
+                                      height / 2.f - padding.top, 0);
           g_object_set (G_OBJECT (priv->toolbar),
                         "natural-width",
-                        stage_width - padding.left - padding.right,
+                        width - padding.left - padding.right,
                         NULL);
         }
     }
@@ -308,12 +408,18 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
   if (priv->child)
     {
       g_object_set (G_OBJECT (priv->child),
-                    "natural-width", stage_width - padding.left - padding.right,
-                    "natural-height", stage_height - toolbar_height -
+                    "natural-width", width - padding.left - padding.right,
+                    "natural-height", height - toolbar_height -
                                       padding.top - padding.bottom,
-                    "x", padding.left,
-                    "y", toolbar_height + padding.top,
+                    "x", padding.left + x,
+                    "y", toolbar_height + padding.top + y,
                     NULL);
+      clutter_actor_set_rotation (priv->child,
+                                  CLUTTER_Z_AXIS,
+                                  priv->angle,
+                                  width / 2.f - padding.left,
+                                  height / 2.f - padding.top - toolbar_height,
+                                  0);
     }
 
   if (priv->resize_grip)
@@ -533,6 +639,32 @@ mx_window_class_init (MxWindowClass *klass)
                                MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_CHILD, pspec);
 
+  pspec = g_param_spec_enum ("window-rotation",
+                             "Window rotation",
+                             "The window's rotation.",
+                             MX_TYPE_WINDOW_ROTATION,
+                             MX_WINDOW_ROTATION_0,
+                             MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_WINDOW_ROTATION, pspec);
+
+  pspec = g_param_spec_object ("window-rotation-timeline",
+                               "Window rotation timeline",
+                               "The timeline used for the window rotation "
+                               "transition animation.",
+                               CLUTTER_TYPE_TIMELINE,
+                               MX_PARAM_READABLE);
+  g_object_class_install_property (object_class, PROP_WINDOW_ROTATION_TIMELINE,
+                                   pspec);
+
+  pspec = g_param_spec_float ("window-rotation-angle",
+                              "Window rotation angle",
+                              "The current angle of rotation about the z-axis "
+                              "for the window.",
+                              0.f, 360.f, 0.f,
+                              MX_PARAM_READABLE);
+  g_object_class_install_property (object_class, PROP_WINDOW_ROTATION_ANGLE,
+                                   pspec);
+
   /**
    * MxWindow::destroy:
    * @window: the object that received the signal
@@ -551,9 +683,59 @@ mx_window_class_init (MxWindowClass *klass)
 }
 
 static void
+mx_window_reallocate (MxWindow *self)
+{
+  ClutterActorBox box;
+  MxWindowPrivate *priv = self->priv;
+
+  clutter_actor_get_allocation_box (priv->stage, &box);
+  mx_window_allocation_changed_cb (priv->stage, &box, 0, self);
+}
+
+static void
+mx_window_rotation_new_frame_cb (ClutterTimeline *timeline,
+                                 gint             msecs,
+                                 MxWindow        *self)
+{
+  MxWindowPrivate *priv = self->priv;
+  gfloat alpha = clutter_alpha_get_alpha (priv->rotation_alpha);
+
+  priv->angle = (alpha * priv->end_angle) + ((1.f - alpha) * priv->start_angle);
+  mx_window_reallocate (self);
+  g_object_notify (G_OBJECT (self), "window-rotation-angle");
+}
+
+static void
+mx_window_rotation_completed_cb (ClutterTimeline *timeline,
+                                 MxWindow        *self)
+{
+  MxWindowPrivate *priv = self->priv;
+
+  priv->angle = priv->end_angle;
+  while (priv->angle >= 360.f)
+    priv->angle -= 360.f;
+  while (priv->angle < 0.f)
+    priv->angle += 360.f;
+
+  priv->rotate_size = FALSE;
+
+  mx_window_reallocate (self);
+  g_object_notify (G_OBJECT (self), "window-rotation-angle");
+}
+
+static void
 mx_window_init (MxWindow *self)
 {
-  self->priv = WINDOW_PRIVATE (self);
+  MxWindowPrivate *priv = self->priv = WINDOW_PRIVATE (self);
+
+  priv->rotation_timeline = clutter_timeline_new (400);
+  priv->rotation_alpha = clutter_alpha_new_full (priv->rotation_timeline,
+                                                 CLUTTER_EASE_IN_OUT_QUAD);
+
+  g_signal_connect (priv->rotation_timeline, "new-frame",
+                    G_CALLBACK (mx_window_rotation_new_frame_cb), self);
+  g_signal_connect (priv->rotation_timeline, "completed",
+                    G_CALLBACK (mx_window_rotation_completed_cb), self);
 }
 
 CoglHandle
@@ -656,8 +838,6 @@ mx_window_set_child (MxWindow     *window,
       priv->child = actor;
       clutter_container_add_actor (CLUTTER_CONTAINER (priv->stage),
                                    priv->child);
-      /*if (CLUTTER_ACTOR_IS_MAPPED (priv->stage))
-        mx_window_pre_paint_cb (priv->stage, window);*/
     }
 
   g_object_notify (G_OBJECT (window), "child");
@@ -953,4 +1133,82 @@ mx_window_present (MxWindow *window)
   priv = window->priv;
   if (priv->native_window)
     _mx_native_window_present (priv->native_window);
+}
+
+/**
+ * mx_window_set_window_rotation:
+ * @window: A #MxWindow
+ * @rotation: The #MxWindowRotation
+ *
+ * Set the rotation of the window.
+ */
+void
+mx_window_set_window_rotation (MxWindow         *window,
+                               MxWindowRotation  rotation)
+{
+  guint msecs;
+  MxWindowPrivate *priv;
+
+  g_return_if_fail (MX_IS_WINDOW (window));
+
+  priv = window->priv;
+  if (priv->rotation == rotation)
+    return;
+
+  if (((priv->rotation == MX_WINDOW_ROTATION_0) ||
+       (priv->rotation == MX_WINDOW_ROTATION_180)) &&
+      ((rotation == MX_WINDOW_ROTATION_90) ||
+       (rotation == MX_WINDOW_ROTATION_270)))
+    priv->rotate_size = TRUE;
+  else if (((priv->rotation == MX_WINDOW_ROTATION_90) ||
+            (priv->rotation == MX_WINDOW_ROTATION_270)) &&
+           ((rotation == MX_WINDOW_ROTATION_0) ||
+            (rotation == MX_WINDOW_ROTATION_180)))
+    priv->rotate_size = TRUE;
+
+  priv->rotation = rotation;
+
+  priv->start_angle = priv->angle;
+  switch (rotation)
+    {
+    case MX_WINDOW_ROTATION_0 :
+      priv->end_angle = 0.f;
+      break;
+    case MX_WINDOW_ROTATION_90 :
+      priv->end_angle = 90.f;
+      break;
+    case MX_WINDOW_ROTATION_180 :
+      priv->end_angle = 180.f;
+      break;
+    case MX_WINDOW_ROTATION_270 :
+      priv->end_angle = 270.f;
+      break;
+    }
+
+  if (priv->end_angle - priv->start_angle > 180.f)
+    priv->end_angle -= 360.f;
+  else if (priv->end_angle - priv->start_angle < -180.f)
+    priv->end_angle += 360.f;
+
+  msecs = (guint)((ABS (priv->end_angle - priv->start_angle) / 90.f) * 400.f);
+  clutter_timeline_rewind (priv->rotation_timeline);
+  clutter_timeline_set_duration (priv->rotation_timeline, msecs);
+  clutter_timeline_start (priv->rotation_timeline);
+
+  g_object_notify (G_OBJECT (window), "window-rotation");
+}
+
+/**
+ * mx_window_get_window_rotation:
+ * @window: A #MxWindow
+ *
+ * Retrieve the rotation of the window.
+ *
+ * Returns: An #MxWindowRotation
+ */
+MxWindowRotation
+mx_window_get_window_rotation (MxWindow *window)
+{
+  g_return_val_if_fail (MX_IS_WINDOW (window), MX_WINDOW_ROTATION_0);
+  return window->priv->rotation;
 }

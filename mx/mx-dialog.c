@@ -66,7 +66,8 @@ struct _MxDialogPrivate
   guint do_paint         : 1;
   guint child_has_focus  : 1;
 
-  guint transition_time;
+  guint  transition_time;
+  gfloat angle;
 
   ClutterActor    *blur;
   ClutterShader   *shader;
@@ -671,6 +672,7 @@ mx_dialog_paint (ClutterActor *actor)
 
   cogl_translate (width/2, height/2, 0);
   cogl_scale (priv->zoom, priv->zoom, 1.f);
+  cogl_rotate (priv->angle, 0, 0, 1);
   cogl_translate (-width/2, -height/2, 0);
 
   clutter_actor_paint (priv->background);
@@ -687,6 +689,7 @@ static void
 mx_dialog_pick (ClutterActor       *actor,
                 const ClutterColor *color)
 {
+  gfloat width, height;
   ClutterGeometry geom;
   MxDialogPrivate *priv = MX_DIALOG (actor)->priv;
 
@@ -700,6 +703,12 @@ mx_dialog_pick (ClutterActor       *actor,
                             color->alpha);
   cogl_rectangle (0, 0, geom.width, geom.height);
 
+  clutter_actor_get_size (actor, &width, &height);
+  cogl_translate (width/2, height/2, 0);
+  cogl_scale (priv->zoom, priv->zoom, 1.f);
+  cogl_rotate (priv->angle, 0, 0, 1);
+  cogl_translate (-width/2, -height/2, 0);
+
   /* Chain up */
   CLUTTER_ACTOR_CLASS (mx_dialog_parent_class)->pick (actor, color);
 
@@ -708,9 +717,21 @@ mx_dialog_pick (ClutterActor       *actor,
 }
 
 static void
+mx_dialog_angle_cb (GObject    *window,
+                    GParamSpec *pspec,
+                    MxDialog   *dialog)
+{
+  g_object_get (window, "window-rotation-angle", &dialog->priv->angle, NULL);
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (dialog));
+}
+
+static void
 mx_dialog_map (ClutterActor *actor)
 {
-  MxDialogPrivate *priv = MX_DIALOG (actor)->priv;
+  MxWindow *window;
+  ClutterActor *stage;
+  MxDialog *self = MX_DIALOG (actor);
+  MxDialogPrivate *priv = self->priv;
 
   CLUTTER_ACTOR_CLASS (mx_dialog_parent_class)->map (actor);
 
@@ -719,12 +740,35 @@ mx_dialog_map (ClutterActor *actor)
 
   clutter_actor_map (priv->background);
   clutter_actor_map (priv->button_box);
+
+  stage = clutter_actor_get_parent (actor);
+  if (CLUTTER_IS_STAGE (stage))
+    {
+      window = mx_window_get_for_stage (CLUTTER_STAGE (stage));
+      if (window)
+        {
+          g_signal_connect (window, "notify::window-rotation-angle",
+                            G_CALLBACK (mx_dialog_angle_cb), actor);
+          mx_dialog_angle_cb (G_OBJECT (window), NULL, self);
+        }
+    }
 }
 
 static void
 mx_dialog_unmap (ClutterActor *actor)
 {
+  MxWindow *window;
+  ClutterActor *stage;
   MxDialogPrivate *priv = MX_DIALOG (actor)->priv;
+
+  stage = clutter_actor_get_parent (actor);
+  if (CLUTTER_IS_STAGE (stage))
+    {
+      window = mx_window_get_for_stage (CLUTTER_STAGE (stage));
+      if (window)
+        g_signal_handlers_disconnect_by_func (window, mx_dialog_angle_cb,
+                                              actor);
+    }
 
   clutter_actor_unmap (priv->button_box);
   clutter_actor_unmap (priv->background);

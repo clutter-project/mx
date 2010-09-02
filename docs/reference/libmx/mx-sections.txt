@@ -298,6 +298,8 @@ mx_window_set_icon_name
 mx_window_set_icon_from_cogl_texture
 mx_window_get_icon_name
 mx_window_get_clutter_stage
+mx_window_get_window_rotation
+mx_window_set_window_rotation
 <SUBSECTION Standard>
 MX_WINDOW
 MX_IS_WINDOW
@@ -452,7 +454,7 @@ MxFramePrivate
 
 <SECTION>
 <FILE>mx-dialog</FILE>
-<TITLE>MxDialog<TITLE>
+<TITLE>MxDialog</TITLE>
 MxDialog
 mx_dialog_new
 mx_dialog_set_transient_parent
@@ -1216,6 +1218,7 @@ MxAlign
 MxFontWeight
 MxScrollPolicy
 MxOrientation
+MxWindowRotation
 <SUBSECTION Standard>
 mx_padding_get_type
 mx_border_image_get_type
