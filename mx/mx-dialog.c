@@ -721,7 +721,7 @@ mx_dialog_angle_cb (GObject    *window,
                     GParamSpec *pspec,
                     MxDialog   *dialog)
 {
-  g_object_get (window, "orientation-angle", &dialog->priv->angle, NULL);
+  g_object_get (window, "window-rotation-angle", &dialog->priv->angle, NULL);
   clutter_actor_queue_redraw (CLUTTER_ACTOR (dialog));
 }
 
@@ -747,7 +747,7 @@ mx_dialog_map (ClutterActor *actor)
       window = mx_window_get_for_stage (CLUTTER_STAGE (stage));
       if (window)
         {
-          g_signal_connect (window, "notify::orientation-angle",
+          g_signal_connect (window, "notify::window-rotation-angle",
                             G_CALLBACK (mx_dialog_angle_cb), actor);
           mx_dialog_angle_cb (G_OBJECT (window), NULL, self);
         }

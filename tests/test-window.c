@@ -68,23 +68,25 @@ static void
 rotate_clicked_cb (ClutterActor *button,
                    MxWindow     *window)
 {
-  MxOrientation orientation;
-  gboolean reversed;
+  MxWindowRotation rotation = mx_window_get_window_rotation (window);
 
-  mx_window_get_orientation (window, &orientation, &reversed);
-  switch (orientation)
+  switch (rotation)
     {
-    case MX_ORIENTATION_HORIZONTAL:
-      orientation = MX_ORIENTATION_VERTICAL;
-      reversed = !reversed;
+    case MX_WINDOW_ROTATION_0:
+      rotation = MX_WINDOW_ROTATION_90;
       break;
-
-    case MX_ORIENTATION_VERTICAL:
-      orientation = MX_ORIENTATION_HORIZONTAL;
+    case MX_WINDOW_ROTATION_90:
+      rotation = MX_WINDOW_ROTATION_180;
+      break;
+    case MX_WINDOW_ROTATION_180:
+      rotation = MX_WINDOW_ROTATION_270;
+      break;
+    case MX_WINDOW_ROTATION_270:
+      rotation = MX_WINDOW_ROTATION_0;
       break;
     }
 
-  mx_window_set_orientation (window, orientation, reversed);
+  mx_window_set_window_rotation (window, rotation);
 }
 
 int

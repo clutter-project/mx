@@ -528,9 +528,8 @@ mx_tooltip_update_position (MxTooltip *tooltip)
   ClutterGeometry *tip_area = tooltip->priv->tip_area;
   gfloat tooltip_w, tooltip_h, tooltip_x, tooltip_y, abs_x, abs_y;
   ClutterActor *stage, *parent;
-  MxOrientation orientation;
+  MxWindowRotation rotation;
   gfloat stage_w, stage_h;
-  gboolean reversed;
   MxWindow *window;
 
   /* If there's no stage, bail out - there's nothing we can do */
@@ -554,18 +553,12 @@ mx_tooltip_update_position (MxTooltip *tooltip)
   /* check if we're in a window and if there's rotation */
   window = mx_window_get_for_stage (CLUTTER_STAGE (stage));
   if (window)
-    {
-      g_object_get (G_OBJECT (window),
-                    "orientation", &orientation,
-                    "orientation-reversed", &reversed,
-                    "orientation-angle", &priv->angle,
-                    NULL);
-    }
+    g_object_get (G_OBJECT (window),
+                  "window-rotation", &rotation,
+                  "window-rotation-angle", &priv->angle,
+                  NULL);
   else
-    {
-      orientation = MX_ORIENTATION_VERTICAL;
-      reversed = FALSE;
-    }
+    rotation = MX_WINDOW_ROTATION_0;
 
   /* we need to have a style in case there are padding values to take into
    * account when calculating width/height */
@@ -582,18 +575,73 @@ mx_tooltip_update_position (MxTooltip *tooltip)
    * arbitrary rotations would massively complicate the code for
    * little benefit.
    */
-  switch (orientation)
+  priv->actor_below = FALSE;
+  switch (rotation)
     {
-    case MX_ORIENTATION_VERTICAL:
+    case MX_WINDOW_ROTATION_0:
       tooltip_x = (int)(tip_area->x + (tip_area->width / 2) -
                         (tooltip_w / 2));
+      tooltip_y = (int)(tip_area->y + tip_area->height);
 
-      if (reversed)
-        tooltip_y = (int)(tip_area->y - tooltip_h);
-      else
-        tooltip_y = (int)(tip_area->y + tip_area->height);
+      /* Keep on the screen vertically */
+      if (tooltip_y + tooltip_h > stage_h)
+        {
+          priv->actor_below = TRUE;
 
-      /* make sure the tooltip is not off screen horizontally */
+          /* re-query size as may have changed */
+          clutter_actor_get_preferred_height ((ClutterActor*) tooltip,
+                                              -1, NULL, &tooltip_h);
+          tooltip_y = tip_area->y - tooltip_h;
+        }
+      break;
+
+    case MX_WINDOW_ROTATION_180:
+      tooltip_x = (int)(tip_area->x + (tip_area->width / 2) -
+                        (tooltip_w / 2));
+      tooltip_y = (int)(tip_area->y - tooltip_h);
+
+      /* Keep on the screen vertically */
+      if (tooltip_y < 0)
+        {
+          priv->actor_below = TRUE;
+          tooltip_y = tip_area->y + tip_area->height;
+        }
+      break;
+
+    case MX_WINDOW_ROTATION_90:
+      tooltip_x = (int)(tip_area->x - (tooltip_w / 2) - (tooltip_h / 2));
+      tooltip_y = (int)(tip_area->y + (tip_area->height / 2) -
+                        (tooltip_h / 2));
+
+      /* Keep on the screen vertically */
+      if (tooltip_x + tooltip_w / 2 - tooltip_h / 2 < 0)
+        {
+          priv->actor_below = TRUE;
+          tooltip_x = tip_area->x + tip_area->width + tooltip_h / 2 -
+                      tooltip_w / 2;
+        }
+      break;
+
+    case MX_WINDOW_ROTATION_270:
+      tooltip_x = (int)(tip_area->x + tip_area->width -
+                        (tooltip_w / 2) + (tooltip_h / 2));
+      tooltip_y = (int)(tip_area->y + (tip_area->height / 2) -
+                        (tooltip_h / 2));
+
+      /* Keep on the screen vertically */
+      if (tooltip_x + tooltip_w / 2 + tooltip_h / 2 > stage_w)
+        {
+          priv->actor_below = TRUE;
+          tooltip_x = tip_area->x - tooltip_h / 2 - tooltip_w / 2;
+        }
+      break;
+    }
+
+  /* Keep on the screen horizontally */
+  switch (rotation)
+    {
+    case MX_WINDOW_ROTATION_0:
+    case MX_WINDOW_ROTATION_180:
       if (tooltip_w > stage_w)
         {
           tooltip_x = 0;
@@ -603,37 +651,10 @@ mx_tooltip_update_position (MxTooltip *tooltip)
         tooltip_x = 0;
       else if (tooltip_x + tooltip_w > stage_w)
         tooltip_x = (int)(stage_w) - tooltip_w;
-
-      /* make sure the tooltip is not off screen vertically */
-      if (reversed && (tooltip_y < 0))
-        {
-          priv->actor_below = TRUE;
-          tooltip_y = tip_area->y + tip_area->height;
-        }
-      else if (!reversed && (tooltip_y + tooltip_h > stage_h))
-        {
-          priv->actor_below = TRUE;
-
-          /* re-query size as may have changed */
-          clutter_actor_get_preferred_height ((ClutterActor*) tooltip,
-                                              -1, NULL, &tooltip_h);
-          tooltip_y = tip_area->y - tooltip_h;
-        }
-      else
-        priv->actor_below = FALSE;
-
       break;
 
-    case MX_ORIENTATION_HORIZONTAL:
-      tooltip_y = (int)(tip_area->y + (tip_area->height / 2) -
-                        (tooltip_h / 2));
-      if (reversed)
-        tooltip_x = (int)(tip_area->x + tip_area->width -
-                          (tooltip_w / 2) + (tooltip_h / 2));
-      else
-        tooltip_x = (int)(tip_area->x - (tooltip_w / 2) - (tooltip_h / 2));
-
-      /* make sure the tooltip is not off screen horizontally */
+    case MX_WINDOW_ROTATION_90:
+    case MX_WINDOW_ROTATION_270:
       if (tooltip_w > stage_h)
         {
           tooltip_y = stage_h / 2 - tooltip_h / 2;
@@ -645,24 +666,6 @@ mx_tooltip_update_position (MxTooltip *tooltip)
         tooltip_y = tooltip_w / 2 - tooltip_h / 2;
       else if (tooltip_y + tooltip_w / 2 + tooltip_h / 2 > stage_h)
         tooltip_y = (int)(stage_h - tooltip_w / 2 - tooltip_h / 2);
-
-      /* make sure the tooltip is not off screen vertically */
-      if (!reversed &&
-          (tooltip_x + tooltip_w / 2 - tooltip_h / 2 < 0))
-        {
-          priv->actor_below = TRUE;
-          tooltip_x = tip_area->x + tip_area->width + tooltip_h / 2 -
-                      tooltip_w / 2;
-        }
-      else if (reversed &&
-               (tooltip_x + tooltip_w / 2 + tooltip_h / 2 > stage_w))
-        {
-          priv->actor_below = TRUE;
-          tooltip_x = tip_area->x - tooltip_h / 2 - tooltip_w / 2;
-        }
-      else
-        priv->actor_below = FALSE;
-
       break;
     }
 

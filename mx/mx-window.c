@@ -47,7 +47,6 @@ struct _MxWindowPrivate
 
   guint has_toolbar   : 1;
   guint small_screen  : 1;
-  guint reversed      : 1;
   guint rotate_size   : 1;
 
   gchar      *icon_name;
@@ -58,12 +57,12 @@ struct _MxWindowPrivate
   ClutterActor *child;
   ClutterActor *resize_grip;
 
-  MxOrientation    orientation;
-  ClutterTimeline *rotation_timeline;
-  ClutterAlpha    *rotation_alpha;
-  gfloat           start_angle;
-  gfloat           end_angle;
-  gfloat           angle;
+  MxWindowRotation  rotation;
+  ClutterTimeline  *rotation_timeline;
+  ClutterAlpha     *rotation_alpha;
+  gfloat            start_angle;
+  gfloat            end_angle;
+  gfloat            angle;
 };
 
 #define WINDOW_PRIVATE(o) \
@@ -81,10 +80,9 @@ enum
   PROP_ICON_COGL_TEXTURE,
   PROP_CLUTTER_STAGE,
   PROP_CHILD,
-  PROP_ORIENTATION,
-  PROP_ORIENTATION_REVERSED,
-  PROP_ORIENTATION_TIMELINE,
-  PROP_ORIENTATION_ANGLE
+  PROP_WINDOW_ROTATION,
+  PROP_WINDOW_ROTATION_TIMELINE,
+  PROP_WINDOW_ROTATION_ANGLE
 };
 
 enum
@@ -134,19 +132,15 @@ mx_window_get_property (GObject    *object,
       g_value_set_object (value, priv->child);
       break;
 
-    case PROP_ORIENTATION:
-      g_value_set_enum (value, priv->orientation);
+    case PROP_WINDOW_ROTATION:
+      g_value_set_enum (value, priv->rotation);
       break;
 
-    case PROP_ORIENTATION_REVERSED:
-      g_value_set_boolean (value, priv->reversed);
-      break;
-
-    case PROP_ORIENTATION_TIMELINE:
+    case PROP_WINDOW_ROTATION_TIMELINE:
       g_value_set_object (value, priv->rotation_timeline);
       break;
 
-    case PROP_ORIENTATION_ANGLE:
+    case PROP_WINDOW_ROTATION_ANGLE:
       g_value_set_float (value, priv->angle);
       break;
 
@@ -193,16 +187,8 @@ mx_window_set_property (GObject      *object,
       mx_window_set_child (window, (ClutterActor *)g_value_get_object (value));
       break;
 
-    case PROP_ORIENTATION:
-      mx_window_set_orientation (window,
-                                 g_value_get_enum (value),
-                                 window->priv->reversed);
-      break;
-
-    case PROP_ORIENTATION_REVERSED:
-      mx_window_set_orientation (window,
-                                 window->priv->orientation,
-                                 g_value_get_boolean (value));
+    case PROP_WINDOW_ROTATION:
+      mx_window_set_window_rotation (window, g_value_get_enum (value));
       break;
 
     default:
@@ -306,8 +292,11 @@ mx_window_get_size (MxWindow *window, gfloat *width, gfloat *height)
       else
         scale = 1.f - (angle - 270.f) / 90.f;
     }
+  else if ((priv->rotation == MX_WINDOW_ROTATION_0) ||
+           (priv->rotation == MX_WINDOW_ROTATION_180))
+    scale = 0;
   else
-    scale = (priv->orientation == MX_ORIENTATION_VERTICAL) ? 0 : 1;
+    scale = 1;
 
   if (width)
     *width = (scale * stage_height) + ((1.f - scale) * stage_width);
@@ -650,39 +639,30 @@ mx_window_class_init (MxWindowClass *klass)
                                MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_CHILD, pspec);
 
-  pspec = g_param_spec_enum ("orientation",
-                             "Orientation",
-                             "The window's orientation.",
-                             MX_TYPE_ORIENTATION,
-                             MX_ORIENTATION_VERTICAL,
+  pspec = g_param_spec_enum ("window-rotation",
+                             "Window rotation",
+                             "The window's rotation.",
+                             MX_TYPE_WINDOW_ROTATION,
+                             MX_WINDOW_ROTATION_0,
                              MX_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_ORIENTATION, pspec);
+  g_object_class_install_property (object_class, PROP_WINDOW_ROTATION, pspec);
 
-  pspec = g_param_spec_boolean ("orientation-reversed",
-                                "Orientation reversed",
-                                "Whether the window's orientation should be "
-                                "rotated through 180 degrees.",
-                                FALSE,
-                                MX_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_ORIENTATION_REVERSED,
-                                   pspec);
-
-  pspec = g_param_spec_object ("orientation-timeline",
-                               "Orientation timeline",
-                               "The timeline used for the orientation "
+  pspec = g_param_spec_object ("window-rotation-timeline",
+                               "Window rotation timeline",
+                               "The timeline used for the window rotation "
                                "transition animation.",
                                CLUTTER_TYPE_TIMELINE,
                                MX_PARAM_READABLE);
-  g_object_class_install_property (object_class, PROP_ORIENTATION_TIMELINE,
+  g_object_class_install_property (object_class, PROP_WINDOW_ROTATION_TIMELINE,
                                    pspec);
 
-  pspec = g_param_spec_float ("orientation-angle",
-                              "Orientation angle",
+  pspec = g_param_spec_float ("window-rotation-angle",
+                              "Window rotation angle",
                               "The current angle of rotation about the z-axis "
-                              "for the window, given its orientation.",
+                              "for the window.",
                               0.f, 360.f, 0.f,
                               MX_PARAM_READABLE);
-  g_object_class_install_property (object_class, PROP_ORIENTATION_ANGLE,
+  g_object_class_install_property (object_class, PROP_WINDOW_ROTATION_ANGLE,
                                    pspec);
 
   /**
@@ -722,7 +702,7 @@ mx_window_rotation_new_frame_cb (ClutterTimeline *timeline,
 
   priv->angle = (alpha * priv->end_angle) + ((1.f - alpha) * priv->start_angle);
   mx_window_reallocate (self);
-  g_object_notify (G_OBJECT (self), "orientation-angle");
+  g_object_notify (G_OBJECT (self), "window-rotation-angle");
 }
 
 static void
@@ -740,7 +720,7 @@ mx_window_rotation_completed_cb (ClutterTimeline *timeline,
   priv->rotate_size = FALSE;
 
   mx_window_reallocate (self);
-  g_object_notify (G_OBJECT (self), "orientation-angle");
+  g_object_notify (G_OBJECT (self), "window-rotation-angle");
 }
 
 static void
@@ -748,7 +728,6 @@ mx_window_init (MxWindow *self)
 {
   MxWindowPrivate *priv = self->priv = WINDOW_PRIVATE (self);
 
-  priv->orientation = MX_ORIENTATION_VERTICAL;
   priv->rotation_timeline = clutter_timeline_new (400);
   priv->rotation_alpha = clutter_alpha_new_full (priv->rotation_timeline,
                                                  CLUTTER_EASE_IN_OUT_QUAD);
@@ -1157,56 +1136,52 @@ mx_window_present (MxWindow *window)
 }
 
 /**
- * mx_window_set_orientation:
+ * mx_window_set_window_rotation:
  * @window: A #MxWindow
- * @orientation: The #MxOrientation
- * @reverse: %TRUE to rotate the orientation through 180 degrees
+ * @rotation: The #MxWindowRotation
  *
- * Set the orientation of the window. The default orientation is vertical. The
- * @reverse parameter lets you rotate the window through an extra 180 degrees.
+ * Set the rotation of the window.
  */
 void
-mx_window_set_orientation (MxWindow      *window,
-                           MxOrientation  orientation,
-                           gboolean       reverse)
+mx_window_set_window_rotation (MxWindow         *window,
+                               MxWindowRotation  rotation)
 {
   guint msecs;
   MxWindowPrivate *priv;
-  gboolean notify_orientation, notify_reverse;
 
   g_return_if_fail (MX_IS_WINDOW (window));
 
   priv = window->priv;
-  if ((priv->orientation == orientation) &&
-      (priv->reversed == reverse))
+  if (priv->rotation == rotation)
     return;
 
-  if (priv->orientation != orientation)
-    {
-      priv->orientation = orientation;
-      priv->rotate_size = TRUE;
-      notify_orientation = TRUE;
-    }
-  else
-    notify_orientation = FALSE;
+  if (((priv->rotation == MX_WINDOW_ROTATION_0) ||
+       (priv->rotation == MX_WINDOW_ROTATION_180)) &&
+      ((rotation == MX_WINDOW_ROTATION_90) ||
+       (rotation == MX_WINDOW_ROTATION_270)))
+    priv->rotate_size = TRUE;
+  else if (((priv->rotation == MX_WINDOW_ROTATION_90) ||
+            (priv->rotation == MX_WINDOW_ROTATION_270)) &&
+           ((rotation == MX_WINDOW_ROTATION_0) ||
+            (rotation == MX_WINDOW_ROTATION_180)))
+    priv->rotate_size = TRUE;
 
-  if (priv->reversed != reverse)
-    {
-      priv->reversed = reverse;
-      notify_reverse = TRUE;
-    }
-  else
-    notify_reverse = FALSE;
+  priv->rotation = rotation;
 
   priv->start_angle = priv->angle;
-  switch (orientation)
+  switch (rotation)
     {
-    case MX_ORIENTATION_VERTICAL :
-      priv->end_angle = reverse ? 180.f : 0.f;
+    case MX_WINDOW_ROTATION_0 :
+      priv->end_angle = 0.f;
       break;
-
-    case MX_ORIENTATION_HORIZONTAL :
-      priv->end_angle = reverse ? 270.f : 90.f;
+    case MX_WINDOW_ROTATION_90 :
+      priv->end_angle = 90.f;
+      break;
+    case MX_WINDOW_ROTATION_180 :
+      priv->end_angle = 180.f;
+      break;
+    case MX_WINDOW_ROTATION_270 :
+      priv->end_angle = 270.f;
       break;
     }
 
@@ -1220,31 +1195,20 @@ mx_window_set_orientation (MxWindow      *window,
   clutter_timeline_set_duration (priv->rotation_timeline, msecs);
   clutter_timeline_start (priv->rotation_timeline);
 
-  if (notify_orientation)
-    g_object_notify (G_OBJECT (window), "orientation");
-  if (notify_reverse)
-    g_object_notify (G_OBJECT (window), "orientation-reversed");
+  g_object_notify (G_OBJECT (window), "window-rotation");
 }
 
 /**
- * mx_window_get_orientation:
+ * mx_window_get_window_rotation:
  * @window: A #MxWindow
- * @orientation: (out): Pointer to an #MxOrientation, or %NULL
- * @reverse: (out): Pointer to a #gboolean, or %NULL
  *
- * Retrieve the orientation of the window. The default orientation is
- * vertical. If @reverse is %TRUE, the orientation of the window is
- * rotated through an extra 180 degrees.
+ * Retrieve the rotation of the window.
+ *
+ * Returns: An #MxWindowRotation
  */
-void
-mx_window_get_orientation (MxWindow      *window,
-                           MxOrientation *orientation,
-                           gboolean      *reverse)
+MxWindowRotation
+mx_window_get_window_rotation (MxWindow *window)
 {
-  g_return_if_fail (MX_IS_WINDOW (window));
-
-  if (orientation)
-    *orientation = window->priv->orientation;
-  if (reverse)
-    *reverse = window->priv->reversed;
+  g_return_val_if_fail (MX_IS_WINDOW (window), MX_WINDOW_ROTATION_0);
+  return window->priv->rotation;
 }
