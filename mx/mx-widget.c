@@ -1158,7 +1158,7 @@ mx_widget_init (MxWidget *actor)
   actor->priv = priv = MX_WIDGET_GET_PRIVATE (actor);
 
   /* set the default style */
-  mx_widget_set_style (MX_STYLABLE (actor), mx_style_get_default ());
+  mx_stylable_set_style (MX_STYLABLE (actor), mx_style_get_default ());
 
   /* connect the notifiers for the stylable */
   mx_stylable_connect_change_notifiers (MX_STYLABLE (actor));
