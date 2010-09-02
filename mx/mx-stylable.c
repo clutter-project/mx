@@ -66,6 +66,8 @@ static GQuark quark_style              = 0;
 
 static guint stylable_signals[LAST_SIGNAL] = { 0, };
 
+static void mx_stylable_property_changed_notify (MxStylable *stylable);
+
 static void
 mx_stylable_notify_dispatcher (GObject     *gobject,
                                guint        n_pspecs,
@@ -575,6 +577,20 @@ mx_stylable_get_style (MxStylable *stylable)
   return g_object_get_data (G_OBJECT (stylable), "mx-stylable-style");
 }
 
+typedef struct
+{
+  GObject *instance;
+  gulong   handler_id;
+} SignalData;
+
+static void
+disconnect_style_changed_signal (SignalData *data)
+{
+  g_signal_handler_disconnect (data->instance, data->handler_id);
+  g_object_unref (data->instance);
+  g_slice_free (SignalData, data);
+}
+
 /**
  * mx_stylable_set_style:
  * @stylable: a #MxStylable
@@ -593,6 +609,7 @@ mx_stylable_set_style (MxStylable *stylable,
 {
   MxStylableIface *iface;
   MxStyle *old_style;
+  SignalData *data;
 
   g_return_if_fail (MX_IS_STYLABLE (stylable));
   g_return_if_fail (MX_IS_STYLE (style));
@@ -600,20 +617,29 @@ mx_stylable_set_style (MxStylable *stylable,
   iface = MX_STYLABLE_GET_IFACE (stylable);
 
   old_style = mx_stylable_get_style (stylable);
-  g_object_ref (old_style);
+  if (old_style)
+    g_object_ref (old_style);
 
   if (iface->set_style)
     iface->set_style (stylable, style);
-  else
-    {
-      g_object_set_qdata_full (G_OBJECT (stylable),
-                               quark_style,
-                               g_object_ref_sink (style),
-                               g_object_unref);
-    }
+
+  /* connect to the "changed" signal of the MxStyle and take a reference to
+   * the style */
+  data = g_slice_new (SignalData);
+  data->instance = g_object_ref_sink (style);
+  data->handler_id =
+    g_signal_connect_swapped (style, "changed",
+                              G_CALLBACK (mx_stylable_property_changed_notify),
+                              stylable);
+
+  g_object_set_qdata_full (G_OBJECT (stylable),
+                           quark_style,
+                           data,
+                           (GDestroyNotify) disconnect_style_changed_signal);
 
   g_signal_emit (stylable, stylable_signals[STYLE_CHANGED], 0, old_style);
-  g_object_unref (old_style);
+  if (old_style)
+    g_object_unref (old_style);
 
   g_object_notify (G_OBJECT (stylable), "style");
 }
@@ -819,9 +845,6 @@ mx_stylable_connect_change_notifiers (MxStylable *stylable)
   g_signal_connect (stylable, "notify::style-pseudo-class",
                     G_CALLBACK (mx_stylable_property_changed_notify), NULL);
 
-  g_signal_connect_swapped (mx_stylable_get_style (stylable), "changed",
-                            G_CALLBACK (mx_stylable_property_changed_notify),
-                            stylable);
 }
 
 void
