@@ -266,9 +266,7 @@ AM_GLIB_GNU_GETTEXT
 AM_PROG_LIBTOOL
 
 PKG_CHECK_MODULES(MX, [$MX_REQUIRES])
-if test "$enable_gtk_widgets" = yes; then
-	PKG_CHECK_MODULES(GTK, [gtk+-2.0 >= 2.20])
-fi
+PKG_CHECK_MODULES(GTK, [gtk+-2.0 >= 2.20])
 GTK_CFLAGS="$GTK_CFLAGS -DGSEAL_ENABLE=1"
 
 # check for gtk-doc
