@@ -91,27 +91,27 @@ struct _MxStackChildClass
 
 GType mx_stack_child_get_type (void);
 
-gboolean mx_stack_child_get_x_fill  (MxStack  *stack,
+gboolean mx_stack_child_get_x_fill  (MxStack      *stack,
                                      ClutterActor *child);
-void     mx_stack_child_set_x_fill  (MxStack  *stack,
+void     mx_stack_child_set_x_fill  (MxStack      *stack,
                                      ClutterActor *child,
                                      gboolean      x_fill);
 
-gboolean mx_stack_child_get_y_fill  (MxStack  *stack,
+gboolean mx_stack_child_get_y_fill  (MxStack      *stack,
                                      ClutterActor *child);
-void     mx_stack_child_set_y_fill  (MxStack  *stack,
+void     mx_stack_child_set_y_fill  (MxStack      *stack,
                                      ClutterActor *child,
                                      gboolean      y_fill);
 
-MxAlign  mx_stack_child_get_x_align (MxStack  *stack,
+MxAlign  mx_stack_child_get_x_align (MxStack      *stack,
                                      ClutterActor *child);
-void     mx_stack_child_set_x_align (MxStack  *stack,
+void     mx_stack_child_set_x_align (MxStack      *stack,
                                      ClutterActor *child,
                                      MxAlign       x_align);
 
-MxAlign  mx_stack_child_get_y_align (MxStack  *stack,
+MxAlign  mx_stack_child_get_y_align (MxStack      *stack,
                                      ClutterActor *child);
-void     mx_stack_child_set_y_align (MxStack  *stack,
+void     mx_stack_child_set_y_align (MxStack      *stack,
                                      ClutterActor *child,
                                      MxAlign       y_align);
 
