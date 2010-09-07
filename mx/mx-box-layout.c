@@ -345,8 +345,6 @@ mx_box_container_remove_actor (ClutterContainer *container,
 
   g_object_ref (actor);
 
-  priv = MX_BOX_LAYOUT (container)->priv;
-
   if ((ClutterActor *)priv->last_focus == actor)
     priv->last_focus = NULL;
 
