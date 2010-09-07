@@ -73,6 +73,8 @@ source_h = \
 	$(top_srcdir)/mx/mx-settings.h		\
 	$(top_srcdir)/mx/mx-settings-provider.h	\
 	$(top_srcdir)/mx/mx-slider.h 		\
+	$(top_srcdir)/mx/mx-stack.h 		\
+	$(top_srcdir)/mx/mx-stack-child.h 	\
 	$(top_srcdir)/mx/mx-stylable.h 		\
 	$(top_srcdir)/mx/mx-style.h 		\
 	$(top_srcdir)/mx/mx-table-child.h 		\
@@ -143,6 +145,8 @@ source_c = \
 	$(top_srcdir)/mx/mx-scrollable.c 		\
 	$(top_srcdir)/mx/mx-settings.c	\
 	$(top_srcdir)/mx/mx-slider.c 		\
+	$(top_srcdir)/mx/mx-stack.c 		\
+	$(top_srcdir)/mx/mx-stack-child.c 	\
 	$(top_srcdir)/mx/mx-stylable.c 		\
 	$(top_srcdir)/mx/mx-style.c 		\
 	$(top_srcdir)/mx/mx-table.c 		\

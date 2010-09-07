@@ -67,6 +67,8 @@
 #include <mx/mx-scroll-view.h>
 #include <mx/mx-scrollable.h>
 #include <mx/mx-slider.h>
+#include <mx/mx-stack.h>
+#include <mx/mx-stack-child.h>
 #include <mx/mx-stylable.h>
 #include <mx/mx-style.h>
 #include <mx/mx-table.h>
