@@ -1236,3 +1236,42 @@ MX_VERSION_HEX
 MX_CHECK_VERSION
 </SECTION>
 
+<SECTION>
+<FILE>mx-stack</FILE>
+<TITLE>MxStack</TITLE>
+MxStack
+mx_stack_new
+<SUBSECTION Standard>
+MX_STACK
+MX_IS_STACK
+MX_TYPE_STACK
+mx_stack_get_type
+MX_STACK_CLASS
+MX_IS_STACK_CLASS
+MX_STACK_GET_CLASS
+MxStackPrivate
+</SECTION>
+
+<SECTION>
+<FILE>mx-stack-child</FILE>
+<TITLE>MxStackChild</TITLE>
+MxStackChild
+mx_stack_child_get_x_fill
+mx_stack_child_set_x_fill
+mx_stack_child_get_y_fill
+mx_stack_child_set_y_fill
+mx_stack_child_get_x_align
+mx_stack_child_set_x_align
+mx_stack_child_get_y_align
+mx_stack_child_set_y_align
+<SUBSECTION Standard>
+MX_STACK_CHILD
+MX_IS_STACK_CHILD
+MX_TYPE_STACK_CHILD
+mx_stack_child_get_type
+MX_STACK_CHILD_CLASS
+MX_IS_STACK_CHILD_CLASS
+MX_STACK_CHILD_GET_CLASS
+MxStackChildPrivate
+</SECTION>
+

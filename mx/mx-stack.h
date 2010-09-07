@@ -59,8 +59,15 @@ typedef struct _MxStack MxStack;
 typedef struct _MxStackClass MxStackClass;
 typedef struct _MxStackPrivate MxStackPrivate;
 
+/**
+ * MxStack:
+ *
+ * The contents of this structure are private and should only be accessed
+ * through the public API.
+ */
 struct _MxStack
 {
+  /*< private >*/
   MxWidget parent;
 
   MxStackPrivate *priv;
@@ -69,6 +76,13 @@ struct _MxStack
 struct _MxStackClass
 {
   MxWidgetClass parent_class;
+
+  /* padding for future expansion */
+  void (*_padding_0) (void);
+  void (*_padding_1) (void);
+  void (*_padding_2) (void);
+  void (*_padding_3) (void);
+  void (*_padding_4) (void);
 };
 
 GType mx_stack_get_type (void) G_GNUC_CONST;

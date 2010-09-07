@@ -58,6 +58,8 @@
       <xi:include href="xml/mx-viewport.xml"/>
       <xi:include href="xml/mx-notebook.xml"/>
       <xi:include href="xml/mx-offscreen.xml"/>
+      <xi:include href="xml/mx-stack-child.xml"/>
+      <xi:include href="xml/mx-stack.xml"/>
     </chapter>
     <chapter>
       <title>Data Views</title>

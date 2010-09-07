@@ -21,6 +21,16 @@
  *
  */
 
+/**
+ * SECTION:mx-stack
+ * @short_description: A container allow stacking of children over each other
+ *
+ * The #MxStack arranges its children in a stack, where each child can be
+ * allocated its preferred size or larger, if the fill option is set. If
+ * the fill option isn't set, a child's position will be determined by its
+ * alignment properties.
+ */
+
 #include "mx-stack.h"
 #include "mx-stack-child.h"
 #include "mx-focusable.h"
@@ -492,6 +502,13 @@ mx_stack_init (MxStack *self)
   self->priv = STACK_PRIVATE (self);
 }
 
+/**
+ * mx_stack_new:
+ *
+ * Create a new #MxStack.
+ *
+ * Returns: a newly allocated #MxStack
+ */
 ClutterActor *
 mx_stack_new ()
 {
