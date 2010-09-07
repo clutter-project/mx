@@ -37,10 +37,13 @@
 #include "mx-private.h"
 
 static void clutter_container_iface_init (ClutterContainerIface *iface);
+static void mx_focusable_iface_init (MxFocusableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxOffscreen, mx_offscreen, CLUTTER_TYPE_TEXTURE,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
-                                                clutter_container_iface_init))
+                                                clutter_container_iface_init)
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
+                                                mx_focusable_iface_init))
 
 #define OFFSCREEN_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_OFFSCREEN, MxOffscreenPrivate))
@@ -133,6 +136,33 @@ clutter_container_iface_init (ClutterContainerIface *iface)
   iface->add = mx_offscreen_add;
   iface->remove = mx_offscreen_remove;
   iface->foreach = mx_offscreen_foreach;
+}
+
+static MxFocusable *
+mx_offscreen_move_focus (MxFocusable      *focusable,
+                         MxFocusDirection  direction,
+                         MxFocusable      *from)
+{
+  return NULL;
+}
+
+static MxFocusable *
+mx_offscreen_accept_focus (MxFocusable *focusable,
+                           MxFocusHint  hint)
+{
+  MxOffscreenPrivate *priv = MX_OFFSCREEN (focusable)->priv;
+
+  if (priv->child && MX_IS_FOCUSABLE (priv->child))
+    return mx_focusable_accept_focus (MX_FOCUSABLE (priv->child), hint);
+  else
+    return NULL;
+}
+
+static void
+mx_focusable_iface_init (MxFocusableIface *iface)
+{
+  iface->move_focus = mx_offscreen_move_focus;
+  iface->accept_focus = mx_offscreen_accept_focus;
 }
 
 static void
