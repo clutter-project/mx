@@ -71,8 +71,8 @@ struct _MxBoxLayoutChild
   ClutterChildMeta parent;
 
   gboolean expand;
-  gboolean x_fill : 1;
-  gboolean y_fill : 1;
+  guint x_fill : 1;
+  guint y_fill : 1;
   MxAlign x_align;
   MxAlign y_align;
 };
