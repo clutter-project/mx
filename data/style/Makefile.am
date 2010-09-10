@@ -83,6 +83,7 @@ dist_style_DATA = \
 		slider-handle-focus.png \
 		slider-handle-hover.png \
 		slider-handle.png \
+		spinner.png \
 		menu-item.png \
 		menu.png \
 		pathbar-button-active.png \

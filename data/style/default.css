@@ -560,3 +560,8 @@ MxDialog > MxFrame.MxDialogBackground {
 MxDialog > MxBoxLayout.MxDialogButtonBox {
   -mx-spacing: 6;
 }
+
+MxSpinner {
+  -mx-spinner-image: url('spinner.png');
+  -mx-spinner-frames: 12;
+}
