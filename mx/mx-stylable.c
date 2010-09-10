@@ -156,7 +156,7 @@ mx_stylable_base_init (gpointer g_iface)
    * properties have changed.
    */
   stylable_signals[STYLE_CHANGED] =
-    g_signal_new (I_("style-changed"),
+    g_signal_new (g_intern_static_string ("style-changed"),
                   iface_type,
                   G_SIGNAL_RUN_FIRST,
                   G_STRUCT_OFFSET (MxStylableIface, style_changed),
@@ -166,7 +166,7 @@ mx_stylable_base_init (gpointer g_iface)
 
 #if 0
   stylable_signals[STYLE_NOTIFY] =
-    g_signal_new (I_("style-notify"),
+    g_signal_new (g_intern_static_string ("style-notify"),
                   iface_type,
                   G_SIGNAL_RUN_FIRST | G_SIGNAL_NO_RECURSE | G_SIGNAL_DETAILED
                   | G_SIGNAL_NO_HOOKS | G_SIGNAL_ACTION,
@@ -192,7 +192,7 @@ mx_stylable_get_type (void)
       };
 
       our_type = g_type_register_static (G_TYPE_INTERFACE,
-                                         I_("MxStylable"),
+                                         g_intern_static_string ("MxStylable"),
                                          &stylable_info, 0);
     }
 

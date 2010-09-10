@@ -29,8 +29,6 @@
 
 G_BEGIN_DECLS
 
-#define I_(str)         (g_intern_static_string ((str)))
-
 #define MX_PARAM_READABLE     \
         (G_PARAM_READABLE |     \
          G_PARAM_STATIC_NICK | G_PARAM_STATIC_NAME | G_PARAM_STATIC_BLURB)

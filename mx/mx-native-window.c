@@ -62,7 +62,8 @@ _mx_native_window_get_type (void)
       };
 
       native_window_type =
-        g_type_register_static (G_TYPE_INTERFACE, I_("MxNativeWindow"),
+        g_type_register_static (G_TYPE_INTERFACE,
+                                g_intern_static_string ("MxNativeWindow"),
                                 &native_window_info, 0);
 
       g_type_interface_add_prerequisite (native_window_type,

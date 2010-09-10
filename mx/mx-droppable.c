@@ -294,7 +294,7 @@ mx_droppable_base_init (gpointer g_iface)
       g_object_interface_install_property (g_iface, pspec);
 
       droppable_signals[OVER_IN] =
-        g_signal_new (I_("over-in"),
+        g_signal_new (g_intern_static_string ("over-in"),
                       iface_type,
                       G_SIGNAL_RUN_FIRST,
                       G_STRUCT_OFFSET (MxDroppableIface, over_in),
@@ -304,7 +304,7 @@ mx_droppable_base_init (gpointer g_iface)
                       CLUTTER_TYPE_ACTOR);
 
       droppable_signals[OVER_OUT] =
-        g_signal_new (I_("over-out"),
+        g_signal_new (g_intern_static_string ("over-out"),
                       iface_type,
                       G_SIGNAL_RUN_FIRST,
                       G_STRUCT_OFFSET (MxDroppableIface, over_out),
@@ -314,7 +314,7 @@ mx_droppable_base_init (gpointer g_iface)
                       CLUTTER_TYPE_ACTOR);
 
       droppable_signals[DROP] =
-        g_signal_new (I_("drop"),
+        g_signal_new (g_intern_static_string ("drop"),
                       iface_type,
                       G_SIGNAL_RUN_FIRST,
                       G_STRUCT_OFFSET (MxDroppableIface, drop),
@@ -347,7 +347,7 @@ mx_droppable_get_type (void)
       };
 
       our_type = g_type_register_static (G_TYPE_INTERFACE,
-                                         I_("MxDroppable"),
+                                         g_intern_static_string ("MxDroppable"),
                                          &droppable_info, 0);
 
       g_type_interface_add_prerequisite (our_type, CLUTTER_TYPE_ACTOR);

@@ -480,7 +480,7 @@ mx_draggable_base_init (gpointer g_iface)
       g_object_interface_install_property (g_iface, pspec);
 
       draggable_signals[DRAG_BEGIN] =
-        g_signal_new (I_("drag-begin"),
+        g_signal_new (g_intern_static_string ("drag-begin"),
                       iface_type,
                       G_SIGNAL_RUN_FIRST,
                       G_STRUCT_OFFSET (MxDraggableIface, drag_begin),
@@ -493,7 +493,7 @@ mx_draggable_base_init (gpointer g_iface)
                       CLUTTER_TYPE_MODIFIER_TYPE);
 
       draggable_signals[DRAG_MOTION] =
-        g_signal_new (I_("drag-motion"),
+        g_signal_new (g_intern_static_string ("drag-motion"),
                       iface_type,
                       G_SIGNAL_RUN_FIRST,
                       G_STRUCT_OFFSET (MxDraggableIface, drag_motion),
@@ -504,7 +504,7 @@ mx_draggable_base_init (gpointer g_iface)
                       G_TYPE_FLOAT);
 
       draggable_signals[DRAG_END] =
-        g_signal_new (I_("drag-end"),
+        g_signal_new (g_intern_static_string ("drag-end"),
                       iface_type,
                       G_SIGNAL_RUN_FIRST,
                       G_STRUCT_OFFSET (MxDraggableIface, drag_end),
@@ -533,7 +533,7 @@ mx_draggable_get_type (void)
       };
 
       our_type = g_type_register_static (G_TYPE_INTERFACE,
-                                         I_("MxDraggable"),
+                                         g_intern_static_string ("MxDraggable"),
                                          &draggable_info, 0);
 
       g_type_interface_add_prerequisite (our_type, CLUTTER_TYPE_ACTOR);
