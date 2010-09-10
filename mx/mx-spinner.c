@@ -20,6 +20,14 @@
  *
  */
 
+/**
+ * SECTION:mx-spinner
+ * @short_description: a processing indicator widget
+ *
+ * The #MxSpinner is a widget to use to indicate that something is being
+ * processed, usually a task of indeterminate length.
+ */
+
 #include "mx-spinner.h"
 #include "mx-private.h"
 #include "mx-stylable.h"
@@ -365,12 +373,27 @@ mx_spinner_init (MxSpinner *self)
                     G_CALLBACK (mx_spinner_style_changed_cb), NULL);
 }
 
+/**
+ * mx_spinner_new:
+ *
+ * Create a new #MxSpinner widget.
+ *
+ * Returns: a newly allocated #MxSpinner
+ */
 ClutterActor *
 mx_spinner_new (void)
 {
   return g_object_new (MX_TYPE_SPINNER, NULL);
 }
 
+/**
+ * mx_spinner_get_animating:
+ * @spinner: A #MxSpinner widget
+ *
+ * Determines whether the spinner is animating.
+ *
+ * Returns: %TRUE if the spinner is animating, %FALSE otherwise
+ */
 gboolean
 mx_spinner_get_animating (MxSpinner *spinner)
 {
@@ -378,6 +401,14 @@ mx_spinner_get_animating (MxSpinner *spinner)
   return spinner->priv->animating;
 }
 
+/**
+ * mx_spinner_set_animating:
+ * @spinner: A #MxSpinner widget
+ * @animating: %TRUE to enable animation, %FALSE to disable
+ *
+ * Sets whether the spinner is animating. A spinner can be stopped if
+ * the task it represents has finished, or to save energy.
+ */
 void
 mx_spinner_set_animating (MxSpinner *spinner, gboolean animating)
 {

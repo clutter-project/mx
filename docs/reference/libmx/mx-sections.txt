@@ -1201,6 +1201,24 @@ MxEntryPrivate
 </SECTION>
 
 <SECTION>
+<FILE>mx-spinner</FILE>
+<TITLE>MxSpinner</TITLE>
+MxSpinner
+mx_spinner_new
+mx_spinner_get_animating
+mx_spinner_set_animating
+<SUBSECTION Standard>
+MX_SPINNER
+MX_IS_SPINNER
+MX_TYPE_SPINNER
+mx_spinner_get_type
+MX_SPINNER_CLASS
+MX_IS_SPINNER_CLASS
+MX_SPINNER_GET_CLASS
+MxSpinnerPrivate
+</SECTION>
+
+<SECTION>
 <FILE>mx-utils</FILE>
 mx_set_locale
 mx_utils_format_time
