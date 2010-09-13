@@ -225,26 +225,27 @@ mx_focus_manager_event_cb (ClutterStage   *stage,
   old_focus = priv->focused;
   switch (event->key.keyval)
     {
-    case CLUTTER_Tab:
+    case CLUTTER_KEY_Tab:
+    case CLUTTER_KEY_ISO_Left_Tab:
       if (event->key.modifier_state & CLUTTER_SHIFT_MASK)
         mx_focus_manager_move_focus (manager, MX_FOCUS_DIRECTION_PREVIOUS);
       else
         mx_focus_manager_move_focus (manager, MX_FOCUS_DIRECTION_NEXT);
       break;
 
-    case CLUTTER_Right:
+    case CLUTTER_KEY_Right:
       mx_focus_manager_move_focus (manager, MX_FOCUS_DIRECTION_RIGHT);
       break;
 
-    case CLUTTER_Left:
+    case CLUTTER_KEY_Left:
       mx_focus_manager_move_focus (manager, MX_FOCUS_DIRECTION_LEFT);
       break;
 
-    case CLUTTER_Up:
+    case CLUTTER_KEY_Up:
       mx_focus_manager_move_focus (manager, MX_FOCUS_DIRECTION_UP);
       break;
 
-    case CLUTTER_Down:
+    case CLUTTER_KEY_Down:
       mx_focus_manager_move_focus (manager, MX_FOCUS_DIRECTION_DOWN);
       break;
 
