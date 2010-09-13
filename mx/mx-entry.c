@@ -65,6 +65,7 @@
 #include "mx-marshal.h"
 #include "mx-clipboard.h"
 #include "mx-focusable.h"
+#include "mx-private.h"
 
 #ifdef HAVE_X11
 /* for pointer cursor support */
@@ -74,7 +75,6 @@
 #endif
 
 #define HAS_FOCUS(actor) (clutter_actor_get_stage (actor) && clutter_stage_get_key_focus ((ClutterStage *) clutter_actor_get_stage (actor)) == actor)
-
 
 /* properties */
 enum
@@ -677,7 +677,7 @@ mx_entry_key_press_event (ClutterActor    *actor,
 
   /* paste */
   if ((event->modifier_state & CLUTTER_CONTROL_MASK)
-      && event->keyval == CLUTTER_v)
+      && event->keyval == CLUTTER_KEY_v)
     {
       MxClipboard *clipboard;
 
@@ -690,7 +690,7 @@ mx_entry_key_press_event (ClutterActor    *actor,
 
   /* copy */
   if ((event->modifier_state & CLUTTER_CONTROL_MASK)
-      && event->keyval == CLUTTER_c)
+      && event->keyval == CLUTTER_KEY_c)
     {
       MxClipboard *clipboard;
       gchar *text;
@@ -708,7 +708,7 @@ mx_entry_key_press_event (ClutterActor    *actor,
 
   /* cut */
   if ((event->modifier_state & CLUTTER_CONTROL_MASK)
-      && event->keyval == CLUTTER_x)
+      && event->keyval == CLUTTER_KEY_x)
     {
       MxClipboard *clipboard;
       gchar *text;
@@ -730,7 +730,7 @@ mx_entry_key_press_event (ClutterActor    *actor,
 
   /* undo */
   if ((event->modifier_state & CLUTTER_CONTROL_MASK)
-      && event->keyval == CLUTTER_z)
+      && event->keyval == CLUTTER_KEY_z)
     {
       gchar *str;
 
@@ -955,7 +955,7 @@ mx_entry_store_undo_on_keypress (ClutterText     *text,
                                  ClutterKeyEvent *event,
                                  MxEntry         *entry)
 {
-  if (event->keyval == CLUTTER_space)
+  if (event->keyval == CLUTTER_KEY_space)
     {
       /* store the text immediately */
       if (entry->priv->undo_timeout_source)

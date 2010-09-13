@@ -344,7 +344,10 @@ static gboolean
 mx_button_key_press (ClutterActor    *actor,
                      ClutterKeyEvent *event)
 {
-  if (event->keyval == CLUTTER_Return || event->keyval == CLUTTER_space)
+  if (event->keyval == CLUTTER_KEY_Return ||
+      event->keyval == CLUTTER_KEY_KP_Enter ||
+      event->keyval == CLUTTER_KEY_ISO_Enter ||
+      event->keyval == CLUTTER_KEY_space)
     {
       mx_button_push (MX_BUTTON (actor), NULL);
 
@@ -358,7 +361,10 @@ static gboolean
 mx_button_key_release (ClutterActor    *actor,
                        ClutterKeyEvent *event)
 {
-  if (event->keyval == CLUTTER_Return || event->keyval == CLUTTER_space)
+  if (event->keyval == CLUTTER_KEY_Return ||
+      event->keyval == CLUTTER_KEY_KP_Enter ||
+      event->keyval == CLUTTER_KEY_ISO_Enter ||
+      event->keyval == CLUTTER_KEY_space)
     {
       mx_button_pull (MX_BUTTON (actor));
 
