@@ -514,8 +514,36 @@ mx_container_lower (ClutterContainer *container,
                     ClutterActor     *actor,
                     ClutterActor     *sibling)
 {
-  /* XXX: not yet implemented */
-  g_warning ("%s() not yet implemented", __FUNCTION__);
+  gint i;
+  GList *c, *position, *actor_link = NULL;
+
+  MxTablePrivate *priv = MX_TABLE (container)->priv;
+
+  if (priv->children && (priv->children->data == actor))
+    return;
+
+  position = priv->children;
+  for (c = priv->children, i = 0; c; c = c->next, i++)
+    {
+      if (c->data == actor)
+        actor_link = c;
+      if (c->data == sibling)
+        position = c;
+    }
+
+  if (!actor_link)
+    {
+      g_warning (G_STRLOC ": Actor of type '%s' is not a child of container "
+                 "of type '%s'",
+                 g_type_name (G_OBJECT_TYPE (actor)),
+                 g_type_name (G_OBJECT_TYPE (container)));
+      return;
+    }
+
+  priv->children = g_list_delete_link (priv->children, actor_link);
+  priv->children = g_list_insert_before (priv->children, position, actor);
+
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (container));
 }
 
 static void
@@ -523,15 +551,61 @@ mx_container_raise (ClutterContainer *container,
                     ClutterActor     *actor,
                     ClutterActor     *sibling)
 {
-  /* XXX: not yet implemented */
-  g_warning ("%s() not yet implemented", __FUNCTION__);
+  gint i;
+  GList *c, *actor_link = NULL;
+
+  gint position = -1;
+  MxTablePrivate *priv = MX_TABLE (container)->priv;
+
+  for (c = priv->children, i = 0; c; c = c->next, i++)
+    {
+      if (c->data == actor)
+        actor_link = c;
+      if (c->data == sibling)
+        position = i;
+    }
+
+  if (!actor_link)
+    {
+      g_warning (G_STRLOC ": Actor of type '%s' is not a child of container "
+                 "of type '%s'",
+                 g_type_name (G_OBJECT_TYPE (actor)),
+                 g_type_name (G_OBJECT_TYPE (container)));
+      return;
+    }
+
+  if (!actor_link->next)
+    return;
+
+  priv->children = g_list_delete_link (priv->children, actor_link);
+  priv->children = g_list_insert (priv->children, actor, position);
+
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (container));
+}
+
+static gint
+mx_table_depth_sort_cb (gconstpointer a,
+                        gconstpointer b)
+{
+  gfloat depth_a = clutter_actor_get_depth ((ClutterActor *)a);
+  gfloat depth_b = clutter_actor_get_depth ((ClutterActor *)a);
+
+  if (depth_a < depth_b)
+    return -1;
+  else if (depth_a > depth_b)
+    return 1;
+  else
+    return 0;
 }
 
 static void
 mx_container_sort_depth_order (ClutterContainer *container)
 {
-  /* XXX: not yet implemented */
-  g_warning ("%s() not yet implemented", __FUNCTION__);
+  MxTablePrivate *priv = MX_TABLE (container)->priv;
+
+  priv->children = g_list_sort (priv->children, mx_table_depth_sort_cb);
+
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (container));
 }
 
 static void
