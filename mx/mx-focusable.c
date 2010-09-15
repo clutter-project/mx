@@ -21,6 +21,7 @@
  */
 
 #include "mx-focusable.h"
+#include "mx-widget.h"
 #include <clutter/clutter.h>
 
 static void
@@ -147,6 +148,11 @@ mx_focusable_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 
   /* hidden actors should not accept focus */
   if (!CLUTTER_ACTOR_IS_VISIBLE (focusable))
+    return NULL;
+
+  /* disabled widgets should also not accept focus */
+  if (MX_IS_WIDGET (focusable) &&
+      mx_widget_get_disabled (MX_WIDGET (focusable)))
     return NULL;
 
   iface = MX_FOCUSABLE_GET_INTERFACE (focusable);
