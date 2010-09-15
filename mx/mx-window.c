@@ -991,6 +991,7 @@ mx_window_constructed (GObject *object)
     {
       priv->stage = clutter_stage_new ();
       clutter_stage_set_user_resizable ((ClutterStage *)priv->stage, TRUE);
+      mx_focus_manager_get_for_stage ((ClutterStage *)priv->stage);
     }
   g_object_add_weak_pointer (G_OBJECT (priv->stage),
                              (gpointer *)&priv->stage);
