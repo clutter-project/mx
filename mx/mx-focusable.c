@@ -72,6 +72,28 @@ mx_focusable_move_focus (MxFocusable      *focusable,
   actor = CLUTTER_ACTOR (focusable);
   parent = clutter_actor_get_parent (actor);
 
+  /* the parent will only have knowledge of its direct children
+   * that are focusable.
+   */
+  if (MX_IS_FOCUSABLE (actor))
+    from = MX_FOCUSABLE (actor);
+
+  while (parent && !CLUTTER_IS_STAGE (parent))
+    {
+      if (MX_IS_FOCUSABLE (parent))
+        {
+          moved = mx_focusable_move_focus (MX_FOCUSABLE (parent), direction,
+                                           from);
+          if (moved)
+            break;
+
+          from = MX_FOCUSABLE (parent);
+        }
+
+      actor = parent;
+      parent = clutter_actor_get_parent (actor);
+    }
+
   /* special case the stage */
   if (CLUTTER_IS_STAGE (parent))
     {
@@ -81,7 +103,7 @@ mx_focusable_move_focus (MxFocusable      *focusable,
       children = clutter_container_get_children (CLUTTER_CONTAINER (parent));
 
       /* find the current focused widget */
-      child_link = g_list_find (children, focusable);
+      child_link = g_list_find (children, actor);
 
       if (direction == MX_FOCUS_DIRECTION_NEXT)
         {
@@ -100,7 +122,7 @@ mx_focusable_move_focus (MxFocusable      *focusable,
       else if (direction == MX_FOCUS_DIRECTION_PREVIOUS)
         {
           /* find the previous widget to focus */
-          for (l = child_link->next; l; l = g_list_previous (l))
+          for (l = child_link->prev; l; l = g_list_previous (l))
             {
               if (MX_IS_FOCUSABLE (l->data))
                 {
@@ -113,27 +135,6 @@ mx_focusable_move_focus (MxFocusable      *focusable,
         }
 
       g_list_free (children);
-      return moved;
-    }
-
-  /* the parent will only have knowledge of its direct children
-   * that are focusable.
-   */
-  if (MX_IS_FOCUSABLE (actor))
-    from = MX_FOCUSABLE (actor);
-
-  while (parent)
-    {
-      if (MX_IS_FOCUSABLE (parent))
-        {
-          moved = mx_focusable_move_focus (MX_FOCUSABLE (parent), direction,
-                                           from);
-          if (moved)
-            break;
-        }
-
-      actor = parent;
-      parent = clutter_actor_get_parent (actor);
     }
 
   return moved;
