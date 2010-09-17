@@ -172,7 +172,7 @@ mx_action_button_init (MxActionButton *self)
 
 /**
  * mx_action_button_new:
- * @action: An #MxAction
+ * @action: A #MxAction
  *
  * Creates a new #MxActionButton that activates @action when clicked.
  *
@@ -189,8 +189,8 @@ mx_action_button_new (MxAction *action)
 
 /**
  * mx_action_button_set_action:
- * @button: An #MxButton
- * @action: An #MxAction
+ * @button: A #MxButton
+ * @action: A #MxAction
  *
  * Sets @action as the action for @button. @Button will take its label and
  * icon from @action.
@@ -215,11 +215,11 @@ mx_action_button_set_action (MxActionButton *button,
 
 /**
  * mx_action_button_get_action:
- * @button: An #MxActionButton
+ * @button: A #MxActionButton
  *
  * Retrieves the #MxAction associated with @button.
  *
- * Return value: An @MxAction
+ * Returns: A #MxAction
  */
 MxAction *
 mx_action_button_get_action (MxActionButton *button)
