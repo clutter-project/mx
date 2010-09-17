@@ -83,10 +83,24 @@ struct _MxActionButtonClass
 };
 
 GType mx_action_button_get_type (void) G_GNUC_CONST;
+
 ClutterActor *mx_action_button_new (MxAction *action);
+
 void mx_action_button_set_action (MxActionButton *button,
                                   MxAction        *action);
 MxAction *mx_action_button_get_action (MxActionButton *button);
+
+void mx_action_button_set_icon_position (MxActionButton *button,
+                                         MxPosition      position);
+MxPosition mx_action_button_get_icon_position (MxActionButton *button);
+
+void mx_action_button_set_icon_visible (MxActionButton *button,
+                                        gboolean        visible);
+gboolean mx_action_button_get_icon_visible (MxActionButton *button);
+
+void mx_action_button_set_text_visible (MxActionButton *button,
+                                        gboolean        visible);
+gboolean mx_action_button_get_text_visible (MxActionButton *button);
 
 G_END_DECLS
 
