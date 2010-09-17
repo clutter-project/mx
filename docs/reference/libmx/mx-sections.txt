@@ -1237,6 +1237,7 @@ MxFontWeight
 MxScrollPolicy
 MxOrientation
 MxWindowRotation
+MxPosition
 <SUBSECTION Standard>
 mx_padding_get_type
 mx_border_image_get_type

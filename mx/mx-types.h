@@ -168,6 +168,23 @@ typedef enum /*< prefix=MX_WINDOW_ROTATION >*/
   MX_WINDOW_ROTATION_270
 } MxWindowRotation;
 
+/**
+ * MxPosition:
+ * @MX_POSITION_TOP: The top position
+ * @MX_POSITION_RIGHT: The right position
+ * @MX_POSITION_BOTTOM: The bottom position
+ * @MX_POSITION_LEFT: The left position
+ *
+ * Defines the position of an interface element.
+ */
+typedef enum /*< prefix=MX_POSITION >*/
+{
+  MX_POSITION_TOP,
+  MX_POSITION_RIGHT,
+  MX_POSITION_BOTTOM,
+  MX_POSITION_LEFT
+} MxPosition;
+
 G_END_DECLS
 
 #endif /* __MX_TYPES_H__ */
