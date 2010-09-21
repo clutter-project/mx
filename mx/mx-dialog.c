@@ -889,21 +889,17 @@ mx_dialog_new_frame_cb (ClutterTimeline *timeline,
 {
   MxDialog *frame = MX_DIALOG (self);
   MxDialogPrivate *priv = frame->priv;
+  ClutterActor *parent = clutter_actor_get_parent (self);
+  gfloat opacity = clutter_alpha_get_alpha (priv->alpha);
 
-  if (priv->blur)
-    {
-      ClutterActor *parent = clutter_actor_get_parent (self);
-      gfloat opacity = clutter_alpha_get_alpha (priv->alpha);
+  priv->zoom = 1.0f + (1.f - opacity) / 2.f;
+  clutter_actor_set_opacity (self, (guint8)(opacity * 255.f));
 
-      priv->zoom = 1.0f + (1.f - opacity) / 2.f;
-      clutter_actor_set_opacity (self, (guint8)(opacity * 255.f));
-
-      /* Queue a redraw on the parent, as having our hidden flag set will
-       * short-circuit the redraw queued on ourselves via set_opacity.
-       */
-      if (parent)
-        clutter_actor_queue_redraw (parent);
-    }
+  /* Queue a redraw on the parent, as having our hidden flag set will
+   * short-circuit the redraw queued on ourselves via set_opacity.
+   */
+  if (parent)
+    clutter_actor_queue_redraw (parent);
 }
 
 static void
