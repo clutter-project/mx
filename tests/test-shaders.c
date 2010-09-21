@@ -19,6 +19,7 @@
 #endif
 
 static gchar *blur =
+  "#version 110\n"
   GLES2_VARS
   "uniform sampler2D tex;\n"
   "uniform float x_step, y_step, x_radius, y_radius;\n"
@@ -27,9 +28,9 @@ static gchar *blur =
   "main ()\n"
   "  {\n"
   "    float u, v, samples;\n"
-  "    vec4 color = vec4 (0, 0, 0, 0);\n"
+  "    vec4 color = vec4 (0.0, 0.0, 0.0, 0.0);\n"
 
-  "    samples = 0;\n"
+  "    samples = 0.0;\n"
   "    for (v = floor (-y_radius); v < ceil (y_radius); v++)\n"
   "      for (u = floor (-x_radius); u < ceil (x_radius); u++)\n"
   "        {\n"
