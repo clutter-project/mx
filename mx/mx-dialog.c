@@ -102,6 +102,7 @@ struct _MxDialogPrivate
 #endif
 
 static gchar *blur_shader =
+  "#version 110\n"
   GLES2_VARS
   "uniform sampler2D tex;\n"
   "uniform float x_step, y_step;\n"
@@ -112,10 +113,10 @@ static gchar *blur_shader =
   "  {\n"
   "    float u, v;\n"
   "    int count = 0;\n"
-  "    vec4 color = vec4 (0, 0, 0, 0);\n"
+  "    vec4 color = vec4 (0.0, 0.0, 0.0, 0.0);\n"
 
-  "    for (u = -1; u <= 1; u++)\n"
-  "      for (v = -1; v <= 1; v++)\n"
+  "    for (u = -1.0; u <= 1.0; u++)\n"
+  "      for (v = -1.0; v <= 1.0; v++)\n"
   "        {\n"
   "          color += texture2D(tex, \n"
   "              vec2(" TEX_COORD ".s + u * x_step, \n"
@@ -146,7 +147,7 @@ static gchar *blur_shader =
   "    color += get_rgba_rel (tex,  x_step, -y_step);\n"
   "    color += get_rgba_rel (tex,  x_step,  0.0);\n"
   "    color += get_rgba_rel (tex,  x_step,  y_step);\n"
-  "    color = color / 9;\n"
+  "    color = color / 9.0;\n"
   "    gl_FragColor = color * "COLOR_VAR";\n"
   "  }\n";
 #endif
