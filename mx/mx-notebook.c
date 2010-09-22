@@ -24,15 +24,19 @@
 #include <config.h>
 #include "mx-notebook.h"
 #include "mx-private.h"
+#include "mx-focusable.h"
 #ifdef HAVE_CLUTTER_GESTURE
 #include <clutter-gesture/clutter-gesture.h>
 #endif
 
 static void clutter_container_iface_init (ClutterContainerIface *iface);
+static void mx_focusable_iface_init (MxFocusableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxNotebook, mx_notebook, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
-                                                clutter_container_iface_init))
+                                                clutter_container_iface_init)
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
+                                                mx_focusable_iface_init))
 
 #define NOTEBOOK_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_NOTEBOOK, MxNotebookPrivate))
@@ -190,6 +194,32 @@ clutter_container_iface_init (ClutterContainerIface *iface)
   iface->foreach = mx_notebook_foreach;
 }
 
+static MxFocusable *
+mx_notebook_accept_focus (MxFocusable *focusable,
+                          MxFocusHint  hint)
+{
+  MxNotebookPrivate *priv = MX_NOTEBOOK (focusable)->priv;
+
+  if (priv->current_page && MX_IS_FOCUSABLE (priv->current_page))
+    return mx_focusable_accept_focus (MX_FOCUSABLE (priv->current_page), hint);
+  else
+    return NULL;
+}
+
+static MxFocusable *
+mx_notebook_move_focus (MxFocusable      *focusable,
+                        MxFocusDirection  direction,
+                        MxFocusable      *from)
+{
+  return NULL;
+}
+
+static void
+mx_focusable_iface_init (MxFocusableIface *iface)
+{
+  iface->accept_focus = mx_notebook_accept_focus;
+  iface->move_focus = mx_notebook_move_focus;
+}
 
 static void
 mx_notebook_get_property (GObject    *object,
