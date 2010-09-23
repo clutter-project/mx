@@ -232,6 +232,9 @@ mx_stack_move_focus (MxFocusable      *focusable,
 
   MxStackPrivate *priv = MX_STACK (focusable)->priv;
 
+  if (direction == MX_FOCUS_DIRECTION_OUT)
+    return NULL;
+
   focusable = NULL;
 
   c = g_list_find (priv->children, from);
