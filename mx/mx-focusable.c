@@ -85,7 +85,7 @@ mx_focusable_move_focus (MxFocusable      *focusable,
           moved = mx_focusable_move_focus (MX_FOCUSABLE (parent), direction,
                                            from);
           if (moved)
-            break;
+            return moved;
 
           from = MX_FOCUSABLE (parent);
         }
@@ -95,7 +95,9 @@ mx_focusable_move_focus (MxFocusable      *focusable,
     }
 
   /* special case the stage */
-  if (CLUTTER_IS_STAGE (parent))
+  if (CLUTTER_IS_STAGE (parent) &&
+      ((direction == MX_FOCUS_DIRECTION_NEXT) ||
+       (direction == MX_FOCUS_DIRECTION_PREVIOUS)))
     {
       GList *children, *l;
       GList *child_link;
