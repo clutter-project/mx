@@ -131,7 +131,7 @@ mx_spinner_get_preferred_width (ClutterActor *actor,
                                 gfloat       *min_width_p,
                                 gfloat       *nat_width_p)
 {
-  guint width;
+  guint min_width, width;
   MxPadding padding;
 
   MxSpinnerPrivate *priv = MX_SPINNER (actor)->priv;
@@ -141,6 +141,7 @@ mx_spinner_get_preferred_width (ClutterActor *actor,
   if (priv->texture != COGL_INVALID_HANDLE)
     {
       width = cogl_texture_get_width (priv->texture) / priv->frames;
+      min_width = width;
 
       if (for_height >= 0)
         {
@@ -151,12 +152,12 @@ mx_spinner_get_preferred_width (ClutterActor *actor,
         }
     }
   else
-    width = 0;
+    min_width = width = 0;
 
   width += padding.left + padding.right;
 
   if (min_width_p)
-    *min_width_p = width;
+    *min_width_p = MIN (min_width, width);
   if (nat_width_p)
     *nat_width_p = width;
 }
@@ -167,7 +168,7 @@ mx_spinner_get_preferred_height (ClutterActor *actor,
                                  gfloat       *min_height_p,
                                  gfloat       *nat_height_p)
 {
-  guint height;
+  guint min_height, height;
   MxPadding padding;
 
   MxSpinnerPrivate *priv = MX_SPINNER (actor)->priv;
@@ -177,6 +178,7 @@ mx_spinner_get_preferred_height (ClutterActor *actor,
   if (priv->texture != COGL_INVALID_HANDLE)
     {
       height = cogl_texture_get_height (priv->texture);
+      min_height = height;
 
       if (for_width >= 0)
         {
@@ -187,12 +189,12 @@ mx_spinner_get_preferred_height (ClutterActor *actor,
         }
     }
   else
-    height = 0;
+    min_height = height = 0;
 
   height += padding.top + padding.bottom;
 
   if (min_height_p)
-    *min_height_p = height;
+    *min_height_p = MIN (min_height, height);
   if (nat_height_p)
     *nat_height_p = height;
 }
@@ -357,7 +359,7 @@ mx_spinner_style_changed_cb (MxStylable          *stylable,
 
   mx_spinner_update_timeout (spinner);
 
-  clutter_actor_queue_redraw (CLUTTER_ACTOR (stylable));
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (stylable));
 }
 
 static void
