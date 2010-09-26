@@ -107,31 +107,34 @@ mx_focusable_move_focus (MxFocusable      *focusable,
       /* find the current focused widget */
       child_link = g_list_find (children, actor);
 
-      if (direction == MX_FOCUS_DIRECTION_NEXT)
+      if (child_link)
         {
-          /* find the next widget to focus */
-          for (l = child_link->next; l; l = g_list_next (l))
+          if (direction == MX_FOCUS_DIRECTION_NEXT)
             {
-              if (MX_IS_FOCUSABLE (l->data))
+              /* find the next widget to focus */
+              for (l = child_link->next; l; l = g_list_next (l))
                 {
-                  moved = mx_focusable_accept_focus (l->data,
-                                                     MX_FOCUS_HINT_FIRST);
-                  if (moved)
-                    break;
+                  if (MX_IS_FOCUSABLE (l->data))
+                    {
+                      moved = mx_focusable_accept_focus (l->data,
+                                                         MX_FOCUS_HINT_FIRST);
+                      if (moved)
+                        break;
+                    }
                 }
             }
-        }
-      else if (direction == MX_FOCUS_DIRECTION_PREVIOUS)
-        {
-          /* find the previous widget to focus */
-          for (l = child_link->prev; l; l = g_list_previous (l))
+          else if (direction == MX_FOCUS_DIRECTION_PREVIOUS)
             {
-              if (MX_IS_FOCUSABLE (l->data))
+              /* find the previous widget to focus */
+              for (l = child_link->prev; l; l = g_list_previous (l))
                 {
-                  moved = mx_focusable_accept_focus (l->data,
-                                                     MX_FOCUS_HINT_LAST);
-                  if (moved)
-                    break;
+                  if (MX_IS_FOCUSABLE (l->data))
+                    {
+                      moved = mx_focusable_accept_focus (l->data,
+                                                         MX_FOCUS_HINT_LAST);
+                      if (moved)
+                        break;
+                    }
                 }
             }
         }
