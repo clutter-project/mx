@@ -186,7 +186,9 @@ mx_dialog_move_focus (MxFocusable      *focusable,
                       MxFocusable      *from)
 {
   ClutterActor *child;
-  MxDialogPrivate *priv = MX_DIALOG (focusable)->priv;
+  MxFocusHint hint = MX_FOCUS_HINT_PRIOR;
+  MxDialog *self = MX_DIALOG (focusable);
+  MxDialogPrivate *priv = self->priv;
 
   child = mx_bin_get_child (MX_BIN (focusable));
   if (child && !MX_IS_FOCUSABLE (child))
@@ -195,42 +197,49 @@ mx_dialog_move_focus (MxFocusable      *focusable,
   focusable = NULL;
   switch (direction)
     {
-    case MX_FOCUS_DIRECTION_UP:
     case MX_FOCUS_DIRECTION_PREVIOUS:
+      hint = MX_FOCUS_HINT_LAST;
+    case MX_FOCUS_DIRECTION_UP:
       if (!priv->child_has_focus && child)
         {
           priv->child_has_focus = TRUE;
-          focusable = mx_focusable_accept_focus (MX_FOCUSABLE (child),
-                                                 MX_FOCUS_HINT_LAST);
+          focusable = mx_focusable_accept_focus (MX_FOCUSABLE (child), hint);
         }
       break;
 
-    case MX_FOCUS_DIRECTION_DOWN:
     case MX_FOCUS_DIRECTION_NEXT:
+      hint = MX_FOCUS_HINT_FIRST;
+    case MX_FOCUS_DIRECTION_DOWN:
       if (priv->child_has_focus && priv->actions)
         {
           priv->child_has_focus = FALSE;
           focusable =
-            mx_focusable_accept_focus (MX_FOCUSABLE (priv->button_box),
-                                       MX_FOCUS_HINT_FIRST);
+            mx_focusable_accept_focus (MX_FOCUSABLE (priv->button_box), hint);
         }
 
     default:
       break;
     }
 
-  return focusable;
+  if (focusable || MX_FOCUS_DIRECTION_OUT)
+    return focusable;
+  else
+    return mx_focusable_accept_focus (MX_FOCUSABLE (self), hint);
 }
 
 static MxFocusable *
 mx_dialog_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 {
   ClutterActor *child;
-  MxDialogPrivate *priv = MX_DIALOG (focusable)->priv;
+  MxDialog *self = MX_DIALOG (focusable);
+  MxDialogPrivate *priv = self->priv;
 
   child = mx_bin_get_child (MX_BIN (focusable));
   if (child && !MX_IS_FOCUSABLE (child))
-    child = NULL;
+    {
+      hint = MX_FOCUS_HINT_PRIOR;
+      child = NULL;
+    }
 
   focusable = NULL;
   switch (hint)
@@ -256,7 +265,10 @@ mx_dialog_accept_focus (MxFocusable *focusable, MxFocusHint hint)
       break;
     }
 
-  return focusable;
+  /* If we don't have a focusable child, we still return ourselves so
+   * that a dialog can't lose focus.
+   */
+  return focusable ? focusable : MX_FOCUSABLE (self);
 }
 
 static void
@@ -1003,6 +1015,7 @@ mx_dialog_show (ClutterActor *self)
 
   if (!priv->visible)
     {
+      ClutterActor *stage;
       ClutterActor *parent = clutter_actor_get_parent (self);
 
       if (!parent)
@@ -1078,6 +1091,15 @@ mx_dialog_show (ClutterActor *self)
       CLUTTER_ACTOR_CLASS (mx_dialog_parent_class)->show (self);
       clutter_alpha_set_mode (priv->alpha, CLUTTER_EASE_OUT_QUAD);
       clutter_timeline_start (priv->timeline);
+
+      /* Steal focus */
+      stage = clutter_actor_get_stage (self);
+      if (stage)
+        {
+          MxFocusManager *manager =
+            mx_focus_manager_get_for_stage (CLUTTER_STAGE (stage));
+          mx_focus_manager_push_focus (manager, MX_FOCUSABLE (self));
+        }
     }
 }
 
@@ -1089,6 +1111,7 @@ mx_dialog_hide (ClutterActor *self)
 
   if (priv->visible)
     {
+      ClutterActor *stage;
       ClutterActor *parent = clutter_actor_get_parent (self);
 
       priv->visible = FALSE;
@@ -1098,8 +1121,16 @@ mx_dialog_hide (ClutterActor *self)
           CLUTTER_ACTOR_CLASS (mx_dialog_parent_class)->hide (self);
           return;
         }
-      else
-        CLUTTER_ACTOR_UNSET_FLAGS (self, CLUTTER_ACTOR_VISIBLE);
+
+      CLUTTER_ACTOR_UNSET_FLAGS (self, CLUTTER_ACTOR_VISIBLE);
+
+      stage = clutter_actor_get_stage (self);
+      if (stage)
+        {
+          MxFocusManager *manager =
+            mx_focus_manager_get_for_stage (CLUTTER_STAGE (stage));
+          mx_focus_manager_move_focus (manager, MX_FOCUS_DIRECTION_OUT);
+        }
 
       if (clutter_timeline_is_playing (priv->timeline))
         {
