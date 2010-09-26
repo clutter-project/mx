@@ -453,6 +453,64 @@ mx_stack_allocate (ClutterActor           *actor,
                                    "y-align", &y_align,
                                    NULL);
 
+      /* Adjust the available space when not filling, otherwise
+       * actors that support width-for-height or height-for-width
+       * allocation won't shrink correctly.
+       */
+      if (!x_fill)
+        {
+          gfloat width;
+
+          clutter_actor_get_preferred_width (child, -1, NULL, &width);
+
+          switch (x_align)
+            {
+            case MX_ALIGN_START:
+              break;
+            case MX_ALIGN_MIDDLE:
+              child_box.x1 += (avail_space.x2 - avail_space.x1) / 2 -
+                              width / 2;
+              break;
+
+            case MX_ALIGN_END:
+              child_box.x1 = avail_space.x2 - width;
+              break;
+            }
+
+          child_box.x2 = child_box.x1 + width;
+          if (child_box.x2 > avail_space.x2)
+            child_box.x2 = avail_space.x2;
+          if (child_box.x1 < avail_space.x1)
+            child_box.x1 = avail_space.x1;
+        }
+
+      if (!y_fill)
+        {
+          gfloat height;
+
+          clutter_actor_get_preferred_height (child, -1, NULL, &height);
+
+          switch (y_align)
+            {
+            case MX_ALIGN_START:
+              break;
+            case MX_ALIGN_MIDDLE:
+              child_box.y1 += (avail_space.y2 - avail_space.y1) / 2 -
+                              height / 2;
+              break;
+
+            case MX_ALIGN_END:
+              child_box.y1 = avail_space.y2 - height;
+              break;
+            }
+
+          child_box.y2 = child_box.y1 + height;
+          if (child_box.y2 > avail_space.y2)
+            child_box.y2 = avail_space.y2;
+          if (child_box.y1 < avail_space.y1)
+            child_box.y1 = avail_space.y1;
+        }
+
       mx_allocate_align_fill (child,
                               &child_box,
                               x_align,
