@@ -50,7 +50,8 @@ enum
 
 struct _MxSpinnerPrivate
 {
-  CoglHandle *texture;
+  CoglHandle  texture;
+  CoglHandle  material;
   guint       frames;
   guint       anim_duration;
 
@@ -110,10 +111,10 @@ mx_spinner_dispose (GObject *object)
       priv->update_id = 0;
     }
 
-  if (priv->texture)
+  if (priv->material)
     {
-      cogl_handle_unref (priv->texture);
-      priv->texture = COGL_INVALID_HANDLE;
+      cogl_handle_unref (priv->material);
+      priv->material = COGL_INVALID_HANDLE;
     }
 
   G_OBJECT_CLASS (mx_spinner_parent_class)->dispose (object);
@@ -138,7 +139,7 @@ mx_spinner_get_preferred_width (ClutterActor *actor,
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
-  if (priv->texture != COGL_INVALID_HANDLE)
+  if (priv->material != COGL_INVALID_HANDLE)
     {
       width = cogl_texture_get_width (priv->texture) / priv->frames;
       min_width = width;
@@ -175,7 +176,7 @@ mx_spinner_get_preferred_height (ClutterActor *actor,
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
-  if (priv->texture != COGL_INVALID_HANDLE)
+  if (priv->material != COGL_INVALID_HANDLE)
     {
       height = cogl_texture_get_height (priv->texture);
       min_height = height;
@@ -202,6 +203,7 @@ mx_spinner_get_preferred_height (ClutterActor *actor,
 static void
 mx_spinner_paint (ClutterActor *actor)
 {
+  guint8 opacity;
   MxPadding padding;
   gfloat width, height;
   MxSpinnerPrivate *priv = MX_SPINNER (actor)->priv;
@@ -209,13 +211,16 @@ mx_spinner_paint (ClutterActor *actor)
   /* Chain up for background */
   CLUTTER_ACTOR_CLASS (mx_spinner_parent_class)->paint (actor);
 
-  if (priv->texture == COGL_INVALID_HANDLE)
+  if (priv->material == COGL_INVALID_HANDLE)
     return;
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
   clutter_actor_get_size (actor, &width, &height);
+  opacity = clutter_actor_get_paint_opacity (actor);
 
-  cogl_set_source_texture (priv->texture);
+  cogl_material_set_color4ub (priv->material,
+                              opacity, opacity, opacity, opacity);
+  cogl_set_source (priv->material);
   cogl_rectangle_with_texture_coords (padding.left,
                                       padding.top,
                                       width - padding.right,
@@ -316,7 +321,7 @@ mx_spinner_update_timeout (MxSpinner *spinner)
       priv->update_id = 0;
     }
 
-  if (priv->animating && priv->frames && priv->texture)
+  if (priv->animating && priv->frames && priv->material)
     priv->update_id = clutter_threads_add_timeout (MAX (1, priv->anim_duration /
                                                            priv->frames),
                                                    (GSourceFunc)
@@ -340,10 +345,10 @@ mx_spinner_style_changed_cb (MxStylable          *stylable,
                    "x-mx-spinner-animation-duration", &anim_duration,
                    NULL);
 
-  if (priv->texture)
+  if (priv->material)
     {
-      cogl_handle_unref (priv->texture);
-      priv->texture = NULL;
+      cogl_handle_unref (priv->material);
+      priv->material = NULL;
     }
 
   priv->anim_duration = anim_duration;
@@ -355,6 +360,10 @@ mx_spinner_style_changed_cb (MxStylable          *stylable,
       MxTextureCache *cache = mx_texture_cache_get_default ();
       priv->texture = mx_texture_cache_get_cogl_texture (cache, image->uri);
       g_boxed_free (MX_TYPE_BORDER_IMAGE, image);
+
+      priv->material = cogl_material_new ();
+      cogl_material_set_layer (priv->material, 0, priv->texture);
+      cogl_handle_unref (priv->texture);
     }
 
   mx_spinner_update_timeout (spinner);
