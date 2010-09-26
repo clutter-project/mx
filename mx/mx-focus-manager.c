@@ -416,7 +416,7 @@ mx_focus_manager_move_focus (MxFocusManager   *manager,
 
         default:
           /* re-focus the original */
-          if (old_focus)
+          if (old_focus && (direction != MX_FOCUS_DIRECTION_OUT))
             priv->focused = mx_focusable_accept_focus (old_focus, 0);
           else
             mx_focus_manager_ensure_focused (manager,
