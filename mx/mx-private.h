@@ -121,7 +121,34 @@ enum
 
 gboolean _mx_debug (gint debug);
 
-G_END_DECLS
+#ifdef G_HAVE_ISO_VARARGS
 
+#define MX_NOTE(topic,...)                         G_STMT_START { \
+    if (G_UNLIKELY (_mx_debug(MX_DEBUG_##topic)))                 \
+          g_message ("[" #topic "] " G_STRLOC ": " __VA_ARGS__);  \
+                                                   } G_STMT_END
+
+#elif G_HAVE_GNUC_VARARGS
+
+#define MX_NOTE(topic, fmt, args...)               G_STMT_START { \
+    if (G_UNLIKELY (_mx_debug(MX_DEBUG_##topic)))                 \
+          g_message ("[" #topic "] " G_STRLOC ": " fmt, ##args);  \
+                                                   } G_STMT_END
+
+#else /* no variadic macros, your compiler sucks at C */
+
+#warning "Can't use variadic macros, MX_NOTE() disabled."
+
+static inline void
+MX_NOTE (gint         topic,
+         const gchar *fmt,
+         ...)
+{
+
+}
+
+#endif /* G_HAVE_ISO_VARARGS */
+
+G_END_DECLS
 
 #endif /* __MX_PRIVATE_H__ */
