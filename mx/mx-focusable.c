@@ -21,6 +21,8 @@
  */
 
 #include "mx-focusable.h"
+#include "mx-enum-types.h"
+#include "mx-private.h"
 #include "mx-widget.h"
 #include <clutter/clutter.h>
 
@@ -65,7 +67,7 @@ mx_focusable_move_focus (MxFocusable      *focusable,
     moved = iface->move_focus (focusable, direction, from);
 
   if (moved)
-    return moved;
+    goto found;
 
 
   /* try and pass the focus up to something that can manage it */
@@ -85,7 +87,7 @@ mx_focusable_move_focus (MxFocusable      *focusable,
           moved = mx_focusable_move_focus (MX_FOCUSABLE (parent), direction,
                                            from);
           if (moved)
-            return moved;
+            goto found;
 
           from = MX_FOCUSABLE (parent);
         }
@@ -142,6 +144,15 @@ mx_focusable_move_focus (MxFocusable      *focusable,
       g_list_free (children);
     }
 
+found:
+  if (moved)
+    {
+      MX_NOTE (FOCUS, "Moving focus from %s (%p) to %s (%p) with direction %s",
+               G_OBJECT_TYPE_NAME (from), from,
+               G_OBJECT_TYPE_NAME (moved), moved,
+               _mx_enum_to_string (MX_TYPE_FOCUS_DIRECTION, direction));
+    }
+
   return moved;
 }
 
@@ -164,8 +175,15 @@ mx_focusable_accept_focus (MxFocusable *focusable, MxFocusHint hint)
   iface = MX_FOCUSABLE_GET_INTERFACE (focusable);
 
   if (iface->accept_focus)
-    return iface->accept_focus (focusable, hint);
+    {
+      MX_NOTE (FOCUS, "Accept focus on %s (%p) with hint %s",
+               G_OBJECT_TYPE_NAME (focusable), focusable,
+               _mx_enum_to_string (MX_TYPE_FOCUS_HINT, hint));
+      return iface->accept_focus (focusable, hint);
+    }
   else
-    return NULL;
+    {
+      return NULL;
+    }
 }
 

@@ -115,9 +115,10 @@ _mx_string_to_enum (GType        type,
 
 enum
 {
-  MX_DEBUG_LAYOUT = 1,
-  MX_DEBUG_INSPECTOR = 2
-};
+  MX_DEBUG_LAYOUT     = 1 << 0,
+  MX_DEBUG_INSPECTOR  = 1 << 1,
+  MX_DEBUG_FOCUS      = 1 << 2
+} MxDebugTopic;
 
 gboolean _mx_debug (gint debug);
 

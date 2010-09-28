@@ -27,6 +27,7 @@ static GDebugKey debug_keys[] =
 {
     {"layout", MX_DEBUG_LAYOUT},
     {"inspector", MX_DEBUG_INSPECTOR},
+    {"focus", MX_DEBUG_FOCUS},
 };
 
 
