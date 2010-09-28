@@ -35,7 +35,7 @@ _mx_debug (gint check)
 {
   static gint debug = -1;
 
-  if (debug == -1)
+  if (G_UNLIKELY (debug == -1))
     {
       const char *debug_str;
 
