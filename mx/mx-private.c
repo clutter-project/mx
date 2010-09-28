@@ -48,3 +48,45 @@ _mx_debug (gint check)
 
   return debug & check;
 }
+
+const gchar *
+_mx_enum_to_string (GType type,
+                    gint  value)
+{
+  GEnumClass *enum_class;
+  GEnumValue *enum_value;
+  const gchar *val;
+
+  enum_class = g_type_class_ref (type);
+  enum_value = g_enum_get_value (enum_class, value);
+  if (enum_value)
+    val = enum_value->value_nick;
+  else
+    val = "<invalid enum value>";
+
+  g_type_class_unref (enum_class);
+
+  return val;
+}
+
+gboolean
+_mx_string_to_enum (GType        type,
+                    const gchar *nick,
+                    gint        *value)
+{
+  GEnumClass *enum_class;
+  GEnumValue *enum_value;
+  gboolean ret = FALSE;
+
+  enum_class = g_type_class_ref (type);
+  enum_value = g_enum_get_value_by_nick (enum_class, nick);
+  if (enum_value) {
+      if (value)
+        *value = enum_value->value;
+      ret = TRUE;
+  }
+
+  g_type_class_unref (enum_class);
+
+  return ret;
+}

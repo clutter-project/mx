@@ -106,6 +106,13 @@ void _mx_style_invalidate_cache (MxStylable *stylable);
 
 gchar * _mx_stylable_get_style_string (MxStylable *stylable);
 
+const gchar * _mx_enum_to_string (GType type,
+                                  gint  value);
+gboolean
+_mx_string_to_enum (GType        type,
+                    const gchar *nick,
+                    gint        *value);
+
 enum
 {
   MX_DEBUG_LAYOUT = 1,
