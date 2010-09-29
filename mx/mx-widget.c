@@ -64,6 +64,7 @@ struct _MxWidgetPrivate
 
   guint         is_hovered : 1;
   guint         is_disabled : 1;
+  guint         parent_disabled : 1;
 
   MxTooltip    *tooltip;
   MxMenu       *menu;
@@ -889,6 +890,72 @@ mx_widget_hide (ClutterActor *actor)
   CLUTTER_ACTOR_CLASS (mx_widget_parent_class)->hide (actor);
 }
 
+static void
+_mx_widget_propagate_disabled (ClutterContainer *container,
+                               gboolean          disabled)
+{
+  GList *c, *children;
+
+  children = clutter_container_get_children (container);
+
+  /* Recurse through the children and set the 'parent_disabled' flag. */
+  for (c = children; c; c = c->next)
+    {
+      MxWidget *child = c->data;
+
+      if (MX_IS_WIDGET (child))
+        {
+          MxWidgetPrivate *child_priv = child->priv;
+
+          child_priv->parent_disabled = disabled;
+
+          /* If this child has already been disabled explicitly,
+           * we don't need to recurse through its children to set
+           * the 'parent_disabled' flag, as it'll already be set.
+           */
+          if (child_priv->is_disabled)
+            continue;
+        }
+
+      if (CLUTTER_IS_CONTAINER (child))
+        _mx_widget_propagate_disabled ((ClutterContainer *) child, disabled);
+    }
+}
+
+static void
+mx_widget_parent_set (ClutterActor *actor,
+                      ClutterActor *old_parent)
+{
+  ClutterActor *parent;
+  MxWidget *widget = (MxWidget *) actor;
+  MxWidgetPrivate *priv = widget->priv;
+
+  /* Make sure the disabled state cache remains valid */
+  if (!priv->is_disabled)
+    {
+      gboolean disabled;
+
+      parent = clutter_actor_get_parent (actor);
+      while (parent && !MX_IS_WIDGET (parent))
+        parent = clutter_actor_get_parent (parent);
+
+      if (parent)
+        {
+          MxWidgetPrivate *parent_priv = ((MxWidget *) parent)->priv;
+          disabled = parent_priv->is_disabled || parent_priv->parent_disabled;
+        }
+      else
+        disabled = FALSE;
+
+      if (disabled != priv->parent_disabled)
+        {
+          priv->parent_disabled = disabled;
+          if (CLUTTER_IS_CONTAINER (widget))
+            _mx_widget_propagate_disabled ((ClutterContainer *) widget,
+                                           disabled);
+        }
+    }
+}
 
 
 static void
@@ -917,6 +984,7 @@ mx_widget_class_init (MxWidgetClass *klass)
   actor_class->button_release_event = mx_widget_button_release;
 
   actor_class->hide = mx_widget_hide;
+  actor_class->parent_set = mx_widget_parent_set;
 
   klass->paint_background = mx_widget_real_paint_background;
 
@@ -1512,6 +1580,10 @@ mx_widget_set_disabled (MxWidget *widget,
     {
       priv->is_disabled = disabled;
 
+      /* Propagate the disabled state to our children, if necessary */
+      if (!priv->parent_disabled && CLUTTER_IS_CONTAINER (widget))
+        _mx_widget_propagate_disabled ((ClutterContainer *) widget, disabled);
+
       /* when a widget is disabled, get_style_pseudo_class will always return
        * "disabled" */
 
@@ -1532,23 +1604,6 @@ mx_widget_set_disabled (MxWidget *widget,
 gboolean
 mx_widget_get_disabled (MxWidget *widget)
 {
-  ClutterActor *parent;
-
   g_return_val_if_fail (MX_IS_WIDGET (widget), FALSE);
-
-  if (widget->priv->is_disabled)
-    return TRUE;
-
-  /* check if any of the parents are disabled */
-  parent = clutter_actor_get_parent (CLUTTER_ACTOR (widget));
-
-  while (parent)
-    {
-      if (MX_IS_WIDGET (parent) && MX_WIDGET (parent)->priv->is_disabled)
-        return TRUE;
-
-      parent = clutter_actor_get_parent (CLUTTER_ACTOR (parent));
-    }
-
-  return FALSE;
+  return widget->priv->is_disabled || widget->priv->parent_disabled;
 }
