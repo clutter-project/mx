@@ -102,6 +102,8 @@ CoglHandle _mx_window_get_icon_cogl_texture (MxWindow *window);
 
 ClutterActor * _mx_window_get_resize_grip (MxWindow *window);
 
+void _mx_style_invalidate_cache (MxStylable *stylable);
+
 enum
 {
   MX_DEBUG_LAYOUT = 1,
