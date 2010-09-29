@@ -542,11 +542,6 @@ css_node_matches_selector (MxSelector *selector,
   id = clutter_actor_get_name (CLUTTER_ACTOR (stylable));
   class = mx_stylable_get_style_class (stylable);
   pseudo_class = mx_stylable_get_style_pseudo_class (stylable);
-  actor = clutter_actor_get_parent (CLUTTER_ACTOR (stylable));
-  if (MX_IS_STYLABLE (actor))
-    parent = MX_STYLABLE (actor);
-  else
-    parent = NULL;
 
   /* check type */
   if (selector->type == NULL || selector->type[0] == '*')
@@ -616,6 +611,12 @@ css_node_matches_selector (MxSelector *selector,
     }
 
   /* check parent */
+  actor = clutter_actor_get_parent (CLUTTER_ACTOR (stylable));
+  if (MX_IS_STYLABLE (actor))
+    parent = MX_STYLABLE (actor);
+  else
+    parent = NULL;
+
   if (selector->parent)
     {
       gint parent_matches;
