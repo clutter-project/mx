@@ -149,7 +149,7 @@ mx_stylable_base_init (gpointer g_iface)
   /**
    * MxStylable::style-changed:
    * @stylable: the #MxStylable that received the signal
-   * @old_style: the previously set #MxStyle for @stylable
+   * @flags: the #MxStyleChangedFlags associated with the signal
    *
    * The ::style-changed signal is emitted each time one of the style
    * properties have changed.
@@ -608,17 +608,12 @@ mx_stylable_set_style (MxStylable *stylable,
                        MxStyle    *style)
 {
   MxStylableIface *iface;
-  MxStyle *old_style;
   SignalData *data;
 
   g_return_if_fail (MX_IS_STYLABLE (stylable));
   g_return_if_fail (MX_IS_STYLE (style));
 
   iface = MX_STYLABLE_GET_IFACE (stylable);
-
-  old_style = mx_stylable_get_style (stylable);
-  if (old_style)
-    g_object_ref (old_style);
 
   if (iface->set_style)
     iface->set_style (stylable, style);
@@ -637,9 +632,7 @@ mx_stylable_set_style (MxStylable *stylable,
                            data,
                            (GDestroyNotify) disconnect_style_changed_signal);
 
-  g_signal_emit (stylable, stylable_signals[STYLE_CHANGED], 0, old_style);
-  if (old_style)
-    g_object_unref (old_style);
+  mx_stylable_style_changed (stylable, MX_STYLE_CHANGED_NONE);
 
   g_object_notify (G_OBJECT (stylable), "style");
 }
