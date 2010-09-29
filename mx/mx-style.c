@@ -42,6 +42,7 @@
 #include "mx-style.h"
 #include "mx-enum-types.h"
 #include "mx-types.h"
+#include "mx-private.h"
 
 enum
 {
@@ -54,6 +55,8 @@ enum
         (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_STYLE, MxStylePrivate))
 
 #define MX_STYLE_ERROR g_style_error_quark ()
+
+#define MX_STYLE_CACHE g_style_cache_quark ()
 
 typedef struct {
   GType value_type;
@@ -80,6 +83,12 @@ static GQuark
 g_style_error_quark (void)
 {
   return g_quark_from_static_string ("mx-style-error-quark");
+}
+
+static GQuark
+g_style_cache_quark (void)
+{
+  return g_quark_from_static_string ("mx-style-cache-quark");
 }
 
 static gboolean
@@ -354,6 +363,50 @@ mx_style_normalize_property_name (const gchar *name)
     return name;
 }
 
+static void
+mx_style_object_died_cb (GHashTable *properties,
+                         GObject    *old_object)
+{
+  g_hash_table_unref (properties);
+}
+
+void
+_mx_style_invalidate_cache (MxStylable *stylable)
+{
+  GObject *object = G_OBJECT (stylable);
+  GHashTable *properties = g_object_get_qdata (object, MX_STYLE_CACHE);
+
+  if (properties)
+    {
+      g_object_set_qdata (object, MX_STYLE_CACHE, NULL);
+      g_object_weak_unref (object, (GWeakNotify)mx_style_object_died_cb,
+                           properties);
+      g_hash_table_unref (properties);
+    }
+}
+
+static GHashTable *
+mx_style_get_style_sheet_properties (MxStyle    *style,
+                                     MxStylable *stylable)
+{
+  GHashTable *properties;
+  MxStylePrivate *priv = style->priv;
+
+  /* see if we have a cached style and return that if possible */
+  properties = g_object_get_qdata (G_OBJECT (stylable), MX_STYLE_CACHE);
+
+  if (!properties)
+    {
+      properties = mx_style_sheet_get_properties (priv->stylesheet,
+                                                  stylable);
+      g_object_set_qdata (G_OBJECT (stylable), MX_STYLE_CACHE, properties);
+      g_object_weak_ref (G_OBJECT (stylable),
+                         (GWeakNotify)mx_style_object_died_cb, properties);
+    }
+
+  return properties;
+}
+
 /**
  * mx_style_get_property:
  * @style: the style data store object
@@ -385,7 +438,7 @@ mx_style_get_property (MxStyle    *style,
       MxStyleSheetValue *css_value;
       GHashTable *properties;
 
-      properties = mx_style_sheet_get_properties (priv->stylesheet, stylable);
+      properties = mx_style_get_style_sheet_properties (style, stylable);
 
       css_value = g_hash_table_lookup (properties,
                                        mx_style_normalize_property_name (pspec->name));
@@ -398,8 +451,6 @@ mx_style_get_property (MxStyle    *style,
         }
       else
         mx_style_transform_css_value (css_value, stylable, pspec, value);
-
-      g_hash_table_destroy (properties);
     }
 }
 
@@ -436,7 +487,7 @@ mx_style_get_valist (MxStyle     *style,
     {
       GHashTable *properties;
 
-      properties = mx_style_sheet_get_properties (priv->stylesheet, stylable);
+      properties = mx_style_get_style_sheet_properties (style, stylable);
 
       while (name)
         {
@@ -481,7 +532,6 @@ mx_style_get_valist (MxStyle     *style,
           name = va_arg (va_args, gchar*);
         }
       values_set = TRUE;
-      g_hash_table_unref (properties);
     }
 
   if (!values_set)

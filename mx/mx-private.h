@@ -92,6 +92,8 @@ void _mx_table_update_row_col (MxTable *table,
                                gint     row,
                                gint     col);
 
+void _mx_style_invalidate_cache (MxStylable *stylable);
+
 enum
 {
   MX_DEBUG_LAYOUT = 1,
