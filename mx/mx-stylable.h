@@ -50,12 +50,15 @@ G_BEGIN_DECLS
  * @MX_STYLE_CHANGED_NONE: No flag set
  * @MX_STYLE_CHANGED_FORCE: Whether to force propogation of the style-changed
  *   signal, regardless of the state of the stylable object.
+ * @MX_STYLE_CHANGED_INVALIDATE_CACHE: Internal flag used to track style
+ *   caching state.
  *
  */
 typedef enum
 {
   MX_STYLE_CHANGED_NONE  = 0,
   MX_STYLE_CHANGED_FORCE = 1 << 0,
+  MX_STYLE_CHANGED_INVALIDATE_CACHE = 1 << 1
 } MxStyleChangedFlags;
 
 struct _MxStylableIface

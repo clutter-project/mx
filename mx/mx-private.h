@@ -104,6 +104,8 @@ ClutterActor * _mx_window_get_resize_grip (MxWindow *window);
 
 void _mx_style_invalidate_cache (MxStylable *stylable);
 
+gchar * _mx_stylable_get_style_string (MxStylable *stylable);
+
 enum
 {
   MX_DEBUG_LAYOUT = 1,

@@ -199,6 +199,31 @@ mx_stylable_get_type (void)
   return our_type;
 }
 
+gchar *
+_mx_stylable_get_style_string (MxStylable *stylable)
+{
+  GType type_id;
+  const gchar *type, *id, *class, *pseudo_class;
+
+  /* Create a string that contains all the properties of a
+   * Stylable that can be matched against in the CSS.
+   */
+  type_id = G_OBJECT_CLASS_TYPE (G_OBJECT_GET_CLASS (stylable));
+  type = g_type_name (type_id);
+
+  id = clutter_actor_get_name (CLUTTER_ACTOR (stylable));
+
+  class = mx_stylable_get_style_class (stylable);
+
+  pseudo_class = mx_stylable_get_style_pseudo_class (stylable);
+
+  return g_strdup_printf ("%s#%s.%s:%s",
+                          type,
+                          id ? id : "",
+                          class ? class : "",
+                          pseudo_class ? pseudo_class : "");
+}
+
 #if 0
 void
 mx_stylable_freeze_notify (MxStylable *stylable)
@@ -694,7 +719,7 @@ mx_stylable_set_style (MxStylable *stylable,
                            data,
                            (GDestroyNotify) disconnect_style_changed_signal);
 
-  mx_stylable_style_changed (stylable, MX_STYLE_CHANGED_NONE);
+  mx_stylable_style_changed (stylable, MX_STYLE_CHANGED_INVALIDATE_CACHE);
 
   g_object_notify (G_OBJECT (stylable), "style");
 }
@@ -805,7 +830,7 @@ mx_stylable_set_style_class (MxStylable  *stylable,
 static void
 mx_stylable_property_changed_notify (MxStylable *stylable)
 {
-  mx_stylable_style_changed (stylable, MX_STYLE_CHANGED_NONE);
+  mx_stylable_style_changed (stylable, MX_STYLE_CHANGED_INVALIDATE_CACHE);
 }
 
 static void
@@ -817,7 +842,8 @@ mx_stylable_parent_set_notify (ClutterActor *actor,
   /* check the actor has a new parent */
   if (new_parent)
     {
-      mx_stylable_style_changed (MX_STYLABLE (actor), MX_STYLE_CHANGED_NONE);
+      mx_stylable_style_changed (MX_STYLABLE (actor),
+                                 MX_STYLE_CHANGED_INVALIDATE_CACHE);
     }
 }
 
@@ -844,7 +870,9 @@ mx_stylable_style_changed_internal (MxStylable          *stylable,
       !(flags & MX_STYLE_CHANGED_FORCE))
     return;
 
-  _mx_style_invalidate_cache (stylable);
+  if (flags & MX_STYLE_CHANGED_INVALIDATE_CACHE)
+    _mx_style_invalidate_cache (stylable);
+
   g_signal_emit (stylable, stylable_signals[STYLE_CHANGED], 0, flags);
 
   /* propagate the style-changed signal to children, since their style may
