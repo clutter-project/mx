@@ -336,6 +336,9 @@ mx_focus_manager_get_focused (MxFocusManager *manager)
  * @manager: the focus manager
  * @focusable: the object to set focus on
  *
+ * Sets the currently focused actor, with an #MxFocusHint of
+ * %MX_FOCUS_HINT_PRIOR.
+ *
  * Note: the final focused object may not be the same as @focusable if
  * @focusable does not accept focus directly.
  */
@@ -358,7 +361,7 @@ mx_focus_manager_push_focus (MxFocusManager *manager,
           mx_focusable_move_focus (priv->focused, MX_FOCUS_DIRECTION_OUT, priv->focused);
         }
 
-      priv->focused = mx_focusable_accept_focus (focusable, MX_FOCUS_HINT_FIRST);
+      priv->focused = mx_focusable_accept_focus (focusable, MX_FOCUS_HINT_PRIOR);
 
       g_object_notify (G_OBJECT (manager), "focused");
     }
