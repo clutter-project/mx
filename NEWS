@@ -1,3 +1,44 @@
+1.0.4
+=====
+
+Changes since 1.0.3:
+
+ * Fix "elastic" behaviour of adjustments and visualisation in scroll bars
+ * Fix MxToggle and MxComboBox actors when a transform is applied
+ * Implement MxFocusable on MxOffscreen and MxToolbar
+ * MxApplication: Call clutter_init_with_args() to get command line arguments
+ * MxFocusManager: Fix various focus chain issues
+ * MxFocusable: Don't allow disabled or hidden actors to accept focus
+ * MxIconTheme: Fix issues with inheritance and fallbacks and improve lookup
+   performance of missing icons
+ * MxViewport: Respect fill, alignment and padding properties
+ * MxWindow: Fix various issues with resizing
+ * MxWindow: Make sure a focus manager is created at startup
+ * Improved performance of CSS styling
+ * Various other bug fixes. See the ChangeLog file for details.
+
+
+Fixed bugs (bugs.meego.com):
+  #1146 Should not be able to move focus onto hidden actors
+  #1934 The shader used in test-shaders is incorrect and not very flexible
+  #1244 mx_adjustment_interpolate can get 'stuck' when called frequently
+  #1199 MxScrollView needlessly chains up to the parent of the parent class in
+        allocate
+  #1186 The mx_combo_box_remove_text() should handle negative scenarios
+  #1385 MxViewport needlessly sets the adjustment value
+  #2013 Respect ClutterStage:user-resizable
+  #1469 MxIconTheme is extremely slow if you continuously ask for a missing icon
+
+Fixed bugs (bugzilla.clutter-project.org):
+  #2310 Use the new CLUTTER_KEY symbols in Mx
+
+
+Updated translations:
+
+  * Asturian (ast)
+  * Turkish (tr)
+
+
 1.0.3
 =====
 
