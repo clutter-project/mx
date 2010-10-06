@@ -786,11 +786,8 @@ mx_widget_enter (ClutterActor         *actor,
   MxWidget *widget = MX_WIDGET (actor);
   MxWidgetPrivate *priv = widget->priv;
 
-  if (event->source != actor)
-    return FALSE;
-
-  if (mx_widget_get_disabled (MX_WIDGET (actor)))
-      return TRUE;
+  /* This is also expected to handle enter events from child actors
+     because they will bubble up */
 
   mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "hover");
   priv->is_hovered = TRUE;
@@ -805,13 +802,14 @@ mx_widget_leave (ClutterActor         *actor,
   MxWidget *widget = MX_WIDGET (actor);
   MxWidgetPrivate *priv = widget->priv;
 
-  if (event->source != actor)
+  /* If the leave event is simply moving to a child actor then we'll
+     ignore it so that the actor will retain its hover state until the
+     pointer moves to an unrelated actor. For this to work the actual
+     leave event from the child needs to bubble up to this actor */
+  if (clutter_actor_contains (actor, event->related))
     return FALSE;
 
   mx_widget_hide_tooltip (widget);
-
-  if (mx_widget_get_disabled (MX_WIDGET (actor)))
-      return TRUE;
 
   mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "");
   priv->is_hovered = FALSE;
