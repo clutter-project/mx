@@ -1216,7 +1216,6 @@ mx_box_layout_allocate (ClutterActor          *actor,
           ClutterActorBox *start, *end, now;
           gdouble alpha;
 
-
           ClutterActorBox *copy = g_new (ClutterActorBox, 1);
 
           *copy = child_box;
@@ -1230,7 +1229,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
               /* don't know where this actor was from (possibly recently
                * added), so just allocate the end co-ordinates */
               clutter_actor_allocate (child, end, flags);
-              continue;
+              goto next;
             }
 
           now.x1 = (int) (start->x1 + (end->x1 - start->x1) * alpha);
@@ -1259,6 +1258,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
           clutter_actor_allocate (child, copy, flags);
         }
 
+next:
       if (priv->orientation == MX_ORIENTATION_VERTICAL)
         position += (old_child_box.y2 - old_child_box.y1) + priv->spacing;
       else
