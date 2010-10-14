@@ -841,6 +841,7 @@ mx_window_set_child (MxWindow     *window,
                                    priv->child);
     }
 
+  mx_window_reallocate (window);
   g_object_notify (G_OBJECT (window), "child");
 }
 
