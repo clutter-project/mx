@@ -893,6 +893,12 @@ mx_offscreen_set_child (MxOffscreen *offscreen, ClutterActor *actor)
                             G_CALLBACK (mx_offscreen_queue_redraw_cb),
                             offscreen);
           g_object_ref (priv->child);
+
+          /* Update, as there's no guarantee that the child will be
+           * painted before us in the draw stack (and so we could end
+           * up showing a blank frame).
+           */
+          mx_offscreen_update (offscreen);
         }
     }
 
