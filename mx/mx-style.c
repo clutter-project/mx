@@ -497,11 +497,11 @@ mx_style_get_style_sheet_properties (MxStyle    *style,
               g_free (entry->style_string);
               g_hash_table_unref (entry->properties);
             }
-          g_array_remove_range (cache, 0, cache->len - MX_STYLE_CACHE_SIZE);
+          g_array_remove_range (cache, 0, i);
         }
     }
 
-  return properties;
+  return g_hash_table_ref (properties);
 }
 
 /**
@@ -546,6 +546,8 @@ mx_style_get_property (MxStyle    *style,
         }
       else
         mx_style_transform_css_value (css_value, stylable, pspec, value);
+
+      g_hash_table_unref (properties);
     }
 }
 
@@ -625,6 +627,8 @@ mx_style_get_valist (MxStyle     *style,
           name = va_arg (va_args, gchar*);
         }
       values_set = TRUE;
+
+      g_hash_table_unref (properties);
     }
 
   if (!values_set)
