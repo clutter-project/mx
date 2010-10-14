@@ -233,6 +233,46 @@ mx_settings_constructor (GType                  type,
   return object;
 }
 
+#if defined(HAVE_X11)
+static void
+mx_settings_changed_cb (MxSettingsProvider *provider,
+                        MxSettingsProperty  id,
+                        MxSettings         *self)
+{
+  switch (id)
+    {
+    case MX_SETTINGS_ICON_THEME:
+      g_object_notify (G_OBJECT (self), "icon-theme");
+      return;
+
+    case MX_SETTINGS_FONT_NAME:
+      g_object_notify (G_OBJECT (self), "font-name");
+      return;
+
+    case MX_SETTINGS_LONG_PRESS_TIMEOUT:
+      g_object_notify (G_OBJECT (self), "long-press-timeout");
+      return;
+
+    case MX_SETTINGS_SMALL_SCREEN:
+      g_object_notify (G_OBJECT (self), "small-screen");
+      return;
+    }
+}
+#endif
+
+static void
+mx_settings_constructed (GObject *self)
+{
+#ifdef HAVE_X11
+  MxSettings *settings = MX_SETTINGS (self);
+  MxSettingsPrivate *priv = settings->priv;
+
+  priv->provider = _mx_settings_x11_new (settings);
+  g_signal_connect (priv->provider, "setting-changed",
+                    G_CALLBACK (mx_settings_changed_cb), settings);
+#endif
+}
+
 static void
 mx_settings_class_init (MxSettingsClass *klass)
 {
@@ -246,6 +286,7 @@ mx_settings_class_init (MxSettingsClass *klass)
   object_class->dispose = mx_settings_dispose;
   object_class->finalize = mx_settings_finalize;
   object_class->constructor = mx_settings_constructor;
+  object_class->constructed = mx_settings_constructed;
 
   pspec = g_param_spec_string ("icon-theme",
                                "Icon Theme",
@@ -279,33 +320,6 @@ mx_settings_class_init (MxSettingsClass *klass)
                                    pspec);
 }
 
-#if defined(HAVE_X11)
-static void
-mx_settings_changed_cb (MxSettingsProvider *provider,
-                        MxSettingsProperty  id,
-                        MxSettings         *self)
-{
-  switch (id)
-    {
-    case MX_SETTINGS_ICON_THEME:
-      g_object_notify (G_OBJECT (self), "icon-theme");
-      return;
-
-    case MX_SETTINGS_FONT_NAME:
-      g_object_notify (G_OBJECT (self), "font-name");
-      return;
-
-    case MX_SETTINGS_LONG_PRESS_TIMEOUT:
-      g_object_notify (G_OBJECT (self), "long-press-timeout");
-      return;
-
-    case MX_SETTINGS_SMALL_SCREEN:
-      g_object_notify (G_OBJECT (self), "small-screen");
-      return;
-    }
-}
-#endif
-
 static void
 mx_settings_init (MxSettings *self)
 {
@@ -316,12 +330,6 @@ mx_settings_init (MxSettings *self)
   priv->font_name = g_strdup ("Sans 10");
   priv->long_press_timeout = 500;
   priv->small_screen = FALSE;
-
-#ifdef HAVE_X11
-  priv->provider = _mx_settings_x11_new (self);
-  g_signal_connect (priv->provider, "setting-changed",
-                    G_CALLBACK (mx_settings_changed_cb), self);
-#endif
 }
 
 MxSettings *
