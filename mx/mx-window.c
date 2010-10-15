@@ -1214,3 +1214,30 @@ mx_window_get_window_rotation (MxWindow *window)
   g_return_val_if_fail (MX_IS_WINDOW (window), MX_WINDOW_ROTATION_0);
   return window->priv->rotation;
 }
+
+/**
+ * mx_window_show:
+ * @window: A #MxWindow
+ *
+ * Show the window
+ */
+void
+mx_window_show (MxWindow *window)
+{
+  clutter_actor_show (window->priv->stage);
+}
+
+
+/**
+ * mx_window_hide:
+ * @window: A #MxWindow
+ *
+ * Hide the window
+ *
+ */
+void
+mx_window_hide (MxWindow *window)
+{
+  clutter_actor_hide (window->priv->stage);
+}
+

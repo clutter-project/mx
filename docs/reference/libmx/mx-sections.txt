@@ -306,6 +306,8 @@ mx_window_get_icon_name
 mx_window_get_clutter_stage
 mx_window_get_window_rotation
 mx_window_set_window_rotation
+mx_window_show
+mx_window_hide
 <SUBSECTION Standard>
 MX_WINDOW
 MX_IS_WINDOW
