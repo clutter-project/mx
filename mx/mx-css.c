@@ -219,6 +219,7 @@ css_parse_simple_selector (GScanner      *scanner,
                            MxSelector    *selector)
 {
   guint token;
+  gchar *tmp;
 
   /* parse optional type (either '*' or an identifier) */
   token = g_scanner_peek_next_token (scanner);
@@ -264,7 +265,18 @@ css_parse_simple_selector (GScanner      *scanner,
           token = g_scanner_get_next_token (scanner);
           if (token != G_TOKEN_IDENTIFIER)
             return G_TOKEN_IDENTIFIER;
-          selector->pseudo_class = g_strdup (scanner->value.v_identifier);
+
+          tmp = selector->pseudo_class;
+
+          if (selector->pseudo_class)
+            selector->pseudo_class = g_strconcat (selector->pseudo_class, ":",
+                                                  scanner->value.v_identifier,
+                                                  NULL);
+          else
+            selector->pseudo_class = g_strdup (scanner->value.v_identifier);
+
+          g_free (tmp);
+
           break;
 
           /* unhandled */
@@ -528,6 +540,7 @@ css_node_matches_selector (MxSelector *selector,
   gint score;
   gint a, b, c;
 
+  const gchar *type = "*";
   const gchar *class, *pseudo_class;
   const gchar *id;
   ClutterActor *actor;
@@ -550,7 +563,6 @@ css_node_matches_selector (MxSelector *selector,
     }
   else
     {
-      const gchar *type;
       GType type_id;
       gint matched;
       gint depth;
@@ -591,14 +603,43 @@ css_node_matches_selector (MxSelector *selector,
         a += 10;
     }
 
-  /* check psuedo_class */
+  /* check pseudo_class */
   if (selector->pseudo_class)
     {
-      if (!pseudo_class
-          || strcmp (selector->pseudo_class, pseudo_class))
+      gchar **pseudo_classes = NULL;
+      gint i, len;
+
+      /* if no pseudo class is supplied on the node, return instantly */
+      if (!pseudo_class)
         return -1;
-      else
+
+      /* an exact match is a common case */
+      if (!strstr (selector->pseudo_class, ":")
+          && !strcmp (selector->pseudo_class, pseudo_class))
         b += 10;
+      else
+        {
+          gint n_matches = 0;
+
+          /* check each pseudo class from the selector occurs on the node */
+          pseudo_classes = g_strsplit (selector->pseudo_class, ":", -1);
+
+          len = g_strv_length (pseudo_classes);
+          for (i = 0; i < len; i++)
+            {
+              /* Increase the 'b' score if this pseudo class is in the
+               * node. */
+              if (strstr (pseudo_class, pseudo_classes[i]))
+                n_matches++;
+            }
+
+          if (n_matches != len)
+            return -1;
+          else
+            b = b + (10 * n_matches);
+        }
+
+      g_strfreev (pseudo_classes);
     }
 
   /* check class */
