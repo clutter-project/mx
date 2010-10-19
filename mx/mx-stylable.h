@@ -134,6 +134,14 @@ void mx_stylable_connect_change_notifiers (MxStylable *stylable);
 void mx_stylable_apply_clutter_text_attributes (MxStylable  *stylable,
                                                 ClutterText *text);
 
+
+void
+mx_stylable_style_pseudo_class_add (MxStylable  *stylable,
+                                    const gchar *new_class);
+void
+mx_stylable_style_pseudo_class_remove (MxStylable  *stylable,
+                                       const gchar *remove_class);
+
 G_END_DECLS
 
 #endif /* __MX_STYLABLE_H__ */

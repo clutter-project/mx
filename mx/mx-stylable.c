@@ -145,7 +145,8 @@ mx_stylable_base_init (gpointer g_iface)
 
   pspec = g_param_spec_string ("style-pseudo-class",
                                "Style Pseudo Class",
-                               "Pseudo class, such as current state",
+                               "List of pseudo class, such as current state,"
+                               "separated by ':'.",
                                "",
                                MX_PARAM_READWRITE);
   g_object_interface_install_property (g_iface, pspec);
@@ -756,7 +757,8 @@ mx_stylable_set_style (MxStylable *stylable,
  * mx_stylable_get_style_pseudo_class:
  * @stylable: a #MxStylable
  *
- * Get the current style pseudo class
+ * Get the current style pseudo class. This can contain multiple pseudo class
+ * names, separated by ':'.
  *
  * Returns: the pseudo class string. The string is owned by the #MxWidget and
  * should not be modified or freed.
@@ -784,7 +786,8 @@ mx_stylable_get_style_pseudo_class (MxStylable *stylable)
  * @stylable: a #MxStylable
  * @pseudo_class: a new pseudo class string
  *
- * Set the style pseudo class
+ * Set the style pseudo class. The string can contain multiple pseudo class
+ * names, separated by ':'.
  */
 void
 mx_stylable_set_style_pseudo_class (MxStylable  *stylable,
@@ -802,6 +805,95 @@ mx_stylable_set_style_pseudo_class (MxStylable  *stylable,
     g_warning ("MxStylable of type '%s' does not implement"
                " set_style_pseudo_class()",
                g_type_name (G_OBJECT_TYPE (stylable)));
+}
+
+/**
+ * mx_stylable_style_pseudo_class_add:
+ * @stylable: A #MxStylable
+ * @new_class: A pseudo- lass name to add
+ *
+ * Add a pseudo-class name to the list of pseudo classes, contained in the
+ * #MxStylable:style-pseudo-class property.
+ *
+ * Since: 1.2
+ */
+void
+mx_stylable_style_pseudo_class_add (MxStylable  *stylable,
+                                    const gchar *new_class)
+{
+  const gchar *old_class;
+  gchar *tmp;
+
+  g_return_if_fail (MX_IS_STYLABLE (stylable));
+  g_return_if_fail (new_class != NULL);
+
+  old_class = mx_stylable_get_style_pseudo_class (stylable);
+
+  /* check if the pseudo class already contains new_class */
+  if (old_class && new_class && strstr (old_class, new_class))
+    return;
+
+  /* add the new pseudo class */
+  if (old_class)
+    tmp = g_strconcat (old_class, ":", new_class, NULL);
+  else
+    tmp = g_strdup (new_class);
+
+  mx_stylable_set_style_pseudo_class (stylable, tmp);
+
+  g_free (tmp);
+}
+
+/**
+ * mx_stylable_style_pseudo_class_remove:
+ * @stylable: An #MxStylable
+ * @remove_class: A pseudo class name to remove
+ *
+ * Remove the specified pseudo class name from the list of pseudo classes
+ * contained in the #MxStylable:style-pseudo-class property.
+ *
+ * Since: 1.2
+ */
+void
+mx_stylable_style_pseudo_class_remove (MxStylable  *stylable,
+                                       const gchar *remove_class)
+{
+  const gchar *old_class;
+  gchar *tmp;
+  gchar **list;
+  gint i, len;
+
+  g_return_if_fail (MX_IS_STYLABLE (stylable));
+  g_return_if_fail (remove_class != NULL);
+
+  old_class = mx_stylable_get_style_pseudo_class (stylable);
+
+  /* check if the pseudo class does not container remove_class */
+  if (!old_class
+      || (old_class && remove_class && !strstr (old_class, remove_class)))
+    return;
+
+  /* remove the old pseudo class */
+  list = g_strsplit (old_class, ":", -1);
+
+  len = g_strv_length (list);
+  tmp = NULL;
+  for (i = 0; i < len; i++)
+    {
+      /* skip over any instances of remove_class */
+      if (!strcmp (list[i], remove_class))
+        continue;
+
+      if (tmp)
+        tmp = g_strconcat (list[i], ":", tmp, NULL);
+      else
+        tmp = g_strdup (list[i]);
+    }
+
+  mx_stylable_set_style_pseudo_class (stylable, tmp);
+
+  g_strfreev (list);
+  g_free (tmp);
 }
 
 /**

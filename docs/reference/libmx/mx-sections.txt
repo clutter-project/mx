@@ -635,6 +635,8 @@ mx_stylable_set_style_pseudo_class
 mx_stylable_style_changed
 mx_stylable_connect_change_notifiers
 mx_stylable_apply_clutter_text_attributes
+mx_stylable_style_pseudo_class_add
+mx_stylable_style_pseudo_class_remove
 <SUBSECTION Standard>
 MX_STYLABLE_IFACE
 MX_IS_STYLABLE_IFACE
