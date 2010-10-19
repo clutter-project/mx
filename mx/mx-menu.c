@@ -560,7 +560,7 @@ mx_menu_new (void)
   return g_object_new (MX_TYPE_MENU, NULL);
 }
 
-static void
+static gboolean
 mx_menu_button_release_cb (MxBoxLayout  *box,
                            ClutterEvent *event,
                            MxAction     *action)
@@ -587,6 +587,8 @@ mx_menu_button_release_cb (MxBoxLayout  *box,
   g_object_unref (action);
   g_object_unref (menu);
 
+  /* allow the default handler to apply the correct styling rules */
+  return FALSE;
 }
 
 /**
