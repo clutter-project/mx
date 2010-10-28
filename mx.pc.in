@@ -8,4 +8,4 @@ Description: An experimental toolkit for moblin-netbook implementation
 Version: @VERSION@
 Libs: -L${libdir} -lmx-@MX_API_VERSION@
 Cflags: -I${includedir}/mx-@MX_API_VERSION@
-Requires: clutter-x11-1.0
+Requires: clutter-1.0
