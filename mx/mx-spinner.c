@@ -322,11 +322,13 @@ mx_spinner_update_timeout (MxSpinner *spinner)
     }
 
   if (priv->animating && priv->frames && priv->material)
-    priv->update_id = clutter_threads_add_timeout (MAX (1, priv->anim_duration /
-                                                           priv->frames),
-                                                   (GSourceFunc)
-                                                   mx_spinner_timeout_cb,
-                                                   spinner);
+    priv->update_id = clutter_threads_add_timeout_full (CLUTTER_PRIORITY_REDRAW,
+                                                        MAX (1, priv->anim_duration /
+                                                             priv->frames),
+                                                        (GSourceFunc)
+                                                        mx_spinner_timeout_cb,
+                                                        spinner,
+                                                        NULL);
 }
 
 static void
