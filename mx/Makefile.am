@@ -236,8 +236,7 @@ common_includes = \
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" 	\
 	-DPACKAGE_SRC_DIR=\""$(srcdir)"\" 				\
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\"				\
-	-DMX_COMPILATION						\
-	-DG_DISABLE_DEPRECATED
+	-DMX_COMPILATION
 
 common_ldflags = \
 	-export-dynamic			\
@@ -247,7 +246,6 @@ common_ldflags = \
 libmx_@MX_API_VERSION@_la_CFLAGS =	\
 	$(common_includes)		\
 	-DG_LOG_DOMAIN=\"Mx\"		\
-	-DCLUTTER_DISABLE_DEPRECATED	\
 	$(MX_MAINTAINER_CFLAGS)	\
 	$(MX_DEBUG_CFLAGS)		\
 	$(MX_CFLAGS)			\
