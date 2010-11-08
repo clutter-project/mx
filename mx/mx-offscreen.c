@@ -527,7 +527,7 @@ mx_offscreen_paint (ClutterActor *actor)
 
       if (priv->acc_enabled && mx_offscreen_ensure_accumulation_buffer (self))
         {
-          gfloat width, height;
+          ClutterActorBox box;
           CoglColor zero_color;
 
           CoglHandle material =
@@ -544,9 +544,9 @@ mx_offscreen_paint (ClutterActor *actor)
           cogl_pop_framebuffer ();
 
           /* Draw the accumulation buffer */
-          clutter_actor_get_size (actor, &width, &height);
+          clutter_actor_get_allocation_box (actor, &box);
           cogl_set_source (priv->acc_material);
-          cogl_rectangle (0, 0, width, height);
+          cogl_rectangle (0, 0, box.x2 - box.x1, box.y2 - box.y1);
         }
       else
         CLUTTER_ACTOR_CLASS (mx_offscreen_parent_class)->paint (actor);
