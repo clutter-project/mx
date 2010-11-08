@@ -125,6 +125,7 @@ mx_toolbar_accept_focus (MxFocusable *self,
   focusable = NULL;
   switch (hint)
     {
+    default:
     case MX_FOCUS_HINT_PRIOR:
       if (child && priv->child_has_focus)
         focusable = mx_focusable_accept_focus (MX_FOCUSABLE (child), hint);

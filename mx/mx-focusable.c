@@ -186,3 +186,46 @@ mx_focusable_accept_focus (MxFocusable *focusable, MxFocusHint hint)
     }
 }
 
+/**
+ * mx_focus_hint_from_direction:
+ * @direction: A #MxFocusDirection
+ *
+ * Transforms a focus direction to a focus hint. This is a convenience
+ * function for actors that implement the #MxFocusable interface, to
+ * pass the correct #MxFocusHint to their children when calling
+ * mx_focusable_accept_focus().
+ *
+ * %MX_FOCUS_DIRECTION_UP maps to %MX_FOCUS_HINT_FROM_BELOW,
+ * %MX_FOCUS_DIRECTION_DOWN maps to %MX_FOCUS_HINT_FROM_ABOVE,
+ * %MX_FOCUS_DIRECTION_LEFT maps to %MX_FOCUS_HINT_FROM_RIGHT,
+ * %MX_FOCUS_DIRECTION_RIGHT maps to %MX_FOCUS_HINT_FROM_LEFT,
+ * %MX_FOCUS_DIRECTION_NEXT maps to %MX_FOCUS_HINT_FIRST,
+ * %MX_FOCUS_DIRECTION_PREVIOUS maps to %MX_FOCUS_HINT_LAST and
+ * anything else maps to %MX_FOCUS_HINT_PRIOR.
+ *
+ * Returns: A #MxFocusHint
+ */
+MxFocusHint
+mx_focus_hint_from_direction (MxFocusDirection direction)
+{
+  switch (direction)
+    {
+    case MX_FOCUS_DIRECTION_UP:
+      return MX_FOCUS_HINT_FROM_BELOW;
+    case MX_FOCUS_DIRECTION_DOWN:
+      return MX_FOCUS_HINT_FROM_ABOVE;
+    case MX_FOCUS_DIRECTION_LEFT:
+      return MX_FOCUS_HINT_FROM_RIGHT;
+    case MX_FOCUS_DIRECTION_RIGHT:
+      return MX_FOCUS_HINT_FROM_LEFT;
+    case MX_FOCUS_DIRECTION_NEXT:
+      return MX_FOCUS_HINT_FIRST;
+    case MX_FOCUS_DIRECTION_PREVIOUS:
+      return MX_FOCUS_HINT_LAST;
+
+    case MX_FOCUS_DIRECTION_OUT:
+    default:
+      return MX_FOCUS_HINT_PRIOR;
+    }
+}
+

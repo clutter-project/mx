@@ -512,12 +512,15 @@ mx_box_layout_move_focus (MxFocusable      *focusable,
 {
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (focusable)->priv;
   GList *l, *childlink;
+  MxFocusHint hint;
 
   /* find the current focus */
   childlink = g_list_find (priv->children, from);
 
   if (!childlink)
     return NULL;
+
+  hint = mx_focus_hint_from_direction (direction);
 
   /* convert left/right and up/down into next/previous */
   if (priv->orientation == MX_ORIENTATION_HORIZONTAL)
@@ -545,7 +548,7 @@ mx_box_layout_move_focus (MxFocusable      *focusable,
               MxFocusable *focused, *child;
 
               child = MX_FOCUSABLE (l->data);
-              focused = mx_focusable_accept_focus (child, MX_FOCUS_HINT_FIRST);
+              focused = mx_focusable_accept_focus (child, hint);
 
               if (focused)
                 {
@@ -555,9 +558,6 @@ mx_box_layout_move_focus (MxFocusable      *focusable,
                 }
             }
         }
-
-      /* no next widgets to focus */
-      return NULL;
     }
   else if (direction == MX_FOCUS_DIRECTION_PREVIOUS)
     {
@@ -568,7 +568,7 @@ mx_box_layout_move_focus (MxFocusable      *focusable,
               MxFocusable *focused, *child;
 
               child = MX_FOCUSABLE (l->data);
-              focused = mx_focusable_accept_focus (child, MX_FOCUS_HINT_LAST);
+              focused = mx_focusable_accept_focus (child, hint);
 
               if (focused)
                 {
@@ -588,17 +588,36 @@ mx_box_layout_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 {
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (focusable)->priv;
   MxFocusable *return_focusable;
+  MxFocusHint modified_hint;
   GList* list, *l;
 
   return_focusable = NULL;
 
-  /* find the first/last focusable widget */
-  switch (hint)
+  /* Transform the hint based on our orientation */
+  modified_hint = hint;
+  if (priv->orientation == MX_ORIENTATION_HORIZONTAL)
+    {
+      if (hint == MX_FOCUS_HINT_FROM_RIGHT)
+        modified_hint = MX_FOCUS_HINT_LAST;
+      else if (hint == MX_FOCUS_HINT_FROM_LEFT)
+        modified_hint = MX_FOCUS_HINT_FIRST;
+    }
+  else
+    {
+      if (hint == MX_FOCUS_HINT_FROM_BELOW)
+        modified_hint = MX_FOCUS_HINT_LAST;
+      else if (hint == MX_FOCUS_HINT_FROM_ABOVE)
+        modified_hint = MX_FOCUS_HINT_FIRST;
+    }
+
+  /* find the first/last/prior focusable widget */
+  switch (modified_hint)
     {
     case MX_FOCUS_HINT_LAST:
       list = g_list_reverse (g_list_copy (priv->children));
       break;
 
+    default:
     case MX_FOCUS_HINT_PRIOR:
       if (priv->last_focus)
         {
@@ -608,7 +627,6 @@ mx_box_layout_accept_focus (MxFocusable *focusable, MxFocusHint hint)
         }
       /* This intentionally runs into the next case */
 
-    default:
     case MX_FOCUS_HINT_FIRST:
       list = g_list_copy (priv->children);
       break;

@@ -27,6 +27,7 @@ MxFocusDirection
 MxFocusHint
 mx_focusable_move_focus
 mx_focusable_accept_focus
+mx_focus_hint_from_direction
 <SUBSECTION Standard>
 MX_FOCUSABLE
 MX_IS_FOCUSABLE

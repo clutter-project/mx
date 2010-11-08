@@ -240,7 +240,6 @@ mx_stack_move_focus (MxFocusable      *focusable,
   c = g_list_find (priv->children, from);
   while (c && !focusable)
     {
-      MxFocusHint hint;
       ClutterActor *child;
 
       switch (direction)
@@ -249,11 +248,9 @@ mx_stack_move_focus (MxFocusable      *focusable,
         case MX_FOCUS_DIRECTION_LEFT :
         case MX_FOCUS_DIRECTION_UP :
           c = c->prev;
-          hint = MX_FOCUS_HINT_LAST;
           break;
         default:
           c = c->next;
-          hint = MX_FOCUS_HINT_FIRST;
           break;
         }
 
@@ -264,7 +261,8 @@ mx_stack_move_focus (MxFocusable      *focusable,
       if (!MX_IS_FOCUSABLE (child))
         continue;
 
-      focusable = mx_focusable_accept_focus (MX_FOCUSABLE (child), hint);
+      focusable = mx_focusable_accept_focus (MX_FOCUSABLE (child),
+                                             MX_FOCUS_HINT_PRIOR);
       if (focusable)
         priv->current_focus = child;
     }
@@ -283,6 +281,7 @@ mx_stack_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 
   switch (hint)
     {
+    default:
     case MX_FOCUS_HINT_PRIOR:
       if (priv->current_focus &&
           (!MX_IS_WIDGET (priv->current_focus) ||

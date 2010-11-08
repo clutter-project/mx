@@ -63,7 +63,11 @@ typedef enum
 {
   MX_FOCUS_HINT_FIRST,
   MX_FOCUS_HINT_LAST,
-  MX_FOCUS_HINT_PRIOR
+  MX_FOCUS_HINT_PRIOR,
+  MX_FOCUS_HINT_FROM_ABOVE,
+  MX_FOCUS_HINT_FROM_BELOW,
+  MX_FOCUS_HINT_FROM_LEFT,
+  MX_FOCUS_HINT_FROM_RIGHT
 } MxFocusHint;
 
 struct _MxFocusableIface
@@ -84,6 +88,8 @@ MxFocusable* mx_focusable_move_focus   (MxFocusable      *focusable,
                                         MxFocusable      *from);
 MxFocusable* mx_focusable_accept_focus (MxFocusable *focusable,
                                         MxFocusHint  hint);
+
+MxFocusHint mx_focus_hint_from_direction (MxFocusDirection direction);
 
 G_END_DECLS
 
