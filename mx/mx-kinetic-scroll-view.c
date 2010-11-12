@@ -767,7 +767,17 @@ mx_kinetic_scroll_view_actor_added_cb (ClutterContainer *container,
   MxKineticScrollViewPrivate *priv = MX_KINETIC_SCROLL_VIEW (container)->priv;
 
   if (MX_IS_SCROLLABLE (actor))
-    priv->child = actor;
+    {
+      MxAdjustment *hadjust, *vadjust;
+
+      priv->child = actor;
+
+      /* Make sure the adjustments have been created so the child
+       * will initialise them during its allocation (necessary for
+       * MxBoxLayout, for example)
+       */
+      mx_scrollable_get_adjustments (MX_SCROLLABLE (actor), &hadjust, &vadjust);
+    }
   else
     g_warning ("Attempting to add an actor of type %s to "
                "a MxKineticScrollView, but the actor does "
