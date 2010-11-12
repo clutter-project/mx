@@ -35,6 +35,7 @@
 #include "config.h"
 #endif
 
+#include <math.h>
 #include <glib-object.h>
 #include <clutter/clutter.h>
 
@@ -1096,6 +1097,8 @@ mx_adjustment_interpolate (MxAdjustment *adjustment,
                            gulong        mode)
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
+
+  g_return_if_fail (isfinite (value));
 
   if (duration <= 1)
     {
