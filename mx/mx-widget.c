@@ -900,6 +900,31 @@ mx_widget_long_press_cancel (MxWidget *widget)
     }
 }
 
+/**
+ * mx_widget_apply_style:
+ * @widget: A #MxWidget
+ * @style: A #MxStyle
+ *
+ * Used to implement how a new style instance should be applied in the widget.
+ * For instance, setting style instance on stylable internal children.
+ *
+ * Since: 1.2
+ */
+void
+mx_widget_apply_style (MxWidget *widget,
+                       MxStyle  *style)
+{
+  MxWidgetClass *klass;
+
+  g_return_if_fail (MX_IS_WIDGET (widget));
+  g_return_if_fail (style != NULL);
+
+  klass = MX_WIDGET_GET_CLASS (widget);
+
+  if (klass->apply_style != NULL)
+    klass->apply_style (widget, style);
+}
+
 static gboolean
 mx_widget_button_press (ClutterActor       *actor,
                         ClutterButtonEvent *event)

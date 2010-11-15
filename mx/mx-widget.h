@@ -30,6 +30,7 @@
 
 #include <clutter/clutter.h>
 #include <mx/mx-types.h>
+#include <mx/mx-style.h>
 
 G_BEGIN_DECLS
 
@@ -86,6 +87,9 @@ struct _MxWidgetClass
                            gfloat             x,
                            gfloat             y);
 
+  void (* apply_style) (MxWidget *container,
+                        MxStyle  *style);
+
   /*< private >*/
   /* padding for future expansion */
   void (*_padding_0) (void);
@@ -97,7 +101,6 @@ struct _MxWidgetClass
   void (*_padding_6) (void);
   void (*_padding_7) (void);
   void (*_padding_8) (void);
-  void (*_padding_9) (void);
 };
 
 GType mx_widget_get_type (void) G_GNUC_CONST;
@@ -128,9 +131,13 @@ ClutterActor *mx_widget_get_border_image     (MxWidget  *actor);
 void          mx_widget_get_padding          (MxWidget  *widget,
                                               MxPadding *padding);
 void          mx_widget_paint_background     (MxWidget  *widget);
+void          mx_widget_apply_style          (MxWidget  *widget,
+                                              MxStyle   *style);
 void          mx_widget_get_available_area   (MxWidget              *widget,
                                               const ClutterActorBox *allocation,
                                               ClutterActorBox       *area);
+
+
 G_END_DECLS
 
 #endif /* __MX_WIDGET_H__ */
