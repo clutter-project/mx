@@ -798,24 +798,24 @@ void
 mx_application_remove_window (MxApplication *application,
                               MxWindow      *window)
 {
-  GList *link;
+  GList *list;
 
   g_return_if_fail (MX_IS_APPLICATION (application));
   g_return_if_fail (MX_IS_WINDOW (window));
 
-  link = g_list_find (application->priv->windows, window);
+  list = g_list_find (application->priv->windows, window);
 
-  if (!link)
+  if (!list)
     {
       g_warning ("Could not remove window from application, the window was not"
                  " found in the application's window list");
       return;
     }
 
-  g_object_unref (G_OBJECT (link->data));
+  g_object_unref (G_OBJECT (list->data));
 
   application->priv->windows = g_list_delete_link (application->priv->windows,
-                                                   link);
+                                                   list);
 }
 
 

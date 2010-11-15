@@ -492,10 +492,10 @@ mx_style_get_style_sheet_properties (MxStyle    *style,
           gint i;
           for (i = 0; i < cache->len - MX_STYLE_CACHE_SIZE; i++)
             {
-              MxStyleCacheEntry *entry =
-                &g_array_index (cache, MxStyleCacheEntry, i);
-              g_free (entry->style_string);
-              g_hash_table_unref (entry->properties);
+              MxStyleCacheEntry *entry_p;
+              entry_p = &g_array_index (cache, MxStyleCacheEntry, i);
+              g_free (entry_p->style_string);
+              g_hash_table_unref (entry_p->properties);
             }
           g_array_remove_range (cache, 0, i);
         }

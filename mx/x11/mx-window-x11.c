@@ -843,7 +843,7 @@ mx_window_x11_constructed (GObject *object)
                             self);
 }
 
-void
+static void
 mx_window_x11_get_position (MxNativeWindow *self, gint *x, gint *y)
 {
   unsigned int width, height, border_width, depth;
@@ -888,7 +888,7 @@ mx_window_x11_get_position (MxNativeWindow *self, gint *x, gint *y)
     *y = win_y;
 }
 
-void
+static void
 mx_window_x11_set_position (MxNativeWindow *self, gint x, gint y)
 {
   Window win;

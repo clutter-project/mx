@@ -218,7 +218,7 @@ static GTokenType
 css_parse_simple_selector (GScanner      *scanner,
                            MxSelector    *selector)
 {
-  GTokenType token;
+  guint token;
 
   /* parse optional type (either '*' or an identifier) */
   token = g_scanner_peek_next_token (scanner);
@@ -339,7 +339,7 @@ mx_selector_free (MxSelector *selector)
 static GTokenType
 css_parse_ruleset (GScanner *scanner, GList **selectors)
 {
-  GTokenType token;
+  guint token;
   MxSelector *selector, *parent;
 
   /* parse the first selector, then keep going until we find left curly */
