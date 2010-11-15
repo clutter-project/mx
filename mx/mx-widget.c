@@ -1153,6 +1153,8 @@ mx_widget_set_style (MxStylable *stylable,
     g_object_unref (priv->style);
 
   priv->style = g_object_ref_sink (style);
+
+  mx_widget_apply_style (MX_WIDGET (stylable), style);
 }
 
 static void
