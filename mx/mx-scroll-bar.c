@@ -259,6 +259,25 @@ mx_scroll_bar_unmap (ClutterActor *actor)
 }
 
 static void
+mx_scroll_bar_apply_style (MxWidget *widget,
+                           MxStyle  *style)
+{
+  MxScrollBarPrivate *priv = MX_SCROLL_BAR (widget)->priv;
+
+  if (priv->bw_stepper != NULL)
+    mx_stylable_set_style (MX_STYLABLE (priv->bw_stepper), style);
+
+  if (priv->fw_stepper != NULL)
+    mx_stylable_set_style (MX_STYLABLE (priv->fw_stepper), style);
+
+  if (priv->trough != NULL)
+    mx_stylable_set_style (MX_STYLABLE (priv->trough), style);
+
+  if (priv->handle != NULL)
+    mx_stylable_set_style (MX_STYLABLE (priv->handle), style);
+}
+
+static void
 mx_scroll_bar_get_preferred_width (ClutterActor *actor,
                                    gfloat        for_height,
                                    gfloat       *min_width,
@@ -600,6 +619,7 @@ mx_scroll_bar_class_init (MxScrollBarClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
+  MxWidgetClass *widget_class = MX_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (MxScrollBarPrivate));
@@ -617,6 +637,8 @@ mx_scroll_bar_class_init (MxScrollBarClass *klass)
   actor_class->scroll_event   = mx_scroll_bar_scroll_event;
   actor_class->map            = mx_scroll_bar_map;
   actor_class->unmap          = mx_scroll_bar_unmap;
+
+  widget_class->apply_style = mx_scroll_bar_apply_style;
 
   g_object_class_install_property
                  (object_class,

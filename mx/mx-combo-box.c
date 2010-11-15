@@ -562,6 +562,15 @@ mx_combo_box_key_press_event (ClutterActor    *actor,
     }
 }
 
+static void
+mx_combo_box_apply_style (MxWidget *widget,
+                          MxStyle  *style)
+{
+  MxComboBoxPrivate *priv = MX_COMBO_BOX (widget)->priv;
+
+  if (priv->icon != NULL)
+    mx_stylable_set_style (MX_STYLABLE (priv->icon), style);
+}
 
 static void
 mx_combo_box_style_changed (MxComboBox *combo, MxStyleChangedFlags flags)
@@ -612,6 +621,7 @@ mx_combo_box_class_init (MxComboBoxClass *klass)
   GParamSpec *pspec;
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
+  MxWidgetClass *widget_class = MX_WIDGET_CLASS (klass);
 
   g_type_class_add_private (klass, sizeof (MxComboBoxPrivate));
 
@@ -630,6 +640,8 @@ mx_combo_box_class_init (MxComboBoxClass *klass)
 
   actor_class->button_press_event = mx_combo_box_button_press_event;
   actor_class->key_press_event = mx_combo_box_key_press_event;
+
+  widget_class->apply_style = mx_combo_box_apply_style;
 
   pspec = g_param_spec_string ("active-text",
                                "Active Text",

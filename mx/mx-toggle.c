@@ -428,10 +428,21 @@ mx_toggle_enter_event (ClutterActor         *actor,
 }
 
 static void
+mx_toggle_apply_style (MxWidget *widget,
+                       MxStyle  *style)
+{
+  MxTogglePrivate *priv = MX_TOGGLE (widget)->priv;
+
+  if (priv->handle != NULL)
+    mx_stylable_set_style (MX_STYLABLE (priv->handle), style);
+}
+
+static void
 mx_toggle_class_init (MxToggleClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
+  MxWidgetClass *widget_class = MX_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (MxTogglePrivate));
@@ -453,6 +464,8 @@ mx_toggle_class_init (MxToggleClass *klass)
   actor_class->button_press_event = mx_toggle_button_press_event;
   actor_class->leave_event = mx_toggle_leave_event;
   actor_class->enter_event = mx_toggle_enter_event;
+
+  widget_class->apply_style = mx_toggle_apply_style;
 
   pspec = g_param_spec_boolean ("active",
                                 "Active",

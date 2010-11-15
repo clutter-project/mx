@@ -793,10 +793,24 @@ mx_dialog_unmap (ClutterActor *actor)
 }
 
 static void
+mx_dialog_apply_style (MxWidget *widget,
+                       MxStyle  *style)
+{
+  MxDialogPrivate *priv = MX_DIALOG (widget)->priv;
+
+  if (priv->background != NULL)
+    mx_stylable_set_style (MX_STYLABLE (priv->background), style);
+
+  if (priv->button_box != NULL)
+    mx_stylable_set_style (MX_STYLABLE (priv->button_box), style);
+}
+
+static void
 mx_dialog_class_init (MxDialogClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
+  MxWidgetClass *widget_class = MX_WIDGET_CLASS (klass);
 
   g_type_class_add_private (klass, sizeof (MxDialogPrivate));
 
@@ -812,6 +826,8 @@ mx_dialog_class_init (MxDialogClass *klass)
   actor_class->unmap = mx_dialog_unmap;
   actor_class->show = mx_dialog_show;
   actor_class->hide = mx_dialog_hide;
+
+  widget_class->apply_style = mx_dialog_apply_style;
 }
 
 static void
