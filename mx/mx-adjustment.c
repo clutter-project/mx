@@ -51,6 +51,8 @@ struct _MxAdjustmentPrivate
   /* Do not sanity-check values while constructing,
    * not all properties may be set yet. */
   guint is_constructing : 1;
+  guint clamp_value     : 1;
+  guint elastic         : 1;
 
   gdouble  lower;
   gdouble  upper;
@@ -73,9 +75,6 @@ struct _MxAdjustmentPrivate
   gdouble          old_position;
   gdouble          new_position;
   ClutterAlpha    *interpolate_alpha;
-
-  /* For elasticity */
-  gboolean      elastic;
 };
 
 enum
@@ -90,6 +89,7 @@ enum
   PROP_PAGE_SIZE,
 
   PROP_ELASTIC,
+  PROP_CLAMP_VALUE,
 };
 
 enum
@@ -172,6 +172,10 @@ mx_adjustment_get_property (GObject    *gobject,
       g_value_set_boolean (value, priv->elastic);
       break;
 
+    case PROP_CLAMP_VALUE:
+      g_value_set_boolean (value, priv->clamp_value);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -214,6 +218,10 @@ mx_adjustment_set_property (GObject      *gobject,
 
     case PROP_ELASTIC:
       mx_adjustment_set_elastic (adj, g_value_get_boolean (value));
+      break;
+
+    case PROP_CLAMP_VALUE:
+      mx_adjustment_set_clamp_value (adj, g_value_get_boolean (value));
       break;
 
     default:
@@ -351,8 +359,18 @@ mx_adjustment_class_init (MxAdjustmentClass *klass)
                                                          "'elastic' way and "
                                                          "stop clamping value.",
                                                          FALSE,
-                                                         MX_PARAM_READWRITE |
-                                                         G_PARAM_CONSTRUCT));
+                                                         MX_PARAM_READWRITE));
+  g_object_class_install_property (object_class,
+                                   PROP_CLAMP_VALUE,
+                                   g_param_spec_boolean ("clamp-value",
+                                                         "Clamp value",
+                                                         "Clamp the adjustment "
+                                                         "value between the "
+                                                         "lower and upper "
+                                                         "values, respecting "
+                                                         "the page-size.",
+                                                         TRUE,
+                                                         MX_PARAM_READWRITE));
 
   /**
    * MxAdjustment::changed:
@@ -375,6 +393,7 @@ mx_adjustment_init (MxAdjustment *self)
   self->priv = ADJUSTMENT_PRIVATE (self);
 
   self->priv->is_constructing = TRUE;
+  self->priv->clamp_value = TRUE;
 }
 
 /**
@@ -540,7 +559,7 @@ mx_adjustment_set_value (MxAdjustment *adjustment,
   /* Defer clamp until after construction. */
   if (!priv->is_constructing)
     {
-      if (!priv->elastic)
+      if (!priv->elastic && priv->clamp_value)
         value = CLAMP (value,
                        priv->lower,
                        MAX (priv->lower, priv->upper - priv->page_size));
@@ -626,7 +645,7 @@ _mx_adjustment_set_lower (MxAdjustment *adjustment,
                            NULL);
 
       /* Defer clamp until after construction. */
-      if (!priv->is_constructing)
+      if (!priv->is_constructing && priv->clamp_value)
         mx_adjustment_clamp_page (adjustment, priv->lower, priv->upper);
 
       return TRUE;
@@ -685,7 +704,7 @@ _mx_adjustment_set_upper (MxAdjustment *adjustment,
                            NULL);
 
       /* Defer clamp until after construction. */
-      if (!priv->is_constructing)
+      if (!priv->is_constructing && priv->clamp_value)
         mx_adjustment_clamp_page (adjustment, priv->lower, priv->upper);
 
       return TRUE;
@@ -854,7 +873,7 @@ _mx_adjustment_set_page_size (MxAdjustment *adjustment,
                            NULL);
 
       /* Well explicitely clamp after construction. */
-      if (!priv->is_constructing)
+      if (!priv->is_constructing && priv->clamp_value)
         mx_adjustment_clamp_page (adjustment, priv->lower, priv->upper);
 
       return TRUE;
@@ -1014,7 +1033,7 @@ interpolation_new_frame_cb (ClutterTimeline *timeline,
   priv->interpolation = timeline;
 
   /* Stop the interpolation if we've reached the end of the adjustment */
-  if (!priv->elastic &&
+  if (!priv->elastic && priv->clamp_value &&
       ((new_value < priv->lower) ||
        (new_value >= (priv->upper - priv->page_size))))
     stop_interpolation (adjustment);
@@ -1026,7 +1045,7 @@ interpolation_completed_cb (ClutterTimeline *timeline,
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
 
-  if (priv->elastic)
+  if (priv->elastic && priv->clamp_value)
     {
       if (clutter_timeline_get_direction (priv->interpolation) ==
             CLUTTER_TIMELINE_FORWARD)
@@ -1179,5 +1198,33 @@ mx_adjustment_set_elastic (MxAdjustment *adjustment,
                            gboolean      elastic)
 {
   adjustment->priv->elastic = elastic;
+}
+
+/**
+ * mx_adjustment_get_clamp_value:
+ * @adjustment: A #MxAdjustment
+ *
+ * Get the value of the #MxAdjustment:clamp-value property.
+ *
+ * Returns: the current value of the "clamp-value" property.
+ */
+gboolean
+mx_adjustment_get_clamp_value (MxAdjustment *adjustment)
+{
+  return adjustment->priv->clamp_value;
+}
+
+/**
+ * mx_adjustment_set_clamp_value:
+ * @adjustment: A #MxAdjustment
+ * @clamp: a #gboolean
+ *
+ * Set the value of the #MxAdjustment:clamp-value property.
+ */
+void
+mx_adjustment_set_clamp_value (MxAdjustment *adjustment,
+                               gboolean      clamp)
+{
+  adjustment->priv->clamp_value = clamp;
 }
 

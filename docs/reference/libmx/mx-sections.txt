@@ -684,6 +684,8 @@ mx_adjustment_interpolate
 mx_adjustment_interpolate_relative
 mx_adjustment_get_elastic
 mx_adjustment_set_elastic
+mx_adjustment_get_clamp_value
+mx_adjustment_set_clamp_value
 <SUBSECTION Standard>
 MX_ADJUSTMENT
 MX_IS_ADJUSTMENT

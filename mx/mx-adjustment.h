@@ -144,6 +144,10 @@ gboolean      mx_adjustment_get_elastic (MxAdjustment *adjustment);
 void          mx_adjustment_set_elastic (MxAdjustment *adjustment,
                                          gboolean      elastic);
 
+gboolean      mx_adjustment_get_clamp_value (MxAdjustment *adjustment);
+void          mx_adjustment_set_clamp_value (MxAdjustment *adjustment,
+                                             gboolean      clamp);
+
 G_END_DECLS
 
 #endif /* __MX_ADJUSTMENT_H__ */
