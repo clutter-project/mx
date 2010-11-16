@@ -88,13 +88,6 @@ struct _MxGtkLightSwitchPrivate {
   gint     offset; /* offset of the mouse to slider when dragging */
 };
 
-/* MEDIUM VERTICAL BAR U+2759 */
-#define ON_STRING "\342\235\231"
-  /* WHITE CIRCLE U+25CB */
-#define OFF_STRING "\342\227\213"
-
-#define UNAVAILABLE_STRING _("Unavailable")
-
 static void
 mx_gtk_light_switch_set_property (GObject      *object,
                                   guint         prop_id,
@@ -195,119 +188,6 @@ mx_gtk_light_switch_init (MxGtkLightSwitch *self)
 }
 
 static void
-draw (GtkWidget *lightswitch,
-      cairo_t   *cr)
-{
-  MxGtkLightSwitchPrivate *priv;
-
-  gint on_label_x;
-  gint off_label_x;
-/*
-  gint label_width;
-  gint label_height;
-*/
-  GtkStyle *style;
-//  PangoLayout *layout;
-//  PangoContext *context;
-  GtkStateType state_type;
-
-  priv = MX_GTK_LIGHT_SWITCH_GET_PRIVATE (lightswitch);
-  style = gtk_widget_get_style (lightswitch);
-  state_type = gtk_widget_get_state (lightswitch);
-
-  on_label_x = (priv->trough_width / 5) * 0.75;
-  off_label_x = (priv->trough_width / 8) * 5;
-
-  /* draw the trough */
-  gtk_paint_box (style,
-                 gtk_widget_get_window (lightswitch),
-                 (state_type != GTK_STATE_INSENSITIVE && priv->active)
-                 ? GTK_STATE_SELECTED : state_type,
-                 GTK_SHADOW_IN,
-                 NULL,
-                 NULL,
-                 "light-switch-trough",
-                 0,
-                 0,
-                 (priv->trough_width),
-                 priv->switch_height);
-
-  if (state_type == GTK_STATE_INSENSITIVE)
-    return;
-#if 0
-  if (state_type == GTK_STATE_INSENSITIVE)
-    {
-      context = gdk_pango_context_get ();
-      layout = pango_layout_new (context);
-      g_object_unref (context);
-
-      pango_layout_set_font_description (layout, style->font_desc);
-      pango_layout_set_text (layout, UNAVAILABLE_STRING, -1);
-      pango_layout_get_size (layout, &label_width, &label_height);
-      gtk_paint_layout (style, lightswitch->window, state_type, FALSE,
-                        NULL, lightswitch, "lighswitch-label",
-                        (priv->trough_width - (label_width / PANGO_SCALE)) / 2,
-                        (priv->switch_height - (label_height / PANGO_SCALE)) / 2,
-                        layout);
-      g_object_unref (layout);
-      return;
-    }
-
-  /* Draw the first label; "On" */
-  context = gdk_pango_context_get ();
-  layout = pango_layout_new (context);
-  g_object_unref (context);
-  pango_layout_set_font_description (layout,
-                                     style->font_desc);
-  pango_layout_set_text (layout, ON_STRING, -1);
-  pango_layout_get_size (layout,
-                         &label_width,
-                         &label_height);
-  gtk_paint_layout (style,
-                    lightswitch->window,
-                    (priv->active) ? GTK_STATE_SELECTED : GTK_STATE_NORMAL,
-                    FALSE,
-                    NULL,
-                    (GtkWidget*) lightswitch,
-                    "lightswitch-label",
-                    on_label_x,
-                    (priv->switch_height
-                     - (label_height / PANGO_SCALE)) / 2,
-                    layout);
-
-  pango_layout_set_text (layout, OFF_STRING, -1);
-  pango_layout_get_size (layout,
-                         &label_width,
-                         &label_height);
-  gtk_paint_layout (style,
-                    lightswitch->window,
-                    (priv->active) ? GTK_STATE_SELECTED : GTK_STATE_NORMAL,
-                    FALSE,
-                    NULL,
-                    (GtkWidget*) lightswitch,
-                    "lightswitch-label",
-                    off_label_x,
-                    (priv->switch_height
-                     - (label_height / PANGO_SCALE)) / 2,
-                    layout);
-  g_object_unref (layout);
-#endif
-  /* draw the switch itself */
-  gtk_paint_box (style,
-                 gtk_widget_get_window (lightswitch),
-                 gtk_widget_get_state (lightswitch),
-                 GTK_SHADOW_OUT,
-                 NULL,
-                 NULL,
-                 "light-switch-handle",
-                 priv->x + style->xthickness,
-                 style->ythickness,
-                 priv->switch_width - style->xthickness * 2,
-                 priv->switch_height - style->ythickness * 2);
-
-}
-
-static void
 mx_gtk_light_switch_size_request (GtkWidget      *lightswitch,
                                   GtkRequisition *req)
 {
@@ -322,21 +202,13 @@ mx_gtk_light_switch_style_set (GtkWidget *lightswitch,
                                GtkStyle  *previous_style)
 {
   MxGtkLightSwitchPrivate *priv = MX_GTK_LIGHT_SWITCH_GET_PRIVATE (lightswitch);
-  PangoLayout *layout;
-  gint label_width, label_height;
 
-  layout = gtk_widget_create_pango_layout (GTK_WIDGET (lightswitch), NULL);
-  pango_layout_set_text (layout, UNAVAILABLE_STRING, -1);
-  pango_layout_get_pixel_size (layout, &label_width, &label_height);
-  g_object_unref (layout);
+  /* TODO: use style properties for these values */
 
   /* MxToggle is 105x39, so make sure light-switch is at least this size */
-  priv->trough_width = MAX (103, label_width);
-  priv->switch_width = (priv->trough_width / 2) * 1.1;
-  //priv->switch_height = MAX (39, label_height);
-  priv->switch_height = 24;
+  priv->trough_width = 105;
+  priv->switch_height = 39;
   priv->switch_width = 50;
-  priv->trough_width = 98;
 }
 
 static gboolean
@@ -357,7 +229,11 @@ static gboolean
 mx_gtk_light_switch_expose (GtkWidget      *lightswitch,
                             GdkEventExpose *event)
 {
+  MxGtkLightSwitchPrivate *priv;
+  GtkStyle *style;
+  GtkStateType state_type;
   cairo_t *cr;
+
   cr = gdk_cairo_create (gtk_widget_get_window (lightswitch));
 
   cairo_rectangle (cr,
@@ -368,7 +244,40 @@ mx_gtk_light_switch_expose (GtkWidget      *lightswitch,
 
   cairo_clip (cr);
 
-  draw (lightswitch, cr);
+  priv = MX_GTK_LIGHT_SWITCH_GET_PRIVATE (lightswitch);
+  style = gtk_widget_get_style (lightswitch);
+  state_type = gtk_widget_get_state (lightswitch);
+
+  /* draw the trough */
+  gtk_paint_box (style,
+                 gtk_widget_get_window (lightswitch),
+                 (state_type != GTK_STATE_INSENSITIVE && priv->active)
+                 ? GTK_STATE_SELECTED : state_type,
+                 GTK_SHADOW_IN,
+                 NULL,
+                 NULL,
+                 "light-switch-trough",
+                 0,
+                 0,
+                 (priv->trough_width),
+                 priv->switch_height);
+
+
+  /* draw the switch itself */
+  if (state_type != GTK_STATE_INSENSITIVE)
+    {
+      gtk_paint_box (style,
+                     gtk_widget_get_window (lightswitch),
+                     gtk_widget_get_state (lightswitch),
+                     GTK_SHADOW_OUT,
+                     NULL,
+                     NULL,
+                     "light-switch-handle",
+                     priv->x + style->xthickness,
+                     style->ythickness,
+                     priv->switch_width - style->xthickness * 2,
+                     priv->switch_height - style->ythickness * 2);
+    }
 
   cairo_destroy (cr);
 
