@@ -171,8 +171,7 @@ EXTRA_DIST = \
 	mx-marshal.list \
 	mx-enum-types.h.in \
 	mx-enum-types.c.in \
-	mx-version.h.in \
-	mx-gtk.h
+	mx-version.h.in
 
 STAMP_FILES = stamp-mx-marshal.h stamp-mx-enum-types.h
 
@@ -224,7 +223,6 @@ mxincludedir = $(includedir)/mx-$(MX_API_VERSION)/mx
 mxinclude_DATA = 				\
 	$(source_h) 				\
 	$(top_srcdir)/mx/mx.h 		\
-	$(top_srcdir)/mx/mx-gtk.h 		\
 	$(top_builddir)/mx/mx-version.h     \
 	$(top_builddir)/mx/mx-enum-types.h	\
 	$(NULL)
