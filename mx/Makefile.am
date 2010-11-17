@@ -231,6 +231,7 @@ lib_LTLIBRARIES = libmx-@MX_API_VERSION@.la
 
 common_includes = \
 	-I$(top_srcdir)							\
+	-I$(top_builddir)						\
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" 	\
 	-DPACKAGE_SRC_DIR=\""$(srcdir)"\" 				\
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\"				\
