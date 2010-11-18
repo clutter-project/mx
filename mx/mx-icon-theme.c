@@ -967,6 +967,15 @@ mx_icon_theme_get_search_paths (MxIconTheme *theme)
   return theme->priv->search_paths;
 }
 
+/**
+ * mx_icon_theme_set_search_paths:
+ * @theme: a #MxIconTheme
+ * @paths: (element-type utf8): a list of search paths
+ *
+ * Sets the directories the #MxIconTheme will search in to find icons.
+ * By default, it will look in the default system and local icon
+ * directories.
+ */
 void
 mx_icon_theme_set_search_paths (MxIconTheme *theme,
                                 const GList *paths)
