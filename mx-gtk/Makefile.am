@@ -67,6 +67,7 @@ MxGtk-@MX_API_VERSION@.gir: $(INTROSPECTION_SCANNER) libmx-gtk-@MX_API_VERSION@.
 		--libtool="$(top_builddir)/libtool" \
 		--pkg gobject-2.0 \
 		--pkg gtk+-2.0 \
+		--pkg-export mx-gtk-1.0 \
 		--output $@ \
 		$(source_gtk_h) \
 		$(top_srcdir)/mx-gtk/mx-gtk.h \

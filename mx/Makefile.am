@@ -281,6 +281,7 @@ Mx-@MX_API_VERSION@.gir: $(INTROSPECTION_SCANNER) libmx-@MX_API_VERSION@.la
 		--libtool="$(top_builddir)/libtool" \
 		--pkg gobject-2.0 \
 		--pkg clutter-1.0 \
+		--pkg-export mx-1.0 \
 		--output $@ \
 		$(source_h) \
 		$(top_srcdir)/mx/mx.h \
