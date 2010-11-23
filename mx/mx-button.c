@@ -60,7 +60,11 @@ enum
 
   PROP_LABEL,
   PROP_IS_TOGGLE,
-  PROP_TOGGLED
+  PROP_TOGGLED,
+  PROP_ACTION,
+  PROP_ICON_POSITION,
+  PROP_ICON_VISIBLE,
+  PROP_LABEL_VISIBLE
 };
 
 enum
@@ -87,9 +91,23 @@ struct _MxButtonPrivate
   ClutterAnimation *animation;
 
   ClutterActor *content_image;
+
+  MxAction   *action;
+  MxPosition  icon_position;
+  guint       icon_visible : 1;
+  guint       label_visible : 1;
+
+  ClutterActor *hbox;
+  ClutterActor *icon;
+  ClutterActor *label;
+
+  GBinding *action_label_binding;
+  GBinding *action_icon_binding;
 };
 
 static guint button_signals[LAST_SIGNAL] = { 0, };
+
+static void mx_button_update_contents (MxButton *self);
 
 static void mx_stylable_iface_init (MxStylableIface *iface);
 static void mx_focusable_iface_init (MxFocusableIface *iface);
@@ -178,16 +196,10 @@ mx_focusable_iface_init (MxFocusableIface *iface)
 static void
 mx_button_update_label_style (MxButton *button)
 {
-  ClutterActor *label;
-
-  label = mx_bin_get_child ((MxBin*) button);
-
-  /* check the child is really a label */
-  if (!CLUTTER_IS_TEXT (label))
-    return;
+  MxButtonPrivate *priv = button->priv;
 
   mx_stylable_apply_clutter_text_attributes (MX_STYLABLE (button),
-                                             CLUTTER_TEXT (label));
+                                             CLUTTER_TEXT (priv->label));
 }
 
 
@@ -237,22 +249,16 @@ mx_button_style_changed (MxWidget *widget)
       return;
     }
 
+  mx_icon_set_icon_size (MX_ICON (priv->icon), icon_size);
+
   if (icon_name)
     {
-      ClutterActor *icon = mx_bin_get_child (MX_BIN (widget));
-
-      if (!icon || !MX_IS_ICON (icon))
-        {
-          icon = mx_icon_new ();
-          mx_bin_set_child (MX_BIN (widget), icon);
-        }
-
-      mx_icon_set_icon_size (MX_ICON (icon), icon_size);
-      mx_icon_set_icon_name (MX_ICON (icon), icon_name);
+      mx_icon_set_icon_name (MX_ICON (priv->icon), icon_name);
 
       g_free (icon_name);
-    }
 
+      mx_button_update_contents (button);
+    }
 
 }
 
@@ -292,6 +298,13 @@ mx_button_pull (MxButton *button)
     }
 
   button->priv->is_pressed = FALSE;
+
+
+
+  /* activate any associated action */
+  if (priv->action)
+    g_signal_emit_by_name (priv->action, "activated", 0);
+
 
   g_signal_emit (button, button_signals[CLICKED], 0);
 
@@ -446,11 +459,29 @@ mx_button_set_property (GObject      *gobject,
     case PROP_LABEL:
       mx_button_set_label (button, g_value_get_string (value));
       break;
+
     case PROP_IS_TOGGLE:
       mx_button_set_is_toggle (button, g_value_get_boolean (value));
       break;
+
     case PROP_TOGGLED:
       mx_button_set_toggled (button, g_value_get_boolean (value));
+      break;
+
+    case PROP_ACTION:
+      mx_button_set_action (button, g_value_get_object (value));
+      break;
+
+    case PROP_ICON_POSITION:
+      mx_button_set_icon_position (button, g_value_get_enum (value));
+      break;
+
+    case PROP_ICON_VISIBLE:
+      mx_button_set_icon_visible (button, g_value_get_boolean (value));
+      break;
+
+    case PROP_LABEL_VISIBLE:
+      mx_button_set_label_visible (button, g_value_get_boolean (value));
       break;
 
     default:
@@ -472,11 +503,29 @@ mx_button_get_property (GObject    *gobject,
     case PROP_LABEL:
       g_value_set_string (value, priv->text);
       break;
+
     case PROP_IS_TOGGLE:
       g_value_set_boolean (value, priv->is_toggle);
       break;
+
     case PROP_TOGGLED:
       g_value_set_boolean (value, priv->is_toggled);
+      break;
+
+    case PROP_ACTION:
+      g_value_set_object (value, priv->action);
+      break;
+
+    case PROP_ICON_POSITION:
+      g_value_set_enum (value, priv->icon_position);
+      break;
+
+    case PROP_ICON_VISIBLE:
+      g_value_set_boolean (value, priv->icon_visible);
+      break;
+
+    case PROP_LABEL_VISIBLE:
+      g_value_set_boolean (value, priv->label_visible);
       break;
 
     default:
@@ -504,6 +553,18 @@ mx_button_dispose (GObject *gobject)
     {
       clutter_actor_unparent (priv->content_image);
       priv->content_image = NULL;
+    }
+
+  if (priv->action)
+    {
+      g_object_unref (priv->action);
+      priv->action = NULL;
+    }
+
+  if (priv->hbox)
+    {
+      g_object_unref (priv->hbox);
+      priv->hbox = NULL;
     }
 
   G_OBJECT_CLASS (mx_button_parent_class)->dispose (gobject);
@@ -630,6 +691,88 @@ mx_button_paint (ClutterActor *actor)
 }
 
 static void
+mx_button_update_contents (MxButton *self)
+{
+  MxButtonPrivate *priv = self->priv;
+  ClutterActor *child;
+  gboolean icon_visible;
+
+  /* If the icon doesn't have a name set, treat it as
+   * not-visible.
+   */
+  if (priv->icon_visible && mx_icon_get_icon_name (MX_ICON (priv->icon)))
+    icon_visible = TRUE;
+  else
+    icon_visible = FALSE;
+
+  /* replace any custom content */
+  child = mx_bin_get_child (MX_BIN (self));
+
+  if (child != priv->hbox)
+    mx_bin_set_child (MX_BIN (self), priv->hbox);
+
+  /* Handle the simple cases first */
+  if (!icon_visible &&
+      !priv->label_visible)
+    {
+      clutter_actor_hide (priv->hbox);
+      return;
+    }
+
+  /* ensure the hbox is visible */
+  clutter_actor_show (priv->hbox);
+
+  if (icon_visible &&
+      !priv->label_visible)
+    {
+      clutter_actor_show (priv->icon);
+      clutter_actor_hide (priv->label);
+      clutter_actor_lower_bottom (priv->icon);
+      return;
+    }
+
+  if (!icon_visible &&
+      priv->label_visible)
+    {
+      clutter_actor_hide (priv->icon);
+      clutter_actor_show (priv->label);
+      clutter_actor_lower_bottom (priv->label);
+      return;
+    }
+
+  /* Both the icon and text are visible, handle this case */
+  clutter_actor_show (priv->icon);
+  clutter_actor_show (priv->label);
+
+  switch (priv->icon_position)
+    {
+    case MX_POSITION_TOP:
+      mx_box_layout_set_orientation (MX_BOX_LAYOUT (priv->hbox),
+                                     MX_ORIENTATION_VERTICAL);
+      clutter_actor_lower_bottom (priv->icon);
+      break;
+
+    case MX_POSITION_RIGHT:
+      mx_box_layout_set_orientation (MX_BOX_LAYOUT (priv->hbox),
+                                     MX_ORIENTATION_HORIZONTAL);
+      clutter_actor_raise_top (priv->icon);
+      break;
+
+    case MX_POSITION_BOTTOM:
+      mx_box_layout_set_orientation (MX_BOX_LAYOUT (priv->hbox),
+                                     MX_ORIENTATION_VERTICAL);
+      clutter_actor_raise_top (priv->icon);
+      break;
+
+    case MX_POSITION_LEFT:
+      mx_box_layout_set_orientation (MX_BOX_LAYOUT (priv->hbox),
+                                     MX_ORIENTATION_HORIZONTAL);
+      clutter_actor_lower_bottom (priv->icon);
+      break;
+    }
+}
+
+static void
 mx_button_class_init (MxButtonClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -679,6 +822,29 @@ mx_button_class_init (MxButtonClass *klass)
                                 FALSE, MX_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_TOGGLED, pspec);
 
+  pspec = g_param_spec_object ("action", "Action", "Associated action",
+                               MX_TYPE_ACTION,
+                               G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+  g_object_class_install_property (gobject_class, PROP_ACTION, pspec);
+
+  pspec = g_param_spec_enum ("icon-position", "Icon position",
+                             "The position of the icon, relative to the text",
+                             MX_TYPE_POSITION, MX_POSITION_LEFT,
+                             G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+  g_object_class_install_property (gobject_class, PROP_ICON_POSITION, pspec);
+
+  pspec = g_param_spec_boolean ("icon-visible", "Icon visible",
+                                "Whether to show the icon",
+                                TRUE,
+                                G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+  g_object_class_install_property (gobject_class, PROP_ICON_VISIBLE, pspec);
+
+  pspec = g_param_spec_boolean ("label-visible", "Label visible",
+                                "Whether to show the label",
+                                TRUE,
+                                G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+  g_object_class_install_property (gobject_class, PROP_LABEL_VISIBLE, pspec);
+
   /**
    * MxButton::clicked:
    * @button: the object that received the signal
@@ -700,12 +866,40 @@ mx_button_class_init (MxButtonClass *klass)
 static void
 mx_button_init (MxButton *button)
 {
-  button->priv = MX_BUTTON_GET_PRIVATE (button);
+  MxButtonPrivate *priv;
+
+  priv = button->priv = MX_BUTTON_GET_PRIVATE (button);
 
   clutter_actor_set_reactive ((ClutterActor *) button, TRUE);
 
   g_signal_connect (button, "style-changed",
                     G_CALLBACK (mx_button_style_changed), NULL);
+
+  priv->icon_visible = TRUE;
+  priv->label_visible = TRUE;
+  priv->icon_position = MX_POSITION_LEFT;
+
+  /* take an extra reference to the hbox */
+  priv->hbox = g_object_ref (mx_box_layout_new ());
+  mx_bin_set_child (MX_BIN (button), priv->hbox);
+
+  priv->icon = mx_icon_new ();
+  priv->label = g_object_new (CLUTTER_TYPE_TEXT,
+                              "line-alignment", PANGO_ALIGN_CENTER,
+                              "ellipsize", PANGO_ELLIPSIZE_END,
+                              NULL);
+
+  clutter_container_add (CLUTTER_CONTAINER (priv->hbox), priv->icon,
+                         priv->label, NULL);
+  mx_box_layout_child_set_expand (MX_BOX_LAYOUT (priv->hbox),
+                                  priv->label, TRUE);
+  mx_box_layout_child_set_y_fill (MX_BOX_LAYOUT (priv->hbox),
+                                  priv->label, FALSE);
+
+  mx_box_layout_child_set_y_fill (MX_BOX_LAYOUT (priv->hbox),
+                                  priv->icon, FALSE);
+  mx_box_layout_child_set_x_fill (MX_BOX_LAYOUT (priv->hbox),
+                                  priv->icon, FALSE);
 }
 
 /**
@@ -763,7 +957,6 @@ mx_button_set_label (MxButton    *button,
                      const gchar *text)
 {
   MxButtonPrivate *priv;
-  ClutterActor *label;
 
   g_return_if_fail (MX_IS_BUTTON (button));
 
@@ -776,24 +969,9 @@ mx_button_set_label (MxButton    *button,
   else
     priv->text = g_strdup ("");
 
-  label = mx_bin_get_child ((MxBin*) button);
+  clutter_text_set_text (CLUTTER_TEXT (priv->label), priv->text);
 
-  if (label && CLUTTER_IS_TEXT (label))
-    {
-      clutter_text_set_text (CLUTTER_TEXT (label), priv->text);
-    }
-  else
-    {
-      label = g_object_new (CLUTTER_TYPE_TEXT,
-                            "text", priv->text,
-                            "line-alignment", PANGO_ALIGN_CENTER,
-                            "ellipsize", PANGO_ELLIPSIZE_END,
-                            NULL);
-      mx_bin_set_child ((MxBin*) button, label);
-      if (CLUTTER_ACTOR_IS_MAPPED (button))
-        mx_stylable_apply_clutter_text_attributes (MX_STYLABLE (button),
-                                                   CLUTTER_TEXT (label));
-    }
+  mx_button_update_contents (button);
 
   g_object_notify (G_OBJECT (button), "label");
 }
@@ -877,4 +1055,191 @@ mx_button_set_toggled (MxButton *button,
 
       g_object_notify (G_OBJECT (button), "toggled");
     }
+}
+
+/**
+ * mx_button_set_action:
+ * @button: A #MxButton
+ * @action: A #MxAction
+ *
+ * Sets @action as the action for @button. @Button will take its label and
+ * icon from @action.
+ */
+void
+mx_button_set_action (MxButton *button,
+                      MxAction *action)
+{
+  MxButtonPrivate *priv;
+
+  g_return_if_fail (MX_IS_BUTTON (button));
+  g_return_if_fail (MX_IS_ACTION (action));
+
+  priv = button->priv;
+
+  if (priv->action)
+    g_object_unref (priv->action);
+
+  if (priv->action_label_binding)
+    g_object_unref (priv->action_label_binding);
+
+  if (priv->action_icon_binding)
+    g_object_unref (priv->action_icon_binding);
+
+  priv->action = g_object_ref_sink (action);
+
+  mx_icon_set_icon_name (MX_ICON (priv->icon), mx_action_get_icon (action));
+  clutter_text_set_text (CLUTTER_TEXT (priv->label),
+                                       mx_action_get_display_name (action));
+
+  /* bind action properties to button properties */
+  priv->action_label_binding = g_object_bind_property (action, "display-name",
+                                                       priv->label, "text", 0);
+
+  priv->action_icon_binding = g_object_bind_property (action, "icon",
+                                                      priv->icon, "icon-name",
+                                                      0);
+
+  mx_button_update_contents (button);
+}
+
+/**
+ * mx_button_get_action:
+ * @button: A #MxButton
+ *
+ * Retrieves the #MxAction associated with @button.
+ *
+ * Returns: A #MxAction
+ */
+MxAction *
+mx_button_get_action (MxButton *button)
+{
+  g_return_val_if_fail (MX_IS_BUTTON (button), NULL);
+
+  return button->priv->action;
+}
+
+/**
+ * mx_button_set_icon_position:
+ * @button: A #MxButton
+ * @position: A #MxPosition
+ *
+ * Sets the icon position, relative to the text on the button.
+ */
+void
+mx_button_set_icon_position (MxButton   *button,
+                             MxPosition  position)
+{
+  MxButtonPrivate *priv;
+
+  g_return_if_fail (MX_IS_BUTTON (button));
+
+  priv = button->priv;
+  if (priv->icon_position != position)
+    {
+      priv->icon_position = position;
+
+      mx_button_update_contents (button);
+
+      g_object_notify (G_OBJECT (button), "icon-position");
+    }
+}
+
+/**
+ * mx_button_get_icon_position:
+ * @button: A #MxButton
+ *
+ * Retrieves the icon's relative position to the text.
+ *
+ * Returns: A #MxPosition
+ */
+MxPosition
+mx_button_get_icon_position (MxButton *button)
+{
+  g_return_val_if_fail (MX_IS_BUTTON (button), MX_POSITION_LEFT);
+
+  return button->priv->icon_position;
+}
+
+/**
+ * mx_button_set_icon_visible:
+ * @button: A #MxButton
+ * @visible: %TRUE if the icon should be visible
+ *
+ * Sets the visibility of the icon associated with the button's action.
+ */
+void
+mx_button_set_icon_visible (MxButton *button,
+                            gboolean  visible)
+{
+  MxButtonPrivate *priv;
+
+  g_return_if_fail (MX_IS_BUTTON (button));
+
+  priv = button->priv;
+  if (priv->icon_visible != visible)
+    {
+      priv->icon_visible = visible;
+
+      mx_button_update_contents (button);
+
+      g_object_notify (G_OBJECT (button), "icon-visible");
+    }
+}
+
+/**
+ * mx_button_get_icon_visible:
+ * @button: A #MxButton
+ *
+ * Retrieves the visibility of the icon associated with the button's action.
+ *
+ * Returns: %TRUE if the icon is visible, %FALSE otherwise
+ */
+gboolean
+mx_button_get_icon_visible (MxButton *button)
+{
+  g_return_val_if_fail (MX_IS_BUTTON (button), FALSE);
+  return button->priv->icon_visible;
+}
+
+/**
+ * mx_button_set_label_visible:
+ * @button: A #MxButton
+ * @visible: %TRUE if the text should be visible
+ *
+ * Sets the visibility of the text associated with the button's action.
+ */
+void
+mx_button_set_label_visible (MxButton *button,
+                            gboolean  visible)
+{
+  MxButtonPrivate *priv;
+
+  g_return_if_fail (MX_IS_BUTTON (button));
+
+  priv = button->priv;
+
+  if (priv->label_visible != visible)
+    {
+      priv->label_visible = visible;
+
+      mx_button_update_contents (button);
+
+      g_object_notify (G_OBJECT (button), "label-visible");
+    }
+}
+
+/**
+ * mx_button_get_label_visible:
+ * @button: A #MxButton
+ *
+ * Retrieves the visibility of the text associated with the button's action.
+ *
+ * Returns: %TRUE if the text is visible, %FALSE otherwise
+ */
+gboolean
+mx_button_get_label_visible (MxButton *button)
+{
+  g_return_val_if_fail (MX_IS_BUTTON (button), FALSE);
+
+  return button->priv->label_visible;
 }

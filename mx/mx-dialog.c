@@ -31,11 +31,10 @@
  * until it is hidden again.
  *
  * It also allows actions to be added to it, which will be represented as
- * buttons, using #MxActionButton.
+ * buttons, using #MxButton.
  */
 
 #include "mx-dialog.h"
-#include "mx-action-button.h"
 #include "mx-button-group.h"
 #include "mx-offscreen.h"
 #include "mx-private.h"
@@ -1171,7 +1170,7 @@ mx_dialog_hide (ClutterActor *self)
  * @dialog: A #MxDialog
  * @action: A #MxAction
  *
- * Adds a #MxActionButton that represents @action to the button area of @dialog
+ * Adds an #MxButton that represents @action to the button area of @dialog
  */
 void
 mx_dialog_add_action (MxDialog *dialog,
@@ -1186,7 +1185,8 @@ mx_dialog_add_action (MxDialog *dialog,
 
   priv = dialog->priv;
 
-  button = mx_action_button_new (action);
+  button = mx_button_new ();
+  mx_button_set_action (MX_BUTTON (button), action);
   clutter_container_add_actor (CLUTTER_CONTAINER (priv->button_box), button);
   mx_button_group_add (priv->button_group, (MxButton *) button);
 

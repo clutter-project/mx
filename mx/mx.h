@@ -26,7 +26,6 @@
 #define MX_H_INSIDE
 
 #include <mx/mx-action.h>
-#include <mx/mx-action-button.h>
 #include <mx/mx-adjustment.h>
 #include <mx/mx-application.h>
 #include <mx/mx-bin.h>

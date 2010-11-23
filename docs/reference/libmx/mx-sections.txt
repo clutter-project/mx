@@ -261,30 +261,6 @@ MxButtonPrivate
 </SECTION>
 
 <SECTION>
-<FILE>mx-action-button</FILE>
-<TITLE>MxActionButton</TITLE>
-MxActionButton
-mx_action_button_new
-mx_action_button_set_action
-mx_action_button_get_action
-mx_action_button_set_icon_position
-mx_action_button_get_icon_position
-mx_action_button_set_icon_visible
-mx_action_button_get_icon_visible
-mx_action_button_set_text_visible
-mx_action_button_get_text_visible
-<SUBSECTION Standard>
-MX_ACTION_BUTTON
-MX_IS_ACTION_BUTTON
-MX_TYPE_ACTION_BUTTON
-mx_action_button_get_type
-MX_ACTION_BUTTON_CLASS
-MX_IS_ACTION_BUTTON_CLASS
-MX_ACTION_BUTTON_GET_CLASS
-MxActionButtonPrivate
-</SECTION>
-
-<SECTION>
 <FILE>mx-window</FILE>
 <TITLE>MxWindow</TITLE>
 MxWindow

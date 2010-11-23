@@ -34,6 +34,7 @@
 G_BEGIN_DECLS
 
 #include <mx/mx-bin.h>
+#include <mx/mx-action.h>
 
 #define MX_TYPE_BUTTON                (mx_button_get_type ())
 #define MX_BUTTON(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), MX_TYPE_BUTTON, MxButton))
@@ -90,6 +91,22 @@ gboolean              mx_button_get_is_toggle   (MxButton    *button);
 void                  mx_button_set_toggled     (MxButton    *button,
                                                  gboolean     toggled);
 gboolean              mx_button_get_toggled     (MxButton    *button);
+
+void       mx_button_set_action (MxButton *button,
+                                 MxAction *action);
+MxAction  *mx_button_get_action (MxButton *button);
+
+void       mx_button_set_icon_position (MxButton   *button,
+                                        MxPosition  position);
+MxPosition mx_button_get_icon_position (MxButton   *button);
+
+void       mx_button_set_icon_visible  (MxButton   *button,
+                                        gboolean    visible);
+gboolean   mx_button_get_icon_visible  (MxButton   *button);
+
+void       mx_button_set_label_visible (MxButton   *button,
+                                        gboolean    visible);
+gboolean   mx_button_get_label_visible (MxButton   *button);
 
 G_END_DECLS
 
