@@ -369,10 +369,10 @@ mx_slider_paint (ClutterActor *actor)
 
   clutter_actor_paint (priv->trough_bg);
 
+  clutter_actor_paint (priv->trough);
+
   if (priv->value)
     clutter_actor_paint (priv->fill);
-
-  clutter_actor_paint (priv->trough);
 
   clutter_actor_paint (priv->handle);
 }
