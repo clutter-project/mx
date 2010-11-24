@@ -33,12 +33,16 @@
 #include "mx-progress-bar-fill.h"
 #include "mx-button.h"
 #include "mx-frame.h"
+#include "mx-focusable.h"
 
 static void mx_stylable_iface_init (MxStylableIface *iface);
+static void mx_focusable_iface_init (MxFocusableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxSlider, mx_slider, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
-                                                mx_stylable_iface_init))
+                                                mx_stylable_iface_init)
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
+                                                mx_focusable_iface_init))
 
 
 #define SLIDER_PRIVATE(o)                         \
@@ -79,6 +83,49 @@ enum
 
   PROP_VALUE
 };
+
+/* MxFocusable interface */
+
+MxFocusable*
+mx_slider_move_focus (MxFocusable      *focusable,
+                      MxFocusDirection  direction,
+                      MxFocusable      *old_focus)
+{
+  MxSliderPrivate *priv = MX_SLIDER (focusable)->priv;
+
+  if (direction == MX_FOCUS_DIRECTION_LEFT
+      || direction == MX_FOCUS_DIRECTION_RIGHT)
+    return focusable;
+
+  mx_stylable_set_style_pseudo_class (MX_STYLABLE (priv->handle), "");
+  mx_stylable_set_style_pseudo_class (MX_STYLABLE (priv->trough), "");
+
+  return NULL;
+}
+
+MxFocusable*
+mx_slider_accept_focus (MxFocusable *focusable,
+                        MxFocusHint  hint)
+{
+  MxSliderPrivate *priv = MX_SLIDER (focusable)->priv;
+
+  clutter_actor_grab_key_focus (CLUTTER_ACTOR (focusable));
+
+  mx_stylable_set_style_pseudo_class (MX_STYLABLE (priv->handle), "focus");
+  mx_stylable_set_style_pseudo_class (MX_STYLABLE (priv->trough), "focus");
+
+  return focusable;
+}
+
+
+static void
+mx_focusable_iface_init (MxFocusableIface *iface)
+{
+  iface->move_focus = mx_slider_move_focus;
+  iface->accept_focus = mx_slider_accept_focus;
+}
+
+
 
 static void
 drag_handle (MxSlider *bar,
@@ -641,6 +688,26 @@ mx_slider_dispose (GObject *object)
   G_OBJECT_CLASS (mx_slider_parent_class)->dispose (object);
 }
 
+static gboolean
+mx_slider_key_release_event (ClutterActor    *actor,
+                             ClutterKeyEvent *event)
+{
+  gdouble value;
+
+  value = mx_slider_get_value (MX_SLIDER (actor));
+
+  if (event->keyval == CLUTTER_Left)
+    {
+      mx_slider_set_value (MX_SLIDER (actor), MAX (value - 0.1, 0));
+    }
+  else if (event->keyval == CLUTTER_Right)
+    {
+      mx_slider_set_value (MX_SLIDER (actor), MIN (value + 0.1, 1));
+    }
+
+  return TRUE;
+}
+
 static void
 mx_slider_class_init (MxSliderClass *klass)
 {
@@ -662,6 +729,7 @@ mx_slider_class_init (MxSliderClass *klass)
   actor_class->allocate = mx_slider_allocate;
   actor_class->map = mx_slider_map;
   actor_class->unmap = mx_slider_unmap;
+  actor_class->key_release_event = mx_slider_key_release_event;
 
   widget_class->apply_style = mx_slider_apply_style;
 
