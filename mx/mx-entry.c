@@ -25,8 +25,8 @@
  * SECTION:mx-entry
  * @short_description: Widget for displaying text
  *
- * #MxEntry is a simple widget for displaying text. It derives from
- * #MxWidget to add extra style and placement functionality over
+ * #MxEntry is a widget for displaying and editing a single line of text.
+ * It derives from #MxWidget to add extra style and placement functionality over
  * #ClutterText. The internal #ClutterText is publicly accessibly to allow
  * applications to set further properties.
  *
