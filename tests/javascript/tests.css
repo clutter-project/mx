@@ -8,3 +8,27 @@ MxSlider *#trough
   background-color: black;
 }
 
+MxButton
+{
+  -mx-icon-size: 16;
+}
+
+MxButton#left
+{
+  -mx-icon-name: "go-previous";
+}
+
+MxButton#top
+{
+  -mx-icon-name: "go-top";
+}
+
+MxButton#bottom
+{
+  -mx-icon-name: "go-bottom";
+}
+
+MxButton#right
+{
+  -mx-icon-name: "go-next";
+}

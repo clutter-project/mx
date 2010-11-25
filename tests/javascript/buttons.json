@@ -1,0 +1,223 @@
+[
+  {
+    "id":   "action-1",
+    "type": "MxAction",
+    "display-name": "Action Test",
+    "icon": "go-home"
+  },
+  {
+    "id":   "action-2",
+    "type": "MxAction",
+    "display-name": "Icon Only",
+    "icon": "help-about"
+  },
+  {
+    "id":   "action-3",
+    "type": "MxAction",
+    "display-name": "Text Only",
+    "icon": "dialog-warning"
+  },
+
+  {
+    "id" : "stage",
+    "type" : "ClutterStage",
+    "user-resizable": true,
+    "title": "Button Test",
+    "children" : [
+      {
+        "type": "MxTable",
+        "constraints": [{ "type": "ClutterBindConstraint", "source": "stage",
+                          "coordinate": "width" },
+                        { "type": "ClutterBindConstraint", "source": "stage",
+                          "coordinate": "height" }],
+        "children": [
+          {
+            "type": "MxLabel",
+            "text": "Plain Button",
+            "child::column": 0,
+            "child::row": 0,
+            "child::x-expand": false,
+            "child::y-fill": false,
+            "child::y-align": "middle"
+          },
+          {
+            "type": "MxLabel",
+            "text": "Toggle Button",
+            "child::column": 0,
+            "child::row": 1,
+            "child::x-expand": false,
+            "child::y-fill": false,
+            "child::y-align": "middle"
+          },
+          {
+            "type": "MxLabel",
+            "text": "Action Test (click to test)",
+            "child::column": 0,
+            "child::row": 2,
+            "child::x-expand": false,
+            "child::y-fill": false,
+            "child::y-align": "middle"
+          },
+          {
+            "type": "MxLabel",
+            "text": "Left icon position",
+            "child::column": 0,
+            "child::row": 3,
+            "child::x-expand": false,
+            "child::y-fill": false,
+            "child::y-align": "middle"
+          },
+          {
+            "type": "MxLabel",
+            "text": "Top icon position",
+            "child::column": 0,
+            "child::row": 4,
+            "child::x-expand": false,
+            "child::y-fill": false,
+            "child::y-align": "middle"
+          },
+          {
+            "type": "MxLabel",
+            "text": "Bottom icon position",
+            "child::column": 0,
+            "child::row": 5,
+            "child::x-expand": false,
+            "child::y-fill": false,
+            "child::y-align": "middle"
+          },
+          {
+            "type": "MxLabel",
+            "text": "Right icon position",
+            "child::column": 0,
+            "child::row": 6,
+            "child::x-expand": false,
+            "child::y-fill": false,
+            "child::y-align": "middle"
+          },
+          {
+            "type": "MxLabel",
+            "text": "Icon only",
+            "child::column": 0,
+            "child::row": 7,
+            "child::x-expand": false,
+            "child::y-fill": false,
+            "child::y-align": "middle"
+          },
+          {
+            "type": "MxLabel",
+            "text": "Text only",
+            "child::column": 0,
+            "child::row": 8,
+            "child::x-expand": false,
+            "child::y-fill": false,
+            "child::y-align": "middle"
+          },
+          {
+            "type": "MxLabel",
+            "text": "Custom content",
+            "child::column": 0,
+            "child::row": 9,
+            "child::x-expand": false,
+            "child::y-fill": false,
+            "child::y-align": "middle"
+          },
+
+          {
+            "type": "MxButton",
+            "label": "Plain",
+            "child::column": 1,
+            "child::row": 0,
+            "child::x-expand": false
+          },
+          {
+            "type": "MxButton",
+            "label": "Toggle",
+            "is-toggle": true,
+            "toggled": true,
+            "child::column": 1,
+            "child::row": 1,
+            "child::x-expand": false
+          },
+          {
+            "type": "MxButton",
+            "action": "action-1",
+            "id": "action-button",
+            "child::column": 1,
+            "child::row": 2,
+            "child::x-expand": false
+
+          },
+          {
+            "type": "MxButton",
+            "name" : "left",
+            "label": "Left",
+            "icon-position": "left",
+            "child::column": 1,
+            "child::row": 3,
+            "child::x-expand": false
+
+          },
+          {
+            "type": "MxButton",
+            "name": "top",
+            "label": "Top",
+            "icon-position": "top",
+            "child::column": 1,
+            "child::row": 4,
+            "child::x-expand": false
+
+          },
+          {
+            "type": "MxButton",
+            "name": "bottom",
+            "label": "Bottom",
+            "icon-position": "bottom",
+            "child::column": 1,
+            "child::row": 5,
+            "child::x-expand": false
+
+          },
+          {
+            "type": "MxButton",
+            "name": "right",
+            "label": "Right",
+            "icon-position": "right",
+            "child::column": 1,
+            "child::row": 6,
+            "child::x-expand": false
+
+          },
+          {
+            "type": "MxButton",
+            "action": "action-2",
+            "label-visible": false,
+            "child::column": 1,
+            "child::row": 7,
+            "child::x-expand": false
+
+          },
+          {
+            "type": "MxButton",
+            "action": "action-3",
+            "icon-visible": false,
+            "child::column": 1,
+            "child::row": 8,
+            "child::x-expand": false
+
+          }
+          {
+            "id": "custom-content",
+            "type": "MxButton",
+            "children": [ {"type": "ClutterRectangle", "color": "red",
+                           "width": 16, "height": 16} ],
+            "child::column": 1,
+            "child::row": 9,
+            "child::x-expand": false
+
+          }
+
+        ]
+      }
+    ]
+  }
+]

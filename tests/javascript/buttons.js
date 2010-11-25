@@ -1,6 +1,6 @@
 #!/usr/bin/env gjs
 /*
- * Copyright 2009 Intel Corporation.
+ * Copyright 2010 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -23,19 +23,29 @@ const Mx = imports.gi.Mx;
 
 Clutter.init (0, null);
 
-let stage = Clutter.Stage.get_default ();
-stage.title = "Test Buttons"
+Mx.Style.get_default ().load_from_file ("tests.css");
 
-let button = new Mx.Button ( {label: "Normal Button"} )
-stage.add_actor (button);
-button.set_position (100, 50);
 
-let button = new Mx.Button ( {label: "Toggle Button"} );
-button.toggle_mode = true;
-stage.add_actor (button);
-button.set_position (100, 100);
+let script = new Clutter.Script ();
+script.load_from_file ("buttons.json", -1);
+
+let stage = script.get_object ("stage");
 
 stage.show ();
+
+stage.connect ("destroy", Clutter.main_quit);
+
+let button = script.get_object ("action-button");
+
+let action = button.action;
+
+let i = 0;
+
+action.connect ("activated", function (a) {a.display_name = "Click " + ++i;
+                                           a.icon = "dialog-information";})
+
+button = script.get_object ("custom-content");
+button.connect ("clicked", function (b) { b.label = "Clicked"; });
+
 Clutter.main ();
 
-stage.destroy ();
