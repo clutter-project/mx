@@ -133,7 +133,7 @@ AS_CASE([$MX_WINSYS],
         [
           SUPPORT_X11=yes
 
-          WINSYS_X11_REQUIRES="clutter-x11-1.0 >= 1.2.0 xrandr >= 1.2.0"
+          WINSYS_X11_REQUIRES="clutter-x11-1.0 >= 1.4.0 xrandr >= 1.2.0"
 	  MX_REQUIRES="$MX_REQUIRES $WINSYS_X11_REQUIRES"
         ],
         [none],
