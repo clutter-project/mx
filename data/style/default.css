@@ -424,6 +424,7 @@ MxToolbar MxButton#close-button:active {
 
 MxSlider {
   -mx-trough-height: 6;
+  -mx-handle-height: 16;
 }
 
 MxSlider *#trough-background {

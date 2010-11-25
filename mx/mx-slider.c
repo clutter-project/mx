@@ -473,11 +473,10 @@ mx_slider_allocate_fill_handle (MxSlider               *self,
   handle_box.x1 = fill_box.x2 - handle_width_2;
   handle_box.x2 = handle_box.x1 + priv->handle_width;
 
-  /* If the handle height is unset, or the handle height is greater than the
-   * trough height, we want the handle to occupy all available space.
+  /* If the handle height is unset, occupy all available space.
    * Otherwise we want it to be centred in the trough.
    */
-  if ((priv->handle_height == 0) || (priv->handle_height > priv->trough_height))
+  if (priv->handle_height == 0)
     {
       handle_box.y1 = padding.top;
       handle_box.y2 = (box->y2 - box->y1) - padding.bottom;
