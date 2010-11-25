@@ -750,24 +750,54 @@ mx_button_update_contents (MxButton *self)
       mx_box_layout_set_orientation (MX_BOX_LAYOUT (priv->hbox),
                                      MX_ORIENTATION_VERTICAL);
       clutter_actor_lower_bottom (priv->icon);
+
+      clutter_container_child_set (CLUTTER_CONTAINER (priv->hbox),
+                                   priv->label, "x-align", MX_ALIGN_MIDDLE,
+                                   "y-align", MX_ALIGN_END, NULL);
+      clutter_container_child_set (CLUTTER_CONTAINER (priv->hbox),
+                                   priv->icon, "x-align", MX_ALIGN_MIDDLE,
+                                   "y-align", MX_ALIGN_START, NULL);
       break;
 
     case MX_POSITION_RIGHT:
       mx_box_layout_set_orientation (MX_BOX_LAYOUT (priv->hbox),
                                      MX_ORIENTATION_HORIZONTAL);
       clutter_actor_raise_top (priv->icon);
+
+      clutter_container_child_set (CLUTTER_CONTAINER (priv->hbox),
+                                   priv->label, "x-align", MX_ALIGN_START,
+                                   "y-align", MX_ALIGN_MIDDLE, NULL);
+      clutter_container_child_set (CLUTTER_CONTAINER (priv->hbox),
+                                   priv->icon, "x-align", MX_ALIGN_END,
+                                   "y-align", MX_ALIGN_MIDDLE, NULL);
       break;
 
     case MX_POSITION_BOTTOM:
       mx_box_layout_set_orientation (MX_BOX_LAYOUT (priv->hbox),
                                      MX_ORIENTATION_VERTICAL);
       clutter_actor_raise_top (priv->icon);
+
+      mx_box_layout_child_set_x_align (MX_BOX_LAYOUT (priv->hbox),
+                                       priv->label, MX_ALIGN_MIDDLE);
+      clutter_container_child_set (CLUTTER_CONTAINER (priv->hbox),
+                                   priv->label, "x-align", MX_ALIGN_MIDDLE,
+                                   "y-align", MX_ALIGN_START, NULL);
+      clutter_container_child_set (CLUTTER_CONTAINER (priv->hbox),
+                                   priv->icon, "x-align", MX_ALIGN_MIDDLE,
+                                   "y-align", MX_ALIGN_END, NULL);
       break;
 
     case MX_POSITION_LEFT:
       mx_box_layout_set_orientation (MX_BOX_LAYOUT (priv->hbox),
                                      MX_ORIENTATION_HORIZONTAL);
       clutter_actor_lower_bottom (priv->icon);
+
+      clutter_container_child_set (CLUTTER_CONTAINER (priv->hbox),
+                                   priv->label, "x-align", MX_ALIGN_END,
+                                   "y-align", MX_ALIGN_MIDDLE, NULL);
+      clutter_container_child_set (CLUTTER_CONTAINER (priv->hbox),
+                                   priv->icon, "x-align", MX_ALIGN_START,
+                                   "y-align", MX_ALIGN_MIDDLE, NULL);
       break;
     }
 }
@@ -891,11 +921,16 @@ mx_button_init (MxButton *button)
 
   clutter_container_add (CLUTTER_CONTAINER (priv->hbox), priv->icon,
                          priv->label, NULL);
+
   mx_box_layout_child_set_expand (MX_BOX_LAYOUT (priv->hbox),
                                   priv->label, TRUE);
   mx_box_layout_child_set_y_fill (MX_BOX_LAYOUT (priv->hbox),
                                   priv->label, FALSE);
+  mx_box_layout_child_set_x_fill (MX_BOX_LAYOUT (priv->hbox),
+                                  priv->label, FALSE);
 
+  mx_box_layout_child_set_expand (MX_BOX_LAYOUT (priv->hbox),
+                                  priv->icon, TRUE);
   mx_box_layout_child_set_y_fill (MX_BOX_LAYOUT (priv->hbox),
                                   priv->icon, FALSE);
   mx_box_layout_child_set_x_fill (MX_BOX_LAYOUT (priv->hbox),
