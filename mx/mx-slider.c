@@ -93,10 +93,6 @@ mx_slider_move_focus (MxFocusable      *focusable,
 {
   MxSliderPrivate *priv = MX_SLIDER (focusable)->priv;
 
-  if (direction == MX_FOCUS_DIRECTION_LEFT
-      || direction == MX_FOCUS_DIRECTION_RIGHT)
-    return focusable;
-
   mx_stylable_set_style_pseudo_class (MX_STYLABLE (priv->handle), "");
   mx_stylable_set_style_pseudo_class (MX_STYLABLE (priv->trough), "");
 
@@ -688,23 +684,28 @@ mx_slider_dispose (GObject *object)
 }
 
 static gboolean
-mx_slider_key_release_event (ClutterActor    *actor,
-                             ClutterKeyEvent *event)
+mx_slider_key_press_event (ClutterActor    *actor,
+                           ClutterKeyEvent *event)
 {
   gdouble value;
 
   value = mx_slider_get_value (MX_SLIDER (actor));
 
-  if (event->keyval == CLUTTER_Left)
+  switch (event->keyval)
     {
+    case CLUTTER_Left :
       mx_slider_set_value (MX_SLIDER (actor), MAX (value - 0.1, 0));
-    }
-  else if (event->keyval == CLUTTER_Right)
-    {
+      return TRUE;
+
+    case CLUTTER_Right :
       mx_slider_set_value (MX_SLIDER (actor), MIN (value + 0.1, 1));
+      return TRUE;
+
+    default:
+      break;
     }
 
-  return TRUE;
+  return FALSE;
 }
 
 static void
@@ -728,7 +729,7 @@ mx_slider_class_init (MxSliderClass *klass)
   actor_class->allocate = mx_slider_allocate;
   actor_class->map = mx_slider_map;
   actor_class->unmap = mx_slider_unmap;
-  actor_class->key_release_event = mx_slider_key_release_event;
+  actor_class->key_press_event = mx_slider_key_press_event;
 
   widget_class->apply_style = mx_slider_apply_style;
 
