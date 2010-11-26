@@ -468,8 +468,8 @@ mx_stack_allocate (ClutterActor           *actor,
             case MX_ALIGN_START:
               break;
             case MX_ALIGN_MIDDLE:
-              child_box.x1 += (avail_space.x2 - avail_space.x1) / 2 -
-                              width / 2;
+              child_box.x1 += (gint)((avail_space.x2 - avail_space.x1) / 2 -
+                                     width / 2);
               break;
 
             case MX_ALIGN_END:
@@ -495,8 +495,8 @@ mx_stack_allocate (ClutterActor           *actor,
             case MX_ALIGN_START:
               break;
             case MX_ALIGN_MIDDLE:
-              child_box.y1 += (avail_space.y2 - avail_space.y1) / 2 -
-                              height / 2;
+              child_box.y1 += (gint)((avail_space.y2 - avail_space.y1) / 2 -
+                                     height / 2);
               break;
 
             case MX_ALIGN_END:
