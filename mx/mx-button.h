@@ -85,6 +85,12 @@ ClutterActor         *mx_button_new_with_label  (const gchar *text);
 G_CONST_RETURN gchar *mx_button_get_label       (MxButton    *button);
 void                  mx_button_set_label       (MxButton    *button,
                                                  const gchar *text);
+G_CONST_RETURN gchar *mx_button_get_icon_name   (MxButton    *button);
+void                  mx_button_set_icon_name   (MxButton    *button,
+                                                 const gchar *text);
+guint                 mx_button_get_icon_size   (MxButton    *button);
+void                  mx_button_set_icon_size   (MxButton    *button,
+                                                 guint        icon_size);
 void                  mx_button_set_is_toggle   (MxButton    *button,
                                                  gboolean     toggle);
 gboolean              mx_button_get_is_toggle   (MxButton    *button);

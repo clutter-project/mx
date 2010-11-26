@@ -59,6 +59,8 @@ enum
   PROP_0,
 
   PROP_LABEL,
+  PROP_ICON_NAME,
+  PROP_ICON_SIZE,
   PROP_IS_TOGGLE,
   PROP_TOGGLED,
   PROP_ACTION,
@@ -80,6 +82,10 @@ enum
 struct _MxButtonPrivate
 {
   gchar            *text;
+  gchar            *icon_name;
+  gchar            *style_icon_name;
+  guint             icon_size;
+  guint             style_icon_size;
 
   guint8            old_opacity;
 
@@ -151,11 +157,11 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                    G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_BUTTON, pspec);
 
-      pspec = g_param_spec_int ("x-mx-icon-size",
-                                "Icon size",
-                                "Size to use for icon",
-                                1, G_MAXINT, 48,
-                                G_PARAM_READWRITE);
+      pspec = g_param_spec_uint ("x-mx-icon-size",
+                                 "Icon size",
+                                 "Size to use for icon",
+                                 1, G_MAXINT, 48,
+                                 G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_BUTTON, pspec);
     }
 }
@@ -209,16 +215,15 @@ mx_button_style_changed (MxWidget *widget)
   MxButton *button = MX_BUTTON (widget);
   MxButtonPrivate *priv = button->priv;
   MxBorderImage *content_image = NULL;
-  gchar *icon_name = NULL;
-  gint icon_size = 48;
 
   /* update the label styling */
   mx_button_update_label_style (button);
 
+  g_free (priv->style_icon_name);
   mx_stylable_get (MX_STYLABLE (widget),
                    "x-mx-content-image", &content_image,
-                   "x-mx-icon-name", &icon_name,
-                   "x-mx-icon-size", &icon_size,
+                   "x-mx-icon-name", &priv->style_icon_name,
+                   "x-mx-icon-size", &priv->style_icon_size,
                    NULL);
 
   if (content_image)
@@ -244,22 +249,18 @@ mx_button_style_changed (MxWidget *widget)
         }
 
       g_boxed_free (MX_TYPE_BORDER_IMAGE, content_image);
-      g_free (icon_name);
 
       return;
     }
 
-  mx_icon_set_icon_size (MX_ICON (priv->icon), icon_size);
+  if (priv->icon_size == 0)
+    mx_icon_set_icon_size (MX_ICON (priv->icon), priv->style_icon_size);
 
-  if (icon_name)
+  if (priv->style_icon_name && !priv->icon_name)
     {
-      mx_icon_set_icon_name (MX_ICON (priv->icon), icon_name);
-
-      g_free (icon_name);
-
+      mx_icon_set_icon_name (MX_ICON (priv->icon), priv->style_icon_name);
       mx_button_update_contents (button);
     }
-
 }
 
 
@@ -460,6 +461,14 @@ mx_button_set_property (GObject      *gobject,
       mx_button_set_label (button, g_value_get_string (value));
       break;
 
+    case PROP_ICON_NAME:
+      mx_button_set_icon_name (button, g_value_get_string (value));
+      break;
+
+    case PROP_ICON_SIZE:
+      mx_button_set_icon_size (button, g_value_get_uint (value));
+      break;
+
     case PROP_IS_TOGGLE:
       mx_button_set_is_toggle (button, g_value_get_boolean (value));
       break;
@@ -504,6 +513,16 @@ mx_button_get_property (GObject    *gobject,
       g_value_set_string (value, priv->text);
       break;
 
+    case PROP_ICON_NAME:
+      g_value_set_string (value, priv->icon_name ?
+                          priv->icon_name : priv->style_icon_name);
+      break;
+
+    case PROP_ICON_SIZE:
+      g_value_set_uint (value, priv->icon_size ?
+                        priv->icon_size : priv->style_icon_size);
+      break;
+
     case PROP_IS_TOGGLE:
       g_value_set_boolean (value, priv->is_toggle);
       break;
@@ -540,6 +559,8 @@ mx_button_finalize (GObject *gobject)
   MxButtonPrivate *priv = MX_BUTTON (gobject)->priv;
 
   g_free (priv->text);
+  g_free (priv->icon_name);
+  g_free (priv->style_icon_name);
 
   G_OBJECT_CLASS (mx_button_parent_class)->finalize (gobject);
 }
@@ -700,7 +721,7 @@ mx_button_update_contents (MxButton *self)
   /* If the icon doesn't have a name set, treat it as
    * not-visible.
    */
-  if (priv->icon_visible && mx_icon_get_icon_name (MX_ICON (priv->icon)))
+  if (!priv->icon_name && !priv->style_icon_name)
     icon_visible = TRUE;
   else
     icon_visible = FALSE;
@@ -838,6 +859,19 @@ mx_button_class_init (MxButtonClass *klass)
                                "Label of the button",
                                NULL, MX_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_LABEL, pspec);
+
+  pspec = g_param_spec_string ("icon-name",
+                               "Icon name",
+                               "Icon name of the button",
+                               NULL, MX_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_ICON_NAME, pspec);
+
+  pspec = g_param_spec_uint ("icon-size",
+                             "Icon size",
+                             "The size to use for the button icon (in pixels)",
+                             0, G_MAXUINT, 0,
+                             MX_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_ICON_SIZE, pspec);
 
   pspec = g_param_spec_boolean ("is-toggle",
                                 "Is Toggle",
@@ -1277,4 +1311,97 @@ mx_button_get_label_visible (MxButton *button)
   g_return_val_if_fail (MX_IS_BUTTON (button), FALSE);
 
   return button->priv->label_visible;
+}
+
+/**
+ * mx_button_get_icon_name:
+ * @button: a #MxButton
+ *
+ * Get the icon-name being used on the button.
+ *
+ * Returns: the icon-name. This must not be freed by the application. %NULL if
+ *   no icon has been set
+ */
+G_CONST_RETURN gchar *
+mx_button_get_icon_name (MxButton *button)
+{
+  g_return_val_if_fail (MX_IS_BUTTON (button), NULL);
+
+  return button->priv->icon_name ?
+    button->priv->icon_name : button->priv->style_icon_name;
+}
+
+/**
+ * mx_button_set_icon_name:
+ * @button: a #MxButton
+ * @icon_name: (allow-none): icon-name to use on the button
+ *
+ * Sets the icon-name used to display an icon on the button. Setting %NULL
+ * will remove the icon name, or resort to the icon-name set in the current
+ * style. Setting an icon name overrides any icon set in the style.
+ */
+void
+mx_button_set_icon_name (MxButton    *button,
+                         const gchar *icon_name)
+{
+  MxButtonPrivate *priv;
+
+  g_return_if_fail (MX_IS_BUTTON (button));
+
+  priv = button->priv;
+
+  g_free (priv->icon_name);
+  priv->icon_name = g_strdup (icon_name);
+
+  mx_icon_set_icon_name (MX_ICON (priv->icon), icon_name ?
+                         icon_name : priv->style_icon_name);
+  mx_button_update_contents (button);
+
+  g_object_notify (G_OBJECT (button), "icon-name");
+}
+
+/**
+ * mx_button_get_icon_size:
+ * @button: a #MxButton
+ *
+ * Retrieves the icon-size being used for the displayed icon inside the button.
+ *
+ * Returns: The icon-size being used for the button icon, in pixels
+ */
+guint
+mx_button_get_icon_size (MxButton *button)
+{
+  g_return_val_if_fail (MX_IS_BUTTON (button), 0);
+
+  return button->priv->icon_size ?
+    button->priv->icon_size : button->priv->style_icon_size;
+}
+
+/**
+ * mx_button_set_icon_size:
+ * @button: a #MxButton
+ *
+ * Sets the icon-size to use for the icon displayed inside the button. This will
+ * override the icon-size set in the style. Setting a value of %0 resets to the
+ * size from the style.
+ */
+void
+mx_button_set_icon_size (MxButton *button,
+                         guint     icon_size)
+{
+  MxButtonPrivate *priv;
+
+  g_return_if_fail (MX_IS_BUTTON (button));
+
+  priv = button->priv;
+
+  if (priv->icon_size != icon_size)
+    {
+      priv->icon_size = icon_size;
+
+      mx_icon_set_icon_size (MX_ICON (priv->icon), icon_size ?
+                             icon_size : priv->style_icon_size);
+
+      g_object_notify (G_OBJECT (button), "icon-size");
+    }
 }
