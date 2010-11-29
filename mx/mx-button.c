@@ -721,7 +721,7 @@ mx_button_update_contents (MxButton *self)
   /* If the icon doesn't have a name set, treat it as
    * not-visible.
    */
-  if (!priv->icon_name && !priv->style_icon_name)
+  if (priv->icon_visible && mx_icon_get_icon_name (MX_ICON (priv->icon)))
     icon_visible = TRUE;
   else
     icon_visible = FALSE;
