@@ -1,3 +1,44 @@
+1.1.1
+=====
+
+Changes since 1.1.0:
+
+ * Add MxDialog, a modal, single-widget container
+ * MxAdjustment: fix elasticity and add a 'clamp-value' property
+ * MxSettings: add a 'small-screen' property
+ * MxBoxLayout: fix animations and child property variable definitions
+ * MxButton: add icon-name and icon-size properties, add an MxAction property
+ * MxComboBox: fix the position of the popup when transformed
+ * Add MxKinecticScrollView, a kinetic scrolling container widget
+ * MxFocusable: add a focus debug category and other various fixes
+ * Remove transitional mx/mx-gtk.h header
+ * Split out various X11 specific code so that it is possible to compile Mx
+   without X11
+ * MxSlider: add key focus support
+ * Add MxSpinner, a processing indicator widget
+ * Add MxStack, a container that allows stacking of children over each other
+ * MxStyle: performance improvements and other fixes
+ * MxTable: fix crasher when focusing an empty cell, implement raise/lower/sort
+   container functions.
+ * MxToggle: fix issues when transformed
+ * MxTooltip: fix position when transformed
+ * MxWindow: add orientation property, show/hide functions and various other
+   fixes
+ * Various other small changes and fixes
+
+Fixed bugs (from bugzilla.clutter-project.org):
+
+  #2310 - Use the new CLUTTER_KEY symbols in Mx
+  #2179 - Tooltips should only show after a delay
+  #2312 - Sync style instance with internal children
+  #2430 - Annotate mx_icon_theme_set_search_paths' paths argument properly
+  #2439 - Add exported pacakges to GIRs
+  #2429 - Differences between MxEntry and MxLabel are not documented
+  #2357 - Mx should set the hover state also when the pointer is over a child
+  #2387 - spinner should update at the redraw priority
+  #2451 - [MxStack] position with pixel alignment when aligning in the middle
+
+
 1.1.0
 =====
 
