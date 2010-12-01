@@ -226,7 +226,7 @@ mx_button_style_changed (MxWidget *widget)
                    "x-mx-icon-size", &priv->style_icon_size,
                    NULL);
 
-  if (content_image)
+  if (content_image && content_image->uri)
     {
       GError *err = NULL;
 
@@ -251,6 +251,18 @@ mx_button_style_changed (MxWidget *widget)
       g_boxed_free (MX_TYPE_BORDER_IMAGE, content_image);
 
       return;
+    }
+  else
+    {
+      /* remove any previous content image */
+      if (priv->content_image)
+        {
+          clutter_actor_unparent (priv->content_image);
+          priv->content_image = NULL;
+        }
+
+      if (content_image)
+        g_boxed_free (MX_TYPE_BORDER_IMAGE, content_image);
     }
 
   if (priv->icon_size == 0)
