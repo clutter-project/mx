@@ -580,7 +580,7 @@ mx_entry_paint (ClutterActor *actor)
       top[0].x = geo.x + geo.width;
       top[0].y = geo.y + geo.height;
       top[1].x = geo.x + geo.width;
-      top[1].y = geo.x;
+      top[1].y = geo.y;
       top[2].x = geo.x + geo.width - 30;
       top[2].y = geo.y;
       top[3].x = geo.x + geo.width - 30;
