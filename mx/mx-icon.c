@@ -55,10 +55,14 @@ G_DEFINE_TYPE_WITH_CODE (MxIcon, mx_icon, MX_TYPE_WIDGET,
 
 struct _MxIconPrivate
 {
+  guint         icon_set         : 1;
+  guint         size_set         : 1;
+  guint         is_content_image : 1;
+
   ClutterActor *icon_texture;
-  gboolean      is_content_image;
 
   gchar        *icon_name;
+  gchar        *icon_suffix;
   gint          icon_size;
 };
 
@@ -85,6 +89,13 @@ mx_stylable_iface_init (MxStylableIface *iface)
       pspec = g_param_spec_string ("x-mx-icon-name",
                                    "Icon name",
                                    "Icon name to load from the theme",
+                                   NULL,
+                                   G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_ICON, pspec);
+
+      pspec = g_param_spec_string ("x-mx-icon-suffix",
+                                   "Icon suffix",
+                                   "Suffix to append to the icon name",
                                    NULL,
                                    G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_ICON, pspec);
@@ -174,6 +185,17 @@ mx_icon_dispose (GObject *gobject)
     }
 
   G_OBJECT_CLASS (mx_icon_parent_class)->dispose (gobject);
+}
+
+static void
+mx_icon_finalize (GObject *gobject)
+{
+  MxIconPrivate *priv = MX_ICON (gobject)->priv;
+
+  g_free (priv->icon_name);
+  g_free (priv->icon_suffix);
+
+  G_OBJECT_CLASS (mx_icon_parent_class)->finalize (gobject);
 }
 
 static void
@@ -330,6 +352,7 @@ mx_icon_class_init (MxIconClass *klass)
   object_class->get_property = mx_icon_get_property;
   object_class->set_property = mx_icon_set_property;
   object_class->dispose = mx_icon_dispose;
+  object_class->finalize = mx_icon_finalize;
 
   actor_class->get_preferred_height = mx_icon_get_preferred_height;
   actor_class->get_preferred_width = mx_icon_get_preferred_width;
@@ -374,9 +397,13 @@ mx_icon_update (MxIcon *icon)
   /* Try to lookup the new one */
   if (priv->icon_name)
     {
+      gchar *icon_name;
       MxIconTheme *theme = mx_icon_theme_get_default ();
+
+      icon_name = g_strconcat (priv->icon_name, priv->icon_suffix, NULL);
       priv->icon_texture = (ClutterActor *)
-        mx_icon_theme_lookup_texture (theme, priv->icon_name, priv->icon_size);
+        mx_icon_theme_lookup_texture (theme, icon_name, priv->icon_size);
+      g_free (icon_name);
 
       /* If the icon is missing, use the image-missing icon */
       if (!priv->icon_texture)
@@ -401,12 +428,14 @@ mx_icon_style_changed_cb (MxWidget *widget)
   MxBorderImage *content_image = NULL;
   gboolean changed = FALSE;
   gchar *icon_name = NULL;
+  gchar *icon_suffix = NULL;
   gint icon_size = -1;
 
   mx_stylable_get (MX_STYLABLE (widget),
                    "x-mx-content-image", &content_image,
                    "x-mx-icon-name", &icon_name,
                    "x-mx-icon-size", &icon_size,
+                   "x-mx-icon-suffix", &icon_suffix,
                    NULL);
 
   /* Content-image overrides drawing of the icon, so
@@ -441,8 +470,8 @@ mx_icon_style_changed_cb (MxWidget *widget)
       return;
     }
 
-  if (icon_name && (!priv->icon_name ||
-                    !g_str_equal (icon_name, priv->icon_name)))
+  if (icon_name && !priv->icon_set &&
+      (!priv->icon_name || !g_str_equal (icon_name, priv->icon_name)))
     {
       g_free (priv->icon_name);
       priv->icon_name = g_strdup (icon_name);
@@ -451,13 +480,25 @@ mx_icon_style_changed_cb (MxWidget *widget)
       g_object_notify (G_OBJECT (self), "icon-name");
     }
 
-  if ((icon_size > 0) && (priv->icon_size != icon_size))
+  if ((icon_size > 0) && !priv->size_set && (priv->icon_size != icon_size))
     {
       priv->icon_size = icon_size;
       changed = TRUE;
 
       g_object_notify (G_OBJECT (self), "icon-size");
     }
+
+  if ((icon_suffix != priv->icon_suffix) &&
+      (!icon_suffix || !priv->icon_suffix ||
+       !g_str_equal (icon_suffix, priv->icon_suffix)))
+    {
+      g_free (priv->icon_suffix);
+      priv->icon_suffix = icon_suffix;
+
+      changed = TRUE;
+    }
+  else
+    g_free (icon_suffix);
 
   if (changed)
     mx_icon_update (self);
@@ -513,10 +554,22 @@ mx_icon_set_icon_name (MxIcon      *icon,
 
   priv = icon->priv;
 
+  /* Unset the icon name if necessary */
+  if (!icon_name)
+    {
+      if (priv->icon_set)
+        {
+          priv->icon_set = FALSE;
+          mx_stylable_style_changed (MX_STYLABLE (icon), MX_STYLE_CHANGED_NONE);
+        }
+
+      return;
+    }
+
+  priv->icon_set = TRUE;
+
   /* Check if there's no change */
-  if ((!priv->icon_name && !icon_name) ||
-      (priv->icon_name && icon_name &&
-       g_str_equal (priv->icon_name, icon_name)))
+  if (priv->icon_name && g_str_equal (priv->icon_name, icon_name))
     return;
 
   g_free (priv->icon_name);
@@ -534,6 +587,7 @@ mx_icon_get_icon_size (MxIcon *icon)
 
   return icon->priv->icon_size;
 }
+
 void
 mx_icon_set_icon_size (MxIcon *icon,
                        gint    size)
@@ -541,13 +595,26 @@ mx_icon_set_icon_size (MxIcon *icon,
   MxIconPrivate *priv;
 
   g_return_if_fail (MX_IS_ICON (icon));
-  g_return_if_fail (size > 0);
 
   priv = icon->priv;
-  if (priv->icon_size != size)
+
+  if (size < 0)
+    {
+      if (priv->size_set)
+        {
+          priv->size_set = FALSE;
+          mx_stylable_style_changed (MX_STYLABLE (icon), MX_STYLE_CHANGED_NONE);
+        }
+
+      return;
+    }
+  else if (priv->icon_size != size)
     {
       priv->icon_size = size;
       mx_icon_update (icon);
+
       g_object_notify (G_OBJECT (icon), "icon-size");
     }
+
+  priv->size_set = TRUE;
 }
