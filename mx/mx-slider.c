@@ -534,8 +534,8 @@ mx_slider_allocate (ClutterActor           *actor,
   else
     {
       trough_box.x1 = padding.left;
-      trough_box.y1 = (box->y2 - box->y1 - padding.bottom - padding.top -
-                       priv->trough_height) / 2;
+      trough_box.y1 = (int) ((box->y2 - box->y1 - padding.bottom - padding.top -
+                       priv->trough_height) / 2);
       trough_box.x2 = (box->x2 - box->x1) - padding.right;
       trough_box.y2 = trough_box.y1 + priv->trough_height;
     }
