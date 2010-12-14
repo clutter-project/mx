@@ -451,10 +451,14 @@ mx_icon_style_changed_cb (MxWidget *widget)
                                             self);
 
       if (priv->icon_texture)
-        clutter_actor_destroy (priv->icon_texture);
+        {
+          clutter_actor_destroy (priv->icon_texture);
+          priv->icon_texture = NULL;
+        }
 
-      priv->icon_texture = clutter_texture_new_from_file (content_image->uri,
-                                                          &error);
+      if (content_image->uri)
+        priv->icon_texture = clutter_texture_new_from_file (content_image->uri,
+                                                            &error);
       if (priv->icon_texture)
         clutter_actor_set_parent (priv->icon_texture, CLUTTER_ACTOR (widget));
 
