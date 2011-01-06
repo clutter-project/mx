@@ -29,6 +29,7 @@
  */
 
 #include "mx-action.h"
+#include "mx-types.h"
 
 G_DEFINE_TYPE (MxAction, mx_action, G_TYPE_INITIALLY_UNOWNED)
 
@@ -169,7 +170,9 @@ mx_action_class_init (MxActionClass *klass)
                                                         G_PARAM_READWRITE |
                                                         G_PARAM_STATIC_NAME |
                                                         G_PARAM_STATIC_NICK |
-                                                        G_PARAM_STATIC_BLURB));
+                                                        G_PARAM_STATIC_BLURB |
+                                                        MX_PARAM_TRANSLATEABLE
+                                                        ));
 
   g_object_class_install_property (object_class,
                                    PROP_ICON,
