@@ -869,7 +869,8 @@ mx_button_class_init (MxButtonClass *klass)
   pspec = g_param_spec_string ("label",
                                "Label",
                                "Label of the button",
-                               NULL, MX_PARAM_READWRITE);
+                               NULL,
+                               MX_PARAM_READWRITE | MX_PARAM_TRANSLATEABLE);
   g_object_class_install_property (gobject_class, PROP_LABEL, pspec);
 
   pspec = g_param_spec_string ("icon-name",
