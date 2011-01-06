@@ -1,3 +1,13 @@
+1.1.2
+=====
+
+Changes since 1.1.1:
+
+ * Focus hints now support direction the request came from
+ * MxSlider: allocate trough on pixel boundaries
+ * MxIcon: now supports a style property for handling the icon suffix
+ * MxEntry: fix shadow drawing when scrolling
+
 1.1.1
 =====
 
