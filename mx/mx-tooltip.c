@@ -493,7 +493,8 @@ mx_tooltip_class_init (MxTooltipClass *klass)
   pspec = g_param_spec_string ("text",
                                "Text",
                                "Text of the tooltip",
-                               NULL, G_PARAM_READWRITE);
+                               NULL,
+                               G_PARAM_READWRITE | MX_PARAM_TRANSLATEABLE);
   g_object_class_install_property (gobject_class, PROP_TEXT, pspec);
 
   pspec = g_param_spec_boxed ("tip-area",
