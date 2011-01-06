@@ -30,6 +30,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <libintl.h>
 
 #include <clutter/clutter.h>
 
@@ -109,6 +110,8 @@ enum
 static guint widget_signals[LAST_SIGNAL] = { 0, };
 
 static void mx_stylable_iface_init (MxStylableIface *iface);
+static ClutterScriptableIface *parent_scriptable_iface = NULL;
+static void scriptable_iface_init (ClutterScriptableIface *iface);
 
 /* Length of time in milliseconds that the cursor must be held steady
    over a widget before the tooltip is displayed */
@@ -116,7 +119,9 @@ static void mx_stylable_iface_init (MxStylableIface *iface);
 
 G_DEFINE_ABSTRACT_TYPE_WITH_CODE (MxWidget, mx_widget, CLUTTER_TYPE_ACTOR,
                                   G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
-                                                         mx_stylable_iface_init));
+                                                         mx_stylable_iface_init)
+                                  G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_SCRIPTABLE,
+                                                         scriptable_iface_init));
 
 #define MX_WIDGET_GET_PRIVATE(obj)    (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_WIDGET, MxWidgetPrivate))
 
@@ -1088,7 +1093,7 @@ mx_widget_class_init (MxWidgetClass *klass)
                                "Tooltip Text",
                                "Text displayed on the tooltip",
                                "",
-                               MX_PARAM_READWRITE);
+                               MX_PARAM_READWRITE | MX_PARAM_TRANSLATEABLE);
   g_object_class_install_property (gobject_class, PROP_TOOLTIP_TEXT, pspec);
 
   /**
@@ -1699,4 +1704,43 @@ mx_widget_get_disabled (MxWidget *widget)
 {
   g_return_val_if_fail (MX_IS_WIDGET (widget), FALSE);
   return widget->priv->is_disabled || widget->priv->parent_disabled;
+}
+
+/* Support translateable strings from JSON */
+static void
+widget_scriptable_set_custom_property (ClutterScriptable *scriptable,
+                                       ClutterScript     *script,
+                                       const gchar       *name,
+                                       const GValue      *value)
+{
+  GParamSpec *pspec;
+
+  pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (scriptable), name);
+
+  if (pspec->flags & MX_PARAM_TRANSLATEABLE &&
+      pspec->value_type == G_TYPE_STRING)
+    {
+      g_object_set (scriptable, name,
+                    gettext (g_value_get_string (value)), NULL);
+    }
+  else
+    {
+      /* chain up */
+      if (parent_scriptable_iface->set_custom_property)
+        parent_scriptable_iface->set_custom_property (scriptable, script,
+                                                      name,
+                                                      value);
+    }
+}
+
+static void
+scriptable_iface_init (ClutterScriptableIface *iface)
+{
+  parent_scriptable_iface = g_type_interface_peek_parent (iface);
+
+  if (!parent_scriptable_iface)
+    parent_scriptable_iface = g_type_default_interface_peek
+                                          (CLUTTER_TYPE_SCRIPTABLE);
+
+  iface->set_custom_property = widget_scriptable_set_custom_property;
 }

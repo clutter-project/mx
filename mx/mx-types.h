@@ -40,6 +40,8 @@ G_BEGIN_DECLS
 #define MX_TYPE_BORDER_IMAGE          (mx_border_image_get_type ())
 #define MX_TYPE_PADDING               (mx_padding_get_type ())
 
+#define MX_PARAM_TRANSLATEABLE 1 << 8
+
 typedef struct _MxBorderImage MxBorderImage;
 typedef struct _MxPadding     MxPadding;
 
