@@ -314,7 +314,8 @@ mx_label_class_init (MxLabelClass *klass)
   pspec = g_param_spec_string ("text",
                                "Text",
                                "Text of the label",
-                               NULL, MX_PARAM_READWRITE);
+                               NULL,
+                               MX_PARAM_READWRITE | MX_PARAM_TRANSLATEABLE);
   g_object_class_install_property (gobject_class, PROP_TEXT, pspec);
 
   pspec = g_param_spec_enum ("x-align",
