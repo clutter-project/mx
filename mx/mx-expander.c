@@ -621,7 +621,8 @@ mx_expander_class_init (MxExpanderClass *klass)
   pspec = g_param_spec_string ("label",
                                "Label",
                                "Expander title label.",
-                               NULL, G_PARAM_READWRITE);
+                               NULL,
+                               G_PARAM_READWRITE | MX_PARAM_TRANSLATEABLE);
   g_object_class_install_property (object_class,
                                    PROP_LABEL,
                                    pspec);
