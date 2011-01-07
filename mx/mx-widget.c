@@ -1095,7 +1095,6 @@ mx_widget_class_init (MxWidgetClass *klass)
    * MxWidget:menu:
    *
    * #MxMenu associated with the widget.
-   * See mx_widget_show_menu().
    */
   pspec = g_param_spec_object ("menu",
                                "Menu",
