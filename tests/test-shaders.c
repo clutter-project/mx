@@ -19,7 +19,6 @@
 #endif
 
 static gchar *blur =
-  "#version 110\n"
   GLES2_VARS
   "uniform sampler2D tex;\n"
   "uniform float x_step, y_step, x_radius, y_radius;\n"
