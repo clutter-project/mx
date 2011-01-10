@@ -43,6 +43,7 @@ struct _MxSettingsPrivate
   gchar *icon_theme;
   gchar *font_name;
   guint  long_press_timeout;
+  guint  drag_threshold;
   guint  small_screen : 1;
 };
 
@@ -90,6 +91,14 @@ mx_settings_get_property (GObject    *object,
               return;
             }
           break;
+
+        case MX_SETTINGS_DRAG_THRESHOLD:
+          if (_mx_settings_provider_get_setting (priv->provider, property_id,
+                                                 &uint_value))
+            {
+              g_value_set_uint (value, uint_value);
+              return;
+            }
         }
     }
 
@@ -110,6 +119,10 @@ mx_settings_get_property (GObject    *object,
 
     case MX_SETTINGS_SMALL_SCREEN:
       g_value_set_boolean (value, priv->small_screen);
+      break;
+
+    case MX_SETTINGS_DRAG_THRESHOLD:
+      g_value_set_uint (value, priv->drag_threshold);
       break;
 
     default:
@@ -155,6 +168,13 @@ mx_settings_set_property (GObject      *object,
                                                  &boolean_value))
             return;
           break;
+
+        case MX_SETTINGS_DRAG_THRESHOLD:
+          uint_value = g_value_get_uint (value);
+          if (_mx_settings_provider_set_setting (priv->provider, property_id,
+                                                 &uint_value))
+            return;
+          break;
         }
     }
 
@@ -163,23 +183,23 @@ mx_settings_set_property (GObject      *object,
     case MX_SETTINGS_ICON_THEME:
       g_free (priv->icon_theme);
       priv->icon_theme = g_value_dup_string (value);
-      g_object_notify (object, "icon-theme");
       break;
 
     case MX_SETTINGS_FONT_NAME:
       g_free (priv->font_name);
       priv->font_name = g_value_dup_string (value);
-      g_object_notify (object, "font-name");
       break;
 
     case MX_SETTINGS_LONG_PRESS_TIMEOUT:
       priv->long_press_timeout = g_value_get_uint (value);
-      g_object_notify (object, "long-press-timeout");
       break;
 
     case MX_SETTINGS_SMALL_SCREEN:
       priv->small_screen = g_value_get_boolean (value);
-      g_object_notify (object, "small-screen");
+      break;
+
+    case MX_SETTINGS_DRAG_THRESHOLD:
+      priv->drag_threshold = g_value_get_uint (value);
       break;
 
     default:
@@ -256,6 +276,10 @@ mx_settings_changed_cb (MxSettingsProvider *provider,
     case MX_SETTINGS_SMALL_SCREEN:
       g_object_notify (G_OBJECT (self), "small-screen");
       return;
+
+    case MX_SETTINGS_DRAG_THRESHOLD:
+      g_object_notify (G_OBJECT (self), "drag-threshold");
+      return;
     }
 }
 #endif
@@ -318,6 +342,15 @@ mx_settings_class_init (MxSettingsClass *klass)
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, MX_SETTINGS_SMALL_SCREEN,
                                    pspec);
+
+  pspec = g_param_spec_uint ("drag-threshold",
+                             "Drag threshold",
+                             "Pixel threshold to exceed before initiating "
+                             "a drag event",
+                             0, G_MAXUINT, 8,
+                             MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, MX_SETTINGS_DRAG_THRESHOLD,
+                                   pspec);
 }
 
 static void
@@ -330,6 +363,7 @@ mx_settings_init (MxSettings *self)
   priv->font_name = g_strdup ("Sans 10");
   priv->long_press_timeout = 500;
   priv->small_screen = FALSE;
+  priv->drag_threshold = 8;
 }
 
 MxSettings *
