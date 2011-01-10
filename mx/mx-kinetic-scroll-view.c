@@ -64,7 +64,8 @@ struct _MxKineticScrollViewPrivate
 {
   ClutterActor          *child;
 
-  gboolean               use_captured;
+  guint                  use_captured : 1;
+  guint                  in_drag      : 1;
   guint32                button;
 
   /* Mouse motion event information */
@@ -390,6 +391,27 @@ motion_event_cb (ClutterActor        *stage,
       MxKineticScrollViewMotion *motion;
       ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
 
+      /* Check if we've passed the drag threshold */
+      if (!priv->in_drag)
+        {
+          guint threshold;
+          MxSettings *settings = mx_settings_get_default ();
+
+          g_object_get (G_OBJECT (settings),
+                        "drag-threshold", &threshold, NULL);
+          motion = &g_array_index (priv->motion_buffer,
+                                   MxKineticScrollViewMotion, 0);
+
+          if ((ABS (motion->x - x) >= threshold) ||
+              (ABS (motion->y - y) >= threshold))
+            {
+              clutter_set_motion_events_enabled (TRUE);
+              priv->in_drag = TRUE;
+            }
+          else
+            return FALSE;
+        }
+
       if (child)
         {
           gdouble dx, dy;
@@ -544,6 +566,9 @@ button_release_event_cb (ClutterActor        *stage,
   g_signal_handlers_disconnect_by_func (stage,
                                         button_release_event_cb,
                                         scroll);
+
+  if (!priv->in_drag)
+    return FALSE;
 
   clutter_set_motion_events_enabled (TRUE);
 
@@ -735,6 +760,9 @@ button_press_event_cb (ClutterActor        *actor,
       if (clutter_actor_transform_stage_point (actor, bevent->x, bevent->y,
                                                &motion->x, &motion->y))
         {
+          guint threshold;
+          MxSettings *settings = mx_settings_get_default ();
+
           g_get_current_time (&motion->time);
 
           if (priv->deceleration_timeline)
@@ -744,8 +772,6 @@ button_press_event_cb (ClutterActor        *actor,
               priv->deceleration_timeline = NULL;
             }
 
-          clutter_set_motion_events_enabled (FALSE);
-
           g_signal_connect (stage,
                             "captured-event",
                             G_CALLBACK (motion_event_cb),
@@ -754,6 +780,20 @@ button_press_event_cb (ClutterActor        *actor,
                             "captured-event",
                             G_CALLBACK (button_release_event_cb),
                             scroll);
+
+          /* If there's a zero drag threshold, start the drag immediately */
+          g_object_get (G_OBJECT (settings),
+                        "drag-threshold", &threshold, NULL);
+          if (threshold == 0)
+            {
+              priv->in_drag = TRUE;
+              clutter_set_motion_events_enabled (FALSE);
+
+              /* Swallow the press event */
+              return TRUE;
+            }
+          else
+            priv->in_drag = FALSE;
         }
     }
 
