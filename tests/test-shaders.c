@@ -1,7 +1,7 @@
 
 #include <mx/mx.h>
 
-#ifdef HAVE_COGL_GLES2
+#ifdef COGL_HAS_GLES2
 
 #define GLES2_VARS \
   "precision mediump float;\n" \
