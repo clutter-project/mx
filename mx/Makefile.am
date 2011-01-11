@@ -60,6 +60,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-list-view.h 		\
 	$(top_srcdir)/mx/mx-offscreen.h 		\
 	$(top_srcdir)/mx/mx-icon.h 			\
+	$(top_srcdir)/mx/mx-image.h 		\
 	$(top_srcdir)/mx/mx-icon-theme.h 	\
 	$(top_srcdir)/mx/mx-label.h 		\
 	$(top_srcdir)/mx/mx-notebook.h 		\
@@ -126,8 +127,9 @@ source_c = \
 	$(top_srcdir)/mx/mx-focusable.c 	\
 	$(top_srcdir)/mx/mx-frame.c		\
 	$(top_srcdir)/mx/mx-grid.c 			\
-	$(top_srcdir)/mx/mx-icon.c 			\
 	$(top_srcdir)/mx/mx-icon-theme.c 	\
+	$(top_srcdir)/mx/mx-icon.c 			\
+	$(top_srcdir)/mx/mx-image.c 		\
 	$(top_srcdir)/mx/mx-item-factory.c 		\
 	$(top_srcdir)/mx/mx-item-view.c 		\
 	$(top_srcdir)/mx/mx-list-view.c 		\

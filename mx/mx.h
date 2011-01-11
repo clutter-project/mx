@@ -51,8 +51,9 @@
 #include <mx/mx-frame.h>
 #include <mx/mx-kinetic-scroll-view.h>
 #include <mx/mx-grid.h>
-#include <mx/mx-icon.h>
 #include <mx/mx-icon-theme.h>
+#include <mx/mx-icon.h>
+#include <mx/mx-image.h>
 #include <mx/mx-item-factory.h>
 #include <mx/mx-item-view.h>
 #include <mx/mx-list-view.h>

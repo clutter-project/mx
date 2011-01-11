@@ -1235,6 +1235,7 @@ MxScrollPolicy
 MxOrientation
 MxWindowRotation
 MxPosition
+MxImageScaleMode
 <SUBSECTION Standard>
 mx_padding_get_type
 mx_border_image_get_type
@@ -1291,3 +1292,27 @@ MX_STACK_CHILD_GET_CLASS
 MxStackChildPrivate
 </SECTION>
 
+<SECTION>
+<FILE>mx-image</FILE>
+<TITLE>MxImage</TITLE>
+MxImageError
+MxImage
+MxImageClass
+mx_image_new
+mx_image_set_from_data
+mx_image_set_from_file
+mx_image_set_scale_mode
+mx_image_get_scale_mode
+<SUBSECTION Standard>
+MX_IMAGE
+MX_IS_IMAGE
+MX_TYPE_IMAGE
+mx_image_get_type
+MX_IMAGE_CLASS
+MX_IS_IMAGE_CLASS
+MX_IMAGE_GET_CLASS
+<SUBSECTION Private>
+MX_IMAGE_ERROR
+mx_image_error_quark
+MxImagePrivate
+</SECTION>

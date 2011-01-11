@@ -32,3 +32,8 @@ MxButton#right
 {
   -mx-icon-name: "go-next";
 }
+
+MxImage
+{
+  background-color: blue;
+}

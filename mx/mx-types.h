@@ -187,6 +187,25 @@ typedef enum /*< prefix=MX_POSITION >*/
   MX_POSITION_LEFT
 } MxPosition;
 
+/**
+ * MxImageScaleMode:
+ * @MX_IMAGE_SCALE_NONE: Do not apply any scaling and center the image within
+ * the allocation
+ * @MX_IMAGE_SCALE_FIT: Scale the image, but maintain the aspect ratio so that
+ * it fits exactly within the allocation
+ * @MX_IMAGE_SCALE_CROP: Scale and crop the image so that it covers the entire
+ * allocation while retaining the correct aspect ratio
+ *
+ * Defines the scaling mode of an image.
+ *
+ */
+typedef enum /*< prefix=MX_IMAGE_SCALE >*/
+{
+  MX_IMAGE_SCALE_NONE,
+  MX_IMAGE_SCALE_FIT,
+  MX_IMAGE_SCALE_CROP
+} MxImageScaleMode;
+
 G_END_DECLS
 
 #endif /* __MX_TYPES_H__ */
