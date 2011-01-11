@@ -83,6 +83,10 @@ void mx_kinetic_scroll_view_set_mouse_button (MxKineticScrollView *scroll,
                                               guint32         button);
 guint32 mx_kinetic_scroll_view_get_mouse_button (MxKineticScrollView *scroll);
 
+void mx_kinetic_scroll_view_set_overshoot (MxKineticScrollView *scroll,
+                                           gdouble              overshoot);
+gdouble mx_kinetic_scroll_view_get_overshoot (MxKineticScrollView *scroll);
+
 G_END_DECLS
 
 #endif /* __MX_KINETIC_SCROLL_VIEW_H__ */

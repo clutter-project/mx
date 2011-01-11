@@ -66,6 +66,8 @@ struct _MxKineticScrollViewPrivate
 
   guint                  use_captured : 1;
   guint                  in_drag      : 1;
+  guint                  hmoving      : 1;
+  guint                  vmoving      : 1;
   guint32                button;
 
   /* Mouse motion event information */
@@ -77,6 +79,7 @@ struct _MxKineticScrollViewPrivate
   gfloat                 dx;
   gfloat                 dy;
   gdouble                decel_rate;
+  gdouble                overshoot;
   gdouble                accumulated_delta;
 };
 
@@ -88,7 +91,8 @@ enum {
   PROP_HADJUST,
   PROP_VADJUST,
   PROP_BUTTON,
-  PROP_USE_CAPTURED
+  PROP_USE_CAPTURED,
+  PROP_OVERSHOOT
 };
 
 /* MxScrollableIface implementation */
@@ -178,6 +182,10 @@ mx_kinetic_scroll_view_get_property (GObject    *object,
       g_value_set_boolean (value, priv->use_captured);
       break;
 
+    case PROP_OVERSHOOT:
+      g_value_set_double (value, priv->overshoot);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -229,6 +237,10 @@ mx_kinetic_scroll_view_set_property (GObject      *object,
     case PROP_USE_CAPTURED:
       mx_kinetic_scroll_view_set_use_captured (self,
                                                g_value_get_boolean (value));
+      break;
+
+    case PROP_OVERSHOOT:
+      mx_kinetic_scroll_view_set_overshoot (self, g_value_get_double (value));
       break;
 
     default:
@@ -360,6 +372,14 @@ mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_USE_CAPTURED, pspec);
 
+  pspec = g_param_spec_double ("overshoot",
+                               "Overshoot",
+                               "The rate at which the view will decelerate "
+                               "when scrolled beyond its boundaries.",
+                               0.0, 1.0, 0.0,
+                               MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_OVERSHOOT, pspec);
+
   /* MxScrollable properties */
   g_object_class_override_property (object_class,
                                     PROP_HADJUST,
@@ -449,7 +469,10 @@ motion_event_cb (ClutterActor        *stage,
 }
 
 static void
-clamp_adjustments (MxKineticScrollView *scroll, guint duration)
+clamp_adjustments (MxKineticScrollView *scroll,
+                   guint                duration,
+                   gboolean             horizontal,
+                   gboolean             vertical)
 {
   ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
 
@@ -461,21 +484,27 @@ clamp_adjustments (MxKineticScrollView *scroll, guint duration)
       mx_scrollable_get_adjustments (MX_SCROLLABLE (child),
                                      &hadj, &vadj);
 
-      /* Snap to the nearest step increment on hadjustment */
-      mx_adjustment_get_values (hadj, &value, &lower, &upper,
-                                &step_increment, NULL, &page_size);
-      d = (rint ((value - lower) / step_increment) *
-          step_increment) + lower;
-      d = CLAMP (d, lower, upper - page_size);
-      mx_adjustment_interpolate (hadj, d, duration, CLUTTER_EASE_OUT_QUAD);
+      if (horizontal)
+        {
+          /* Snap to the nearest step increment on hadjustment */
+          mx_adjustment_get_values (hadj, &value, &lower, &upper,
+                                    &step_increment, NULL, &page_size);
+          d = (rint ((value - lower) / step_increment) *
+              step_increment) + lower;
+          d = CLAMP (d, lower, upper - page_size);
+          mx_adjustment_interpolate (hadj, d, duration, CLUTTER_EASE_OUT_QUAD);
+        }
 
-      /* Snap to the nearest step increment on vadjustment */
-      mx_adjustment_get_values (vadj, &value, &lower, &upper,
-                                &step_increment, NULL, &page_size);
-      d = (rint ((value - lower) / step_increment) *
-          step_increment) + lower;
-      d = CLAMP (d, lower, upper - page_size);
-      mx_adjustment_interpolate (vadj, d, duration, CLUTTER_EASE_OUT_QUAD);
+      if (vertical)
+        {
+          /* Snap to the nearest step increment on vadjustment */
+          mx_adjustment_get_values (vadj, &value, &lower, &upper,
+                                    &step_increment, NULL, &page_size);
+          d = (rint ((value - lower) / step_increment) *
+              step_increment) + lower;
+          d = CLAMP (d, lower, upper - page_size);
+          mx_adjustment_interpolate (vadj, d, duration, CLUTTER_EASE_OUT_QUAD);
+        }
     }
 }
 
@@ -483,9 +512,13 @@ static void
 deceleration_completed_cb (ClutterTimeline     *timeline,
                            MxKineticScrollView *scroll)
 {
-  clamp_adjustments (scroll, 10);
+  MxKineticScrollViewPrivate *priv = scroll->priv;
+
+  clamp_adjustments (scroll, (priv->overshoot > 0.0) ? 250 : 10,
+                     priv->hmoving, priv->vmoving);
+
   g_object_unref (timeline);
-  scroll->priv->deceleration_timeline = NULL;
+  priv->deceleration_timeline = NULL;
 }
 
 static void
@@ -498,44 +531,73 @@ deceleration_new_frame_cb (ClutterTimeline     *timeline,
 
   if (child)
     {
-      gdouble value, lower, upper, page_size;
       MxAdjustment *hadjust, *vadjust;
 
       gboolean stop = TRUE;
 
       mx_scrollable_get_adjustments (MX_SCROLLABLE (child),
-                                       &hadjust,
-                                       &vadjust);
+                                     &hadjust, &vadjust);
 
       priv->accumulated_delta += clutter_timeline_get_delta (timeline);
 
+      if (priv->accumulated_delta <= 1000.0/60.0)
+        stop = FALSE;
+
       while (priv->accumulated_delta > 1000.0/60.0)
         {
-          mx_adjustment_set_value (hadjust,
-                                   priv->dx +
-                                   mx_adjustment_get_value (hadjust));
-          mx_adjustment_set_value (vadjust,
-                                   priv->dy +
-                                   mx_adjustment_get_value (vadjust));
-          priv->dx = priv->dx / priv->decel_rate;
-          priv->dy = priv->dy / priv->decel_rate;
+          gdouble hvalue, vvalue;
+
+          if (ABS (priv->dx) > 0.1)
+            {
+              hvalue = priv->dx + mx_adjustment_get_value (hadjust);
+              mx_adjustment_set_value (hadjust, hvalue);
+
+              if (priv->overshoot > 0.0)
+                {
+                  if ((hvalue > mx_adjustment_get_upper (hadjust) -
+                       mx_adjustment_get_page_size (hadjust)) ||
+                      (hvalue < mx_adjustment_get_lower (hadjust)))
+                    priv->dx *= priv->overshoot;
+                }
+
+              priv->dx = priv->dx / priv->decel_rate;
+
+              stop = FALSE;
+            }
+          else if (priv->hmoving)
+            {
+              priv->hmoving = FALSE;
+              clamp_adjustments (scroll,
+                                 (priv->overshoot > 0.0) ? 250 : 10,
+                                 TRUE, FALSE);
+            }
+
+          if (ABS (priv->dy) > 0.1)
+            {
+              vvalue = priv->dy + mx_adjustment_get_value (vadjust);
+              mx_adjustment_set_value (vadjust, vvalue);
+
+              if (priv->overshoot > 0.0)
+                {
+                  if ((vvalue > mx_adjustment_get_upper (vadjust) -
+                       mx_adjustment_get_page_size (vadjust)) ||
+                      (vvalue < mx_adjustment_get_lower (vadjust)))
+                    priv->dy *= priv->overshoot;
+                }
+
+              priv->dy = priv->dy / priv->decel_rate;
+
+              stop = FALSE;
+            }
+          else if (priv->vmoving)
+            {
+              priv->vmoving = FALSE;
+              clamp_adjustments (scroll,
+                                 (priv->overshoot > 0.0) ? 250 : 10,
+                                 FALSE, TRUE);
+            }
 
           priv->accumulated_delta -= 1000.0/60.0;
-        }
-
-      /* Check if we've hit the upper or lower bounds and stop the timeline */
-      mx_adjustment_get_values (hadjust, &value, &lower, &upper,
-                                NULL, NULL, &page_size);
-      if (((priv->dx > 0) && (value < upper - page_size)) ||
-          ((priv->dx < 0) && (value > lower)))
-        stop = FALSE;
-      else
-        {
-          mx_adjustment_get_values (vadjust, &value, &lower, &upper,
-                                    NULL, NULL, &page_size);
-          if (((priv->dy > 0) && (value < upper - page_size)) ||
-              ((priv->dy < 0) && (value > lower)))
-            stop = FALSE;
         }
 
       if (stop)
@@ -696,8 +758,12 @@ button_release_event_cb (ClutterActor        *stage,
               else
                 d = floor ((value + priv->dx - lower) / step_increment);
 
-              d = CLAMP ((d * step_increment) + lower,
-                         lower, upper - page_size) - value;
+              if (priv->overshoot <= 0.0)
+                d = CLAMP ((d * step_increment) + lower,
+                           lower, upper - page_size) - value;
+              else
+                d = ((d * step_increment) + lower) - value;
+
               priv->dx = d / ax;
 
               /* Solving for dy */
@@ -712,8 +778,12 @@ button_release_event_cb (ClutterActor        *stage,
               else
                 d = floor ((value + priv->dy - lower) / step_increment);
 
-              d = CLAMP ((d * step_increment) + lower,
-                         lower, upper - page_size) - value;
+              if (priv->overshoot <= 0.0)
+                d = CLAMP ((d * step_increment) + lower,
+                           lower, upper - page_size) - value;
+              else
+                d = ((d * step_increment) + lower) - value;
+
               priv->dy = d / ay;
 
               priv->deceleration_timeline = clutter_timeline_new (duration);
@@ -723,6 +793,7 @@ button_release_event_cb (ClutterActor        *stage,
               g_signal_connect (priv->deceleration_timeline, "completed",
                                 G_CALLBACK (deceleration_completed_cb), scroll);
               priv->accumulated_delta = 0;
+              priv->hmoving = priv->vmoving = TRUE;
               clutter_timeline_start (priv->deceleration_timeline);
               decelerating = TRUE;
             }
@@ -733,7 +804,7 @@ button_release_event_cb (ClutterActor        *stage,
   priv->last_motion = 0;
 
   if (!decelerating)
-    clamp_adjustments (scroll, 250);
+    clamp_adjustments (scroll, 250, TRUE, TRUE);
 
   return TRUE;
 }
@@ -1049,4 +1120,47 @@ mx_kinetic_scroll_view_get_use_captured (MxKineticScrollView *scroll)
 {
   g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), FALSE);
   return scroll->priv->use_captured;
+}
+
+/**
+ * mx_kinetic_scroll_view_set_overshoot:
+ * @scroll: A #MxKineticScrollView
+ * @overshoot: The rate at which the view will decelerate when scrolling beyond
+ *             its boundaries.
+ *
+ * Sets the rate at which the view will decelerate when scrolling beyond its
+ * boundaries. The deceleration rate will be multiplied by this value every
+ * 60th of a second when the view is scrolling outside of the range set by its
+ * adjustments.
+ *
+ * See mx_kinetic_scroll_view_set_deceleration()
+ */
+void
+mx_kinetic_scroll_view_set_overshoot (MxKineticScrollView *scroll,
+                                      gdouble              overshoot)
+{
+  MxKineticScrollViewPrivate *priv;
+
+  g_return_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll));
+
+  priv = scroll->priv;
+  if (priv->overshoot != overshoot)
+    {
+      priv->overshoot = overshoot;
+      g_object_notify (G_OBJECT (scroll), "overshoot");
+    }
+}
+
+/**
+ * mx_kinetic_scroll_view_get_overshoot:
+ * @scroll: A #MxKineticScrollView
+ *
+ * Retrieves the deceleration rate multiplier used when the scroll-view is
+ * scrolling beyond its boundaries.
+ */
+gdouble
+mx_kinetic_scroll_view_get_overshoot (MxKineticScrollView *scroll)
+{
+  g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), 0.0);
+  return scroll->priv->overshoot;
 }
