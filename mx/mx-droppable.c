@@ -258,7 +258,7 @@ mx_droppable_real_disable (MxDroppable *droppable)
                                             G_CALLBACK (on_stage_capture),
                                             context);
 
-      g_object_set_qdata (G_OBJECT (droppable), quark_drop_context, NULL);
+      g_object_set_qdata (G_OBJECT (stage), quark_drop_context, NULL);
     }
 }
 
