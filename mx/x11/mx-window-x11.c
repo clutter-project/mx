@@ -345,6 +345,15 @@ mx_window_x11_mapped_notify_cb (ClutterActor *actor,
 }
 
 static void
+mx_window_x11_has_toolbar_notify_cb (MxWindow    *window,
+                                     GParamSpec  *pspec,
+                                     MxWindowX11 *self)
+{
+  if (CLUTTER_ACTOR_IS_MAPPED (mx_window_get_clutter_stage (window)))
+    mx_window_x11_set_wm_hints (self);
+}
+
+static void
 mx_window_x11_allocation_changed_cb (ClutterActor           *actor,
                                      ClutterActorBox        *box,
                                      ClutterAllocationFlags  flags,
@@ -841,6 +850,8 @@ mx_window_x11_constructed (GObject *object)
   g_signal_connect_swapped (priv->window, "notify::icon-cogl-texture",
                             G_CALLBACK (mx_window_x11_notify_icon_changed_cb),
                             self);
+  g_signal_connect (priv->window, "notify::has-toolbar",
+                    G_CALLBACK (mx_window_x11_has_toolbar_notify_cb), self);
 }
 
 static void

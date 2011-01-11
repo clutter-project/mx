@@ -57,6 +57,14 @@ icon_cb (MxToggle   *toggle,
 }
 
 static void
+toolbar_cb (MxToggle   *toggle,
+            GParamSpec *pspec,
+            MxWindow   *window)
+{
+  mx_window_set_has_toolbar (window, mx_toggle_get_active (toggle));
+}
+
+static void
 resizable_cb (MxToggle     *toggle,
               GParamSpec   *pspec,
               ClutterStage *stage)
@@ -184,6 +192,27 @@ main (int argc, char **argv)
   mx_table_add_actor_with_properties (MX_TABLE (table),
                                       label,
                                       3, 1,
+                                      "x-expand", TRUE,
+                                      "x-align", MX_ALIGN_START,
+                                      "y-fill", FALSE,
+                                      "x-fill", FALSE,
+                                      NULL);
+
+  toggle = mx_toggle_new ();
+  mx_toggle_set_active (MX_TOGGLE (toggle), TRUE);
+  label = mx_label_new_with_text ("Toggle toolbar");
+  g_signal_connect (toggle, "notify::active",
+                    G_CALLBACK (toolbar_cb), window);
+  mx_table_add_actor_with_properties (MX_TABLE (table),
+                                      toggle,
+                                      4, 0,
+                                      "x-expand", TRUE,
+                                      "x-align", MX_ALIGN_END,
+                                      "x-fill", FALSE,
+                                      NULL);
+  mx_table_add_actor_with_properties (MX_TABLE (table),
+                                      label,
+                                      4, 1,
                                       "x-expand", TRUE,
                                       "x-align", MX_ALIGN_START,
                                       "y-fill", FALSE,

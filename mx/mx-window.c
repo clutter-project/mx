@@ -898,6 +898,8 @@ mx_window_set_has_toolbar (MxWindow *window,
         }
 
       g_object_notify (G_OBJECT (window), "has-toolbar");
+
+      mx_window_reallocate (window);
     }
 }
 
