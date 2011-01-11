@@ -19,14 +19,34 @@
  */
 #include "test-mx.h"
 
+static void
+notify_overshoot_cb (MxToggle            *toggle,
+                     GParamSpec          *pspec,
+                     MxKineticScrollView *view)
+{
+  gboolean on = mx_toggle_get_active (toggle);
+  mx_kinetic_scroll_view_set_overshoot (view, on ? 0.2 : 0.0);
+}
 
+static void
+notify_elastic_cb (MxToggle     *toggle,
+                   GParamSpec   *pspec,
+                   MxScrollable *view)
+{
+  MxAdjustment *hadjust, *vadjust;
+  gboolean on = mx_toggle_get_active (toggle);
+
+  mx_scrollable_get_adjustments (view, &hadjust, &vadjust);
+  mx_adjustment_set_elastic (hadjust, on);
+  mx_adjustment_set_elastic (vadjust, on);
+}
 
 void
 scroll_view_main (ClutterContainer *stage)
 {
   gint width, height;
   MxAdjustment *hadjust, *vadjust;
-  ClutterActor *scroll, *kinetic, *view, *texture;
+  ClutterActor *label, *elastic, *overshoot, *scroll, *kinetic, *view, *texture;
 
   scroll = mx_scroll_view_new ();
   kinetic = mx_kinetic_scroll_view_new ();
@@ -64,4 +84,25 @@ scroll_view_main (ClutterContainer *stage)
                             height,
                             height * 3,
                             300);
+
+  label = mx_label_new_with_text ("Toggle over-shooting:");
+  overshoot = mx_toggle_new ();
+  clutter_actor_set_position (label, 320, 10);
+  clutter_actor_set_position (overshoot, 330 + clutter_actor_get_width (label),
+                              10);
+  clutter_container_add (stage, label, overshoot, NULL);
+
+  g_signal_connect (overshoot, "notify::active",
+                    G_CALLBACK (notify_overshoot_cb), kinetic);
+
+  label = mx_label_new_with_text ("Toggle elasticity:");
+  elastic = mx_toggle_new ();
+  clutter_actor_set_position (label, 320,
+                              20 + clutter_actor_get_height (overshoot));
+  clutter_actor_set_position (elastic, clutter_actor_get_x (overshoot),
+                              clutter_actor_get_y (label));
+  clutter_container_add (stage, label, elastic, NULL);
+
+  g_signal_connect (elastic, "notify::active",
+                    G_CALLBACK (notify_elastic_cb), kinetic);
 }
