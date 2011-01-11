@@ -438,16 +438,23 @@ motion_event_cb (ClutterActor        *stage,
           MxAdjustment *hadjust, *vadjust;
 
           mx_scrollable_get_adjustments (MX_SCROLLABLE (child),
-                                           &hadjust,
-                                           &vadjust);
+                                         &hadjust, &vadjust);
 
           motion = &g_array_index (priv->motion_buffer,
-                                   MxKineticScrollViewMotion, priv->last_motion);
-          dx = (motion->x - x) + mx_adjustment_get_value (hadjust);
-          dy = (motion->y - y) + mx_adjustment_get_value (vadjust);
+                                   MxKineticScrollViewMotion,
+                                   priv->last_motion);
 
-          mx_adjustment_set_value (hadjust, dx);
-          mx_adjustment_set_value (vadjust, dy);
+          if (hadjust)
+            {
+              dx = (motion->x - x) + mx_adjustment_get_value (hadjust);
+              mx_adjustment_set_value (hadjust, dx);
+            }
+
+          if (vadjust)
+            {
+              dy = (motion->y - y) + mx_adjustment_get_value (vadjust);
+              mx_adjustment_set_value (vadjust, dy);
+            }
         }
 
       priv->last_motion ++;
@@ -484,7 +491,7 @@ clamp_adjustments (MxKineticScrollView *scroll,
       mx_scrollable_get_adjustments (MX_SCROLLABLE (child),
                                      &hadj, &vadj);
 
-      if (horizontal)
+      if (horizontal && hadj)
         {
           /* Snap to the nearest step increment on hadjustment */
           mx_adjustment_get_values (hadj, &value, &lower, &upper,
@@ -495,7 +502,7 @@ clamp_adjustments (MxKineticScrollView *scroll,
           mx_adjustment_interpolate (hadj, d, duration, CLUTTER_EASE_OUT_QUAD);
         }
 
-      if (vertical)
+      if (vertical && vadj)
         {
           /* Snap to the nearest step increment on vadjustment */
           mx_adjustment_get_values (vadj, &value, &lower, &upper,
@@ -547,54 +554,60 @@ deceleration_new_frame_cb (ClutterTimeline     *timeline,
         {
           gdouble hvalue, vvalue;
 
-          if (ABS (priv->dx) > 0.1)
+          if (hadjust)
             {
-              hvalue = priv->dx + mx_adjustment_get_value (hadjust);
-              mx_adjustment_set_value (hadjust, hvalue);
-
-              if (priv->overshoot > 0.0)
+              if (ABS (priv->dx) > 0.1)
                 {
-                  if ((hvalue > mx_adjustment_get_upper (hadjust) -
-                       mx_adjustment_get_page_size (hadjust)) ||
-                      (hvalue < mx_adjustment_get_lower (hadjust)))
-                    priv->dx *= priv->overshoot;
+                  hvalue = priv->dx + mx_adjustment_get_value (hadjust);
+                  mx_adjustment_set_value (hadjust, hvalue);
+
+                  if (priv->overshoot > 0.0)
+                    {
+                      if ((hvalue > mx_adjustment_get_upper (hadjust) -
+                           mx_adjustment_get_page_size (hadjust)) ||
+                          (hvalue < mx_adjustment_get_lower (hadjust)))
+                        priv->dx *= priv->overshoot;
+                    }
+
+                  priv->dx = priv->dx / priv->decel_rate;
+
+                  stop = FALSE;
                 }
-
-              priv->dx = priv->dx / priv->decel_rate;
-
-              stop = FALSE;
-            }
-          else if (priv->hmoving)
-            {
-              priv->hmoving = FALSE;
-              clamp_adjustments (scroll,
-                                 (priv->overshoot > 0.0) ? 250 : 10,
-                                 TRUE, FALSE);
-            }
-
-          if (ABS (priv->dy) > 0.1)
-            {
-              vvalue = priv->dy + mx_adjustment_get_value (vadjust);
-              mx_adjustment_set_value (vadjust, vvalue);
-
-              if (priv->overshoot > 0.0)
+              else if (priv->hmoving)
                 {
-                  if ((vvalue > mx_adjustment_get_upper (vadjust) -
-                       mx_adjustment_get_page_size (vadjust)) ||
-                      (vvalue < mx_adjustment_get_lower (vadjust)))
-                    priv->dy *= priv->overshoot;
+                  priv->hmoving = FALSE;
+                  clamp_adjustments (scroll,
+                                     (priv->overshoot > 0.0) ? 250 : 10,
+                                     TRUE, FALSE);
                 }
-
-              priv->dy = priv->dy / priv->decel_rate;
-
-              stop = FALSE;
             }
-          else if (priv->vmoving)
+
+          if (vadjust)
             {
-              priv->vmoving = FALSE;
-              clamp_adjustments (scroll,
-                                 (priv->overshoot > 0.0) ? 250 : 10,
-                                 FALSE, TRUE);
+              if (ABS (priv->dy) > 0.1)
+                {
+                  vvalue = priv->dy + mx_adjustment_get_value (vadjust);
+                  mx_adjustment_set_value (vadjust, vvalue);
+
+                  if (priv->overshoot > 0.0)
+                    {
+                      if ((vvalue > mx_adjustment_get_upper (vadjust) -
+                           mx_adjustment_get_page_size (vadjust)) ||
+                          (vvalue < mx_adjustment_get_lower (vadjust)))
+                        priv->dy *= priv->overshoot;
+                    }
+
+                  priv->dy = priv->dy / priv->decel_rate;
+
+                  stop = FALSE;
+                }
+              else if (priv->vmoving)
+                {
+                  priv->vmoving = FALSE;
+                  clamp_adjustments (scroll,
+                                     (priv->overshoot > 0.0) ? 250 : 10,
+                                     FALSE, TRUE);
+                }
             }
 
           priv->accumulated_delta -= 1000.0/60.0;
@@ -697,11 +710,6 @@ button_release_event_cb (ClutterActor        *stage,
           if (ABS (priv->dy) < 1)
             priv->dy = (priv->dy > 0) ? 1 : -1;
 
-          /* Get adjustments to do step-increment snapping */
-          mx_scrollable_get_adjustments (MX_SCROLLABLE (child),
-                                         &hadjust,
-                                         &vadjust);
-
           /* We want n, where x / y^n < z,
            * x = Distance to move per frame
            * y = Deceleration rate
@@ -740,51 +748,59 @@ button_release_event_cb (ClutterActor        *stage,
                */
 
               /* Get adjustments, work out y^n */
+              mx_scrollable_get_adjustments (MX_SCROLLABLE (child),
+                                             &hadjust, &vadjust);
               ax = (1.0 - 1.0 / pow (y, n + 1)) / (1.0 - 1.0 / y);
               ay = (1.0 - 1.0 / pow (y, n + 1)) / (1.0 - 1.0 / y);
 
               /* Solving for dx */
-              mx_adjustment_get_values (hadjust, &value, &lower, &upper,
-                                        &step_increment, NULL, &page_size);
+              if (hadjust)
+                {
+                  mx_adjustment_get_values (hadjust, &value, &lower, &upper,
+                                            &step_increment, NULL, &page_size);
 
-              /* Make sure we pick the next nearest step increment in the
-               * same direction as the push.
-               */
-              priv->dx *= n;
-              if (ABS (priv->dx) < step_increment / 2)
-                d = round ((value + priv->dx - lower) / step_increment);
-              else if (priv->dx > 0)
-                d = ceil ((value + priv->dx - lower) / step_increment);
-              else
-                d = floor ((value + priv->dx - lower) / step_increment);
+                  /* Make sure we pick the next nearest step increment in the
+                   * same direction as the push.
+                   */
+                  priv->dx *= n;
+                  if (ABS (priv->dx) < step_increment / 2)
+                    d = round ((value + priv->dx - lower) / step_increment);
+                  else if (priv->dx > 0)
+                    d = ceil ((value + priv->dx - lower) / step_increment);
+                  else
+                    d = floor ((value + priv->dx - lower) / step_increment);
 
-              if (priv->overshoot <= 0.0)
-                d = CLAMP ((d * step_increment) + lower,
-                           lower, upper - page_size) - value;
-              else
-                d = ((d * step_increment) + lower) - value;
+                  if (priv->overshoot <= 0.0)
+                    d = CLAMP ((d * step_increment) + lower,
+                               lower, upper - page_size) - value;
+                  else
+                    d = ((d * step_increment) + lower) - value;
 
-              priv->dx = d / ax;
+                  priv->dx = d / ax;
+                }
 
               /* Solving for dy */
-              mx_adjustment_get_values (vadjust, &value, &lower, &upper,
-                                        &step_increment, NULL, &page_size);
+              if (vadjust)
+                {
+                  mx_adjustment_get_values (vadjust, &value, &lower, &upper,
+                                            &step_increment, NULL, &page_size);
 
-              priv->dy *= n;
-              if (ABS (priv->dy) < step_increment / 2)
-                d = round ((value + priv->dy - lower) / step_increment);
-              else if (priv->dy > 0)
-                d = ceil ((value + priv->dy - lower) / step_increment);
-              else
-                d = floor ((value + priv->dy - lower) / step_increment);
+                  priv->dy *= n;
+                  if (ABS (priv->dy) < step_increment / 2)
+                    d = round ((value + priv->dy - lower) / step_increment);
+                  else if (priv->dy > 0)
+                    d = ceil ((value + priv->dy - lower) / step_increment);
+                  else
+                    d = floor ((value + priv->dy - lower) / step_increment);
 
-              if (priv->overshoot <= 0.0)
-                d = CLAMP ((d * step_increment) + lower,
-                           lower, upper - page_size) - value;
-              else
-                d = ((d * step_increment) + lower) - value;
+                  if (priv->overshoot <= 0.0)
+                    d = CLAMP ((d * step_increment) + lower,
+                               lower, upper - page_size) - value;
+                  else
+                    d = ((d * step_increment) + lower) - value;
 
-              priv->dy = d / ay;
+                  priv->dy = d / ay;
+                }
 
               priv->deceleration_timeline = clutter_timeline_new (duration);
 
