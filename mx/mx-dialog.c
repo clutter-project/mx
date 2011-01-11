@@ -391,6 +391,12 @@ mx_dialog_dispose (GObject *object)
       priv->button_box = NULL;
     }
 
+  if (priv->shader)
+    {
+      g_object_unref (priv->shader);
+      priv->shader = NULL;
+    }
+
   G_OBJECT_CLASS (mx_dialog_parent_class)->dispose (object);
 }
 
@@ -987,6 +993,29 @@ mx_dialog_init (MxDialog *self)
 
   g_object_set (G_OBJECT (self), "show-on-set-parent", FALSE, NULL);
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
+
+  /* Compile the shader when creating the instance so it's ready when we need
+   * it */
+  if (clutter_feature_available (CLUTTER_FEATURE_SHADERS_GLSL) &&
+      clutter_feature_available (CLUTTER_FEATURE_OFFSCREEN))
+    {
+      GError *error = NULL;
+      ClutterShader *shader;
+
+      shader = clutter_shader_new ();
+      clutter_shader_set_fragment_source (shader, blur_shader, -1);
+
+      if (clutter_shader_compile (shader, &error))
+        {
+          priv->shader = shader;
+        }
+      else
+        {
+          g_warning (G_STRLOC ": Error compiling shader: %s", error->message);
+          g_error_free (error);
+          g_object_unref (shader);
+        }
+    }
 }
 
 /**
@@ -1051,43 +1080,26 @@ mx_dialog_show (ClutterActor *self)
         }
 
       /* Create the blurred background */
-      if (clutter_feature_available (CLUTTER_FEATURE_SHADERS_GLSL) &&
-          clutter_feature_available (CLUTTER_FEATURE_OFFSCREEN))
+      if (priv->shader)
         {
-          GError *error = NULL;
-          ClutterShader *shader;
+          gint width, height;
 
-          shader = clutter_shader_new ();
-          clutter_shader_set_fragment_source (shader, blur_shader, -1);
+          priv->blur = mx_offscreen_new ();
+          clutter_actor_push_internal (self);
+          clutter_actor_set_parent (priv->blur, self);
+          clutter_actor_pop_internal (self);
 
-          if (clutter_shader_compile (shader, &error))
-            {
-              gint width, height;
+          mx_offscreen_set_child (MX_OFFSCREEN (priv->blur), parent);
+          clutter_actor_set_shader (priv->blur, priv->shader);
 
-              priv->blur = mx_offscreen_new ();
-              clutter_actor_push_internal (self);
-              clutter_actor_set_parent (priv->blur, self);
-              clutter_actor_pop_internal (self);
+          g_signal_connect (priv->blur, "size-change",
+                            G_CALLBACK (mx_dialog_texture_size_change_cb),
+                            NULL);
+          clutter_texture_get_base_size (CLUTTER_TEXTURE (priv->blur),
+                                         &width, &height);
+          mx_dialog_texture_size_change_cb (priv->blur, width, height);
+          clutter_actor_set_shader_param_int (priv->blur, "tex", 0);
 
-              mx_offscreen_set_child (MX_OFFSCREEN (priv->blur), parent);
-              clutter_actor_set_shader (priv->blur, shader);
-              g_object_unref (shader);
-
-              g_signal_connect (priv->blur, "size-change",
-                G_CALLBACK (mx_dialog_texture_size_change_cb), NULL);
-              clutter_texture_get_base_size (CLUTTER_TEXTURE (priv->blur),
-                                             &width, &height);
-              mx_dialog_texture_size_change_cb (priv->blur, width, height);
-              clutter_actor_set_shader_param_int (priv->blur, "tex", 0);
-
-            }
-          else
-            {
-              g_warning (G_STRLOC ": Error compiling shader: %s",
-                         error->message);
-              g_error_free (error);
-              g_object_unref (shader);
-            }
         }
 
       /* Hook onto signals necessary for drawing */
