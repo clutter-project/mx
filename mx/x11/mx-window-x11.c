@@ -118,7 +118,7 @@ mx_window_x11_get_has_border (MxWindowX11 *self)
   MxWindow *win = self->priv->window;
   return (mx_window_get_has_toolbar (win) &&
           !(mx_window_get_small_screen (win) ||
-            clutter_stage_get_fullscreen (mx_window_get_clutter_stage (win))));
+            mx_window_get_fullscreen (win)));
 }
 
 static void
@@ -370,7 +370,7 @@ mx_window_x11_allocation_changed_cb (ClutterActor           *actor,
   /* Don't mess with the window size when we're full-screen, or you
    * get odd race conditions (and you never want to do it anyway)
    */
-  if (clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
+  if (mx_window_get_fullscreen (window))
     return;
 
   if (!priv->has_mapped)
@@ -756,7 +756,7 @@ mx_window_x11_notify_small_screen_cb (MxWindow    *window,
 
   if (small_screen)
     {
-      if (!clutter_stage_get_fullscreen (stage))
+      if (!mx_window_get_fullscreen (priv->window))
         {
           int width, height;
           XRRScreenResources *res;
@@ -873,7 +873,7 @@ mx_window_x11_get_position (MxNativeWindow *self, gint *x, gint *y)
   if (!stage)
     return;
 
-  if (clutter_stage_get_fullscreen (stage) ||
+  if (mx_window_get_fullscreen (priv->window) ||
       mx_window_get_small_screen (priv->window))
     {
       if (x)
@@ -917,7 +917,7 @@ mx_window_x11_set_position (MxNativeWindow *self, gint x, gint y)
     return;
 
   /* Don't try to move a full-screen/small-screen window */
-  if (clutter_stage_get_fullscreen (stage) ||
+  if (mx_window_get_fullscreen (priv->window) ||
       mx_window_get_small_screen (priv->window))
     return;
 

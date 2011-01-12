@@ -47,6 +47,7 @@ struct _MxWindowPrivate
 
   guint has_toolbar   : 1;
   guint small_screen  : 1;
+  guint fullscreen    : 1;
   guint rotate_size   : 1;
 
   gchar      *icon_name;
@@ -76,6 +77,7 @@ enum
   PROP_HAS_TOOLBAR,
   PROP_TOOLBAR,
   PROP_SMALL_SCREEN,
+  PROP_FULLSCREEN,
   PROP_ICON_NAME,
   PROP_ICON_COGL_TEXTURE,
   PROP_CLUTTER_STAGE,
@@ -114,6 +116,10 @@ mx_window_get_property (GObject    *object,
 
     case PROP_SMALL_SCREEN:
       g_value_set_boolean (value, priv->small_screen);
+      break;
+
+    case PROP_FULLSCREEN:
+      g_value_set_boolean (value, priv->fullscreen);
       break;
 
     case PROP_ICON_NAME:
@@ -168,6 +174,9 @@ mx_window_set_property (GObject      *object,
       mx_window_set_small_screen (window,
                                   g_value_get_boolean (value));
       break;
+
+    case PROP_FULLSCREEN:
+      mx_window_set_fullscreen (window, g_value_get_boolean (value));
 
     case PROP_ICON_NAME:
       mx_window_set_icon_name (window,
@@ -314,8 +323,7 @@ mx_window_post_paint_cb (ClutterActor *actor, MxWindow *window)
   /* If we're in small-screen or fullscreen mode, or we don't have the toolbar,
    * we don't want a frame or a resize handle.
    */
-  if (!priv->has_toolbar || priv->small_screen ||
-      clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
+  if (!priv->has_toolbar || priv->small_screen || priv->fullscreen)
     return;
 
   mx_window_get_size (window, &width, &height);
@@ -371,8 +379,7 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
   x = (stage_width - width) / 2.f;
   y = (stage_height - height) / 2.f;
 
-  if (!priv->has_toolbar || priv->small_screen ||
-      clutter_stage_get_fullscreen (CLUTTER_STAGE (actor)))
+  if (!priv->has_toolbar || priv->small_screen || priv->fullscreen)
       padding.top = padding.right = padding.bottom = padding.left = 0;
   else
       padding.top = padding.right = padding.bottom = padding.left = 1;
@@ -434,16 +441,33 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
 }
 
 static void
+mx_window_reallocate (MxWindow *self)
+{
+  ClutterActorBox box;
+  MxWindowPrivate *priv = self->priv;
+
+  clutter_actor_get_allocation_box (priv->stage, &box);
+  mx_window_allocation_changed_cb (priv->stage, &box, 0, self);
+}
+
+static void
 mx_window_fullscreen_set_cb (ClutterStage *stage,
                              GParamSpec   *pspec,
                              MxWindow     *self)
 {
   MxWindowPrivate *priv = self->priv;
 
+  /* Synchronise our local fullscreen-set property */
+  if (priv->fullscreen != clutter_stage_get_fullscreen (stage))
+    {
+      priv->fullscreen = !priv->fullscreen;
+      g_object_notify (G_OBJECT (self), "fullscreen");
+    }
+
   /* If we're in small-screen mode, make sure the size gets reset
    * correctly.
    */
-  if (!clutter_stage_get_fullscreen (stage))
+  if (!priv->fullscreen)
     {
       if (!priv->small_screen && priv->resize_grip && priv->has_toolbar &&
           clutter_stage_get_user_resizable (stage))
@@ -456,6 +480,7 @@ mx_window_fullscreen_set_cb (ClutterStage *stage,
   else if (priv->resize_grip)
     clutter_actor_hide (priv->resize_grip);
 
+  mx_window_reallocate (self);
   clutter_actor_queue_relayout (CLUTTER_ACTOR (stage));
 }
 
@@ -505,7 +530,7 @@ mx_window_user_resizable_cb (ClutterStage *stage,
     clutter_actor_hide (priv->resize_grip);
   else
     {
-      if (!clutter_stage_get_fullscreen (stage) &&
+      if (!priv->fullscreen &&
           !priv->small_screen &&
           priv->has_toolbar)
         {
@@ -544,7 +569,7 @@ mx_window_constructed (GObject *object)
   mx_stylable_set_style_class (MX_STYLABLE (priv->resize_grip), "ResizeGrip");
   clutter_container_add_actor (CLUTTER_CONTAINER (priv->stage),
                                priv->resize_grip);
-  if (clutter_stage_get_fullscreen (CLUTTER_STAGE (priv->stage)) ||
+  if (priv->fullscreen ||
       !clutter_stage_get_user_resizable (CLUTTER_STAGE (priv->stage)) ||
       !priv->has_toolbar)
     clutter_actor_hide (priv->resize_grip);
@@ -612,6 +637,13 @@ mx_window_class_init (MxWindowClass *klass)
                                 FALSE,
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_SMALL_SCREEN, pspec);
+
+  pspec = g_param_spec_boolean ("fullscreen",
+                                "Fullscreen",
+                                "Window should be set to full-screen mode.",
+                                FALSE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_FULLSCREEN, pspec);
 
   pspec = g_param_spec_string ("icon-name",
                                "Icon name",
@@ -683,16 +715,6 @@ mx_window_class_init (MxWindowClass *klass)
                                    G_TYPE_NONE, 0);
 
   window_quark = g_quark_from_static_string ("mx-window");
-}
-
-static void
-mx_window_reallocate (MxWindow *self)
-{
-  ClutterActorBox box;
-  MxWindowPrivate *priv = self->priv;
-
-  clutter_actor_get_allocation_box (priv->stage, &box);
-  mx_window_allocation_changed_cb (priv->stage, &box, 0, self);
 }
 
 static void
@@ -976,6 +998,52 @@ mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
 }
 
 /**
+ * mx_window_get_fullscreen:
+ * @window: A #MxWindow
+ *
+ * Determines if the window has been set to be in fullscreen mode.
+ *
+ * Returns: %TRUE if the window has been set to be in fullscreen mode,
+ *   otherwise %FALSE
+ */
+gboolean
+mx_window_get_fullscreen (MxWindow *window)
+{
+  g_return_val_if_fail (MX_IS_WINDOW (window), FALSE);
+  return window->priv->fullscreen;
+}
+
+/**
+ * mx_window_set_fullscreen:
+ * @window: A #MxWindow
+ * @fullscreen: %TRUE to request fullscreen mode, %FALSE to disable
+ *
+ * Set the window to be in fullscreen mode or windowed mode.
+ *
+ * <note><para>
+ * Setting fullscreen mode doesn't necessarily mean the window is actually
+ * fullscreen. Setting this property is only a request to the underlying
+ * window system.
+ * </para></note>
+ */
+void
+mx_window_set_fullscreen (MxWindow *window,
+                          gboolean  fullscreen)
+{
+  MxWindowPrivate *priv;
+
+  g_return_if_fail (MX_IS_WINDOW (window));
+
+  priv = window->priv;
+  if (priv->fullscreen != fullscreen)
+    {
+      priv->fullscreen = fullscreen;
+      clutter_stage_set_fullscreen (CLUTTER_STAGE (priv->stage), fullscreen);
+      g_object_notify (G_OBJECT (window), "fullscreen");
+    }
+}
+
+/**
  * mx_window_set_icon_name:
  * @window: A #MxWindow
  * @icon_name: (allow-none): An icon name, or %NULL
@@ -1124,6 +1192,79 @@ mx_window_set_window_position (MxWindow *window,
 }
 
 /**
+ * mx_window_get_window_size:
+ * @window: A #MxWindow
+ * @width: (out): A #gint pointer for the window's width
+ * @height: (out): A #gint pointer for the window's height
+ *
+ * Retrieves the size of the display area of the window, taking into
+ * account any window border. This includes the area occupied by the
+ * window's toolbar, if it's enabled.
+ */
+void
+mx_window_get_window_size (MxWindow *window,
+                           gint     *width,
+                           gint     *height)
+{
+  MxWindowPrivate *priv;
+  gfloat fwidth, fheight;
+
+  g_return_if_fail (MX_IS_WINDOW (window));
+
+  priv = window->priv;
+
+  mx_window_get_size (window, &fwidth, &fheight);
+
+  if (width)
+    *width = (gint)fwidth;
+  if (height)
+    *height = (gint)fheight;
+
+  if (priv->has_toolbar && !priv->small_screen && !priv->fullscreen)
+    {
+      if (width)
+        *width = *width + 1;
+      if (height)
+        *height = *height + 1;
+    }
+}
+
+/**
+ * mx_window_set_window_size:
+ * @window: A #MxWindow
+ * @width: A width, in pixels
+ * @height: A height, in pixels
+ *
+ * Sets the size of the window, taking into account any window border. This
+ * corresponds to the window's available area for its child, minus the area
+ * occupied by the window's toolbar, if it's enabled.
+ *
+ * <note><para>
+ * Setting the window size may involve a request to the underlying windowing
+ * system, and may not immediately be reflected.
+ * </para></note>
+ */
+void
+mx_window_set_window_size (MxWindow *window,
+                           gint      width,
+                           gint      height)
+{
+  MxWindowPrivate *priv;
+
+  g_return_if_fail (MX_IS_WINDOW (window));
+
+  priv = window->priv;
+
+  if (priv->has_toolbar && !priv->small_screen && !priv->fullscreen)
+    {
+      width ++;
+      height ++;
+    }
+
+  clutter_actor_set_size (priv->stage, width, height);
+}
+
+/**
  * mx_window_present:
  * @window: A #MxWindow
  *
@@ -1228,6 +1369,7 @@ mx_window_get_window_rotation (MxWindow *window)
 void
 mx_window_show (MxWindow *window)
 {
+  g_return_if_fail (MX_IS_WINDOW (window));
   clutter_actor_show (window->priv->stage);
 }
 
@@ -1242,6 +1384,7 @@ mx_window_show (MxWindow *window)
 void
 mx_window_hide (MxWindow *window)
 {
+  g_return_if_fail (MX_IS_WINDOW (window));
   clutter_actor_hide (window->priv->stage);
 }
 

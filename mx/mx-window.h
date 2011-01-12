@@ -108,6 +108,9 @@ void       mx_window_set_has_toolbar (MxWindow *window, gboolean  toolbar);
 gboolean   mx_window_get_small_screen (MxWindow *window);
 void       mx_window_set_small_screen (MxWindow *window, gboolean small_screen);
 
+gboolean   mx_window_get_fullscreen   (MxWindow *window);
+void       mx_window_set_fullscreen   (MxWindow *window, gboolean fullscreen);
+
 void         mx_window_set_icon_name (MxWindow *window, const gchar *icon_name);
 const gchar *mx_window_get_icon_name (MxWindow *window);
 
@@ -118,6 +121,11 @@ ClutterStage *mx_window_get_clutter_stage (MxWindow *window);
 
 void       mx_window_get_window_position (MxWindow *window, gint *x, gint *y);
 void       mx_window_set_window_position (MxWindow *window, gint  x, gint  y);
+
+void       mx_window_get_window_size (MxWindow *window,
+                                      gint *width, gint *height);
+void       mx_window_set_window_size (MxWindow *window,
+                                      gint  width, gint  height);
 
 void       mx_window_present (MxWindow *window);
 
