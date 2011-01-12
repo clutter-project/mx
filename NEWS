@@ -1,3 +1,28 @@
+1.1.3
+=====
+
+Changes since 1.1.2:
+
+ * Make text and label properties translatable from JSON files
+ * Add a 'drag-threshold' setting to MxSettings
+ * Don't specify #version in 1.10 GLSL shaders
+ * Add an 'overshoot' property to MxKineticScrollView
+ * Compile the blur shader in MxDialog on creation
+ * Fix toggling the toolbar after mapping in MxWindow
+ * Add functions for setting/getting window size in MxWindow
+
+Fixed bugs (from bugzilla.clutter-project.org):
+
+  #2488 - button events inside kinetic scroll view
+  #2507 - add overshoot oeffect to MxKineticScrollView
+  #2208 - Fix the incorrect removal of qdata when disabling MxDroppable
+  #2412 - Don't try to interpolate if we get an invalid target value
+  #2498 - Don't assume that MxScrollables will have both adjustments
+  #2483 - MxIcon warning when "-mx-content-image:none;" is used
+  #2463 - MxWindow with disabled toolbar still shows part of the toolbar ...
+  #2496 - clutter_stage_set_fullscreen() only works after stage is realized
+  #2434 - MxWindow should have a mx_window_set_size method
+
 1.1.2
 =====
 
