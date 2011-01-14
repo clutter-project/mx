@@ -42,6 +42,8 @@ struct _MxSelector
   MxSelector *ancestor;
   GHashTable *style;
   const gchar *filename; /* origin of this selector */
+  guint line;
+  guint position;
   gint priority;
 };
 
@@ -321,13 +323,18 @@ print_selector (MxSelector *selector, gint indent)
 
 
 static MxSelector *
-mx_selector_new (const gchar *filename, gint priority)
+mx_selector_new (const gchar *filename,
+                 gint         priority,
+                 guint        line,
+                 guint        position)
 {
   MxSelector *s;
 
   s = g_slice_new0 (MxSelector);
   s->filename = filename;
   s->priority = priority;
+  s->position = position;
+  s->line = line;
 
   return s;
 }
@@ -378,7 +385,8 @@ css_parse_ruleset (GScanner *scanner, GList **selectors)
            * should use the previous selector to match an ancestor */
 
           selector = mx_selector_new (scanner->input_name,
-                                      GPOINTER_TO_INT (scanner->user_data));
+                                      GPOINTER_TO_INT (scanner->user_data),
+                                      scanner->line, scanner->position);
           *selectors = g_list_prepend (*selectors, selector);
 
           if (parent)
@@ -403,7 +411,8 @@ css_parse_ruleset (GScanner *scanner, GList **selectors)
           parent = selector;
 
           selector = mx_selector_new (scanner->input_name,
-                                      GPOINTER_TO_INT (scanner->user_data));
+                                      GPOINTER_TO_INT (scanner->user_data),
+                                      scanner->line, scanner->position);
           *selectors = g_list_prepend (*selectors, selector);
 
           /* remove parent from list of selectors and link it to the new
@@ -421,7 +430,8 @@ css_parse_ruleset (GScanner *scanner, GList **selectors)
           g_scanner_get_next_token (scanner);
 
           selector = mx_selector_new (scanner->input_name,
-                                      GPOINTER_TO_INT (scanner->user_data));
+                                      GPOINTER_TO_INT (scanner->user_data),
+                                      scanner->line, scanner->position);
           *selectors = g_list_prepend (*selectors, selector);
 
           token = css_parse_simple_selector (scanner, selector);
@@ -729,8 +739,21 @@ static gint
 compare_selector_matches (SelectorMatch *a,
                           SelectorMatch *b)
 {
-  gint priority = a->selector->priority - b->selector->priority;
-  return priority ? priority : (a->score - b->score);
+  gint priority;
+  guint line;
+  guint position;
+  gint score;
+
+  if ((score = a->score - b->score) != 0)
+    return score;
+  else if ((priority = a->selector->priority - b->selector->priority) != 0)
+    return priority;
+  else if ((line = a->selector->line - b->selector->line) != 0)
+    return line;
+  else if ((position = a->selector->position - b->selector->position) != 0)
+    return position;
+  else
+    return 0;
 }
 
 struct _css_table_copy_data
