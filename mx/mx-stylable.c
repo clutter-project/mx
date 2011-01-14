@@ -808,9 +808,47 @@ mx_stylable_set_style_pseudo_class (MxStylable  *stylable,
 }
 
 /**
+ * mx_stylable_style_pseudo_class_contains:
+ * @stylable: A #MxStylable
+ * @pseudo_class: A pseudo-class name
+ *
+ * Check if the given pseudo-class name is contained in the list of
+ * set pseudo classes on this #MxStylable object.
+ *
+ * Returns: %TRUE if the given pseudo-class is set, %FALSE otherwise
+ *
+ * Since: 1.2
+ */
+gboolean
+mx_stylable_style_pseudo_class_contains (MxStylable  *stylable,
+                                         const gchar *pseudo_class)
+{
+  const gchar *old_class, *match;
+
+  g_return_val_if_fail (MX_IS_STYLABLE (stylable), FALSE);
+  g_return_val_if_fail (pseudo_class != NULL, FALSE);
+
+  old_class = mx_stylable_get_style_pseudo_class (stylable);
+
+  if (old_class && pseudo_class && (match = strstr (old_class, pseudo_class)))
+    {
+      if ((match == old_class) ||
+           (match[-1] == ':'))
+        {
+          size_t length = strlen (match);
+          if ((match[length] == ':') ||
+              (match[length] == '\0'))
+            return TRUE;
+        }
+    }
+
+  return FALSE;
+}
+
+/**
  * mx_stylable_style_pseudo_class_add:
  * @stylable: A #MxStylable
- * @new_class: A pseudo- lass name to add
+ * @new_class: A pseudo-class name to add
  *
  * Add a pseudo-class name to the list of pseudo classes, contained in the
  * #MxStylable:style-pseudo-class property.
@@ -827,11 +865,11 @@ mx_stylable_style_pseudo_class_add (MxStylable  *stylable,
   g_return_if_fail (MX_IS_STYLABLE (stylable));
   g_return_if_fail (new_class != NULL);
 
-  old_class = mx_stylable_get_style_pseudo_class (stylable);
-
   /* check if the pseudo class already contains new_class */
-  if (old_class && new_class && strstr (old_class, new_class))
+  if (mx_stylable_style_pseudo_class_contains (stylable, new_class))
     return;
+
+  old_class = mx_stylable_get_style_pseudo_class (stylable);
 
   /* add the new pseudo class */
   if (old_class)
@@ -866,12 +904,11 @@ mx_stylable_style_pseudo_class_remove (MxStylable  *stylable,
   g_return_if_fail (MX_IS_STYLABLE (stylable));
   g_return_if_fail (remove_class != NULL);
 
-  old_class = mx_stylable_get_style_pseudo_class (stylable);
-
   /* check if the pseudo class does not container remove_class */
-  if (!old_class
-      || (old_class && remove_class && !strstr (old_class, remove_class)))
+  if (!mx_stylable_style_pseudo_class_contains (stylable, remove_class))
     return;
+
+  old_class = mx_stylable_get_style_pseudo_class (stylable);
 
   /* remove the old pseudo class */
   list = g_strsplit (old_class, ":", -1);

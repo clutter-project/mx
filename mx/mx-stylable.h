@@ -142,6 +142,10 @@ void
 mx_stylable_style_pseudo_class_remove (MxStylable  *stylable,
                                        const gchar *remove_class);
 
+gboolean
+mx_stylable_style_pseudo_class_contains (MxStylable  *stylable,
+                                         const gchar *pseudo_class);
+
 G_END_DECLS
 
 #endif /* __MX_STYLABLE_H__ */
