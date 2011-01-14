@@ -794,7 +794,7 @@ mx_widget_enter (ClutterActor         *actor,
   /* This is also expected to handle enter events from child actors
      because they will bubble up */
 
-  mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "hover");
+  mx_stylable_style_pseudo_class_add (MX_STYLABLE (widget), "hover");
   priv->is_hovered = TRUE;
 
   return FALSE;
@@ -816,7 +816,7 @@ mx_widget_leave (ClutterActor         *actor,
 
   mx_widget_hide_tooltip (widget);
 
-  mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "");
+  mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "hover");
   priv->is_hovered = FALSE;
 
   return FALSE;
@@ -938,7 +938,7 @@ mx_widget_button_press (ClutterActor       *actor,
       return TRUE;
 
   if (event->button == 1)
-    mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "active");
+    mx_stylable_style_pseudo_class_add (MX_STYLABLE (widget), "active");
 
   mx_widget_long_press_query (widget, event);
 
@@ -955,12 +955,7 @@ mx_widget_button_release (ClutterActor       *actor,
       return TRUE;
 
   if (event->button == 1)
-    {
-      if (widget->priv->is_hovered)
-        mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "hover");
-      else
-        mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "");
-    }
+    mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "active");
 
   mx_widget_long_press_cancel (widget);
 

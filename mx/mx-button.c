@@ -169,8 +169,7 @@ mx_stylable_iface_init (MxStylableIface *iface)
 static MxFocusable*
 mx_button_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 {
-  mx_stylable_set_style_pseudo_class (MX_STYLABLE (focusable), "focus");
-  MX_BUTTON (focusable)->priv->is_hover = TRUE;
+  mx_stylable_style_pseudo_class_add (MX_STYLABLE (focusable), "focus");
 
   clutter_actor_grab_key_focus (CLUTTER_ACTOR (focusable));
 
@@ -184,10 +183,7 @@ mx_button_move_focus (MxFocusable      *focusable,
 {
   /* check if focus is being moved from us */
   if (focusable == from)
-    {
-      mx_stylable_set_style_pseudo_class (MX_STYLABLE (focusable), "");
-      MX_BUTTON (focusable)->priv->is_hover = FALSE;
-    }
+    mx_stylable_style_pseudo_class_remove (MX_STYLABLE (focusable), "focus");
 
   return NULL;
 }
@@ -288,7 +284,7 @@ mx_button_push (MxButton           *button,
 
   //clutter_grab_pointer (CLUTTER_ACTOR (button));
 
-  mx_stylable_set_style_pseudo_class (MX_STYLABLE (button), "active");
+  mx_stylable_style_pseudo_class_add (MX_STYLABLE (button), "active");
 
   if (event)
     mx_widget_long_press_query (widget, event);
@@ -323,12 +319,7 @@ mx_button_pull (MxButton *button)
 
   mx_widget_long_press_cancel (widget);
 
-  if (priv->is_toggled)
-    mx_stylable_set_style_pseudo_class (MX_STYLABLE (button), "checked");
-  else if (!priv->is_hover)
-    mx_stylable_set_style_pseudo_class (MX_STYLABLE (button), NULL);
-  else
-    mx_stylable_set_style_pseudo_class (MX_STYLABLE (button), "hover");
+  mx_stylable_style_pseudo_class_remove (MX_STYLABLE (button), "active");
 }
 
 static gboolean
@@ -415,8 +406,7 @@ mx_button_enter (ClutterActor         *actor,
     return FALSE;
 
 
-  if (!button->priv->is_toggled)
-    mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "hover");
+  mx_stylable_style_pseudo_class_add (MX_STYLABLE (widget), "hover");
 
   button->priv->is_hover = 1;
 
@@ -451,10 +441,7 @@ mx_button_leave (ClutterActor         *actor,
       button->priv->is_pressed = FALSE;
     }
 
-  if (button->priv->is_toggled)
-    mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), "checked");
-  else
-    mx_stylable_set_style_pseudo_class (MX_STYLABLE (widget), NULL);
+  mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "hover");
 
   return FALSE;
 }
@@ -1128,12 +1115,9 @@ mx_button_set_toggled (MxButton *button,
       button->priv->is_toggled = toggled;
 
       if (toggled)
-        mx_stylable_set_style_pseudo_class (MX_STYLABLE (button), "checked");
+        mx_stylable_style_pseudo_class_add (MX_STYLABLE (button), "checked");
       else
-      if (button->priv->is_hover)
-        mx_stylable_set_style_pseudo_class (MX_STYLABLE (button), "hover");
-      else
-        mx_stylable_set_style_pseudo_class (MX_STYLABLE (button), NULL);
+        mx_stylable_style_pseudo_class_remove (MX_STYLABLE (button), "checked");
 
       g_object_notify (G_OBJECT (button), "toggled");
     }
