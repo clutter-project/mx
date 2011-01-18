@@ -375,7 +375,7 @@ mx_style_normalize_property_name (const gchar *name)
   if (!name)
     return NULL;
 
-  if (strstr (name, "x-mx") == name)
+  if (strncmp (name, "x-mx", 4) == 0)
     return &name[1];
   else
     return name;
