@@ -105,7 +105,7 @@ ClutterActor * _mx_window_get_resize_grip (MxWindow *window);
 
 void _mx_style_invalidate_cache (MxStylable *stylable);
 
-gchar * _mx_stylable_get_style_string (MxStylable *stylable);
+const gchar * _mx_stylable_get_style_string (MxStylable *stylable);
 
 const gchar * _mx_enum_to_string (GType type,
                                   gint  value);

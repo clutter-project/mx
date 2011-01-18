@@ -433,7 +433,7 @@ mx_style_get_style_sheet_properties (MxStyle    *style,
                                      MxStylable *stylable)
 {
   GArray *cache;
-  gchar *style_string;
+  const gchar *style_string;
   GHashTable *properties = NULL;
   MxStylePrivate *priv = style->priv;
 
@@ -454,7 +454,6 @@ mx_style_get_style_sheet_properties (MxStyle    *style,
 
           if (!g_strcmp0 (style_string, entry->style_string))
             {
-              g_free (style_string);
               properties = entry->properties;
               break;
             }
@@ -482,7 +481,7 @@ mx_style_get_style_sheet_properties (MxStyle    *style,
                                                   stylable);
 
       /* Append this to the style cache */
-      entry.style_string = style_string;
+      entry.style_string = g_strdup (style_string);
       entry.properties = properties;
       g_array_append_val (cache, entry);
 

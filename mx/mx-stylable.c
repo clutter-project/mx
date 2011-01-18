@@ -64,6 +64,7 @@ static GParamSpecPool *style_property_spec_pool = NULL;
 
 static GQuark quark_real_owner         = 0;
 static GQuark quark_style              = 0;
+static GQuark quark_style_string       = 0;
 
 static guint stylable_signals[LAST_SIGNAL] = { 0, };
 
@@ -119,6 +120,8 @@ mx_stylable_base_init (gpointer g_iface)
   quark_real_owner =
     g_quark_from_static_string ("mx-stylable-real-owner-quark");
   quark_style = g_quark_from_static_string ("mx-stylable-style-quark");
+  quark_style_string =
+    g_quark_from_static_string ("mx-stylable-style-string-quark");
 
   style_property_spec_pool = g_param_spec_pool_new (FALSE);
 
@@ -199,11 +202,24 @@ mx_stylable_get_type (void)
   return our_type;
 }
 
-gchar *
+static void
+mx_stylable_name_change_cb (MxStylable *stylable)
+{
+  g_object_set_qdata (G_OBJECT (stylable), quark_style_string, NULL);
+  g_signal_handlers_disconnect_by_func (stylable,
+                                        mx_stylable_name_change_cb, NULL);
+}
+
+const gchar *
 _mx_stylable_get_style_string (MxStylable *stylable)
 {
   GType type_id;
-  const gchar *type, *id, *class, *pseudo_class;
+  const gchar *type, *id, *class, *pseudo_class, *string;
+
+  /* Check if we've generated the string already first */
+  string = g_object_get_qdata (G_OBJECT (stylable), quark_style_string);
+  if (string)
+    return string;
 
   /* Create a string that contains all the properties of a
    * Stylable that can be matched against in the CSS.
@@ -217,11 +233,23 @@ _mx_stylable_get_style_string (MxStylable *stylable)
 
   pseudo_class = mx_stylable_get_style_pseudo_class (stylable);
 
-  return g_strdup_printf ("%s#%s.%s:%s",
-                          type,
-                          id ? id : "",
-                          class ? class : "",
-                          pseudo_class ? pseudo_class : "");
+  string = g_strdup_printf ("%s#%s.%s:%s",
+                            type,
+                            id ? id : "",
+                            class ? class : "",
+                            pseudo_class ? pseudo_class : "");
+
+  /* Store the string as qdata so we don't have to constantly
+   * regenerate it.
+   */
+  g_object_set_qdata_full (G_OBJECT (stylable), quark_style_string,
+                           string, g_free);
+
+  /* Connect to the actor name changing to release the style-string */
+  g_signal_connect (stylable, "notify::name",
+                    G_CALLBACK (mx_stylable_name_change_cb), NULL);
+
+  return string;
 }
 
 #if 0
