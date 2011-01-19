@@ -543,6 +543,45 @@ css_parse_file (MxStyleSheet *sheet,
     return FALSE;
 }
 
+gboolean
+list_contains (const gchar *needle,
+               gint         needle_len,
+               const gchar *haystack,
+               gchar        seperator)
+{
+  const gchar *start;
+
+  for (start = haystack; start; start = strchr (start, seperator))
+    {
+      gint len;
+      gchar *next_seperator;
+
+      /* move to the character after the separator */
+      if (start[0] == seperator)
+        start = start + 1;
+
+      /* find the end of this haystack item */
+      next_seperator = strchr (start, seperator);
+      if (!next_seperator)
+        len = strlen (start);
+      else
+        len = next_seperator - start;
+
+      /* if the item in the haystack is not the same length as the separator,
+       * then it is not a match */
+      if (len != needle_len)
+        continue;
+
+      if (!strncmp (needle, start, needle_len))
+        return TRUE;
+      else
+        continue;
+    }
+
+  /* needle not found */
+  return FALSE;
+}
+
 static gint
 css_node_matches_selector (MxSelector *selector,
                            MxStylable *stylable)
@@ -616,40 +655,46 @@ css_node_matches_selector (MxSelector *selector,
   /* check pseudo_class */
   if (selector->pseudo_class)
     {
-      gchar **pseudo_classes = NULL;
-      gint i, len;
+      gchar *needle;
+      gint n_matches;
 
       /* if no pseudo class is supplied on the node, return instantly */
       if (!pseudo_class)
         return -1;
 
-      /* an exact match is a common case */
-      if (!strstr (selector->pseudo_class, ":")
-          && !strcmp (selector->pseudo_class, pseudo_class))
-        b += 10;
-      else
+      /* check that each pseudo-class from the selector appears in the
+       * pseudo-classes from the node, i.e. the selector pseudo-class list
+       * is a subset of the node's pseudo-class list */
+      n_matches = 0;
+      for (needle = selector->pseudo_class;
+           needle; needle = strchr (needle, ':'))
         {
-          gint n_matches = 0;
+          gint needle_len;
+          gchar *next;
 
-          /* check each pseudo class from the selector occurs on the node */
-          pseudo_classes = g_strsplit (selector->pseudo_class, ":", -1);
+          /* move beyond ':' */
+          if (needle[0] == ':')
+            needle++;
 
-          len = g_strv_length (pseudo_classes);
-          for (i = 0; i < len; i++)
-            {
-              /* Increase the 'b' score if this pseudo class is in the
-               * node. */
-              if (strstr (pseudo_class, pseudo_classes[i]))
-                n_matches++;
-            }
+          /* calculate the length of this needle */
+          next = strchr (needle, ':');
+          if (next)
+            needle_len = next - needle;
+          else
+            needle_len = strlen (needle);
 
-          if (n_matches != len)
+          /* if the pseudo-class from the selector does not appear in the
+           * list of pseudo-classes from the node, then this is not a
+           * match */
+          if (!list_contains (needle, needle_len, pseudo_class, ':'))
             return -1;
           else
-            b = b + (10 * n_matches);
+            n_matches++;
         }
 
-      g_strfreev (pseudo_classes);
+      /* increase the 'b' score by the number of pseudo-classes in the
+       * selector */
+      b = b + (10 * n_matches);
     }
 
   /* check class */
