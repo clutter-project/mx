@@ -151,7 +151,7 @@ get_zoom_crop_coords (CoglObject *tex,
     }
 }
 
-void
+static void
 get_center_coords (CoglObject *tex,
                    float       aw,
                    float       ah,
@@ -168,7 +168,7 @@ get_center_coords (CoglObject *tex,
   tex_coords[3] = 0.5 + (ah / bh) / 2;
 }
 
-void
+static void
 get_zoom_coords (CoglObject *tex,
                  float       aw,
                  float       ah,

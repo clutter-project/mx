@@ -86,7 +86,7 @@ enum
 
 /* MxFocusable interface */
 
-MxFocusable*
+static MxFocusable*
 mx_slider_move_focus (MxFocusable      *focusable,
                       MxFocusDirection  direction,
                       MxFocusable      *old_focus)
@@ -99,7 +99,7 @@ mx_slider_move_focus (MxFocusable      *focusable,
   return NULL;
 }
 
-MxFocusable*
+static MxFocusable*
 mx_slider_accept_focus (MxFocusable *focusable,
                         MxFocusHint  hint)
 {

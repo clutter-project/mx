@@ -543,7 +543,7 @@ css_parse_file (MxStyleSheet *sheet,
     return FALSE;
 }
 
-gboolean
+static gboolean
 list_contains (const gchar *needle,
                gint         needle_len,
                const gchar *haystack,

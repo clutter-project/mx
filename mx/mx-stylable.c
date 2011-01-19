@@ -215,7 +215,8 @@ const gchar *
 _mx_stylable_get_style_string (MxStylable *stylable)
 {
   GType type_id;
-  const gchar *type, *id, *class, *pseudo_class, *string;
+  const gchar *type, *id, *class, *pseudo_class;
+  gchar *string;
 
   /* Check if we've generated the string already first */
   string = g_object_get_qdata (G_OBJECT (stylable), quark_style_string);
