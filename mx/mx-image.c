@@ -44,6 +44,9 @@ struct _MxImagePrivate
 
   CoglHandle texture;
   CoglHandle old_texture;
+  CoglHandle blank_texture;
+
+  CoglMaterial *template_material;
   CoglMaterial *material;
 
   ClutterTimeline *timeline;
@@ -385,6 +388,20 @@ mx_image_dispose (GObject *object)
       priv->old_texture = NULL;
     }
 
+  if (priv->blank_texture)
+    {
+      cogl_object_unref (priv->blank_texture);
+
+      priv->blank_texture = NULL;
+    }
+
+  if (priv->template_material)
+    {
+      cogl_object_unref (priv->template_material);
+
+      priv->template_material = NULL;
+    }
+
   G_OBJECT_CLASS (mx_image_parent_class)->dispose (object);
 }
 
@@ -460,14 +477,48 @@ new_frame_cb (ClutterTimeline *timeline,
 static void
 mx_image_init (MxImage *self)
 {
+  MxImagePrivate *priv;
+  guchar data[4] = { 0, 0, 0, 0 };
 
-  self->priv = MX_IMAGE_GET_PRIVATE (self);
+  priv = self->priv = MX_IMAGE_GET_PRIVATE (self);
 
-  self->priv->timeline = clutter_timeline_new (DEFAULT_DURATION);
-  self->priv->duration = DEFAULT_DURATION;
+  priv->timeline = clutter_timeline_new (DEFAULT_DURATION);
+  priv->duration = DEFAULT_DURATION;
 
-  g_signal_connect (self->priv->timeline, "new-frame",
-                    G_CALLBACK (new_frame_cb), self);
+  g_signal_connect (priv->timeline, "new-frame", G_CALLBACK (new_frame_cb),
+                    self);
+
+  priv->blank_texture = cogl_texture_new_from_data (1, 1, COGL_TEXTURE_NO_ATLAS,
+                                                    COGL_PIXEL_FORMAT_RGBA_8888,
+                                                    COGL_PIXEL_FORMAT_ANY,
+                                                    1, data);
+
+  /* set up the initial material */
+  priv->template_material = cogl_material_new ();
+
+  cogl_material_set_layer (priv->template_material, 1, priv->blank_texture);
+  cogl_material_set_layer (priv->template_material, 0, priv->blank_texture);
+
+  cogl_material_set_layer_wrap_mode (priv->template_material, 0,
+                                     COGL_MATERIAL_WRAP_MODE_CLAMP_TO_EDGE);
+  cogl_material_set_layer_wrap_mode (priv->template_material, 1,
+                                     COGL_MATERIAL_WRAP_MODE_CLAMP_TO_EDGE);
+
+  /* Set the layer combination description for the second layer; the
+   * default for Cogl is to simply multiply the layer with the
+   * precendent one. In this case we interpolate the color for each
+   * pixel between the pixel value of the previous layer and the
+   * current one, using the alpha component of a constant color as
+   * the interpolation factor.
+   */
+  cogl_material_set_layer_combine (priv->template_material, 1,
+                                   "RGBA = INTERPOLATE (PREVIOUS, "
+                                                       "TEXTURE, "
+                                                       "CONSTANT[A])",
+                                   NULL);
+
+  /* set the transparent texture to start from */
+  mx_image_clear (self);
 }
 
 
@@ -526,9 +577,8 @@ mx_image_prepare_texture (MxImage  *image)
 {
   MxImagePrivate *priv = image->priv;
 
+  /* add a one pixel border to the image */
   add_one_pixel_border (&priv->texture);
-
-  clutter_timeline_start (priv->timeline);
 
   /* Create a new Cogl material holding the two textures inside two
    * separate layers.
@@ -536,27 +586,49 @@ mx_image_prepare_texture (MxImage  *image)
   if (priv->material)
     cogl_object_unref (priv->material);
 
-  priv->material = cogl_material_new ();
+  priv->material = cogl_material_copy (priv->template_material);
+
+  /* set the new textures on the material */
   cogl_material_set_layer (priv->material, 1, priv->old_texture);
   cogl_material_set_layer (priv->material, 0, priv->texture);
 
-  cogl_material_set_layer_wrap_mode (priv->material, 0,
-                                     COGL_MATERIAL_WRAP_MODE_CLAMP_TO_EDGE);
-  cogl_material_set_layer_wrap_mode (priv->material, 1,
-                                     COGL_MATERIAL_WRAP_MODE_CLAMP_TO_EDGE);
+  /* start the cross fade animation */
+  clutter_timeline_start (priv->timeline);
+  new_frame_cb (priv->timeline, 0, image);
 
-  /* Set the layer combination description for the second layer; the
-   * default for Cogl is to simply multiply the layer with the
-   * precendent one. In this case we interpolate the color for each
-   * pixel between the pixel value of the previous layer and the
-   * current one, using the alpha component of a constant color as
-   * the interpolation factor.
-   */
-  cogl_material_set_layer_combine (priv->material, 1,
-                                   "RGBA = INTERPOLATE (PREVIOUS, "
-                                                       "TEXTURE, "
-                                                       "CONSTANT[A])",
-                                   NULL);
+  /* the image has changed size, so update the preferred width/height */
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (image));
+}
+
+/**
+ * mx_image_clear:
+ * @image: A #MxImage
+ *
+ * Clear the current image and set a blank, transparent image.
+ *
+ * Returns: static void
+ */
+void
+mx_image_clear (MxImage *image)
+{
+  MxImagePrivate *priv = image->priv;
+
+  if (priv->texture)
+    cogl_object_unref (priv->texture);
+
+  priv->texture = cogl_object_ref (priv->blank_texture);
+
+
+  if (priv->old_texture)
+    cogl_object_unref (priv->old_texture);
+
+  priv->old_texture = cogl_object_ref (priv->blank_texture);
+
+
+  if (priv->material)
+    cogl_object_unref (priv->material);
+
+  priv->material = cogl_object_ref (priv->template_material);
 
   /* the image has changed size, so update the preferred width/height */
   clutter_actor_queue_relayout (CLUTTER_ACTOR (image));

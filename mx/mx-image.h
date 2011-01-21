@@ -91,6 +91,8 @@ gboolean mx_image_set_from_file (MxImage      *image,
                                  const gchar  *filename,
                                  GError      **error);
 
+void     mx_image_clear (MxImage *image);
+
 void             mx_image_set_scale_mode (MxImage          *image,
                                           MxImageScaleMode  mode);
 MxImageScaleMode mx_image_get_scale_mode (MxImage          *image);
