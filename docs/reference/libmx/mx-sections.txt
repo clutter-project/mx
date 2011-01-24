@@ -1304,8 +1304,13 @@ MxImageClass
 mx_image_new
 mx_image_set_from_data
 mx_image_set_from_file
+mx_image_set_from_file_at_size
+mx_image_set_from_buffer
+mx_image_set_from_buffer_at_size
 mx_image_set_scale_mode
 mx_image_get_scale_mode
+mx_image_set_load_async
+mx_image_get_load_async
 <SUBSECTION Standard>
 MX_IMAGE
 MX_IS_IMAGE

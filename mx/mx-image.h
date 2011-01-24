@@ -21,6 +21,7 @@
 #define _MX_IMAGE
 
 #include <glib-object.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
 #include "mx-widget.h"
 
 G_BEGIN_DECLS
@@ -44,7 +45,8 @@ G_BEGIN_DECLS
 
 typedef enum
 {
-  MX_IMAGE_ERROR_BAD_FORMAT
+  MX_IMAGE_ERROR_BAD_FORMAT,
+  MX_IMAGE_ERROR_NO_ASYNC
 } MxImageError;
 
 #define MX_IMAGE_ERROR (mx_image_error_quark ())
@@ -73,6 +75,10 @@ struct _MxImageClass
 {
   /*< private >*/
   MxWidgetClass parent_class;
+
+  /* signals, not vfuncs */
+  void (* image_loaded)     (MxImage *image);
+  void (* image_load_error) (MxImage *image, GError *error);
 };
 
 
@@ -87,15 +93,38 @@ gboolean mx_image_set_from_data (MxImage          *image,
                                  gint              height,
                                  gint              rowstride,
                                  GError          **error);
+
 gboolean mx_image_set_from_file (MxImage      *image,
                                  const gchar  *filename,
                                  GError      **error);
+gboolean mx_image_set_from_file_at_size (MxImage      *image,
+                                         const gchar  *filename,
+                                         gint          width,
+                                         gint          height,
+                                         GError      **error);
+
+gboolean mx_image_set_from_buffer (MxImage         *image,
+                                   guchar          *buffer,
+                                   gsize            buffer_size,
+                                   GDestroyNotify   buffer_free_func,
+                                   GError         **error);
+gboolean mx_image_set_from_buffer_at_size (MxImage         *image,
+                                           guchar          *buffer,
+                                           gsize            buffer_size,
+                                           GDestroyNotify   buffer_free_func,
+                                           gint             width,
+                                           gint             height,
+                                           GError         **error);
 
 void     mx_image_clear (MxImage *image);
 
 void             mx_image_set_scale_mode (MxImage          *image,
                                           MxImageScaleMode  mode);
 MxImageScaleMode mx_image_get_scale_mode (MxImage          *image);
+
+void     mx_image_set_load_async (MxImage  *image,
+                                  gboolean  load_async);
+gboolean mx_image_get_load_async (MxImage  *image);
 
 G_END_DECLS
 

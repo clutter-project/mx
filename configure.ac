@@ -118,7 +118,7 @@ AC_SUBST(MX_MAINTAINER_CFLAGS)
 
 dnl = Required Packages ====================================================
 
-MX_REQUIRES=""
+MX_REQUIRES="gdk-pixbuf-2.0"
 
 dnl = Winsys ===============================================================
 

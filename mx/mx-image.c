@@ -26,10 +26,12 @@
  *
  */
 
+#include <unistd.h>
 #include <cogl/cogl.h>
 
 #include "mx-image.h"
 #include "mx-enum-types.h"
+#include "mx-marshal.h"
 
 G_DEFINE_TYPE (MxImage, mx_image, MX_TYPE_WIDGET)
 
@@ -38,9 +40,57 @@ G_DEFINE_TYPE (MxImage, mx_image, MX_TYPE_WIDGET)
 
 #define DEFAULT_DURATION 1000
 
+/* This stucture holds all that is necessary for cancellable async
+ * image loading using thread pools.
+ *
+ * The idea is that you create this structure (with the pixbuf as NULL)
+ * and add it to the thread-pool.
+ *
+ * The 'complete' member of the struct is protected by the mutex. The
+ * main thread can use this to indicate to the thread handler that the
+ * load was cancelled, where as the thread handler uses this to indicate
+ * that the load was completed.
+ *
+ * The thread will take the mutex while it's loading data - if complete
+ * is set when it takes the mutex, it will mark the thread as cancelled
+ * and do nothing, otherwise it will load the image. It will then unlock
+ * the mutex.
+ *
+ * The idle handler will check that the cancelled member isn't set and if not,
+ * will try to upload the image using mx_image_set_from_pixbuf(). It will free
+ * the async structure always. It will also reset the pointer to the task in
+ * the MxImage priv struct, but only if the cancelled member *isn't* set.
+ *
+ * During MxImage dispose, if the async-data is non-NULL, it will take the
+ * mutex. If it's complete, it will free the structure and remove the idle
+ * handler. If it's not complete, it will set it to complete and the data
+ * structure will be freed by the idle handler.
+ */
+typedef struct
+{
+  MxImage   *parent;
+
+  GMutex         *mutex;
+  guint           complete  : 1;
+  guint           cancelled : 1;
+  guint           idle_handler;
+
+  gchar          *filename;
+  guchar         *buffer;
+  gsize           count;
+  GDestroyNotify  free_func;
+
+  gint            width;
+  gint            height;
+
+  GdkPixbuf      *pixbuf;
+  GError         *error;
+} MxImageAsyncData;
+
 struct _MxImagePrivate
 {
   MxImageScaleMode mode;
+  guint            load_async : 1;
 
   CoglHandle texture;
   CoglHandle old_texture;
@@ -52,14 +102,29 @@ struct _MxImagePrivate
   ClutterTimeline *timeline;
 
   guint duration;
+
+  MxImageAsyncData *async_load_data;
 };
 
 enum
 {
   PROP_0,
 
-  PROP_SCALE_MODE
+  PROP_SCALE_MODE,
+  PROP_LOAD_ASYNC
 };
+
+enum
+{
+  IMAGE_LOADED,
+  IMAGE_LOAD_ERROR,
+
+  LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL] = { 0, };
+
+static GThreadPool *mx_image_threads = NULL;
 
 GQuark
 mx_image_error_quark (void)
@@ -68,58 +133,38 @@ mx_image_error_quark (void)
 }
 
 static void
-add_one_pixel_border (CoglHandle *texture)
+mx_image_async_data_free (MxImageAsyncData *data)
 {
-  CoglHandle old_texture = *texture;
+  g_mutex_free (data->mutex);
 
-  int width = cogl_texture_get_width (old_texture);
-  int height = cogl_texture_get_height (old_texture);
-  /* Create a new texture with an extra 2 pixels in each dimension and
-     force it to have an alpha component */
-  CoglHandle new_texture =
-    cogl_texture_new_with_size (width + 2, height + 2,
-                                COGL_TEXTURE_NO_ATLAS,
-                                COGL_PIXEL_FORMAT_RGBA_8888);
-  CoglHandle fbo = cogl_offscreen_new_to_texture (new_texture);
-  CoglMaterial *tex_material = cogl_material_new ();
-  CoglMaterial *clear_material;
-  CoglColor transparent_color;
+  if (data->free_func)
+    data->free_func (data->buffer);
 
-  /* Set the blending equation to directly copy the bits of the old
-     texture without blending the destination pixels */
-  cogl_material_set_blend (tex_material,
-                           "RGBA=ADD(SRC_COLOR, 0)",
-                           NULL);
-  clear_material = cogl_material_copy (tex_material);
+  g_free (data->filename);
 
-  cogl_material_set_layer (tex_material, 0, old_texture);
+  if (data->idle_handler)
+    g_source_remove (data->idle_handler);
 
-  cogl_color_set_from_4ub (&transparent_color, 0, 0, 0, 0);
-  cogl_material_set_color (clear_material, &transparent_color);
+  if (data->pixbuf)
+    g_object_unref (data->pixbuf);
 
-  cogl_push_framebuffer (fbo);
-  cogl_ortho (0, width + 2, height + 2, 0, -1, 1);
+  if (data->error)
+    g_error_free (data->error);
 
-  cogl_push_source (tex_material);
-  cogl_rectangle (1, 1, width + 1, height + 1);
+  g_free (data);
+}
 
-  /* Clear the 1 pixel border around the texture */
-  cogl_set_source (clear_material);
-  cogl_rectangle (0, 0, width + 2, 1);
-  cogl_rectangle (0, height + 1, width + 2, height + 2);
-  cogl_rectangle (0, 1, 1, height + 1);
-  cogl_rectangle (width + 1, 1, width + 2, height + 1);
+static MxImageAsyncData *
+mx_image_async_data_new (MxImage *parent)
+{
+  MxImageAsyncData *data = g_new0 (MxImageAsyncData, 1);
 
-  cogl_pop_framebuffer ();
-  cogl_pop_source ();
+  data->parent = parent;
+  data->mutex = g_mutex_new ();
+  data->width = -1;
+  data->height = -1;
 
-  cogl_object_unref (clear_material);
-  cogl_object_unref (tex_material);
-  cogl_handle_unref (fbo);
-
-  cogl_handle_unref (old_texture);
-
-  *texture = new_texture;
+  return data;
 }
 
 static void
@@ -336,6 +381,10 @@ mx_image_set_property (GObject      *object,
       mx_image_set_scale_mode (MX_IMAGE (object), g_value_get_enum (value));
       break;
 
+    case PROP_LOAD_ASYNC:
+      mx_image_set_load_async (MX_IMAGE (object), g_value_get_boolean (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -354,6 +403,10 @@ mx_image_get_property (GObject    *object,
     {
     case PROP_SCALE_MODE:
       g_value_set_enum (value, priv->mode);
+      break;
+
+    case PROP_LOAD_ASYNC:
+      g_value_set_boolean (value, priv->load_async);
       break;
 
     default:
@@ -402,6 +455,25 @@ mx_image_dispose (GObject *object)
       priv->template_material = NULL;
     }
 
+  if (priv->async_load_data)
+    {
+      MxImageAsyncData *data = priv->async_load_data;
+
+      g_mutex_lock (data->mutex);
+      if (data->complete)
+        {
+          g_mutex_unlock (data->mutex);
+          mx_image_async_data_free (data);
+        }
+      else
+        {
+          data->complete = TRUE;
+          g_mutex_unlock (data->mutex);
+        }
+
+      priv->async_load_data = NULL;
+    }
+
   G_OBJECT_CLASS (mx_image_parent_class)->dispose (object);
 }
 
@@ -431,6 +503,45 @@ mx_image_class_init (MxImageClass *klass)
                              G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
   g_object_class_install_property (object_class, PROP_SCALE_MODE, pspec);
+
+  pspec = g_param_spec_boolean ("load-async",
+                                "Load Asynchronously",
+                                "Whether to load images asynchronously",
+                                FALSE,
+                                G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+
+  g_object_class_install_property (object_class, PROP_LOAD_ASYNC, pspec);
+
+  /**
+   * MxImage::image-loaded:
+   * @image: the #MxImage that emitted the signal
+   *
+   * Emitted when an asynchronous image load has completed successfully
+   */
+  signals[IMAGE_LOADED] =
+    g_signal_new ("image-loaded",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (MxImageClass, image_loaded),
+                  NULL, NULL,
+                  _mx_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
+
+  /**
+   * MxImage::image-load-error:
+   * @image: the #MxImage that emitted the signal
+   *
+   * Emitted when an asynchronous image load has encountered an error
+   * and cannot load the requested image.
+   */
+  signals[IMAGE_LOAD_ERROR] =
+    g_signal_new ("image-load-error",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (MxImageClass, image_load_error),
+                  NULL, NULL,
+                  _mx_marshal_VOID__BOXED,
+                  G_TYPE_NONE, 1, G_TYPE_ERROR);
 }
 
 
@@ -577,9 +688,6 @@ mx_image_prepare_texture (MxImage  *image)
 {
   MxImagePrivate *priv = image->priv;
 
-  /* add a one pixel border to the image */
-  add_one_pixel_border (&priv->texture);
-
   /* Create a new Cogl material holding the two textures inside two
    * separate layers.
    */
@@ -657,20 +765,24 @@ mx_image_set_from_data (MxImage          *image,
                         gint              rowstride,
                         GError          **error)
 {
-  MxImagePrivate *priv = image->priv;
+  GError *err;
+  gint *blank_area;
+  MxImagePrivate *priv;
 
+  g_return_val_if_fail (MX_IS_IMAGE (image), FALSE);
+
+  err = NULL;
+  priv = image->priv;
 
   if (priv->old_texture)
     cogl_object_unref (priv->old_texture);
 
   priv->old_texture = priv->texture;
 
-  priv->texture = cogl_texture_new_from_data (width, height,
+  /* Create and upload texture */
+  priv->texture = cogl_texture_new_with_size (width + 2, height + 2,
                                               COGL_TEXTURE_NO_ATLAS,
-                                              pixel_format,
-                                              COGL_PIXEL_FORMAT_ANY,
-                                              rowstride, data);
-
+                                              COGL_PIXEL_FORMAT_ANY);
   if (!priv->texture)
     {
       if (error)
@@ -680,7 +792,342 @@ mx_image_set_from_data (MxImage          *image,
       return FALSE;
     }
 
+  cogl_texture_set_region (priv->texture, 0, 0, 1, 1,
+                           width, height, width, height,
+                           pixel_format, rowstride, data);
+
+  /* Blit a transparent buffer around the texture */
+  blank_area = g_new0 (gint, MAX (width, height) + 2);
+  cogl_texture_set_region (priv->texture, 0, 0, 0, 0,
+                           width, 1, width, 1,
+                           COGL_PIXEL_FORMAT_RGBA_8888, width * 4,
+                           (const guint8 *)blank_area);
+  cogl_texture_set_region (priv->texture, 0, 0, 0, height + 1,
+                           width + 2, 1, width + 2, 1,
+                           COGL_PIXEL_FORMAT_RGBA_8888, width * 4,
+                           (const guint8 *)blank_area);
+  cogl_texture_set_region (priv->texture, 0, 0, 0, 0,
+                           1, height + 2, 1, height + 2,
+                           COGL_PIXEL_FORMAT_RGBA_8888, 4,
+                           (const guint8 *)blank_area);
+  cogl_texture_set_region (priv->texture, 0, 0, width + 1, 0,
+                           1, height + 2, 1, height + 2,
+                           COGL_PIXEL_FORMAT_RGBA_8888, 4,
+                           (const guint8 *)blank_area);
+  g_free (blank_area);
+
   mx_image_prepare_texture (image);
+
+  return TRUE;
+}
+
+static gboolean
+mx_image_set_from_pixbuf (MxImage    *image,
+                          GdkPixbuf  *pixbuf,
+                          GError    **error)
+{
+  GError *err;
+  gboolean has_alpha;
+  MxImagePrivate *priv;
+  GdkColorspace color_space;
+  gint width, height, rowstride, bps, channels;
+
+  g_return_val_if_fail (MX_IS_IMAGE (image), FALSE);
+
+  err = NULL;
+  priv = image->priv;
+
+  if (!pixbuf)
+    return FALSE;
+
+  width = gdk_pixbuf_get_width (pixbuf);
+  height = gdk_pixbuf_get_height (pixbuf);
+  has_alpha = gdk_pixbuf_get_has_alpha (pixbuf);
+  rowstride = gdk_pixbuf_get_rowstride (pixbuf);
+  bps = gdk_pixbuf_get_bits_per_sample (pixbuf);
+  channels = gdk_pixbuf_get_n_channels (pixbuf);
+  color_space = gdk_pixbuf_get_colorspace (pixbuf);
+
+  if ((bps != 8) ||
+      (color_space != GDK_COLORSPACE_RGB) ||
+      !((has_alpha && channels == 4) ||
+        (!has_alpha && channels == 3)))
+    {
+      if (error)
+        g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_BAD_FORMAT,
+                     "Unsupported image formatting");
+      g_object_unref (pixbuf);
+      return FALSE;
+    }
+
+  return mx_image_set_from_data (image, gdk_pixbuf_get_pixels (pixbuf),
+                                 has_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 :
+                                             COGL_PIXEL_FORMAT_RGB_888,
+                                 width, height, rowstride, error);
+}
+
+static gboolean
+mx_image_load_complete_cb (gpointer task_data)
+{
+  MxImageAsyncData *data = task_data;
+
+  /* Lock/unlock mutex to make sure the thread is finished. This is necessary
+   * as it's possible that this idle handler will run before the thread unlocks
+   * the mutex, and freeing a locked mutex results in undefined behaviour
+   * (well, it crashes on Linux with an assert in pthreads...)
+   */
+  g_mutex_lock (data->mutex);
+  g_mutex_unlock (data->mutex);
+
+  /* Reset the idle handler id so we don't try to remove it when we free
+   * the data later on.
+   */
+  data->idle_handler = 0;
+
+  /* Don't do anything with the image data if we've been cancelled already */
+  if (!data->cancelled)
+    {
+      /* If we managed to load the pixbuf, set it now, otherwise forward the
+       * error on to the user via a signal.
+       */
+      if (data->pixbuf)
+        {
+          GError *error = NULL;
+          gboolean success =
+            mx_image_set_from_pixbuf (data->parent, data->pixbuf, &error);
+
+          if (success)
+            g_signal_emit (data->parent, signals[IMAGE_LOADED], 0);
+          else
+            {
+              g_signal_emit (data->parent, signals[IMAGE_LOAD_ERROR], 0, error);
+              g_error_free (error);
+            }
+        }
+      else
+        g_signal_emit (data->parent, signals[IMAGE_LOAD_ERROR], 0, data->error);
+
+      /* Reset the image pointer to the data if necessary */
+      data->parent->priv->async_load_data = NULL;
+    }
+
+  /* Free the async loading struct */
+  mx_image_async_data_free (data);
+
+  return FALSE;
+}
+
+static void
+mx_image_size_prepared_cb (GdkPixbufLoader *loader,
+                           gint             width,
+                           gint             height,
+                           gpointer         user_data)
+{
+  gboolean fit_width, fit_height;
+  gint *constraints = user_data;
+
+  if (constraints[0] >= 0)
+    {
+      if (constraints[1] >= 0)
+        {
+          gfloat aspect = constraints[0] / (gfloat)constraints[1];
+          gfloat aspect_orig = width / (gfloat)height;
+
+          fit_width = (aspect_orig > aspect);
+        }
+      else
+        fit_width = TRUE;
+    }
+  else if (constraints[1] >= 0)
+    fit_width = FALSE;
+
+  if (fit_width)
+    gdk_pixbuf_loader_set_size (loader, constraints[0],
+                                (constraints[0] / (gfloat)width) *
+                                (gfloat)height);
+  else
+    gdk_pixbuf_loader_set_size (loader,
+                                (constraints[1] / (gfloat)height) *
+                                (gfloat)width,
+                                constraints[1]);
+}
+
+static GdkPixbuf *
+mx_image_pixbuf_new (const gchar  *filename,
+                     const guchar *buffer,
+                     gsize         count,
+                     gint          width,
+                     gint          height,
+                     GError      **error)
+{
+  /* Easy case, load pixbuf from file */
+  if (filename)
+    return gdk_pixbuf_new_from_file_at_size (filename, width, height, error);
+
+  /* Slightly less easy case, load pixbuf from buffer (use GdkPixbufLoader) */
+  if (buffer && count)
+    {
+      GdkPixbuf *pixbuf;
+      GdkPixbufLoader *loader;
+      gint size_constraints[2];
+
+      GError *err = NULL;
+
+      loader = gdk_pixbuf_loader_new ();
+
+      size_constraints[0] = width;
+      size_constraints[1] = height;
+      g_signal_connect (loader, "size-prepared",
+                        G_CALLBACK (mx_image_size_prepared_cb),
+                        size_constraints);
+
+      if (!gdk_pixbuf_loader_write (loader, buffer, count, &err))
+        {
+          g_propagate_error (error, err);
+          g_object_unref (loader);
+          return NULL;
+        }
+
+      /* Note, closing the pixbuf loader will make sure that size-prepared
+       * will not be called beyond this point.
+       */
+      if (!gdk_pixbuf_loader_close (loader, &err))
+        {
+          g_propagate_error (error, err);
+          g_object_unref (loader);
+          return NULL;
+        }
+
+      pixbuf = g_object_ref (gdk_pixbuf_loader_get_pixbuf (loader));
+
+      g_object_unref (loader);
+
+      return pixbuf;
+    }
+
+  return NULL;
+}
+
+static void
+mx_image_async_cb (gpointer task_data,
+                   gpointer user_data)
+{
+  MxImageAsyncData *data = task_data;
+
+  g_mutex_lock (data->mutex);
+
+  /* Check if the task has been cancelled and free/bail out */
+  if (data->complete)
+    {
+      data->cancelled = TRUE;
+      g_mutex_unlock (data->mutex);
+      return;
+    }
+
+  /* Try to load the pixbuf */
+  data->pixbuf = mx_image_pixbuf_new (data->filename, data->buffer,
+                                      data->count, data->width, data->height,
+                                      &data->error);
+
+  data->complete = TRUE;
+  data->idle_handler =
+    clutter_threads_add_idle_full (G_PRIORITY_HIGH_IDLE,
+                                   mx_image_load_complete_cb, data, NULL);
+
+  g_mutex_unlock (data->mutex);
+}
+
+static gboolean
+mx_image_set_async (MxImage         *image,
+                    const gchar     *filename,
+                    guchar          *buffer,
+                    gsize            count,
+                    GDestroyNotify   free_func,
+                    gint             width,
+                    gint             height,
+                    GError         **error)
+{
+  GError *err;
+  MxImagePrivate *priv;
+  MxImageAsyncData *data;
+
+  g_return_val_if_fail (MX_IS_IMAGE (image), FALSE);
+
+  priv = image->priv;
+
+  /* This function should not be called if async loading isn't enabled */
+  if (!priv->load_async)
+    {
+      g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_NO_ASYNC,
+                   "Asynchronous image loading is not enabled");
+      return FALSE;
+    }
+
+  err = NULL;
+  data = NULL;
+
+  /* Load the pixbuf in a thread, then later on upload it to the GPU */
+  if (!mx_image_threads)
+    {
+      mx_image_threads = g_thread_pool_new (mx_image_async_cb, NULL,
+                                            sysconf (_SC_NPROCESSORS_ONLN),
+                                            FALSE, &err);
+      if (!mx_image_threads)
+        {
+          g_propagate_error (error, err);
+          return FALSE;
+        }
+    }
+
+  /* Cancel/free any in-progress load */
+  if (priv->async_load_data)
+    {
+      MxImageAsyncData *old_data = priv->async_load_data;
+
+      if (!g_mutex_trylock (old_data->mutex))
+        {
+          /* The thread is busy, cancel it and start a new one */
+          old_data->cancelled = TRUE;
+        }
+      else
+        {
+          if (old_data->complete)
+            {
+              /* The load finished, cancel the upload and free
+               * the data.
+               */
+              g_mutex_unlock (old_data->mutex);
+              mx_image_async_data_free (old_data);
+            }
+          else
+            {
+              /* The load hasn't begun, we'll hijack it */
+              g_free (old_data->filename);
+              old_data->filename = g_strdup (filename);
+              old_data->buffer = buffer;
+              old_data->count = count;
+              old_data->free_func = free_func;
+              old_data->width = width;
+              old_data->height = height;
+              g_mutex_unlock (old_data->mutex);
+
+              data = old_data;
+            }
+        }
+    }
+
+  if (!data)
+    {
+      /* Create the async load data and add it to the thread-pool */
+      priv->async_load_data = data = mx_image_async_data_new (image);
+      data->filename = g_strdup (filename);
+      data->buffer = buffer;
+      data->count = count;
+      data->free_func = free_func;
+      data->width = width;
+      data->height = height;
+      g_thread_pool_push (mx_image_threads, data, NULL);
+    }
 
   return TRUE;
 }
@@ -701,28 +1148,183 @@ mx_image_set_from_file (MxImage      *image,
                         const gchar  *filename,
                         GError      **error)
 {
-  MxImagePrivate *priv = image->priv;
-  GError *err = NULL;
-
-  if (priv->old_texture)
-    cogl_object_unref (priv->old_texture);
-
-  priv->old_texture = priv->texture;
-
-  priv->texture = cogl_texture_new_from_file (filename,
-                                              COGL_TEXTURE_NO_ATLAS,
-                                              COGL_PIXEL_FORMAT_ANY,
-                                              &err);
-
-  if (err)
-    {
-      g_propagate_error (error, err);
-
-      return FALSE;
-    }
-
-
-  mx_image_prepare_texture (image);
-
-  return TRUE;
+  return mx_image_set_from_file_at_size (image, filename, -1, -1, error);
 }
+
+/**
+ * mx_image_set_from_file_at_size:
+ * @image: An #MxImage
+ * @filename: Filename to read the file from
+ * @width: Width to scale the image to, or -1
+ * @height: Height to scale the image to, or -1
+ * @error: Return location for a #GError, or #NULL
+ *
+ * Set the image data from an image file, and scale the image during loading.
+ * In case of failure, #FALSE is returned and @error is set. The aspect ratio
+ * will always be maintained.
+ *
+ * Returns: #TRUE if the image was successfully updated
+ */
+gboolean
+mx_image_set_from_file_at_size (MxImage      *image,
+                                const gchar  *filename,
+                                gint          width,
+                                gint          height,
+                                GError      **error)
+{
+  gboolean retval;
+  GdkPixbuf *pixbuf;
+  MxImagePrivate *priv;
+
+  g_return_val_if_fail (MX_IS_IMAGE (image), FALSE);
+
+  priv = image->priv;
+
+  /* Load the pixbuf in a thread, then later on upload it to the GPU */
+  if (priv->load_async)
+    return mx_image_set_async (image, filename, NULL, 0, NULL,
+                               width, height, error);
+
+  /* Synchronously load the pixbuf and set it */
+  pixbuf = mx_image_pixbuf_new (filename, NULL, 0, width, height, error);
+  if (!pixbuf)
+    return FALSE;
+
+  retval = mx_image_set_from_pixbuf (image, pixbuf, error);
+
+  g_object_unref (pixbuf);
+
+  return retval;
+}
+
+/**
+ * mx_image_set_from_buffer:
+ * @image: An #MxImage
+ * @buffer: A buffer pointing to encoded image data
+ * @buffer_size: The size of @buffer, in bytes
+ * @buffer_free_func: A function to free @buffer, or %NULL
+ * @error: Return location for a #GError, or #NULL
+ *
+ * Set the image data from unencoded image data, stored in memory. In case of
+ * failure, #FALSE is returned and @error is set. It is expected that @buffer
+ * will remain accessible for the duration of the load. Once it is finished
+ * with, @buffer_free_func will be called.
+ *
+ * Returns: #TRUE if the image was successfully updated
+ */
+gboolean
+mx_image_set_from_buffer (MxImage         *image,
+                          guchar          *buffer,
+                          gsize            buffer_size,
+                          GDestroyNotify   buffer_free_func,
+                          GError         **error)
+{
+  return mx_image_set_from_buffer_at_size (image, buffer, buffer_size,
+                                           buffer_free_func, -1, -1, error);
+}
+
+/**
+ * mx_image_set_from_buffer_at_size:
+ * @image: An #MxImage
+ * @buffer: A buffer pointing to encoded image data
+ * @buffer_size: The size of @buffer, in bytes
+ * @buffer_free_func: A function to free @buffer, or %NULL
+ * @width: Width to scale the image to, or -1
+ * @height: Height to scale the image to, or -1
+ * @error: Return location for a #GError, or #NULL
+ *
+ * Set the image data from unencoded image data, stored in memory, and scales
+ * it while loading. In case of failure, #FALSE is returned and @error is set.
+ * It is expected that @buffer will remain accessible for the duration of the
+ * load. Once it is finished with, @buffer_free_func will be called. The aspect
+ * ratio will always be maintained.
+ *
+ * Returns: #TRUE if the image was successfully updated
+ */
+gboolean
+mx_image_set_from_buffer_at_size (MxImage         *image,
+                                  guchar          *buffer,
+                                  gsize            buffer_size,
+                                  GDestroyNotify   buffer_free_func,
+                                  gint             width,
+                                  gint             height,
+                                  GError         **error)
+{
+  gboolean retval;
+  GdkPixbuf *pixbuf;
+  MxImagePrivate *priv;
+
+  g_return_val_if_fail (MX_IS_IMAGE (image), FALSE);
+
+  priv = image->priv;
+
+  if (priv->load_async)
+    return mx_image_set_async (image, NULL, buffer, buffer_size,
+                               buffer_free_func, width, height, error);
+
+  pixbuf = mx_image_pixbuf_new (NULL, buffer, buffer_size,
+                                width, height, error);
+  if (!pixbuf)
+    return FALSE;
+
+  retval = mx_image_set_from_pixbuf (image, pixbuf, error);
+
+  g_object_unref (pixbuf);
+
+  if (buffer_free_func)
+    buffer_free_func ((gpointer)buffer);
+
+  return retval;
+}
+
+/**
+ * mx_image_set_load_async:
+ * @image: A #MxImage
+ * @load_async: %TRUE to load images asynchronously
+ *
+ * Sets whether to load images asynchronously. Asynchronous image loading
+ * requires thread support (see g_thread_init()).
+ *
+ * When using asynchronous image loading, all image-loading functions will
+ * return immediately as successful. The #MxImage::image-loaded and
+ * #MxImage::image-load-error signals are used to signal success or failure
+ * of asynchronous image loading.
+ */
+void
+mx_image_set_load_async (MxImage  *image,
+                         gboolean  load_async)
+{
+  MxImagePrivate *priv;
+
+  g_return_if_fail (MX_IS_IMAGE (image));
+
+  priv = image->priv;
+  if (priv->load_async != load_async)
+    {
+      priv->load_async = load_async;
+      g_object_notify (G_OBJECT (image), "load-async");
+
+      /* Cancel the old transfer if we're turning async off */
+      if (!load_async && priv->async_load_data)
+        {
+          priv->async_load_data->cancelled = TRUE;
+          priv->async_load_data = NULL;
+        }
+    }
+}
+
+/**
+ * mx_image_get_load_async:
+ * @image: A #MxImage
+ *
+ * Determines whether asynchronous image loading is in use.
+ *
+ * Returns: %TRUE if images are set to load asynchronously, %FALSE otherwise
+ */
+gboolean
+mx_image_get_load_async (MxImage *image)
+{
+  g_return_val_if_fail (MX_IS_IMAGE (image), FALSE);
+  return image->priv->load_async;
+}
+
