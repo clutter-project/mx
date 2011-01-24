@@ -579,6 +579,10 @@ mx_box_layout_move_focus (MxFocusable      *focusable,
             }
         }
     }
+  else if (direction == MX_FOCUS_DIRECTION_OUT)
+    {
+      priv->last_focus = from;
+    }
 
   return NULL;
 }
