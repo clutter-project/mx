@@ -561,6 +561,8 @@ mx_grid_move_focus (MxFocusable      *focusable,
   if (!childlink)
     return NULL;
 
+  priv->last_focus = from;
+
   /* find the next widget to focus */
   if (direction == MX_FOCUS_DIRECTION_NEXT)
     {
@@ -575,15 +577,11 @@ mx_grid_move_focus (MxFocusable      *focusable,
 
               if (focused)
                 {
-                  priv->last_focus = (MxFocusable *)l->data;
                   update_adjustments (MX_GRID (focusable), focused);
                   return focused;
                 }
             }
         }
-
-      /* no next widgets to focus */
-      return NULL;
     }
   else if (direction == MX_FOCUS_DIRECTION_PREVIOUS)
     {
@@ -598,13 +596,13 @@ mx_grid_move_focus (MxFocusable      *focusable,
 
               if (focused)
                 {
-                  priv->last_focus = (MxFocusable *)l->data;
                   update_adjustments (MX_GRID (focusable), focused);
                   return focused;
                 }
             }
         }
     }
+
 
   return NULL;
 }

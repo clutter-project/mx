@@ -173,6 +173,8 @@ mx_table_move_focus (MxFocusable      *focusable,
   if (!childlink)
     return NULL;
 
+  priv->last_focus = from;
+
   child_actor = CLUTTER_ACTOR (childlink->data);
   child_meta = (MxTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (focusable),
                                                                   child_actor);
@@ -190,10 +192,7 @@ mx_table_move_focus (MxFocusable      *focusable,
                                                    MX_FOCUS_HINT_FIRST);
 
               if (focused)
-                {
-                  priv->last_focus = (MxFocusable *)l->data;
-                  return focused;
-                }
+                return focused;
             }
         }
 
@@ -210,10 +209,7 @@ mx_table_move_focus (MxFocusable      *focusable,
                                                    MX_FOCUS_HINT_LAST);
 
               if (focused)
-                {
-                  priv->last_focus = (MxFocusable *)l->data;
-                  return focused;
-                }
+                return focused;
             }
         }
 
@@ -239,10 +235,7 @@ mx_table_move_focus (MxFocusable      *focusable,
                   focused = mx_focusable_accept_focus (MX_FOCUSABLE (found),
                                                        MX_FOCUS_HINT_FIRST);
                   if (focused)
-                    {
-                      priv->last_focus = (MxFocusable *)found;
-                      break;
-                    }
+                    break;
                 }
 
               child_meta = (MxTableChild *) clutter_container_get_child_meta
@@ -277,10 +270,7 @@ mx_table_move_focus (MxFocusable      *focusable,
                   focused = mx_focusable_accept_focus (MX_FOCUSABLE (found),
                                                        MX_FOCUS_HINT_FIRST);
                   if (focused)
-                    {
-                      priv->last_focus = (MxFocusable *)found;
-                      break;
-                    }
+                    break;
                 }
 
               child_meta = (MxTableChild *) clutter_container_get_child_meta
@@ -314,10 +304,7 @@ mx_table_move_focus (MxFocusable      *focusable,
                   focused = mx_focusable_accept_focus (MX_FOCUSABLE (found),
                                                        MX_FOCUS_HINT_FIRST);
                   if (focused)
-                    {
-                      priv->last_focus = (MxFocusable *)found;
-                      break;
-                    }
+                    break;
                 }
 
               child_meta = (MxTableChild *) clutter_container_get_child_meta
@@ -352,10 +339,7 @@ mx_table_move_focus (MxFocusable      *focusable,
                   focused = mx_focusable_accept_focus (MX_FOCUSABLE (found),
                                                        MX_FOCUS_HINT_FIRST);
                   if (focused)
-                    {
-                      priv->last_focus = (MxFocusable *)found;
-                      break;
-                    }
+                    break;
                 }
 
               child_meta = (MxTableChild *) clutter_container_get_child_meta

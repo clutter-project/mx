@@ -520,6 +520,8 @@ mx_box_layout_move_focus (MxFocusable      *focusable,
   if (!childlink)
     return NULL;
 
+  priv->last_focus = from;
+
   hint = mx_focus_hint_from_direction (direction);
 
   /* convert left/right and up/down into next/previous */
@@ -552,7 +554,6 @@ mx_box_layout_move_focus (MxFocusable      *focusable,
 
               if (focused)
                 {
-                  priv->last_focus = child;
                   update_adjustments (MX_BOX_LAYOUT (focusable), focused);
                   return focused;
                 }
@@ -572,16 +573,11 @@ mx_box_layout_move_focus (MxFocusable      *focusable,
 
               if (focused)
                 {
-                  priv->last_focus = child;
                   update_adjustments (MX_BOX_LAYOUT (focusable), focused);
                   return focused;
                 }
             }
         }
-    }
-  else if (direction == MX_FOCUS_DIRECTION_OUT)
-    {
-      priv->last_focus = from;
     }
 
   return NULL;
