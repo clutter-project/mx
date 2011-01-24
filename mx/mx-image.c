@@ -594,7 +594,6 @@ mx_image_prepare_texture (MxImage  *image)
 
   /* start the cross fade animation */
   clutter_timeline_start (priv->timeline);
-  new_frame_cb (priv->timeline, 0, image);
 
   /* the image has changed size, so update the preferred width/height */
   clutter_actor_queue_relayout (CLUTTER_ACTOR (image));
