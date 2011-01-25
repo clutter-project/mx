@@ -767,6 +767,7 @@ mx_image_prepare_texture (MxImage  *image)
   cogl_material_set_layer (priv->material, 0, priv->texture);
 
   /* start the cross fade animation */
+  clutter_timeline_stop (priv->timeline);
   clutter_timeline_start (priv->timeline);
 
   /* the image has changed size, so update the preferred width/height */
