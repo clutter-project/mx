@@ -73,6 +73,7 @@ typedef struct
   GMutex         *mutex;
   guint           complete  : 1;
   guint           cancelled : 1;
+  guint           upscale   : 1;
   guint           idle_handler;
 
   gchar          *filename;
@@ -82,6 +83,8 @@ typedef struct
 
   gint            width;
   gint            height;
+  guint           width_threshold;
+  guint           height_threshold;
 
   GdkPixbuf      *pixbuf;
   GError         *error;
@@ -91,6 +94,9 @@ struct _MxImagePrivate
 {
   MxImageScaleMode mode;
   guint            load_async : 1;
+  guint            upscale    : 1;
+  guint            width_threshold;
+  guint            height_threshold;
 
   CoglHandle texture;
   CoglHandle old_texture;
@@ -111,7 +117,10 @@ enum
   PROP_0,
 
   PROP_SCALE_MODE,
-  PROP_LOAD_ASYNC
+  PROP_LOAD_ASYNC,
+  PROP_ALLOW_UPSCALE,
+  PROP_SCALE_WIDTH_THRESHOLD,
+  PROP_SCALE_HEIGHT_THRESHOLD
 };
 
 enum
@@ -163,6 +172,9 @@ mx_image_async_data_new (MxImage *parent)
   data->mutex = g_mutex_new ();
   data->width = -1;
   data->height = -1;
+  data->upscale = parent->priv->upscale;
+  data->width_threshold = parent->priv->width_threshold;
+  data->height_threshold = parent->priv->height_threshold;
 
   return data;
 }
@@ -375,14 +387,28 @@ mx_image_set_property (GObject      *object,
                        const GValue *value,
                        GParamSpec   *pspec)
 {
+  MxImage *image = MX_IMAGE (object);
+
   switch (prop_id)
     {
     case PROP_SCALE_MODE:
-      mx_image_set_scale_mode (MX_IMAGE (object), g_value_get_enum (value));
+      mx_image_set_scale_mode (image, g_value_get_enum (value));
       break;
 
     case PROP_LOAD_ASYNC:
-      mx_image_set_load_async (MX_IMAGE (object), g_value_get_boolean (value));
+      mx_image_set_load_async (image, g_value_get_boolean (value));
+      break;
+
+    case PROP_ALLOW_UPSCALE:
+      mx_image_set_allow_upscale (image, g_value_get_boolean (value));
+      break;
+
+    case PROP_SCALE_WIDTH_THRESHOLD:
+      mx_image_set_scale_width_threshold (image, g_value_get_uint (value));
+      break;
+
+    case PROP_SCALE_HEIGHT_THRESHOLD:
+      mx_image_set_scale_height_threshold (image, g_value_get_uint (value));
       break;
 
     default:
@@ -407,6 +433,18 @@ mx_image_get_property (GObject    *object,
 
     case PROP_LOAD_ASYNC:
       g_value_set_boolean (value, priv->load_async);
+      break;
+
+    case PROP_ALLOW_UPSCALE:
+      g_value_set_boolean (value, priv->upscale);
+      break;
+
+    case PROP_SCALE_WIDTH_THRESHOLD:
+      g_value_set_uint (value, priv->width_threshold);
+      break;
+
+    case PROP_SCALE_HEIGHT_THRESHOLD:
+      g_value_set_uint (value, priv->height_threshold);
       break;
 
     default:
@@ -511,6 +549,34 @@ mx_image_class_init (MxImageClass *klass)
                                 G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
   g_object_class_install_property (object_class, PROP_LOAD_ASYNC, pspec);
+
+  pspec = g_param_spec_boolean ("allow-upscale",
+                                "Allow Upscale",
+                                "Allow images to be up-scaled",
+                                FALSE,
+                                G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+
+  g_object_class_install_property (object_class, PROP_ALLOW_UPSCALE, pspec);
+
+  pspec = g_param_spec_uint ("scale-width-threshold",
+                             "Scale Width Threshold",
+                             "Amount of pixels difference allowed between "
+                             "requested width and image width",
+                             0, G_MAXUINT, 0,
+                             G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+
+  g_object_class_install_property (object_class, PROP_SCALE_WIDTH_THRESHOLD,
+                                   pspec);
+
+  pspec = g_param_spec_uint ("scale-height-threshold",
+                             "Scale Height Threshold",
+                             "Amount of pixels difference allowed between "
+                             "requested height and image height",
+                             0, G_MAXUINT, 0,
+                             G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+
+  g_object_class_install_property (object_class, PROP_SCALE_HEIGHT_THRESHOLD,
+                                   pspec);
 
   /**
    * MxImage::image-loaded:
@@ -917,95 +983,131 @@ mx_image_load_complete_cb (gpointer task_data)
   return FALSE;
 }
 
+typedef struct
+{
+  gint     width;
+  gint     height;
+  guint    width_threshold;
+  guint    height_threshold;
+  gboolean upscale;
+} MxImageSizeRequest;
+
 static void
 mx_image_size_prepared_cb (GdkPixbufLoader *loader,
                            gint             width,
                            gint             height,
                            gpointer         user_data)
 {
-  gboolean fit_width, fit_height;
-  gint *constraints = user_data;
+  gboolean fit_width;
+  MxImageSizeRequest *constraints = user_data;
 
-  if (constraints[0] >= 0)
+  if (constraints->width >= 0)
     {
-      if (constraints[1] >= 0)
+      if (constraints->height >= 0)
         {
-          gfloat aspect = constraints[0] / (gfloat)constraints[1];
+          gfloat aspect = constraints->width / (gfloat)constraints->height;
           gfloat aspect_orig = width / (gfloat)height;
 
-          fit_width = (aspect_orig > aspect);
+          fit_width = (aspect_orig < aspect);
         }
       else
         fit_width = TRUE;
     }
-  else if (constraints[1] >= 0)
+  else if (constraints->height >= 0)
     fit_width = FALSE;
+  else
+    return;
 
   if (fit_width)
-    gdk_pixbuf_loader_set_size (loader, constraints[0],
-                                (constraints[0] / (gfloat)width) *
-                                (gfloat)height);
+    {
+      if (!constraints->upscale && (width < constraints->width))
+        return;
+
+      if (ABS (width - constraints->width) < constraints->width_threshold)
+        return;
+
+      gdk_pixbuf_loader_set_size (loader, constraints->width,
+                                  (constraints->width / (gfloat)width) *
+                                  (gfloat)height);
+    }
   else
-    gdk_pixbuf_loader_set_size (loader,
-                                (constraints[1] / (gfloat)height) *
-                                (gfloat)width,
-                                constraints[1]);
+    {
+      if (!constraints->upscale && (height < constraints->height))
+        return;
+
+      if (ABS (height - constraints->height) < constraints->height_threshold)
+        return;
+
+      gdk_pixbuf_loader_set_size (loader,
+                                  (constraints->height / (gfloat)height) *
+                                  (gfloat)width,
+                                  constraints->height);
+    }
 }
 
 static GdkPixbuf *
 mx_image_pixbuf_new (const gchar  *filename,
-                     const guchar *buffer,
+                     guchar       *buffer,
                      gsize         count,
                      gint          width,
                      gint          height,
+                     guint         width_threshold,
+                     guint         height_threshold,
+                     gboolean      upscale,
                      GError      **error)
 {
-  /* Easy case, load pixbuf from file */
+  GdkPixbuf *pixbuf;
+  GdkPixbufLoader *loader;
+  MxImageSizeRequest constraints;
+
+  GError *err = NULL;
+
+  loader = gdk_pixbuf_loader_new ();
+
+  constraints.width = width;
+  constraints.height = height;
+  constraints.width_threshold = width_threshold;
+  constraints.height_threshold = height_threshold;
+  constraints.upscale = upscale;
+
+  g_signal_connect (loader, "size-prepared",
+                    G_CALLBACK (mx_image_size_prepared_cb),
+                    &constraints);
+
   if (filename)
-    return gdk_pixbuf_new_from_file_at_size (filename, width, height, error);
-
-  /* Slightly less easy case, load pixbuf from buffer (use GdkPixbufLoader) */
-  if (buffer && count)
     {
-      GdkPixbuf *pixbuf;
-      GdkPixbufLoader *loader;
-      gint size_constraints[2];
-
-      GError *err = NULL;
-
-      loader = gdk_pixbuf_loader_new ();
-
-      size_constraints[0] = width;
-      size_constraints[1] = height;
-      g_signal_connect (loader, "size-prepared",
-                        G_CALLBACK (mx_image_size_prepared_cb),
-                        size_constraints);
-
-      if (!gdk_pixbuf_loader_write (loader, buffer, count, &err))
+      if (!g_file_get_contents (filename, (gchar **)&buffer, &count, &err))
         {
           g_propagate_error (error, err);
           g_object_unref (loader);
           return NULL;
         }
 
-      /* Note, closing the pixbuf loader will make sure that size-prepared
-       * will not be called beyond this point.
-       */
-      if (!gdk_pixbuf_loader_close (loader, &err))
-        {
-          g_propagate_error (error, err);
-          g_object_unref (loader);
-          return NULL;
-        }
-
-      pixbuf = g_object_ref (gdk_pixbuf_loader_get_pixbuf (loader));
-
-      g_object_unref (loader);
-
-      return pixbuf;
+      g_object_weak_ref (G_OBJECT (loader), (GWeakNotify)g_free, buffer);
     }
 
-  return NULL;
+  if (!gdk_pixbuf_loader_write (loader, buffer, count, &err))
+    {
+      g_propagate_error (error, err);
+      g_object_unref (loader);
+      return NULL;
+    }
+
+  /* Note, closing the pixbuf loader will make sure that size-prepared
+   * will not be called beyond this point.
+   */
+  if (!gdk_pixbuf_loader_close (loader, &err))
+    {
+      g_propagate_error (error, err);
+      g_object_unref (loader);
+      return NULL;
+    }
+
+  pixbuf = g_object_ref (gdk_pixbuf_loader_get_pixbuf (loader));
+
+  g_object_unref (loader);
+
+  return pixbuf;
 }
 
 static void
@@ -1027,6 +1129,8 @@ mx_image_async_cb (gpointer task_data,
   /* Try to load the pixbuf */
   data->pixbuf = mx_image_pixbuf_new (data->filename, data->buffer,
                                       data->count, data->width, data->height,
+                                      data->width_threshold,
+                                      data->height_threshold, data->upscale,
                                       &data->error);
 
   data->complete = TRUE;
@@ -1186,7 +1290,9 @@ mx_image_set_from_file_at_size (MxImage      *image,
                                width, height, error);
 
   /* Synchronously load the pixbuf and set it */
-  pixbuf = mx_image_pixbuf_new (filename, NULL, 0, width, height, error);
+  pixbuf = mx_image_pixbuf_new (filename, NULL, 0, width, height,
+                                priv->width_threshold, priv->height_threshold,
+                                priv->upscale, error);
   if (!pixbuf)
     return FALSE;
 
@@ -1262,8 +1368,9 @@ mx_image_set_from_buffer_at_size (MxImage         *image,
     return mx_image_set_async (image, NULL, buffer, buffer_size,
                                buffer_free_func, width, height, error);
 
-  pixbuf = mx_image_pixbuf_new (NULL, buffer, buffer_size,
-                                width, height, error);
+  pixbuf = mx_image_pixbuf_new (NULL, buffer, buffer_size, width, height,
+                                priv->width_threshold, priv->height_threshold,
+                                priv->upscale, error);
   if (!pixbuf)
     return FALSE;
 
@@ -1326,5 +1433,134 @@ mx_image_get_load_async (MxImage *image)
 {
   g_return_val_if_fail (MX_IS_IMAGE (image), FALSE);
   return image->priv->load_async;
+}
+
+/**
+ * mx_image_set_allow_upscale:
+ * @image: A #MxImage
+ * @allow: %TRUE to allow upscaling, %FALSE otherwise
+ *
+ * Sets whether up-scaling of images is allowed. If set to %TRUE and a size
+ * larger than the image is requested, the image will be up-scaled in
+ * software.
+ *
+ * The advantage of this is that software up-scaling is potentially higher
+ * quality, but it comes at the expense of video memory.
+ */
+void
+mx_image_set_allow_upscale (MxImage  *image,
+                            gboolean  allow)
+{
+  MxImagePrivate *priv;
+
+  g_return_if_fail (MX_IS_IMAGE (image));
+
+  priv = image->priv;
+  if (priv->upscale != allow)
+    {
+      priv->upscale = allow;
+      g_object_notify (G_OBJECT (image), "allow-upscale");
+    }
+}
+
+/**
+ * mx_image_get_allow_upscale:
+ * @image: A #MxImage
+ *
+ * Determines whether image up-scaling is allowed.
+ *
+ * Returns: %TRUE if upscaling is allowed, %FALSE otherwise
+ */
+gboolean
+mx_image_get_allow_upscale (MxImage *image)
+{
+  g_return_val_if_fail (MX_IS_IMAGE (image), FALSE);
+  return image->priv->upscale;
+}
+
+/**
+ * mx_image_set_scale_width_threshold:
+ * @image: A #MxImage
+ * @pixels: Number of pixels
+ *
+ * Sets the threshold used to determine whether to scale the width of the
+ * image. If a specific width is requested, the image width is allowed to
+ * differ by this amount before scaling is employed.
+ *
+ * This can be useful to avoid excessive CPU usage when the image differs
+ * only slightly to the desired size.
+ */
+void
+mx_image_set_scale_width_threshold (MxImage *image,
+                                    guint    pixels)
+{
+  MxImagePrivate *priv;
+
+  g_return_if_fail (MX_IS_IMAGE (image));
+
+  priv = image->priv;
+  if (priv->width_threshold != pixels)
+    {
+      priv->width_threshold = pixels;
+      g_object_notify (G_OBJECT (image), "scale-width-threshold");
+    }
+}
+
+/**
+ * mx_image_get_scale_width_threshold:
+ * @image: A #MxImage
+ *
+ * Retrieves the width scaling threshold.
+ *
+ * Returns: The width scaling threshold, in pixels
+ */
+guint
+mx_image_get_scale_width_threshold (MxImage *image)
+{
+  g_return_val_if_fail (MX_IS_IMAGE (image), 0);
+  return image->priv->width_threshold;
+}
+
+/**
+ * mx_image_set_scale_height_threshold:
+ * @image: A #MxImage
+ * @pixels: Number of pixels
+ *
+ * Sets the threshold used to determine whether to scale the height of the
+ * image. If a specific height is requested, the image height is allowed to
+ * differ by this amount before scaling is employed.
+ *
+ * This can be useful to avoid excessive CPU usage when the image differs
+ * only slightly to the desired size.
+ */
+void
+mx_image_set_scale_height_threshold (MxImage *image,
+                                     guint    pixels)
+{
+  MxImagePrivate *priv;
+
+  g_return_if_fail (MX_IS_IMAGE (image));
+
+  priv = image->priv;
+  if (priv->height_threshold != pixels)
+    {
+      priv->height_threshold = pixels;
+      g_object_notify (G_OBJECT (image), "scale-height-threshold");
+    }
+}
+
+/**
+ * mx_image_get_scale_height_threshold:
+ * @image: A #MxImage
+ *
+ * Retrieves the height scaling threshold.
+ *
+ * Returns: The height scaling threshold, in pixels
+ */
+guint
+mx_image_get_scale_height_threshold (MxImage *image)
+{
+  g_return_val_if_fail (MX_IS_IMAGE (image), 0);
+  return image->priv->height_threshold;
 }
 

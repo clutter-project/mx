@@ -1311,6 +1311,12 @@ mx_image_set_scale_mode
 mx_image_get_scale_mode
 mx_image_set_load_async
 mx_image_get_load_async
+mx_image_set_allow_upscale
+mx_image_get_allow_upscale
+mx_image_set_scale_width_threshold
+mx_image_get_scale_width_threshold
+mx_image_set_scale_height_threshold
+mx_image_get_scale_height_threshold
 <SUBSECTION Standard>
 MX_IMAGE
 MX_IS_IMAGE

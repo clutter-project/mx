@@ -126,6 +126,18 @@ void     mx_image_set_load_async (MxImage  *image,
                                   gboolean  load_async);
 gboolean mx_image_get_load_async (MxImage  *image);
 
+void     mx_image_set_allow_upscale (MxImage *image,
+                                     gboolean allow);
+gboolean mx_image_get_allow_upscale (MxImage *image);
+
+void     mx_image_set_scale_width_threshold (MxImage *image,
+                                             guint    pixels);
+guint    mx_image_get_scale_width_threshold (MxImage *image);
+
+void     mx_image_set_scale_height_threshold (MxImage *image,
+                                              guint    pixels);
+guint    mx_image_get_scale_height_threshold (MxImage *image);
+
 G_END_DECLS
 
 #endif /* _MX_IMAGE */
