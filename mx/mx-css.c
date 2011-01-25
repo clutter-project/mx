@@ -24,6 +24,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include "mx-private.h"
+
 struct _MxStyleSheet
 {
   GList *selectors;
@@ -291,35 +293,57 @@ css_parse_simple_selector (GScanner      *scanner,
   return G_TOKEN_NONE;
 }
 
-#ifdef MX_DEBUG_CSS
-static void
-print_selector (MxSelector *selector, gint indent)
+static char*
+selector_to_string (MxSelector *selector)
 {
-  int i;
+  gchar *ancestor, *string, *tmp, *parent, *ret;
 
-  for (i = 0; i < indent; i++)
-      printf ("  ");
+  if (!selector)
+    return NULL;
 
-  printf ("%s.%s#%s:%s\n", selector->type, selector->class, selector->id,
-          selector->pseudo_class);
+  ancestor = selector_to_string (selector->ancestor);
 
-  if (selector->parent)
-    {
-      for (i = 0; i < indent; i++)
-        printf ("  ");
-      printf ("p");
-      print_selector (selector->parent, indent + 1);
-    }
+  tmp = selector_to_string (selector->parent);
+  if (tmp)
+    parent = g_strconcat (tmp, " > ", NULL);
+  else
+    parent = NULL;
+  g_free (tmp);
 
-  if (selector->ancestor)
-    {
-      for (i = 0; i < indent; i++)
-        printf ("  ");
-      printf ("a");
-      print_selector (selector->ancestor, indent + 1);
-    }
+  string = g_strdup_printf ("%s%s%s%s%s%s%s",
+                            (selector->type) ?  selector->type : "",
+                            (selector->class) ? "." : "",
+                            (selector->class) ? selector->class : "",
+                            (selector->id) ? "#" : "",
+                            (selector->id) ? selector->id : "",
+                            (selector->pseudo_class) ? "#" : "",
+                            (selector->pseudo_class)
+                            ? selector->pseudo_class : "");
+
+  ret = g_strconcat ((ancestor) ? ancestor : "",
+                     (parent) ? parent : "",
+                     string, NULL);
+
+  g_free (string);
+
+  g_free (ancestor);
+  g_free (parent);
+
+  return ret;
 }
-#endif
+
+static void
+print_selector (MxSelector *selector,
+                gint        score)
+{
+  gchar *string;
+
+  string = selector_to_string (selector);
+
+  MX_NOTE (CSS, "%5d: %s", score, string);
+
+  g_free (string);
+}
 
 
 static MxSelector *
@@ -831,14 +855,32 @@ GHashTable *
 mx_style_sheet_get_properties (MxStyleSheet *sheet,
                                MxStylable   *node)
 {
+  GTimer *timer;
   GList *l, *matching_selectors = NULL;
   SelectorMatch *selector_match = NULL;
   GHashTable *result;
 
+  if (_mx_debug (MX_DEBUG_CSS))
+    {
+      const char *id = clutter_actor_get_name (CLUTTER_ACTOR (node));
+      const char *class = mx_stylable_get_style_class (node);
+      const char *pseudo_class = mx_stylable_get_style_pseudo_class (node);
+      const char *type_name = G_OBJECT_TYPE_NAME (node);
+
+      timer = g_timer_new ();
+      g_print ("\x1b[1m");
+      MX_NOTE (CSS, "Matches for: %s%s%s%s%s%s%s",
+               (type_name) ? type_name : "",
+               (class) ? "." : "",
+               (class) ? class : "",
+               (id) ? "#" : "",
+               (id) ? id : "",
+               (pseudo_class) ? ":" : "",
+               (pseudo_class) ? pseudo_class : "");
+      g_print ("\x1b[22m");
+    }
+
   /* find matching selectors */
-#ifdef MX_DEBUG_CSS
-  GTimer *timer = g_timer_new ();
-#endif
   for (l = sheet->selectors; l; l = l->next)
     {
       gint score;
@@ -875,27 +917,21 @@ mx_style_sheet_get_properties (MxStyleSheet *sheet,
       g_hash_table_foreach (match->selector->style, (GHFunc) css_table_copy,
                             &copy_data);
 
-#ifdef MX_DEBUG_CSS
-          printf ("(%6d) ", match->score);
-          print_selector (match->selector, 3);
-#endif
+      if (_mx_debug (MX_DEBUG_CSS))
+        print_selector (match->selector, match->score);
     }
 
   g_list_foreach (matching_selectors, (GFunc) free_selector_match, NULL);
   g_list_free (matching_selectors);
 
-#ifdef MX_DEBUG_CSS
+  if (_mx_debug (MX_DEBUG_CSS))
+    {
+      g_print ("\x1b[2m");
+      MX_NOTE (CSS, "%fs", g_timer_elapsed (timer, NULL));
+      g_print ("\x1b[0m");
+      g_timer_destroy (timer);
+    }
 
-  g_timer_stop (timer);
-  static int count = 1;
-  static double avg = 0, new;
-  new = g_timer_elapsed (timer, NULL);
-  avg = ((avg * count + new) / (count + 1));
-  count++;
-  printf ("%f - finished (total: %d, average: %f) %s \n",
-          new, count, avg, G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (node)));
-  printf ("----\n");
-#endif
   return result;
 }
 
@@ -935,11 +971,6 @@ mx_style_sheet_add_from_file (MxStyleSheet *sheet,
   input_name = g_strdup (filename);
   result = css_parse_file (sheet, input_name, g_list_length (sheet->filenames));
   sheet->filenames = g_list_prepend (sheet->filenames, input_name);
-
-#ifdef MX_DEBUG_CSS
-  g_list_foreach (sheet->selectors, (GFunc)print_selector, GINT_TO_POINTER (0));
-  printf ("-------\n");
-#endif
 
   return result;
 }
