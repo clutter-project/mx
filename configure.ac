@@ -243,7 +243,7 @@ AC_SUBST([catalogdir])
 AC_ARG_ENABLE([gtk-widgets],
               [AC_HELP_STRING([--disable-gtk-widgets],
                               [disable building the gtk+ widgets library])],
-              [],
+              [enable_gtk_widgets=no],
               [PKG_CHECK_MODULES(GTK, [gtk+-2.0 >= 2.20])
                enable_gtk_widgets=yes])
 
@@ -300,6 +300,7 @@ echo ""
 echo " Mx Toolkit - $VERSION"
 echo ""
 echo " Features:"
+echo "   GTK+ widgets:         $enable_gtk_widgets"
 echo "   Clutter-Imcontext:    $with_clutter_imcontext"
 echo "   Clutter-Gesture:      $with_clutter_gesture"
 echo "   Startup Notification: $with_startup_notification"
