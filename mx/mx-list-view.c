@@ -72,6 +72,8 @@ struct _MxListViewPrivate
   gulong         row_changed;
   gulong         row_removed;
   gulong         sort_changed;
+
+  guint          is_frozen : 1;
 };
 
 /* gobject implementations */
@@ -221,6 +223,9 @@ model_changed_cb (ClutterModel *model,
   if (!priv->item_type && !priv->factory)
     return;
 
+  if (priv->is_frozen)
+    return;
+
   if (priv->item_type)
     {
       /* check the item-type is an descendant of ClutterActor */
@@ -326,6 +331,9 @@ row_removed_cb (ClutterModel     *model,
   GList *children;
   GList *l;
   ClutterActor *child;
+
+  if (list_view->priv->is_frozen)
+    return;
 
   children = clutter_container_get_children (CLUTTER_CONTAINER (list_view));
   l = g_list_nth (children, clutter_model_iter_get_row (iter));
@@ -517,7 +525,7 @@ mx_list_view_add_attribute (MxListView  *list_view,
  * @list_view: An #MxListView
  *
  * Freeze the view. This means that the view will not act on changes to the
- * model until it is thawed. Call mx_list_view_thaw() to thaw the view
+ * model until it is thawed. Call #mx_list_view_thaw to thaw the view.
  */
 void
 mx_list_view_freeze (MxListView *list_view)
@@ -528,17 +536,7 @@ mx_list_view_freeze (MxListView *list_view)
 
   priv = list_view->priv;
 
-  g_signal_handlers_block_by_func (priv->model,
-                                   model_changed_cb,
-                                   list_view);
-
-  g_signal_handlers_block_by_func (priv->model,
-                                   row_removed_cb,
-                                   list_view);
-
-  g_signal_handlers_block_by_func (priv->model,
-                                   row_changed_cb,
-                                   list_view);
+  priv->is_frozen = TRUE;
 }
 
 /**
@@ -557,17 +555,7 @@ mx_list_view_thaw (MxListView *list_view)
 
   priv = list_view->priv;
 
-  g_signal_handlers_unblock_by_func (priv->model,
-                                     model_changed_cb,
-                                     list_view);
-
-  g_signal_handlers_unblock_by_func (priv->model,
-                                     row_removed_cb,
-                                     list_view);
-
-  g_signal_handlers_unblock_by_func (priv->model,
-                                     row_changed_cb,
-                                     list_view);
+  priv->is_frozen = FALSE;
 
   /* Repopulate */
   model_changed_cb (priv->model, list_view);
