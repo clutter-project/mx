@@ -277,7 +277,7 @@ mx_window_x11_set_wm_hints (MxWindowX11 *self)
   if ((icon_name || texture) && net_wm_icon)
     {
       guint width, height;
-      guchar *data;
+      gulong *data;
       gint size;
 
       /* Lookup icon for program name if there's no texture set */
@@ -303,7 +303,7 @@ mx_window_x11_set_wm_hints (MxWindowX11 *self)
                                     COGL_PIXEL_FORMAT_BGRA_8888,
                                     width * 4,
                                     NULL);
-      if (!size)
+      if (size != width * height * 4)
         {
           g_warning ("Unable to get texture data in "
                      "correct format for window icon");
@@ -311,19 +311,35 @@ mx_window_x11_set_wm_hints (MxWindowX11 *self)
           return;
         }
 
-      data = g_malloc (size + (sizeof (gulong) * 2));
-      ((gulong *)data)[0] = width;
-      ((gulong *)data)[1] = height;
+      data = g_new (gulong, width * height + 2);
+      data[0] = width;
+      data[1] = height;
 
       /* Get the window icon */
       if (cogl_texture_get_data (texture,
                                  COGL_PIXEL_FORMAT_BGRA_8888,
                                  width * 4,
-                                 data + (sizeof (gulong) * 2)) == size)
+                                 (guint8 *) (data + 2)) == size)
         {
+          /* For some inexplicable reason XChangeProperty always takes
+           * an array of longs when the format == 32 even on 64-bit
+           * architectures where sizeof(long) != 32. Therefore we need
+           * to pointlessly pad each 32-bit value with an extra 4
+           * bytes so that libX11 can remove them again to send the
+           * request. We can do this in-place if we start from the
+           * end */
+          if (sizeof (gulong) != 4)
+            {
+              const guint32 *src = (guint32 *) (data + 2) + width * height;
+              gulong *dst = data + 2 + width * height;
+
+              while (dst > data + 2)
+                *(--dst) = *(--src);
+            }
+
           /* Set the property */
           XChangeProperty (dpy, win, net_wm_icon, XA_CARDINAL,
-                           32, PropModeReplace, data,
+                           32, PropModeReplace, (unsigned char *) data,
                            (width * height) + 2);
         }
       else
