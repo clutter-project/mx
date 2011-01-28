@@ -47,6 +47,7 @@
 #include "mx-widget.h"
 #include "mx-stylable.h"
 #include "mx-private.h"
+#include "mx-fade-effect.h"
 
 enum
 {
@@ -56,17 +57,27 @@ enum
   PROP_TEXT,
   PROP_X_ALIGN,
   PROP_Y_ALIGN,
-  PROP_LINE_WRAP
+  PROP_LINE_WRAP,
+  PROP_FADE_OUT
 };
 
 #define MX_LABEL_GET_PRIVATE(obj)     (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_LABEL, MxLabelPrivate))
 
 struct _MxLabelPrivate
 {
-  ClutterActor *label;
+  ClutterActor  *label;
+  ClutterEffect *fade_effect;
 
   MxAlign x_align;
   MxAlign y_align;
+
+  ClutterTimeline *fade_timeline;
+  ClutterAlpha    *fade_alpha;
+
+  gint em_width;
+
+  guint fade_out           : 1;
+  guint label_should_fade  : 1;
 };
 
 G_DEFINE_TYPE (MxLabel, mx_label, MX_TYPE_WIDGET);
@@ -95,6 +106,10 @@ mx_label_set_property (GObject      *gobject,
 
     case PROP_LINE_WRAP:
       mx_label_set_line_wrap (label, g_value_get_boolean (value));
+      break;
+
+    case PROP_FADE_OUT:
+      mx_label_set_fade_out (label, g_value_get_boolean (value));
       break;
 
     default:
@@ -134,6 +149,10 @@ mx_label_get_property (GObject    *gobject,
       g_value_set_boolean (value, mx_label_get_line_wrap (MX_LABEL (gobject)));
       break;
 
+    case PROP_FADE_OUT:
+      g_value_set_boolean (value, priv->fade_out);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -141,7 +160,8 @@ mx_label_get_property (GObject    *gobject,
 }
 
 static void
-mx_label_style_changed (MxWidget *self)
+mx_label_style_changed (MxWidget            *self,
+                        MxStyleChangedFlags  flags)
 {
   MxLabelPrivate *priv = MX_LABEL (self)->priv;
 
@@ -165,6 +185,10 @@ mx_label_get_preferred_width (ClutterActor *actor,
   clutter_actor_get_preferred_width (priv->label, for_height,
                                      min_width_p,
                                      natural_width_p);
+
+  /* If we're fading out, make sure our minimum width is zero */
+  if (priv->fade_out && min_width_p)
+    *min_width_p = 0;
 
   if (min_width_p)
     *min_width_p += padding.left + padding.right;
@@ -203,20 +227,18 @@ mx_label_allocate (ClutterActor          *actor,
                    ClutterAllocationFlags flags)
 {
   MxLabelPrivate *priv = MX_LABEL (actor)->priv;
+  gboolean label_did_fade = priv->label_should_fade;
+
   ClutterActorClass *parent_class;
   ClutterActorBox child_box;
   gboolean x_fill, y_fill;
-  MxPadding padding = { 0, };
-
-  mx_widget_get_padding (MX_WIDGET (actor), &padding);
+  gfloat avail_width;
 
   parent_class = CLUTTER_ACTOR_CLASS (mx_label_parent_class);
   parent_class->allocate (actor, box, flags);
 
-  child_box.x1 = padding.left;
-  child_box.y1 = padding.top;
-  child_box.x2 = box->x2 - box->x1 - padding.right;
-  child_box.y2 = box->y2 - box->y1 - padding.bottom;
+  mx_widget_get_available_area (MX_WIDGET (actor), box, &child_box);
+  avail_width = child_box.x2 - child_box.x1;
 
   /* The default behaviour of ClutterText is to align to the
    * top-left when it gets more space than is needed. Because
@@ -230,7 +252,48 @@ mx_label_allocate (ClutterActor          *actor,
 
   mx_allocate_align_fill (priv->label, &child_box, priv->x_align,
                           priv->y_align, x_fill, y_fill);
+
+  priv->label_should_fade = FALSE;
+
+  if (priv->fade_out)
+    {
+      /* If we're fading out, make sure the label has its full width
+       * allocated. This ensures that the offscreen effect has the full
+       * label inside its texture.
+       */
+      gfloat label_width;
+
+      clutter_actor_get_preferred_width (priv->label, -1, NULL, &label_width);
+
+      if (label_width > avail_width)
+        {
+          priv->label_should_fade = TRUE;
+          child_box.x2 = child_box.x1 + label_width;
+        }
+
+      mx_fade_effect_set_bounds (MX_FADE_EFFECT (priv->fade_effect),
+                                 0, 0, MIN (label_width, avail_width), 0);
+    }
+
+  /* Allocate the label */
   clutter_actor_allocate (priv->label, &child_box, flags);
+
+  /* Animate in/out the faded end of the label */
+  if (label_did_fade != priv->label_should_fade)
+    {
+      /* Begin/reverse the fading timeline when necessary */
+      if (priv->label_should_fade)
+        clutter_timeline_set_direction (priv->fade_timeline,
+                                        CLUTTER_TIMELINE_FORWARD);
+      else
+        clutter_timeline_set_direction (priv->fade_timeline,
+                                        CLUTTER_TIMELINE_BACKWARD);
+
+      if (!clutter_timeline_is_playing (priv->fade_timeline))
+        clutter_timeline_rewind (priv->fade_timeline);
+
+      clutter_timeline_start (priv->fade_timeline);
+    }
 }
 
 static void
@@ -243,6 +306,7 @@ mx_label_paint (ClutterActor *actor)
   parent_class->paint (actor);
 
   clutter_actor_paint (priv->label);
+  _mx_fade_effect_set_freeze_update (MX_FADE_EFFECT (priv->fade_effect), TRUE);
 }
 
 static void
@@ -273,15 +337,28 @@ mx_label_unmap (ClutterActor *actor)
 {
   MxLabelPrivate *priv = MX_LABEL (actor)->priv;
 
-  CLUTTER_ACTOR_CLASS (mx_label_parent_class)->unmap (actor);
-
   clutter_actor_unmap (priv->label);
+
+  CLUTTER_ACTOR_CLASS (mx_label_parent_class)->unmap (actor);
 }
 
 static void
 mx_label_dispose (GObject *actor)
 {
   MxLabelPrivate *priv = MX_LABEL (actor)->priv;
+
+  if (priv->fade_timeline)
+    {
+      clutter_timeline_stop (priv->fade_timeline);
+      g_object_unref (priv->fade_timeline);
+      priv->fade_timeline = NULL;
+    }
+
+  if (priv->fade_alpha)
+    {
+      g_object_unref (priv->fade_alpha);
+      priv->fade_alpha = NULL;
+    }
 
   if (priv->label)
     {
@@ -355,23 +432,149 @@ mx_label_class_init (MxLabelClass *klass)
                                 FALSE,
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_LINE_WRAP, pspec);
+
+  pspec = g_param_spec_boolean ("fade-out",
+                                "Fade out",
+                                "Fade out the end of the label, instead "
+                                "of ellipsizing",
+                                FALSE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_FADE_OUT, pspec);
+}
+
+static void
+mx_label_single_line_mode_cb (ClutterText *text,
+                              GParamSpec  *pspec,
+                              MxLabel     *self)
+{
+  MxLabelPrivate *priv = self->priv;
+  if (!clutter_text_get_single_line_mode (text) && priv->fade_out)
+    mx_label_set_fade_out (self, FALSE);
+}
+
+static void
+mx_label_label_changed_cb (MxLabel *label)
+{
+  MxLabelPrivate *priv = label->priv;
+
+  /* Enable updating of the off-screen texture */
+  _mx_fade_effect_set_freeze_update (MX_FADE_EFFECT (priv->fade_effect), FALSE);
+}
+
+static void
+mx_label_font_description_cb (ClutterText *text,
+                              GParamSpec  *pspec,
+                              MxLabel     *self)
+{
+  PangoFontDescription *font;
+
+  MxLabelPrivate *priv = self->priv;
+
+  /* Find out the em-width - code pretty much copied from Clutter,
+   * clutter-backend.c, get_units_per_em ()
+   */
+  font = clutter_text_get_font_description (text);
+  if (font)
+    {
+      gint i_dpi;
+      gdouble dpi;
+
+      gdouble font_size = 0;
+      gint pango_size = pango_font_description_get_size (font);
+      ClutterSettings *settings = clutter_settings_get_default ();
+
+      g_object_get (G_OBJECT (settings), "font-dpi", &i_dpi, NULL);
+      dpi = i_dpi / 1024.0;
+
+      if (pango_font_description_get_size_is_absolute (font))
+        font_size = pango_size / PANGO_SCALE;
+      else
+        font_size = pango_size / PANGO_SCALE * dpi / 96.f;
+
+      priv->em_width = (1.2f * font_size) * dpi / 96.f;
+
+      mx_fade_effect_set_border (MX_FADE_EFFECT (priv->fade_effect),
+                                 0, priv->em_width * 5, 0, 0);
+    }
+}
+
+static void
+mx_label_fade_new_frame_cb (ClutterTimeline *timeline,
+                            gint             msecs,
+                            MxLabel         *self)
+{
+  guint8 a;
+  ClutterColor color;
+
+  MxLabelPrivate *priv = self->priv;
+
+  a = (1.0 - clutter_alpha_get_alpha (priv->fade_alpha)) * 255;
+
+  color.red = a;
+  color.green = a;
+  color.blue = a;
+  color.alpha = a;
+
+  mx_fade_effect_set_color (MX_FADE_EFFECT (priv->fade_effect), &color);
+
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (self));
+}
+
+static void
+mx_label_fade_started_cb (ClutterTimeline *timeline,
+                          MxLabel         *label)
+{
+  clutter_actor_meta_set_enabled (CLUTTER_ACTOR_META (label->priv->fade_effect),
+                                  TRUE);
+}
+
+static void
+mx_label_fade_completed_cb (ClutterTimeline *timeline,
+                            MxLabel         *label)
+{
+  MxLabelPrivate *priv = label->priv;
+
+  if (!priv->label_should_fade)
+    clutter_actor_meta_set_enabled (CLUTTER_ACTOR_META (priv->fade_effect),
+                                    FALSE);
 }
 
 static void
 mx_label_init (MxLabel *label)
 {
   MxLabelPrivate *priv;
+  const ClutterColor opaque = { 0xff, 0xff, 0xff, 0xff };
 
   label->priv = priv = MX_LABEL_GET_PRIVATE (label);
 
-  label->priv->label = g_object_new (CLUTTER_TYPE_TEXT,
-                                     "ellipsize", PANGO_ELLIPSIZE_END,
-                                     NULL);
+  priv->label = g_object_new (CLUTTER_TYPE_TEXT,
+                              "ellipsize", PANGO_ELLIPSIZE_END,
+                              NULL);
 
   clutter_actor_set_parent (priv->label, CLUTTER_ACTOR (label));
 
+  priv->fade_effect = mx_fade_effect_new ();
+  mx_fade_effect_set_color (MX_FADE_EFFECT (priv->fade_effect), &opaque);
+  clutter_actor_add_effect (priv->label, priv->fade_effect);
+  clutter_actor_meta_set_enabled (CLUTTER_ACTOR_META (priv->fade_effect),
+                                  FALSE);
+
   g_signal_connect (label, "style-changed",
                     G_CALLBACK (mx_label_style_changed), NULL);
+  g_signal_connect (priv->label, "notify::single-line-mode",
+                    G_CALLBACK (mx_label_single_line_mode_cb), label);
+  g_signal_connect_swapped (priv->label, "queue-redraw",
+                            G_CALLBACK (mx_label_label_changed_cb), label);
+
+  priv->fade_timeline = clutter_timeline_new (250);
+  priv->fade_alpha = clutter_alpha_new_full (priv->fade_timeline,
+                                             CLUTTER_EASE_OUT_QUAD);
+  g_signal_connect (priv->fade_timeline, "new-frame",
+                    G_CALLBACK (mx_label_fade_new_frame_cb), label);
+  g_signal_connect (priv->fade_timeline, "started",
+                    G_CALLBACK (mx_label_fade_started_cb), label);
+  g_signal_connect (priv->fade_timeline, "completed",
+                    G_CALLBACK (mx_label_fade_completed_cb), label);
 }
 
 /**
@@ -528,3 +731,71 @@ mx_label_get_line_wrap (MxLabel *label)
 
   return clutter_text_get_line_wrap (CLUTTER_TEXT (label->priv->label));
 }
+
+/**
+ * mx_label_set_fade_out:
+ * @label: A #MxLabel
+ * @fade: %TRUE to fade out, %FALSE otherwise
+ *
+ * Set whether to fade out the end of the label, instead of ellipsizing.
+ * Enabling this mode will also set the #ClutterText::single-line-mode and
+ * #ClutterText::ellipsize properties.
+ */
+void
+mx_label_set_fade_out (MxLabel  *label,
+                       gboolean  fade)
+{
+  MxLabelPrivate *priv;
+
+  g_return_if_fail (MX_IS_LABEL (label));
+
+  priv = label->priv;
+  if (priv->fade_out != fade)
+    {
+      priv->fade_out = fade;
+      g_object_notify (G_OBJECT (label), "fade-out");
+
+      /* Enable the fade-effect */
+      if (fade)
+        {
+          priv->label_should_fade = FALSE;
+          clutter_text_set_single_line_mode (CLUTTER_TEXT (priv->label), TRUE);
+          clutter_text_set_ellipsize (CLUTTER_TEXT (priv->label),
+                                      PANGO_ELLIPSIZE_NONE);
+        }
+
+      /* If we need to fade, listen for the font-description changing so
+       * we can keep track of the em-width of the label.
+       */
+      if (fade)
+        {
+          g_signal_connect (priv->label, "notify::font-description",
+                            G_CALLBACK (mx_label_font_description_cb), label);
+          mx_label_font_description_cb (CLUTTER_TEXT (priv->label),
+                                        NULL, label);
+        }
+      else
+        {
+          g_signal_handlers_disconnect_by_func (priv->label,
+                                                mx_label_font_description_cb,
+                                                label);
+        }
+    }
+}
+
+/**
+ * mx_label_get_fade_out:
+ * @label: A #MxLabel
+ *
+ * Determines whether the label has been set to fade out when there isn't
+ * enough space allocated to display the entire label.
+ *
+ * Returns: %TRUE if the label is set to fade out, %FALSE otherwise
+ */
+gboolean
+mx_label_get_fade_out (MxLabel *label)
+{
+  g_return_val_if_fail (MX_IS_LABEL (label), FALSE);
+  return label->priv->fade_out;
+}
+

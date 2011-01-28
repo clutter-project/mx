@@ -158,6 +158,8 @@ mx_label_set_x_align
 mx_label_get_x_align
 mx_label_set_y_align
 mx_label_get_y_align
+mx_label_set_fade_out
+mx_label_get_fade_out
 <SUBSECTION Standard>
 MX_LABEL
 MX_IS_LABEL
