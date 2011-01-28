@@ -78,6 +78,17 @@ enum
   PROP_WINDOW
 };
 
+/* The data format expected by the _NET_WM_ICON property is defined so
+   that the alpha component is in the most significant byte and the
+   blue component is in the least significant byte which means that on
+   a big endian architecture the data format retrieved from Cogl would
+   need to be in the reverse order. */
+#if G_BYTE_ORDER == G_LITTLE_ENDIAN
+#define MX_WINDOW_X11_GET_TEXTURE_DATA_FORMAT COGL_PIXEL_FORMAT_BGRA_8888
+#else
+#define MX_WINDOW_X11_GET_TEXTURE_DATA_FORMAT COGL_PIXEL_FORMAT_ARGB_8888
+#endif
+
 static void
 mx_window_x11_get_property (GObject    *object,
                             guint       property_id,
@@ -300,7 +311,7 @@ mx_window_x11_set_wm_hints (MxWindowX11 *self)
       width = cogl_texture_get_width (texture);
       height = cogl_texture_get_height (texture);
       size = cogl_texture_get_data (texture,
-                                    COGL_PIXEL_FORMAT_BGRA_8888,
+                                    MX_WINDOW_X11_GET_TEXTURE_DATA_FORMAT,
                                     width * 4,
                                     NULL);
       if (size != width * height * 4)
@@ -317,7 +328,7 @@ mx_window_x11_set_wm_hints (MxWindowX11 *self)
 
       /* Get the window icon */
       if (cogl_texture_get_data (texture,
-                                 COGL_PIXEL_FORMAT_BGRA_8888,
+                                 MX_WINDOW_X11_GET_TEXTURE_DATA_FORMAT,
                                  width * 4,
                                  (guint8 *) (data + 2)) == size)
         {
