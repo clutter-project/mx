@@ -296,6 +296,8 @@ AC_CONFIG_FILES([
         docs/reference/Makefile
         docs/reference/libmx/Makefile
         docs/reference/libmx/version.xml
+        docs/reference/libmx-gtk/Makefile
+        docs/reference/libmx-gtk/version.xml
         mx/Makefile
         mx-gtk/Makefile
         mx/mx-version.h

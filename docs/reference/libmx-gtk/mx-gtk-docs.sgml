@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+<!ENTITY version SYSTEM "version.xml">
+]>
+
+<book id="index" xmlns:xi="http://www.w3.org/2003/XInclude">
+  <bookinfo>
+    <title>Mx-GTK Reference Manual</title>
+    <releaseinfo>
+      for mx-gtk &version;
+    </releaseinfo>
+
+    <copyright>
+      <year>2009, 2010</year>
+      <holder>Intel Corporation</holder>
+    </copyright>
+  </bookinfo>
+
+  <part>
+    <xi:include href="xml/annotation-glossary.xml"><xi:fallback /></xi:include>
+    <title>GTK widgets</title>
+    <chapter>
+      <xi:include href="xml/mx-gtk-frame.xml"/>
+      <xi:include href="xml/mx-gtk-light-switch.xml"/>
+    </chapter>
+  </part>
+
+  <index>
+    <title>Index of all symbols</title>
+    <xi:include href="xml/api-index-full.xml"><xi:fallback/></xi:include>
+  </index>
+</book>
