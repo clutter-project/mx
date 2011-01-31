@@ -31,7 +31,6 @@
 
 #include <glib.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
-#include <gtk/gtk.h>
 
 struct imgcache_element {
   char  filename[256];
@@ -453,7 +452,7 @@ int main(int    argc,
       printf("Usage:\n\t\tmakecache <directory>\n");
       return EXIT_FAILURE;
     }
-  gtk_init_check(&argc, &argv);
+  g_type_init();
   makecache(argv[1], 1);
   optimal_placement();
   sprintf(image_file, "/var/cache/mx/%08x.png", g_str_hash(argv[1]));

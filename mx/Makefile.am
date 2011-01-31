@@ -3,8 +3,8 @@ NULL =
 # installed utilities
 bin_PROGRAMS = mx-create-image-cache
 mx_create_image_cache_SOURCES = mx-create-image-cache.c
-mx_create_image_cache_LDADD = $(GTK_LIBS)
-mx_create_image_cache_CFLAGS = $(GTK_CFLAGS) $(MX_MAINTAINER_CFLAGS)
+mx_create_image_cache_LDADD = $(MX_IMAGE_CACHE_LIBS)
+mx_create_image_cache_CFLAGS = $(MX_IMAGE_CACHE_CFLAGS) $(MX_MAINTAINER_CFLAGS)
 
 BUILT_SOURCES = 		\
 	mx-enum-types.h 	\
