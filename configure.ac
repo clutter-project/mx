@@ -245,6 +245,7 @@ AC_ARG_ENABLE([gtk-widgets],
                               [disable building the gtk+ widgets library])],
               [enable_gtk_widgets=no],
               [PKG_CHECK_MODULES(GTK, [gtk+-2.0 >= 2.20])
+	       GTK_CFLAGS="$GTK_CFLAGS -DGSEAL_ENABLE=1"
                enable_gtk_widgets=yes])
 
 AM_CONDITIONAL(ENABLE_GTK_WIDGETS, test "x$enable_gtk_widgets" = xyes)
@@ -267,7 +268,6 @@ AM_GLIB_GNU_GETTEXT
 AM_PROG_LIBTOOL
 
 PKG_CHECK_MODULES(MX, [$MX_REQUIRES])
-GTK_CFLAGS="$GTK_CFLAGS -DGSEAL_ENABLE=1"
 
 # check for gtk-doc
 GTK_DOC_CHECK([1.14])
