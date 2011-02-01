@@ -459,9 +459,9 @@ mx_window_x11_allocation_changed_cb (ClutterActor           *actor,
 }
 
 static gboolean
-mx_window_x11_button_press_event_cb (ClutterActor       *actor,
-                                     ClutterButtonEvent *event,
-                                     MxWindowX11        *self)
+mx_window_x11_button_press_event_cb (ClutterActor *actor,
+                                     ClutterEvent *event,
+                                     MxWindowX11  *self)
 {
   unsigned int width, height, border_width, depth, mask;
   Window win, root, child;
@@ -480,10 +480,10 @@ mx_window_x11_button_press_event_cb (ClutterActor       *actor,
     return FALSE;
 
   /* We only care about the first mouse button */
-  if (event->button != 1)
+  if (clutter_event_get_button (event) != 1)
     return FALSE;
 
-  priv->is_moving = clutter_input_device_get_device_id (event->device);
+  priv->is_moving = clutter_event_get_device_id (event);
 
   win = clutter_x11_get_stage_window (CLUTTER_STAGE (actor));
   dpy = clutter_x11_get_default_display ();
@@ -615,9 +615,7 @@ mx_window_x11_captured_event_cb (ClutterActor *actor,
        * underneath the resize-handle.
        */
       if (priv->is_resizing)
-        return mx_window_x11_button_press_event_cb (actor,
-                                                    &event->button,
-                                                    self);
+        return mx_window_x11_button_press_event_cb (actor, event, self);
       else
         return FALSE;
 
@@ -627,9 +625,9 @@ mx_window_x11_captured_event_cb (ClutterActor *actor,
 }
 
 static gboolean
-mx_window_x11_motion_event_cb (ClutterActor       *actor,
-                               ClutterMotionEvent *event,
-                               MxWindowX11        *self)
+mx_window_x11_motion_event_cb (ClutterActor *actor,
+                               ClutterEvent *event,
+                               MxWindowX11  *self)
 {
   gint offsetx, offsety;
   gint x, y, winx, winy;
@@ -637,6 +635,7 @@ mx_window_x11_motion_event_cb (ClutterActor       *actor,
   MxWindowX11Private *priv;
   Window win, root_win, root, child;
   Display *dpy;
+  gfloat event_x, event_y;
   gfloat height, width;
 
   priv = self->priv;
@@ -645,14 +644,14 @@ mx_window_x11_motion_event_cb (ClutterActor       *actor,
    * our grabbed device.
    */
   if (!mx_window_x11_get_has_border (self) ||
-      (clutter_input_device_get_device_id (event->device) != priv->is_moving))
+      (clutter_event_get_device_id (event) != priv->is_moving))
     return FALSE;
 
   /* Check if the mouse button is still down - if the user releases the
    * mouse button while outside of the stage (which can happen), we don't
    * get the release event.
    */
-  if (!(event->modifier_state & CLUTTER_BUTTON1_MASK))
+  if (!(clutter_event_get_state (event) & CLUTTER_BUTTON1_MASK))
     {
       mx_window_x11_button_release (self);
       return TRUE;
@@ -666,8 +665,9 @@ mx_window_x11_motion_event_cb (ClutterActor       *actor,
 
   clutter_actor_get_size (actor, &width, &height);
 
-  x = event->x;
-  y = event->y;
+  clutter_event_get_coords (event, &event_x, &event_y);
+  x = (int) event_x;
+  y = (int) event_y;
 
   /* Move/resize the window if we're dragging */
   offsetx = priv->drag_x_start;
