@@ -1036,7 +1036,7 @@ interpolation_new_frame_cb (ClutterTimeline *timeline,
   /* Stop the interpolation if we've reached the end of the adjustment */
   if (!priv->elastic && priv->clamp_value &&
       ((new_value < priv->lower) ||
-       (new_value >= (priv->upper - priv->page_size))))
+       (new_value > (priv->upper - priv->page_size))))
     stop_interpolation (adjustment);
 }
 
