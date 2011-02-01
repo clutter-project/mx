@@ -855,7 +855,7 @@ GHashTable *
 mx_style_sheet_get_properties (MxStyleSheet *sheet,
                                MxStylable   *node)
 {
-  GTimer *timer;
+  GTimer *timer = NULL;
   GList *l, *matching_selectors = NULL;
   SelectorMatch *selector_match = NULL;
   GHashTable *result;

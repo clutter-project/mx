@@ -216,8 +216,8 @@ mx_allocate_align_fill (ClutterActor    *child,
       return;
     }
 
-  request = CLUTTER_REQUEST_HEIGHT_FOR_WIDTH;
-  g_object_get (G_OBJECT (child), "request-mode", &request, NULL);
+  request = clutter_actor_get_request_mode (child);
+  child_width = child_height = 0.0f;
 
   if (request == CLUTTER_REQUEST_HEIGHT_FOR_WIDTH)
     {
