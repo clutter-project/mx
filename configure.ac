@@ -3,7 +3,8 @@ m4_define([mx_minor], [1])
 m4_define([mx_micro], [5])
 
 m4_define([mx_version], [mx_major.mx_minor.mx_micro])
-m4_define([mx_api_version], [1.0])
+m4_define([mx_api_version], [mx_major.0])
+m4_define([mx_api_version_am], [mx_major\_0])
 
 # increase the interface age of 2 for each release
 # set to 0 if the API changes
@@ -36,11 +37,13 @@ MX_MINOR_VERSION=mx_minor
 MX_MICRO_VERSION=mx_micro
 MX_VERSION=mx_version
 MX_API_VERSION=mx_api_version
+MX_API_VERSION_AM=mx_api_version_am
 AC_SUBST(MX_MAJOR_VERSION)
 AC_SUBST(MX_MINOR_VERSION)
 AC_SUBST(MX_MICRO_VERSION)
 AC_SUBST(MX_VERSION)
 AC_SUBST(MX_API_VERSION)
+AC_SUBST(MX_API_VERSION_AM)
 
 m4_define([lt_current], [m4_eval(100 * mx_minor + mx_micro - mx_interface_age)])
 m4_define([lt_revision], [mx_interface_age])

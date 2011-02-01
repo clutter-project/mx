@@ -267,46 +267,35 @@ libmx_@MX_API_VERSION@_la_SOURCES =	\
 libmx_@MX_API_VERSION@_la_LIBADD = $(MX_LIBS)
 
 if HAVE_INTROSPECTION
+-include $(INTROSPECTION_MAKEFILE)
 
-BUILT_GIRSOURCES =
+INTROSPECTION_GIRS = Mx-@MX_API_VERSION@.gir
 
-Mx-@MX_API_VERSION@.gir: $(INTROSPECTION_SCANNER) libmx-@MX_API_VERSION@.la
-	$(AM_V_GEN)$(INTROSPECTION_SCANNER) -v \
-		--namespace Mx --nsversion=@MX_API_VERSION@ \
-		$(common_includes) \
-		--c-include="mx/mx.h" \
-		--include=GObject-2.0 \
-		--include=Clutter-1.0 \
-		--library=libmx-@MX_API_VERSION@.la \
-		--libtool="$(top_builddir)/libtool" \
-		--pkg gobject-2.0 \
-		--pkg clutter-1.0 \
-		--pkg-export mx-1.0 \
-		--output $@ \
-		$(source_h) \
-		$(top_srcdir)/mx/mx.h \
-		$(top_builddir)/mx/mx-version.h \
-		$(top_builddir)/mx/mx-enum-types.h \
-		$(source_c)
+Mx-@MX_API_VERSION@.gir: libmx-@MX_API_VERSION@.la Makefile $(INTROSPECTION_SCANNER)
 
-BUILT_GIRSOURCES += Mx-@MX_API_VERSION@.gir
+Mx_@MX_API_VERSION_AM@_gir_NAMESPACE = Mx
+Mx_@MX_API_VERSION_AM@_gir_VERSION   = @MX_API_VERSION@
+Mx_@MX_API_VERSION_AM@_gir_LIBS      = libmx-@MX_API_VERSION@.la
+Mx_@MX_API_VERSION_AM@_gir_FILES     = \
+	$(source_h) \
+	$(top_srcdir)/mx/mx.h \
+	$(top_builddir)/mx/mx-version.h \
+	$(top_builddir)/mx/mx-enum-types.h \
+	$(source_c)
+Mx_@MX_API_VERSION_AM@_gir_CFLAGS = $(common_includes)
+Mx_@MX_API_VERSION_AM@_gir_INCLUDES = Clutter-1.0
+Mx_@MX_API_VERSION_AM@_gir_SCANNERFLAGS = \
+	--warn-all \
+	--c-include='mx/mx.h' \
+	--pkg-export=mx-@MX_API_VERSION@
 
-girdir = $(datadir)/gir-1.0
-gir_DATA = $(BUILT_GIRSOURCES)
+girdir = $(datadir)/girepository-1.0/
+gir_DATA = $(INTROSPECTION_GIRS)
 
 typelibsdir = $(libdir)/girepository-1.0/
-typelibs_DATA = $(BUILT_GIRSOURCES:.gir=.typelib)
+typelibs_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
 
-%.typelib: %.gir $(INTROSPECTION_COMPILER)
-	$(AM_V_GEN) \
-	LD_LIBRARY_PATH=.libs${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} \
-	$(INTROSPECTION_COMPILER) \
-		--includedir=$(srcdir) \
-		--includedir=. \
-		$(INTROSPECTION_COMPILER_OPTS) $< -o $(@F)
-
-CLEANFILES += $(BUILT_GIRSOURCES) $(typelibs_DATA)
-
+CLEANFILES += $(gir_DATA) $(typelibs_DATA)
 endif # HAVE_INTROSPECTION
 
 -include $(top_srcdir)/git.mk
