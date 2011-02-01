@@ -531,14 +531,14 @@ mx_window_x11_button_release (MxWindowX11 *self)
 }
 
 static gboolean
-mx_window_x11_button_release_event_cb (ClutterActor       *actor,
-                                       ClutterButtonEvent *event,
-                                       MxWindowX11        *self)
+mx_window_x11_button_release_event_cb (ClutterActor *actor,
+                                       ClutterEvent *event,
+                                       MxWindowX11  *self)
 {
   MxWindowX11Private *priv = self->priv;
 
-  if ((clutter_input_device_get_device_id (event->device) == priv->is_moving) &&
-      (event->button == 1))
+  if (clutter_event_get_device_id (event) == priv->is_moving &&
+      clutter_event_get_button (event) == 1)
     {
       mx_window_x11_button_release (self);
       return TRUE;
@@ -555,7 +555,7 @@ mx_window_x11_captured_event_cb (ClutterActor *actor,
   MxWindowX11Private *priv = self->priv;
   ClutterActor *resize_grip = _mx_window_get_resize_grip (priv->window);
 
-  switch (event->type)
+  switch (clutter_event_type (event))
     {
     case CLUTTER_MOTION:
       /* Check if we're over the resize handle */
@@ -563,13 +563,12 @@ mx_window_x11_captured_event_cb (ClutterActor *actor,
           clutter_stage_get_user_resizable (CLUTTER_STAGE (actor)) &&
           resize_grip)
         {
-          gint x, y;
+          gfloat x, y;
           Window win;
           Display *dpy;
           gfloat height, width, rwidth, rheight;
 
           static Cursor csoutheast = 0;
-          ClutterMotionEvent *mevent = &event->motion;
 
           win = clutter_x11_get_stage_window (CLUTTER_STAGE (actor));
           dpy = clutter_x11_get_default_display ();
@@ -579,8 +578,7 @@ mx_window_x11_captured_event_cb (ClutterActor *actor,
 
           clutter_actor_get_size (actor, &width, &height);
 
-          x = mevent->x;
-          y = mevent->y;
+          clutter_event_get_coords (event, &x, &y);
 
           /* Create the resize cursor */
           if (!csoutheast)
