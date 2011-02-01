@@ -244,7 +244,7 @@ add_texture_to_cache (MxTextureCache     *self,
  * Subsequent calls with the same image path will return the #CoglHandle of
  * the previously loaded image with an increased reference count.
  *
- * Returns: a #CoglHandle to the cached texture
+ * Returns: (transfer none): a #CoglHandle to the cached texture
  */
 CoglHandle
 mx_texture_cache_get_cogl_texture (MxTextureCache *self,

@@ -820,7 +820,7 @@ mx_window_new_with_clutter_stage (ClutterStage *stage)
  *
  * Gets the #MxWindow parent of the #ClutterStage, if it exists.
  *
- * Returns: A #MxWindow, or %NULL
+ * Returns: (transfer none): A #MxWindow, or %NULL
  */
 MxWindow *
 mx_window_get_for_stage (ClutterStage *stage)
@@ -875,7 +875,7 @@ mx_window_set_child (MxWindow     *window,
  *
  * Get the primary child of the window. See mx_window_set_child().
  *
- * Returns: A #ClutterActor, or %NULL
+ * Returns: (transfer none): A #ClutterActor, or %NULL
  */
 ClutterActor*
 mx_window_get_child (MxWindow *window)
@@ -947,7 +947,7 @@ mx_window_get_has_toolbar (MxWindow *window)
  *
  * Retrieves the toolbar associated with the window.
  *
- * Returns: A #MxToolbar
+ * Returns: (transfer none): A #MxToolbar
  */
 MxToolbar *
 mx_window_get_toolbar (MxWindow *window)
@@ -1131,7 +1131,7 @@ mx_window_set_icon_from_cogl_texture (MxWindow   *window,
  *
  * Gets the #ClutterStage managed by the window.
  *
- * Returns: A #ClutterStage
+ * Returns: (transfer none): A #ClutterStage
  */
 ClutterStage *
 mx_window_get_clutter_stage (MxWindow *window)

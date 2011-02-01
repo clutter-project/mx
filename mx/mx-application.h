@@ -76,8 +76,8 @@ struct _MxApplicationClass
   GObjectClass parent_class;
 
   /* vfuncs */
-  MxWindow* (*create_window)   (MxApplication *app);
-  void      (*raise)           (MxApplication *app);
+  MxWindow* (*create_window)   (MxApplication *application);
+  void      (*raise)           (MxApplication *application);
 
   /* signals */
   void          (*actions_changed) (MxApplication *app);

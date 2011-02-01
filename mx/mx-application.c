@@ -1196,7 +1196,7 @@ mx_application_proxy_action_cb (MxAction      *action,
  *
  * Retrieves all actions registered on @application.
  *
- * Return value: (element-type Action) (transfer container): a list
+ * Return value: (element-type Mx.Action) (transfer container): a list
  *   of #MxAction<!-- -->s. Use g_list_free() on the returned list
  *   when done.
  */

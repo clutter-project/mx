@@ -336,8 +336,8 @@ mx_button_group_remove (MxButtonGroup   *group,
 /**
  * mx_button_group_foreach:
  * @group: A #MxButtonGroup
- * @callback: A #ClutterCallback
- * @userdata: A #gpointer
+ * @callback: (scope call): A #ClutterCallback
+ * @userdata: (closure): A #gpointer
  *
  * Calls @callback for each button in the group.
  *
@@ -392,7 +392,7 @@ mx_button_group_set_active_button (MxButtonGroup *group,
  *
  * Get the current active button
  *
- * Returns: the currently active button
+ * Returns: (transfer none): the currently active button
  */
 MxButton *
 mx_button_group_get_active_button (MxButtonGroup *group)

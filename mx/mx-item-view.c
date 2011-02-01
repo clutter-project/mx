@@ -388,7 +388,7 @@ mx_item_view_set_item_type (MxItemView *item_view,
  *
  * Get the model currently used by the #MxItemView
  *
- * Returns: the current #ClutterModel
+ * Returns: (transfer none): the current #ClutterModel
  */
 ClutterModel*
 mx_item_view_get_model (MxItemView *item_view)
@@ -583,7 +583,7 @@ mx_item_view_set_factory (MxItemView    *item_view,
  *
  * Gets the #MxItemFactory used for creating new items.
  *
- * Returns: A #MxItemFactory.
+ * Returns: (transfer none): A #MxItemFactory.
  */
 MxItemFactory *
 mx_item_view_get_factory (MxItemView *item_view)

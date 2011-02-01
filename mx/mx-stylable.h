@@ -76,7 +76,7 @@ struct _MxStylableIface
 
   G_CONST_RETURN gchar* (* get_style_pseudo_class) (MxStylable  *stylable);
   void                  (* set_style_pseudo_class) (MxStylable  *stylable,
-                                                    const gchar *style_class);
+                                                    const gchar *pseudo_class);
 
   /* context virtual functions */
 

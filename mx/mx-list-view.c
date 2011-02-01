@@ -401,7 +401,7 @@ mx_list_view_set_item_type (MxListView *list_view,
  *
  * Get the model currently used by the #MxListView
  *
- * Returns: the current #ClutterModel
+ * Returns: (transfer none): the current #ClutterModel
  */
 ClutterModel*
 mx_list_view_get_model (MxListView *list_view)
@@ -600,7 +600,7 @@ mx_list_view_set_factory (MxListView    *list_view,
  *
  * Gets the #MxItemFactory used for creating new list items.
  *
- * Returns: A #MxItemFactory.
+ * Returns: (transfer none): A #MxItemFactory.
  */
 MxItemFactory *
 mx_list_view_get_factory (MxListView *list_view)

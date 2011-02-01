@@ -228,9 +228,9 @@ mx_action_init (MxAction *self)
 /**
  * mx_action_new:
  *
- * Create a new, blank, MxAction
+ * Creates a new, blank, #MxAction
  *
- * Returns: a newly allocated MxAction
+ * Returns: (transfer full): a newly allocated #MxAction
  */
 MxAction *
 mx_action_new (void)
@@ -245,9 +245,9 @@ mx_action_new (void)
  * @activated_cb: callback to connect to the activated signal
  * @user_data: user data to be passed to the callback
  *
- * Create a new MxAction with the name and callback set
+ * Creates a new #MxAction with the name and callback set
  *
- * Returns: a newly allocation MxAction
+ * Returns: (transfer full): a newly allocated #MxAction
  */
 MxAction *
 mx_action_new_full (const gchar *name,

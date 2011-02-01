@@ -1261,8 +1261,9 @@ mx_dialog_remove_action (MxDialog *dialog,
  *
  * Retrieves a list of actions added to @dialog.
  *
- * Returns: A newly allocated #GList of #MxAction objects. The actions
- *          in the list are owned by the dialog.
+ * Returns: (transfer container) (element-type Mx.Action): A newly allocated
+ *   #GList of #MxAction objects. The actions in the list are owned by the
+ *   dialog.
  */
 GList *
 mx_dialog_get_actions (MxDialog *dialog)

@@ -1174,7 +1174,7 @@ mx_button_set_action (MxButton *button,
  *
  * Retrieves the #MxAction associated with @button.
  *
- * Returns: A #MxAction
+ * Returns: (transfer none): A #MxAction
  */
 MxAction *
 mx_button_get_action (MxButton *button)

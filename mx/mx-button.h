@@ -87,7 +87,7 @@ void                  mx_button_set_label       (MxButton    *button,
                                                  const gchar *text);
 G_CONST_RETURN gchar *mx_button_get_icon_name   (MxButton    *button);
 void                  mx_button_set_icon_name   (MxButton    *button,
-                                                 const gchar *text);
+                                                 const gchar *icon_name);
 guint                 mx_button_get_icon_size   (MxButton    *button);
 void                  mx_button_set_icon_size   (MxButton    *button,
                                                  guint        icon_size);

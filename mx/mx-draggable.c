@@ -665,6 +665,14 @@ mx_draggable_set_drag_actor (MxDraggable  *draggable,
   g_object_set (G_OBJECT (draggable), "drag-actor", actor, NULL);
 }
 
+/**
+ * mx_draggable_get_drag_actor:
+ * @draggable: a #MxDraggable
+ *
+ * FIXME
+ *
+ * Return value: (transfer none): a #ClutterActor, or %NULL
+ */
 ClutterActor *
 mx_draggable_get_drag_actor (MxDraggable *draggable)
 {

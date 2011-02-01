@@ -896,7 +896,7 @@ mx_icon_theme_lookup_internal (MxIconTheme *theme,
  *
  * If the icon is available, returns a #CoglHandle of the icon.
  *
- * Return value: a #CoglHandle of the icon, or %NULL.
+ * Return value: (transfer none): a #CoglHandle of the icon, or %NULL.
  */
 CoglHandle
 mx_icon_theme_lookup (MxIconTheme *theme,

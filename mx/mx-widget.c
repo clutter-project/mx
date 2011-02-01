@@ -1643,7 +1643,7 @@ mx_widget_set_menu (MxWidget *widget,
  *
  * Get the object in the #MxWidget:menu property.
  *
- * Returns: The current object in the "menu" property.
+ * Returns: (transfer none): The current object in the "menu" property.
  */
 MxMenu *
 mx_widget_get_menu (MxWidget *widget)

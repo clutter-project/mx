@@ -983,7 +983,7 @@ mx_path_bar_set_text (MxPathBar *bar, const gchar *text)
  *
  * Get the MxEntry used as the editable area in the MxPathBar.
  *
- * Returns: MxEntry *
+ * Returns: (transfer none): MxEntry *
  */
 MxEntry *
 mx_path_bar_get_entry (MxPathBar *bar)

@@ -913,7 +913,7 @@ mx_offscreen_set_child (MxOffscreen *offscreen, ClutterActor *actor)
  *
  * Gets the value of the #MxOffscreen:child property.
  *
- * Returns: The child of the offscreen widget
+ * Returns: (transfer none): The child of the offscreen widget
  */
 ClutterActor *
 mx_offscreen_get_child (MxOffscreen *offscreen)
@@ -1088,7 +1088,7 @@ mx_offscreen_get_redirect_enabled (MxOffscreen *offscreen)
  *
  * Gets the value of the #MxOffscreen:buffer property.
  *
- * Returns: the #CoglHandle for the offscreen buffer object
+ * Returns: (transfer none): the #CoglHandle for the offscreen buffer object
  */
 CoglHandle
 mx_offscreen_get_buffer (MxOffscreen *offscreen)
@@ -1191,7 +1191,8 @@ mx_offscreen_get_accumulation_enabled (MxOffscreen *offscreen)
  *
  * Gets the #MxOffscreen:accumulation-material property.
  *
- * Returns: The #CoglHandle for the material used for the accumulation buffer
+ * Returns: (transfer none): The #CoglHandle for the material used
+ *   for the accumulation buffer
  */
 CoglHandle
 mx_offscreen_get_accumulation_material (MxOffscreen *offscreen)
