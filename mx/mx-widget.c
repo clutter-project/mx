@@ -1712,7 +1712,7 @@ widget_scriptable_set_custom_property (ClutterScriptable *scriptable,
 
   pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (scriptable), name);
 
-  if (pspec->flags & MX_PARAM_TRANSLATEABLE &&
+  if (pspec && pspec->flags & MX_PARAM_TRANSLATEABLE &&
       pspec->value_type == G_TYPE_STRING)
     {
       g_object_set (scriptable, name,
