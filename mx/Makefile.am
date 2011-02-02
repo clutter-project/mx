@@ -289,7 +289,7 @@ Mx_@MX_API_VERSION_AM@_gir_SCANNERFLAGS = \
 	--c-include='mx/mx.h' \
 	--pkg-export=mx-@MX_API_VERSION@
 
-girdir = $(datadir)/girepository-1.0/
+girdir = $(datadir)/gir-1.0/
 gir_DATA = $(INTROSPECTION_GIRS)
 
 typelibsdir = $(libdir)/girepository-1.0/
