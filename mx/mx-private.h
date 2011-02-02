@@ -114,6 +114,10 @@ _mx_string_to_enum (GType        type,
                     const gchar *nick,
                     gint        *value);
 
+void     _mx_fade_effect_set_freeze_update (MxFadeEffect *effect,
+                                            gboolean      freeze);
+gboolean _mx_fade_effect_get_freeze_update (MxFadeEffect *effect);
+
 typedef enum
 {
   MX_DEBUG_LAYOUT     = 1 << 0,

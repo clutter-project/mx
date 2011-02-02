@@ -78,6 +78,10 @@
       <xi:include href="xml/mx-stylable.xml"/>
     </chapter>
     <chapter>
+      <title>Effects</title>
+      <xi:include href="xml/mx-fade-effect.xml"/>
+    </chapter>
+    <chapter>
       <title>Abstract Types and Utilities</title>
       <xi:include href="xml/mx-action.xml"/>
       <xi:include href="xml/mx-application.xml"/>

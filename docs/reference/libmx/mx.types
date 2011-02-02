@@ -59,3 +59,4 @@ mx_spinner_get_type
 mx_stack_get_type
 mx_stack_child_get_type
 mx_image_get_type
+mx_fade_effect_get_type

@@ -51,6 +51,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-clipboard.h		\
 	$(top_srcdir)/mx/mx-entry.h 		\
 	$(top_srcdir)/mx/mx-expander.h 		\
+	$(top_srcdir)/mx/mx-fade-effect.h 	\
 	$(top_srcdir)/mx/mx-focus-manager.h 	\
 	$(top_srcdir)/mx/mx-focusable.h 	\
 	$(top_srcdir)/mx/mx-frame.h		\
@@ -123,6 +124,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-droppable.c		\
 	$(top_srcdir)/mx/mx-entry.c 		\
 	$(top_srcdir)/mx/mx-expander.c 		\
+	$(top_srcdir)/mx/mx-fade-effect.c 	\
 	$(top_srcdir)/mx/mx-focus-manager.c 	\
 	$(top_srcdir)/mx/mx-focusable.c 	\
 	$(top_srcdir)/mx/mx-frame.c		\

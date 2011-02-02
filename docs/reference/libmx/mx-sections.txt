@@ -1332,3 +1332,26 @@ MX_IMAGE_ERROR
 mx_image_error_quark
 MxImagePrivate
 </SECTION>
+
+<SECTION>
+<FILE>mx-fade-effect</FILE>
+<TITLE>MxFadeEffect</TITLE>
+MxFadeEffect
+MxFadeEffectClass
+mx_fade_effect_new
+mx_fade_effect_set_border
+mx_fade_effect_get_border
+mx_fade_effect_set_bounds
+mx_fade_effect_get_bounds
+mx_fade_effect_set_color
+mx_fade_effect_get_color
+<SUBSECTION Standard>
+MX_FADE_EFFECT
+MX_IS_FADE_EFFECT
+MX_TYPE_FADE_EFFECT
+mx_fade_effect_get_type
+MX_FADE_EFFECT_CLASS
+MX_FADE_EFFECT_GET_CLASS
+<SUBSECTION Private>
+MxFadeEffectPrivate
+</SECTION>

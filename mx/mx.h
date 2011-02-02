@@ -45,6 +45,7 @@
 #include <mx/mx-entry.h>
 #include <mx/mx-enum-types.h>
 #include <mx/mx-expander.h>
+#include <mx/mx-fade-effect.h>
 #include <mx/mx-floating-widget.h>
 #include <mx/mx-focus-manager.h>
 #include <mx/mx-focusable.h>
