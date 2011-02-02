@@ -55,7 +55,8 @@ enum
   PROP_CLUTTER_TEXT,
   PROP_TEXT,
   PROP_X_ALIGN,
-  PROP_Y_ALIGN
+  PROP_Y_ALIGN,
+  PROP_LINE_WRAP
 };
 
 #define MX_LABEL_GET_PRIVATE(obj)     (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_LABEL, MxLabelPrivate))
@@ -92,6 +93,10 @@ mx_label_set_property (GObject      *gobject,
       mx_label_set_x_align (label, g_value_get_enum (value));
       break;
 
+    case PROP_LINE_WRAP:
+      mx_label_set_line_wrap (label, g_value_get_boolean (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -123,6 +128,10 @@ mx_label_get_property (GObject    *gobject,
 
     case PROP_Y_ALIGN:
       g_value_set_enum (value, priv->y_align);
+      break;
+
+    case PROP_LINE_WRAP:
+      g_value_set_boolean (value, mx_label_get_line_wrap (MX_LABEL (gobject)));
       break;
 
     default:
@@ -331,6 +340,21 @@ mx_label_class_init (MxLabelClass *klass)
                              MX_TYPE_ALIGN, MX_ALIGN_START,
                              MX_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_Y_ALIGN, pspec);
+
+  /**
+   * MxLabel:line-wrap:
+   *
+   * Whether to wrap the lines of #MxLabel:text if the contents
+   * exceed the available allocation.
+   *
+   * Since: 1.2
+   */
+  pspec = g_param_spec_boolean ("line-wrap",
+                                "Line wrap",
+                                "If set, wrap the lines if the text becomes too wide",
+                                FALSE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_LINE_WRAP, pspec);
 }
 
 static void
@@ -485,4 +509,22 @@ mx_label_get_y_align (MxLabel *label)
   g_return_val_if_fail (MX_IS_LABEL (label), 0);
 
   return label->priv->y_align;
+}
+
+void
+mx_label_set_line_wrap (MxLabel  *label,
+                        gboolean  line_wrap)
+{
+  g_return_if_fail (MX_IS_LABEL (label));
+
+  clutter_text_set_line_wrap (CLUTTER_TEXT (label->priv->label), line_wrap);
+  g_object_notify (G_OBJECT (label), "line-wrap");
+}
+
+gboolean
+mx_label_get_line_wrap (MxLabel *label)
+{
+  g_return_val_if_fail (MX_IS_LABEL (label), FALSE);
+
+  return clutter_text_get_line_wrap (CLUTTER_TEXT (label->priv->label));
 }

@@ -79,10 +79,16 @@ void                  mx_label_set_text         (MxLabel     *label,
                                                  const gchar *text);
 ClutterActor *        mx_label_get_clutter_text (MxLabel     *label);
 
-void    mx_label_set_x_align (MxLabel *label, MxAlign align);
-MxAlign mx_label_get_x_align (MxLabel *label);
-void    mx_label_set_y_align (MxLabel *label, MxAlign align);
-MxAlign mx_label_get_y_align (MxLabel *label);
+MxAlign               mx_label_get_x_align      (MxLabel *label);
+void                  mx_label_set_x_align      (MxLabel *label,
+                                                 MxAlign  align);
+MxAlign               mx_label_get_y_align      (MxLabel *label);
+void                  mx_label_set_y_align      (MxLabel *label,
+                                                 MxAlign  align);
+
+gboolean              mx_label_get_line_wrap    (MxLabel *label);
+void                  mx_label_set_line_wrap    (MxLabel  *label,
+                                                 gboolean  line_wrap);
 
 G_END_DECLS
 
