@@ -368,6 +368,44 @@ mx_focus_manager_push_focus (MxFocusManager *manager,
 }
 
 /**
+ * mx_focus_manager_push_focus_with_hint:
+ * @manager: the focus manager
+ * @focusable: the object to set focus on
+ * @hint: an #MxFocusHint
+ *
+ * Similar to #mx_focus_manager_push_focus, but allows the hint to be specified.
+ *
+ * Note: the final focused object may not be the same as @focusable if
+ * @focusable does not accept focus directly.
+ */
+void
+mx_focus_manager_push_focus_with_hint (MxFocusManager *manager,
+                                       MxFocusable    *focusable,
+                                       MxFocusHint     hint)
+{
+  MxFocusManagerPrivate *priv;
+
+  g_return_if_fail (MX_IS_FOCUS_MANAGER (manager));
+  g_return_if_fail (MX_IS_FOCUSABLE (focusable));
+
+  priv = manager->priv;
+
+  if (priv->focused != focusable)
+    {
+      if (priv->focused)
+        {
+          /* notify the current focusable that focus is being moved */
+          mx_focusable_move_focus (priv->focused, MX_FOCUS_DIRECTION_OUT,
+                                   priv->focused);
+        }
+
+      priv->focused = mx_focusable_accept_focus (focusable, hint);
+
+      g_object_notify (G_OBJECT (manager), "focused");
+    }
+}
+
+/**
  * mx_focus_manager_move_focus
  * @manager: the focus manager
  * @direction: The direction to move focus in

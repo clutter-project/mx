@@ -96,6 +96,9 @@ MxFocusable* mx_focus_manager_get_focused (MxFocusManager *manager);
 
 void         mx_focus_manager_push_focus  (MxFocusManager *manager,
                                            MxFocusable    *focusable);
+void         mx_focus_manager_push_focus_with_hint  (MxFocusManager *manager,
+                                                     MxFocusable    *focusable,
+                                                     MxFocusHint     hint);
 
 void         mx_focus_manager_move_focus  (MxFocusManager   *manager,
                                            MxFocusDirection  direction);
