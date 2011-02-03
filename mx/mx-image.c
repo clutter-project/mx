@@ -458,6 +458,15 @@ mx_image_dispose (GObject *object)
 {
   MxImagePrivate *priv = MX_IMAGE (object)->priv;
 
+  if (priv->timeline)
+    {
+      clutter_timeline_stop (priv->timeline);
+
+      g_object_unref (priv->timeline);
+
+      priv->timeline = NULL;
+    }
+
   if (priv->material)
     {
       cogl_object_unref (priv->material);
