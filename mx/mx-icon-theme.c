@@ -494,7 +494,7 @@ mx_icon_theme_set_theme_name (MxIconTheme *theme,
 
   if (!priv->theme_file)
     {
-      g_warning ("Error loading theme");
+      g_warning ("Error loading \"%s\" icon theme", priv->theme);
       return;
     }
 
