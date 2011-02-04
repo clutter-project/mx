@@ -1,3 +1,21 @@
+1.1.5
+=====
+
+Changes since 1.1.4:
+
+ * CSS debugging mode
+ * Interpolation in MxAdjustment now works when the value was exactly at the
+   end
+ * JSON files without valid properties won't cause a segfault
+ * Focus manager now supports a hint when pushing focus
+
+Fixed bugs (from bugzilla.clutter-project.org):
+
+  #1195 - fixes to freeze/thaw behaviour
+  #2533 - setting custom icon causes crash on 64bit
+  #2532 - only requre GTK+ if not disabled
+  #2537 - make mx-create-image-cache only depend on gdk-pixbuf
+
 1.1.4
 =====
 
