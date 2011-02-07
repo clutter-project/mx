@@ -114,7 +114,7 @@ _mx_string_to_enum (GType        type,
                     const gchar *nick,
                     gint        *value);
 
-enum
+typedef enum
 {
   MX_DEBUG_LAYOUT     = 1 << 0,
   MX_DEBUG_INSPECTOR  = 1 << 1,
