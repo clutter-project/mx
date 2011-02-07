@@ -1038,9 +1038,9 @@ mx_combo_box_set_index (MxComboBox *box,
  *
  * Get the index of the last item selected
  *
- * Returns: const gint
+ * Returns: gint
  */
-const gint
+gint
 mx_combo_box_get_index (MxComboBox *box)
 {
   g_return_val_if_fail (MX_IS_COMBO_BOX (box), 0);

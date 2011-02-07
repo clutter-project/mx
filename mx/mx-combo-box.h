@@ -118,7 +118,7 @@ const gchar* mx_combo_box_get_active_icon_name (MxComboBox  *box);
 
 void         mx_combo_box_set_index       (MxComboBox *box,
                                            gint        index);
-const gint   mx_combo_box_get_index       (MxComboBox *box);
+gint         mx_combo_box_get_index       (MxComboBox *box);
 
 G_END_DECLS
 
