@@ -1,11 +1,11 @@
 NULL =
 
 AM_CFLAGS = $(MX_CFLAGS) $(MX_MAINTAINER_CFLAGS)
-LDADD = $(top_builddir)/mx/libmx-$(MX_API_VERSION).la
+LDADD = $(top_builddir)/mx/libmx-$(MX_API_VERSION).la $(MX_LIBS)
 
 if ENABLE_GTK_WIDGETS
 AM_CFLAGS += $(GTK_CFLAGS)
-LDADD += $(top_builddir)/mx-gtk/libmx-gtk-$(MX_API_VERSION).la
+LDADD += $(top_builddir)/mx-gtk/libmx-gtk-$(MX_API_VERSION).la $(GTK_LIBS)
 endif
 
 INCLUDES = \
