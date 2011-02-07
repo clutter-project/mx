@@ -252,7 +252,7 @@ AC_ARG_ENABLE([gtk-widgets],
               [enable_gtk_widgets=yes])
 
 
-AS_IF([test "x$enable_maintainer_flags" = "xyes"],
+AS_IF([test "x$enable_gtk_widgets" = "xyes"],
       [PKG_CHECK_MODULES(GTK, [gtk+-2.0 >= 2.20])
        GTK_CFLAGS="$GTK_CFLAGS -DGSEAL_ENABLE=1"],
       []
