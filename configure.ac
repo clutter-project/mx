@@ -243,13 +243,20 @@ AC_SUBST([catalogdir])
 # Gtk+ widgets library
 #
 
+# If no parameter given default to yes otherwise use the enable value
+# --enable-widgets == yes and --disable-widgets == no
 AC_ARG_ENABLE([gtk-widgets],
               [AC_HELP_STRING([--disable-gtk-widgets],
                               [disable building the gtk+ widgets library])],
-              [enable_gtk_widgets=no],
-              [PKG_CHECK_MODULES(GTK, [gtk+-2.0 >= 2.20])
-	       GTK_CFLAGS="$GTK_CFLAGS -DGSEAL_ENABLE=1"
-               enable_gtk_widgets=yes])
+              [],
+              [enable_gtk_widgets=yes])
+
+
+AS_IF([test "x$enable_maintainer_flags" = "xyes"],
+      [PKG_CHECK_MODULES(GTK, [gtk+-2.0 >= 2.20])
+       GTK_CFLAGS="$GTK_CFLAGS -DGSEAL_ENABLE=1"],
+      []
+)
 
 AM_CONDITIONAL(ENABLE_GTK_WIDGETS, test "x$enable_gtk_widgets" = xyes)
 
