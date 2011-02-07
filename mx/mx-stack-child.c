@@ -45,7 +45,8 @@ enum
   PROP_X_FILL,
   PROP_Y_FILL,
   PROP_X_ALIGN,
-  PROP_Y_ALIGN
+  PROP_Y_ALIGN,
+  PROP_FIT
 };
 
 static void
@@ -69,6 +70,9 @@ mx_stack_child_get_property (GObject    *object,
       break;
     case PROP_Y_ALIGN:
       g_value_set_enum (value, child->y_align);
+      break;
+    case PROP_FIT:
+      g_value_set_boolean (value, child->fit);
       break;
 
     default:
@@ -98,6 +102,9 @@ mx_stack_child_set_property (GObject      *object,
       break;
     case PROP_Y_ALIGN:
       child->y_align = g_value_get_enum (value);
+      break;
+    case PROP_FIT:
+      child->fit = g_value_get_boolean (value);
       break;
 
     default:
@@ -147,6 +154,17 @@ mx_stack_child_class_init (MxStackChildClass *klass)
                              MX_ALIGN_MIDDLE,
                              MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_Y_ALIGN, pspec);
+
+
+  pspec = g_param_spec_boolean ("fit", "Fit",
+                                "Attempt to fit the actor into the available"
+                                " space while respecting the actor's"
+                                " width-for-height or height-for-width"
+                                " constraints. The fill properties are ignored@"
+                                " when this property is enabled.",
+                                FALSE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_FIT, pspec);
 }
 
 static void

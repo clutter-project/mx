@@ -73,6 +73,7 @@ struct _MxStackChild
 
   guint x_fill : 1;
   guint y_fill : 1;
+  guint fit    : 1;
   MxAlign x_align;
   MxAlign y_align;
 };

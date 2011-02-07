@@ -438,7 +438,7 @@ mx_stack_allocate (ClutterActor           *actor,
 
   for (c = priv->children; c; c = c->next)
     {
-      gboolean x_fill, y_fill;
+      gboolean x_fill, y_fill, fit;
       MxAlign x_align, y_align;
 
       ClutterActor *child = c->data;
@@ -450,7 +450,81 @@ mx_stack_allocate (ClutterActor           *actor,
                                    "y-fill", &y_fill,
                                    "x-align", &x_align,
                                    "y-align", &y_align,
+                                   "fit", &fit,
                                    NULL);
+
+
+      /* when "fit" is set, fill properties are ignored */
+      if (fit)
+        {
+          gfloat available_height, available_width, width, height;
+          gfloat min_width, natural_width, min_height, natural_height;
+          ClutterRequestMode request_mode;
+
+          available_height = avail_space.y2 - avail_space.y1;
+          available_width  = avail_space.x2 - avail_space.x1;
+          request_mode = clutter_actor_get_request_mode (child);
+
+          if (request_mode == CLUTTER_REQUEST_HEIGHT_FOR_WIDTH)
+            {
+              clutter_actor_get_preferred_width (child, available_height,
+                                                 &min_width,
+                                                 &natural_width);
+              width = CLAMP (natural_width, min_width, available_width);
+
+              clutter_actor_get_preferred_height (child, width,
+                                                  &min_height,
+                                                  &natural_height);
+              height = CLAMP (natural_height, min_height, available_height);
+            }
+          else
+            {
+              clutter_actor_get_preferred_height (child, available_width,
+                                                  &min_height,
+                                                  &natural_height);
+              height = CLAMP (natural_height, min_height, available_height);
+
+              clutter_actor_get_preferred_width (child, height,
+                                                 &min_width,
+                                                 &natural_width);
+              width = CLAMP (natural_width, min_width, available_width);
+            }
+
+          child_box.x1 = 0;
+          child_box.y1 = 0;
+
+          switch (x_align)
+            {
+            case MX_ALIGN_START:
+              break;
+            case MX_ALIGN_MIDDLE:
+              child_box.x1 += (gint)(available_width / 2 - width / 2);
+              break;
+
+            case MX_ALIGN_END:
+              child_box.x1 = avail_space.x2 - width;
+              break;
+            }
+
+          switch (y_align)
+            {
+            case MX_ALIGN_START:
+              break;
+            case MX_ALIGN_MIDDLE:
+              child_box.y1 += (gint)(available_height / 2 - height / 2);
+              break;
+
+            case MX_ALIGN_END:
+              child_box.y1 = avail_space.y2 - height;
+              break;
+            }
+
+          child_box.x2 = child_box.x1 + width;
+          child_box.y2 = child_box.y1 + height;
+
+          clutter_actor_allocate (child, &child_box, flags);
+          continue;
+        }
 
       /* Adjust the available space when not filling, otherwise
        * actors that support width-for-height or height-for-width
