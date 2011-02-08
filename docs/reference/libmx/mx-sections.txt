@@ -1276,6 +1276,8 @@ MxStackPrivate
 <FILE>mx-stack-child</FILE>
 <TITLE>MxStackChild</TITLE>
 MxStackChild
+mx_stack_child_get_fit
+mx_stack_child_set_fit
 mx_stack_child_get_x_fill
 mx_stack_child_set_x_fill
 mx_stack_child_get_y_fill

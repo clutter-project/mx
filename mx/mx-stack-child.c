@@ -385,3 +385,52 @@ mx_stack_child_set_y_align (MxStack      *stack,
   clutter_actor_queue_relayout (child);
 }
 
+
+/**
+ * mx_stack_child_get_fit:
+ * @stack: An #MxStack
+ * @child: A #ClutterActor
+ *
+ * Get the value of the #MxStackChild:fit property.
+ *
+ * Returns: the current value of the #MxStackChild:fit property
+ */
+gboolean
+mx_stack_child_get_fit (MxStack      *stack,
+                        ClutterActor *child)
+{
+  MxStackChild *meta;
+
+  g_return_val_if_fail (MX_IS_STACK (stack), FALSE);
+  g_return_val_if_fail (CLUTTER_IS_ACTOR (child), FALSE);
+
+  meta = _get_child_meta (stack, child);
+
+  return meta->fit;
+}
+
+/**
+ * mx_stack_child_set_fit:
+ * @stack: An #MxStack
+ * @child: A #ClutterActor
+ * @fit: A #gboolean
+ *
+ * Set the value of the #MxStackChild:fit property.
+ *
+ */
+void
+mx_stack_child_set_fit (MxStack      *stack,
+                        ClutterActor *child,
+                        gboolean      fit)
+{
+  MxStackChild *meta;
+
+  g_return_if_fail (MX_IS_STACK (stack));
+  g_return_if_fail (CLUTTER_IS_ACTOR (child));
+
+  meta = _get_child_meta (stack, child);
+
+  meta->fit = fit;
+
+  clutter_actor_queue_relayout (child);
+}

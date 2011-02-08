@@ -116,6 +116,13 @@ void     mx_stack_child_set_y_align (MxStack      *stack,
                                      ClutterActor *child,
                                      MxAlign       y_align);
 
+gboolean mx_stack_child_get_fit     (MxStack      *stack,
+                                     ClutterActor *child);
+void     mx_stack_child_set_fit     (MxStack      *stack,
+                                     ClutterActor *child,
+                                     gboolean      fit);
+
+
 G_END_DECLS
 
 #endif /* _MX_STACK_CHILD_H */
