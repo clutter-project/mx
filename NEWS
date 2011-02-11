@@ -1,3 +1,19 @@
+1.1.6
+=====
+
+Changes since 1.1.5:
+
+ * Label supports a linewrap property that proxies through to the internal
+   ClutterText
+ * MxStack now supports a fit property that attempts to fix the actor into the
+   available space whilst respecting the actor's width-for-height or
+   height-for-width constraints
+
+Fixed bugs (from bugzilla.clutter-project.org):
+
+  #2523 - fix DSO linking issues
+  #2552 - fix behaviour of --disable-gtk-widgets
+
 1.1.5
 =====
 
