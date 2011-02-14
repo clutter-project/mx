@@ -127,6 +127,9 @@ G_DEFINE_TYPE_WITH_CODE (MxTable, mx_table, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
                                                 mx_focusable_iface_init));
 
+
+void _mx_table_update_row_col (MxTable *table, gint row, gint col);
+
 static ClutterActor*
 mx_table_find_actor_at (MxTable *table,
                         int      row,
@@ -425,8 +428,10 @@ mx_container_add_actor (ClutterContainer *container,
 
   clutter_actor_set_parent (actor, CLUTTER_ACTOR (container));
 
-
   priv->children = g_list_append (priv->children, actor);
+
+  /* default position of the actor is 0, 0 */
+  _mx_table_update_row_col (MX_TABLE (container), 0, 0);
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
 
