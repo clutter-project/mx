@@ -1,3 +1,17 @@
+1.1.7
+=====
+
+Changes since 1.1.6:
+
+ * New class, MxFadeEffect. This is a sub-class of ClutterOffscreenEffect
+   that lets you fade out the borders of actors
+ * Label supports a 'fade-out' property that instructs it to fade out at the
+   end of the line instead of ellipsizing
+
+Fixed bugs (from bugzilla.clutter-project.org):
+
+  #2560 - MxTable: clutter_container_add does not update row/column count
+
 1.1.6
 =====
 
