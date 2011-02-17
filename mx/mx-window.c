@@ -22,6 +22,19 @@
  *
  */
 
+/**
+ * SECTION:mx-window
+ * @short_description: an object that represents a platform-specific window
+ *
+ * #MxWindow is a platform-specific window, providing functions for moving,
+ * resizing, icons and rotation. Every window has an associated #ClutterStage
+ * in which its children are kept. This #ClutterStage can be used in the
+ * normal way, but to take advantage of automatic resizing and rotation, the
+ * #MxWindow functions should be used.
+ *
+ * When the #MxWindow loses its last reference, its contents are destroyed.
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
