@@ -122,6 +122,10 @@ void             mx_image_set_scale_mode (MxImage          *image,
                                           MxImageScaleMode  mode);
 MxImageScaleMode mx_image_get_scale_mode (MxImage          *image);
 
+void     mx_image_set_image_rotation (MxImage *image,
+                                      gfloat   rotation);
+gfloat   mx_image_get_image_rotation (MxImage *image);
+
 void     mx_image_set_load_async (MxImage  *image,
                                   gboolean  load_async);
 gboolean mx_image_get_load_async (MxImage  *image);

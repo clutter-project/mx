@@ -102,6 +102,9 @@ struct _MxImagePrivate
   CoglHandle old_texture;
   CoglHandle blank_texture;
 
+  gint rotation;
+  gint old_rotation;
+
   CoglMaterial *template_material;
   CoglMaterial *material;
 
@@ -120,7 +123,8 @@ enum
   PROP_LOAD_ASYNC,
   PROP_ALLOW_UPSCALE,
   PROP_SCALE_WIDTH_THRESHOLD,
-  PROP_SCALE_HEIGHT_THRESHOLD
+  PROP_SCALE_HEIGHT_THRESHOLD,
+  PROP_IMAGE_ROTATION
 };
 
 enum
@@ -180,103 +184,72 @@ mx_image_async_data_new (MxImage *parent)
 }
 
 static void
-get_zoom_crop_coords (CoglObject *tex,
-                      float       aw,
-                      float       ah,
-                      float      *tex_coords)
-{
-  float bw, bh;
-  float v;
-
-  bw = (float) cogl_texture_get_width (tex); /* base texture width */
-  bh = (float) cogl_texture_get_height (tex); /* base texture height */
-
-  if ((float) bw/bh < (float) aw/ah)
-    {
-      /* fit width */
-      v = (((float) ah * bw) / ((float) aw * bh)) / 2;
-      tex_coords[0] = 0;
-      tex_coords[2] = 1;
-      tex_coords[1] = (0.5 - v);
-      tex_coords[3] = (0.5 + v);
-    }
-  else
-    {
-      /* fit height */
-      v = (((float) aw * bh) / ((float) ah * bw)) / 2;
-      tex_coords[0] = (0.5 - v);
-      tex_coords[2] = (0.5 + v);
-      tex_coords[1] = 0;
-      tex_coords[3] = 1;
-    }
-}
-
-static void
 get_center_coords (CoglObject *tex,
+                   float       rotation,
                    float       aw,
                    float       ah,
                    float      *tex_coords)
 {
   float bw, bh;
+  gint angle = ABS (rotation) - ((int)(ABS (rotation) / 360) * 360);
 
   bw = (float) cogl_texture_get_width (tex); /* base texture width */
   bh = (float) cogl_texture_get_height (tex); /* base texture height */
 
-  tex_coords[0] = 0.5 - (aw / bw) / 2;
-  tex_coords[1] = 0.5 - (ah / bh) / 2;
-  tex_coords[2] = 0.5 + (aw / bw) / 2;
-  tex_coords[3] = 0.5 + (ah / bh) / 2;
-}
-
-static void
-get_zoom_coords (CoglObject *tex,
-                 float       aw,
-                 float       ah,
-                 float      *tex_coords)
-{
-  float bw, bh;
-  float x, y, w, h;
-
-  bw = (float) cogl_texture_get_width (tex); /* base texture width */
-  bh = (float) cogl_texture_get_height (tex); /* base texture height */
-
-
-  if (ah / aw < bh / bw)
+  if (angle == 90 || angle == 270)
     {
-      gfloat factor, new_w, gap;
-
-      y = 0; h = 1;
-
-      factor = (ah / bh);
-
-      new_w = bw * factor;
-
-      gap = (aw - new_w) / 2.0;
-
-      x = 0.0 - gap / new_w;
-      w = 1.0 + gap / new_w;
+      tex_coords[0] = 0.5 - (aw / bh) / 2;
+      tex_coords[1] = 0.5 - (ah / bw) / 2;
+      tex_coords[2] = 0.5 + (aw / bh) / 2;
+      tex_coords[3] = 0.5 + (ah / bw) / 2;
     }
   else
     {
-      gfloat factor, new_h, gap;
+      tex_coords[0] = 0.5 - (aw / bw) / 2;
+      tex_coords[1] = 0.5 - (ah / bh) / 2;
+      tex_coords[2] = 0.5 + (aw / bw) / 2;
+      tex_coords[3] = 0.5 + (ah / bh) / 2;
+    }
+}
 
-      x = 0; w = 1;
+static gfloat
+calculate_scale (CoglObject       *texture,
+                 float             rotation,
+                 float             aw,
+                 float             ah,
+                 MxImageScaleMode  mode)
+{
+  float bw, bh;
+  gint angle = ABS (rotation) - ((int)(ABS (rotation) / 360) * 360);
 
-      factor = (aw / bw);
+  if (mode == MX_IMAGE_SCALE_NONE)
+    return 1.0;
 
-      new_h = bh * factor;
+  bw = cogl_texture_get_width (texture); /* base texture width */
+  bh = cogl_texture_get_height (texture); /* base texture height */
 
-      gap = (ah - new_h) / 2;
+  if (angle == 90 || angle == 270)
+    {
+      gint tmp;
 
-      y = 0 - gap / new_h;
-      h = 1 + gap / new_h;
+      /* swap width and height if the image is horizontal */
+      tmp = bw; bw = bh; bh = tmp;
     }
 
-
-  tex_coords[0] = x;
-  tex_coords[1] = y;
-  tex_coords[2] = w;
-  tex_coords[3] = h;
+  if (bw/bh < aw/ah)
+    {
+      if (mode == MX_IMAGE_SCALE_CROP)
+        return bw / aw;
+      else
+        return bh / ah;
+    }
+  else
+    {
+      if (mode == MX_IMAGE_SCALE_CROP)
+        return bh / ah;
+      else
+        return bw / aw;
+    }
 }
 
 static void
@@ -288,6 +261,8 @@ mx_image_paint (ClutterActor *actor)
   guint8 alpha;
   float tex_coords[8];
   MxPadding padding;
+  CoglMatrix matrix;
+  gfloat scale = 1, scale2 = 1;
 
   /* chain up to draw the background */
   CLUTTER_ACTOR_CLASS (mx_image_parent_class)->paint (actor);
@@ -315,23 +290,31 @@ mx_image_paint (ClutterActor *actor)
                               alpha,
                               alpha);
 
-  cogl_set_source (priv->material);
+  /* calculate texture co-ordinates */
+  get_center_coords (priv->texture, priv->rotation, aw, ah, tex_coords);
+  get_center_coords (priv->old_texture, priv->old_rotation, aw, ah,
+                     tex_coords + 4);
 
-  if (priv->mode == MX_IMAGE_SCALE_CROP)
-    {
-      get_zoom_crop_coords (priv->texture, aw, ah, tex_coords);
-      get_zoom_crop_coords (priv->old_texture, aw, ah, tex_coords + 4);
-    }
-  else if (priv->mode == MX_IMAGE_SCALE_FIT)
-    {
-      get_zoom_coords (priv->texture, aw, ah, tex_coords);
-      get_zoom_coords (priv->old_texture, aw, ah, tex_coords + 4);
-    }
-  else if (priv->mode == MX_IMAGE_SCALE_NONE)
-    {
-      get_center_coords (priv->texture, aw, ah, tex_coords);
-      get_center_coords (priv->old_texture, aw, ah, tex_coords + 4);
-    }
+  scale = calculate_scale (priv->texture, priv->rotation, aw, ah, priv->mode);
+  scale2 = calculate_scale (priv->old_texture, priv->old_rotation, aw, ah,
+                            priv->old_mode);
+
+  cogl_matrix_init_identity (&matrix);
+  cogl_matrix_translate (&matrix, 0.5, 0.5, 0);
+  cogl_matrix_rotate (&matrix, priv->rotation, 0, 0, -1);
+  cogl_matrix_scale (&matrix, scale, scale, 1);
+  cogl_matrix_translate (&matrix, -0.5, -0.5, 0);
+  cogl_material_set_layer_matrix (priv->material, 0, &matrix);
+
+
+  cogl_matrix_init_identity (&matrix);
+  cogl_matrix_translate (&matrix, 0.5, 0.5, 0);
+  cogl_matrix_rotate (&matrix, priv->old_rotation, 0, 0, -1);
+  cogl_matrix_scale (&matrix, scale2, scale2, 1);
+  cogl_matrix_translate (&matrix, -0.5, -0.5, 0);
+  cogl_material_set_layer_matrix (priv->material, 1, &matrix);
+
+  cogl_set_source (priv->material);
 
   cogl_rectangle_with_multitexture_coords (padding.left, padding.top,
                                            padding.left + aw, padding.top + ah,
@@ -411,6 +394,10 @@ mx_image_set_property (GObject      *object,
       mx_image_set_scale_height_threshold (image, g_value_get_uint (value));
       break;
 
+    case PROP_IMAGE_ROTATION:
+      mx_image_set_image_rotation (image, g_value_get_float (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -445,6 +432,10 @@ mx_image_get_property (GObject    *object,
 
     case PROP_SCALE_HEIGHT_THRESHOLD:
       g_value_set_uint (value, priv->height_threshold);
+      break;
+
+    case PROP_IMAGE_ROTATION:
+      g_value_set_float (value, priv->rotation);
       break;
 
     default:
@@ -586,6 +577,14 @@ mx_image_class_init (MxImageClass *klass)
 
   g_object_class_install_property (object_class, PROP_SCALE_HEIGHT_THRESHOLD,
                                    pspec);
+
+  pspec = g_param_spec_float ("image-rotation",
+                              "Image Rotation",
+                              "Image rotation in degrees",
+                              0, G_MAXINT, 0,
+                              G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+
+  g_object_class_install_property (object_class, PROP_IMAGE_ROTATION, pspec);
 
   /**
    * MxImage::image-loaded:
@@ -806,6 +805,7 @@ mx_image_clear (MxImage *image)
     cogl_object_unref (priv->old_texture);
 
   priv->old_texture = cogl_object_ref (priv->blank_texture);
+  priv->old_rotation = priv->rotation;
 
 
   if (priv->material)
@@ -854,6 +854,7 @@ mx_image_set_from_data (MxImage          *image,
     cogl_object_unref (priv->old_texture);
 
   priv->old_texture = priv->texture;
+  priv->old_rotation = priv->rotation;
 
   /* Create and upload texture */
   priv->texture = cogl_texture_new_with_size (width + 2, height + 2,
@@ -1574,3 +1575,42 @@ mx_image_get_scale_height_threshold (MxImage *image)
   return image->priv->height_threshold;
 }
 
+/**
+ * mx_image_set_image_rotation:
+ * @image: A #MxImage
+ * @rotation: Rotation angle in degrees
+ *
+ * Set the MxImage:image-rotation property.
+ *
+ */
+void
+mx_image_set_image_rotation (MxImage *image,
+                             gfloat   rotation)
+{
+  g_return_if_fail (MX_IS_IMAGE (image));
+
+  if (image->priv->rotation != rotation)
+    {
+      image->priv->rotation = rotation;
+
+      clutter_actor_queue_redraw (CLUTTER_ACTOR (image));
+
+      g_object_notify (G_OBJECT (image), "image-rotation");
+    }
+}
+
+/**
+ * mx_image_get_image_rotation:
+ * @image: A #MxImage
+ *
+ * Get the value of the MxImage:image-rotation property.
+ *
+ * Returns: The value of the image-rotation property.
+ */
+gfloat
+mx_image_get_image_rotation (MxImage *image)
+{
+  g_return_val_if_fail (MX_IS_IMAGE (image), 0);
+
+  return image->priv->rotation;
+}
