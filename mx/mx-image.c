@@ -104,6 +104,7 @@ struct _MxImagePrivate
 
   gint rotation;
   gint old_rotation;
+  MxImageScaleMode old_mode;
 
   CoglMaterial *template_material;
   CoglMaterial *material;
@@ -806,6 +807,7 @@ mx_image_clear (MxImage *image)
 
   priv->old_texture = cogl_object_ref (priv->blank_texture);
   priv->old_rotation = priv->rotation;
+  priv->old_mode = priv->mode;
 
 
   if (priv->material)
@@ -855,6 +857,7 @@ mx_image_set_from_data (MxImage          *image,
 
   priv->old_texture = priv->texture;
   priv->old_rotation = priv->rotation;
+  priv->old_mode = priv->mode;
 
   /* Create and upload texture */
   priv->texture = cogl_texture_new_with_size (width + 2, height + 2,
@@ -1588,6 +1591,8 @@ mx_image_set_image_rotation (MxImage *image,
                              gfloat   rotation)
 {
   g_return_if_fail (MX_IS_IMAGE (image));
+
+  g_return_if_fail (rotation == 0 || ((int) rotation % 90) != 0);
 
   if (image->priv->rotation != rotation)
     {
