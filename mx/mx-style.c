@@ -341,6 +341,34 @@ mx_style_transform_css_value (MxStyleSheetValue *css_value,
 
       g_value_set_string (value, stripped);
     }
+  else if (g_type_is_a (pspec->value_type, G_TYPE_ENUM))
+    {
+      GEnumValue *enum_value;
+      GEnumClass *class;
+
+      g_value_init (value, pspec->value_type);
+
+
+      class = g_type_class_ref (pspec->value_type);
+
+      enum_value = g_enum_get_value_by_nick (class, css_value->string);
+
+      if (!enum_value)
+        {
+          g_warning ("Error setting property \"%s\" on \"%s\", could"
+                     " not transform \"%s\" from string to type %s",
+                     pspec->name,
+                     G_OBJECT_CLASS_NAME(G_OBJECT_GET_CLASS (stylable)),
+                     css_value->string,
+                     g_type_name (pspec->value_type));
+        }
+      else
+        {
+          g_value_set_enum (value, enum_value->value);
+        }
+
+      g_type_class_unref (class);
+    }
   else
     {
       GValue strval = { 0, };
