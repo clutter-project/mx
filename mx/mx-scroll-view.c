@@ -60,8 +60,6 @@
 static void clutter_container_iface_init (ClutterContainerIface *iface);
 static void mx_stylable_iface_init (MxStylableIface *iface);
 
-static ClutterContainerIface *mx_scroll_view_parent_iface = NULL;
-
 G_DEFINE_TYPE_WITH_CODE (MxScrollView, mx_scroll_view, MX_TYPE_BIN,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
                                                 clutter_container_iface_init)
@@ -894,8 +892,8 @@ mx_scroll_view_init (MxScrollView *self)
 }
 
 static void
-mx_scroll_view_add (ClutterContainer *container,
-                    ClutterActor     *actor)
+mx_scroll_view_actor_added (ClutterContainer *container,
+                            ClutterActor     *actor)
 {
   MxScrollView *self = MX_SCROLL_VIEW (container);
   MxScrollViewPrivate *priv = self->priv;
@@ -903,9 +901,6 @@ mx_scroll_view_add (ClutterContainer *container,
   if (MX_IS_SCROLLABLE (actor))
     {
       priv->child = actor;
-
-      /* chain up to MxBin::add() */
-      mx_scroll_view_parent_iface->add (container, actor);
 
       /* Get adjustments for scroll-bars */
       g_signal_connect (actor, "notify::horizontal-adjustment",
@@ -927,17 +922,14 @@ mx_scroll_view_add (ClutterContainer *container,
 }
 
 static void
-mx_scroll_view_remove (ClutterContainer *container,
-                       ClutterActor     *actor)
+mx_scroll_view_actor_removed (ClutterContainer *container,
+                              ClutterActor     *actor)
 {
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (container)->priv;
 
   if (actor == priv->child)
     {
       g_object_ref (priv->child);
-
-      /* chain up to MxBin::remove() */
-      mx_scroll_view_parent_iface->remove (container, actor);
 
       g_signal_handlers_disconnect_by_func (priv->child,
                                             child_hadjustment_notify_cb,
@@ -972,15 +964,10 @@ mx_scroll_view_foreach_with_internals (ClutterContainer *container,
 static void
 clutter_container_iface_init (ClutterContainerIface *iface)
 {
-  /* store a pointer to the MxBin implementation of
-   * ClutterContainer so that we can chain up when
-   * overriding the methods
-   */
-  mx_scroll_view_parent_iface = g_type_interface_peek_parent (iface);
-
-  iface->add = mx_scroll_view_add;
-  iface->remove = mx_scroll_view_remove;
   iface->foreach_with_internals = mx_scroll_view_foreach_with_internals;
+
+  iface->actor_added = mx_scroll_view_actor_added;
+  iface->actor_removed = mx_scroll_view_actor_removed;
 }
 
 /**
