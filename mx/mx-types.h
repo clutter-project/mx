@@ -208,7 +208,7 @@ typedef enum /*< prefix=MX_IMAGE_SCALE >*/
 
 
 /**
- * MxTooltipAnimationMode:
+ * MxTooltipAnimation:
  * @MX_TOOLTIP_ANIMATION_BOUNCE: Bounce the tooltips when they appear
  * @MX_TOOLTIP_ANIMATION_FADE: Fade the tooltips on show and hide
  *
@@ -218,7 +218,7 @@ typedef enum /*< prefix=MX_TOOLTIP_ANIMATION >*/
 {
   MX_TOOLTIP_ANIMATION_BOUNCE,
   MX_TOOLTIP_ANIMATION_FADE
-} MxTooltipAnimationMode;
+} MxTooltipAnimation;
 
 G_END_DECLS
 

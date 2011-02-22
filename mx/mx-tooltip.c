@@ -71,7 +71,7 @@ struct _MxTooltipPrivate
   CoglMatrix       stage_matrix;
   gfloat           angle;
 
-  MxTooltipAnimationMode animation_mode;
+  MxTooltipAnimation animation_mode;
 };
 
 /* Time in milliseconds after a tooltip is hidden before disabling
@@ -101,10 +101,10 @@ mx_stylable_iface_init (MxStylableIface *iface)
 
       is_initialized = TRUE;
 
-      pspec = g_param_spec_enum ("x-mx-tooltip-animation-mode",
-                                 "Tooltip animation mode",
-                                 "The animation mode of the tooltip",
-                                 MX_TYPE_TOOLTIP_ANIMATION_MODE,
+      pspec = g_param_spec_enum ("x-mx-tooltip-animation",
+                                 "Tooltip animation",
+                                 "The hide and show animation of the tooltip",
+                                 MX_TYPE_TOOLTIP_ANIMATION,
                                  MX_TOOLTIP_ANIMATION_FADE,
                                  G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_TOOLTIP, pspec);
@@ -173,7 +173,7 @@ mx_tooltip_style_changed (MxWidget *self)
                    "color", &color,
                    "font-family", &font_name,
                    "font-size", &font_size,
-                   "x-mx-tooltip-animation-mode", &priv->animation_mode,
+                   "x-mx-tooltip-animation", &priv->animation_mode,
                    NULL);
 
   if (color)

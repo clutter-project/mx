@@ -1507,7 +1507,7 @@ MxOrientation
 MxWindowRotation
 MxPosition
 MxImageScaleMode
-MxTooltipAnimationMode
+MxTooltipAnimation
 <SUBSECTION Standard>
 MX_TYPE_BORDER_IMAGE
 MX_TYPE_PADDING
