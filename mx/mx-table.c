@@ -128,8 +128,6 @@ G_DEFINE_TYPE_WITH_CODE (MxTable, mx_table, MX_TYPE_WIDGET,
                                                 mx_focusable_iface_init));
 
 
-void _mx_table_update_row_col (MxTable *table, gint row, gint col);
-
 static ClutterActor*
 mx_table_find_actor_at (MxTable *table,
                         int      row,
