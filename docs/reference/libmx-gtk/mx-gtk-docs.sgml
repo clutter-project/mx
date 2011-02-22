@@ -18,12 +18,13 @@
   </bookinfo>
 
   <part>
-    <xi:include href="xml/annotation-glossary.xml"><xi:fallback /></xi:include>
-    <title>GTK widgets</title>
+    <title>API Reference</title>
     <chapter>
+      <title>GTK widgets</title>
       <xi:include href="xml/mx-gtk-frame.xml"/>
       <xi:include href="xml/mx-gtk-light-switch.xml"/>
     </chapter>
+    <xi:include href="xml/annotation-glossary.xml"><xi:fallback /></xi:include>
   </part>
 
   <index>
