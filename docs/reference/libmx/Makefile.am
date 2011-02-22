@@ -66,7 +66,12 @@ IGNORE_HFILES= \
 	mx-subtexture.h \
 	mx-path-bar-button.h \
 	stamp-mx-enum-types.h \
-	stamp-mx-marshal.h
+	stamp-mx-marshal.h \
+	xsettings-client.h \
+	xsettings-common.h \
+	mx-settings-provider.h \
+	mx-settings-x11.h \
+	mx-window-x11.h
 
 # Images to copy into HTML directory.
 # e.g. HTML_IMAGES=$(top_srcdir)/gtk/stock-icons/stock_about_24.png
