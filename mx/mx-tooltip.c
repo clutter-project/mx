@@ -70,6 +70,8 @@ struct _MxTooltipPrivate
 
   CoglMatrix       stage_matrix;
   gfloat           angle;
+
+  MxTooltipAnimationMode animation_mode;
 };
 
 /* Time in milliseconds after a tooltip is hidden before disabling
@@ -79,7 +81,35 @@ struct _MxTooltipPrivate
 static gboolean mx_tooltip_in_browse_mode = FALSE;
 static guint mx_tooltip_browse_mode_timeout = 0;
 
-G_DEFINE_TYPE (MxTooltip, mx_tooltip, MX_TYPE_FLOATING_WIDGET);
+static void mx_stylable_iface_init (MxStylableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE (MxTooltip, mx_tooltip, MX_TYPE_FLOATING_WIDGET,
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
+                                                mx_stylable_iface_init));
+
+
+/* Stylable Implementation */
+
+static void
+mx_stylable_iface_init (MxStylableIface *iface)
+{
+  static gboolean is_initialized = FALSE;
+
+  if (G_UNLIKELY (!is_initialized))
+    {
+      GParamSpec *pspec;
+
+      is_initialized = TRUE;
+
+      pspec = g_param_spec_enum ("x-mx-tooltip-animation-mode",
+                                 "Tooltip animation mode",
+                                 "The animation mode of the tooltip",
+                                 MX_TYPE_TOOLTIP_ANIMATION_MODE,
+                                 MX_TOOLTIP_ANIMATION_FADE,
+                                 G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_TOOLTIP, pspec);
+    }
+}
 
 static void
 mx_tooltip_set_property (GObject      *gobject,
@@ -143,6 +173,7 @@ mx_tooltip_style_changed (MxWidget *self)
                    "color", &color,
                    "font-family", &font_name,
                    "font-size", &font_size,
+                   "x-mx-tooltip-animation-mode", &priv->animation_mode,
                    NULL);
 
   if (color)
@@ -748,17 +779,31 @@ mx_tooltip_show (MxTooltip *tooltip)
   /* finally show the tooltip... */
   CLUTTER_ACTOR_CLASS (mx_tooltip_parent_class)->show (self);
 
-  /* and give it some bounce! */
-  g_object_set (G_OBJECT (self),
-                "scale-center-x", priv->arrow_offset,
-                "scale-center-y", (priv->actor_below) ? clutter_actor_get_height (self) : 0,
-                NULL);
-  clutter_actor_set_scale (self, 0.0, 0.0);
-  clutter_actor_animate (self, CLUTTER_EASE_OUT_ELASTIC,
-                         500,
-                         "scale-x", 1.0,
-                         "scale-y", 1.0,
-                         NULL);
+  if (priv->animation_mode == MX_TOOLTIP_ANIMATION_BOUNCE)
+    {
+      g_object_set (G_OBJECT (self),
+                    "scale-center-x", priv->arrow_offset,
+                    "scale-center-y", (priv->actor_below) ?
+                    clutter_actor_get_height (self) : 0,
+                    "opacity", 255,
+                    NULL);
+      clutter_actor_set_scale (self, 0.0, 0.0);
+      clutter_actor_animate (self, CLUTTER_EASE_OUT_ELASTIC,
+                             500,
+                             "scale-x", 1.0,
+                             "scale-y", 1.0,
+                             NULL);
+    }
+  else
+    {
+      clutter_actor_set_scale (self, 1.0, 1.0);
+
+      clutter_actor_set_opacity (self, 0);
+      clutter_actor_animate (self, CLUTTER_EASE_OUT_QUAD,
+                             150,
+                             "opacity", 255,
+                             NULL);
+    }
 
   /* Enter browse mode */
   mx_tooltip_in_browse_mode = TRUE;
@@ -798,6 +843,7 @@ void
 mx_tooltip_hide (MxTooltip *tooltip)
 {
   ClutterAnimation *animation;
+  MxTooltipPrivate *priv = tooltip->priv;
 
   g_return_if_fail (MX_IS_TOOLTIP (tooltip));
 
@@ -806,15 +852,26 @@ mx_tooltip_hide (MxTooltip *tooltip)
   if (animation)
     clutter_animation_completed (animation);
 
-  g_object_set (G_OBJECT (tooltip),
-                "scale-center-x", tooltip->priv->arrow_offset,
-                NULL);
-  animation =
-    clutter_actor_animate (CLUTTER_ACTOR (tooltip), CLUTTER_EASE_IN_SINE,
-                           150,
-                           "scale-x", 0.0,
-                           "scale-y", 0.0,
-                           NULL);
+  if (priv->animation_mode == MX_TOOLTIP_ANIMATION_BOUNCE)
+    {
+      g_object_set (G_OBJECT (tooltip),
+                    "scale-center-x", tooltip->priv->arrow_offset,
+                    NULL);
+      animation =
+        clutter_actor_animate (CLUTTER_ACTOR (tooltip), CLUTTER_EASE_IN_SINE,
+                               150,
+                               "scale-x", 0.0,
+                               "scale-y", 0.0,
+                               NULL);
+    }
+  else
+    {
+      animation = clutter_actor_animate (CLUTTER_ACTOR (tooltip),
+                                         CLUTTER_EASE_OUT_QUAD,
+                                         150,
+                                         "opacity", 0,
+                                         NULL);;
+    }
   g_signal_connect (animation, "completed",
                     G_CALLBACK (mx_tooltip_hide_complete), tooltip);
 
