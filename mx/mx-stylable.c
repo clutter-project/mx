@@ -203,14 +203,6 @@ mx_stylable_get_type (void)
   return our_type;
 }
 
-static void
-mx_stylable_name_change_cb (MxStylable *stylable)
-{
-  g_object_set_qdata (G_OBJECT (stylable), quark_style_string, NULL);
-  g_signal_handlers_disconnect_by_func (stylable,
-                                        mx_stylable_name_change_cb, NULL);
-}
-
 const gchar *
 _mx_stylable_get_style_string (MxStylable *stylable)
 {
@@ -243,13 +235,12 @@ _mx_stylable_get_style_string (MxStylable *stylable)
 
   /* Store the string as qdata so we don't have to constantly
    * regenerate it.
+   *
+   * Setting style-affecting properties (class, pseudo-class, name,
+   * parent) will invalidate the string.
    */
   g_object_set_qdata_full (G_OBJECT (stylable), quark_style_string,
                            string, g_free);
-
-  /* Connect to the actor name changing to release the style-string */
-  g_signal_connect (stylable, "notify::name",
-                    G_CALLBACK (mx_stylable_name_change_cb), NULL);
 
   return string;
 }
@@ -988,7 +979,10 @@ mx_stylable_set_style_class (MxStylable  *stylable,
 static void
 mx_stylable_property_changed_notify (MxStylable *stylable)
 {
-  mx_stylable_style_changed (stylable, MX_STYLE_CHANGED_INVALIDATE_CACHE);
+  /* Invalidate the style string */
+  g_object_set_qdata (G_OBJECT (stylable), quark_style_string, NULL);
+
+  mx_stylable_style_changed (stylable, MX_STYLE_CHANGED_NONE);
 }
 
 static void
@@ -1030,6 +1024,13 @@ mx_stylable_style_changed_internal (MxStylable          *stylable,
 
   if (flags & MX_STYLE_CHANGED_INVALIDATE_CACHE)
     _mx_style_invalidate_cache (stylable);
+
+  /* If the parent style has changed, child cache needs to be
+   * invalidated. This needs to happen for internal children as
+   * well, which is why it's here and not in the container block
+   * lower down.
+   */
+  flags |= MX_STYLE_CHANGED_INVALIDATE_CACHE;
 
   g_signal_emit (stylable, stylable_signals[STYLE_CHANGED], 0, flags);
 
