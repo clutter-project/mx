@@ -602,6 +602,9 @@ mx_stack_paint (ClutterActor *actor)
 
   MxStackPrivate *priv = MX_STACK (actor)->priv;
 
+  /* allow MxWidget to paint the background */
+  CLUTTER_ACTOR_CLASS (mx_stack_parent_class)->paint (actor);
+
   for (c = priv->children; c; c = c->next)
     clutter_actor_paint (c->data);
 }
