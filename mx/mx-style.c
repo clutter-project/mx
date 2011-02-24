@@ -72,7 +72,6 @@ typedef struct {
 struct _MxStylePrivate
 {
   MxStyleSheet *stylesheet;
-  GList *image_paths;
 
   GHashTable *style_hash;
   GHashTable *node_hash;
@@ -186,14 +185,6 @@ mx_style_load (MxStyle *style)
 static void
 mx_style_finalize (GObject *gobject)
 {
-  MxStylePrivate *priv = ((MxStyle *)gobject)->priv;
-  GList *l;
-
-  for (l = priv->image_paths; l; l = g_list_delete_link (l, l))
-  {
-    g_free (l->data);
-  }
-
   G_OBJECT_CLASS (mx_style_parent_class)->finalize (gobject);
 }
 
