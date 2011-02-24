@@ -83,6 +83,8 @@ struct _MxKineticScrollViewPrivate
   gdouble                decel_rate;
   gdouble                overshoot;
   gdouble                accumulated_delta;
+
+  MxScrollPolicy         scroll_policy;
 };
 
 enum {
@@ -94,7 +96,8 @@ enum {
   PROP_VADJUST,
   PROP_BUTTON,
   PROP_USE_CAPTURED,
-  PROP_OVERSHOOT
+  PROP_OVERSHOOT,
+  PROP_SCROLL_POLICY
 };
 
 /* MxScrollableIface implementation */
@@ -188,6 +191,10 @@ mx_kinetic_scroll_view_get_property (GObject    *object,
       g_value_set_double (value, priv->overshoot);
       break;
 
+    case PROP_SCROLL_POLICY:
+      g_value_set_enum (value, priv->scroll_policy);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -245,6 +252,10 @@ mx_kinetic_scroll_view_set_property (GObject      *object,
       mx_kinetic_scroll_view_set_overshoot (self, g_value_get_double (value));
       break;
 
+    case PROP_SCROLL_POLICY:
+      mx_kinetic_scroll_view_set_scroll_policy (self, g_value_get_enum (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -281,10 +292,12 @@ mx_kinetic_scroll_view_get_preferred_width (ClutterActor *actor,
                                             gfloat       *min_width_p,
                                             gfloat       *nat_width_p)
 {
+  MxKineticScrollViewPrivate *priv = MX_KINETIC_SCROLL_VIEW (actor)->priv;
+
   CLUTTER_ACTOR_CLASS (mx_kinetic_scroll_view_parent_class)->
     get_preferred_width (actor, for_height, NULL, nat_width_p);
 
-  if (min_width_p)
+  if (min_width_p && priv->scroll_policy != MX_SCROLL_POLICY_VERTICAL)
     {
       MxPadding padding;
 
@@ -299,10 +312,12 @@ mx_kinetic_scroll_view_get_preferred_height (ClutterActor *actor,
                                              gfloat       *min_height_p,
                                              gfloat       *nat_height_p)
 {
+  MxKineticScrollViewPrivate *priv = MX_KINETIC_SCROLL_VIEW (actor)->priv;
+
   CLUTTER_ACTOR_CLASS (mx_kinetic_scroll_view_parent_class)->
     get_preferred_height (actor, for_width, NULL, nat_height_p);
 
-  if (min_height_p)
+  if (min_height_p && priv->scroll_policy != MX_SCROLL_POLICY_HORIZONTAL)
     {
       MxPadding padding;
 
@@ -382,6 +397,14 @@ mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
                                MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_OVERSHOOT, pspec);
 
+  pspec = g_param_spec_enum ("scroll-policy",
+                             "Scroll Policy",
+                             "The scroll policy",
+                             MX_TYPE_SCROLL_POLICY,
+                             MX_SCROLL_POLICY_BOTH,
+                             MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_SCROLL_POLICY, pspec);
+
   /* MxScrollable properties */
   g_object_class_override_property (object_class,
                                     PROP_HADJUST,
@@ -417,6 +440,7 @@ motion_event_cb (ClutterActor        *stage,
       if (!priv->in_drag)
         {
           guint threshold;
+          gboolean threshold_passed;
           MxSettings *settings = mx_settings_get_default ();
 
           g_object_get (G_OBJECT (settings),
@@ -424,8 +448,18 @@ motion_event_cb (ClutterActor        *stage,
           motion = &g_array_index (priv->motion_buffer,
                                    MxKineticScrollViewMotion, 0);
 
-          if ((ABS (motion->x - x) >= threshold) ||
-              (ABS (motion->y - y) >= threshold))
+          if ((ABS (motion->y - y) >= threshold) &&
+              (priv->scroll_policy == MX_SCROLL_POLICY_VERTICAL ||
+               priv->scroll_policy == MX_SCROLL_POLICY_BOTH))
+           threshold_passed = TRUE;
+          else if ((ABS (motion->x - x) >= threshold) &&
+              (priv->scroll_policy == MX_SCROLL_POLICY_HORIZONTAL ||
+               priv->scroll_policy == MX_SCROLL_POLICY_BOTH))
+           threshold_passed = TRUE;
+          else
+           threshold_passed = FALSE;
+
+          if (threshold_passed)
             {
               clutter_set_motion_events_enabled (TRUE);
               priv->in_drag = TRUE;
@@ -933,6 +967,7 @@ mx_kinetic_scroll_view_init (MxKineticScrollView *self)
   g_array_set_size (priv->motion_buffer, 3);
   priv->decel_rate = 1.1f;
   priv->button = 1;
+  priv->scroll_policy = MX_SCROLL_POLICY_BOTH;
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
   g_signal_connect (self, "button-press-event",
@@ -1201,4 +1236,46 @@ mx_kinetic_scroll_view_get_overshoot (MxKineticScrollView *scroll)
 {
   g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), 0.0);
   return scroll->priv->overshoot;
+}
+
+/**
+ * mx_kinetic_scroll_view_set_scroll_policy:
+ * @scroll: A #MxKineticScrollView
+ * @policy: A #MxScrollPolicy
+ *
+ * Sets the scrolling policy for the kinetic scroll-view. This controls the
+ * possible axes of movement, and can affect the minimum size of the widget.
+ */
+void
+mx_kinetic_scroll_view_set_scroll_policy (MxKineticScrollView  *scroll,
+                                          MxScrollPolicy policy)
+{
+  MxKineticScrollViewPrivate *priv;
+
+  g_return_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll));
+
+  priv = scroll->priv;
+
+  if (priv->scroll_policy != policy)
+    {
+      priv->scroll_policy = policy;
+
+      g_object_notify (G_OBJECT (scroll), "scroll-policy");
+    }
+}
+
+/**
+ * mx_kinetic_scroll_view_get_scroll_policy:
+ * @scroll: A #MxKineticScrollView
+ *
+ * Retrieves the scrolling policy of the kinetic scroll-view.
+ *
+ * Returns: A #MxScrollPolicy
+ */
+MxScrollPolicy
+mx_kinetic_scroll_view_get_scroll_policy (MxKineticScrollView *scroll)
+{
+  g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), 0);
+
+  return scroll->priv->scroll_policy;
 }

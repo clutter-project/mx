@@ -582,6 +582,8 @@ mx_kinetic_scroll_view_set_mouse_button
 mx_kinetic_scroll_view_get_mouse_button
 mx_kinetic_scroll_view_set_overshoot
 mx_kinetic_scroll_view_get_overshoot
+mx_kinetic_scroll_view_set_scroll_policy
+mx_kinetic_scroll_view_get_scroll_policy
 <SUBSECTION Private>
 MxKineticScrollViewPrivate
 <SUBSECTION Standard>
