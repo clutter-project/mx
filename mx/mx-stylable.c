@@ -64,7 +64,6 @@ static GParamSpecPool *style_property_spec_pool = NULL;
 
 static GQuark quark_real_owner         = 0;
 static GQuark quark_style              = 0;
-static GQuark quark_style_string       = 0;
 
 static guint stylable_signals[LAST_SIGNAL] = { 0, };
 
@@ -120,8 +119,6 @@ mx_stylable_base_init (gpointer g_iface)
   quark_real_owner =
     g_quark_from_static_string ("mx-stylable-real-owner-quark");
   quark_style = g_quark_from_static_string ("mx-stylable-style-quark");
-  quark_style_string =
-    g_quark_from_static_string ("mx-stylable-style-string-quark");
 
   style_property_spec_pool = g_param_spec_pool_new (FALSE);
 
@@ -203,17 +200,39 @@ mx_stylable_get_type (void)
   return our_type;
 }
 
-const gchar *
+static void
+_mx_stylable_prepend_style_string (GString    *string,
+                                   MxStylable *stylable)
+{
+  GType type_id;
+  gchar *style_string;
+  const gchar *type, *id, *class, *pseudo_class;
+
+  type_id = G_OBJECT_CLASS_TYPE (G_OBJECT_GET_CLASS (stylable));
+  type = g_type_name (type_id);
+
+  id = clutter_actor_get_name (CLUTTER_ACTOR (stylable));
+
+  class = mx_stylable_get_style_class (stylable);
+
+  pseudo_class = mx_stylable_get_style_pseudo_class (stylable);
+
+  style_string = g_strdup_printf ("%s#%s.%s:%s>",
+                                  type,
+                                  id ? id : "",
+                                  class ? class : "",
+                                  pseudo_class ? pseudo_class : "");
+  g_string_prepend (string, style_string);
+  g_free (style_string);
+}
+
+gchar *
 _mx_stylable_get_style_string (MxStylable *stylable)
 {
   GType type_id;
+  gchar *cstring;
+  GString *string;
   const gchar *type, *id, *class, *pseudo_class;
-  gchar *string;
-
-  /* Check if we've generated the string already first */
-  string = g_object_get_qdata (G_OBJECT (stylable), quark_style_string);
-  if (string)
-    return string;
 
   /* Create a string that contains all the properties of a
    * Stylable that can be matched against in the CSS.
@@ -227,22 +246,32 @@ _mx_stylable_get_style_string (MxStylable *stylable)
 
   pseudo_class = mx_stylable_get_style_pseudo_class (stylable);
 
-  string = g_strdup_printf ("%s#%s.%s:%s",
-                            type,
-                            id ? id : "",
-                            class ? class : "",
-                            pseudo_class ? pseudo_class : "");
+  string = g_string_new (type);
 
-  /* Store the string as qdata so we don't have to constantly
-   * regenerate it.
-   *
-   * Setting style-affecting properties (class, pseudo-class, name,
-   * parent) will invalidate the string.
-   */
-  g_object_set_qdata_full (G_OBJECT (stylable), quark_style_string,
-                           string, g_free);
+  /* Add the actor hierarchy */
+  if (CLUTTER_IS_ACTOR (stylable))
+    {
+      ClutterActor *parent =
+        clutter_actor_get_parent (CLUTTER_ACTOR (stylable));
 
-  return string;
+      while (parent)
+        {
+          if (MX_IS_STYLABLE (parent))
+            _mx_stylable_prepend_style_string (string, MX_STYLABLE (parent));
+
+          parent = clutter_actor_get_parent (parent);
+        }
+    }
+
+  g_string_append_printf (string, "#%s.%s:%s",
+                          id ? id : "",
+                          class ? class : "",
+                          pseudo_class ? pseudo_class : "");
+
+  cstring = string->str;
+  g_string_free (string, FALSE);
+
+  return cstring;
 }
 
 #if 0
@@ -979,10 +1008,7 @@ mx_stylable_set_style_class (MxStylable  *stylable,
 static void
 mx_stylable_property_changed_notify (MxStylable *stylable)
 {
-  /* Invalidate the style string */
-  g_object_set_qdata (G_OBJECT (stylable), quark_style_string, NULL);
-
-  mx_stylable_style_changed (stylable, MX_STYLE_CHANGED_NONE);
+  mx_stylable_style_changed (stylable, MX_STYLE_CHANGED_INVALIDATE_CACHE);
 }
 
 static void

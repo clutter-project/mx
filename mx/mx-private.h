@@ -105,7 +105,7 @@ ClutterActor * _mx_window_get_resize_grip (MxWindow *window);
 
 void _mx_style_invalidate_cache (MxStylable *stylable);
 
-const gchar * _mx_stylable_get_style_string (MxStylable *stylable);
+gchar * _mx_stylable_get_style_string (MxStylable *stylable);
 
 const gchar * _mx_enum_to_string (GType type,
                                   gint  value);
@@ -120,10 +120,11 @@ gboolean _mx_fade_effect_get_freeze_update (MxFadeEffect *effect);
 
 typedef enum
 {
-  MX_DEBUG_LAYOUT     = 1 << 0,
-  MX_DEBUG_INSPECTOR  = 1 << 1,
-  MX_DEBUG_FOCUS      = 1 << 2,
-  MX_DEBUG_CSS        = 1 << 3
+  MX_DEBUG_LAYOUT      = 1 << 0,
+  MX_DEBUG_INSPECTOR   = 1 << 1,
+  MX_DEBUG_FOCUS       = 1 << 2,
+  MX_DEBUG_CSS         = 1 << 3,
+  MX_DEBUG_STYLE_CACHE = 1 << 4
 } MxDebugTopic;
 
 gboolean _mx_debug (gint debug);

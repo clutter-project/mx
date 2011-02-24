@@ -58,10 +58,37 @@ enum
 
 #define MX_STYLE_CACHE g_style_cache_quark ()
 
-/* Default cache size - 6 should probably be enough,
+/* This is the amount of entries that will be allowed per
+ * stylable object.
+ *
+ * In the usual case, objects share rules and
+ * so we don't really need to allocate more than one space in
+ * the cache per object, but in case of the pathological case
+ * of every stylable object having a unique style rule that
+ * applies only to itself, we allow 6 per object.
+ *
  * e.g. normal, hover, active, checked, focus + 1 extra
  */
 #define MX_STYLE_CACHE_SIZE 6
+
+/* A style cache entry is the unique string representing all the properties
+ * that can be matched against in CSS, and the matched properties themselves.
+ */
+typedef struct
+{
+  gchar      *style_string;
+  gint        age;
+  GHashTable *properties;
+} MxStyleCacheEntry;
+
+/* This is the per-stylable cache store. We need a reference back to the
+ * parent style so that we can maintain the count of alive stylables.
+ */
+typedef struct
+{
+  GList   *styles;
+  gchar   *string;
+} MxStylableCache;
 
 typedef struct {
   GType value_type;
@@ -75,6 +102,11 @@ struct _MxStylePrivate
 
   GHashTable *style_hash;
   GHashTable *node_hash;
+
+  gint        alive_stylables;
+  GQueue     *cached_matches;
+  GHashTable *cache_hash;
+  gint        age;
 };
 
 static guint style_signals[LAST_SIGNAL] = { 0, };
@@ -122,6 +154,9 @@ mx_style_real_load_from_file (MxStyle    *style,
     priv->stylesheet = mx_style_sheet_new ();
 
   mx_style_sheet_add_from_file (priv->stylesheet, filename, NULL);
+
+  /* Increment the age so we know if a style cache entry is valid */
+  priv->age ++;
 
   g_signal_emit (style, style_signals[CHANGED], 0, NULL);
 
@@ -182,9 +217,41 @@ mx_style_load (MxStyle *style)
   g_free (rc_file);
 }
 
+static MxStyleCacheEntry *
+mx_style_cache_entry_new (const gchar *style_string,
+                          GHashTable  *properties,
+                          gint         age)
+{
+  MxStyleCacheEntry *entry = g_slice_new (MxStyleCacheEntry);
+
+  entry->style_string = g_strdup (style_string);
+  entry->properties = properties;
+  entry->age = age;
+
+  return entry;
+}
+
+static void
+mx_style_cache_entry_free (MxStyleCacheEntry *entry,
+                           gboolean           free_struct)
+{
+  g_free (entry->style_string);
+  g_hash_table_unref (entry->properties);
+  if (free_struct)
+    g_slice_free (MxStyleCacheEntry, entry);
+}
+
 static void
 mx_style_finalize (GObject *gobject)
 {
+  MxStylePrivate *priv = MX_STYLE (gobject)->priv;
+
+  g_hash_table_unref (priv->cache_hash);
+
+  while (g_queue_get_length (priv->cached_matches))
+    mx_style_cache_entry_free (g_queue_pop_head (priv->cached_matches), TRUE);
+  g_queue_free (priv->cached_matches);
+
   G_OBJECT_CLASS (mx_style_parent_class)->finalize (gobject);
 }
 
@@ -221,6 +288,9 @@ mx_style_init (MxStyle *style)
   MxStylePrivate *priv;
 
   style->priv = priv = MX_STYLE_GET_PRIVATE (style);
+
+  priv->cached_matches = g_queue_new ();
+  priv->cache_hash = g_hash_table_new (g_str_hash, g_str_equal);
 
   mx_style_load (style);
 }
@@ -400,82 +470,90 @@ mx_style_normalize_property_name (const gchar *name)
     return name;
 }
 
-/* A style cache entry is the unique string representing all the properties
- * that can be matched against in CSS, and the matched properties themselves.
- */
-typedef struct
+static void
+mx_style_cache_weak_ref_cb (gpointer  data,
+                            GObject  *old_object)
 {
-  gchar      *style_string;
-  GHashTable *properties;
-} MxStyleCacheEntry;
+  MxStylableCache *cache = data;
+  GList *style_link = g_list_find (cache->styles, old_object);
+
+  if (style_link)
+    cache->styles = g_list_delete_link (cache->styles, style_link);
+  else
+    g_warning (G_STRLOC ": Weak unref on a stylable with no style reference");
+}
 
 static void
-mx_style_object_died_cb (GArray  *cache,
-                         GObject *old_object)
+mx_style_stylable_cache_free (MxStylableCache *cache)
 {
-  gint i;
-
-  /* The object we've added a cache to has died, so free
-   * the cached data.
+  /* If there are still styles referencing this stylable, decrement their
+   * count of alive stylables and remove the weak reference.
    */
-  for (i = 0; i < cache->len; i++)
+  while (cache->styles)
     {
-      MxStyleCacheEntry *entry =
-        &g_array_index (cache, MxStyleCacheEntry, i);
+      MxStyle *style = cache->styles->data;
+      MxStylePrivate *priv = style->priv;
 
-      g_hash_table_unref (entry->properties);
-      g_free (entry->style_string);
+      g_object_weak_unref (G_OBJECT (style),
+                           mx_style_cache_weak_ref_cb,
+                           cache);
+      priv->alive_stylables --;
+
+      MX_NOTE (STYLE_CACHE, "(%p) Alive stylables: %d",
+               style, priv->alive_stylables);
+
+      cache->styles = g_list_delete_link (cache->styles, cache->styles);
     }
 
-  /* We use this function to either destroy the cache, or
-   * empty it, depending on if old_object is set.
-   */
-  if (old_object)
-    g_array_free (cache, TRUE);
-  else
-    g_array_set_size (cache, 0);
+  g_free (cache->string);
+  g_slice_free (MxStylableCache, cache);
 }
 
 void
 _mx_style_invalidate_cache (MxStylable *stylable)
 {
   GObject *object = G_OBJECT (stylable);
-  GArray *cache = g_object_get_qdata (object, MX_STYLE_CACHE);
+  MxStylableCache *cache = g_object_get_qdata (object, MX_STYLE_CACHE);
 
-  /* Empty the cache */
+  /* Reset the cache string */
   if (cache)
-    mx_style_object_died_cb (cache, NULL);
+    {
+      g_free (cache->string);
+      cache->string = NULL;
+    }
 }
 
 static GHashTable *
 mx_style_get_style_sheet_properties (MxStyle    *style,
                                      MxStylable *stylable)
 {
-  GArray *cache;
-  const gchar *style_string;
-  GHashTable *properties = NULL;
+  GList *entry_link;
+  MxStylableCache *cache;
+
+  MxStyleCacheEntry *entry = NULL;
   MxStylePrivate *priv = style->priv;
 
   /* see if we have a cached style and return that if possible */
   cache = g_object_get_qdata (G_OBJECT (stylable), MX_STYLE_CACHE);
-  style_string = _mx_stylable_get_style_string (stylable);
 
   if (cache)
     {
-      /* A cache exists, so check if this particular style-state
-       * has been cached already.
+      /* Make sure that the style string is up-to-date. We set this
+       * to NULL when invalidating the stylable's cache.
        */
-      gint i;
-      for (i = 0; i < cache->len; i++)
-        {
-          MxStyleCacheEntry *entry =
-            &g_array_index (cache, MxStyleCacheEntry, i);
+      if (!cache->string)
+        cache->string = _mx_stylable_get_style_string (stylable);
 
-          if (!g_strcmp0 (style_string, entry->style_string))
-            {
-              properties = entry->properties;
-              break;
-            }
+      /* Check that the stylable has a reference to us. If the stylable
+       * cache struct was created by another style, we need to add ourselves
+       * to the list.
+       */
+      if (!g_list_find (cache->styles, style))
+        {
+          cache->styles = g_list_prepend (cache->styles, style);
+          g_object_weak_ref (G_OBJECT (style), mx_style_cache_weak_ref_cb,
+                             cache);
+          priv->alive_stylables ++;
         }
     }
   else
@@ -483,43 +561,79 @@ mx_style_get_style_sheet_properties (MxStyle    *style,
       /* This is the first time this stylable has tried to get style
        * properties, initialise a cache.
        */
-      cache = g_array_new (FALSE, TRUE, sizeof (MxStyleCacheEntry));
-      g_object_set_qdata (G_OBJECT (stylable), MX_STYLE_CACHE, cache);
-      g_object_weak_ref (G_OBJECT (stylable),
-                         (GWeakNotify)mx_style_object_died_cb, cache);
+      cache = g_slice_new0 (MxStylableCache);
+      cache->string = _mx_stylable_get_style_string (stylable);
+      cache->styles = g_list_prepend (NULL, style);
+
+      /* Increase the alive-stylables count and add a weak reference so we
+       * can remove it.
+       */
+      priv->alive_stylables ++;
+      g_object_weak_ref (G_OBJECT (style), mx_style_cache_weak_ref_cb, cache);
+
+      MX_NOTE (STYLE_CACHE, "(%p) Alive stylables: %d",
+               style, priv->alive_stylables);
+
+      /* Use qdata to associate the cache entry with the stylable object */
+      g_object_set_qdata_full (G_OBJECT (stylable), MX_STYLE_CACHE, cache,
+                               (GDestroyNotify)mx_style_stylable_cache_free);
     }
 
-  /* No cached style properties were found, so look them up from the
-   * style-sheet and add them to the cache.
-   */
-  if (!properties)
+  if ((entry_link = g_hash_table_lookup (priv->cache_hash, cache->string)))
     {
-      MxStyleCacheEntry entry;
+      entry = entry_link->data;
 
-      properties = mx_style_sheet_get_properties (priv->stylesheet,
-                                                  stylable);
+      /* If the entry is old, remove it from the cache */
+      if (entry->age != priv->age)
+        {
+          g_hash_table_remove (priv->cache_hash, entry->style_string);
+          g_queue_delete_link (priv->cached_matches, entry_link);
+          mx_style_cache_entry_free (entry, TRUE);
+          entry = NULL;
+        }
+
+      /* As the cache is rarely emptied, FIFO is good enough for the
+       * eviction strategy (preferring speedy retrieval to efficient
+       * eviction)
+       *
+       * If we did want LRU though, for example, here would be the place
+       * to do it. You could remove the link from the queue using
+       * g_queue_unlink() and reinsert it with g_queue_push_head_link()
+       */
+    }
+
+  /* No cached style properties were found, or the entry found is out of date,
+   * so look them up from the style-sheet and (re-)add them to the cache.
+   */
+  if (!entry || (entry->age != priv->age))
+    {
+      /* Look up style properties */
+      GHashTable *properties = mx_style_sheet_get_properties (priv->stylesheet,
+                                                              stylable);
 
       /* Append this to the style cache */
-      entry.style_string = g_strdup (style_string);
-      entry.properties = properties;
-      g_array_append_val (cache, entry);
+      entry = mx_style_cache_entry_new (cache->string, properties, priv->age);
+      g_queue_push_head (priv->cached_matches, entry);
+      g_hash_table_insert (priv->cache_hash, entry->style_string,
+                           priv->cached_matches->head);
 
       /* Shrink the cache if its grown too large */
-      if (cache->len > MX_STYLE_CACHE_SIZE)
+      while (g_queue_get_length (priv->cached_matches) >
+             (priv->alive_stylables * MX_STYLE_CACHE_SIZE))
         {
-          gint i;
-          for (i = 0; i < cache->len - MX_STYLE_CACHE_SIZE; i++)
-            {
-              MxStyleCacheEntry *entry_p;
-              entry_p = &g_array_index (cache, MxStyleCacheEntry, i);
-              g_free (entry_p->style_string);
-              g_hash_table_unref (entry_p->properties);
-            }
-          g_array_remove_range (cache, 0, i);
+          MxStyleCacheEntry *old_entry =
+            g_queue_pop_tail (priv->cached_matches);
+
+          g_hash_table_remove (priv->cache_hash, old_entry->style_string);
+          mx_style_cache_entry_free (old_entry, TRUE);
         }
+
+      MX_NOTE (STYLE_CACHE, "(%p) Cache size: %d, (Max-size: %d)",
+               style, g_queue_get_length (priv->cached_matches),
+               priv->alive_stylables * MX_STYLE_CACHE_SIZE);
     }
 
-  return g_hash_table_ref (properties);
+  return entry->properties ? g_hash_table_ref (entry->properties) : NULL;
 }
 
 /**
