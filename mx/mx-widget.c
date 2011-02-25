@@ -992,6 +992,14 @@ _mx_widget_propagate_disabled (ClutterContainer *container,
 
           child_priv->parent_disabled = disabled;
 
+
+          if (disabled)
+            mx_stylable_style_pseudo_class_add (MX_STYLABLE (child),
+                                                "disabled");
+          else
+            mx_stylable_style_pseudo_class_remove (MX_STYLABLE (child),
+                                                   "disabled");
+
           /* If this child has already been disabled explicitly,
            * we don't need to recurse through its children to set
            * the 'parent_disabled' flag, as it'll already be set.
@@ -1195,10 +1203,7 @@ _mx_stylable_set_style_pseudo_class (MxStylable  *actor,
 static const gchar*
 _mx_stylable_get_style_pseudo_class (MxStylable *actor)
 {
-  if (mx_widget_get_disabled (MX_WIDGET (actor)))
-    return "disabled";
-  else
-    return ((MxWidget *) actor)->priv->pseudo_class;
+  return ((MxWidget *) actor)->priv->pseudo_class;
 }
 
 
