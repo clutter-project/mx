@@ -36,3 +36,4 @@ void scroll_view_main (ClutterContainer *container);
 void styles_main (ClutterContainer *container);
 void toggle_main (ClutterContainer *container);
 void dialog_main (ClutterContainer *container);
+void spinner_main (ClutterContainer *container);

@@ -102,7 +102,7 @@ rotate_180_clicked_cb (ClutterActor *button,
 static ClutterActor *
 create_rotate_box (MxWindow *window)
 {
-  ClutterActor *button, *icon, *icon2, *layout2, *spinner;
+  ClutterActor *button, *icon, *icon2, *layout2;
   ClutterActor *layout = mx_box_layout_new ();
 
   /* Create rotate-left button */
@@ -139,10 +139,6 @@ create_rotate_box (MxWindow *window)
   g_signal_connect (button, "clicked",
                     G_CALLBACK (rotate_right_clicked_cb), window);
   clutter_container_add_actor (CLUTTER_CONTAINER (layout), button);
-
-  /* Create spinner */
-  spinner = mx_spinner_new ();
-  clutter_container_add_actor (CLUTTER_CONTAINER (layout), spinner);
 
   return layout;
 }
@@ -345,6 +341,8 @@ main (int argc, char *argv[])
            (GCallback) styles_main, CLUTTER_CONTAINER (holder));
   add_tab (CLUTTER_CONTAINER (vbox), group, "Dialog",
            (GCallback) dialog_main, CLUTTER_CONTAINER (holder));
+  add_tab (CLUTTER_CONTAINER (vbox), group, "Spinner",
+           (GCallback) spinner_main, CLUTTER_CONTAINER (holder));
 
   prev = mx_action_new_full ("Previous tab",
                              "Previous tab",

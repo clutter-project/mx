@@ -55,6 +55,7 @@ test_mx_SOURCES = test-mx.c \
 		  test-scroll-grid.c \
 		  test-scroll-view.c \
 		  test-slider.c \
+		  test-spinner.c \
 		  test-styles.c \
 		  test-tooltips.c \
 		  test-toggle.c \
