@@ -29,6 +29,7 @@
  */
 
 #include "mx-spinner.h"
+#include "mx-marshal.h"
 #include "mx-private.h"
 #include "mx-stylable.h"
 
@@ -40,6 +41,13 @@ G_DEFINE_TYPE_WITH_CODE (MxSpinner, mx_spinner, MX_TYPE_WIDGET,
 
 #define SPINNER_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_SPINNER, MxSpinnerPrivate))
+
+enum
+{
+  LOOPED,
+
+  LAST_SIGNAL
+};
 
 enum
 {
@@ -60,6 +68,8 @@ struct _MxSpinnerPrivate
 
   guint       animating : 1;
 };
+
+static guint signals[LAST_SIGNAL] = { 0, };
 
 
 static void
@@ -295,6 +305,21 @@ mx_spinner_class_init (MxSpinnerClass *klass)
                                 TRUE,
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_ANIMATING, pspec);
+
+  /**
+   * MxSpinner::looped:
+   * @spinner: the #MxSpinner that received the signal
+   *
+   * Emitted after the animation has displayed the final frame.
+   */
+  signals[LOOPED] =
+    g_signal_new ("looped",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (MxSpinnerClass, looped),
+                  NULL, NULL,
+                  _mx_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
 }
 
 static gboolean
@@ -302,10 +327,16 @@ mx_spinner_timeout_cb (MxSpinner *spinner)
 {
   MxSpinnerPrivate *priv = spinner->priv;
 
-  if (++priv->current_frame == priv->frames)
-    priv->current_frame = 0;
-
+  /* We may be destroyed during the signal emission, so
+   * queue the redraw here instead of below.
+   */
   clutter_actor_queue_redraw (CLUTTER_ACTOR (spinner));
+
+  if (++priv->current_frame == priv->frames)
+    {
+      priv->current_frame = 0;
+      g_signal_emit (spinner, signals[LOOPED], 0);
+    }
 
   return TRUE;
 }
@@ -329,6 +360,8 @@ mx_spinner_update_timeout (MxSpinner *spinner)
                                                         mx_spinner_timeout_cb,
                                                         spinner,
                                                         NULL);
+  else
+    priv->current_frame = 0;
 }
 
 static void
