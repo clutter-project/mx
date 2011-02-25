@@ -1592,7 +1592,7 @@ mx_image_set_image_rotation (MxImage *image,
 {
   g_return_if_fail (MX_IS_IMAGE (image));
 
-  g_return_if_fail (rotation == 0 || ((int) rotation % 90) != 0);
+  g_return_if_fail (rotation == 0 || ((int) rotation % 90) == 0);
 
   if (image->priv->rotation != rotation)
     {
