@@ -301,7 +301,12 @@ selector_to_string (MxSelector *selector)
   if (!selector)
     return NULL;
 
-  ancestor = selector_to_string (selector->ancestor);
+  tmp = selector_to_string (selector->ancestor);
+  if (tmp)
+    ancestor = g_strconcat (tmp, " ", NULL);
+  else
+    ancestor = NULL;
+  g_free (tmp);
 
   tmp = selector_to_string (selector->parent);
   if (tmp)
