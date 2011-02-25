@@ -564,5 +564,6 @@ MxDialog > MxBoxLayout.MxDialogButtonBox {
 
 MxSpinner {
   -mx-spinner-image: url('spinner.png');
-  -mx-spinner-frames: 12;
+  -mx-spinner-frames: 24;
+  -mx-spinner-animation-duration: 800;
 }
