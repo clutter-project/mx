@@ -31,6 +31,8 @@ on_value_changed (MxSlider         *slider,
   value = mx_slider_get_value (slider);
   color.alpha = (guint8) (value * 0xff);
   clutter_rectangle_set_color (rectangle, &color);
+
+  mx_slider_set_buffer_value (slider, MIN (0.1 + value * 1.5, 1.0));
 }
 
 void
@@ -52,4 +54,6 @@ slider_main (ClutterContainer *stage)
   clutter_container_add_actor (stage, rectangle);
   clutter_actor_set_size (rectangle, 64, 64);
   clutter_actor_set_position (rectangle, 108, 52);
+
+  mx_slider_set_value (MX_SLIDER (slider), 0.5);
 }

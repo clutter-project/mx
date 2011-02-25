@@ -87,6 +87,10 @@ void            mx_slider_set_value  (MxSlider *bar,
                                       gdouble   value);
 gdouble         mx_slider_get_value  (MxSlider *bar);
 
+void            mx_slider_set_buffer_value  (MxSlider *slider,
+                                             gdouble   value);
+gdouble         mx_slider_get_buffer_value  (MxSlider *slider);
+
 G_END_DECLS
 
 #endif /* __MX_SLIDER_H__ */

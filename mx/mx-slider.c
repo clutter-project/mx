@@ -59,6 +59,7 @@ struct _MxSliderPrivate
   ClutterActor *fill;
   ClutterActor *trough;
   ClutterActor *handle;
+  ClutterActor *buffer;
 
   gulong        capture_handler;
   gfloat        x_origin;
@@ -75,13 +76,15 @@ struct _MxSliderPrivate
   guint         handle_height;
 
   gdouble       value;
+  gdouble       buffer_value;
 };
 
 enum
 {
   PROP_0,
 
-  PROP_VALUE
+  PROP_VALUE,
+  PROP_BUFFER_VALUE,
 };
 
 /* MxFocusable interface */
@@ -367,6 +370,9 @@ mx_slider_paint (ClutterActor *actor)
 
   clutter_actor_paint (priv->trough);
 
+  if (priv->buffer_value)
+    clutter_actor_paint (priv->buffer);
+
   if (priv->value)
     clutter_actor_paint (priv->fill);
 
@@ -439,6 +445,7 @@ mx_slider_allocate_fill_handle (MxSlider               *self,
   MxPadding        padding;
   ClutterActorBox  bar_box;
   ClutterActorBox  fill_box;
+  ClutterActorBox  buffer_box;
   ClutterActorBox  handle_box;
   guint            handle_width_2;
 
@@ -464,6 +471,16 @@ mx_slider_allocate_fill_handle (MxSlider               *self,
   fill_box.y2 = priv->trough_box_y2;
 
   clutter_actor_allocate (priv->fill, &fill_box, flags);
+
+
+  /* buffer */
+  buffer_box.x1 = padding.left;
+  buffer_box.y1 = priv->trough_box_y1;
+  buffer_box.x2 = buffer_box.x1
+    + ((box->x2 - box->x1 - padding.left - padding.right) * priv->buffer_value);
+  buffer_box.y2 = priv->trough_box_y2;
+
+  clutter_actor_allocate (priv->buffer, &buffer_box, flags);
 
   /* handle */
   handle_box.x1 = fill_box.x2 - handle_width_2;
@@ -563,6 +580,7 @@ mx_slider_map (ClutterActor *actor)
   clutter_actor_map (priv->fill);
   clutter_actor_map (priv->trough);
   clutter_actor_map (priv->handle);
+  clutter_actor_map (priv->buffer);
 }
 
 static void
@@ -576,6 +594,7 @@ mx_slider_unmap (ClutterActor *actor)
   clutter_actor_unmap (priv->fill);
   clutter_actor_unmap (priv->trough);
   clutter_actor_unmap (priv->handle);
+  clutter_actor_unmap (priv->buffer);
 }
 
 static void
@@ -615,6 +634,10 @@ mx_slider_get_property (GObject    *object,
       g_value_set_double (value, mx_slider_get_value (self));
       break;
 
+    case PROP_BUFFER_VALUE:
+      g_value_set_double (value, mx_slider_get_buffer_value (self));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -632,6 +655,10 @@ mx_slider_set_property (GObject      *object,
     {
     case PROP_VALUE:
       mx_slider_set_value (self, g_value_get_double (value));
+      break;
+
+    case PROP_BUFFER_VALUE:
+      mx_slider_set_buffer_value (self, g_value_get_double (value));
       break;
 
     default:
@@ -738,6 +765,12 @@ mx_slider_class_init (MxSliderClass *klass)
                                "Value",
                                0.0, 1.0, 0.0, G_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_VALUE, pspec);
+
+  pspec = g_param_spec_double ("buffer-value",
+                               "Buffer Value",
+                               "Buffer Value",
+                               0.0, 1.0, 0.0, G_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_BUFFER_VALUE, pspec);
 }
 
 static void
@@ -818,6 +851,10 @@ mx_slider_init (MxSlider *self)
   clutter_actor_set_parent (priv->handle, CLUTTER_ACTOR (self));
   g_signal_connect (priv->handle, "button-press-event",
                     G_CALLBACK (on_handle_button_press_event), self);
+
+  priv->buffer = _mx_progress_bar_fill_new ();
+  clutter_actor_set_name (priv->buffer, "buffer");
+  clutter_actor_set_parent (priv->buffer, CLUTTER_ACTOR (self));
 }
 
 /**
@@ -879,4 +916,35 @@ mx_slider_get_value (MxSlider *bar)
   g_return_val_if_fail (MX_IS_SLIDER (bar), 0.0);
 
   return bar->priv->value;
+}
+
+
+void
+mx_slider_set_buffer_value (MxSlider *slider,
+                            gdouble   value)
+{
+  MxSliderPrivate *priv;
+
+  g_return_if_fail (MX_IS_SLIDER (slider));
+  g_return_if_fail (value >= 0.0 && value <= 1.0);
+
+  priv = slider->priv;
+
+  if (priv->buffer_value == value)
+    return;
+
+  priv->buffer_value = value;
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR  (slider));
+
+  g_object_notify (G_OBJECT (slider), "buffer-value");
+}
+
+gdouble
+mx_slider_get_buffer_value (MxSlider *slider)
+{
+  g_return_val_if_fail (MX_IS_SLIDER (slider), 0.0);
+
+
+  return slider->priv->buffer_value;
 }
