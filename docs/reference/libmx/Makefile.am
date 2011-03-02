@@ -102,7 +102,7 @@ expand_content_files=
 # signals and properties.
 # e.g. GTKDOC_CFLAGS=-I$(top_srcdir) -I$(top_builddir) $(GTK_DEBUG_FLAGS)
 # e.g. GTKDOC_LIBS=$(top_builddir)/gtk/$(gtktargetlib)
-GTKDOC_CFLAGS=-I$(MX_CFLAGS) -I$(top_srcdir) -I$(top_builddir) -DMX_COMPILATION
+GTKDOC_CFLAGS=$(MX_CFLAGS) -I$(top_srcdir) -I$(top_builddir) -DMX_COMPILATION
 GTKDOC_LIBS=$(MX_LIBS) $(top_builddir)/mx/libmx-$(MX_API_VERSION).la $(top_builddir)/mx-gtk/libmx-gtk-$(MX_API_VERSION).la
 
 # This includes the standard gtk-doc make rules, copied by gtkdocize.
