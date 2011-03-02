@@ -94,10 +94,7 @@ mx_slider_move_focus (MxFocusable      *focusable,
                       MxFocusDirection  direction,
                       MxFocusable      *old_focus)
 {
-  MxSliderPrivate *priv = MX_SLIDER (focusable)->priv;
-
-  mx_stylable_set_style_pseudo_class (MX_STYLABLE (priv->handle), "");
-  mx_stylable_set_style_pseudo_class (MX_STYLABLE (priv->trough), "");
+  mx_stylable_style_pseudo_class_remove (MX_STYLABLE (focusable), "focus");
 
   return NULL;
 }
@@ -106,12 +103,9 @@ static MxFocusable*
 mx_slider_accept_focus (MxFocusable *focusable,
                         MxFocusHint  hint)
 {
-  MxSliderPrivate *priv = MX_SLIDER (focusable)->priv;
-
   clutter_actor_grab_key_focus (CLUTTER_ACTOR (focusable));
 
-  mx_stylable_set_style_pseudo_class (MX_STYLABLE (priv->handle), "focus");
-  mx_stylable_set_style_pseudo_class (MX_STYLABLE (priv->trough), "focus");
+  mx_stylable_style_pseudo_class_add (MX_STYLABLE (focusable), "focus");
 
   return focusable;
 }
