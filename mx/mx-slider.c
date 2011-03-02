@@ -802,10 +802,17 @@ mx_slider_style_changed_cb (MxSlider *self)
       relayout = TRUE;
     }
 
-  mx_stylable_style_changed (MX_STYLABLE (priv->trough_bg), 0);
-  mx_stylable_style_changed (MX_STYLABLE (priv->fill), 0);
-  mx_stylable_style_changed (MX_STYLABLE (priv->trough), 0);
-  mx_stylable_style_changed (MX_STYLABLE (priv->handle), 0);
+  /* invalidate the style cache of the internal children */
+  mx_stylable_style_changed (MX_STYLABLE (priv->trough_bg),
+                             MX_STYLE_CHANGED_INVALIDATE_CACHE);
+  mx_stylable_style_changed (MX_STYLABLE (priv->fill),
+                             MX_STYLE_CHANGED_INVALIDATE_CACHE);
+  mx_stylable_style_changed (MX_STYLABLE (priv->trough),
+                             MX_STYLE_CHANGED_INVALIDATE_CACHE);
+  mx_stylable_style_changed (MX_STYLABLE (priv->handle),
+                             MX_STYLE_CHANGED_INVALIDATE_CACHE);
+  mx_stylable_style_changed (MX_STYLABLE (priv->buffer),
+                             MX_STYLE_CHANGED_INVALIDATE_CACHE);
 
   if (relayout)
     clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
