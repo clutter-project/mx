@@ -1,6 +1,6 @@
 m4_define([mx_major], [1])
 m4_define([mx_minor], [1])
-m4_define([mx_micro], [9])
+m4_define([mx_micro], [10])
 
 m4_define([mx_version], [mx_major.mx_minor.mx_micro])
 m4_define([mx_api_version], [mx_major.0])
