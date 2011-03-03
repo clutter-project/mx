@@ -1,3 +1,28 @@
+1.1.9
+=====
+
+Changes since 1.1.8
+
+ * Fix MxStack not chaining up correctly, breaking background drawing
+ * Add a new spinner graphic that stands out better on white
+ * Add a 'looped' signal to the spinner
+ * Add a 'buffer-value' property to MxSlider
+ * Fix supported rotation values check in MxImage
+ * Ensure that the 'disabled' pseudo-state is correct in MxWidget
+ * Fix various styling issues in MxSlider
+ * Fix incorrect CFLAGS when building documentation
+ * Replace the per-object style cache with a per-style rule cache
+
+Fixed bugs (from bugzilla.clutter-project.org):
+
+  #2577 - MxStack doesn't allow its parent to paint its background
+  #2456 - MxBoxLayout: notify when adjustments change
+  #2579 - Add last-frame / looped / something signal to MxSpinner
+  #2568 - build: Update introspection.m4
+  #2281 - mx_bin_set_child() does not work with MxScrollView
+  #2590 - Extra "-I" in Makefile.am causes fail to build from source
+  #2510 - Update mx types and sections files for gtk-doc
+
 1.1.8
 =====
 
