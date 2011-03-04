@@ -46,25 +46,17 @@ G_DEFINE_TYPE (MxImage, mx_image, MX_TYPE_WIDGET)
  * The idea is that you create this structure (with the pixbuf as NULL)
  * and add it to the thread-pool.
  *
- * The 'complete' member of the struct is protected by the mutex. The
- * main thread can use this to indicate to the thread handler that the
- * load was cancelled, where as the thread handler uses this to indicate
- * that the load was completed.
+ * The 'complete' member of the struct is protected by the mutex.
+ * The thread handler uses this to indicate that the load was completed.
  *
- * The thread will take the mutex while it's loading data - if complete
- * is set when it takes the mutex, it will mark the thread as cancelled
- * and do nothing, otherwise it will load the image. It will then unlock
- * the mutex.
+ * The thread will take the mutex while it's loading data - if cancelled
+ * is set when it takes the mutex, it will add the idle handler and let the
+ * main thread free the data.
  *
  * The idle handler will check that the cancelled member isn't set and if not,
  * will try to upload the image using mx_image_set_from_pixbuf(). It will free
  * the async structure always. It will also reset the pointer to the task in
  * the MxImage priv struct, but only if the cancelled member *isn't* set.
- *
- * During MxImage dispose, if the async-data is non-NULL, it will take the
- * mutex. If it's complete, it will free the structure and remove the idle
- * handler. If it's not complete, it will set it to complete and the data
- * structure will be freed by the idle handler.
  */
 typedef struct
 {
@@ -496,20 +488,7 @@ mx_image_dispose (GObject *object)
 
   if (priv->async_load_data)
     {
-      MxImageAsyncData *data = priv->async_load_data;
-
-      g_mutex_lock (data->mutex);
-      if (data->complete)
-        {
-          g_mutex_unlock (data->mutex);
-          mx_image_async_data_free (data);
-        }
-      else
-        {
-          data->complete = TRUE;
-          g_mutex_unlock (data->mutex);
-        }
-
+      priv->async_load_data->cancelled = TRUE;
       priv->async_load_data = NULL;
     }
 
@@ -783,6 +762,19 @@ mx_image_prepare_texture (MxImage  *image)
   clutter_actor_queue_relayout (CLUTTER_ACTOR (image));
 }
 
+static void
+mx_image_cancel_in_progress (MxImage *image)
+{
+  MxImagePrivate *priv = image->priv;
+
+  /* Cancel any asynchronous image load */
+  if (priv->async_load_data)
+    {
+      priv->async_load_data->cancelled = TRUE;
+      priv->async_load_data = NULL;
+    }
+}
+
 /**
  * mx_image_clear:
  * @image: A #MxImage
@@ -795,6 +787,8 @@ void
 mx_image_clear (MxImage *image)
 {
   MxImagePrivate *priv = image->priv;
+
+  mx_image_cancel_in_progress (image);
 
   if (priv->texture)
     cogl_object_unref (priv->texture);
@@ -851,6 +845,8 @@ mx_image_set_from_data (MxImage          *image,
 
   err = NULL;
   priv = image->priv;
+
+  mx_image_cancel_in_progress (image);
 
   if (priv->old_texture)
     cogl_object_unref (priv->old_texture);
@@ -965,8 +961,11 @@ mx_image_load_complete_cb (gpointer task_data)
   data->idle_handler = 0;
 
   /* Don't do anything with the image data if we've been cancelled already */
-  if (!data->cancelled)
+  if (!data->cancelled && data->complete)
     {
+      /* Reset the current async image load data pointer */
+      data->parent->priv->async_load_data = NULL;
+
       /* If we managed to load the pixbuf, set it now, otherwise forward the
        * error on to the user via a signal.
        */
@@ -986,9 +985,6 @@ mx_image_load_complete_cb (gpointer task_data)
         }
       else
         g_signal_emit (data->parent, signals[IMAGE_LOAD_ERROR], 0, data->error);
-
-      /* Reset the image pointer to the data if necessary */
-      data->parent->priv->async_load_data = NULL;
     }
 
   /* Free the async loading struct */
@@ -1100,6 +1096,12 @@ mx_image_pixbuf_new (const gchar  *filename,
       g_object_weak_ref (G_OBJECT (loader), (GWeakNotify)g_free, buffer);
     }
 
+  if (!buffer)
+    {
+      g_object_unref (loader);
+      return NULL;
+    }
+
   if (!gdk_pixbuf_loader_write (loader, buffer, count, &err))
     {
       g_propagate_error (error, err);
@@ -1132,11 +1134,16 @@ mx_image_async_cb (gpointer task_data,
 
   g_mutex_lock (data->mutex);
 
-  /* Check if the task has been cancelled and free/bail out */
-  if (data->complete)
+  /* Check if the task has been cancelled and bail out - leave to the main
+   * thread to free the data.
+   */
+  if (data->cancelled)
     {
-      data->cancelled = TRUE;
+      data->idle_handler =
+        clutter_threads_add_idle_full (G_PRIORITY_HIGH_IDLE,
+                                       mx_image_load_complete_cb, data, NULL);
       g_mutex_unlock (data->mutex);
+
       return;
     }
 
@@ -1211,11 +1218,9 @@ mx_image_set_async (MxImage         *image,
         {
           if (old_data->complete)
             {
-              /* The load finished, cancel the upload and free
-               * the data.
-               */
+              /* The load finished, cancel the upload */
+              old_data->cancelled = TRUE;
               g_mutex_unlock (old_data->mutex);
-              mx_image_async_data_free (old_data);
             }
           else
             {
@@ -1227,6 +1232,7 @@ mx_image_set_async (MxImage         *image,
               old_data->free_func = free_func;
               old_data->width = width;
               old_data->height = height;
+              old_data->cancelled = FALSE;
               g_mutex_unlock (old_data->mutex);
 
               data = old_data;
