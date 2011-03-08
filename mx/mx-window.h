@@ -113,6 +113,9 @@ void       mx_window_set_small_screen (MxWindow *window, gboolean small_screen);
 gboolean   mx_window_get_fullscreen   (MxWindow *window);
 void       mx_window_set_fullscreen   (MxWindow *window, gboolean fullscreen);
 
+void         mx_window_set_title (MxWindow *window, const gchar *title);
+const gchar *mx_window_get_title (MxWindow *window);
+
 void         mx_window_set_icon_name (MxWindow *window, const gchar *icon_name);
 const gchar *mx_window_get_icon_name (MxWindow *window);
 

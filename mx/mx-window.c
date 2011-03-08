@@ -91,6 +91,7 @@ enum
   PROP_TOOLBAR,
   PROP_SMALL_SCREEN,
   PROP_FULLSCREEN,
+  PROP_TITLE,
   PROP_ICON_NAME,
   PROP_ICON_COGL_TEXTURE,
   PROP_CLUTTER_STAGE,
@@ -115,7 +116,8 @@ mx_window_get_property (GObject    *object,
                         GValue     *value,
                         GParamSpec *pspec)
 {
-  MxWindowPrivate *priv = MX_WINDOW (object)->priv;
+  MxWindow *self = MX_WINDOW (object);
+  MxWindowPrivate *priv = self->priv;
 
   switch (property_id)
     {
@@ -133,6 +135,10 @@ mx_window_get_property (GObject    *object,
 
     case PROP_FULLSCREEN:
       g_value_set_boolean (value, priv->fullscreen);
+      break;
+
+    case PROP_TITLE:
+      g_value_set_string (value, mx_window_get_title (self));
       break;
 
     case PROP_ICON_NAME:
@@ -194,6 +200,10 @@ mx_window_set_property (GObject      *object,
 
     case PROP_FULLSCREEN:
       mx_window_set_fullscreen (window, g_value_get_boolean (value));
+      break;
+
+    case PROP_TITLE:
+      mx_window_set_title (window, g_value_get_string (value));
       break;
 
     case PROP_ICON_NAME:
@@ -500,6 +510,14 @@ mx_window_fullscreen_set_cb (ClutterStage *stage,
 }
 
 static void
+mx_window_title_cb (ClutterStage *stage,
+                    GParamSpec   *pspec,
+                    MxWindow     *self)
+{
+  g_object_notify (G_OBJECT (self), "title");
+}
+
+static void
 mx_window_destroy_cb (ClutterStage *stage, MxWindow *self)
 {
   self->priv->stage = NULL;
@@ -594,6 +612,8 @@ mx_window_constructed (GObject *object)
                     G_CALLBACK (mx_window_allocation_changed_cb), object);
   g_signal_connect (priv->stage, "notify::fullscreen-set",
                     G_CALLBACK (mx_window_fullscreen_set_cb), object);
+  g_signal_connect (priv->stage, "notify::title",
+                    G_CALLBACK (mx_window_title_cb), object);
   g_signal_connect (priv->stage, "destroy",
                     G_CALLBACK (mx_window_destroy_cb), object);
   g_signal_connect (priv->stage, "actor-added",
@@ -654,6 +674,13 @@ mx_window_class_init (MxWindowClass *klass)
                                 FALSE,
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_FULLSCREEN, pspec);
+
+  pspec = g_param_spec_string ("title",
+                               "Title",
+                               "Title to use for the window.",
+                               NULL,
+                               MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_TITLE, pspec);
 
   pspec = g_param_spec_string ("icon-name",
                                "Icon name",
@@ -1100,6 +1127,39 @@ mx_window_set_fullscreen (MxWindow *window,
       clutter_stage_set_fullscreen (CLUTTER_STAGE (priv->stage), fullscreen);
       g_object_notify (G_OBJECT (window), "fullscreen");
     }
+}
+
+/**
+ * mx_window_set_title:
+ * @window: A #MxWindow
+ * @title: A string to use for the window title name
+ *
+ * Sets the title used for the window, the results of which are
+ * window-system specific.
+ */
+void
+mx_window_set_title (MxWindow    *window,
+                     const gchar *title)
+{
+  g_return_if_fail (MX_IS_WINDOW (window));
+  g_return_if_fail (title != NULL);
+
+  clutter_stage_set_title (CLUTTER_STAGE (window->priv->stage), title);
+}
+
+/**
+ * mx_window_get_title:
+ * @window: A #MxWindow
+ *
+ * Retrieves the title used for the window.
+ *
+ * Returns: The title used for the window
+ */
+const gchar *
+mx_window_get_title (MxWindow *window)
+{
+  g_return_val_if_fail (MX_IS_WINDOW (window), NULL);
+  return clutter_stage_get_title (CLUTTER_STAGE (window->priv->stage));
 }
 
 /**

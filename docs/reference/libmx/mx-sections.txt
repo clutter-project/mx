@@ -603,6 +603,8 @@ mx_window_get_small_screen
 mx_window_set_small_screen
 mx_window_get_fullscreen
 mx_window_set_fullscreen
+mx_window_set_title
+mx_window_get_title
 mx_window_set_icon_name
 mx_window_get_icon_name
 mx_window_set_icon_from_cogl_texture
