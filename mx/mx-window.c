@@ -190,6 +190,7 @@ mx_window_set_property (GObject      *object,
 
     case PROP_FULLSCREEN:
       mx_window_set_fullscreen (window, g_value_get_boolean (value));
+      break;
 
     case PROP_ICON_NAME:
       mx_window_set_icon_name (window,
