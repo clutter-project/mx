@@ -101,7 +101,9 @@ ClutterActor* mx_window_get_child (MxWindow *window);
 void          mx_window_set_child (MxWindow *window, ClutterActor *actor);
 
 
-MxToolbar* mx_window_get_toolbar     (MxWindow *window);
+MxToolbar* mx_window_get_toolbar (MxWindow *window);
+void       mx_window_set_toolbar (MxWindow *window, MxToolbar *toolbar);
+
 gboolean   mx_window_get_has_toolbar (MxWindow *window);
 void       mx_window_set_has_toolbar (MxWindow *window, gboolean  toolbar);
 

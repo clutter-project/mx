@@ -596,6 +596,7 @@ mx_window_get_for_stage
 mx_window_get_child
 mx_window_set_child
 mx_window_get_toolbar
+mx_window_set_toolbar
 mx_window_get_has_toolbar
 mx_window_set_has_toolbar
 mx_window_get_small_screen

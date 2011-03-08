@@ -183,6 +183,10 @@ mx_window_set_property (GObject      *object,
                                  g_value_get_boolean (value));
       break;
 
+    case PROP_TOOLBAR:
+      mx_window_set_toolbar (window, g_value_get_object (value));
+      break;
+
     case PROP_SMALL_SCREEN:
       mx_window_set_small_screen (window,
                                   g_value_get_boolean (value));
@@ -222,7 +226,8 @@ mx_window_set_property (GObject      *object,
 static void
 mx_window_dispose (GObject *object)
 {
-  MxWindowPrivate *priv = MX_WINDOW (object)->priv;
+  MxWindow *self = MX_WINDOW (object);
+  MxWindowPrivate *priv = self->priv;
 
   if (priv->icon_texture)
     {
@@ -231,11 +236,7 @@ mx_window_dispose (GObject *object)
     }
 
   if (priv->toolbar)
-    {
-      g_object_remove_weak_pointer (G_OBJECT (priv->toolbar),
-                                    (gpointer *)&priv->toolbar);
-      priv->toolbar = NULL;
-    }
+    mx_window_set_toolbar (self, NULL);
 
   if (priv->resize_grip)
     {
@@ -573,11 +574,8 @@ mx_window_constructed (GObject *object)
                              (gpointer *)&priv->stage);
   g_object_set_qdata (G_OBJECT (priv->stage), window_quark, object);
 
-  priv->has_toolbar = TRUE;
-  priv->toolbar = mx_toolbar_new ();
-  clutter_container_add_actor (CLUTTER_CONTAINER (priv->stage), priv->toolbar);
-  g_object_add_weak_pointer (G_OBJECT (priv->toolbar),
-                             (gpointer *)&priv->toolbar);
+  if (!priv->toolbar && priv->has_toolbar)
+    mx_window_set_toolbar (self, MX_TOOLBAR (mx_toolbar_new ()));
 
   priv->resize_grip = mx_icon_new ();
   mx_stylable_set_style_class (MX_STYLABLE (priv->resize_grip), "ResizeGrip");
@@ -593,8 +591,6 @@ mx_window_constructed (GObject *object)
   g_signal_connect_after (priv->stage, "paint",
                           G_CALLBACK (mx_window_post_paint_cb), object);
   g_signal_connect (priv->stage, "allocation-changed",
-                    G_CALLBACK (mx_window_allocation_changed_cb), object);
-  g_signal_connect (priv->toolbar, "allocation-changed",
                     G_CALLBACK (mx_window_allocation_changed_cb), object);
   g_signal_connect (priv->stage, "notify::fullscreen-set",
                     G_CALLBACK (mx_window_fullscreen_set_cb), object);
@@ -640,7 +636,7 @@ mx_window_class_init (MxWindowClass *klass)
                                "Toolbar",
                                "The MxToolbar associated with the window.",
                                MX_TYPE_TOOLBAR,
-                               MX_PARAM_READABLE);
+                               MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_TOOLBAR, pspec);
 
   pspec = g_param_spec_boolean ("small-screen",
@@ -770,6 +766,7 @@ mx_window_init (MxWindow *self)
   priv->rotation_timeline = clutter_timeline_new (400);
   priv->rotation_alpha = clutter_alpha_new_full (priv->rotation_timeline,
                                                  CLUTTER_EASE_IN_OUT_QUAD);
+  priv->has_toolbar = TRUE;
 
   g_signal_connect (priv->rotation_timeline, "new-frame",
                     G_CALLBACK (mx_window_rotation_new_frame_cb), self);
@@ -968,6 +965,54 @@ mx_window_get_toolbar (MxWindow *window)
 {
   g_return_val_if_fail (MX_IS_WINDOW (window), NULL);
   return MX_TOOLBAR (window->priv->toolbar);
+}
+
+/**
+ * mx_window_set_toolbar:
+ * @window: (allow-none): A #MxWindow
+ *
+ * Sets the toolbar associated with the window.
+ */
+void
+mx_window_set_toolbar (MxWindow  *window,
+                       MxToolbar *toolbar)
+{
+  MxWindowPrivate *priv;
+
+  g_return_if_fail (MX_IS_WINDOW (window));
+  g_return_if_fail (!toolbar || MX_IS_TOOLBAR (toolbar));
+
+  priv = window->priv;
+
+  if (priv->toolbar == (ClutterActor *)toolbar)
+    return;
+
+  /* Remove old toolbar */
+  if (priv->toolbar)
+    {
+      g_signal_handlers_disconnect_by_func (priv->toolbar,
+                                            mx_window_allocation_changed_cb,
+                                            window);
+      g_object_remove_weak_pointer (G_OBJECT (priv->toolbar),
+                                    (gpointer *)&priv->toolbar);
+      clutter_container_remove_actor (CLUTTER_CONTAINER (priv->stage),
+                                      priv->toolbar);
+    }
+
+  priv->toolbar = (ClutterActor *)toolbar;
+
+  /* Add new toolbar */
+  if (toolbar)
+    {
+      clutter_container_add_actor (CLUTTER_CONTAINER (priv->stage),
+                                   priv->toolbar);
+      g_object_add_weak_pointer (G_OBJECT (priv->toolbar),
+                                 (gpointer *)&priv->toolbar);
+      g_signal_connect (priv->toolbar, "allocation-changed",
+                        G_CALLBACK (mx_window_allocation_changed_cb), window);
+    }
+
+  priv->has_toolbar = priv->toolbar ? TRUE : FALSE;
 }
 
 /**
