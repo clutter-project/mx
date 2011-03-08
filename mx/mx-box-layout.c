@@ -830,6 +830,9 @@ mx_box_layout_get_preferred_width (ClutterActor *actor,
   if (natural_width_p)
     *natural_width_p = 0;
 
+  if (for_height > 0)
+    for_height = MAX (0, for_height - padding.top - padding.bottom);
+
   for (l = priv->children; l; l = g_list_next (l))
     {
       gfloat child_min = 0, child_nat = 0;
@@ -905,6 +908,9 @@ mx_box_layout_get_preferred_height (ClutterActor *actor,
 
   if (natural_height_p)
     *natural_height_p = 0;
+
+  if (for_width > 0)
+    for_width = MAX (0, for_width - padding.left - padding.right);
 
 
   for (l = priv->children; l; l = g_list_next (l))
