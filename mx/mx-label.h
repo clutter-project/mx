@@ -77,6 +77,9 @@ ClutterActor         *mx_label_new_with_text    (const gchar *text);
 G_CONST_RETURN gchar *mx_label_get_text         (MxLabel     *label);
 void                  mx_label_set_text         (MxLabel     *label,
                                                  const gchar *text);
+gboolean              mx_label_get_use_markup   (MxLabel *label);
+void                  mx_label_set_use_markup   (MxLabel     *label,
+                                                 gboolean use_markup);
 ClutterActor *        mx_label_get_clutter_text (MxLabel     *label);
 
 MxAlign               mx_label_get_x_align      (MxLabel *label);

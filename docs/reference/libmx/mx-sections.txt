@@ -350,6 +350,8 @@ mx_label_new
 mx_label_new_with_text
 mx_label_get_text
 mx_label_set_text
+mx_label_get_use_markup
+mx_label_set_use_markup
 mx_label_get_clutter_text
 mx_label_get_x_align
 mx_label_set_x_align

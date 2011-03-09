@@ -55,6 +55,7 @@ enum
 
   PROP_CLUTTER_TEXT,
   PROP_TEXT,
+  PROP_USE_MARKUP,
   PROP_X_ALIGN,
   PROP_Y_ALIGN,
   PROP_LINE_WRAP,
@@ -96,6 +97,10 @@ mx_label_set_property (GObject      *gobject,
       mx_label_set_text (label, g_value_get_string (value));
       break;
 
+    case PROP_USE_MARKUP:
+      mx_label_set_use_markup (label, g_value_get_boolean (value));
+      break;
+
     case PROP_Y_ALIGN:
       mx_label_set_y_align (label, g_value_get_enum (value));
       break;
@@ -124,7 +129,8 @@ mx_label_get_property (GObject    *gobject,
                        GValue     *value,
                        GParamSpec *pspec)
 {
-  MxLabelPrivate *priv = MX_LABEL (gobject)->priv;
+  MxLabel *self = MX_LABEL (gobject);
+  MxLabelPrivate *priv = self->priv;
 
   switch (prop_id)
     {
@@ -137,6 +143,10 @@ mx_label_get_property (GObject    *gobject,
                           clutter_text_get_text (CLUTTER_TEXT (priv->label)));
       break;
 
+    case PROP_USE_MARKUP:
+      g_value_set_boolean (value, mx_label_get_use_markup (self));
+      break;
+
     case PROP_X_ALIGN:
       g_value_set_enum (value, priv->x_align);
       break;
@@ -146,7 +156,7 @@ mx_label_get_property (GObject    *gobject,
       break;
 
     case PROP_LINE_WRAP:
-      g_value_set_boolean (value, mx_label_get_line_wrap (MX_LABEL (gobject)));
+      g_value_set_boolean (value, mx_label_get_line_wrap (self));
       break;
 
     case PROP_FADE_OUT:
@@ -404,6 +414,14 @@ mx_label_class_init (MxLabelClass *klass)
                                MX_PARAM_READWRITE | MX_PARAM_TRANSLATEABLE);
   g_object_class_install_property (gobject_class, PROP_TEXT, pspec);
 
+  pspec = g_param_spec_boolean ("use-markup",
+                                "Use markup",
+                                "Whether the text of the label should be "
+                                "treated as Pango markup",
+                                FALSE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_USE_MARKUP, pspec);
+
   pspec = g_param_spec_enum ("x-align",
                              "X Align",
                              "Horizontal position of the text layout",
@@ -643,9 +661,50 @@ mx_label_set_text (MxLabel     *label,
 
   priv = label->priv;
 
-  clutter_text_set_text (CLUTTER_TEXT (priv->label), text);
+  if (clutter_text_get_use_markup (CLUTTER_TEXT (priv->label)))
+    clutter_text_set_markup (CLUTTER_TEXT (priv->label), text);
+  else
+    clutter_text_set_text (CLUTTER_TEXT (priv->label), text);
 
   g_object_notify (G_OBJECT (label), "text");
+}
+
+/**
+ * mx_label_get_use_markup:
+ * @label: a #MxLabel
+ *
+ * Determines whether the text of the label is being treated as Pango markup.
+ *
+ * Returns: %TRUE if the text of the label is treated as Pango markup,
+ *   %FALSE otherwise.
+ */
+gboolean
+mx_label_get_use_markup (MxLabel *label)
+{
+  g_return_val_if_fail (MX_IS_LABEL (label), FALSE);
+  return clutter_text_get_use_markup (CLUTTER_TEXT (label->priv->label));
+}
+
+/**
+ * mx_label_set_use_markup:
+ * @label: a #MxLabel
+ * @use_markup: %TRUE to use Pango markup, %FALSE otherwise
+ *
+ * Sets whether the text of the label should be treated as Pango markup.
+ */
+void
+mx_label_set_use_markup (MxLabel  *label,
+                         gboolean  use_markup)
+{
+  MxLabelPrivate *priv;
+
+  g_return_if_fail (MX_IS_LABEL (label));
+
+  priv = label->priv;
+
+  clutter_text_set_use_markup (CLUTTER_TEXT (priv->label), use_markup);
+
+  g_object_notify (G_OBJECT (label), "use-markup");
 }
 
 /**
