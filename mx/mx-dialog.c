@@ -1052,6 +1052,18 @@ mx_dialog_set_transient_parent (MxDialog *dialog,
 }
 
 static void
+mx_dialog_steal_focus (MxDialog *self)
+{
+  ClutterActor *stage = clutter_actor_get_stage (CLUTTER_ACTOR (self));
+  if (stage)
+    {
+      MxFocusManager *manager =
+        mx_focus_manager_get_for_stage (CLUTTER_STAGE (stage));
+      mx_focus_manager_push_focus (manager, MX_FOCUSABLE (self));
+    }
+}
+
+static void
 mx_dialog_show (ClutterActor *self)
 {
   MxDialog *dialog = MX_DIALOG (self);
@@ -1059,7 +1071,6 @@ mx_dialog_show (ClutterActor *self)
 
   if (!priv->visible)
     {
-      ClutterActor *stage;
       ClutterActor *parent = clutter_actor_get_parent (self);
 
       if (!parent)
@@ -1075,6 +1086,9 @@ mx_dialog_show (ClutterActor *self)
           direction = (direction == CLUTTER_TIMELINE_FORWARD) ?
             CLUTTER_TIMELINE_BACKWARD : CLUTTER_TIMELINE_FORWARD;
           clutter_timeline_set_direction (priv->timeline, direction);
+
+          CLUTTER_ACTOR_SET_FLAGS (self, CLUTTER_ACTOR_VISIBLE);
+          mx_dialog_steal_focus (dialog);
 
           return;
         }
@@ -1119,14 +1133,7 @@ mx_dialog_show (ClutterActor *self)
       clutter_alpha_set_mode (priv->alpha, CLUTTER_EASE_OUT_QUAD);
       clutter_timeline_start (priv->timeline);
 
-      /* Steal focus */
-      stage = clutter_actor_get_stage (self);
-      if (stage)
-        {
-          MxFocusManager *manager =
-            mx_focus_manager_get_for_stage (CLUTTER_STAGE (stage));
-          mx_focus_manager_push_focus (manager, MX_FOCUSABLE (self));
-        }
+      mx_dialog_steal_focus (dialog);
     }
 }
 
