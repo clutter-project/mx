@@ -321,6 +321,7 @@ mx_widget_allocate (ClutterActor          *actor,
 {
   MxWidgetPrivate *priv = MX_WIDGET (actor)->priv;
   ClutterActorClass *klass;
+  ClutterActorBox frame_box = { 0, 0, box->x2 - box->x1, box->y2 - box->y1 };
 
   klass = CLUTTER_ACTOR_CLASS (mx_widget_parent_class);
   klass->allocate (actor, box, flags);
@@ -359,22 +360,13 @@ mx_widget_allocate (ClutterActor          *actor,
 
 
 
+  /* allocate border images */
   if (priv->border_image)
-    {
-      ClutterActorBox frame_box = {
-        0,
-        0,
-        box->x2 - box->x1,
-        box->y2 - box->y1
-      };
+    clutter_actor_allocate (priv->border_image, &frame_box, flags);
 
-      clutter_actor_allocate (CLUTTER_ACTOR (priv->border_image),
-                              &frame_box,
-                              flags);
+  if (priv->old_border_image)
+    clutter_actor_allocate (priv->old_border_image, &frame_box, flags);
 
-      if (priv->old_border_image)
-        clutter_actor_allocate (priv->old_border_image, &frame_box, flags);
-    }
 
   if (priv->background_image)
     {
