@@ -330,8 +330,10 @@ mx_fade_effect_draw_rect (CoglTextureVertex *verts,
                           CoglColor         *color1,
                           CoglColor         *color2,
                           CoglColor         *color3,
-                          CoglColor         *color4)
+                          CoglColor         *color4,
+                          gboolean           clockwise)
 {
+  gint i, a;
   gfloat tx1, ty1, tx2, ty2;
 
   /* The Cogl rectangle drawing functions don't allow you to alter
@@ -343,33 +345,50 @@ mx_fade_effect_draw_rect (CoglTextureVertex *verts,
   tx2 = x2 / width;
   ty2 = y2 / height;
 
-  verts[0].x = x1;
-  verts[0].y = y1;
-  verts[0].z = 0;
-  verts[0].tx = tx1;
-  verts[0].ty = ty1;
-  verts[0].color = *color1;
+  if (clockwise)
+    {
+      i = 3;
+      a = -1;
+    }
+  else
+    {
+      i = 0;
+      a = 1;
+    }
 
-  verts[1].x = x1;
-  verts[1].y = y2;
-  verts[1].z = 0;
-  verts[1].tx = tx1;
-  verts[1].ty = ty2;
-  verts[1].color = *color4;
+  verts[i].x = x1;
+  verts[i].y = y1;
+  verts[i].z = 0;
+  verts[i].tx = tx1;
+  verts[i].ty = ty1;
+  verts[i].color = *color1;
 
-  verts[2].x = x2;
-  verts[2].y = y2;
-  verts[2].z = 0;
-  verts[2].tx = tx2;
-  verts[2].ty = ty2;
-  verts[2].color = *color3;
+  i += a;
 
-  verts[3].x = x2;
-  verts[3].y = y1;
-  verts[3].z = 0;
-  verts[3].tx = tx2;
-  verts[3].ty = ty1;
-  verts[3].color = *color2;
+  verts[i].x = x1;
+  verts[i].y = y2;
+  verts[i].z = 0;
+  verts[i].tx = tx1;
+  verts[i].ty = ty2;
+  verts[i].color = *color4;
+
+  i += a;
+
+  verts[i].x = x2;
+  verts[i].y = y2;
+  verts[i].z = 0;
+  verts[i].tx = tx2;
+  verts[i].ty = ty2;
+  verts[i].color = *color3;
+
+  i += a;
+
+  verts[i].x = x2;
+  verts[i].y = y1;
+  verts[i].z = 0;
+  verts[i].tx = tx2;
+  verts[i].ty = ty1;
+  verts[i].color = *color2;
 }
 
 static void
@@ -436,7 +455,8 @@ mx_fade_effect_update_vbo (MxFadeEffect *self)
                                 x1 + bl, y1 + bu,
                                 priv->width, priv->height,
                                 &color, &color,
-                                &opaque, &color);
+                                &opaque, &color,
+                                FALSE);
       n_quads ++;
     }
 
@@ -448,7 +468,8 @@ mx_fade_effect_update_vbo (MxFadeEffect *self)
                                 x2 - br, y1 + bu,
                                 priv->width, priv->height,
                                 &color, &color,
-                                &opaque, &opaque);
+                                &opaque, &opaque,
+                                FALSE);
       n_quads ++;
     }
 
@@ -460,7 +481,8 @@ mx_fade_effect_update_vbo (MxFadeEffect *self)
                                 x2, y1 + bu,
                                 priv->width, priv->height,
                                 &color, &color,
-                                &color, &opaque);
+                                &color, &opaque,
+                                TRUE);
       n_quads ++;
     }
 
@@ -472,7 +494,8 @@ mx_fade_effect_update_vbo (MxFadeEffect *self)
                                 x1 + bl, y2 - bb,
                                 priv->width, priv->height,
                                 &color, &opaque,
-                                &opaque, &color);
+                                &opaque, &color,
+                                TRUE);
       n_quads ++;
     }
 
@@ -482,7 +505,8 @@ mx_fade_effect_update_vbo (MxFadeEffect *self)
                             x2 - br, y2 - bb,
                             priv->width, priv->height,
                             &opaque, &opaque,
-                            &opaque, &opaque);
+                            &opaque, &opaque,
+                            TRUE);
   n_quads ++;
 
   /* Generate the right square */
@@ -493,7 +517,8 @@ mx_fade_effect_update_vbo (MxFadeEffect *self)
                                 x2, y2 - bb,
                                 priv->width, priv->height,
                                 &opaque, &color,
-                                &color, &opaque);
+                                &color, &opaque,
+                                TRUE);
       n_quads ++;
     }
 
@@ -505,7 +530,8 @@ mx_fade_effect_update_vbo (MxFadeEffect *self)
                                 x1 + bl, y2,
                                 priv->width, priv->height,
                                 &color, &opaque,
-                                &color, &color);
+                                &color, &color,
+                                TRUE);
       n_quads ++;
     }
 
@@ -517,7 +543,8 @@ mx_fade_effect_update_vbo (MxFadeEffect *self)
                                 x2 - br, y2,
                                 priv->width, priv->height,
                                 &opaque, &opaque,
-                                &color, &color);
+                                &color, &color,
+                                FALSE);
       n_quads ++;
     }
 
@@ -529,7 +556,8 @@ mx_fade_effect_update_vbo (MxFadeEffect *self)
                                 x2, y2,
                                 priv->width, priv->height,
                                 &opaque, &color,
-                                &color, &color);
+                                &color, &color,
+                                FALSE);
       n_quads ++;
     }
 
