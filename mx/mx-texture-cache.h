@@ -102,6 +102,10 @@ gint            mx_texture_cache_get_size    (MxTextureCache *self);
 gboolean        mx_texture_cache_contains    (MxTextureCache *self,
                                               const gchar    *uri);
 
+void            mx_texture_cache_insert      (MxTextureCache *self,
+                                              const gchar    *uri,
+                                              CoglHandle     *texture);
+
 void mx_texture_cache_load_cache (MxTextureCache *self,
                                   const char     *filename);
 

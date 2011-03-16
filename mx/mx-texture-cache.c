@@ -270,6 +270,54 @@ mx_texture_cache_filename_to_uri (const gchar *file)
   return uri;
 }
 
+static gboolean
+mx_texture_cache_resolve_path_uri (const gchar **input_uri_path,
+                                   const gchar **output_path,
+                                   gchar       **new_uri,
+                                   gchar       **new_path)
+{
+  /* Check if it's a local path or URI given, and work out the
+   * corresponding URI or local path.
+   */
+  *new_path = *new_uri = NULL;
+
+  if (strstr (*input_uri_path, "://"))
+    {
+      GError *error = NULL;
+
+      *new_path = g_filename_from_uri (*input_uri_path, NULL, &error);
+
+      if (!(*new_path))
+        {
+          g_warning ("Unable to transform URI to filename: %s",
+                     error->message);
+          g_error_free (error);
+          return FALSE;
+        }
+
+      *output_path = *new_path;
+    }
+  else
+    {
+      /* Make sure we have an absolute path */
+      if ((*new_path =
+           mx_texture_cache_resolve_relative_path (*input_uri_path)))
+        *output_path = *new_path;
+      else
+        *output_path = *input_uri_path;
+
+      if (!(*new_uri = mx_texture_cache_filename_to_uri (*output_path)))
+        {
+          g_free (*new_path);
+          return FALSE;
+        }
+
+      *input_uri_path = *new_uri;
+    }
+
+  return TRUE;
+}
+
 static MxTextureCacheItem *
 mx_texture_cache_get_item (MxTextureCache *self,
                            const gchar    *uri,
@@ -282,40 +330,10 @@ mx_texture_cache_get_item (MxTextureCache *self,
 
   priv = TEXTURE_CACHE_PRIVATE (self);
 
-  /* Check if it's a local path or URI given, and work out the
-   * corresponding URI or local path.
-   */
-  new_file = new_uri = NULL;
-
-  if (strstr (uri, "://"))
-    {
-      GError *error = NULL;
-
-      new_file = g_filename_from_uri (uri, NULL, &error);
-
-      if (!new_file)
-        {
-          g_warning ("Unable to transform URI to filename: %s",
-                     error->message);
-          g_error_free (error);
-          return NULL;
-        }
-
-      file = new_file;
-    }
-  else
-    {
-      /* Make sure we have an absolute path */
-      if ((new_file = mx_texture_cache_resolve_relative_path (uri)))
-        file = new_file;
-      else
-        file = uri;
-
-      if (!(new_uri = mx_texture_cache_filename_to_uri (file)))
-        return NULL;
-
-      uri = new_uri;
-    }
+  /* Make sure we have the full path and URI */
+  if (!mx_texture_cache_resolve_path_uri (&uri, &file,
+                                          &new_uri, &new_file))
+    return NULL;
 
   item = g_hash_table_lookup (priv->cache, uri);
 
@@ -464,6 +482,50 @@ mx_texture_cache_contains (MxTextureCache *self,
   g_return_val_if_fail (uri != NULL, FALSE);
 
   return mx_texture_cache_get_item (self, uri, FALSE) ? TRUE : FALSE;
+}
+
+/**
+ * mx_texture_cache_insert:
+ * @self: A #MxTextureCache
+ * @uri: A URI or local file path
+ * @texture: A #CoglHandle to a texture
+ *
+ * Inserts a texture into the texture cache. This can be useful if you
+ * want to cache a texture from a custom or unhandled URI type, or you
+ * want to override a particular texture.
+ *
+ * If the image is already in the cache, this texture will replace it. A
+ * reference will be taken on the given texture.
+ */
+void
+mx_texture_cache_insert (MxTextureCache *self,
+                         const gchar    *uri,
+                         CoglHandle     *texture)
+{
+  const gchar *path;
+  MxTextureCacheItem *item;
+  gchar *new_uri, *new_path;
+
+  g_return_if_fail (MX_IS_TEXTURE_CACHE (self));
+  g_return_if_fail (uri != NULL);
+  g_return_if_fail (cogl_is_texture (texture));
+
+  if (!mx_texture_cache_resolve_path_uri (&uri, &path,
+                                          &new_uri, &new_path))
+    return;
+
+  item = mx_texture_cache_item_new ();
+
+  item->posX = -1;
+  item->posY = -1;
+  item->ptr = cogl_handle_ref (texture);
+  item->width = cogl_texture_get_width (item->ptr);
+  item->height = cogl_texture_get_height (item->ptr);
+
+  add_texture_to_cache (self, uri, item);
+
+  g_free (new_uri);
+  g_free (new_path);
 }
 
 void

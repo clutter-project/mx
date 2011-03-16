@@ -1053,6 +1053,7 @@ mx_texture_cache_get_default
 mx_texture_cache_get_texture
 mx_texture_cache_get_actor
 mx_texture_cache_contains
+mx_texture_cache_insert
 mx_texture_cache_get_cogl_texture
 mx_texture_cache_get_size
 mx_texture_cache_load_cache
