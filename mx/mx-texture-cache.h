@@ -70,7 +70,7 @@ typedef struct {
   GObjectClass parent_class;
 
   void (* loaded)        (MxTextureCache *self,
-                          const gchar      *path,
+                          const gchar      *uri,
                           ClutterTexture   *texture);
 
   void (* error_loading) (MxTextureCache *self,
@@ -90,12 +90,12 @@ GType mx_texture_cache_get_type (void);
 MxTextureCache* mx_texture_cache_get_default (void);
 
 ClutterTexture* mx_texture_cache_get_texture (MxTextureCache *self,
-                                              const gchar    *path);
+                                              const gchar    *uri);
 ClutterActor*   mx_texture_cache_get_actor   (MxTextureCache *self,
-                                              const gchar    *path);
+                                              const gchar    *uri);
 
 CoglHandle      mx_texture_cache_get_cogl_texture (MxTextureCache *self,
-                                                   const gchar    *path);
+                                                   const gchar    *uri);
 
 gint            mx_texture_cache_get_size    (MxTextureCache *self);
 

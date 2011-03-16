@@ -56,7 +56,7 @@ struct _MxTextureCachePrivate
 
 typedef struct FinalizedClosure
 {
-  gchar          *path;
+  gchar          *uri;
   MxTextureCache *cache;
 } FinalizedClosure;
 
@@ -189,9 +189,9 @@ on_texure_finalized (gpointer data,
   FinalizedClosure *closure = (FinalizedClosure *) data;
   MxTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE(closure->cache);
 
-  g_hash_table_remove (priv->cache, closure->path);
+  g_hash_table_remove (priv->cache, closure->uri);
 
-  g_free(closure->path);
+  g_free(closure->uri);
   g_free(closure);
 }
 #endif
@@ -214,18 +214,18 @@ mx_texture_cache_get_size (MxTextureCache *self)
 
 static void
 add_texture_to_cache (MxTextureCache     *self,
-                      const gchar        *path,
+                      const gchar        *uri,
                       MxTextureCacheItem *item)
 {
   /*  FinalizedClosure        *closure; */
   MxTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE(self);
 
-  g_hash_table_insert (priv->cache, g_strdup (path), item);
+  g_hash_table_insert (priv->cache, g_strdup (uri), item);
 
 #if 0
   /* Make sure we can remove from hash */
   closure = g_new0 (FinalizedClosure, 1);
-  closure->path = g_strdup (path);
+  closure->uri = g_strdup (uri);
   closure->cache = self;
 
   g_object_weak_ref (G_OBJECT (res), on_texure_finalized, closure);
@@ -234,32 +234,103 @@ add_texture_to_cache (MxTextureCache     *self,
 
 /* NOTE: you should unref the returned texture when not needed */
 
+static gchar *
+mx_texture_cache_resolve_relative_path (const gchar *path)
+{
+  gchar *cwd, *new_path;
+
+  if (g_path_is_absolute (path))
+    return NULL;
+
+  cwd = g_get_current_dir ();
+  new_path = g_build_filename (cwd, path, NULL);
+  g_free (cwd);
+
+  return new_path;
+}
+
+static gchar *
+mx_texture_cache_filename_to_uri (const gchar *file)
+{
+  gchar *uri;
+  GError *error = NULL;
+
+  uri = g_filename_to_uri (file, NULL, &error);
+
+  if (!uri)
+    {
+      g_warning ("Unable to transform filename to URI: %s",
+                 error->message);
+      g_error_free (error);
+      return NULL;
+    }
+
+  return uri;
+}
+
 /**
  * mx_texture_cache_get_cogl_texture:
  * @self: A #MxTextureCache
- * @path: A path to an image file
+ * @uri: A URI or path to an image file
  *
  * Create a #CoglHandle representing a texture of the specified image. Adds
  * the image to the cache if the image had not been previously loaded.
- * Subsequent calls with the same image path will return the #CoglHandle of
+ * Subsequent calls with the same image URI/path will return the #CoglHandle of
  * the previously loaded image with an increased reference count.
  *
  * Returns: (transfer none): a #CoglHandle to the cached texture
  */
 CoglHandle
 mx_texture_cache_get_cogl_texture (MxTextureCache *self,
-                                   const gchar    *path)
+                                   const gchar    *uri)
 {
   MxTextureCachePrivate *priv;
   MxTextureCacheItem *item;
+  gchar *new_file, *new_uri;
+  const gchar *file;
 
   g_return_val_if_fail (MX_IS_TEXTURE_CACHE (self), NULL);
-  g_return_val_if_fail (path != NULL, NULL);
+  g_return_val_if_fail (uri != NULL, NULL);
 
 
   priv = TEXTURE_CACHE_PRIVATE (self);
 
-  item = g_hash_table_lookup (priv->cache, path);
+  /* Check if it's a local path or URI given, and work out the
+   * corresponding URI or local path.
+   */
+  new_file = new_uri = NULL;
+
+  if (strstr (uri, "://"))
+    {
+      GError *error = NULL;
+
+      new_file = g_filename_from_uri (uri, NULL, &error);
+
+      if (!new_file)
+        {
+          g_warning ("Unable to transform URI to filename: %s",
+                     error->message);
+          g_error_free (error);
+          return NULL;
+        }
+
+      file = new_file;
+    }
+  else
+    {
+      /* Make sure we have an absolute path */
+      if ((new_file = mx_texture_cache_resolve_relative_path (uri)))
+        file = new_file;
+      else
+        file = uri;
+
+      if (!(new_uri = mx_texture_cache_filename_to_uri (file)))
+        return NULL;
+
+      uri = new_uri;
+    }
+
+  item = g_hash_table_lookup (priv->cache, uri);
 
   if (!item)
     {
@@ -268,7 +339,7 @@ mx_texture_cache_get_cogl_texture (MxTextureCache *self,
       item = mx_texture_cache_item_new ();
       item->posX = -1;
       item->posY = -1;
-      item->ptr = cogl_texture_new_from_file (path, COGL_TEXTURE_NONE,
+      item->ptr = cogl_texture_new_from_file (file, COGL_TEXTURE_NONE,
                                               COGL_PIXEL_FORMAT_ANY,
                                               &err);
 
@@ -280,14 +351,21 @@ mx_texture_cache_get_cogl_texture (MxTextureCache *self,
               g_error_free (err);
             }
 
+          mx_texture_cache_item_free (item);
+          g_free (new_file);
+          g_free (new_uri);
+
           return NULL;
         }
 
       item->width = cogl_texture_get_width (item->ptr);
       item->height = cogl_texture_get_height (item->ptr);
 
-      add_texture_to_cache (self, path, item);
+      add_texture_to_cache (self, uri, item);
     }
+
+  g_free (new_file);
+  g_free (new_uri);
 
   return cogl_handle_ref (item->ptr);
 }
@@ -295,25 +373,25 @@ mx_texture_cache_get_cogl_texture (MxTextureCache *self,
 /**
  * mx_texture_cache_get_texture:
  * @self: A #MxTextureCache
- * @path: A path to a image file
+ * @uri: A URI or path to a image file
  *
  * Create a new ClutterTexture with the specified image. Adds the image to the
  * cache if the image had not been previously loaded. Subsequent calls with
- * the same image path will return a new ClutterTexture with the previously
+ * the same image URI/path will return a new ClutterTexture with the previously
  * loaded image.
  *
  * Returns: (transfer none): a newly created ClutterTexture
  */
 ClutterTexture*
 mx_texture_cache_get_texture (MxTextureCache *self,
-                              const gchar    *path)
+                              const gchar    *uri)
 {
   CoglHandle *handle;
 
   g_return_val_if_fail (MX_IS_TEXTURE_CACHE (self), NULL);
-  g_return_val_if_fail (path != NULL, NULL);
+  g_return_val_if_fail (uri != NULL, NULL);
 
-  handle = mx_texture_cache_get_cogl_texture (self, path);
+  handle = mx_texture_cache_get_cogl_texture (self, uri);
 
   if (handle)
     {
@@ -331,7 +409,7 @@ mx_texture_cache_get_texture (MxTextureCache *self,
 /**
  * mx_texture_cache_get_actor:
  * @self: A #MxTextureCache
- * @path: A path to a image file
+ * @uri: A URI or path to a image file
  *
  * This is a wrapper around mx_texture_cache_get_texture() which returns
  * a ClutterActor.
@@ -340,14 +418,14 @@ mx_texture_cache_get_texture (MxTextureCache *self,
  */
 ClutterActor*
 mx_texture_cache_get_actor (MxTextureCache *self,
-                            const gchar    *path)
+                            const gchar    *uri)
 {
   ClutterTexture *tex;
 
   g_return_val_if_fail (MX_IS_TEXTURE_CACHE (self), NULL);
-  g_return_val_if_fail (path != NULL, NULL);
+  g_return_val_if_fail (uri != NULL, NULL);
 
-  if ((tex = mx_texture_cache_get_texture (self, path)))
+  if ((tex = mx_texture_cache_get_texture (self, uri)))
     return CLUTTER_ACTOR (tex);
   else
     return NULL;
@@ -398,8 +476,11 @@ mx_texture_cache_load_cache (MxTextureCache *self,
 
   while (!feof (file))
     {
+      gchar *uri;
+
       element = mx_texture_cache_item_new ();
       ret = fread (element, sizeof (MxTextureCacheItem), 1, file);
+
       if (ret < 1)
         {
           /* end of file */
@@ -407,9 +488,20 @@ mx_texture_cache_load_cache (MxTextureCache *self,
           break;
         }
 
-      if (g_hash_table_lookup (priv->cache, element->filename))
-        /* file is already in the cache.... */
-        mx_texture_cache_item_free (element);
+      uri = mx_texture_cache_filename_to_uri (element->filename);
+      if (!uri)
+        {
+          /* Couldn't resolve path */
+          mx_texture_cache_item_free (element);
+          continue;
+        }
+
+      if (g_hash_table_lookup (priv->cache, uri))
+        {
+          /* URI is already in the cache.... */
+          mx_texture_cache_item_free (element);
+          g_free (uri);
+        }
       else
         {
           element->ptr = cogl_texture_new_from_sub_texture (full_texture,
@@ -417,7 +509,7 @@ mx_texture_cache_load_cache (MxTextureCache *self,
                                                             element->posY,
                                                             element->width,
                                                             element->height);
-          g_hash_table_insert (priv->cache, element->filename, element);
+          g_hash_table_insert (priv->cache, uri, element);
         }
     }
 
