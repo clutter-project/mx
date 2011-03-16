@@ -99,6 +99,9 @@ CoglHandle      mx_texture_cache_get_cogl_texture (MxTextureCache *self,
 
 gint            mx_texture_cache_get_size    (MxTextureCache *self);
 
+gboolean        mx_texture_cache_contains    (MxTextureCache *self,
+                                              const gchar    *uri);
+
 void mx_texture_cache_load_cache (MxTextureCache *self,
                                   const char     *filename);
 

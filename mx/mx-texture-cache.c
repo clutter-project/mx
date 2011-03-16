@@ -268,30 +268,15 @@ mx_texture_cache_filename_to_uri (const gchar *file)
   return uri;
 }
 
-/**
- * mx_texture_cache_get_cogl_texture:
- * @self: A #MxTextureCache
- * @uri: A URI or path to an image file
- *
- * Create a #CoglHandle representing a texture of the specified image. Adds
- * the image to the cache if the image had not been previously loaded.
- * Subsequent calls with the same image URI/path will return the #CoglHandle of
- * the previously loaded image with an increased reference count.
- *
- * Returns: (transfer none): a #CoglHandle to the cached texture
- */
-CoglHandle
-mx_texture_cache_get_cogl_texture (MxTextureCache *self,
-                                   const gchar    *uri)
+static MxTextureCacheItem *
+mx_texture_cache_get_item (MxTextureCache *self,
+                           const gchar    *uri,
+                           gboolean        create_if_not_exists)
 {
   MxTextureCachePrivate *priv;
   MxTextureCacheItem *item;
   gchar *new_file, *new_uri;
   const gchar *file;
-
-  g_return_val_if_fail (MX_IS_TEXTURE_CACHE (self), NULL);
-  g_return_val_if_fail (uri != NULL, NULL);
-
 
   priv = TEXTURE_CACHE_PRIVATE (self);
 
@@ -332,7 +317,7 @@ mx_texture_cache_get_cogl_texture (MxTextureCache *self,
 
   item = g_hash_table_lookup (priv->cache, uri);
 
-  if (!item)
+  if (!item && create_if_not_exists)
     {
       GError *err = NULL;
 
@@ -367,7 +352,36 @@ mx_texture_cache_get_cogl_texture (MxTextureCache *self,
   g_free (new_file);
   g_free (new_uri);
 
-  return cogl_handle_ref (item->ptr);
+  return item;
+}
+
+/**
+ * mx_texture_cache_get_cogl_texture:
+ * @self: A #MxTextureCache
+ * @uri: A URI or path to an image file
+ *
+ * Create a #CoglHandle representing a texture of the specified image. Adds
+ * the image to the cache if the image had not been previously loaded.
+ * Subsequent calls with the same image URI/path will return the #CoglHandle of
+ * the previously loaded image with an increased reference count.
+ *
+ * Returns: (transfer none): a #CoglHandle to the cached texture
+ */
+CoglHandle
+mx_texture_cache_get_cogl_texture (MxTextureCache *self,
+                                   const gchar    *uri)
+{
+  MxTextureCacheItem *item;
+
+  g_return_val_if_fail (MX_IS_TEXTURE_CACHE (self), NULL);
+  g_return_val_if_fail (uri != NULL, NULL);
+
+  item = mx_texture_cache_get_item (self, uri, TRUE);
+
+  if (item)
+    return cogl_handle_ref (item->ptr);
+  else
+    return NULL;
 }
 
 /**
@@ -386,18 +400,17 @@ ClutterTexture*
 mx_texture_cache_get_texture (MxTextureCache *self,
                               const gchar    *uri)
 {
-  CoglHandle *handle;
+  MxTextureCacheItem *item;
 
   g_return_val_if_fail (MX_IS_TEXTURE_CACHE (self), NULL);
   g_return_val_if_fail (uri != NULL, NULL);
 
-  handle = mx_texture_cache_get_cogl_texture (self, uri);
+  item = mx_texture_cache_get_item (self, uri, TRUE);
 
-  if (handle)
+  if (item)
     {
       ClutterActor *texture = clutter_texture_new ();
-      clutter_texture_set_cogl_texture ((ClutterTexture*) texture, handle);
-      cogl_handle_unref (handle);
+      clutter_texture_set_cogl_texture ((ClutterTexture*) texture, item->ptr);
 
       return (ClutterTexture *)texture;
     }
@@ -429,6 +442,26 @@ mx_texture_cache_get_actor (MxTextureCache *self,
     return CLUTTER_ACTOR (tex);
   else
     return NULL;
+}
+
+/**
+ * mx_texture_cache_contains:
+ * @self: A #MxTextureCache
+ * @uri: A URI or path to an image file
+ *
+ * Checks whether the given URI/path is contained within the texture
+ * cache.
+ *
+ * Returns: %TRUE if the image exists, %FALSE otherwise
+ */
+gboolean
+mx_texture_cache_contains (MxTextureCache *self,
+                           const gchar    *uri)
+{
+  g_return_val_if_fail (MX_IS_TEXTURE_CACHE (self), FALSE);
+  g_return_val_if_fail (uri != NULL, FALSE);
+
+  return mx_texture_cache_get_item (self, uri, FALSE) ? TRUE : FALSE;
 }
 
 void
