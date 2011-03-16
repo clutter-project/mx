@@ -74,7 +74,7 @@ typedef struct MxTextureCacheItem {
   char          filename[256];
   int           width, height;
   int           posX, posY;
-  ClutterActor *ptr;
+  CoglHandle   *ptr;
 } MxTextureCacheItem;
 
 static MxTextureCacheItem *
@@ -86,6 +86,9 @@ mx_texture_cache_item_new (void)
 static void
 mx_texture_cache_item_free (MxTextureCacheItem *item)
 {
+  if (item->ptr)
+    cogl_handle_unref (item->ptr);
+
   g_slice_free (MxTextureCacheItem, item);
 }
 
@@ -157,10 +160,9 @@ mx_texture_cache_init (MxTextureCache *self)
 {
   MxTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE(self);
 
-  priv->cache = g_hash_table_new_full (g_str_hash,
-                                       g_str_equal,
-                                       g_free,
-                                       NULL);
+  priv->cache =
+    g_hash_table_new_full (g_str_hash, g_str_equal,
+                           g_free, (GDestroyNotify)mx_texture_cache_item_free);
 
 }
 
