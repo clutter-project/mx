@@ -1,3 +1,18 @@
+1.1.10
+======
+
+Changes since 1.1.9
+
+ * Fix some concurrency issues with asynchronous loading in MxImage
+ * Fix the fullscreen GObject property setter in MxWindow
+ * Make the toolbar property of MxWindow writable
+ * Add a title property to MxWindow
+ * Fix handling of padding in MxBoxLayout get_preferred_width/height
+ * Add a use-markup property to MxLabel
+ * Ensure the old border-image is correctly allocated in MxWidget
+ * Make sure the corners of MxFadeEffect render consistently
+ * Fix focus issues when showing a still-hiding MxDialog
+
 1.1.9
 =====
 
