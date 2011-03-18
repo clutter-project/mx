@@ -184,25 +184,14 @@ get_center_coords (CoglObject *tex,
                    float      *tex_coords)
 {
   float bw, bh;
-  gint angle = ABS (rotation) - ((int)(ABS (rotation) / 360) * 360);
 
   bw = (float) cogl_texture_get_width (tex); /* base texture width */
   bh = (float) cogl_texture_get_height (tex); /* base texture height */
 
-  if (angle == 90 || angle == 270)
-    {
-      tex_coords[0] = 0.5 - (aw / bh) / 2;
-      tex_coords[1] = 0.5 - (ah / bw) / 2;
-      tex_coords[2] = 0.5 + (aw / bh) / 2;
-      tex_coords[3] = 0.5 + (ah / bw) / 2;
-    }
-  else
-    {
-      tex_coords[0] = 0.5 - (aw / bw) / 2;
-      tex_coords[1] = 0.5 - (ah / bh) / 2;
-      tex_coords[2] = 0.5 + (aw / bw) / 2;
-      tex_coords[3] = 0.5 + (ah / bh) / 2;
-    }
+  tex_coords[0] = 0.5 - (aw / bw) / 2;
+  tex_coords[1] = 0.5 - (ah / bh) / 2;
+  tex_coords[2] = 0.5 + (aw / bw) / 2;
+  tex_coords[3] = 0.5 + (ah / bh) / 2;
 }
 
 static gfloat
@@ -212,8 +201,7 @@ calculate_scale (CoglObject       *texture,
                  float             ah,
                  MxImageScaleMode  mode)
 {
-  float bw, bh;
-  gint angle = ABS (rotation) - ((int)(ABS (rotation) / 360) * 360);
+  float bw, bh, tmp, factor;
 
   if (mode == MX_IMAGE_SCALE_NONE)
     return 1.0;
@@ -221,13 +209,16 @@ calculate_scale (CoglObject       *texture,
   bw = cogl_texture_get_width (texture); /* base texture width */
   bh = cogl_texture_get_height (texture); /* base texture height */
 
-  if (angle == 90 || angle == 270)
-    {
-      gint tmp;
+  /* interpolate between scaling for width and height */
+  factor = (ABS (rotation) - ((int)(ABS (rotation) / 180) * 180.0)) / 90.0;
 
-      /* swap width and height if the image is horizontal */
-      tmp = bw; bw = bh; bh = tmp;
-    }
+  if (factor > 1.0)
+    factor = 2.0 - factor;
+
+  tmp = bw + (bh - bw) * factor;
+  bh = bh + (bw - bh) * factor;
+  bw = tmp;
+
 
   if (bw/bh < aw/ah)
     {
@@ -250,12 +241,13 @@ mx_image_paint (ClutterActor *actor)
 {
   MxImagePrivate *priv = MX_IMAGE (actor)->priv;
   ClutterActorBox box;
-  float aw, ah;
+  float aw, ah, bw, bh;
   guint8 alpha;
   float tex_coords[8];
   MxPadding padding;
   CoglMatrix matrix;
-  gfloat scale = 1, scale2 = 1;
+  gfloat scale = 1;
+  gfloat ratio;
 
   /* chain up to draw the background */
   CLUTTER_ACTOR_CLASS (mx_image_parent_class)->paint (actor);
@@ -274,6 +266,9 @@ mx_image_paint (ClutterActor *actor)
   aw -= (float) (padding.left + padding.right);
   ah -= (float) (padding.top + padding.bottom);
 
+  bw = cogl_texture_get_width (priv->texture); /* base texture width */
+  bh = cogl_texture_get_height (priv->texture); /* base texture height */
+  ratio = bw/bh;
 
   alpha = clutter_actor_get_paint_opacity (actor);
 
@@ -288,22 +283,39 @@ mx_image_paint (ClutterActor *actor)
   get_center_coords (priv->old_texture, priv->old_rotation, aw, ah,
                      tex_coords + 4);
 
+  /* current texture */
   scale = calculate_scale (priv->texture, priv->rotation, aw, ah, priv->mode);
-  scale2 = calculate_scale (priv->old_texture, priv->old_rotation, aw, ah,
-                            priv->old_mode);
 
   cogl_matrix_init_identity (&matrix);
   cogl_matrix_translate (&matrix, 0.5, 0.5, 0);
+
+  cogl_matrix_scale (&matrix, 1, ratio, 1);
   cogl_matrix_rotate (&matrix, priv->rotation, 0, 0, -1);
+  cogl_matrix_scale (&matrix, 1, 1 / ratio, 1);
+
   cogl_matrix_scale (&matrix, scale, scale, 1);
+
   cogl_matrix_translate (&matrix, -0.5, -0.5, 0);
   cogl_material_set_layer_matrix (priv->material, 0, &matrix);
 
 
+  /* old texture */
+  scale = calculate_scale (priv->old_texture, priv->old_rotation, aw, ah,
+                           priv->old_mode);
+
+  bw = cogl_texture_get_width (priv->old_texture);
+  bh = cogl_texture_get_height (priv->old_texture);
+  ratio = bw/bh;
+
   cogl_matrix_init_identity (&matrix);
   cogl_matrix_translate (&matrix, 0.5, 0.5, 0);
+
+  cogl_matrix_scale (&matrix, 1, ratio, 1);
   cogl_matrix_rotate (&matrix, priv->old_rotation, 0, 0, -1);
-  cogl_matrix_scale (&matrix, scale2, scale2, 1);
+  cogl_matrix_scale (&matrix, 1, 1 / ratio, 1);
+
+  cogl_matrix_scale (&matrix, scale, scale, 1);
+
   cogl_matrix_translate (&matrix, -0.5, -0.5, 0);
   cogl_material_set_layer_matrix (priv->material, 1, &matrix);
 
@@ -1597,8 +1609,6 @@ mx_image_set_image_rotation (MxImage *image,
                              gfloat   rotation)
 {
   g_return_if_fail (MX_IS_IMAGE (image));
-
-  g_return_if_fail (rotation == 0 || ((int) rotation % 90) == 0);
 
   if (image->priv->rotation != rotation)
     {
