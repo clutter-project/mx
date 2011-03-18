@@ -38,6 +38,13 @@
 #include "mx-utils.h"
 #include "mx-private.h"
 
+/**
+ * mx_set_locale:
+ *
+ * Initializes internationalization support for Mx. If MxApplication is
+ * used, this is called automatically. Otherwise it has to be called
+ * together with clutter_init() before using Mx.
+ */
 void
 mx_set_locale ()
 {
