@@ -103,6 +103,9 @@ gboolean mx_image_set_from_file_at_size (MxImage      *image,
                                          gint          height,
                                          GError      **error);
 
+gboolean mx_image_set_from_cogl_texture (MxImage    *image,
+                                         CoglHandle  texture);
+
 gboolean mx_image_set_from_buffer (MxImage         *image,
                                    guchar          *buffer,
                                    gsize            buffer_size,
