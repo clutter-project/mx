@@ -93,18 +93,34 @@ ClutterTexture* mx_texture_cache_get_texture (MxTextureCache *self,
                                               const gchar    *uri);
 ClutterActor*   mx_texture_cache_get_actor   (MxTextureCache *self,
                                               const gchar    *uri);
-
 CoglHandle      mx_texture_cache_get_cogl_texture (MxTextureCache *self,
                                                    const gchar    *uri);
+
+ClutterTexture *mx_texture_cache_get_meta_texture (MxTextureCache *self,
+                                                   const gchar    *uri,
+                                                   gpointer        ident);
+CoglHandle      mx_texture_cache_get_meta_cogl_texture (MxTextureCache *self,
+                                                        const gchar    *uri,
+                                                        gpointer        ident);
 
 gint            mx_texture_cache_get_size    (MxTextureCache *self);
 
 gboolean        mx_texture_cache_contains    (MxTextureCache *self,
                                               const gchar    *uri);
 
+gboolean        mx_texture_cache_contains_meta (MxTextureCache *self,
+                                                const gchar    *uri,
+                                                gpointer        ident);
+
 void            mx_texture_cache_insert      (MxTextureCache *self,
                                               const gchar    *uri,
                                               CoglHandle     *texture);
+
+void            mx_texture_cache_insert_meta (MxTextureCache *self,
+                                              const gchar    *uri,
+                                              gpointer        ident,
+                                              CoglHandle     *texture,
+                                              GDestroyNotify  destroy_func);
 
 void mx_texture_cache_load_cache (MxTextureCache *self,
                                   const char     *filename);

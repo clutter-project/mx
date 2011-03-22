@@ -75,7 +75,15 @@ typedef struct MxTextureCacheItem {
   int           width, height;
   int           posX, posY;
   CoglHandle   *ptr;
+  GHashTable   *meta;
 } MxTextureCacheItem;
+
+typedef struct
+{
+  gpointer        ident;
+  CoglHandle     *texture;
+  GDestroyNotify  destroy_func;
+} MxTextureCacheMetaEntry;
 
 static MxTextureCacheItem *
 mx_texture_cache_item_new (void)
@@ -88,6 +96,9 @@ mx_texture_cache_item_free (MxTextureCacheItem *item)
 {
   if (item->ptr)
     cogl_handle_unref (item->ptr);
+
+  if (item->meta)
+    g_hash_table_unref (item->meta);
 
   g_slice_free (MxTextureCacheItem, item);
 }
@@ -337,13 +348,19 @@ mx_texture_cache_get_item (MxTextureCache *self,
 
   item = g_hash_table_lookup (priv->cache, uri);
 
-  if (!item && create_if_not_exists)
+  if ((!item || !item->ptr) && create_if_not_exists)
     {
+      gboolean created;
       GError *err = NULL;
 
-      item = mx_texture_cache_item_new ();
-      item->posX = -1;
-      item->posY = -1;
+      if (!item)
+        {
+          item = mx_texture_cache_item_new ();
+          created = TRUE;
+        }
+      else
+        created = FALSE;
+
       item->ptr = cogl_texture_new_from_file (file, COGL_TEXTURE_NONE,
                                               COGL_PIXEL_FORMAT_ANY,
                                               &err);
@@ -356,15 +373,14 @@ mx_texture_cache_get_item (MxTextureCache *self,
               g_error_free (err);
             }
 
-          mx_texture_cache_item_free (item);
+          if (created)
+            mx_texture_cache_item_free (item);
+
           g_free (new_file);
           g_free (new_uri);
 
           return NULL;
         }
-
-      item->width = cogl_texture_get_width (item->ptr);
-      item->height = cogl_texture_get_height (item->ptr);
 
       add_texture_to_cache (self, uri, item);
     }
@@ -465,6 +481,89 @@ mx_texture_cache_get_actor (MxTextureCache *self,
 }
 
 /**
+ * mx_texture_cache_get_meta_texture:
+ * @self: A #MxTextureCache
+ * @uri: A URI or path to an image file
+ * @ident: A unique identifier
+ *
+ * Create a new ClutterTexture using the previously added image associated
+ * with the given unique identifier.
+ *
+ * See mx_texture_cache_insert_meta()
+ *
+ * Returns: A newly allocated #ClutterTexture, or %NULL if no image was found
+ */
+ClutterTexture *
+mx_texture_cache_get_meta_texture (MxTextureCache *self,
+                                   const gchar    *uri,
+                                   gpointer        ident)
+{
+  MxTextureCacheItem *item;
+
+  g_return_val_if_fail (MX_IS_TEXTURE_CACHE (self), NULL);
+  g_return_val_if_fail (uri != NULL, NULL);
+
+  item = mx_texture_cache_get_item (self, uri, TRUE);
+
+  if (item && item->meta)
+    {
+      MxTextureCacheMetaEntry *entry = g_hash_table_lookup (item->meta, ident);
+
+      if (entry->texture)
+        {
+          ClutterActor *texture = clutter_texture_new ();
+          clutter_texture_set_cogl_texture ((ClutterTexture*) texture,
+                                            entry->texture);
+          return (ClutterTexture *)texture;
+        }
+    }
+
+  return NULL;
+}
+
+/**
+ * mx_texture_cache_get_cogl_texture:
+ * @self: A #MxTextureCache
+ * @uri: A URI or path to an image file
+ * @ident: A unique identifier
+ *
+ * Retrieves the #CoglHandle of the previously added image associated
+ * with the given unique identifier.
+ *
+ * See mx_texture_cache_insert_meta()
+ *
+ * Returns: A #CoglHandle to a texture, with an added reference. %NULL if
+ *   no image was found.
+ */
+CoglHandle
+mx_texture_cache_get_meta_cogl_texture (MxTextureCache *self,
+                                        const gchar    *uri,
+                                        gpointer        ident)
+{
+  MxTextureCacheItem *item;
+
+  g_return_val_if_fail (MX_IS_TEXTURE_CACHE (self), NULL);
+  g_return_val_if_fail (uri != NULL, NULL);
+
+  item = mx_texture_cache_get_item (self, uri, TRUE);
+
+  if (item && item->meta)
+    {
+      MxTextureCacheMetaEntry *entry = g_hash_table_lookup (item->meta, ident);
+
+      if (entry->texture)
+        {
+          ClutterActor *texture = clutter_texture_new ();
+          clutter_texture_set_cogl_texture ((ClutterTexture*) texture,
+                                            entry->texture);
+          return (ClutterTexture *)texture;
+        }
+    }
+
+  return NULL;
+}
+
+/**
  * mx_texture_cache_contains:
  * @self: A #MxTextureCache
  * @uri: A URI or path to an image file
@@ -482,6 +581,36 @@ mx_texture_cache_contains (MxTextureCache *self,
   g_return_val_if_fail (uri != NULL, FALSE);
 
   return mx_texture_cache_get_item (self, uri, FALSE) ? TRUE : FALSE;
+}
+
+/**
+ * mx_texture_cache_contains_meta:
+ * @self: A #MxTextureCache
+ * @uri: A URI or path to an image file
+ * @ident: A unique identifier
+ *
+ * Checks whether there are any textures associated with the given URI by
+ * the given identifier.
+ *
+ * Returns: %TRUE if the data exists, %FALSE otherwise
+ */
+gboolean
+mx_texture_cache_contains_meta (MxTextureCache *self,
+                                const gchar    *uri,
+                                gpointer        ident)
+{
+  MxTextureCacheItem *item;
+
+  g_return_val_if_fail (MX_IS_TEXTURE_CACHE (self), FALSE);
+  g_return_val_if_fail (uri != NULL, FALSE);
+
+  item = mx_texture_cache_get_item (self, uri, FALSE);
+
+  if (item && item->meta &&
+      g_hash_table_lookup (item->meta, ident))
+    return TRUE;
+  else
+    return FALSE;
 }
 
 /**
@@ -515,17 +644,75 @@ mx_texture_cache_insert (MxTextureCache *self,
     return;
 
   item = mx_texture_cache_item_new ();
-
-  item->posX = -1;
-  item->posY = -1;
   item->ptr = cogl_handle_ref (texture);
-  item->width = cogl_texture_get_width (item->ptr);
-  item->height = cogl_texture_get_height (item->ptr);
-
   add_texture_to_cache (self, uri, item);
 
   g_free (new_uri);
   g_free (new_path);
+}
+
+static void
+mx_texture_cache_destroy_meta_entry (gpointer data)
+{
+  MxTextureCacheMetaEntry *entry = data;
+
+  if (entry->destroy_func)
+    entry->destroy_func (entry->ident);
+
+  if (entry->texture)
+    cogl_handle_unref (entry->texture);
+
+  g_slice_free (MxTextureCacheMetaEntry, entry);
+}
+
+/**
+ * mx_texture_cache_insert_meta:
+ * @self: A #MxTextureCache
+ * @uri: A URI or local file path
+ * @ident: A unique identifier
+ * @texture: A #CoglHandle to a texture
+ * @destroy_func: An optional destruction function for @ident
+ *
+ * Inserts a texture that's associated with a URI into the cache.
+ * If the metadata already exists for this URI, it will be replaced.
+ *
+ * This is useful if you have a widely used modification of an image,
+ * for example, an image with a border composited around it.
+ */
+void
+mx_texture_cache_insert_meta (MxTextureCache *self,
+                              const gchar    *uri,
+                              gpointer        ident,
+                              CoglHandle     *texture,
+                              GDestroyNotify  destroy_func)
+{
+  const gchar *path;
+  MxTextureCacheItem *item;
+  gchar *new_uri, *new_path;
+  MxTextureCacheMetaEntry *entry;
+
+  g_return_if_fail (MX_IS_TEXTURE_CACHE (self));
+  g_return_if_fail (uri != NULL);
+  g_return_if_fail (cogl_is_texture (texture));
+
+  if (!mx_texture_cache_resolve_path_uri (&uri, &path,
+                                          &new_uri, &new_path))
+    return;
+
+  item = mx_texture_cache_get_item (self, uri, FALSE);
+  if (!item)
+    item = mx_texture_cache_item_new ();
+
+  if (!item->meta)
+    item->meta = g_hash_table_new_full (NULL, NULL, NULL,
+                                        mx_texture_cache_destroy_meta_entry);
+
+  entry = g_slice_new0 (MxTextureCacheMetaEntry);
+  entry->ident = ident;
+  entry->texture = cogl_handle_ref (texture);
+  entry->destroy_func = destroy_func;
+
+  g_hash_table_insert (item->meta, ident, entry);
 }
 
 void
