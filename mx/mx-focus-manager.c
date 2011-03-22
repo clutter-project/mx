@@ -46,6 +46,11 @@ enum
   PROP_FOCUSED
 };
 
+static void mx_focus_manager_set_focused (MxFocusManager *manager, MxFocusable *focusable);
+static void mx_focus_manager_focused_parent_set_cb (ClutterActor   *focused,
+                                                    ClutterActor   *old_parent,
+                                                    MxFocusManager *manager);
+
 static void
 mx_focus_manager_get_property (GObject    *object,
                                guint       property_id,
@@ -91,6 +96,14 @@ mx_focus_manager_dispose (GObject *object)
     {
       g_object_set_qdata (G_OBJECT (priv->stage), focus_manager_quark, NULL);
       priv->stage = NULL;
+    }
+
+  if (priv->focused)
+    {
+      g_signal_handlers_disconnect_by_func (priv->focused,
+                                         mx_focus_manager_focused_parent_set_cb,
+                                         object);
+      priv->focused = NULL;
     }
 
   G_OBJECT_CLASS (mx_focus_manager_parent_class)->dispose (object);
@@ -147,10 +160,42 @@ mx_focus_manager_weak_notify (MxFocusManager *manager,
 }
 
 static void
+mx_focus_manager_focused_parent_set_cb (ClutterActor   *focused,
+                                        ClutterActor   *old_parent,
+                                        MxFocusManager *manager)
+{
+  if (clutter_actor_get_parent (focused) != NULL)
+    return;
+
+  if (old_parent && MX_IS_FOCUSABLE (old_parent))
+    mx_focus_manager_push_focus_with_hint (manager,
+                                           MX_FOCUSABLE (old_parent),
+                                           MX_FOCUS_HINT_PRIOR);
+}
+
+static void
+mx_focus_manager_set_focused (MxFocusManager *manager,
+                              MxFocusable    *focusable)
+{
+  MxFocusManagerPrivate *priv = manager->priv;
+
+  if (priv->focused)
+    g_signal_handlers_disconnect_by_func (priv->focused,
+                                          mx_focus_manager_focused_parent_set_cb,
+                                          manager);
+
+  priv->focused = focusable;
+  if (priv->focused)
+    g_signal_connect (priv->focused, "parent-set",
+                      G_CALLBACK (mx_focus_manager_focused_parent_set_cb),
+                      manager);
+}
+
+static void
 mx_focus_manager_start_focus (MxFocusManager *manager, MxFocusHint hint)
 {
   MxFocusManagerPrivate *priv = manager->priv;
-  MxFocusable *focusable;
+  MxFocusable *focusable, *new_focused;
 
   GList *children, *l;
 
@@ -165,9 +210,10 @@ mx_focus_manager_start_focus (MxFocusManager *manager, MxFocusHint hint)
       if (MX_IS_FOCUSABLE (l->data))
         {
           focusable = MX_FOCUSABLE (l->data);
-          priv->focused = mx_focusable_accept_focus (focusable, hint);
+          new_focused = mx_focusable_accept_focus (focusable, hint);
+          mx_focus_manager_set_focused (manager, new_focused);
 
-          if (priv->focused)
+          if (new_focused)
             break;
         }
     }
@@ -199,10 +245,17 @@ mx_focus_manager_ensure_focused (MxFocusManager *manager,
 
       /* if we didn't find a focusable, try any children of the stage */
       if (!actor)
-        mx_focus_manager_start_focus (manager, hint);
+        {
+          mx_focus_manager_start_focus (manager, hint);
+        }
       else
-        priv->focused = mx_focusable_accept_focus (MX_FOCUSABLE (actor),
+        {
+          MxFocusable *new_focused;
+
+          new_focused = mx_focusable_accept_focus (MX_FOCUSABLE (actor),
                                                    MX_FOCUS_HINT_PRIOR);
+          mx_focus_manager_set_focused (manager, new_focused);
+        }
 
       if (priv->focused)
         g_object_notify (G_OBJECT (manager), "focused");
@@ -355,13 +408,16 @@ mx_focus_manager_push_focus (MxFocusManager *manager,
 
   if (priv->focused != focusable)
     {
+      MxFocusable *new_focused;
+
       if (priv->focused)
         {
           /* notify the current focusable that focus is being moved */
           mx_focusable_move_focus (priv->focused, MX_FOCUS_DIRECTION_OUT, priv->focused);
         }
 
-      priv->focused = mx_focusable_accept_focus (focusable, MX_FOCUS_HINT_PRIOR);
+      new_focused = mx_focusable_accept_focus (focusable, MX_FOCUS_HINT_PRIOR);
+      mx_focus_manager_set_focused (manager, new_focused);
 
       g_object_notify (G_OBJECT (manager), "focused");
     }
@@ -392,6 +448,8 @@ mx_focus_manager_push_focus_with_hint (MxFocusManager *manager,
 
   if (priv->focused != focusable)
     {
+      MxFocusable *new_focused;
+
       if (priv->focused)
         {
           /* notify the current focusable that focus is being moved */
@@ -399,7 +457,8 @@ mx_focus_manager_push_focus_with_hint (MxFocusManager *manager,
                                    priv->focused);
         }
 
-      priv->focused = mx_focusable_accept_focus (focusable, hint);
+      new_focused = mx_focusable_accept_focus (focusable, hint);
+      mx_focus_manager_set_focused (manager, new_focused);
 
       g_object_notify (G_OBJECT (manager), "focused");
     }
@@ -416,7 +475,7 @@ void
 mx_focus_manager_move_focus (MxFocusManager   *manager,
                              MxFocusDirection  direction)
 {
-  MxFocusable *old_focus;
+  MxFocusable *old_focus, *new_focused;
   MxFocusManagerPrivate *priv;
 
   g_return_if_fail (MX_IS_FOCUS_MANAGER (manager));
@@ -426,9 +485,12 @@ mx_focus_manager_move_focus (MxFocusManager   *manager,
   old_focus = priv->focused;
 
   if (priv->focused)
-    priv->focused = mx_focusable_move_focus (priv->focused,
+    {
+      new_focused = mx_focusable_move_focus (priv->focused,
                                              direction,
                                              priv->focused);
+      mx_focus_manager_set_focused (manager, new_focused);
+    }
 
   if (!priv->focused)
     {
@@ -458,7 +520,10 @@ mx_focus_manager_move_focus (MxFocusManager   *manager,
         default:
           /* re-focus the original */
           if (old_focus && (direction != MX_FOCUS_DIRECTION_OUT))
-            priv->focused = mx_focusable_accept_focus (old_focus, 0);
+            {
+              new_focused = mx_focusable_accept_focus (old_focus, 0);
+              mx_focus_manager_set_focused (manager, new_focused);
+            }
           else
             mx_focus_manager_ensure_focused (manager,
                                              CLUTTER_STAGE (priv->stage),

@@ -27,6 +27,7 @@ noinst_PROGRAMS = 			\
 	test-views 			\
 	test-window 			\
 	test-box-layout			\
+	test-focus			\
 	test-mx				\
 	$(NULL)
 
@@ -41,6 +42,7 @@ test_table_2_SOURCES = test-table-2.c
 test_texture_frame_SOURCES = test-texture-frame.c
 test_grid_SOURCES = test-grid.c
 test_views_SOURCES = test-views.c
+test_focus_SOURCES = test-focus.c
 
 test_mx_SOURCES = test-mx.c \
 		  test-mx.h \
