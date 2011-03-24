@@ -96,6 +96,7 @@ enum
 enum
 {
   CHANGED,
+  INTERPOLATION_COMPLETED,
 
   LAST_SIGNAL
 };
@@ -383,6 +384,20 @@ mx_adjustment_class_init (MxAdjustmentClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxAdjustmentClass, changed),
+                  NULL, NULL,
+                  _mx_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
+
+  /**
+   * MxAdjustment::interpolation-completed:
+   *
+   * Emitted when the animation started by mx_adjustment_interpolate completes
+   */
+  signals[INTERPOLATION_COMPLETED] =
+    g_signal_new ("interpolation-completed",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (MxAdjustmentClass, interpolation_completed),
                   NULL, NULL,
                   _mx_marshal_VOID__VOID,
                   G_TYPE_NONE, 0);
@@ -1078,6 +1093,8 @@ interpolation_completed_cb (ClutterTimeline *timeline,
       stop_interpolation (adjustment);
       mx_adjustment_set_value (adjustment, priv->new_position);
     }
+
+  g_signal_emit (adjustment, signals[INTERPOLATION_COMPLETED], 0);
 }
 
 /**
