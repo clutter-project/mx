@@ -52,6 +52,7 @@ typedef struct _MxTextureCachePrivate MxTextureCachePrivate;
 struct _MxTextureCachePrivate
 {
   GHashTable *cache;
+  GRegex     *is_uri;
 };
 
 typedef struct FinalizedClosure
@@ -144,10 +145,10 @@ mx_texture_cache_finalize (GObject *object)
   MxTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE(object);
 
   if (priv->cache)
-    {
-      g_hash_table_unref (priv->cache);
-      priv->cache = NULL;
-    }
+    g_hash_table_unref (priv->cache);
+
+  if (priv->is_uri)
+    g_regex_unref (priv->is_uri);
 
   G_OBJECT_CLASS (mx_texture_cache_parent_class)->finalize (object);
 }
@@ -169,12 +170,17 @@ mx_texture_cache_class_init (MxTextureCacheClass *klass)
 static void
 mx_texture_cache_init (MxTextureCache *self)
 {
+  GError *error = NULL;
   MxTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE(self);
 
   priv->cache =
     g_hash_table_new_full (g_str_hash, g_str_equal,
                            g_free, (GDestroyNotify)mx_texture_cache_item_free);
 
+  priv->is_uri = g_regex_new ("^([a-zA-Z0-9+.-]+)://.*",
+                              G_REGEX_OPTIMIZE, 0, &error);
+  if (!priv->is_uri)
+    g_error (G_STRLOC ": Unable to compile regex: %s", error->message);
 }
 
 /**
@@ -266,9 +272,17 @@ static gchar *
 mx_texture_cache_filename_to_uri (const gchar *file)
 {
   gchar *uri;
+  gchar *new_file;
   GError *error = NULL;
 
-  uri = g_filename_to_uri (file, NULL, &error);
+  new_file = mx_texture_cache_resolve_relative_path (file);
+  if (new_file)
+    {
+      uri = g_filename_to_uri (new_file, NULL, &error);
+      g_free (new_file);
+    }
+  else
+    uri = g_filename_to_uri (file, NULL, &error);
 
   if (!uri)
     {
@@ -281,52 +295,17 @@ mx_texture_cache_filename_to_uri (const gchar *file)
   return uri;
 }
 
-static gboolean
-mx_texture_cache_resolve_path_uri (const gchar **input_uri_path,
-                                   const gchar **output_path,
-                                   gchar       **new_uri,
-                                   gchar       **new_path)
+static gchar *
+mx_texture_cache_uri_to_filename (const gchar *uri)
 {
-  /* Check if it's a local path or URI given, and work out the
-   * corresponding URI or local path.
-   */
-  *new_path = *new_uri = NULL;
+  GError *error = NULL;
+  gchar *file = g_filename_from_uri (uri, NULL, &error);
 
-  if (strstr (*input_uri_path, "://"))
-    {
-      GError *error = NULL;
+  if (!file)
+    g_warning (G_STRLOC ": Unable to transform URI to filename: %s",
+               error->message);
 
-      *new_path = g_filename_from_uri (*input_uri_path, NULL, &error);
-
-      if (!(*new_path))
-        {
-          g_warning ("Unable to transform URI to filename: %s",
-                     error->message);
-          g_error_free (error);
-          return FALSE;
-        }
-
-      *output_path = *new_path;
-    }
-  else
-    {
-      /* Make sure we have an absolute path */
-      if ((*new_path =
-           mx_texture_cache_resolve_relative_path (*input_uri_path)))
-        *output_path = *new_path;
-      else
-        *output_path = *input_uri_path;
-
-      if (!(*new_uri = mx_texture_cache_filename_to_uri (*output_path)))
-        {
-          g_free (*new_path);
-          return FALSE;
-        }
-
-      *input_uri_path = *new_uri;
-    }
-
-  return TRUE;
+  return file;
 }
 
 static MxTextureCacheItem *
@@ -341,10 +320,25 @@ mx_texture_cache_get_item (MxTextureCache *self,
 
   priv = TEXTURE_CACHE_PRIVATE (self);
 
-  /* Make sure we have the full path and URI */
-  if (!mx_texture_cache_resolve_path_uri (&uri, &file,
-                                          &new_uri, &new_file))
-    return NULL;
+  /* Make sure we have the URI (and the path if we're loading) */
+  new_file = new_uri = NULL;
+
+  if (g_regex_match (priv->is_uri, uri, 0, NULL))
+    {
+      if (create_if_not_exists)
+        {
+          file = new_file = mx_texture_cache_uri_to_filename (uri);
+          if (!new_file)
+            return NULL;
+        }
+    }
+  else
+    {
+      file = uri;
+      uri = new_uri = mx_texture_cache_filename_to_uri (file);
+      if (!new_uri)
+        return NULL;
+    }
 
   item = g_hash_table_lookup (priv->cache, uri);
 
@@ -631,24 +625,29 @@ mx_texture_cache_insert (MxTextureCache *self,
                          const gchar    *uri,
                          CoglHandle     *texture)
 {
-  const gchar *path;
+  gchar *new_uri;
   MxTextureCacheItem *item;
-  gchar *new_uri, *new_path;
+  MxTextureCachePrivate *priv;
 
   g_return_if_fail (MX_IS_TEXTURE_CACHE (self));
   g_return_if_fail (uri != NULL);
   g_return_if_fail (cogl_is_texture (texture));
 
-  if (!mx_texture_cache_resolve_path_uri (&uri, &path,
-                                          &new_uri, &new_path))
-    return;
+  priv = TEXTURE_CACHE_PRIVATE (self);
+
+  /* Transform path to URI, if necessary */
+  if (!g_regex_match (priv->is_uri, uri, 0, NULL))
+    {
+      uri = new_uri = mx_texture_cache_filename_to_uri (uri);
+      if (!new_uri)
+        return;
+    }
 
   item = mx_texture_cache_item_new ();
   item->ptr = cogl_handle_ref (texture);
   add_texture_to_cache (self, uri, item);
 
   g_free (new_uri);
-  g_free (new_path);
 }
 
 static void
@@ -686,22 +685,33 @@ mx_texture_cache_insert_meta (MxTextureCache *self,
                               CoglHandle     *texture,
                               GDestroyNotify  destroy_func)
 {
-  const gchar *path;
+  gchar *new_uri;
   MxTextureCacheItem *item;
-  gchar *new_uri, *new_path;
+  MxTextureCachePrivate *priv;
   MxTextureCacheMetaEntry *entry;
 
   g_return_if_fail (MX_IS_TEXTURE_CACHE (self));
   g_return_if_fail (uri != NULL);
   g_return_if_fail (cogl_is_texture (texture));
 
-  if (!mx_texture_cache_resolve_path_uri (&uri, &path,
-                                          &new_uri, &new_path))
-    return;
+  priv = TEXTURE_CACHE_PRIVATE (self);
+
+  /* Transform path to URI, if necessary */
+  if (!g_regex_match (priv->is_uri, uri, 0, NULL))
+    {
+      uri = new_uri = mx_texture_cache_filename_to_uri (uri);
+      if (!new_uri)
+        return;
+    }
 
   item = mx_texture_cache_get_item (self, uri, FALSE);
   if (!item)
-    item = mx_texture_cache_item_new ();
+    {
+      item = mx_texture_cache_item_new ();
+      add_texture_to_cache (self, uri, item);
+    }
+
+  g_free (new_uri);
 
   if (!item->meta)
     item->meta = g_hash_table_new_full (NULL, NULL, NULL,
