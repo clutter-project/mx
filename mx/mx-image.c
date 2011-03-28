@@ -978,7 +978,7 @@ mx_image_set_from_pixbuf (MxImage      *image,
 
   cache = mx_texture_cache_get_default ();
 
-  if ((!pixbuf && !filename) || (filename &&
+  if ((!pixbuf && !filename) || (!pixbuf && filename &&
       !mx_texture_cache_contains_meta (cache, filename,
                                        GINT_TO_POINTER (mx_image_cache_quark))))
     return FALSE;
