@@ -546,12 +546,7 @@ mx_texture_cache_get_meta_cogl_texture (MxTextureCache *self,
       MxTextureCacheMetaEntry *entry = g_hash_table_lookup (item->meta, ident);
 
       if (entry->texture)
-        {
-          ClutterActor *texture = clutter_texture_new ();
-          clutter_texture_set_cogl_texture ((ClutterTexture*) texture,
-                                            entry->texture);
-          return (ClutterTexture *)texture;
-        }
+        return cogl_handle_ref (entry->texture);
     }
 
   return NULL;
