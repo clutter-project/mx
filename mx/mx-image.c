@@ -104,7 +104,7 @@ struct _MxImagePrivate
 
   ClutterTimeline *timeline;
 
-  guint duration;
+  guint transition_duration;
 
   MxImageAsyncData *async_load_data;
 };
@@ -118,7 +118,8 @@ enum
   PROP_ALLOW_UPSCALE,
   PROP_SCALE_WIDTH_THRESHOLD,
   PROP_SCALE_HEIGHT_THRESHOLD,
-  PROP_IMAGE_ROTATION
+  PROP_IMAGE_ROTATION,
+  PROP_TRANSITION_DURATION
 };
 
 enum
@@ -416,6 +417,10 @@ mx_image_set_property (GObject      *object,
       mx_image_set_image_rotation (image, g_value_get_float (value));
       break;
 
+    case PROP_TRANSITION_DURATION:
+      mx_image_set_transition_duration (image, g_value_get_uint (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -454,6 +459,10 @@ mx_image_get_property (GObject    *object,
 
     case PROP_IMAGE_ROTATION:
       g_value_set_float (value, priv->rotation);
+      break;
+
+    case PROP_TRANSITION_DURATION:
+      g_value_set_uint (value, priv->transition_duration);
       break;
 
     default:
@@ -591,6 +600,16 @@ mx_image_class_init (MxImageClass *klass)
 
   g_object_class_install_property (object_class, PROP_IMAGE_ROTATION, pspec);
 
+
+  pspec = g_param_spec_uint ("transition-duration",
+                             "Transition duration",
+                             "Transition duration in ms",
+                             0, G_MAXUINT, DEFAULT_DURATION,
+                             G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+
+  g_object_class_install_property (object_class, PROP_TRANSITION_DURATION, pspec);
+
+
   /**
    * MxImage::image-loaded:
    * @image: the #MxImage that emitted the signal
@@ -674,8 +693,8 @@ mx_image_init (MxImage *self)
 
   priv = self->priv = MX_IMAGE_GET_PRIVATE (self);
 
-  priv->timeline = clutter_timeline_new (DEFAULT_DURATION);
-  priv->duration = DEFAULT_DURATION;
+  priv->transition_duration = DEFAULT_DURATION;
+  priv->timeline = clutter_timeline_new (priv->transition_duration);
 
   g_signal_connect (priv->timeline, "new-frame", G_CALLBACK (new_frame_cb),
                     self);
@@ -1857,4 +1876,43 @@ mx_image_get_image_rotation (MxImage *image)
   g_return_val_if_fail (MX_IS_IMAGE (image), 0);
 
   return image->priv->rotation;
+}
+
+/**
+ * mx_image_set_transition_duration:
+ * @image: A #MxImage
+ * @duration: Transition duration in milliseconds
+ *
+ * Set the MxImage:transition-duration property.
+ */
+void
+mx_image_set_transition_duration (MxImage *image, guint duration)
+{
+  g_return_if_fail (MX_IS_IMAGE (image));
+
+  if (image->priv->transition_duration != duration)
+    {
+      image->priv->transition_duration = duration;
+
+      clutter_timeline_set_duration (CLUTTER_TIMELINE (image->priv->timeline),
+                                     duration);
+
+      g_object_notify (G_OBJECT (image), "transition-duration");
+    }
+}
+
+/**
+ * mx_image_get_transition_duration:
+ * @image: A #MxImage
+ *
+ * Get the value of the MxImage:transition-duration property.
+ *
+ * Returns: The value of the transition-duration property.
+ */
+guint
+mx_image_get_transition_duration (MxImage *image)
+{
+  g_return_val_if_fail (MX_IS_IMAGE (image), 0);
+
+  return image->priv->transition_duration;
 }
