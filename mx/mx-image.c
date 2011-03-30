@@ -39,7 +39,7 @@ G_DEFINE_TYPE (MxImage, mx_image, MX_TYPE_WIDGET)
 #define MX_IMAGE_GET_PRIVATE(obj)    \
   (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_IMAGE, MxImagePrivate))
 
-#define DEFAULT_DURATION 1000
+#define DEFAULT_DURATION 250
 
 /* This stucture holds all that is necessary for cancellable async
  * image loading using thread pools.
