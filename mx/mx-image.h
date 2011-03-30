@@ -46,7 +46,8 @@ G_BEGIN_DECLS
 typedef enum
 {
   MX_IMAGE_ERROR_BAD_FORMAT,
-  MX_IMAGE_ERROR_NO_ASYNC
+  MX_IMAGE_ERROR_NO_ASYNC,
+  MX_IMAGE_ERROR_INTERNAL
 } MxImageError;
 
 #define MX_IMAGE_ERROR (mx_image_error_quark ())

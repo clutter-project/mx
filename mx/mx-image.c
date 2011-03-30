@@ -859,6 +859,24 @@ mx_image_clear (MxImage *image)
   clutter_actor_queue_relayout (CLUTTER_ACTOR (image));
 }
 
+/*
+ * mx_image_set_from_data_internal:
+ * @image: An #MxImage
+ * @data: Image data, or %NULL
+ * @uri: A local file path / URI, or %NULL
+ * @use_cache: Whether the texture cache should be used
+ * @pixel_format: The #CoglPixelFormat of the buffer
+ * @width: Width in pixels of image data.
+ * @height: Height in pixels of image data
+ * @rowstride: Distance in bytes between row starts.
+ * @error: Return location for a #GError, or #NULL
+ *
+ * Set the image data from a buffer. In case of failure, #FALSE is returned
+ * and @error is set. If @data is %NULL, the image will be loaded from the
+ * cache.
+ *
+ * Returns: #TRUE if the image was successfully updated
+ */
 static gboolean
 mx_image_set_from_data_internal (MxImage          *image,
                                  const guchar     *data,
@@ -870,14 +888,12 @@ mx_image_set_from_data_internal (MxImage          *image,
                                  gint              rowstride,
                                  GError          **error)
 {
-  GError *err;
-  gint *blank_area;
   MxImagePrivate *priv;
   MxTextureCache *cache;
+  CoglHandle old_texture;
 
   g_return_val_if_fail (MX_IS_IMAGE (image), FALSE);
 
-  err = NULL;
   priv = image->priv;
 
   mx_image_cancel_in_progress (image);
@@ -885,61 +901,82 @@ mx_image_set_from_data_internal (MxImage          *image,
   if (priv->old_texture)
     cogl_object_unref (priv->old_texture);
 
-  priv->old_texture = priv->texture;
-  priv->old_rotation = priv->rotation;
-  priv->old_mode = priv->mode;
-
-  cache = mx_texture_cache_get_default ();
+  /* Store a pointer to the old texture */
+  old_texture = priv->texture;
 
   /* See if the texture's cached, otherwise create it */
-  if (!use_cache || !uri ||
-      !(priv->texture = mx_texture_cache_get_meta_cogl_texture (
-                          cache, uri, GINT_TO_POINTER (mx_image_cache_quark))))
-    priv->texture = cogl_texture_new_with_size (width + 2, height + 2,
-                                                COGL_TEXTURE_NO_ATLAS,
-                                                COGL_PIXEL_FORMAT_ANY);
+  cache = mx_texture_cache_get_default ();
 
-  if (!priv->texture)
+  if (use_cache && uri && !data)
     {
-      if (error)
-        g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_BAD_FORMAT,
-                     "Failed to create Cogl texture");
+      priv->texture = mx_texture_cache_get_meta_cogl_texture (
+        cache, uri, GINT_TO_POINTER (mx_image_cache_quark));
 
-      return FALSE;
+      if (!priv->texture)
+        {
+          if (error)
+            g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_INTERNAL,
+                         "Image '%s' not found in cache", uri);
+          return FALSE;
+
+        }
+    }
+  else
+    {
+      gint *blank_area;
+
+      priv->texture = cogl_texture_new_with_size (width + 2, height + 2,
+                                                  COGL_TEXTURE_NO_ATLAS,
+                                                  COGL_PIXEL_FORMAT_ANY);
+
+      if (!priv->texture)
+        {
+          if (error)
+            g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_BAD_FORMAT,
+                         "Failed to create Cogl texture");
+
+          return FALSE;
+        }
+
+      /* Create the new texture */
+      cogl_texture_set_region (priv->texture, 0, 0, 1, 1,
+                               width, height, width, height,
+                               pixel_format, rowstride, data);
+
+      /* Blit a transparent buffer around the texture */
+      blank_area = g_new0 (gint, MAX (width, height) + 2);
+      cogl_texture_set_region (priv->texture, 0, 0, 0, 0,
+                               width, 1, width, 1,
+                               COGL_PIXEL_FORMAT_RGBA_8888, width * 4,
+                               (const guint8 *)blank_area);
+      cogl_texture_set_region (priv->texture, 0, 0, 0, height + 1,
+                               width + 2, 1, width + 2, 1,
+                               COGL_PIXEL_FORMAT_RGBA_8888, width * 4,
+                               (const guint8 *)blank_area);
+      cogl_texture_set_region (priv->texture, 0, 0, 0, 0,
+                               1, height + 2, 1, height + 2,
+                               COGL_PIXEL_FORMAT_RGBA_8888, 4,
+                               (const guint8 *)blank_area);
+      cogl_texture_set_region (priv->texture, 0, 0, width + 1, 0,
+                               1, height + 2, 1, height + 2,
+                               COGL_PIXEL_FORMAT_RGBA_8888, 4,
+                               (const guint8 *)blank_area);
+      g_free (blank_area);
+
+      /* Insert the processed image into the cache, if we have a URI */
+      if (uri)
+        {
+          MxTextureCache *cache = mx_texture_cache_get_default ();
+          mx_texture_cache_insert_meta (cache, uri,
+                                        GINT_TO_POINTER (mx_image_cache_quark),
+                                        priv->texture, NULL);
+        }
     }
 
-  cogl_texture_set_region (priv->texture, 0, 0, 1, 1,
-                           width, height, width, height,
-                           pixel_format, rowstride, data);
-
-  /* Blit a transparent buffer around the texture */
-  blank_area = g_new0 (gint, MAX (width, height) + 2);
-  cogl_texture_set_region (priv->texture, 0, 0, 0, 0,
-                           width, 1, width, 1,
-                           COGL_PIXEL_FORMAT_RGBA_8888, width * 4,
-                           (const guint8 *)blank_area);
-  cogl_texture_set_region (priv->texture, 0, 0, 0, height + 1,
-                           width + 2, 1, width + 2, 1,
-                           COGL_PIXEL_FORMAT_RGBA_8888, width * 4,
-                           (const guint8 *)blank_area);
-  cogl_texture_set_region (priv->texture, 0, 0, 0, 0,
-                           1, height + 2, 1, height + 2,
-                           COGL_PIXEL_FORMAT_RGBA_8888, 4,
-                           (const guint8 *)blank_area);
-  cogl_texture_set_region (priv->texture, 0, 0, width + 1, 0,
-                           1, height + 2, 1, height + 2,
-                           COGL_PIXEL_FORMAT_RGBA_8888, 4,
-                           (const guint8 *)blank_area);
-  g_free (blank_area);
-
-  /* Insert the processed image into the cache, if we have a URI */
-  if (uri)
-    {
-      MxTextureCache *cache = mx_texture_cache_get_default ();
-      mx_texture_cache_insert_meta (cache, uri,
-                                    GINT_TO_POINTER (mx_image_cache_quark),
-                                    priv->texture, NULL);
-    }
+  /* Replace the old texture */
+  priv->old_texture = old_texture;
+  priv->old_rotation = priv->rotation;
+  priv->old_mode = priv->mode;
 
   mx_image_prepare_texture (image);
 
@@ -977,6 +1014,18 @@ mx_image_set_from_data (MxImage          *image,
                                           rowstride, error);
 }
 
+/*
+ * mx_image_set_from_pixbuf:
+ * @image: A #MxImage
+ * @pixbuf: A #GdkPixbuf, or %NULL
+ * @filename: A path or URI to an image file, or %NULL
+ * @error: A pointer to a #GError, or %NULL
+ *
+ * Sets the MxImage from a #GdkPixbuf, or from the cache if a filename is
+ * given, no pixbuf is given and the filename has been previously cached.
+ *
+ * Returns: %TRUE on success, %FALSE otherwise. @error is set on failure
+ */
 static gboolean
 mx_image_set_from_pixbuf (MxImage      *image,
                           GdkPixbuf    *pixbuf,
@@ -997,10 +1046,23 @@ mx_image_set_from_pixbuf (MxImage      *image,
 
   cache = mx_texture_cache_get_default ();
 
+  /* Check if we have valid input arguments */
   if ((!pixbuf && !filename) || (!pixbuf && filename &&
       !mx_texture_cache_contains_meta (cache, filename,
                                        GINT_TO_POINTER (mx_image_cache_quark))))
-    return FALSE;
+    {
+      if (error)
+        {
+          if (filename)
+            g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_INTERNAL,
+                         "Texture '%s' not found in cache", filename);
+          else
+            g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_INTERNAL,
+                         "NULL pixbuf and filename");
+        }
+
+      return FALSE;
+    }
 
   if (pixbuf)
     {
@@ -1034,7 +1096,9 @@ mx_image_set_from_pixbuf (MxImage      *image,
       has_alpha = TRUE;
     }
 
-  return mx_image_set_from_data_internal (image, gdk_pixbuf_get_pixels (pixbuf),
+  return
+    mx_image_set_from_data_internal (image,
+                                 pixbuf ? gdk_pixbuf_get_pixels (pixbuf) : NULL,
                                  filename, TRUE,
                                  has_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 :
                                              COGL_PIXEL_FORMAT_RGB_888,
@@ -1159,6 +1223,23 @@ mx_image_size_prepared_cb (GdkPixbufLoader *loader,
     }
 }
 
+/*
+ * mx_image_pixbuf_new:
+ * @filename: A local file path, or %NULL
+ * @buffer: Encoded image data buffer, or %NULL
+ * @count: The size of @buffer
+ * @width: The scaled width, or -1
+ * @height: The scaled height, or -1
+ * @width_threshold: The delta allowed before actually scaling the width
+ * @height_threshold: The delta allowed before actually scaling the height
+ * @upscale: %TRUE if the image should be allowed to scale upwards,
+ *   %FALSE otherwise
+ * @error: A pointer to a #GError
+ *
+ * Loads and scales a #GdkPixbuf using the given filename or data.
+ *
+ * Returns: A new #GdkPixbuf, or %NULL on failure (@error will be set)
+ */
 static GdkPixbuf *
 mx_image_pixbuf_new (const gchar  *filename,
                      guchar       *buffer,
@@ -1193,7 +1274,8 @@ mx_image_pixbuf_new (const gchar  *filename,
     {
       if (!g_file_get_contents (filename, (gchar **)&buffer, &count, &err))
         {
-          g_propagate_error (error, err);
+          if (error)
+            g_propagate_error (error, err);
           g_object_unref (loader);
           return NULL;
         }
@@ -1209,7 +1291,8 @@ mx_image_pixbuf_new (const gchar  *filename,
 
   if (!gdk_pixbuf_loader_write (loader, buffer, count, &err))
     {
-      g_propagate_error (error, err);
+      if (error)
+        g_propagate_error (error, err);
       g_object_unref (loader);
       return NULL;
     }
@@ -1219,7 +1302,8 @@ mx_image_pixbuf_new (const gchar  *filename,
    */
   if (!gdk_pixbuf_loader_close (loader, &err))
     {
-      g_propagate_error (error, err);
+      if (error)
+        g_propagate_error (error, err);
       g_object_unref (loader);
       return NULL;
     }
@@ -1427,14 +1511,14 @@ mx_image_set_from_file_at_size (MxImage      *image,
    * if we're loading at a particular size.
    */
   cache = mx_texture_cache_get_default ();
-  use_cache = FALSE;
+  use_cache = TRUE;
 
   if ((width != -1) || (height != -1) ||
       !mx_texture_cache_contains_meta (cache, filename,
                                        GINT_TO_POINTER (mx_image_cache_quark)))
     {
       /* Check if the unprocessed image is in the cache, and if so, skip
-       * loading it.
+       * loading it and set it from the Cogl texture handle.
        */
       if ((width == -1) && (height == -1) &&
           mx_texture_cache_contains (cache, filename))
@@ -1449,7 +1533,13 @@ mx_image_set_from_file_at_size (MxImage      *image,
               return TRUE;
             }
           else
-            return FALSE;
+            {
+              if (error)
+                g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_INTERNAL,
+                             "Setting image '%s' from CoglTexture failed",
+                             filename);
+              return FALSE;
+            }
         }
 
       /* Load the pixbuf in a thread, then later on upload it to the GPU */
@@ -1481,6 +1571,8 @@ mx_image_set_from_file_at_size (MxImage      *image,
  * @texture: A #CoglHandle to a texture
  *
  * Sets the contents of the image from the given Cogl texture.
+ *
+ * Returns: %TRUE on success, %FALSE on failure
  */
 gboolean
 mx_image_set_from_cogl_texture (MxImage    *image,
