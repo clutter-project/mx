@@ -376,7 +376,8 @@ mx_texture_cache_get_item (MxTextureCache *self,
           return NULL;
         }
 
-      add_texture_to_cache (self, uri, item);
+      if (created)
+        add_texture_to_cache (self, uri, item);
     }
 
   g_free (new_file);
