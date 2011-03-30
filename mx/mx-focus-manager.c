@@ -38,6 +38,8 @@ struct _MxFocusManagerPrivate
   ClutterActor *stage;
 
   MxFocusable *focused;
+  MxFocusable *focused_toplevel;
+  guint        refocus_idle;
 };
 
 enum
@@ -47,9 +49,6 @@ enum
 };
 
 static void mx_focus_manager_set_focused (MxFocusManager *manager, MxFocusable *focusable);
-static void mx_focus_manager_focused_parent_set_cb (ClutterActor   *focused,
-                                                    ClutterActor   *old_parent,
-                                                    MxFocusManager *manager);
 
 static void
 mx_focus_manager_get_property (GObject    *object,
@@ -90,7 +89,14 @@ mx_focus_manager_set_property (GObject      *object,
 static void
 mx_focus_manager_dispose (GObject *object)
 {
-  MxFocusManagerPrivate *priv = MX_FOCUS_MANAGER (object)->priv;
+  MxFocusManager *self = MX_FOCUS_MANAGER (object);
+  MxFocusManagerPrivate *priv = self->priv;
+
+  if (priv->refocus_idle)
+    {
+      g_source_remove (priv->refocus_idle);
+      priv->refocus_idle = 0;
+    }
 
   if (priv->stage)
     {
@@ -98,13 +104,8 @@ mx_focus_manager_dispose (GObject *object)
       priv->stage = NULL;
     }
 
-  if (priv->focused)
-    {
-      g_signal_handlers_disconnect_by_func (priv->focused,
-                                         mx_focus_manager_focused_parent_set_cb,
-                                         object);
-      priv->focused = NULL;
-    }
+  if (priv->focused || priv->focused_toplevel)
+    mx_focus_manager_set_focused (self, NULL);
 
   G_OBJECT_CLASS (mx_focus_manager_parent_class)->dispose (object);
 }
@@ -159,18 +160,45 @@ mx_focus_manager_weak_notify (MxFocusManager *manager,
   g_object_unref (manager);
 }
 
-static void
-mx_focus_manager_focused_parent_set_cb (ClutterActor   *focused,
-                                        ClutterActor   *old_parent,
-                                        MxFocusManager *manager)
+static gboolean
+mx_focus_manager_refocus_cb (MxFocusManager *manager)
 {
-  if (clutter_actor_get_parent (focused) != NULL)
+  MxFocusManagerPrivate *priv = manager->priv;
+
+  priv->refocus_idle = 0;
+
+  if (priv->focused_toplevel)
+    mx_focus_manager_push_focus_with_hint (manager,
+                                           priv->focused_toplevel,
+                                           MX_FOCUS_HINT_PRIOR);
+  else
+    mx_focus_manager_set_focused (manager, NULL);
+
+  return FALSE;
+}
+
+static void
+mx_focus_manager_focused_mapped_cb (ClutterActor   *focused,
+                                    GParamSpec     *pspec,
+                                    MxFocusManager *manager)
+{
+  MxFocusManagerPrivate *priv = manager->priv;
+
+  if (CLUTTER_ACTOR_IS_MAPPED (focused))
     return;
 
-  if (old_parent && MX_IS_FOCUSABLE (old_parent))
-    mx_focus_manager_push_focus_with_hint (manager,
-                                           MX_FOCUSABLE (old_parent),
-                                           MX_FOCUS_HINT_PRIOR);
+  /* We can't refocus straight away, as during the mapped notification,
+   * the actor is still valid (and will just receive focus again).
+   *
+   * This may also trigger a redraw, which would trigger this Clutter bug:
+   * http://bugzilla.clutter-project.org/show_bug.cgi?id=2621
+   * (patch submitted).
+   */
+  if (!priv->refocus_idle)
+    priv->refocus_idle =
+      g_idle_add_full (G_PRIORITY_HIGH,
+                       (GSourceFunc)mx_focus_manager_refocus_cb,
+                       manager, NULL);
 }
 
 static void
@@ -180,15 +208,48 @@ mx_focus_manager_set_focused (MxFocusManager *manager,
   MxFocusManagerPrivate *priv = manager->priv;
 
   if (priv->focused)
-    g_signal_handlers_disconnect_by_func (priv->focused,
-                                          mx_focus_manager_focused_parent_set_cb,
-                                          manager);
+    {
+      g_object_remove_weak_pointer (G_OBJECT (priv->focused),
+                                    (gpointer *)&priv->focused);
+      g_signal_handlers_disconnect_by_func (priv->focused,
+                                            mx_focus_manager_focused_mapped_cb,
+                                            manager);
+    }
+
+  if (priv->focused_toplevel)
+    {
+      g_object_remove_weak_pointer (G_OBJECT (priv->focused_toplevel),
+                                    (gpointer *)&priv->focused_toplevel);
+      priv->focused_toplevel = NULL;
+    }
 
   priv->focused = focusable;
+
   if (priv->focused)
-    g_signal_connect (priv->focused, "parent-set",
-                      G_CALLBACK (mx_focus_manager_focused_parent_set_cb),
-                      manager);
+    {
+      ClutterActor *parent =
+        clutter_actor_get_parent (CLUTTER_ACTOR (priv->focused));
+
+      g_signal_connect_after (priv->focused, "notify::mapped",
+                              G_CALLBACK (mx_focus_manager_focused_mapped_cb),
+                              manager);
+      g_object_add_weak_pointer (G_OBJECT (priv->focused),
+                                 (gpointer *)&priv->focused);
+
+      /* Keep track of the highest-level focusable so we can push the focus
+       * back onto it if the focused actor disappears.
+       */
+      while (parent)
+        {
+          if (MX_IS_FOCUSABLE (parent))
+            priv->focused_toplevel = MX_FOCUSABLE (parent);
+          parent = clutter_actor_get_parent (parent);
+        }
+
+      if (priv->focused_toplevel)
+        g_object_add_weak_pointer (G_OBJECT (priv->focused_toplevel),
+                                   (gpointer *)&priv->focused_toplevel);
+    }
 }
 
 static void
