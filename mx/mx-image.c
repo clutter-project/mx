@@ -223,6 +223,9 @@ calculate_scale (CoglObject       *texture,
   bw = cogl_texture_get_width (texture); /* base texture width */
   bh = cogl_texture_get_height (texture); /* base texture height */
 
+  /* account for the 1px transparent border */
+  bw -= 2; bh -= 2;
+
   /* interpolate between scaling for width and height */
   factor = (ABS (rotation) - ((int)(ABS (rotation) / 180) * 180.0)) / 90.0;
 
