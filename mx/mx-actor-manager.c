@@ -617,7 +617,7 @@ mx_actor_manager_handle_op (MxActorManager *manager)
         {
           if (op->actor)
             {
-              clutter_container_add_actor (op->container, op->actor);
+              clutter_container_remove_actor (op->container, op->actor);
               g_signal_emit (manager, signals[ACTOR_ADDED], 0,
                              op->id, op->container, op->actor);
             }
