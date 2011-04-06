@@ -58,6 +58,8 @@ struct _MxOffscreenPrivate
   guint         acc_enabled : 1;
   guint         blend_set   : 1;
 
+  guint         in_dispose  : 1;
+
   ClutterActor *child;
 
   CoglHandle    fbo;
@@ -264,6 +266,8 @@ mx_offscreen_dispose (GObject *object)
 {
   MxOffscreen *self = MX_OFFSCREEN (object);
   MxOffscreenPrivate *priv = self->priv;
+
+  priv->in_dispose = TRUE;
 
   if (priv->child &&
       (clutter_actor_get_parent (priv->child) != (ClutterActor *)self))
@@ -902,7 +906,8 @@ mx_offscreen_set_child (MxOffscreen *offscreen, ClutterActor *actor)
         }
     }
 
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (offscreen));
+  if (!priv->in_dispose)
+    clutter_actor_queue_relayout (CLUTTER_ACTOR (offscreen));
 
   g_object_notify (G_OBJECT (offscreen), "child");
 }
