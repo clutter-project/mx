@@ -37,6 +37,7 @@ enum
 {
   PROP_0,
 
+  PROP_STAGE,
   PROP_TIME_SLICE,
   PROP_N_OPERATIONS
 };
@@ -205,6 +206,13 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
   object_class->set_property = mx_actor_manager_set_property;
   object_class->dispose = mx_actor_manager_dispose;
   object_class->finalize = mx_actor_manager_finalize;
+
+  pspec = g_param_spec_object ("stage",
+                               "Stage",
+                               "The stage that contains the managed actors.",
+                               CLUTTER_TYPE_STAGE,
+                               MX_PARAM_READABLE);
+  g_object_class_install_property (object_class, PROP_STAGE, pspec);
 
   pspec = g_param_spec_uint ("time-slice",
                              "Time slice",
