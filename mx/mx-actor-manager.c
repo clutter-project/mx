@@ -352,14 +352,6 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
 }
 
 static void
-debug_op_failed_cb (MxActorManager *self,
-                    gulong          id,
-                    GError         *error)
-{
-  g_debug ("Operation %lu failed: %s", id, error->message);
-}
-
-static void
 mx_actor_manager_init (MxActorManager *self)
 {
   MxActorManagerPrivate *priv = self->priv = ACTOR_MANAGER_PRIVATE (self);
@@ -368,9 +360,6 @@ mx_actor_manager_init (MxActorManager *self)
   priv->actor_op_count = g_hash_table_new (NULL, NULL);
   priv->timer = g_timer_new ();
   priv->time_slice = 5;
-
-  g_signal_connect (self, "operation-failed",
-                    G_CALLBACK (debug_op_failed_cb), NULL);
 }
 
 static void
@@ -685,10 +674,7 @@ mx_actor_manager_process_operations (MxActorManager *manager)
       mx_actor_manager_handle_op (manager);
 
       if (g_timer_elapsed (priv->timer, NULL) * 1000 >= priv->time_slice)
-        {
-          g_debug ("-- SNIP --");
-          break;
-        }
+        break;
     }
 
   g_timer_stop (priv->timer);
