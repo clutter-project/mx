@@ -133,6 +133,9 @@ void mx_actor_manager_remove_container (MxActorManager   *manager,
 void mx_actor_manager_cancel_operation (MxActorManager *manager,
                                         gulong          id);
 
+void mx_actor_manager_cancel_operations (MxActorManager *manager,
+                                         ClutterActor   *actor);
+
 void  mx_actor_manager_set_time_slice (MxActorManager *manager,
                                        guint           msecs);
 guint mx_actor_manager_get_time_slice (MxActorManager *manager);

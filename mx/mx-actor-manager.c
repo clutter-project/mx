@@ -91,7 +91,7 @@ struct _MxActorManagerPrivate
 {
   GQueue       *ops;
 
-  GHashTable   *actor_op_count;
+  GHashTable   *actor_op_links;
 
   guint         source;
   gulong        post_paint_handler;
@@ -109,9 +109,11 @@ static void mx_actor_manager_stage_destroyed (gpointer  data,
                                               GObject  *old_stage);
 
 static guint mx_actor_manager_increment_count (MxActorManager *manager,
-                                               gpointer        actor);
+                                               gpointer        actor,
+                                               GList          *op_link);
 static guint mx_actor_manager_decrement_count (MxActorManager *manager,
-                                               gpointer        actor);
+                                               gpointer        actor,
+                                               GList          *op_link);
 
 static void mx_actor_manager_ensure_processing (MxActorManager *manager);
 
@@ -199,12 +201,23 @@ mx_actor_manager_dispose (GObject *object)
 }
 
 static void
+mx_actor_manager_free_op_links (gpointer key,
+                                gpointer value,
+                                gpointer userdata)
+{
+  g_list_free (value);
+}
+
+static void
 mx_actor_manager_finalize (GObject *object)
 {
   MxActorManagerPrivate *priv = MX_ACTOR_MANAGER (object)->priv;
 
   g_queue_free (priv->ops);
-  g_hash_table_unref (priv->actor_op_count);
+  g_hash_table_foreach (priv->actor_op_links,
+                        mx_actor_manager_free_op_links,
+                        NULL);
+  g_hash_table_unref (priv->actor_op_links);
   g_timer_destroy (priv->timer);
 
   G_OBJECT_CLASS (mx_actor_manager_parent_class)->finalize (object);
@@ -381,7 +394,7 @@ mx_actor_manager_init (MxActorManager *self)
   MxActorManagerPrivate *priv = self->priv = ACTOR_MANAGER_PRIVATE (self);
 
   priv->ops = g_queue_new ();
-  priv->actor_op_count = g_hash_table_new (NULL, NULL);
+  priv->actor_op_links = g_hash_table_new (NULL, NULL);
   priv->timer = g_timer_new ();
   priv->time_slice = 5;
 }
@@ -451,33 +464,41 @@ mx_actor_manager_get_stage (MxActorManager *manager)
 
 static guint
 mx_actor_manager_increment_count (MxActorManager *manager,
-                                  gpointer        actor)
+                                  gpointer        actor,
+                                  GList          *op_link)
 {
-  guint count;
+  GList *op_links;
   MxActorManagerPrivate *priv = manager->priv;
 
-  count = GPOINTER_TO_UINT (g_hash_table_lookup (priv->actor_op_count, actor));
-  g_hash_table_insert (priv->actor_op_count, actor, GUINT_TO_POINTER (++count));
+  op_links = g_hash_table_lookup (priv->actor_op_links, actor);
+  op_links = g_list_prepend (op_links, op_link);
 
-  return count;
+  g_hash_table_insert (priv->actor_op_links, actor, op_links);
+
+  return g_list_length (op_links);
 }
 
 static guint
 mx_actor_manager_decrement_count (MxActorManager *manager,
-                                  gpointer        actor)
+                                  gpointer        actor,
+                                  GList          *op_link)
 {
   guint count;
+  GList *op_links;
   MxActorManagerPrivate *priv = manager->priv;
 
-  count = GPOINTER_TO_UINT (g_hash_table_lookup (priv->actor_op_count, actor));
+  op_links = g_hash_table_lookup (priv->actor_op_links, actor);
+  op_links = g_list_remove (op_links, op_link);
 
-  if (--count == 0)
+  count = g_list_length (op_links);
+
+  if (count == 0)
     {
-      g_hash_table_remove (priv->actor_op_count, actor);
+      g_hash_table_remove (priv->actor_op_links, actor);
       g_signal_emit (manager, signals[ACTOR_FINISHED], 0, actor);
     }
   else
-    g_hash_table_insert (priv->actor_op_count, actor, GUINT_TO_POINTER (count));
+    g_hash_table_insert (priv->actor_op_links, actor, op_links);
 
   return count;
 }
@@ -489,7 +510,7 @@ mx_actor_manager_actor_destroyed (gpointer  data,
   MxActorManagerOperation *op = data;
   MxActorManagerPrivate *priv = op->manager->priv;
 
-  g_hash_table_remove (priv->actor_op_count, old_actor);
+  g_hash_table_remove (priv->actor_op_links, old_actor);
   op->actor = NULL;
 }
 
@@ -500,7 +521,7 @@ mx_actor_manager_container_destroyed (gpointer  data,
   MxActorManagerOperation *op = data;
   MxActorManagerPrivate *priv = op->manager->priv;
 
-  g_hash_table_remove (priv->actor_op_count, old_actor);
+  g_hash_table_remove (priv->actor_op_links, old_actor);
   op->container = NULL;
 }
 
@@ -512,6 +533,7 @@ mx_actor_manager_op_new (MxActorManager              *manager,
                          ClutterActor                *actor,
                          ClutterContainer            *container)
 {
+  GList *op_link;
   MxActorManagerPrivate *priv = manager->priv;
   MxActorManagerOperation *op = g_slice_new0 (MxActorManagerOperation);
 
@@ -528,12 +550,15 @@ mx_actor_manager_op_new (MxActorManager              *manager,
   op->actor = actor;
   op->container = container;
 
+  g_queue_push_tail (priv->ops, op);
+  op_link = g_queue_peek_tail_link (priv->ops);
+
   if (actor)
     {
       g_object_weak_ref (G_OBJECT (actor),
                          mx_actor_manager_actor_destroyed,
                          op);
-      mx_actor_manager_increment_count (manager, actor);
+      mx_actor_manager_increment_count (manager, actor, op_link);
 
       if (type == MX_ACTOR_MANAGER_ADD)
         g_object_ref_sink (actor);
@@ -544,27 +569,23 @@ mx_actor_manager_op_new (MxActorManager              *manager,
       g_object_weak_ref (G_OBJECT (container),
                          mx_actor_manager_container_destroyed,
                          op);
-      mx_actor_manager_increment_count (manager, container);
+      mx_actor_manager_increment_count (manager, container, op_link);
     }
-
-  g_queue_push_tail (priv->ops, op);
 
   return op;
 }
 
 static void
-mx_actor_manager_op_free (MxActorManager          *manager,
-                          MxActorManagerOperation *op,
-                          gboolean                 remove)
+mx_actor_manager_op_free (MxActorManager *manager,
+                          GList          *op_link,
+                          gboolean        remove)
 {
+  MxActorManagerOperation *op = op_link->data;
   MxActorManagerPrivate *priv = manager->priv;
-
-  if (remove)
-    g_queue_remove (priv->ops, op);
 
   if (op->actor)
     {
-      mx_actor_manager_decrement_count (manager, op->actor);
+      mx_actor_manager_decrement_count (manager, op->actor, op_link);
       g_object_weak_unref (G_OBJECT (op->actor),
                            mx_actor_manager_actor_destroyed,
                            op);
@@ -575,11 +596,14 @@ mx_actor_manager_op_free (MxActorManager          *manager,
 
   if (op->container)
     {
-      mx_actor_manager_decrement_count (manager, op->container);
+      mx_actor_manager_decrement_count (manager, op->container, op_link);
       g_object_weak_unref (G_OBJECT (op->container),
                            mx_actor_manager_container_destroyed,
                            op);
     }
+
+  if (remove)
+    g_queue_delete_link (priv->ops, op_link);
 
   g_slice_free (MxActorManagerOperation, op);
 }
@@ -588,13 +612,16 @@ static void
 mx_actor_manager_handle_op (MxActorManager *manager)
 {
   ClutterActor *actor;
+  MxActorManagerOperation *op;
 
   GError *error = NULL;
   MxActorManagerPrivate *priv = manager->priv;
-  MxActorManagerOperation *op = g_queue_peek_head (priv->ops);
+  GList *op_link = g_queue_peek_head_link (priv->ops);
 
-  if (!op)
+  if (!op_link)
     return;
+
+  op = op_link->data;
 
   /* We want the actor and container to remain alive during this function,
    * for the purposes of signal emission.
@@ -646,7 +673,7 @@ mx_actor_manager_handle_op (MxActorManager *manager)
           if (op->actor)
             {
               clutter_container_remove_actor (op->container, op->actor);
-              g_signal_emit (manager, signals[ACTOR_ADDED], 0,
+              g_signal_emit (manager, signals[ACTOR_REMOVED], 0,
                              op->id, op->container, op->actor);
             }
           else
@@ -684,7 +711,7 @@ mx_actor_manager_handle_op (MxActorManager *manager)
   if (op->container)
     g_object_unref (op->container);
 
-  mx_actor_manager_op_free (manager, op, TRUE);
+  mx_actor_manager_op_free (manager, op_link, TRUE);
 }
 
 static void
@@ -872,7 +899,8 @@ mx_actor_manager_remove_actor (MxActorManager   *manager,
  *
  * Removes the container. This is a utility function that works by first
  * removing all the children of the container, then the children itself. This
- * effectively spreads the load of removing a large container.
+ * effectively spreads the load of removing a large container. All prior
+ * operations associated with this container will be cancelled.
  *
  * <note><para>
  * The container may not be removed immediately, and thus you may want to set
@@ -892,6 +920,10 @@ mx_actor_manager_remove_container (MxActorManager   *manager,
 
   priv = manager->priv;
 
+  /* Cancel all operations on this container */
+  mx_actor_manager_cancel_operations (manager, CLUTTER_ACTOR (container));
+
+  /* Remove all children */
   children = clutter_container_get_children (container);
   while (children)
     {
@@ -905,6 +937,7 @@ mx_actor_manager_remove_container (MxActorManager   *manager,
       children = g_list_delete_link (children, children);
     }
 
+  /* Then remove the container */
   parent = clutter_actor_get_parent (CLUTTER_ACTOR (container));
   if (parent && CLUTTER_IS_CONTAINER (parent))
     mx_actor_manager_op_new (manager,
@@ -958,11 +991,48 @@ mx_actor_manager_cancel_operation (MxActorManager *manager,
     }
 
   op = op_link->data;
-  g_queue_delete_link (priv->ops, op_link);
+  g_queue_unlink (priv->ops, op_link);
 
   g_signal_emit (manager, signals[OP_CANCELLED], 0, id);
 
-  mx_actor_manager_op_free (manager, op, FALSE);
+  mx_actor_manager_op_free (manager, op_link, FALSE);
+  g_list_free (op_link);
+}
+
+/**
+ * mx_actor_manager_cancel_operations:
+ * @manager: A #MxActorManager
+ * @actor: A #ClutterActor
+ *
+ * Cancels all operations associated with the given actor.
+ */
+void
+mx_actor_manager_cancel_operations (MxActorManager *manager,
+                                    ClutterActor   *actor)
+{
+  GList *op_links;
+  MxActorManagerPrivate *priv;
+
+  g_return_if_fail (MX_IS_ACTOR_MANAGER (manager));
+  g_return_if_fail (CLUTTER_IS_ACTOR (actor));
+
+  priv = manager->priv;
+
+  op_links = g_hash_table_lookup (priv->actor_op_links, actor);
+  while (op_links)
+    {
+      GList *op_link = op_links->data;
+      MxActorManagerOperation *op = op_link->data;
+
+      op_links = op_links->next;
+
+      g_queue_unlink (priv->ops, op_link);
+
+      g_signal_emit (manager, signals[OP_CANCELLED], 0, op->id);
+
+      mx_actor_manager_op_free (manager, op_link, FALSE);
+      g_list_free (op_link);
+    }
 }
 
 /**
