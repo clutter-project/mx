@@ -793,6 +793,44 @@ mx_actor_manager_remove_actor (MxActorManager   *manager,
   return op->id;
 }
 
+void
+mx_actor_manager_remove_container (MxActorManager   *manager,
+                                   ClutterContainer *container)
+{
+  GList *children;
+  ClutterActor *parent;
+  MxActorManagerPrivate *priv;
+
+  g_return_if_fail (MX_IS_ACTOR_MANAGER (manager));
+  g_return_if_fail (CLUTTER_IS_CONTAINER (container));
+
+  priv = manager->priv;
+
+  children = clutter_container_get_children (container);
+  while (children)
+    {
+      ClutterActor *child = children->data;
+      mx_actor_manager_op_new (manager,
+                               MX_ACTOR_MANAGER_REMOVE,
+                               NULL,
+                               NULL,
+                               child,
+                               container);
+      children = g_list_delete_link (children, children);
+    }
+
+  parent = clutter_actor_get_parent (CLUTTER_ACTOR (container));
+  if (parent && CLUTTER_IS_CONTAINER (parent))
+    mx_actor_manager_op_new (manager,
+                             MX_ACTOR_MANAGER_REMOVE,
+                             NULL,
+                             NULL,
+                             (ClutterActor *)container,
+                             (ClutterContainer *)parent);
+
+  mx_actor_manager_ensure_processing (manager);
+}
+
 static gint
 mx_actor_manager_find_by_id (gconstpointer a,
                              gconstpointer b)

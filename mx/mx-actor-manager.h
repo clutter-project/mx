@@ -125,6 +125,9 @@ gulong mx_actor_manager_remove_actor (MxActorManager   *manager,
                                       ClutterContainer *container,
                                       ClutterActor     *actor);
 
+void mx_actor_manager_remove_container (MxActorManager   *manager,
+                                        ClutterContainer *container);
+
 void mx_actor_manager_cancel_operation (MxActorManager *manager,
                                         gulong          id);
 
