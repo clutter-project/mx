@@ -210,7 +210,7 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                              "Time slice",
                              "The amount of time to spend performing "
                              "operations, per frame, in ms",
-                             0, G_MAXUINT, 8,
+                             0, G_MAXUINT, 5,
                              MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_TIME_SLICE, pspec);
 
@@ -367,7 +367,7 @@ mx_actor_manager_init (MxActorManager *self)
   priv->ops = g_queue_new ();
   priv->actor_op_count = g_hash_table_new (NULL, NULL);
   priv->timer = g_timer_new ();
-  priv->time_slice = 8;
+  priv->time_slice = 5;
 
   g_signal_connect (self, "operation-failed",
                     G_CALLBACK (debug_op_failed_cb), NULL);
