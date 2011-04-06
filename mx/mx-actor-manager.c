@@ -20,6 +20,18 @@
  *
  */
 
+/**
+ * SECTION:mx-actor-manager
+ * @short_description: An object that manages ClutterActor lifecycle
+ *
+ * #MxActorManager is an object that helps manage the creation, addition
+ * and removal of actors. It is bound to a particular stage, and spreads
+ * operations over time so as not to interrupt animations or interactivity.
+ *
+ * Operations added to the #MxActorManager will strictly be performed in the
+ * order in which they were added.
+ */
+
 #include "mx-actor-manager.h"
 #include "mx-enum-types.h"
 #include "mx-marshal.h"
@@ -320,7 +332,7 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                   G_TYPE_UINT);
 
   /**
-   * MxActorManager::operation-completed
+   * MxActorManager::operation-cancelled
    * @manager: the object that received the signal
    * @id: The operation id
    *
@@ -712,6 +724,21 @@ mx_actor_manager_ensure_processing (MxActorManager *manager)
                        NULL);
 }
 
+/**
+ * mx_actor_manager_create_actor:
+ * @manager: A #MxActorManager
+ * @create_func: A #ClutterActor creation function
+ * @userdata: data to be passed to the function, or %NULL
+ * @destroy_func: callback to invoke before the operation is removed
+ *
+ * Creates a #ClutterActor. The actor may not be created immediately,
+ * or at all, if the operation is cancelled.
+ *
+ * On successful completion, the #MxActorManager::actor_created signal will
+ * be fired.
+ *
+ * Returns: The ID for this operation.
+ */
 gulong
 mx_actor_manager_create_actor (MxActorManager           *manager,
                                MxActorManagerCreateFunc  create_func,
@@ -737,6 +764,20 @@ mx_actor_manager_create_actor (MxActorManager           *manager,
   return op->id;
 }
 
+/**
+ * mx_actor_manager_add_actor:
+ * @manager: A #MxActorManager
+ * @container: A #ClutterContainer
+ * @actor: A #ClutterActor
+ *
+ * Adds @actor to @container. The actor may not be parented immediately,
+ * or at all, if the operation is cancelled.
+ *
+ * On successful completion, the #MxActorManager::actor_added signal will
+ * be fired.
+ *
+ * Returns: The ID for this operation.
+ */
 gulong
 mx_actor_manager_add_actor (MxActorManager   *manager,
                             ClutterContainer *container,
@@ -762,6 +803,24 @@ mx_actor_manager_add_actor (MxActorManager   *manager,
   return op->id;
 }
 
+/**
+ * mx_actor_manager_remove_actor:
+ * @manager: A #MxActorManager
+ * @container: A #ClutterContainer
+ * @actor: A #ClutterActor
+ *
+ * Removes @actor from @container.
+ *
+ * On successful completion, the #MxActorManager::actor_removed signal will
+ * be fired.
+ *
+ * <note><para>
+ * The actor may not be removed immediately, and thus you may want to set
+ * the actor's opacity to 0 before calling this function.
+ * </para></note>
+ *
+ * Returns: The ID for this operation.
+ */
 gulong
 mx_actor_manager_remove_actor (MxActorManager   *manager,
                                ClutterContainer *container,
@@ -787,6 +846,20 @@ mx_actor_manager_remove_actor (MxActorManager   *manager,
   return op->id;
 }
 
+/**
+ * mx_actor_manager_remove_container:
+ * @manager: A #MxActorManager
+ * @container: A #ClutterContainer
+ *
+ * Removes the container. This is a utility function that works by first
+ * removing all the children of the container, then the children itself. This
+ * effectively spreads the load of removing a large container.
+ *
+ * <note><para>
+ * The container may not be removed immediately, and thus you may want to set
+ * the container's opacity to 0 before calling this function.
+ * </para></note>
+ */
 void
 mx_actor_manager_remove_container (MxActorManager   *manager,
                                    ClutterContainer *container)
@@ -835,6 +908,15 @@ mx_actor_manager_find_by_id (gconstpointer a,
   return (op->id == *id) ? 0 : -1;
 }
 
+/**
+ * mx_actor_manager_cancel_operation:
+ * @manager: A #MxActorManager
+ * @id: An operation ID
+ *
+ * Cancels the given operation, if it exists. The
+ * #MxActorManager::operation_cancelled signal is fired whenever an operation
+ * is cancelled.
+ */
 void
 mx_actor_manager_cancel_operation (MxActorManager *manager,
                                    gulong          id)
@@ -864,6 +946,17 @@ mx_actor_manager_cancel_operation (MxActorManager *manager,
   mx_actor_manager_op_free (manager, op, FALSE);
 }
 
+/**
+ * mx_actor_manager_set_time_slice:
+ * @manager: A #MxActorManager
+ * @msecs: A time, in milliseconds
+ *
+ * Sets the amount of time the actor manager will spend performing operations,
+ * before yielding to allow any necessary redrawing to occur.
+ *
+ * Lower times will lead to smoother performance, but will increase the amount
+ * of time it takes for operations to complete.
+ */
 void
 mx_actor_manager_set_time_slice (MxActorManager *manager,
                                  guint           msecs)
@@ -881,6 +974,14 @@ mx_actor_manager_set_time_slice (MxActorManager *manager,
     }
 }
 
+/**
+ * mx_actor_manager_get_time_slice:
+ * @manager: A #MxActorManager
+ *
+ * Retrieves the current time slice being used for operations.
+ *
+ * Returns: The time-slice being used, in milliseconds
+ */
 guint
 mx_actor_manager_get_time_slice (MxActorManager *manager)
 {
@@ -888,6 +989,14 @@ mx_actor_manager_get_time_slice (MxActorManager *manager)
   return manager->priv->time_slice;
 }
 
+/**
+ * mx_actor_manager_get_n_operations:
+ * @manager: A #MxActorManager
+ *
+ * Retrieves the amount of operations left in the queue.
+ *
+ * Returns: Number of operations left to perform
+ */
 guint
 mx_actor_manager_get_n_operations (MxActorManager *manager)
 {

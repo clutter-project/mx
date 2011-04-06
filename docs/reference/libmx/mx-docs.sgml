@@ -82,6 +82,7 @@
     <chapter>
       <title>Abstract Types and Utilities</title>
       <xi:include href="xml/mx-action.xml"/>
+      <xi:include href="xml/mx-actor-manager.xml"/>
       <xi:include href="xml/mx-application.xml"/>
       <xi:include href="xml/mx-adjustment.xml"/>
       <xi:include href="xml/mx-button-group.xml"/>

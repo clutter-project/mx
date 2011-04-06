@@ -298,6 +298,32 @@ MX_FOCUS_MANAGER_GET_CLASS
 </SECTION>
 
 <SECTION>
+<FILE>mx-actor-manager</FILE>
+<TITLE>MxActorManager</TITLE>
+MxActorManager
+MxActorManagerClass
+mx_actor_manager_get_for_stage
+mx_actor_manager_create_actor
+mx_actor_manager_add_actor
+mx_actor_manager_remove_actor
+mx_actor_manager_remove_container
+mx_actor_manager_cancel_operation
+mx_actor_manager_set_time_slice
+mx_actor_manager_get_time_slice
+mx_actor_manager_get_n_operations
+<SUBSECTION Private>
+MxActorManagerPrivate
+<SUBSECTION Standard>
+MX_ACTOR_MANAGER
+MX_IS_ACTOR_MANAGER
+MX_TYPE_ACTOR_MANAGER
+mx_focus_manager_get_type
+MX_ACTOR_MANAGER_CLASS
+MX_IS_ACTOR_MANAGER_CLASS
+MX_ACTOR_MANAGER_GET_CLASS
+</SECTION>
+
+<SECTION>
 <FILE>mx-spinner</FILE>
 <TITLE>MxSpinner</TITLE>
 MxSpinner
