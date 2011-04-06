@@ -303,6 +303,7 @@ MX_FOCUS_MANAGER_GET_CLASS
 MxActorManager
 MxActorManagerClass
 mx_actor_manager_get_for_stage
+mx_actor_manager_get_stage
 mx_actor_manager_create_actor
 mx_actor_manager_add_actor
 mx_actor_manager_remove_actor

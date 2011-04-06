@@ -125,6 +125,10 @@ mx_actor_manager_get_property (GObject    *object,
 
   switch (property_id)
     {
+    case PROP_STAGE:
+      g_value_set_object (value, priv->stage);
+      break;
+
     case PROP_TIME_SLICE:
       g_value_set_uint (value, priv->time_slice);
       break;
@@ -428,6 +432,21 @@ mx_actor_manager_get_for_stage (ClutterStage *stage)
     }
 
   return manager;
+}
+
+/**
+ * mx_actor_manager_get_stage:
+ * @manager: A #MxActorManager
+ *
+ * Gets the #ClutterStage the actor manager is associated with.
+ *
+ * Returns: The #ClutterStage the actor is associated with.
+ */
+ClutterStage *
+mx_actor_manager_get_stage (MxActorManager *manager)
+{
+  g_return_val_if_fail (MX_IS_ACTOR_MANAGER (manager), NULL);
+  return manager->priv->stage;
 }
 
 static guint
