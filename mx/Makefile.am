@@ -33,6 +33,7 @@ endif
 # keep sorted alphabetically, please
 source_h = \
 	$(top_srcdir)/mx/mx-action.h		\
+	$(top_srcdir)/mx/mx-actor-manager.h	\
 	$(top_srcdir)/mx/mx-adjustment.h		\
 	$(top_srcdir)/mx/mx-application.h	\
 	$(top_srcdir)/mx/mx-bin.h			\
@@ -107,6 +108,7 @@ source_h_priv = \
 source_c = \
 	$(top_srcdir)/mx/mx-adjustment.c 		\
 	$(top_srcdir)/mx/mx-action.c 		\
+	$(top_srcdir)/mx/mx-actor-manager.c 	\
 	$(top_srcdir)/mx/mx-application.c	\
 	$(top_srcdir)/mx/mx-bin.c			\
 	$(top_srcdir)/mx/mx-box-layout.c		\
