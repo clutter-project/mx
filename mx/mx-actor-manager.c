@@ -259,9 +259,9 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxActorManagerClass, actor_created),
                   NULL, NULL,
-                  _mx_marshal_VOID__UINT_OBJECT,
+                  _mx_marshal_VOID__ULONG_OBJECT,
                   G_TYPE_NONE, 2,
-                  G_TYPE_UINT, CLUTTER_TYPE_ACTOR);
+                  G_TYPE_ULONG, CLUTTER_TYPE_ACTOR);
 
   /**
    * MxActorManager::actor-added
@@ -278,9 +278,9 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxActorManagerClass, actor_added),
                   NULL, NULL,
-                  _mx_marshal_VOID__UINT_OBJECT_OBJECT,
+                  _mx_marshal_VOID__ULONG_OBJECT_OBJECT,
                   G_TYPE_NONE, 3,
-                  G_TYPE_UINT, CLUTTER_TYPE_ACTOR, CLUTTER_TYPE_ACTOR);
+                  G_TYPE_ULONG, CLUTTER_TYPE_ACTOR, CLUTTER_TYPE_ACTOR);
 
   /**
    * MxActorManager::actor-removed
@@ -297,9 +297,9 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxActorManagerClass, actor_removed),
                   NULL, NULL,
-                  _mx_marshal_VOID__UINT_OBJECT_OBJECT,
+                  _mx_marshal_VOID__ULONG_OBJECT_OBJECT,
                   G_TYPE_NONE, 3,
-                  G_TYPE_UINT, CLUTTER_TYPE_ACTOR, CLUTTER_TYPE_ACTOR);
+                  G_TYPE_ULONG, CLUTTER_TYPE_ACTOR, CLUTTER_TYPE_ACTOR);
 
   /**
    * MxActorManager::actor-finished
@@ -331,9 +331,9 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxActorManagerClass, operation_completed),
                   NULL, NULL,
-                  _mx_marshal_VOID__UINT,
+                  _mx_marshal_VOID__ULONG,
                   G_TYPE_NONE, 1,
-                  G_TYPE_UINT);
+                  G_TYPE_ULONG);
 
   /**
    * MxActorManager::operation-cancelled
@@ -348,9 +348,9 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxActorManagerClass, operation_cancelled),
                   NULL, NULL,
-                  _mx_marshal_VOID__UINT,
+                  _mx_marshal_VOID__ULONG,
                   G_TYPE_NONE, 1,
-                  G_TYPE_UINT);
+                  G_TYPE_ULONG);
 
   /**
    * MxActorManager::operation-failed
@@ -366,9 +366,9 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxActorManagerClass, operation_failed),
                   NULL, NULL,
-                  _mx_marshal_VOID__UINT_BOXED,
+                  _mx_marshal_VOID__ULONG_BOXED,
                   G_TYPE_NONE, 2,
-                  G_TYPE_UINT, G_TYPE_ERROR);
+                  G_TYPE_ULONG, G_TYPE_ERROR);
 
   actor_manager_quark = g_quark_from_static_string ("mx-actor-manager");
   actor_manager_error_quark =
