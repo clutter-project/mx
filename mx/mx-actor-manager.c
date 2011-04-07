@@ -100,13 +100,13 @@ struct _MxActorManagerPrivate
   guint         time_slice;
 
   ClutterStage *stage;
+
+  guint         quark_set   : 1;
 };
 
 static guint signals[LAST_SIGNAL] = { 0, };
 
 static void mx_actor_manager_handle_op (MxActorManager *manager);
-static void mx_actor_manager_stage_destroyed (gpointer  data,
-                                              GObject  *old_stage);
 
 static guint mx_actor_manager_increment_count (MxActorManager *manager,
                                                gpointer        actor,
@@ -145,6 +145,17 @@ mx_actor_manager_get_property (GObject    *object,
 }
 
 static void
+mx_actor_manager_stage_destroyed (gpointer  data,
+                                  GObject  *old_stage)
+{
+  MxActorManager *self = MX_ACTOR_MANAGER (data);
+  MxActorManagerPrivate *priv = self->priv;
+
+  priv->stage = NULL;
+  g_object_unref (self);
+}
+
+static void
 mx_actor_manager_set_property (GObject      *object,
                                guint         property_id,
                                const GValue *value,
@@ -154,6 +165,12 @@ mx_actor_manager_set_property (GObject      *object,
 
   switch (property_id)
     {
+    case PROP_STAGE:
+      self->priv->stage = g_value_get_object (value);
+      g_object_weak_ref (G_OBJECT (self->priv->stage),
+                         mx_actor_manager_stage_destroyed, self);
+      break;
+
     case PROP_TIME_SLICE:
       mx_actor_manager_set_time_slice (self, g_value_get_uint (value));
       break;
@@ -190,7 +207,9 @@ mx_actor_manager_dispose (GObject *object)
 
   if (priv->stage)
     {
-      g_object_set_qdata (G_OBJECT (priv->stage), actor_manager_quark, NULL);
+      if (priv->quark_set)
+        g_object_set_qdata (G_OBJECT (priv->stage), actor_manager_quark, NULL);
+
       g_object_weak_unref (G_OBJECT (priv->stage),
                            mx_actor_manager_stage_destroyed,
                            self);
@@ -240,7 +259,7 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                                "Stage",
                                "The stage that contains the managed actors.",
                                CLUTTER_TYPE_STAGE,
-                               MX_PARAM_READABLE);
+                               MX_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
   g_object_class_install_property (object_class, PROP_STAGE, pspec);
 
   pspec = g_param_spec_uint ("time-slice",
@@ -399,23 +418,35 @@ mx_actor_manager_init (MxActorManager *self)
   priv->time_slice = 5;
 }
 
-static void
-mx_actor_manager_stage_destroyed (gpointer  data,
-                                  GObject  *old_stage)
+/**
+ * mx_actor_manager_new:
+ * @stage: A #ClutterStage
+ *
+ * Creates a new #MxActorManager, associated with the given stage.
+ *
+ * <note><para>
+ * A reference will not be taken on the stage, and when the stage is destroyed,
+ * the actor manager will lose a reference. The actor manager can be kept
+ * alive by taking a reference, but will no longer divide up events.
+ * </para></note>
+ *
+ * Returns: (transfer none): An #MxActorManager, tied to the given #ClutterStage
+ */
+MxActorManager *
+mx_actor_manager_new (ClutterStage *stage)
 {
-  MxActorManager *self = MX_ACTOR_MANAGER (data);
-  MxActorManagerPrivate *priv = self->priv;
-
-  priv->stage = NULL;
-  g_object_unref (self);
+  return g_object_new (MX_TYPE_ACTOR_MANAGER, "stage", stage, NULL);
 }
 
 /**
  * mx_actor_manager_get_for_stage:
  * @stage: A #ClutterStage
  *
- * Get the MxActorManager associated with a stage, or create one if none exist
- * for the specified stage.
+ * Get the MxActorManager associated with a stage, or creates one if this is the
+ * first call to the function with the given #ClutterStage.
+ *
+ * This is a convenience function that allows for easy association of one
+ * #MxActorManager to a #ClutterStage.
  *
  * Returns: (transfer none): An #MxActorManager
  */
@@ -430,18 +461,9 @@ mx_actor_manager_get_for_stage (ClutterStage *stage)
 
   if (manager == NULL)
     {
-      MxActorManagerPrivate *priv;
-
-      manager = g_object_new (MX_TYPE_ACTOR_MANAGER, NULL);
-      priv = manager->priv;
-
-      priv->stage = stage;
-
+      manager = g_object_new (MX_TYPE_ACTOR_MANAGER, "stage", stage, NULL);
       g_object_set_qdata (G_OBJECT (stage), actor_manager_quark, manager);
-      g_object_weak_ref (G_OBJECT (stage),
-                         mx_actor_manager_stage_destroyed, manager);
-
-      g_object_notify (G_OBJECT (manager), "stage");
+      manager->priv->quark_set = TRUE;
     }
 
   return manager;
@@ -735,17 +757,18 @@ mx_actor_manager_process_operations (MxActorManager *manager)
 
   g_timer_start (priv->timer);
 
-  while (g_queue_get_length (priv->ops))
+  while (!g_queue_is_empty (priv->ops))
     {
       mx_actor_manager_handle_op (manager);
 
-      if (g_timer_elapsed (priv->timer, NULL) * 1000 >= priv->time_slice)
+      if (priv->stage &&
+          g_timer_elapsed (priv->timer, NULL) * 1000 >= priv->time_slice)
         break;
     }
 
   g_timer_stop (priv->timer);
 
-  if (g_queue_get_length (priv->ops))
+  if (!g_queue_is_empty (priv->ops))
     {
       if (!priv->post_paint_handler)
         priv->post_paint_handler =

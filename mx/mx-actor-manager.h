@@ -110,6 +110,8 @@ struct _MxActorManagerClass
 
 GType mx_actor_manager_get_type (void) G_GNUC_CONST;
 
+MxActorManager *mx_actor_manager_new (ClutterStage *stage);
+
 MxActorManager *mx_actor_manager_get_for_stage (ClutterStage *stage);
 
 ClutterStage *mx_actor_manager_get_stage (MxActorManager *manager);
