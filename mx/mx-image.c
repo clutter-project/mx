@@ -901,9 +901,6 @@ mx_image_set_from_data_internal (MxImage          *image,
 
   mx_image_cancel_in_progress (image);
 
-  if (priv->old_texture)
-    cogl_object_unref (priv->old_texture);
-
   /* Store a pointer to the old texture */
   old_texture = priv->texture;
 
@@ -917,11 +914,12 @@ mx_image_set_from_data_internal (MxImage          *image,
 
       if (!priv->texture)
         {
+          priv->texture = old_texture;
+
           if (error)
             g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_INTERNAL,
                          "Image '%s' not found in cache", uri);
           return FALSE;
-
         }
     }
   else
@@ -934,6 +932,8 @@ mx_image_set_from_data_internal (MxImage          *image,
 
       if (!priv->texture)
         {
+          priv->texture = old_texture;
+
           if (error)
             g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_BAD_FORMAT,
                          "Failed to create Cogl texture");
@@ -977,6 +977,9 @@ mx_image_set_from_data_internal (MxImage          *image,
     }
 
   /* Replace the old texture */
+  if (priv->old_texture)
+    cogl_object_unref (priv->old_texture);
+
   priv->old_texture = old_texture;
   priv->old_rotation = priv->rotation;
   priv->old_mode = priv->mode;
