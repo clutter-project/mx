@@ -1,3 +1,18 @@
+1.1.11
+======
+
+Changes since 1.1.10
+
+ * Allow arbitrary rotation angles in MxImage
+ * Handle loss of focus in MxFocusManager
+ * Handle URIs in MxTextureCache
+ * Allow insertion into MxTextureCache
+ * Allow insertion of metadata in MxTextureCache
+ * Many fixes and refinement of MxImage
+ * Fix calling clutter_actor_queue_relayout during dispose of MxOffscreen
+ * Add MxActorManager, to help spread the load of actor operations
+ * Fix MxTable get_preferred_width/height when used without for_width/height
+
 1.1.10
 ======
 
