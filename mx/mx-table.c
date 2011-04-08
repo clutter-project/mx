@@ -777,7 +777,7 @@ mx_table_calculate_col_widths (MxTable *table,
       clutter_actor_get_preferred_width (child, -1, &c_min, &c_pref);
 
       col->min_size = MAX (col->min_size, c_min);
-      col->pref_size = MAX (col->pref_size, c_pref);
+      col->final_size = col->pref_size = MAX (col->pref_size, c_pref);
       col->expand = MAX (col->expand, meta->x_expand);
     }
 
@@ -1066,7 +1066,7 @@ mx_table_calculate_row_heights (MxTable *table,
                                           &c_min, &c_pref);
 
       row->min_size = MAX (row->min_size, c_min);
-      row->pref_size = MAX (row->pref_size, c_pref);
+      row->final_size = row->pref_size = MAX (row->pref_size, c_pref);
       row->expand = MAX (row->expand, meta->y_expand);
     }
 
