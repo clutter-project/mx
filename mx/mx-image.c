@@ -265,6 +265,7 @@ mx_image_paint (ClutterActor *actor)
   CoglMatrix matrix;
   gfloat scale = 1;
   gfloat ratio;
+  CoglColor color;
 
   /* chain up to draw the background */
   CLUTTER_ACTOR_CLASS (mx_image_parent_class)->paint (actor);
@@ -289,11 +290,10 @@ mx_image_paint (ClutterActor *actor)
 
   alpha = clutter_actor_get_paint_opacity (actor);
 
-  cogl_material_set_color4ub (priv->material,
-                              alpha,
-                              alpha,
-                              alpha,
-                              alpha);
+  /* Paint opacity is applied using a constant on the third layer of the
+   * material. This ensures the paint opacity is applied to both textures. */
+  cogl_color_init_from_4ub (&color, alpha, alpha, alpha, alpha);
+  cogl_material_set_layer_combine_constant (priv->material, 2, &color);
 
   /* calculate texture co-ordinates */
   get_center_coords (priv->texture, priv->rotation, aw, ah, tex_coords);
@@ -718,6 +718,12 @@ mx_image_init (MxImage *self)
   cogl_material_set_layer_wrap_mode (priv->template_material, 1,
                                      COGL_MATERIAL_WRAP_MODE_CLAMP_TO_EDGE);
 
+  /* override the default combination description in the first layer so that the
+   * paint opacity is not applied to the texture */
+  cogl_material_set_layer_combine (priv->template_material, 0,
+                                   "RGBA = REPLACE (TEXTURE)",
+                                   NULL);
+
   /* Set the layer combination description for the second layer; the
    * default for Cogl is to simply multiply the layer with the
    * precendent one. In this case we interpolate the color for each
@@ -729,6 +735,11 @@ mx_image_init (MxImage *self)
                                    "RGBA = INTERPOLATE (PREVIOUS, "
                                                        "TEXTURE, "
                                                        "CONSTANT[A])",
+                                   NULL);
+
+  /* apply the paint opacity */
+  cogl_material_set_layer_combine (priv->template_material, 2,
+                                   "RGBA = MODULATE (PREVIOUS, CONSTANT[A])",
                                    NULL);
 
   /* set the transparent texture to start from */
