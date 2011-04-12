@@ -906,7 +906,14 @@ mx_image_set_from_data_internal (MxImage          *image,
   MxTextureCache *cache;
   CoglHandle old_texture;
 
-  g_return_val_if_fail (MX_IS_IMAGE (image), FALSE);
+  if (G_UNLIKELY (!MX_IS_IMAGE (image)))
+    {
+      if (error)
+        g_set_error (error, MX_IMAGE_ERROR,
+                     MX_IMAGE_ERROR_INVALID_PARAMETER,
+                     "image parameter is not a MxImage");
+      return FALSE;
+    }
 
   priv = image->priv;
 
@@ -1024,7 +1031,14 @@ mx_image_set_from_data (MxImage          *image,
                         gint              rowstride,
                         GError          **error)
 {
-  g_return_val_if_fail (MX_IS_IMAGE (image), FALSE);
+  if (G_UNLIKELY (!MX_IS_IMAGE (image)))
+    {
+      if (error)
+        g_set_error (error, MX_IMAGE_ERROR,
+                     MX_IMAGE_ERROR_INVALID_PARAMETER,
+                     "image parameter is not a MxImage");
+      return FALSE;
+    }
 
   return mx_image_set_from_data_internal (image, data, NULL, FALSE,
                                           pixel_format, width, height,
@@ -1056,7 +1070,14 @@ mx_image_set_from_pixbuf (MxImage      *image,
   GdkColorspace color_space;
   gint width, height, rowstride, bps, channels;
 
-  g_return_val_if_fail (MX_IS_IMAGE (image), FALSE);
+  if (G_UNLIKELY (!MX_IS_IMAGE (image)))
+    {
+      if (error)
+        g_set_error (error, MX_IMAGE_ERROR,
+                     MX_IMAGE_ERROR_INVALID_PARAMETER,
+                     "image parameter is not a MxImage");
+      return FALSE;
+    }
 
   err = NULL;
   priv = image->priv;
@@ -1394,7 +1415,14 @@ mx_image_set_async (MxImage         *image,
   MxImagePrivate *priv;
   MxImageAsyncData *data;
 
-  g_return_val_if_fail (MX_IS_IMAGE (image), FALSE);
+  if (G_UNLIKELY (!MX_IS_IMAGE (image)))
+    {
+      if (error)
+        g_set_error (error, MX_IMAGE_ERROR,
+                     MX_IMAGE_ERROR_INVALID_PARAMETER,
+                     "image parameter is not a MxImage");
+      return FALSE;
+    }
 
   priv = image->priv;
 
@@ -1519,7 +1547,14 @@ mx_image_set_from_file_at_size (MxImage      *image,
   MxTextureCache *cache;
   gboolean retval, use_cache;
 
-  g_return_val_if_fail (MX_IS_IMAGE (image), FALSE);
+  if (G_UNLIKELY (!MX_IS_IMAGE (image)))
+    {
+      if (error)
+        g_set_error (error, MX_IMAGE_ERROR,
+                     MX_IMAGE_ERROR_INVALID_PARAMETER,
+                     "image parameter is not a MxImage");
+      return FALSE;
+    }
 
   priv = image->priv;
   pixbuf = NULL;
@@ -1743,7 +1778,14 @@ mx_image_set_from_buffer_at_size (MxImage         *image,
   GdkPixbuf *pixbuf;
   MxImagePrivate *priv;
 
-  g_return_val_if_fail (MX_IS_IMAGE (image), FALSE);
+  if (G_UNLIKELY (!MX_IS_IMAGE (image)))
+    {
+      if (error)
+        g_set_error (error, MX_IMAGE_ERROR,
+                     MX_IMAGE_ERROR_INVALID_PARAMETER,
+                     "image parameter is not a MxImage");
+      return FALSE;
+    }
 
   priv = image->priv;
 
