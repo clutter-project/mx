@@ -391,14 +391,20 @@ mx_expander_allocate (ClutterActor          *actor,
   ClutterActorBox child_box;
   MxPadding padding;
   gfloat label_w, label_h;
-  gfloat child_h, child_w;
   gfloat available_w, available_h, min_w, min_h, full_h, arrow_h, arrow_w;
-  ClutterRequestMode request;
+  MxAlign x_align, y_align;
+  gboolean x_fill, y_fill;
 
   /* chain up to store allocation */
   CLUTTER_ACTOR_CLASS (mx_expander_parent_class)->allocate (actor, box, flags);
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
+  g_object_get (G_OBJECT (actor),
+                "x-align", &x_align,
+                "y-align", &y_align,
+                "x-fill", &x_fill,
+                "y-fill", &y_fill,
+                NULL);
 
   available_w = (box->x2 - box->x1) - padding.left - padding.right;
   available_h = (box->y2 - box->y1) - padding.top - padding.bottom;
@@ -443,44 +449,23 @@ mx_expander_allocate (ClutterActor          *actor,
   full_h += MAX (label_h, arrow_h);
 
   /* remove label height and spacing for child calculations */
-  available_h -= MAX (label_h, arrow_h) - priv->spacing;
+  available_h -= MAX (label_h, arrow_h) + priv->spacing;
 
   /* child */
   child = mx_bin_get_child (MX_BIN (actor));
   if (child && CLUTTER_ACTOR_IS_VISIBLE (child))
     {
-      request = CLUTTER_REQUEST_HEIGHT_FOR_WIDTH;
-      g_object_get (G_OBJECT (child), "request-mode", &request, NULL);
-
-      min_h = 0;
-      min_w = 0;
-
-      if (request == CLUTTER_REQUEST_HEIGHT_FOR_WIDTH)
-        {
-          clutter_actor_get_preferred_width (child, available_h, &min_w, &child_w);
-          child_w = CLAMP (child_w, min_w, available_w);
-
-          clutter_actor_get_preferred_height (child, child_w, &min_h, &child_h);
-          child_h = CLAMP (child_h, min_h, available_h);
-        }
-      else if (request == CLUTTER_REQUEST_WIDTH_FOR_HEIGHT)
-        {
-          clutter_actor_get_preferred_height (child, available_w, &min_h, &child_h);
-          child_h = CLAMP (child_h, min_h, available_h);
-
-          clutter_actor_get_preferred_width (child, child_h, &min_w, &child_w);
-          child_w = CLAMP (child_w, min_w, available_w);
-        }
-
       child_box.x1 = padding.left;
-      child_box.x2 = child_box.x1 + child_w;
+      child_box.x2 = child_box.x1 + available_w;
       child_box.y1 = padding.top + priv->spacing + MAX (label_h, arrow_h);
-      child_box.y2 = child_box.y1 + child_h;
+      child_box.y2 = child_box.y1 + available_h;
+
+      mx_allocate_align_fill (child, &child_box,
+                              x_align, y_align,
+                              x_fill, y_fill);
+
       clutter_actor_allocate (child, &child_box, flags);
-
-      full_h += priv->spacing + child_h;
     }
-
 }
 
 static void
