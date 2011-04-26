@@ -819,6 +819,22 @@ mx_slider_style_changed_cb (MxSlider *self)
 }
 
 static void
+mx_slider_disable_notify_cb (MxSlider *slider)
+{
+  MxSliderPrivate *priv = slider->priv;
+  gboolean disabled;
+
+  disabled = mx_widget_get_disabled (MX_WIDGET (slider));
+
+  /* update the disabled state of internal children */
+  mx_widget_set_disabled (MX_WIDGET (priv->trough_bg), disabled);
+  mx_widget_set_disabled (MX_WIDGET (priv->fill), disabled);
+  mx_widget_set_disabled (MX_WIDGET (priv->trough), disabled);
+  mx_widget_set_disabled (MX_WIDGET (priv->handle), disabled);
+  mx_widget_set_disabled (MX_WIDGET (priv->buffer), disabled);
+}
+
+static void
 mx_slider_init (MxSlider *self)
 {
   MxSliderPrivate *priv;
@@ -856,6 +872,9 @@ mx_slider_init (MxSlider *self)
   priv->buffer = _mx_progress_bar_fill_new ();
   clutter_actor_set_name (priv->buffer, "buffer");
   clutter_actor_set_parent (priv->buffer, CLUTTER_ACTOR (self));
+
+  g_signal_connect (self, "notify::disabled",
+                    G_CALLBACK (mx_slider_disable_notify_cb), NULL);
 }
 
 /**
