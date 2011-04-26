@@ -988,6 +988,10 @@ _mx_widget_propagate_disabled (ClutterContainer *container,
 
           child_priv->parent_disabled = disabled;
 
+          /* emit the "notify" signal for the "disabled" property */
+          g_object_notify_by_pspec (G_OBJECT (container),
+                                    widget_properties[PROP_DISABLED]);
+
 
           if (disabled)
             mx_stylable_style_pseudo_class_add (MX_STYLABLE (child),
