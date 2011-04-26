@@ -97,8 +97,12 @@ enum
   PROP_TOOLTIP_TEXT,
   PROP_MENU,
 
-  PROP_DISABLED
+  PROP_DISABLED,
+
+  LAST_PROP
 };
+
+static GParamSpec *widget_properties[LAST_PROP];
 
 enum
 {
@@ -1046,7 +1050,6 @@ mx_widget_class_init (MxWidgetClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (MxWidgetPrivate));
 
@@ -1074,42 +1077,57 @@ mx_widget_class_init (MxWidgetClass *klass)
 
   /* stylable interface properties */
   g_object_class_override_property (gobject_class, PROP_STYLE, "style");
+  widget_properties[PROP_STYLE] = g_object_class_find_property (gobject_class,
+                                                                "style");
   g_object_class_override_property (gobject_class, PROP_STYLE_CLASS,
                                     "style-class");
+  widget_properties[PROP_STYLE_CLASS] =
+    g_object_class_find_property (gobject_class, "style-class");
+
   g_object_class_override_property (gobject_class, PROP_STYLE_PSEUDO_CLASS,
                                     "style-pseudo-class");
+  widget_properties[PROP_STYLE_PSEUDO_CLASS] =
+    g_object_class_find_property (gobject_class, "style-pseudo-class");
 
   /**
    * MxWidget:tooltip-text:
    *
    * text displayed on the tooltip
    */
-  pspec = g_param_spec_string ("tooltip-text",
-                               "Tooltip Text",
-                               "Text displayed on the tooltip",
-                               "",
-                               MX_PARAM_READWRITE | MX_PARAM_TRANSLATEABLE);
-  g_object_class_install_property (gobject_class, PROP_TOOLTIP_TEXT, pspec);
+  widget_properties[PROP_TOOLTIP_TEXT] =
+    g_param_spec_string ("tooltip-text",
+                         "Tooltip Text",
+                         "Text displayed on the tooltip",
+                         "",
+                         MX_PARAM_READWRITE | MX_PARAM_TRANSLATEABLE);
+  g_object_class_install_property (gobject_class, PROP_TOOLTIP_TEXT,
+                                   widget_properties[PROP_TOOLTIP_TEXT]);
 
   /**
    * MxWidget:menu:
    *
    * #MxMenu associated with the widget.
    */
-  pspec = g_param_spec_object ("menu",
-                               "Menu",
-                               "The MxMenu associated with the widget",
-                               MX_TYPE_MENU,
-                               MX_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class, PROP_MENU, pspec);
+  widget_properties[PROP_MENU] =
+    g_param_spec_object ("menu",
+                         "Menu",
+                         "The MxMenu associated with the widget",
+                         MX_TYPE_MENU,
+                         MX_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_MENU,
+                                   widget_properties[PROP_MENU]);
 
-  pspec = g_param_spec_boolean ("disabled",
-                               "Disabled",
-                               "Whether disabled styling should be applied and"
-                               " the widget made unreactive.",
-                               FALSE,
-                               MX_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class, PROP_DISABLED, pspec);
+  widget_properties[PROP_DISABLED] = g_param_spec_boolean ("disabled",
+                                                           "Disabled",
+                                                           "Whether disabled"
+                                                           " styling should be"
+                                                           " applied and the"
+                                                           " widget made"
+                                                           " unreactive.",
+                                                           FALSE,
+                                                           MX_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_DISABLED,
+                                   widget_properties[PROP_DISABLED]);
 
 
 
@@ -1169,7 +1187,8 @@ _mx_widget_set_style_class (MxStylable  *actor,
       g_free (priv->style_class);
       priv->style_class = g_strdup (style_class);
 
-      g_object_notify (G_OBJECT (actor), "style-class");
+      g_object_notify_by_pspec (G_OBJECT (actor),
+                                widget_properties[PROP_STYLE_CLASS]);
     }
 }
 
@@ -1188,7 +1207,8 @@ _mx_stylable_set_style_pseudo_class (MxStylable  *actor,
       g_free (priv->pseudo_class);
       priv->pseudo_class = g_strdup (pseudo_class);
 
-      g_object_notify (G_OBJECT (actor), "style-pseudo-class");
+      g_object_notify_by_pspec (G_OBJECT (actor),
+                                widget_properties[PROP_STYLE_PSEUDO_CLASS]);
     }
 }
 
@@ -1456,7 +1476,8 @@ mx_widget_set_tooltip_text (MxWidget    *widget,
   if (priv->tooltip)
     mx_tooltip_set_text (priv->tooltip, text);
 
-  g_object_notify (G_OBJECT (widget), "tooltip-text");
+  g_object_notify_by_pspec (G_OBJECT (widget),
+                            widget_properties[PROP_TOOLTIP_TEXT]);
 }
 
 /**
@@ -1680,7 +1701,8 @@ mx_widget_set_disabled (MxWidget *widget,
 
       mx_stylable_style_changed (MX_STYLABLE (widget), 0);
 
-      g_object_notify (G_OBJECT (widget), "disabled");
+      g_object_notify_by_pspec (G_OBJECT (widget),
+                                widget_properties[PROP_DISABLED]);
     }
 }
 
