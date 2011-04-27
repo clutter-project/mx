@@ -219,12 +219,12 @@ mx_bin_pick (ClutterActor       *self,
 /**
  * mx_bin_allocate_child:
  * @bin: An #MxBin
- * @box: The box to allocate the child within
+ * @box: The allocation box of the parent actor.
  * @flags: #ClutterAllocationFlags, usually provided by the.
  * clutter_actor_allocate function.
  *
- * Allocates the child of an #MxBin inside the given box. This function should
- * usually only be called by subclasses of #MxBin.
+ * Allocates the child of an #MxBin using the width and height from @box.
+ * This function should usually only be called by subclasses of #MxBin.
  *
  * This function can be used to allocate the child of an #MxBin if no special
  * allocation requirements are needed. It is similar to
