@@ -225,8 +225,8 @@ AS_IF([test "x$with_dbus" != xno],
 AC_ARG_WITH([glade],
             [AC_HELP_STRING([--with-glade],
                             [enable glade3 support])],
-            [with_glade=yes],
-            [])
+            [],
+            [with_glade=no])
 
 AS_IF([test "x$with_glade" = xyes],
       [PKG_CHECK_EXISTS([gladeui-1.0 >= 3.4.5],
