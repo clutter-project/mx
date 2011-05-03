@@ -142,7 +142,7 @@ mx_spinner_get_preferred_width (ClutterActor *actor,
                                 gfloat       *min_width_p,
                                 gfloat       *nat_width_p)
 {
-  guint min_width, width;
+  guint min_width, width, height;
   MxPadding padding;
 
   MxSpinnerPrivate *priv = MX_SPINNER (actor)->priv;
@@ -152,9 +152,10 @@ mx_spinner_get_preferred_width (ClutterActor *actor,
   if (priv->material != COGL_INVALID_HANDLE)
     {
       width = cogl_texture_get_width (priv->texture) / priv->frames;
+      height = cogl_texture_get_height (priv->texture);
       min_width = width;
 
-      if (for_height >= 0)
+      if (for_height >= 0 && for_height < height)
         {
           guint height = cogl_texture_get_height (priv->texture);
           for_height = MAX (0, for_height - padding.top - padding.bottom);
@@ -179,7 +180,7 @@ mx_spinner_get_preferred_height (ClutterActor *actor,
                                  gfloat       *min_height_p,
                                  gfloat       *nat_height_p)
 {
-  guint min_height, height;
+  guint min_height, height, width;
   MxPadding padding;
 
   MxSpinnerPrivate *priv = MX_SPINNER (actor)->priv;
@@ -189,9 +190,10 @@ mx_spinner_get_preferred_height (ClutterActor *actor,
   if (priv->material != COGL_INVALID_HANDLE)
     {
       height = cogl_texture_get_height (priv->texture);
+      width = cogl_texture_get_width (priv->texture);
       min_height = height;
 
-      if (for_width >= 0)
+      if (for_width >= 0 && for_width < width)
         {
           guint width = cogl_texture_get_width (priv->texture) / priv->frames;
           for_width = MAX (0, for_width - padding.left - padding.right);
