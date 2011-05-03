@@ -438,6 +438,8 @@ mx_button_leave (ClutterActor         *actor,
     {
       //clutter_ungrab_pointer ();
 
+      mx_widget_long_press_cancel (widget);
+      mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "active");
       button->priv->is_pressed = FALSE;
     }
 

@@ -812,6 +812,8 @@ mx_widget_leave (ClutterActor         *actor,
 
   mx_widget_hide_tooltip (widget);
 
+  mx_widget_long_press_cancel (widget);
+  mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "active");
   mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "hover");
   priv->is_hovered = FALSE;
 
