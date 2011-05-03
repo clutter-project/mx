@@ -162,7 +162,7 @@ mx_stack_child_class_init (MxStackChildClass *klass)
                                 "Attempt to fit the actor into the available"
                                 " space while respecting the actor's"
                                 " width-for-height or height-for-width"
-                                " constraints. The fill properties are ignored@"
+                                " constraints. The fill properties are ignored"
                                 " when this property is enabled.",
                                 FALSE,
                                 MX_PARAM_READWRITE);
