@@ -161,6 +161,8 @@ typedef enum /*< prefix=MX_ORIENTATION >*/
  * @MX_WINDOW_ROTATION_270: 270 degrees of rotation
  *
  * Defines the clock-wise rotation angle of a window.
+ *
+ * Since: 1.2
  */
 typedef enum /*< prefix=MX_WINDOW_ROTATION >*/
 {
@@ -178,6 +180,8 @@ typedef enum /*< prefix=MX_WINDOW_ROTATION >*/
  * @MX_POSITION_LEFT: The left position
  *
  * Defines the position of an interface element.
+ *
+ * Since: 1.2
  */
 typedef enum /*< prefix=MX_POSITION >*/
 {
@@ -213,6 +217,8 @@ typedef enum /*< prefix=MX_IMAGE_SCALE >*/
  * @MX_TOOLTIP_ANIMATION_FADE: Fade the tooltips on show and hide
  *
  * Defines the animation when tooltips are shown and hidden.
+ *
+ * Since: 1.2
  */
 typedef enum /*< prefix=MX_TOOLTIP_ANIMATION >*/
 {

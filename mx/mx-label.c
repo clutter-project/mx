@@ -677,6 +677,8 @@ mx_label_set_text (MxLabel     *label,
  *
  * Returns: %TRUE if the text of the label is treated as Pango markup,
  *   %FALSE otherwise.
+ *
+ * Since: 1.2
  */
 gboolean
 mx_label_get_use_markup (MxLabel *label)
@@ -773,6 +775,15 @@ mx_label_get_y_align (MxLabel *label)
   return label->priv->y_align;
 }
 
+/**
+ * mx_label_set_line_wrap:
+ * @label: An #MxLabel
+ * @line_wrap: new value of the line-wrap property.
+ *
+ * Set the value of the #MxLabel:line-wrap property.
+ *
+ * Since: 1.2
+ */
 void
 mx_label_set_line_wrap (MxLabel  *label,
                         gboolean  line_wrap)
@@ -783,6 +794,16 @@ mx_label_set_line_wrap (MxLabel  *label,
   g_object_notify (G_OBJECT (label), "line-wrap");
 }
 
+/**
+ * mx_label_get_line_wrap:
+ * @label: An #MxLabel
+ *
+ * Get the value of the #MxLabel:line-wrap property.
+ *
+ * Returns: %TRUE if the "line-wrap" property is set.
+ *
+ * Since: 1.2
+ */
 gboolean
 mx_label_get_line_wrap (MxLabel *label)
 {
@@ -797,8 +818,10 @@ mx_label_get_line_wrap (MxLabel *label)
  * @fade: %TRUE to fade out, %FALSE otherwise
  *
  * Set whether to fade out the end of the label, instead of ellipsizing.
- * Enabling this mode will also set the #ClutterText::single-line-mode and
- * #ClutterText::ellipsize properties.
+ * Enabling this mode will also set the #ClutterText:single-line-mode and
+ * #ClutterText:ellipsize properties.
+ *
+ * Since: 1.2
  */
 void
 mx_label_set_fade_out (MxLabel  *label,
@@ -850,6 +873,8 @@ mx_label_set_fade_out (MxLabel  *label,
  * enough space allocated to display the entire label.
  *
  * Returns: %TRUE if the label is set to fade out, %FALSE otherwise
+ *
+ * Since: 1.2
  */
 gboolean
 mx_label_get_fade_out (MxLabel *label)

@@ -27,6 +27,8 @@
  *
  * #MxStackChild is a #ClutterChildMeta implementation that stores the
  * child properties for children inside a #MxStack.
+ *
+ * Since: 1.2
  */
 
 #include "mx-stack-child.h"
@@ -197,6 +199,8 @@ _get_child_meta (MxStack      *stack,
  * Get the value of the #MxStackChild:x-fill property.
  *
  * Returns: the current value of the "x-fill" property.
+ *
+ * Since: 1.2
  */
 gboolean
 mx_stack_child_get_x_fill (MxStack      *stack,
@@ -220,6 +224,7 @@ mx_stack_child_get_x_fill (MxStack      *stack,
  *
  * Set the value of the #MxStackChild:x-fill property.
  *
+ * Since: 1.2
  */
 void
 mx_stack_child_set_x_fill (MxStack      *stack,
@@ -246,6 +251,8 @@ mx_stack_child_set_x_fill (MxStack      *stack,
  * Get the value of the #MxStackChild:y-fill property
  *
  * Returns: the current value of the "y-fill" property
+ *
+ * Since: 1.2
  */
 gboolean
 mx_stack_child_get_y_fill (MxStack      *stack,
@@ -269,6 +276,7 @@ mx_stack_child_get_y_fill (MxStack      *stack,
  *
  * Set the value of the #MxStackChild:y-fill property.
  *
+ * Since: 1.2
  */
 void
 mx_stack_child_set_y_fill (MxStack      *stack,
@@ -295,6 +303,8 @@ mx_stack_child_set_y_fill (MxStack      *stack,
  * Get the value of the #MxStackChild:x-align property
  *
  * Returns: the current value of the "x-align" property
+ *
+ * Since: 1.2
  */
 MxAlign
 mx_stack_child_get_x_align (MxStack      *stack,
@@ -318,6 +328,7 @@ mx_stack_child_get_x_align (MxStack      *stack,
  *
  * Set the value of the #MxStackChild:x-align property.
  *
+ * Since: 1.2
  */
 void
 mx_stack_child_set_x_align (MxStack      *stack,
@@ -344,6 +355,8 @@ mx_stack_child_set_x_align (MxStack      *stack,
  * Get the value of the #MxStackChild:y-align property.
  *
  * Returns: the current value of the "y-align" property.
+ *
+ * Since: 1.2
  */
 MxAlign
 mx_stack_child_get_y_align (MxStack      *stack,
@@ -367,6 +380,7 @@ mx_stack_child_get_y_align (MxStack      *stack,
  *
  * Set the value of the #MxStackChild:y-align property.
  *
+ * Since: 1.2
  */
 void
 mx_stack_child_set_y_align (MxStack      *stack,
@@ -394,6 +408,8 @@ mx_stack_child_set_y_align (MxStack      *stack,
  * Get the value of the #MxStackChild:fit property.
  *
  * Returns: the current value of the #MxStackChild:fit property
+ *
+ * Since: 1.2
  */
 gboolean
 mx_stack_child_get_fit (MxStack      *stack,
@@ -417,6 +433,7 @@ mx_stack_child_get_fit (MxStack      *stack,
  *
  * Set the value of the #MxStackChild:fit property.
  *
+ * Since: 1.2
  */
 void
 mx_stack_child_set_fit (MxStack      *stack,

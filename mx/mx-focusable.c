@@ -204,6 +204,8 @@ mx_focusable_accept_focus (MxFocusable *focusable, MxFocusHint hint)
  * anything else maps to %MX_FOCUS_HINT_PRIOR.
  *
  * Returns: A #MxFocusHint
+ *
+ * Since: 1.2
  */
 MxFocusHint
 mx_focus_hint_from_direction (MxFocusDirection direction)

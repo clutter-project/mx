@@ -929,6 +929,8 @@ mx_tooltip_get_tip_area (MxTooltip *tooltip)
  *
  * Returns: %TRUE if the app is in tooltip browse mode or %FALSE
  * otherwise.
+ *
+ * Since: 1.2
  */
 gboolean
 mx_tooltip_is_in_browse_mode (void)

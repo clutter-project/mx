@@ -24,6 +24,8 @@
  * or scaled to fit within the allocation. A transition effect occurs when a
  * new image is loaded.
  *
+ *
+ * Since: 1.2
  */
 
 #include <unistd.h>
@@ -618,6 +620,8 @@ mx_image_class_init (MxImageClass *klass)
    * @image: the #MxImage that emitted the signal
    *
    * Emitted when an asynchronous image load has completed successfully
+   *
+   * Since: 1.2
    */
   signals[IMAGE_LOADED] =
     g_signal_new ("image-loaded",
@@ -634,6 +638,8 @@ mx_image_class_init (MxImageClass *klass)
    *
    * Emitted when an asynchronous image load has encountered an error
    * and cannot load the requested image.
+   *
+   * Since: 1.2
    */
   signals[IMAGE_LOAD_ERROR] =
     g_signal_new ("image-load-error",
@@ -753,6 +759,8 @@ mx_image_init (MxImage *self)
  * Creates a new #MxImage object.
  *
  * Returns: A newly created #MxImage object
+ *
+ * Since: 1.2
  */
 ClutterActor*
 mx_image_new (void)
@@ -768,6 +776,7 @@ mx_image_new (void)
  *
  * Set the scale mode on @MxImage
  *
+ * Since: 1.2
  */
 void
 mx_image_set_scale_mode (MxImage          *image,
@@ -790,6 +799,8 @@ mx_image_set_scale_mode (MxImage          *image,
  * Get the current scale mode of @MxImage.
  *
  * Returns: The current MxImageScaleMode
+ *
+ * Since: 1.2
  */
 MxImageScaleMode
 mx_image_get_scale_mode (MxImage *image)
@@ -842,6 +853,8 @@ mx_image_cancel_in_progress (MxImage *image)
  * Clear the current image and set a blank, transparent image.
  *
  * Returns: static void
+ *
+ * Since: 1.2
  */
 void
 mx_image_clear (MxImage *image)
@@ -1021,6 +1034,8 @@ mx_image_set_from_data_internal (MxImage          *image,
  * and @error is set.
  *
  * Returns: #TRUE if the image was successfully updated
+ *
+ * Since: 1.2
  */
 gboolean
 mx_image_set_from_data (MxImage          *image,
@@ -1512,6 +1527,8 @@ mx_image_set_async (MxImage         *image,
  * and @error is set.
  *
  * Returns: #TRUE if the image was successfully updated
+ *
+ * Since: 1.2
  */
 gboolean
 mx_image_set_from_file (MxImage      *image,
@@ -1534,6 +1551,8 @@ mx_image_set_from_file (MxImage      *image,
  * will always be maintained.
  *
  * Returns: #TRUE if the image was successfully updated
+ *
+ * Since: 1.2
  */
 gboolean
 mx_image_set_from_file_at_size (MxImage      *image,
@@ -1625,6 +1644,8 @@ mx_image_set_from_file_at_size (MxImage      *image,
  * Sets the contents of the image from the given Cogl texture.
  *
  * Returns: %TRUE on success, %FALSE on failure
+ *
+ * Since: 1.2
  */
 gboolean
 mx_image_set_from_cogl_texture (MxImage    *image,
@@ -1735,6 +1756,8 @@ mx_image_set_from_cogl_texture (MxImage    *image,
  * with, @buffer_free_func will be called.
  *
  * Returns: #TRUE if the image was successfully updated
+ *
+ * Since: 1.2
  */
 gboolean
 mx_image_set_from_buffer (MxImage         *image,
@@ -1764,6 +1787,8 @@ mx_image_set_from_buffer (MxImage         *image,
  * ratio will always be maintained.
  *
  * Returns: #TRUE if the image was successfully updated
+ *
+ * Since: 1.2
  */
 gboolean
 mx_image_set_from_buffer_at_size (MxImage         *image,
@@ -1821,6 +1846,8 @@ mx_image_set_from_buffer_at_size (MxImage         *image,
  * return immediately as successful. The #MxImage::image-loaded and
  * #MxImage::image-load-error signals are used to signal success or failure
  * of asynchronous image loading.
+ *
+ * Since: 1.2
  */
 void
 mx_image_set_load_async (MxImage  *image,
@@ -1852,6 +1879,8 @@ mx_image_set_load_async (MxImage  *image,
  * Determines whether asynchronous image loading is in use.
  *
  * Returns: %TRUE if images are set to load asynchronously, %FALSE otherwise
+ *
+ * Since: 1.2
  */
 gboolean
 mx_image_get_load_async (MxImage *image)
@@ -1871,6 +1900,8 @@ mx_image_get_load_async (MxImage *image)
  *
  * The advantage of this is that software up-scaling is potentially higher
  * quality, but it comes at the expense of video memory.
+ *
+ * Since: 1.2
  */
 void
 mx_image_set_allow_upscale (MxImage  *image,
@@ -1895,6 +1926,8 @@ mx_image_set_allow_upscale (MxImage  *image,
  * Determines whether image up-scaling is allowed.
  *
  * Returns: %TRUE if upscaling is allowed, %FALSE otherwise
+ *
+ * Since: 1.2
  */
 gboolean
 mx_image_get_allow_upscale (MxImage *image)
@@ -1914,6 +1947,8 @@ mx_image_get_allow_upscale (MxImage *image)
  *
  * This can be useful to avoid excessive CPU usage when the image differs
  * only slightly to the desired size.
+ *
+ * Since: 1.2
  */
 void
 mx_image_set_scale_width_threshold (MxImage *image,
@@ -1938,6 +1973,8 @@ mx_image_set_scale_width_threshold (MxImage *image,
  * Retrieves the width scaling threshold.
  *
  * Returns: The width scaling threshold, in pixels
+ *
+ * Since: 1.2
  */
 guint
 mx_image_get_scale_width_threshold (MxImage *image)
@@ -1957,6 +1994,8 @@ mx_image_get_scale_width_threshold (MxImage *image)
  *
  * This can be useful to avoid excessive CPU usage when the image differs
  * only slightly to the desired size.
+ *
+ * Since: 1.2
  */
 void
 mx_image_set_scale_height_threshold (MxImage *image,
@@ -1981,6 +2020,8 @@ mx_image_set_scale_height_threshold (MxImage *image,
  * Retrieves the height scaling threshold.
  *
  * Returns: The height scaling threshold, in pixels
+ *
+ * Since: 1.2
  */
 guint
 mx_image_get_scale_height_threshold (MxImage *image)
@@ -1996,6 +2037,7 @@ mx_image_get_scale_height_threshold (MxImage *image)
  *
  * Set the MxImage:image-rotation property.
  *
+ * Since: 1.2
  */
 void
 mx_image_set_image_rotation (MxImage *image,
@@ -2020,6 +2062,8 @@ mx_image_set_image_rotation (MxImage *image,
  * Get the value of the MxImage:image-rotation property.
  *
  * Returns: The value of the image-rotation property.
+ *
+ * Since: 1.2
  */
 gfloat
 mx_image_get_image_rotation (MxImage *image)
@@ -2035,6 +2079,8 @@ mx_image_get_image_rotation (MxImage *image)
  * @duration: Transition duration in milliseconds
  *
  * Set the MxImage:transition-duration property.
+ *
+ * Since: 1.2
  */
 void
 mx_image_set_transition_duration (MxImage *image, guint duration)
@@ -2059,6 +2105,8 @@ mx_image_set_transition_duration (MxImage *image, guint duration)
  * Get the value of the MxImage:transition-duration property.
  *
  * Returns: The value of the transition-duration property.
+ *
+ * Since: 1.2
  */
 guint
 mx_image_get_transition_duration (MxImage *image)

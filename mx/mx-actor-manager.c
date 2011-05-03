@@ -30,6 +30,8 @@
  *
  * Operations added to the #MxActorManager will strictly be performed in the
  * order in which they were added.
+ *
+ * Since: 1.2
  */
 
 #include "mx-actor-manager.h"
@@ -284,6 +286,8 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
    * @actor: The created #ClutterActor
    *
    * Emitted when an actor creation operation has completed.
+   *
+   * Since: 1.2
    */
   signals[ACTOR_CREATED] =
     g_signal_new ("actor-created",
@@ -303,6 +307,8 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
    * @actor: The added #ClutterActor
    *
    * Emitted when an actor add operation has completed.
+   *
+   * Since: 1.2
    */
   signals[ACTOR_ADDED] =
     g_signal_new ("actor-added",
@@ -322,6 +328,8 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
    * @actor: The removed #ClutterActor
    *
    * Emitted when an actor remove operation has completed.
+   *
+   * Since: 1.2
    */
   signals[ACTOR_REMOVED] =
     g_signal_new ("actor-removed",
@@ -339,6 +347,8 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
    * @actor: The #ClutterActor to which the signal pertains
    *
    * Emitted when all queued operations involving @actor have completed.
+   *
+   * Since: 1.2
    */
   signals[ACTOR_FINISHED] =
     g_signal_new ("actor-finished",
@@ -356,6 +366,8 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
    * @id: The operation id
    *
    * Emitted when an operation has completed successfully.
+   *
+   * Since: 1.2
    */
   signals[OP_COMPLETED] =
     g_signal_new ("operation-completed",
@@ -373,6 +385,8 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
    * @id: The operation id
    *
    * Emitted when an operation has been cancelled.
+   *
+   * Since: 1.2
    */
   signals[OP_CANCELLED] =
     g_signal_new ("operation-cancelled",
@@ -391,6 +405,8 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
    * @error: A #GError describing the reason of the failure
    *
    * Emitted when an operation has failed.
+   *
+   * Since: 1.2
    */
   signals[OP_FAILED] =
     g_signal_new ("operation-failed",
@@ -431,6 +447,8 @@ mx_actor_manager_init (MxActorManager *self)
  * </para></note>
  *
  * Returns: (transfer none): An #MxActorManager, tied to the given #ClutterStage
+ *
+ * Since: 1.2
  */
 MxActorManager *
 mx_actor_manager_new (ClutterStage *stage)
@@ -449,6 +467,8 @@ mx_actor_manager_new (ClutterStage *stage)
  * #MxActorManager to a #ClutterStage.
  *
  * Returns: (transfer none): An #MxActorManager
+ *
+ * Since: 1.2
  */
 MxActorManager *
 mx_actor_manager_get_for_stage (ClutterStage *stage)
@@ -476,6 +496,8 @@ mx_actor_manager_get_for_stage (ClutterStage *stage)
  * Gets the #ClutterStage the actor manager is associated with.
  *
  * Returns: The #ClutterStage the actor is associated with.
+ *
+ * Since: 1.2
  */
 ClutterStage *
 mx_actor_manager_get_stage (MxActorManager *manager)
@@ -807,6 +829,8 @@ mx_actor_manager_ensure_processing (MxActorManager *manager)
  * be fired.
  *
  * Returns: The ID for this operation.
+ *
+ * Since: 1.2
  */
 gulong
 mx_actor_manager_create_actor (MxActorManager           *manager,
@@ -846,6 +870,8 @@ mx_actor_manager_create_actor (MxActorManager           *manager,
  * be fired.
  *
  * Returns: The ID for this operation.
+ *
+ * Since: 1.2
  */
 gulong
 mx_actor_manager_add_actor (MxActorManager   *manager,
@@ -889,6 +915,8 @@ mx_actor_manager_add_actor (MxActorManager   *manager,
  * </para></note>
  *
  * Returns: The ID for this operation.
+ *
+ * Since: 1.2
  */
 gulong
 mx_actor_manager_remove_actor (MxActorManager   *manager,
@@ -929,6 +957,8 @@ mx_actor_manager_remove_actor (MxActorManager   *manager,
  * The container may not be removed immediately, and thus you may want to set
  * the container's opacity to 0 before calling this function.
  * </para></note>
+ *
+ * Since: 1.2
  */
 void
 mx_actor_manager_remove_container (MxActorManager   *manager,
@@ -991,6 +1021,8 @@ mx_actor_manager_find_by_id (gconstpointer a,
  * Cancels the given operation, if it exists. The
  * #MxActorManager::operation_cancelled signal is fired whenever an operation
  * is cancelled.
+ *
+ * Since: 1.2
  */
 void
 mx_actor_manager_cancel_operation (MxActorManager *manager,
@@ -1028,6 +1060,8 @@ mx_actor_manager_cancel_operation (MxActorManager *manager,
  * @actor: A #ClutterActor
  *
  * Cancels all operations associated with the given actor.
+ *
+ * Since: 1.2
  */
 void
 mx_actor_manager_cancel_operations (MxActorManager *manager,
@@ -1068,6 +1102,8 @@ mx_actor_manager_cancel_operations (MxActorManager *manager,
  *
  * Lower times will lead to smoother performance, but will increase the amount
  * of time it takes for operations to complete.
+ *
+ * Since: 1.2
  */
 void
 mx_actor_manager_set_time_slice (MxActorManager *manager,
@@ -1093,6 +1129,8 @@ mx_actor_manager_set_time_slice (MxActorManager *manager,
  * Retrieves the current time slice being used for operations.
  *
  * Returns: The time-slice being used, in milliseconds
+ *
+ * Since: 1.2
  */
 guint
 mx_actor_manager_get_time_slice (MxActorManager *manager)
@@ -1108,6 +1146,8 @@ mx_actor_manager_get_time_slice (MxActorManager *manager)
  * Retrieves the amount of operations left in the queue.
  *
  * Returns: Number of operations left to perform
+ *
+ * Since: 1.2
  */
 guint
 mx_actor_manager_get_n_operations (MxActorManager *manager)

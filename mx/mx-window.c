@@ -999,6 +999,8 @@ mx_window_get_toolbar (MxWindow *window)
  * @window: (allow-none): A #MxWindow
  *
  * Sets the toolbar associated with the window.
+ *
+ * Since: 1.2
  */
 void
 mx_window_set_toolbar (MxWindow  *window,
@@ -1091,6 +1093,8 @@ mx_window_set_small_screen (MxWindow *window, gboolean small_screen)
  *
  * Returns: %TRUE if the window has been set to be in fullscreen mode,
  *   otherwise %FALSE
+ *
+ * Since: 1.2
  */
 gboolean
 mx_window_get_fullscreen (MxWindow *window)
@@ -1111,6 +1115,8 @@ mx_window_get_fullscreen (MxWindow *window)
  * fullscreen. Setting this property is only a request to the underlying
  * window system.
  * </para></note>
+ *
+ * Since: 1.2
  */
 void
 mx_window_set_fullscreen (MxWindow *window,
@@ -1136,6 +1142,8 @@ mx_window_set_fullscreen (MxWindow *window,
  *
  * Sets the title used for the window, the results of which are
  * window-system specific.
+ *
+ * Since: 1.2
  */
 void
 mx_window_set_title (MxWindow    *window,
@@ -1154,6 +1162,8 @@ mx_window_set_title (MxWindow    *window,
  * Retrieves the title used for the window.
  *
  * Returns: The title used for the window
+ *
+ * Since: 1.2
  */
 const gchar *
 mx_window_get_title (MxWindow *window)
@@ -1319,6 +1329,8 @@ mx_window_set_window_position (MxWindow *window,
  * Retrieves the size of the display area of the window, taking into
  * account any window border. This includes the area occupied by the
  * window's toolbar, if it's enabled.
+ *
+ * Since: 1.2
  */
 void
 mx_window_get_window_size (MxWindow *window,
@@ -1362,6 +1374,8 @@ mx_window_get_window_size (MxWindow *window,
  * Setting the window size may involve a request to the underlying windowing
  * system, and may not immediately be reflected.
  * </para></note>
+ *
+ * Since: 1.2
  */
 void
 mx_window_set_window_size (MxWindow *window,
@@ -1388,6 +1402,8 @@ mx_window_set_window_size (MxWindow *window,
  * @window: A #MxWindow
  *
  * Present the window. The actual behaviour is specific to the window system.
+ *
+ * Since: 1.2
  */
 void
 mx_window_present (MxWindow *window)
@@ -1407,6 +1423,8 @@ mx_window_present (MxWindow *window)
  * @rotation: The #MxWindowRotation
  *
  * Set the rotation of the window.
+ *
+ * Since: 1.2
  */
 void
 mx_window_set_window_rotation (MxWindow         *window,
@@ -1471,6 +1489,8 @@ mx_window_set_window_rotation (MxWindow         *window,
  * Retrieve the rotation of the window.
  *
  * Returns: An #MxWindowRotation
+ *
+ * Since: 1.2
  */
 MxWindowRotation
 mx_window_get_window_rotation (MxWindow *window)
@@ -1484,6 +1504,8 @@ mx_window_get_window_rotation (MxWindow *window)
  * @window: A #MxWindow
  *
  * Show the window
+ *
+ * Since: 1.2
  */
 void
 mx_window_show (MxWindow *window)
@@ -1499,6 +1521,7 @@ mx_window_show (MxWindow *window)
  *
  * Hide the window
  *
+ * Since: 1.2
  */
 void
 mx_window_hide (MxWindow *window)

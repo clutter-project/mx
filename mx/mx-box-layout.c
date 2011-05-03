@@ -1823,6 +1823,8 @@ mx_box_layout_add_actor_with_properties (MxBoxLayout  *box,
  *   focused actor
  *
  * Enables or disables automatic scrolling to the focused actor.
+ *
+ * Since: 1.2
  */
 void
 mx_box_layout_set_scroll_to_focused (MxBoxLayout *box,
@@ -1847,6 +1849,8 @@ mx_box_layout_set_scroll_to_focused (MxBoxLayout *box,
  * Get the value of the #MxBoxLayout:scroll-to-focused property.
  *
  * Returns: #TRUE if automatically scrolling to the focused actor is enabled
+ *
+ * Since: 1.2
  */
 gboolean
 mx_box_layout_get_scroll_to_focused (MxBoxLayout *box)

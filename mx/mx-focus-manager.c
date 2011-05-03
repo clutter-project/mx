@@ -494,6 +494,8 @@ mx_focus_manager_push_focus (MxFocusManager *manager,
  *
  * Note: the final focused object may not be the same as @focusable if
  * @focusable does not accept focus directly.
+ *
+ * Since: 1.2
  */
 void
 mx_focus_manager_push_focus_with_hint (MxFocusManager *manager,

@@ -1038,6 +1038,8 @@ mx_offscreen_update (MxOffscreen *offscreen)
  * Sets the value of the #MxOffscreen:redirect-enabled property. When
  * redirection is enabled, the painting of the child of @offscreen will be
  * redirected to the texture of @offscreen.
+ *
+ * Since: 1.2
  */
 void
 mx_offscreen_set_redirect_enabled (MxOffscreen *offscreen,
@@ -1079,6 +1081,8 @@ mx_offscreen_set_redirect_enabled (MxOffscreen *offscreen,
  * Gets the value of the #MxOffscreen:redirect-enabled property.
  *
  * Returns: #TRUE if offscreen redirection is enabled
+ *
+ * Since: 1.2
  */
 gboolean
 mx_offscreen_get_redirect_enabled (MxOffscreen *offscreen)
@@ -1094,6 +1098,8 @@ mx_offscreen_get_redirect_enabled (MxOffscreen *offscreen)
  * Gets the value of the #MxOffscreen:buffer property.
  *
  * Returns: (transfer none): the #CoglHandle for the offscreen buffer object
+ *
+ * Since: 1.2
  */
 CoglHandle
 mx_offscreen_get_buffer (MxOffscreen *offscreen)
@@ -1114,6 +1120,8 @@ mx_offscreen_get_buffer (MxOffscreen *offscreen)
  * is set to blend the contents of the offscreen texture with the accumulation
  * buffer at the opacity specified in the alpha component of the blend
  * constant. This opacity is 50% by default.
+ *
+ * Since: 1.2
  */
 void
 mx_offscreen_set_accumulation_enabled (MxOffscreen *offscreen,
@@ -1182,6 +1190,8 @@ mx_offscreen_set_accumulation_enabled (MxOffscreen *offscreen,
  * Gets the value of the #MxOffscreen:accumulation-enabled property.
  *
  * Returns: #TRUE if the accumulation buffer is enabled
+ *
+ * Since: 1.2
  */
 gboolean
 mx_offscreen_get_accumulation_enabled (MxOffscreen *offscreen)
@@ -1198,6 +1208,8 @@ mx_offscreen_get_accumulation_enabled (MxOffscreen *offscreen)
  *
  * Returns: (transfer none): The #CoglHandle for the material used
  *   for the accumulation buffer
+ *
+ * Since: 1.2
  */
 CoglHandle
 mx_offscreen_get_accumulation_material (MxOffscreen *offscreen)

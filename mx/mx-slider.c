@@ -939,6 +939,15 @@ mx_slider_get_value (MxSlider *bar)
 }
 
 
+/**
+ * mx_slider_set_buffer_value:
+ * @slider: A #MxSlider
+ * @value: the new buffer value of the slider
+ *
+ * Set the value of the #MxSlider:buffer-value property.
+ *
+ * Since: 1.2
+ */
 void
 mx_slider_set_buffer_value (MxSlider *slider,
                             gdouble   value)
@@ -960,6 +969,16 @@ mx_slider_set_buffer_value (MxSlider *slider,
   g_object_notify (G_OBJECT (slider), "buffer-value");
 }
 
+/**
+ * mx_slider_get_buffer_value:
+ * @slider: A #MxSlider
+ *
+ * Get the value of the #MxSlider:buffer-value property.
+ *
+ * Returns: The current value of the "buffer-value" property.
+ *
+ * Since: 1.2
+ */
 gdouble
 mx_slider_get_buffer_value (MxSlider *slider)
 {

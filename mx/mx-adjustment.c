@@ -1227,6 +1227,8 @@ mx_adjustment_set_elastic (MxAdjustment *adjustment,
  * Get the value of the #MxAdjustment:clamp-value property.
  *
  * Returns: the current value of the "clamp-value" property.
+ *
+ * Since: 1.2
  */
 gboolean
 mx_adjustment_get_clamp_value (MxAdjustment *adjustment)
@@ -1240,6 +1242,8 @@ mx_adjustment_get_clamp_value (MxAdjustment *adjustment)
  * @clamp: a #gboolean
  *
  * Set the value of the #MxAdjustment:clamp-value property.
+ *
+ * Since: 1.2
  */
 void
 mx_adjustment_set_clamp_value (MxAdjustment *adjustment,

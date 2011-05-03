@@ -32,6 +32,8 @@
  *
  * It also allows actions to be added to it, which will be represented as
  * buttons, using #MxButton.
+ *
+ * Since: 1.2
  */
 
 #include "mx-dialog.h"
@@ -1024,6 +1026,8 @@ mx_dialog_init (MxDialog *self)
  * Creates a new #MxDialog.
  *
  * Returns: A newly allocated #MxDialog
+ *
+ * Since: 1.2
  */
 ClutterActor *
 mx_dialog_new (void)
@@ -1038,6 +1042,8 @@ mx_dialog_new (void)
  *
  * Sets the parent of the #MxDialog. This is the actor over which the
  * modal frame will appear when clutter_actor_show() is called.
+ *
+ * Since: 1.2
  */
 void
 mx_dialog_set_transient_parent (MxDialog *dialog,
@@ -1190,6 +1196,8 @@ mx_dialog_hide (ClutterActor *self)
  * @action: A #MxAction
  *
  * Adds an #MxButton that represents @action to the button area of @dialog
+ *
+ * Since: 1.2
  */
 void
 mx_dialog_add_action (MxDialog *dialog,
@@ -1222,6 +1230,8 @@ mx_dialog_add_action (MxDialog *dialog,
  * @action: A #MxAction
  *
  * Removes the button associated with @action from the button area of @dialog
+ *
+ * Since: 1.2
  */
 void
 mx_dialog_remove_action (MxDialog *dialog,
@@ -1271,6 +1281,8 @@ mx_dialog_remove_action (MxDialog *dialog,
  * Returns: (transfer container) (element-type Mx.Action): A newly allocated
  *   #GList of #MxAction objects. The actions in the list are owned by the
  *   dialog.
+ *
+ * Since: 1.2
  */
 GList *
 mx_dialog_get_actions (MxDialog *dialog)

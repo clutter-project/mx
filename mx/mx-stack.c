@@ -29,6 +29,8 @@
  * allocated its preferred size or larger, if the fill option is set. If
  * the fill option isn't set, a child's position will be determined by its
  * alignment properties.
+ *
+ * Since: 1.2
  */
 
 #include "mx-stack.h"
@@ -645,6 +647,8 @@ mx_stack_init (MxStack *self)
  * Create a new #MxStack.
  *
  * Returns: a newly allocated #MxStack
+ *
+ * Since: 1.2
  */
 ClutterActor *
 mx_stack_new ()

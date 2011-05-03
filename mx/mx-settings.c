@@ -366,6 +366,15 @@ mx_settings_init (MxSettings *self)
   priv->drag_threshold = 8;
 }
 
+/**
+ * mx_settings_get_default:
+ *
+ * Get the default #MxSettings object.
+ *
+ * Returns: the #MxSettings singleton.
+ *
+ * Since: 1.2
+ */
 MxSettings *
 mx_settings_get_default (void)
 {

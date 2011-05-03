@@ -28,6 +28,8 @@
  * #MxFadeEffect is a #ClutterEffect that can be used to fade the borders
  * of a #ClutterActor. It provides a configurable bounding box, border
  * size and colour to control the fading effect.
+ *
+ * Since: 1.2
  */
 
 #include "mx-fade-effect.h"
@@ -769,6 +771,8 @@ mx_fade_effect_init (MxFadeEffect *self)
  * Creates a new #MxFadeEffect to be used with clutter_actor_add_effect().
  *
  * Returns: the newly created #MxFadeEffect, or %NULL
+ *
+ * Since: 1.2
  */
 ClutterEffect *
 mx_fade_effect_new (void)
@@ -786,6 +790,8 @@ mx_fade_effect_new (void)
  *
  * Sets the border to be used for the fading effect. This is the number of
  * pixels on each side of the effect that should be used to fade.
+ *
+ * Since: 1.2
  */
 void
 mx_fade_effect_set_border (MxFadeEffect *effect,
@@ -840,6 +846,8 @@ mx_fade_effect_set_border (MxFadeEffect *effect,
  * @left: (out): The left border, in pixels
  *
  * Retrieves the border values for @effect.
+ *
+ * Since: 1.2
  */
 void
 mx_fade_effect_get_border (MxFadeEffect *effect,
@@ -871,6 +879,8 @@ mx_fade_effect_get_border (MxFadeEffect *effect,
  *
  * Sets the color of the fade effect. The effect will fade out towards
  * the set border to this color.
+ *
+ * Since: 1.2
  */
 void
 mx_fade_effect_set_color (MxFadeEffect       *effect,
@@ -895,6 +905,8 @@ mx_fade_effect_set_color (MxFadeEffect       *effect,
  * @color: (out): A #ClutterColor to store the color in
  *
  * Retrieves the color used for the fade effect.
+ *
+ * Since: 1.2
  */
 void
 mx_fade_effect_get_color (MxFadeEffect *effect,
@@ -926,6 +938,8 @@ mx_fade_effect_get_color (MxFadeEffect *effect,
  * rectangle, so an effect with an %x of %5 and a %left-border of %5 will
  * have a gap of 5 blank pixels to the left, with a fade length of 5 pixels.
  * </para></note>
+ *
+ * Since: 1.2
  */
 void
 mx_fade_effect_set_bounds (MxFadeEffect *effect,
@@ -980,6 +994,8 @@ mx_fade_effect_set_bounds (MxFadeEffect *effect,
  * @height: (out): The height of the effect bounds, in pixels, or %0
  *
  * Retrieves the bounding box of the effect.
+ *
+ * Since: 1.2
  */
 void
 mx_fade_effect_get_bounds (MxFadeEffect *effect,
@@ -1017,6 +1033,8 @@ mx_fade_effect_get_bounds (MxFadeEffect *effect,
  * Note, that this may conflict with other effects, and in such a situation,
  * should not be used.
  * </note></para>
+ *
+ * Since: 1.2
  */
 void
 _mx_fade_effect_set_freeze_update (MxFadeEffect *effect,
@@ -1041,6 +1059,8 @@ _mx_fade_effect_set_freeze_update (MxFadeEffect *effect,
  * Determines if the #MxFadeEffect has had its updates frozen.
  *
  * Returns: %TRUE if updates are frozen, %FALSE otherwise
+ *
+ * Since: 1.2
  */
 gboolean
 _mx_fade_effect_get_freeze_update (MxFadeEffect *effect)

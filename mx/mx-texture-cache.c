@@ -487,6 +487,8 @@ mx_texture_cache_get_actor (MxTextureCache *self,
  * See mx_texture_cache_insert_meta()
  *
  * Returns: A newly allocated #ClutterTexture, or %NULL if no image was found
+ *
+ * Since: 1.2
  */
 ClutterTexture *
 mx_texture_cache_get_meta_texture (MxTextureCache *self,
@@ -529,6 +531,8 @@ mx_texture_cache_get_meta_texture (MxTextureCache *self,
  *
  * Returns: A #CoglHandle to a texture, with an added reference. %NULL if
  *   no image was found.
+ *
+ * Since: 1.2
  */
 CoglHandle
 mx_texture_cache_get_meta_cogl_texture (MxTextureCache *self,
@@ -562,6 +566,8 @@ mx_texture_cache_get_meta_cogl_texture (MxTextureCache *self,
  * cache.
  *
  * Returns: %TRUE if the image exists, %FALSE otherwise
+ *
+ * Since: 1.2
  */
 gboolean
 mx_texture_cache_contains (MxTextureCache *self,
@@ -583,6 +589,8 @@ mx_texture_cache_contains (MxTextureCache *self,
  * the given identifier.
  *
  * Returns: %TRUE if the data exists, %FALSE otherwise
+ *
+ * Since: 1.2
  */
 gboolean
 mx_texture_cache_contains_meta (MxTextureCache *self,
@@ -615,6 +623,8 @@ mx_texture_cache_contains_meta (MxTextureCache *self,
  *
  * If the image is already in the cache, this texture will replace it. A
  * reference will be taken on the given texture.
+ *
+ * Since: 1.2
  */
 void
 mx_texture_cache_insert (MxTextureCache *self,
@@ -673,6 +683,8 @@ mx_texture_cache_destroy_meta_entry (gpointer data)
  *
  * This is useful if you have a widely used modification of an image,
  * for example, an image with a border composited around it.
+ *
+ * Since: 1.2
  */
 void
 mx_texture_cache_insert_meta (MxTextureCache *self,

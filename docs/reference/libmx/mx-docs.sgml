@@ -106,4 +106,9 @@
     <title>Index of all symbols</title>
     <xi:include href="xml/api-index-full.xml"><xi:fallback/></xi:include>
   </index>
+
+  <index role="1.2">
+    <title>Index of new symbols in 1.2</title>
+    <xi:include href="xml/api-index-1.2.xml"><xi:fallback /></xi:include>
+  </index>
 </book>

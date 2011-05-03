@@ -1130,6 +1130,8 @@ mx_button_set_toggled (MxButton *button,
  *
  * Sets @action as the action for @button. @Button will take its label and
  * icon from @action.
+ *
+ * Since: 1.2
  */
 void
 mx_button_set_action (MxButton *button,
@@ -1175,6 +1177,8 @@ mx_button_set_action (MxButton *button,
  * Retrieves the #MxAction associated with @button.
  *
  * Returns: (transfer none): A #MxAction
+ *
+ * Since: 1.2
  */
 MxAction *
 mx_button_get_action (MxButton *button)
@@ -1190,6 +1194,8 @@ mx_button_get_action (MxButton *button)
  * @position: A #MxPosition
  *
  * Sets the icon position, relative to the text on the button.
+ *
+ * Since: 1.2
  */
 void
 mx_button_set_icon_position (MxButton   *button,
@@ -1217,6 +1223,8 @@ mx_button_set_icon_position (MxButton   *button,
  * Retrieves the icon's relative position to the text.
  *
  * Returns: A #MxPosition
+ *
+ * Since: 1.2
  */
 MxPosition
 mx_button_get_icon_position (MxButton *button)
@@ -1232,6 +1240,8 @@ mx_button_get_icon_position (MxButton *button)
  * @visible: %TRUE if the icon should be visible
  *
  * Sets the visibility of the icon associated with the button's action.
+ *
+ * Since: 1.2
  */
 void
 mx_button_set_icon_visible (MxButton *button,
@@ -1259,6 +1269,8 @@ mx_button_set_icon_visible (MxButton *button,
  * Retrieves the visibility of the icon associated with the button's action.
  *
  * Returns: %TRUE if the icon is visible, %FALSE otherwise
+ *
+ * Since: 1.2
  */
 gboolean
 mx_button_get_icon_visible (MxButton *button)
@@ -1273,6 +1285,8 @@ mx_button_get_icon_visible (MxButton *button)
  * @visible: %TRUE if the text should be visible
  *
  * Sets the visibility of the text associated with the button's action.
+ *
+ * Since: 1.2
  */
 void
 mx_button_set_label_visible (MxButton *button,
@@ -1301,6 +1315,8 @@ mx_button_set_label_visible (MxButton *button,
  * Retrieves the visibility of the text associated with the button's action.
  *
  * Returns: %TRUE if the text is visible, %FALSE otherwise
+ *
+ * Since: 1.2
  */
 gboolean
 mx_button_get_label_visible (MxButton *button)
@@ -1318,6 +1334,8 @@ mx_button_get_label_visible (MxButton *button)
  *
  * Returns: the icon-name. This must not be freed by the application. %NULL if
  *   no icon has been set
+ *
+ * Since: 1.2
  */
 G_CONST_RETURN gchar *
 mx_button_get_icon_name (MxButton *button)
@@ -1336,6 +1354,8 @@ mx_button_get_icon_name (MxButton *button)
  * Sets the icon-name used to display an icon on the button. Setting %NULL
  * will remove the icon name, or resort to the icon-name set in the current
  * style. Setting an icon name overrides any icon set in the style.
+ *
+ * Since: 1.2
  */
 void
 mx_button_set_icon_name (MxButton    *button,
@@ -1364,6 +1384,8 @@ mx_button_set_icon_name (MxButton    *button,
  * Retrieves the icon-size being used for the displayed icon inside the button.
  *
  * Returns: The icon-size being used for the button icon, in pixels
+ *
+ * Since: 1.2
  */
 guint
 mx_button_get_icon_size (MxButton *button)
@@ -1381,6 +1403,8 @@ mx_button_get_icon_size (MxButton *button)
  * Sets the icon-size to use for the icon displayed inside the button. This will
  * override the icon-size set in the style. Setting a value of %0 resets to the
  * size from the style.
+ *
+ * Since: 1.2
  */
 void
 mx_button_set_icon_size (MxButton *button,

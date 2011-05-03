@@ -311,6 +311,8 @@ mx_spinner_class_init (MxSpinnerClass *klass)
    * @spinner: the #MxSpinner that received the signal
    *
    * Emitted after the animation has displayed the final frame.
+   *
+   * Since: 1.2
    */
   signals[LOOPED] =
     g_signal_new ("looped",
@@ -425,6 +427,8 @@ mx_spinner_init (MxSpinner *self)
  * Create a new #MxSpinner widget.
  *
  * Returns: a newly allocated #MxSpinner
+ *
+ * Since: 1.2
  */
 ClutterActor *
 mx_spinner_new (void)
@@ -439,6 +443,8 @@ mx_spinner_new (void)
  * Determines whether the spinner is animating.
  *
  * Returns: %TRUE if the spinner is animating, %FALSE otherwise
+ *
+ * Since: 1.2
  */
 gboolean
 mx_spinner_get_animating (MxSpinner *spinner)
@@ -454,6 +460,8 @@ mx_spinner_get_animating (MxSpinner *spinner)
  *
  * Sets whether the spinner is animating. A spinner can be stopped if
  * the task it represents has finished, or to save energy.
+ *
+ * Since: 1.2
  */
 void
 mx_spinner_set_animating (MxSpinner *spinner, gboolean animating)
