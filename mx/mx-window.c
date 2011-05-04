@@ -70,6 +70,7 @@ struct _MxWindowPrivate
   ClutterActor *toolbar;
   ClutterActor *child;
   ClutterActor *resize_grip;
+  ClutterActor *debug_actor;
 
   MxWindowRotation  rotation;
   ClutterTimeline  *rotation_timeline;
@@ -339,6 +340,137 @@ mx_window_get_size (MxWindow *window, gfloat *width, gfloat *height)
 }
 
 static void
+debug_paint (ClutterActor *stage,
+             MxWindow     *window)
+{
+  MxPadding padding = { 0, };
+  static gpointer current;
+  ClutterActor *actor;
+  gfloat width, height, x, y;
+  CoglMatrix matrix;
+
+  actor = window->priv->debug_actor;
+
+  if (!actor)
+    return;
+
+  if (MX_IS_WIDGET (actor))
+    mx_widget_get_padding (MX_WIDGET (actor), &padding);
+
+
+  clutter_actor_get_size (actor, &width, &height);
+  clutter_actor_get_transformed_position (actor, &x, &y);
+
+
+    {
+      ClutterActor *cur_actor;
+      GSList *parents = NULL, *l;
+
+      cogl_get_modelview_matrix (&matrix);
+
+      /* Get the complete modelview matrix for light by applying all of
+         its parent transformations as well as its own in reverse */
+      for (cur_actor = actor;
+           cur_actor != stage;
+           cur_actor = clutter_actor_get_parent (cur_actor))
+        parents = g_slist_prepend (parents, cur_actor);
+
+      for (l = parents; l; l = l->next)
+        {
+          CoglMatrix actor_matrix;
+
+          cogl_matrix_init_identity (&actor_matrix);
+          clutter_actor_get_transformation_matrix (CLUTTER_ACTOR (l->data),
+                                                   &actor_matrix);
+
+          cogl_matrix_multiply (&matrix,
+                                &matrix,
+                                &actor_matrix);
+        }
+
+      g_slist_free (parents);
+    }
+
+  cogl_push_matrix ();
+
+  cogl_set_modelview_matrix (&matrix);
+
+
+  if (current != actor)
+    {
+      current = actor;
+
+      const char *id = clutter_actor_get_name (current);
+      const char *class = NULL;
+      const char *type_name = G_OBJECT_TYPE_NAME (current);
+
+      if (MX_IS_STYLABLE (class))
+        class = mx_stylable_get_style_class (current);
+
+      g_debug ("%s%s%s%s%s (%.1f, %.1f) (%.1f x %.1f)",
+               (type_name) ? type_name : "",
+               (class) ? "." : "",
+               (class) ? class : "",
+               (id) ? "#" : "",
+               (id) ? id : "",
+               x, y,
+               width, height);
+    }
+
+  cogl_set_source_color4f (0, 0, 1, 0.5);
+  cogl_rectangle (0, 0, width, height);
+
+  cogl_set_source_color4f (0, 1, 0, 0.5);
+  cogl_rectangle (padding.left, padding.top,
+                  width - padding.right,
+                  height - padding.bottom);
+
+  cogl_set_source_color4f (0, 0, 0, 1);
+  cogl_path_rectangle (0, 0, width, height);
+  cogl_path_stroke ();
+
+  cogl_set_source_color4f (1, 1, 1, 1);
+  cogl_path_rectangle (1, 1, width - 1, height - 1);
+  cogl_path_stroke ();
+
+  cogl_pop_matrix ();
+}
+
+static void
+debug_actor_notify (gpointer debug_actor_p,
+                    GObject *actor)
+{
+  *((gpointer *)debug_actor_p) = NULL;
+}
+
+static gboolean
+debug_captured_event (ClutterActor *actor,
+                      ClutterEvent *event,
+                      gpointer      data)
+{
+  MxWindowPrivate *priv = MX_WINDOW (data)->priv;
+
+  if (event->type == CLUTTER_MOTION)
+    {
+      ClutterMotionEvent *m_event = (ClutterMotionEvent *) event;
+
+      if (priv->debug_actor)
+        g_object_weak_unref (G_OBJECT (priv->debug_actor), debug_actor_notify,
+                             &priv->debug_actor);
+
+      priv->debug_actor = clutter_stage_get_actor_at_pos (CLUTTER_STAGE (actor),
+                                                          CLUTTER_PICK_ALL,
+                                                          m_event->x,
+                                                          m_event->y);
+      g_object_weak_ref (G_OBJECT (priv->debug_actor), debug_actor_notify,
+                         &priv->debug_actor);
+    }
+
+  return FALSE;
+}
+
+
+static void
 mx_window_post_paint_cb (ClutterActor *actor, MxWindow *window)
 {
   gfloat width, height, stage_width, stage_height;
@@ -353,6 +485,8 @@ mx_window_post_paint_cb (ClutterActor *actor, MxWindow *window)
 
   mx_window_get_size (window, &width, &height);
   clutter_actor_get_size (actor, &stage_width, &stage_height);
+
+  cogl_push_matrix ();
 
   /* Adjust for rotation */
   cogl_translate ((stage_width - width) / 2.f,
@@ -371,6 +505,11 @@ mx_window_post_paint_cb (ClutterActor *actor, MxWindow *window)
 
   cogl_rectangle (0, 1, 1, height - 1);
   cogl_rectangle (width - 1, 1, width, height - 1);
+
+  cogl_pop_matrix ();
+
+  if (_mx_debug (MX_DEBUG_LAYOUT))
+    debug_paint (actor, window);
 }
 
 static void
@@ -622,6 +761,10 @@ mx_window_constructed (GObject *object)
                     G_CALLBACK (mx_window_actor_removed_cb), object);
   g_signal_connect (priv->stage, "notify::user-resizable",
                     G_CALLBACK (mx_window_user_resizable_cb), object);
+
+  if (_mx_debug (MX_DEBUG_LAYOUT))
+    g_signal_connect (priv->stage, "captured-event",
+                      G_CALLBACK (debug_captured_event), object);
 
   g_object_set (G_OBJECT (priv->stage), "use-alpha", TRUE, NULL);
 
