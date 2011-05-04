@@ -347,6 +347,8 @@ mx_toggle_handle_button_release_event (ClutterActor       *actor,
                                        ClutterButtonEvent *event,
                                        MxToggle           *toggle)
 {
+  ClutterActorBox box;
+
   if (mx_widget_get_disabled (MX_WIDGET (actor)))
     return FALSE;
 
@@ -360,6 +362,12 @@ mx_toggle_handle_button_release_event (ClutterActor       *actor,
   toggle->priv->last_move = 0;
 
   clutter_ungrab_pointer ();
+
+  /* ensure the hover state is removed if the pointer left the handle
+   * during the grab */
+  clutter_actor_get_allocation_box (actor, &box);
+  if (!clutter_actor_box_contains (&box, event->x, event->y))
+    mx_stylable_style_pseudo_class_remove (MX_STYLABLE (actor), "hover");
 
   return TRUE;
 }
