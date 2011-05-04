@@ -284,7 +284,7 @@ mx_bin_get_preferred_width (ClutterActor *self,
 
   min_width = natural_width = padding.left + padding.right;
 
-  if (priv->child == NULL)
+  if (priv->child == NULL || !CLUTTER_ACTOR_IS_VISIBLE (priv->child))
     {
       if (min_width_p)
         *min_width_p = min_width;
@@ -323,7 +323,7 @@ mx_bin_get_preferred_height (ClutterActor *self,
 
   min_height = natural_height = padding.top + padding.bottom;
 
-  if (priv->child == NULL)
+  if (priv->child == NULL || !CLUTTER_ACTOR_IS_VISIBLE (priv->child))
     {
       if (min_height_p)
         *min_height_p = min_height;
