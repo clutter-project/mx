@@ -717,7 +717,8 @@ mx_button_update_contents (MxButton *self)
 {
   MxButtonPrivate *priv = self->priv;
   ClutterActor *child;
-  gboolean icon_visible;
+  gboolean icon_visible, label_visible;
+  const gchar *text;
 
   /* If the icon doesn't have a name set, treat it as
    * not-visible.
@@ -727,6 +728,13 @@ mx_button_update_contents (MxButton *self)
   else
     icon_visible = FALSE;
 
+  text = clutter_text_get_text (CLUTTER_TEXT (priv->label));
+
+  if (priv->label_visible && text && (strcmp (text, "") != 0))
+    label_visible = TRUE;
+  else
+    label_visible = FALSE;
+
   /* replace any custom content */
   child = mx_bin_get_child (MX_BIN (self));
 
@@ -734,8 +742,7 @@ mx_button_update_contents (MxButton *self)
     mx_bin_set_child (MX_BIN (self), priv->hbox);
 
   /* Handle the simple cases first */
-  if (!icon_visible &&
-      !priv->label_visible)
+  if (!icon_visible && !label_visible)
     {
       clutter_actor_hide (priv->hbox);
       return;
@@ -744,8 +751,7 @@ mx_button_update_contents (MxButton *self)
   /* ensure the hbox is visible */
   clutter_actor_show (priv->hbox);
 
-  if (icon_visible &&
-      !priv->label_visible)
+  if (icon_visible && !label_visible)
     {
       clutter_actor_show (priv->icon);
       clutter_actor_hide (priv->label);
@@ -753,8 +759,7 @@ mx_button_update_contents (MxButton *self)
       return;
     }
 
-  if (!icon_visible &&
-      priv->label_visible)
+  if (!icon_visible && label_visible)
     {
       clutter_actor_hide (priv->icon);
       clutter_actor_show (priv->label);
@@ -971,6 +976,8 @@ mx_button_init (MxButton *button)
                                   priv->icon, FALSE);
   mx_box_layout_child_set_x_fill (MX_BOX_LAYOUT (priv->hbox),
                                   priv->icon, FALSE);
+
+  mx_button_update_contents (button);
 }
 
 /**
