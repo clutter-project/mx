@@ -556,6 +556,23 @@ mx_toggle_set_active (MxToggle *toggle,
     {
       ClutterTimeline *timeline;
 
+      priv->active = active;
+
+      if (active)
+        mx_stylable_set_style_pseudo_class (MX_STYLABLE (toggle), "checked");
+      else
+        mx_stylable_set_style_pseudo_class (MX_STYLABLE (toggle), NULL);
+
+      g_object_notify (G_OBJECT (toggle), "active");
+
+
+      /* don't run an animation if the actor is not mapped */
+      if (!CLUTTER_ACTOR_IS_MAPPED (CLUTTER_ACTOR (toggle)))
+        {
+          priv->position = (active) ? 1 : 0;
+          return;
+        }
+
       timeline = clutter_alpha_get_timeline (priv->alpha);
 
       if (clutter_timeline_is_playing (timeline))
@@ -579,16 +596,6 @@ mx_toggle_set_active (MxToggle *toggle,
         }
 
       clutter_timeline_start (timeline);
-
-      priv->active = active;
-
-      if (active)
-        mx_stylable_set_style_pseudo_class (MX_STYLABLE (toggle), "checked");
-      else
-        mx_stylable_set_style_pseudo_class (MX_STYLABLE (toggle), NULL);
-
-
-      g_object_notify (G_OBJECT (toggle), "active");
     }
 }
 
