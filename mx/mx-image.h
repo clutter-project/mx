@@ -151,6 +151,10 @@ void     mx_image_set_transition_duration (MxImage *image,
                                            guint    duration);
 guint    mx_image_get_transition_duration (MxImage *image);
 
+void     mx_image_animate_scale_mode (MxImage          *image,
+                                      gulong            mode,
+                                      guint             duration,
+                                      MxImageScaleMode  scale_mode);
 G_END_DECLS
 
 #endif /* _MX_IMAGE */

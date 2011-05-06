@@ -88,6 +88,7 @@ typedef struct
 struct _MxImagePrivate
 {
   MxImageScaleMode mode;
+  MxImageScaleMode previous_mode;
   guint            load_async : 1;
   guint            upscale    : 1;
   guint            width_threshold;
@@ -105,6 +106,8 @@ struct _MxImagePrivate
   CoglMaterial *material;
 
   ClutterTimeline *timeline;
+  ClutterTimeline *redraw_timeline;
+  ClutterAlpha *redraw_alpha;
 
   guint transition_duration;
 
@@ -265,9 +268,10 @@ mx_image_paint (ClutterActor *actor)
   float tex_coords[8];
   MxPadding padding;
   CoglMatrix matrix;
-  gfloat scale = 1;
+  gfloat scale = 1, previous_scale = 1;
   gfloat ratio;
   CoglColor color;
+  gfloat progress;
 
   /* chain up to draw the background */
   CLUTTER_ACTOR_CLASS (mx_image_parent_class)->paint (actor);
@@ -304,6 +308,12 @@ mx_image_paint (ClutterActor *actor)
 
   /* current texture */
   scale = calculate_scale (priv->texture, priv->rotation, aw, ah, priv->mode);
+  previous_scale = calculate_scale (priv->texture, priv->rotation, aw, ah,
+                                    priv->previous_mode);
+
+  progress = clutter_alpha_get_alpha (priv->redraw_alpha);
+  if (clutter_timeline_is_playing (priv->redraw_timeline))
+    scale = scale + (previous_scale - scale) * (1 - progress);
 
   cogl_matrix_init_identity (&matrix);
   cogl_matrix_translate (&matrix, 0.5, 0.5, 0);
@@ -488,6 +498,22 @@ mx_image_dispose (GObject *object)
       g_object_unref (priv->timeline);
 
       priv->timeline = NULL;
+    }
+
+  if (priv->redraw_timeline)
+    {
+      clutter_timeline_stop (priv->redraw_timeline);
+
+      g_object_unref (priv->redraw_timeline);
+
+      priv->redraw_timeline = NULL;
+    }
+
+  if (priv->redraw_alpha)
+    {
+      g_object_unref (priv->redraw_alpha);
+
+      priv->redraw_alpha = NULL;
     }
 
   if (priv->material)
@@ -695,6 +721,13 @@ new_frame_cb (ClutterTimeline *timeline,
 }
 
 static void
+redraw_timeline_complete (ClutterTimeline *timeline,
+                          MxImage         *image)
+{
+  image->priv->old_mode = image->priv->mode;
+}
+
+static void
 mx_image_init (MxImage *self)
 {
   MxImagePrivate *priv;
@@ -704,9 +737,17 @@ mx_image_init (MxImage *self)
 
   priv->transition_duration = DEFAULT_DURATION;
   priv->timeline = clutter_timeline_new (priv->transition_duration);
+  priv->redraw_timeline = clutter_timeline_new (200);
+  priv->redraw_alpha = clutter_alpha_new_full (priv->redraw_timeline,
+                                               CLUTTER_EASE_OUT_CUBIC);
 
   g_signal_connect (priv->timeline, "new-frame", G_CALLBACK (new_frame_cb),
                     self);
+
+  g_signal_connect_swapped (priv->redraw_timeline, "new-frame",
+                            G_CALLBACK (clutter_actor_queue_redraw), self);
+  g_signal_connect (priv->redraw_timeline, "completed",
+                    G_CALLBACK (redraw_timeline_complete), self);
 
   priv->blank_texture = cogl_texture_new_from_data (1, 1, COGL_TEXTURE_NO_ATLAS,
                                                     COGL_PIXEL_FORMAT_RGBA_8888,
@@ -784,12 +825,47 @@ mx_image_set_scale_mode (MxImage          *image,
 {
   if (image->priv->mode != mode)
     {
+      image->priv->previous_mode = mode;
       image->priv->mode = mode;
 
       g_object_notify (G_OBJECT (image), "scale-mode");
     }
 
   clutter_actor_queue_redraw (CLUTTER_ACTOR (image));
+}
+
+/**
+ * mx_image_animate_scale_mode:
+ * @image: An #MxImage
+ * @mode: a #ClutterAnimationMode
+ * @duration: duration of the animation in milliseconds
+ * @scale_mode: The #MxImageScaleMode to set
+ *
+ * Sets the value of #MxImage:scale-mode to @scale_mode and animates the
+ * scale factor of the image between the previous value and the new value.
+ *
+ * Since: 1.2
+ */
+void
+mx_image_animate_scale_mode (MxImage          *image,
+                             gulong            mode,
+                             guint             duration,
+                             MxImageScaleMode  scale_mode)
+{
+  MxImagePrivate *priv = image->priv;
+
+  if (priv->mode != mode)
+    {
+      priv->previous_mode = priv->mode;
+      priv->mode = scale_mode;
+
+      clutter_timeline_stop (priv->redraw_timeline);
+      clutter_timeline_set_duration (priv->redraw_timeline, duration);
+      clutter_alpha_set_mode (priv->redraw_alpha, mode);
+      clutter_timeline_start (priv->redraw_timeline);
+
+      g_object_notify (G_OBJECT (image), "scale-mode");
+    }
 }
 
 /**
