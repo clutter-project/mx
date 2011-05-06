@@ -1,3 +1,30 @@
+1.1.12
+======
+
+Changes since 1.1.11
+
+  * Apply the paint opacity to both textures correctly in MxImage
+  * Clarify the documentation for mx_bin_allocate_child
+  * Indicate in the documentation which symbols are new in 1.2
+  * Draw rectangles around actors when using the layout debug flag
+  * MxBin: don't request space for the child when it is not visible
+  * MxBin: hide the label when it is empty or no text has been set
+  * Don't animate MxToggle if it is not mapped
+  * Remove the hover state from MxToggle if the pointer left during a drag
+  * Add a function to MxImage to animate changing the scale mode
+
+Fixed Bugs (from bugzilla.clutter-project.org):
+
+  #2470 - slider: propagate the "disabled" property to internal children
+  #2609 - don't require libmx-gtk when building libmx documentation
+  #2613 - Document mx_set_locale
+  #2618 - Add MxAdjustment::interpolation-completed signal
+  #2635 - Prevent glade support being enabled when --without-glade is used
+  #2636 - Allocate expander child using align/fill properties.
+  #2641 - Remove 'active' state and cancel long press on leave event
+  #2642 - MxGrid: compute min_width and min_height correctly
+
+
 1.1.11
 ======
 
