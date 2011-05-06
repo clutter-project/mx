@@ -300,6 +300,8 @@ MX_FOCUS_MANAGER_GET_CLASS
 <SECTION>
 <FILE>mx-actor-manager</FILE>
 <TITLE>MxActorManager</TITLE>
+MxActorManagerCreateFunc
+MxActorManagerError
 MxActorManager
 MxActorManagerClass
 mx_actor_manager_new
@@ -320,7 +322,7 @@ MxActorManagerPrivate
 MX_ACTOR_MANAGER
 MX_IS_ACTOR_MANAGER
 MX_TYPE_ACTOR_MANAGER
-mx_focus_manager_get_type
+mx_actor_manager_get_type
 MX_ACTOR_MANAGER_CLASS
 MX_IS_ACTOR_MANAGER_CLASS
 MX_ACTOR_MANAGER_GET_CLASS
@@ -680,6 +682,7 @@ mx_image_set_from_buffer_at_size
 mx_image_clear
 mx_image_set_scale_mode
 mx_image_get_scale_mode
+mx_image_animate_scale_mode
 mx_image_set_image_rotation
 mx_image_get_image_rotation
 mx_image_set_load_async
@@ -1541,10 +1544,8 @@ mx_actor_box_clamp_to_pixels
 MxBorderImage
 MxPadding
 MX_PARAM_TRANSLATEABLE
-MxBorderImage
 mx_border_image_set_from_string
 mx_font_weight_set_from_string
-MxPadding
 MxAlign
 MxFontWeight
 MxScrollPolicy
