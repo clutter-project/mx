@@ -166,7 +166,9 @@ mx_grid_do_allocate (ClutterActor          *self,
                      ClutterAllocationFlags flags,
                      gboolean               calculate_extents_only,
                      gfloat                *actual_width,
-                     gfloat                *actual_height);
+                     gfloat                *actual_height,
+                     gfloat                *min_width,
+                     gfloat                *min_height);
 
 static void scrollable_interface_init (MxScrollableIface *iface);
 static void mx_box_focusable_iface_init (MxFocusableIface *iface);
@@ -1243,7 +1245,7 @@ mx_grid_get_preferred_width (ClutterActor *self,
                              gfloat       *min_width_p,
                              gfloat       *natural_width_p)
 {
-  gfloat actual_width, actual_height;
+  gfloat actual_width, min_width;
   ClutterActorBox box;
 
   box.x1 = 0;
@@ -1252,10 +1254,10 @@ mx_grid_get_preferred_width (ClutterActor *self,
   box.y2 = for_height;
 
   mx_grid_do_allocate (self, &box, FALSE,
-                       TRUE, &actual_width, &actual_height);
+                       TRUE, &actual_width, NULL, &min_width, NULL);
 
   if (min_width_p)
-    *min_width_p = actual_width;
+    *min_width_p = min_width;
   if (natural_width_p)
     *natural_width_p = actual_width;
 }
@@ -1266,7 +1268,7 @@ mx_grid_get_preferred_height (ClutterActor *self,
                               gfloat       *min_height_p,
                               gfloat       *natural_height_p)
 {
-  gfloat actual_width, actual_height;
+  gfloat actual_height, min_height;
   ClutterActorBox box;
 
   box.x1 = 0;
@@ -1275,10 +1277,10 @@ mx_grid_get_preferred_height (ClutterActor *self,
   box.y2 = G_MAXFLOAT;
 
   mx_grid_do_allocate (self, &box, FALSE,
-                       TRUE, &actual_width, &actual_height);
+                       TRUE, NULL, &actual_height, NULL, &min_height);
 
   if (min_height_p)
-    *min_height_p = actual_height;
+    *min_height_p = min_height;
   if (natural_height_p)
     *natural_height_p = actual_height;
 }
@@ -1407,7 +1409,9 @@ mx_grid_do_allocate (ClutterActor          *self,
                      ClutterAllocationFlags flags,
                      gboolean               calculate_extents_only,
                      gfloat                *actual_width,
-                     gfloat                *actual_height)
+                     gfloat                *actual_height,
+                     gfloat                *min_width,
+                     gfloat                *min_height)
 {
   MxGrid *layout = (MxGrid *) self;
   MxGridPrivate *priv = layout->priv;
@@ -1432,6 +1436,12 @@ mx_grid_do_allocate (ClutterActor          *self,
 
   if (actual_height)
     *actual_height = 0;
+
+  if (min_width)
+    *min_width = 0;
+
+  if (min_height)
+    *min_height = 0;
 
   current_a = current_b = next_b = 0;
 
@@ -1499,13 +1509,15 @@ mx_grid_do_allocate (ClutterActor          *self,
       ClutterActor *child = iter->data;
       gfloat natural_a;
       gfloat natural_b;
+      gfloat min_a;
+      gfloat min_b;
 
       if (!CLUTTER_ACTOR_IS_VISIBLE (child))
         continue;
 
       /* each child will get as much space as they require */
       clutter_actor_get_preferred_size (CLUTTER_ACTOR (child),
-                                        NULL, NULL,
+                                        &min_a, &min_b,
                                         &natural_a, &natural_b);
 
       /* swap axes around if column is major */
@@ -1514,6 +1526,10 @@ mx_grid_do_allocate (ClutterActor          *self,
           gfloat temp = natural_a;
           natural_a = natural_b;
           natural_b = temp;
+
+          temp = min_a;
+          min_a = min_b;
+          min_b = temp;
         }
 
       /* if the child is overflowing, or the max-stride has been reached,
@@ -1543,6 +1559,7 @@ mx_grid_do_allocate (ClutterActor          *self,
       {
         gfloat row_height;
         ClutterActorBox child_box;
+        ClutterActorBox min_child_box;
 
         if (homogenous_b)
           {
@@ -1569,6 +1586,10 @@ mx_grid_do_allocate (ClutterActor          *self,
         child_box.y1 = current_b + (row_height-natural_b) * balign;
         child_box.y2 = child_box.y1 + natural_b;
 
+        min_child_box.x1 = 0;
+        min_child_box.y1 = 0;
+        min_child_box.x2 = min_a;
+        min_child_box.y2 = min_b;
 
         if (priv->orientation == MX_ORIENTATION_VERTICAL)
           {
@@ -1579,6 +1600,14 @@ mx_grid_do_allocate (ClutterActor          *self,
             temp = child_box.x2;
             child_box.x2 = child_box.y2;
             child_box.y2 = temp;
+
+            temp = min_child_box.x1;
+            min_child_box.x1 = min_child_box.y1;
+            min_child_box.y1 = temp;
+
+            temp = min_child_box.x2;
+            min_child_box.x2 = min_child_box.y2;
+            min_child_box.y2 = temp;
           }
 
         /* account for padding and pixel-align */
@@ -1599,6 +1628,18 @@ mx_grid_do_allocate (ClutterActor          *self,
 
         if (actual_height && (child_box.y2 + padding.bottom) > *actual_height)
           *actual_height = child_box.y2 + padding.bottom;
+
+        if (min_width &&
+            padding.left + min_child_box.x2 + padding.right > *min_width)
+          {
+            *min_width = padding.left + min_child_box.x2 + padding.right;
+          }
+
+        if (min_height &&
+            padding.top + min_child_box.y2 + padding.bottom > *min_height)
+          {
+            *min_height = padding.left + min_child_box.y2 + padding.right;
+          }
 
         if (homogenous_a)
           {
@@ -1637,12 +1678,7 @@ mx_grid_allocate (ClutterActor          *self,
       gfloat height;
 
       /* get preferred height for this width */
-      mx_grid_do_allocate (self,
-                           box,
-                           flags,
-                           TRUE,
-                           NULL,
-                           &height);
+      mx_grid_do_allocate (self, box, flags, TRUE, NULL, &height, NULL, NULL);
       /* set our allocated height to be the preferred height, since we will be
        * scrolling
        */
@@ -1673,12 +1709,7 @@ mx_grid_allocate (ClutterActor          *self,
       gfloat width;
 
       /* get preferred width for this height */
-      mx_grid_do_allocate (self,
-                           box,
-                           flags,
-                           TRUE,
-                           &width,
-                           NULL);
+      mx_grid_do_allocate (self, box, flags, TRUE, &width, NULL, NULL, NULL);
       /* set our allocated height to be the preferred height, since we will be
        * scrolling
        */
@@ -1705,12 +1736,8 @@ mx_grid_allocate (ClutterActor          *self,
     }
 
 
-  mx_grid_do_allocate (self,
-                       &alloc_box,
-                       flags,
-                       FALSE,
-                       NULL,
-                       NULL);
+  mx_grid_do_allocate (self, &alloc_box, flags, FALSE, NULL, NULL,
+      NULL, NULL);
 }
 
 
