@@ -41,6 +41,12 @@ notify_elastic_cb (MxToggle     *toggle,
   mx_adjustment_set_elastic (vadjust, on);
 }
 
+static gboolean
+true_cb ()
+{
+  return TRUE;
+}
+
 void
 scroll_view_main (ClutterContainer *stage)
 {
@@ -49,6 +55,12 @@ scroll_view_main (ClutterContainer *stage)
   ClutterActor *label, *elastic, *overshoot, *scroll, *kinetic, *view, *texture;
 
   scroll = mx_scroll_view_new ();
+
+  /* Make sure something underneath the kinetic scroll view swallows events
+   * so that we don't end up moving the window.
+   */
+  g_signal_connect (scroll, "button-press-event", G_CALLBACK (true_cb), NULL);
+
   kinetic = mx_kinetic_scroll_view_new ();
 
   clutter_container_add_actor (stage, scroll);
