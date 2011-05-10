@@ -100,6 +100,10 @@ enum {
   PROP_SCROLL_POLICY
 };
 
+static gboolean button_release (MxKineticScrollView *scroll,
+                                gint                 x,
+                                gint                 y);
+
 /* MxScrollableIface implementation */
 
 static void
@@ -416,19 +420,49 @@ mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
 }
 
 static gboolean
-motion_event_cb (ClutterActor        *stage,
+motion_event_cb (ClutterActor        *actor,
                  ClutterMotionEvent  *event,
                  MxKineticScrollView *scroll)
 {
   gfloat x, y;
 
   MxKineticScrollViewPrivate *priv = scroll->priv;
-  ClutterActor *actor = CLUTTER_ACTOR (scroll);
 
   if (event->type != CLUTTER_MOTION)
     return FALSE;
 
-  if (clutter_actor_transform_stage_point (actor,
+  /* For various reasons, it's possible we may not get the button release
+   * event - in this case, check here if the button is still down and
+   * handle it manually.
+   *
+   * We need to do this, or we can end up just stealing events forever.
+   */
+  switch (priv->button)
+    {
+    default:
+    case 1:
+      if (!(event->modifier_state & CLUTTER_BUTTON1_MASK))
+        return button_release (scroll, event->x, event->y);
+      break;
+    case 2:
+      if (!(event->modifier_state & CLUTTER_BUTTON2_MASK))
+        return button_release (scroll, event->x, event->y);
+      break;
+    case 3:
+      if (!(event->modifier_state & CLUTTER_BUTTON3_MASK))
+        return button_release (scroll, event->x, event->y);
+      break;
+    case 4:
+      if (!(event->modifier_state & CLUTTER_BUTTON4_MASK))
+        return button_release (scroll, event->x, event->y);
+      break;
+    case 5:
+      if (!(event->modifier_state & CLUTTER_BUTTON5_MASK))
+        return button_release (scroll, event->x, event->y);
+      break;
+    }
+
+  if (clutter_actor_transform_stage_point (CLUTTER_ACTOR (scroll),
                                            event->x,
                                            event->y,
                                            &x, &y))
@@ -461,8 +495,19 @@ motion_event_cb (ClutterActor        *stage,
 
           if (threshold_passed)
             {
-              clutter_set_motion_events_enabled (TRUE);
+              clutter_set_motion_events_enabled (FALSE);
               priv->in_drag = TRUE;
+
+              if (!priv->use_captured)
+                {
+                  g_signal_handlers_disconnect_by_func (actor,
+                                                        motion_event_cb,
+                                                        scroll);
+                  g_signal_connect (clutter_actor_get_stage (actor),
+                                    "captured-event",
+                                    G_CALLBACK (motion_event_cb),
+                                    scroll);
+                }
             }
           else
             return FALSE;
@@ -663,14 +708,28 @@ button_release_event_cb (ClutterActor        *stage,
                          MxKineticScrollView *scroll)
 {
   MxKineticScrollViewPrivate *priv = scroll->priv;
-  ClutterActor *actor = CLUTTER_ACTOR (scroll);
-  ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
-  gboolean decelerating = FALSE;
 
   if ((event->type != CLUTTER_BUTTON_RELEASE) ||
       (event->button != priv->button))
     return FALSE;
 
+  return button_release (scroll, event->x, event->y);
+}
+
+static gboolean
+button_release (MxKineticScrollView *scroll,
+                gint                 x,
+                gint                 y)
+{
+  ClutterActor *actor = CLUTTER_ACTOR (scroll);
+  ClutterActor *stage = clutter_actor_get_stage (actor);
+  ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
+  MxKineticScrollViewPrivate *priv = scroll->priv;
+  gboolean decelerating = FALSE;
+
+  g_signal_handlers_disconnect_by_func (scroll,
+                                        motion_event_cb,
+                                        scroll);
   g_signal_handlers_disconnect_by_func (stage,
                                         motion_event_cb,
                                         scroll);
@@ -687,7 +746,7 @@ button_release_event_cb (ClutterActor        *stage,
     {
       gfloat event_x, event_y;
 
-      if (clutter_actor_transform_stage_point (actor, event->x, event->y,
+      if (clutter_actor_transform_stage_point (actor, x, y,
                                                &event_x, &event_y))
         {
           gdouble value, lower, upper, step_increment, page_size,
@@ -895,10 +954,16 @@ button_press_event_cb (ClutterActor        *actor,
               priv->deceleration_timeline = NULL;
             }
 
-          g_signal_connect (stage,
-                            "captured-event",
-                            G_CALLBACK (motion_event_cb),
-                            scroll);
+          if (priv->use_captured)
+            g_signal_connect (stage,
+                              "captured-event",
+                              G_CALLBACK (motion_event_cb),
+                              scroll);
+          else
+            g_signal_connect (scroll,
+                              "motion-event",
+                              G_CALLBACK (motion_event_cb),
+                              scroll);
           g_signal_connect (stage,
                             "captured-event",
                             G_CALLBACK (button_release_event_cb),
