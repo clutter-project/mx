@@ -369,8 +369,17 @@ mx_box_container_foreach (ClutterContainer *container,
                           gpointer          callback_data)
 {
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (container)->priv;
+  ClutterActor       *child;
+  GList              *list;
 
-  g_list_foreach (priv->children, (GFunc) callback, callback_data);
+  list = priv->children;
+  while (list)
+    {
+      child = list->data;
+      list  = list->next;
+
+      callback (child, callback_data);
+    }
 }
 
 /*
