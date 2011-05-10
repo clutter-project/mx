@@ -940,7 +940,7 @@ mx_widget_button_press (ClutterActor       *actor,
 
   mx_widget_long_press_query (widget, event);
 
-  return TRUE;
+  return FALSE;
 }
 
 static gboolean
@@ -957,7 +957,7 @@ mx_widget_button_release (ClutterActor       *actor,
 
   mx_widget_long_press_cancel (widget);
 
-  return TRUE;
+  return FALSE;
 }
 
 static void
