@@ -205,9 +205,9 @@ mx_gtk_light_switch_style_set (GtkWidget *lightswitch,
 
   /* TODO: use style properties for these values */
 
-  /* MxToggle is 105x39, so make sure light-switch is at least this size */
-  priv->trough_width = 105;
-  priv->switch_height = 39;
+  /* MxToggle is 98x24, so make sure light-switch is at least this size */
+  priv->trough_width = 98;
+  priv->switch_height = 24;
   priv->switch_width = 50;
 }
 
