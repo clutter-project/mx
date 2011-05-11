@@ -838,13 +838,11 @@ mx_actor_manager_create_actor (MxActorManager           *manager,
                                gpointer                  userdata,
                                GDestroyNotify            destroy_func)
 {
-  MxActorManagerPrivate *priv;
   MxActorManagerOperation *op;
 
   g_return_val_if_fail (MX_IS_ACTOR_MANAGER (manager), 0);
   g_return_val_if_fail (create_func != NULL, 0);
 
-  priv = manager->priv;
   op = mx_actor_manager_op_new (manager,
                                 MX_ACTOR_MANAGER_CREATE,
                                 create_func,
@@ -878,14 +876,12 @@ mx_actor_manager_add_actor (MxActorManager   *manager,
                             ClutterContainer *container,
                             ClutterActor     *actor)
 {
-  MxActorManagerPrivate *priv;
   MxActorManagerOperation *op;
 
   g_return_val_if_fail (MX_IS_ACTOR_MANAGER (manager), 0);
   g_return_val_if_fail (CLUTTER_IS_CONTAINER (container), 0);
   g_return_val_if_fail (CLUTTER_IS_ACTOR (actor), 0);
 
-  priv = manager->priv;
   op = mx_actor_manager_op_new (manager,
                                 MX_ACTOR_MANAGER_ADD,
                                 NULL,
@@ -923,14 +919,12 @@ mx_actor_manager_remove_actor (MxActorManager   *manager,
                                ClutterContainer *container,
                                ClutterActor     *actor)
 {
-  MxActorManagerPrivate *priv;
   MxActorManagerOperation *op;
 
   g_return_val_if_fail (MX_IS_ACTOR_MANAGER (manager), 0);
   g_return_val_if_fail (CLUTTER_IS_CONTAINER (container), 0);
   g_return_val_if_fail (CLUTTER_IS_ACTOR (actor), 0);
 
-  priv = manager->priv;
   op = mx_actor_manager_op_new (manager,
                                 MX_ACTOR_MANAGER_REMOVE,
                                 NULL,
@@ -966,12 +960,9 @@ mx_actor_manager_remove_container (MxActorManager   *manager,
 {
   GList *children;
   ClutterActor *parent;
-  MxActorManagerPrivate *priv;
 
   g_return_if_fail (MX_IS_ACTOR_MANAGER (manager));
   g_return_if_fail (CLUTTER_IS_CONTAINER (container));
-
-  priv = manager->priv;
 
   /* Cancel all operations on this container */
   mx_actor_manager_cancel_operations (manager, CLUTTER_ACTOR (container));
@@ -1030,7 +1021,6 @@ mx_actor_manager_cancel_operation (MxActorManager *manager,
 {
   GList *op_link;
   MxActorManagerPrivate *priv;
-  MxActorManagerOperation *op;
 
   g_return_if_fail (MX_IS_ACTOR_MANAGER (manager));
   g_return_if_fail (id > 0);
@@ -1045,7 +1035,6 @@ mx_actor_manager_cancel_operation (MxActorManager *manager,
       return;
     }
 
-  op = op_link->data;
   g_queue_unlink (priv->ops, op_link);
 
   g_signal_emit (manager, signals[OP_CANCELLED], 0, id);

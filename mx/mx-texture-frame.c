@@ -477,9 +477,7 @@ mx_texture_frame_class_init (MxTextureFrameClass *klass)
 static void
 mx_texture_frame_init (MxTextureFrame *self)
 {
-  MxTextureFramePrivate *priv;
-
-  self->priv = priv = MX_TEXTURE_FRAME_GET_PRIVATE (self);
+  self->priv = MX_TEXTURE_FRAME_GET_PRIVATE (self);
 }
 
 /**

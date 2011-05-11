@@ -631,7 +631,7 @@ mx_texture_cache_insert (MxTextureCache *self,
                          const gchar    *uri,
                          CoglHandle     *texture)
 {
-  gchar *new_uri;
+  gchar *new_uri = NULL;
   MxTextureCacheItem *item;
   MxTextureCachePrivate *priv;
 
@@ -693,7 +693,7 @@ mx_texture_cache_insert_meta (MxTextureCache *self,
                               CoglHandle     *texture,
                               GDestroyNotify  destroy_func)
 {
-  gchar *new_uri;
+  gchar *new_uri = NULL;
   MxTextureCacheItem *item;
   MxTextureCachePrivate *priv;
   MxTextureCacheMetaEntry *entry;

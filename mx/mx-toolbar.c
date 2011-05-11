@@ -322,8 +322,6 @@ mx_toolbar_get_preferred_height (ClutterActor *actor,
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
-  for_width = for_width - padding.left - padding.right;
-
   if (priv->close_button)
     {
       clutter_actor_get_preferred_height (priv->close_button,

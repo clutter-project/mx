@@ -762,7 +762,6 @@ void
 mx_tooltip_show (MxTooltip *tooltip)
 {
   MxTooltipPrivate *priv;
-  ClutterActor *parent;
   ClutterActor *self = CLUTTER_ACTOR (tooltip);
   ClutterAnimation *animation;
 
@@ -772,7 +771,6 @@ mx_tooltip_show (MxTooltip *tooltip)
     clutter_animation_completed (animation);
 
   priv = tooltip->priv;
-  parent = clutter_actor_get_parent (self);
 
   mx_tooltip_update_position (tooltip);
 

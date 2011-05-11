@@ -168,7 +168,6 @@ mx_icon_notify_theme_name_cb (MxIconTheme *theme,
 static void
 mx_icon_dispose (GObject *gobject)
 {
-  MxIconTheme *theme;
   MxIconPrivate *priv = MX_ICON (gobject)->priv;
 
   if (priv->icon_texture)
@@ -177,7 +176,7 @@ mx_icon_dispose (GObject *gobject)
       priv->icon_texture = NULL;
     }
 
-  if ((theme = mx_icon_theme_get_default ()))
+  if (mx_icon_theme_get_default ())
     {
       g_signal_handlers_disconnect_by_func (mx_icon_theme_get_default (),
                                             mx_icon_notify_theme_name_cb,

@@ -1153,12 +1153,9 @@ mx_image_set_from_pixbuf (MxImage      *image,
                           const gchar  *filename,
                           GError      **error)
 {
-  GError *err;
   gboolean has_alpha;
-  MxImagePrivate *priv;
   MxTextureCache *cache;
-  GdkColorspace color_space;
-  gint width, height, rowstride, bps, channels;
+  gint width, height, rowstride;
 
   if (G_UNLIKELY (!MX_IS_IMAGE (image)))
     {
@@ -1168,9 +1165,6 @@ mx_image_set_from_pixbuf (MxImage      *image,
                      "image parameter is not a MxImage");
       return FALSE;
     }
-
-  err = NULL;
-  priv = image->priv;
 
   cache = mx_texture_cache_get_default ();
 
@@ -1194,6 +1188,9 @@ mx_image_set_from_pixbuf (MxImage      *image,
 
   if (pixbuf)
     {
+      gint bps, channels;
+      GdkColorspace color_space;
+
       width = gdk_pixbuf_get_width (pixbuf);
       height = gdk_pixbuf_get_height (pixbuf);
       has_alpha = gdk_pixbuf_get_has_alpha (pixbuf);
@@ -1219,8 +1216,7 @@ mx_image_set_from_pixbuf (MxImage      *image,
       /* Fill these variables with data so the compiler doesn't complain,
        * but they won't be accessed if the pixbuf is NULL.
        */
-      width = height = rowstride = bps = channels = -1;
-      color_space = GDK_COLORSPACE_RGB;
+      width = height = rowstride = -1;
       has_alpha = TRUE;
     }
 

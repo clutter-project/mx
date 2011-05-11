@@ -163,11 +163,11 @@ css_parse_key_value (GScanner *scanner, gchar **key, gchar **value)
           return ';';
         }
 
-      token = g_scanner_peek_next_token (scanner);
+      g_scanner_peek_next_token (scanner);
     }
 
   /* semi colon */
-  token = g_scanner_get_next_token (scanner);
+  g_scanner_get_next_token (scanner);
   if (scanner->value.v_char != ';')
     return ';';
 
@@ -230,11 +230,11 @@ css_parse_simple_selector (GScanner      *scanner,
   switch (token)
     {
     case '*':
-      token = g_scanner_get_next_token (scanner);
+      g_scanner_get_next_token (scanner);
       selector->type = g_strdup ("*");
       break;
     case G_TOKEN_IDENTIFIER:
-      token = g_scanner_get_next_token (scanner);
+      g_scanner_get_next_token (scanner);
       selector->type = g_strdup (scanner->value.v_identifier);
       break;
     default:
@@ -249,7 +249,7 @@ css_parse_simple_selector (GScanner      *scanner,
         {
           /* id */
         case '#':
-          token = g_scanner_get_next_token (scanner);
+          g_scanner_get_next_token (scanner);
           token = g_scanner_get_next_token (scanner);
           if (token != G_TOKEN_IDENTIFIER)
             return G_TOKEN_IDENTIFIER;
@@ -257,7 +257,7 @@ css_parse_simple_selector (GScanner      *scanner,
           break;
           /* class */
         case '.':
-          token = g_scanner_get_next_token (scanner);
+          g_scanner_get_next_token (scanner);
           token = g_scanner_get_next_token (scanner);
           if (token != G_TOKEN_IDENTIFIER)
             return G_TOKEN_IDENTIFIER;
@@ -265,7 +265,7 @@ css_parse_simple_selector (GScanner      *scanner,
           break;
           /* pseudo-class */
         case ':':
-          token = g_scanner_get_next_token (scanner);
+          g_scanner_get_next_token (scanner);
           token = g_scanner_get_next_token (scanner);
           if (token != G_TOKEN_IDENTIFIER)
             return G_TOKEN_IDENTIFIER;
@@ -624,7 +624,6 @@ css_node_matches_selector (MxSelector *selector,
   ClutterActor *actor;
   MxStylable *parent;
 
-  score = 0;
   a = 0;
   b = 0;
   c = 0;

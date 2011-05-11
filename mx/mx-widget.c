@@ -1339,9 +1339,7 @@ mx_stylable_iface_init (MxStylableIface *iface)
 static void
 mx_widget_init (MxWidget *actor)
 {
-  MxWidgetPrivate *priv;
-
-  actor->priv = priv = MX_WIDGET_GET_PRIVATE (actor);
+  actor->priv = MX_WIDGET_GET_PRIVATE (actor);
 
   /* set the default style */
   mx_stylable_set_style (MX_STYLABLE (actor), mx_style_get_default ());

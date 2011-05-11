@@ -556,13 +556,11 @@ mx_scroll_bar_constructor (GType                  type,
   GObjectClass *gobject_class;
   GObject *obj;
   MxScrollBar *bar;
-  MxScrollBarPrivate *priv;
 
   gobject_class = G_OBJECT_CLASS (mx_scroll_bar_parent_class);
   obj = gobject_class->constructor (type, n_properties, properties);
 
   bar  = MX_SCROLL_BAR (obj);
-  priv = MX_SCROLL_BAR_GET_PRIVATE (bar);
 
   g_signal_connect (bar, "notify::reactive",
                     G_CALLBACK (bar_reactive_notify_cb), NULL);

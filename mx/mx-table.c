@@ -1077,7 +1077,6 @@ mx_table_calculate_row_heights (MxTable *table,
     {
       MxTableChild *meta;
       ClutterActor *child;
-      DimensionData *row;
       gfloat c_min, c_pref;
       gfloat min_height, pref_height;
       gint start_row, end_row;
@@ -1094,7 +1093,6 @@ mx_table_calculate_row_heights (MxTable *table,
       if (meta->row_span < 2)
         continue;
 
-      row = &rows[meta->row];
       start_row = meta->row;
       end_row = meta->row + meta->row_span - 1;
 
@@ -1324,7 +1322,7 @@ mx_table_preferred_allocate (ClutterActor          *self,
 {
   GList *list;
   gint row_spacing, col_spacing;
-  gint i, table_width, table_height;
+  gint i;
   MxTable *table;
   MxTablePrivate *priv;
   MxPadding padding;
@@ -1337,14 +1335,6 @@ mx_table_preferred_allocate (ClutterActor          *self,
 
   col_spacing = (priv->col_spacing);
   row_spacing = (priv->row_spacing);
-
-
-  table_height = (int)(box->y2 - box->y1
-                       - padding.top
-                       - padding.bottom);
-  table_width = (int)(box->x2 - box->x1
-                      - padding.right
-                      - padding.left);
 
   mx_table_calculate_dimensions (table, box->x2 - box->x1, box->y2 - box->y1);
 

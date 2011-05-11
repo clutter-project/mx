@@ -688,11 +688,6 @@ mx_grid_init (MxGrid *self)
 static void
 mx_grid_dispose (GObject *object)
 {
-  MxGrid *self = (MxGrid *) object;
-  MxGridPrivate *priv;
-
-  priv = self->priv;
-
   /* Destroy all of the children. This will cause them to be removed
      from the container and unparented */
   clutter_container_foreach (CLUTTER_CONTAINER (object),
@@ -941,10 +936,6 @@ mx_grid_get_property (GObject    *object,
 {
   MxAdjustment *adjustment;
   MxGrid *grid = MX_GRID (object);
-
-  MxGridPrivate *priv;
-
-  priv = MX_GRID_GET_PRIVATE (object);
 
   switch (prop_id)
     {
@@ -1294,19 +1285,16 @@ compute_row_height (GList         *siblings,
   GList *l;
 
   gboolean homogenous_a;
-  gboolean homogenous_b;
   gfloat gap;
 
   if (priv->orientation == MX_ORIENTATION_VERTICAL)
     {
-      homogenous_b = priv->homogenous_columns;
       homogenous_a = priv->homogenous_rows;
       gap          = priv->row_spacing;
     }
   else
     {
       homogenous_a = priv->homogenous_columns;
-      homogenous_b = priv->homogenous_rows;
       gap          = priv->column_spacing;
     }
 
@@ -1357,19 +1345,16 @@ compute_row_start (GList         *siblings,
   GList *l;
 
   gboolean homogenous_a;
-  gboolean homogenous_b;
   gfloat gap;
 
   if (priv->orientation == MX_ORIENTATION_VERTICAL)
     {
-      homogenous_b = priv->homogenous_columns;
       homogenous_a = priv->homogenous_rows;
       gap          = priv->row_spacing;
     }
   else
     {
       homogenous_a = priv->homogenous_columns;
-      homogenous_b = priv->homogenous_rows;
       gap          = priv->column_spacing;
     }
 

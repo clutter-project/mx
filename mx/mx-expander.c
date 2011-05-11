@@ -391,7 +391,7 @@ mx_expander_allocate (ClutterActor          *actor,
   ClutterActorBox child_box;
   MxPadding padding;
   gfloat label_w, label_h;
-  gfloat available_w, available_h, min_w, min_h, full_h, arrow_h, arrow_w;
+  gfloat available_w, available_h, min_w, min_h, arrow_h, arrow_w;
   MxAlign x_align, y_align;
   gboolean x_fill, y_fill;
 
@@ -408,9 +408,6 @@ mx_expander_allocate (ClutterActor          *actor,
 
   available_w = (box->x2 - box->x1) - padding.left - padding.right;
   available_h = (box->y2 - box->y1) - padding.top - padding.bottom;
-
-  /* visual height of the expander - used for allocating the background */
-  full_h = padding.top + padding.bottom;
 
   /* arrow */
   clutter_actor_get_preferred_width (priv->arrow, -1, NULL, &arrow_w);
@@ -445,8 +442,6 @@ mx_expander_allocate (ClutterActor          *actor,
   mx_allocate_align_fill (priv->label, &child_box, MX_ALIGN_START,
                           MX_ALIGN_MIDDLE, FALSE, FALSE);
   clutter_actor_allocate (priv->label, &child_box, flags);
-
-  full_h += MAX (label_h, arrow_h);
 
   /* remove label height and spacing for child calculations */
   available_h -= MAX (label_h, arrow_h) + priv->spacing;

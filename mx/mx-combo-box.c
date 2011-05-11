@@ -319,7 +319,6 @@ mx_combo_box_get_preferred_height (ClutterActor *actor,
                                    gfloat       *natural_height_p)
 {
   MxComboBoxPrivate *priv = MX_COMBO_BOX (actor)->priv;
-  gfloat width;
   gfloat min_label_h, nat_label_h;
   gfloat min_icon_h = 0, nat_icon_h = 0;
   gfloat min_marker_h = 0, nat_marker_h = 0;
@@ -327,8 +326,6 @@ mx_combo_box_get_preferred_height (ClutterActor *actor,
   MxPadding padding;
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
-
-  width = for_width - padding.left - padding.right;
 
   clutter_actor_get_preferred_height (priv->label,
                                       -1,
