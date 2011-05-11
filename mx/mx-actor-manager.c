@@ -622,7 +622,7 @@ mx_actor_manager_op_new (MxActorManager              *manager,
 static void
 mx_actor_manager_op_free (MxActorManager *manager,
                           GList          *op_link,
-                          gboolean        remove)
+                          gboolean        _remove)
 {
   MxActorManagerOperation *op = op_link->data;
   MxActorManagerPrivate *priv = manager->priv;
@@ -646,7 +646,7 @@ mx_actor_manager_op_free (MxActorManager *manager,
                            op);
     }
 
-  if (remove)
+  if (_remove)
     g_queue_delete_link (priv->ops, op_link);
 
   g_slice_free (MxActorManagerOperation, op);

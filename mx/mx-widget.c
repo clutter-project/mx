@@ -374,9 +374,6 @@ mx_widget_allocate (ClutterActor          *actor,
 
   if (priv->background_image)
     {
-      ClutterActorBox frame_box = {
-        0, 0, box->x2 - box->x1, box->y2 - box->y1
-      };
       gfloat w, h;
 
       clutter_actor_get_preferred_size (CLUTTER_ACTOR (priv->background_image),

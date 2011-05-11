@@ -157,7 +157,6 @@ mx_spinner_get_preferred_width (ClutterActor *actor,
 
       if (for_height >= 0 && for_height < height)
         {
-          guint height = cogl_texture_get_height (priv->texture);
           for_height = MAX (0, for_height - padding.top - padding.bottom);
 
           width = (guint)((gfloat)width * (for_height / (gfloat)height));
@@ -195,7 +194,7 @@ mx_spinner_get_preferred_height (ClutterActor *actor,
 
       if (for_width >= 0 && for_width < width)
         {
-          guint width = cogl_texture_get_width (priv->texture) / priv->frames;
+          width = cogl_texture_get_width (priv->texture) / priv->frames;
           for_width = MAX (0, for_width - padding.left - padding.right);
 
           height = (guint)((gfloat)height * (for_width / (gfloat)width));

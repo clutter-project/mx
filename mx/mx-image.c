@@ -1076,7 +1076,6 @@ mx_image_set_from_data_internal (MxImage          *image,
       /* Insert the processed image into the cache, if we have a URI */
       if (uri)
         {
-          MxTextureCache *cache = mx_texture_cache_get_default ();
           mx_texture_cache_insert_meta (cache, uri,
                                         GINT_TO_POINTER (mx_image_cache_quark),
                                         priv->texture, NULL);
