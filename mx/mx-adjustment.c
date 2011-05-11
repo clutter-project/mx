@@ -329,7 +329,7 @@ mx_adjustment_class_init (MxAdjustmentClass *klass)
                                                         "Step increment",
                                                         0.0,
                                                         G_MAXDOUBLE,
-                                                        0.0,
+                                                        1.0,
                                                         MX_PARAM_READWRITE |
                                                         G_PARAM_CONSTRUCT));
   g_object_class_install_property (object_class,
