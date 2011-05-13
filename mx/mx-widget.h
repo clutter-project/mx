@@ -125,6 +125,9 @@ void mx_widget_long_press_query  (MxWidget           *widget,
                                   ClutterButtonEvent *event);
 void mx_widget_long_press_cancel (MxWidget           *widget);
 
+void   mx_widget_set_tooltip_delay (MxWidget *widget, guint delay);
+guint  mx_widget_get_tooltip_delay (MxWidget *widget);
+
 /* Only to be used by sub-classes of MxWidget */
 ClutterActor *mx_widget_get_background_image (MxWidget  *actor);
 ClutterActor *mx_widget_get_border_image     (MxWidget  *actor);

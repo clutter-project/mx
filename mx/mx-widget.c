@@ -73,6 +73,7 @@ struct _MxWidgetPrivate
   guint         long_press_source;
 
   guint         tooltip_timeout;
+  guint         tooltip_delay;
 };
 
 /**
@@ -98,6 +99,8 @@ enum
   PROP_MENU,
 
   PROP_DISABLED,
+
+  PROP_TOOLTIP_DELAY,
 
   LAST_PROP
 };
@@ -164,6 +167,10 @@ mx_widget_set_property (GObject      *gobject,
       mx_widget_set_disabled (actor, g_value_get_boolean (value));
       break;
 
+    case PROP_TOOLTIP_DELAY:
+      mx_widget_set_tooltip_delay (actor, g_value_get_int (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -203,6 +210,10 @@ mx_widget_get_property (GObject    *gobject,
 
     case PROP_DISABLED:
       g_value_set_boolean (value, mx_widget_get_disabled (actor));
+      break;
+
+    case PROP_TOOLTIP_DELAY:
+      g_value_set_int (value, mx_widget_get_tooltip_delay (actor));
       break;
 
     default:
@@ -245,7 +256,7 @@ mx_widget_set_tooltip_timeout (MxWidget *widget)
   mx_widget_remove_tooltip_timeout (widget);
 
   priv->tooltip_timeout =
-    clutter_threads_add_timeout (MX_WIDGET_TOOLTIP_TIMEOUT,
+    clutter_threads_add_timeout (mx_widget_get_tooltip_delay (widget),
                                  mx_widget_tooltip_timeout_cb,
                                  widget);
 }
@@ -1132,7 +1143,14 @@ mx_widget_class_init (MxWidgetClass *klass)
   g_object_class_install_property (gobject_class, PROP_DISABLED,
                                    widget_properties[PROP_DISABLED]);
 
-
+  widget_properties[PROP_TOOLTIP_DELAY] =
+    g_param_spec_int ("tooltip-delay",
+                      "Tooltip delay",
+                      "Delay time before showing the tooltip",
+                      0, G_MAXINT, MX_WIDGET_TOOLTIP_TIMEOUT,
+                      MX_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+  g_object_class_install_property (gobject_class, PROP_TOOLTIP_DELAY,
+                                   widget_properties[PROP_TOOLTIP_DELAY]);
 
   /**
    * MxWidget::long-press:
@@ -1718,6 +1736,43 @@ mx_widget_get_disabled (MxWidget *widget)
 {
   g_return_val_if_fail (MX_IS_WIDGET (widget), FALSE);
   return widget->priv->is_disabled || widget->priv->parent_disabled;
+}
+
+/**
+ * mx_widget_set_tooltip_delay:
+ * @widget: an #MxWidget
+ *
+ * Set the value, in milliseconds, of the "tooltip-delay" property.
+ * This is initially set to MX_WIDGET_TOOLTIP_TIMEOUT.
+ */
+void
+mx_widget_set_tooltip_delay (MxWidget *widget,
+                             guint delay)
+{
+  g_return_if_fail (MX_IS_WIDGET (widget));
+
+  if (widget->priv->tooltip_delay != delay)
+    {
+      widget->priv->tooltip_delay = delay;
+      g_object_notify_by_pspec (G_OBJECT (widget),
+                                widget_properties[PROP_TOOLTIP_DELAY]);
+    }
+}
+
+/**
+ * mx_widget_get_tooltip_delay:
+ * @widget: an #MxWidget
+ *
+ * Get the value of the "tooltip-delay" property.
+ *
+ * Returns: the current delay value in milliseconds
+ */
+guint
+mx_widget_get_tooltip_delay (MxWidget *widget)
+{
+  g_return_if_fail (MX_IS_WIDGET (widget));
+
+  return widget->priv->tooltip_delay;
 }
 
 /* Support translateable strings from JSON */
