@@ -60,6 +60,8 @@ typedef struct
 
 struct _MxIconThemePrivate
 {
+  guint       override_theme : 1;
+
   GList      *search_paths;
   GHashTable *icon_hash;
   GHashTable *theme_path_hash;
@@ -327,9 +329,14 @@ mx_icon_theme_changed_cb (MxSettings  *settings,
 {
   gchar *theme;
 
+  if (self->priv->override_theme)
+    return;
+
   g_object_get (settings, "icon-theme", &theme, NULL);
   mx_icon_theme_set_theme_name (self, theme);
   g_free (theme);
+
+  self->priv->override_theme = FALSE;
 }
 
 static void
@@ -444,12 +451,15 @@ mx_icon_theme_get_theme_name (MxIconTheme *theme)
 /**
  * mx_icon_theme_set_theme_name:
  * @theme: A #MxIconTheme
- * @theme_name: the name of an icon theme to load
+ * @theme_name: the name of an icon theme to load, or %NULL
  *
  * Set the value of the #MxIconTheme:theme-name property. This will cause the
  * icon theme to be loaded if it differs from the existing theme name. If the
  * theme could not be loaded, it will fall back to using the default icon theme
  * (hicolor).
+ *
+ * This will override the system's theme setting. To revert to the system
+ * icon theme, this function can be called with a %NULL @theme_name argument.
  *
  */
 void
@@ -459,9 +469,27 @@ mx_icon_theme_set_theme_name (MxIconTheme *theme,
   MxIconThemePrivate *priv;
 
   g_return_if_fail (MX_IS_ICON_THEME (theme));
-  g_return_if_fail (theme_name != NULL);
 
   priv = theme->priv;
+
+  if (!theme_name)
+    {
+      if (priv->override_theme)
+        {
+          gchar *system_theme = NULL;
+          MxSettings *settings = mx_settings_get_default ();
+
+          g_object_get (settings, "icon-theme", &system_theme, NULL);
+          priv->override_theme = FALSE;
+          mx_icon_theme_set_theme_name (theme, system_theme);
+          priv->override_theme = FALSE;
+          g_free (system_theme);
+        }
+
+      return;
+    }
+
+  priv->override_theme = TRUE;
 
   if (g_str_equal (theme_name, "hicolor"))
     return;
