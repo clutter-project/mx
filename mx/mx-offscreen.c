@@ -713,6 +713,18 @@ mx_offscreen_cogl_texture_notify (MxOffscreen *self)
   stage = clutter_actor_get_stage (priv->child);
   clutter_stage_get_perspective (CLUTTER_STAGE (stage), &perspective);
 
+  /* FIXME: The code below to calculate the modelview matrix only
+     works if the aspect ratio is 1.0. Clutter changed to use a
+     different aspect ratio and a different way to calculate the
+     modelview in commit eef9078f892 so the code no longer
+     works. Ideally this would use the new
+     cogl_matrix_view_2d_in_perspective function to share the
+     calculation code with Clutter but that function is marked as
+     experimental. Instead we just always use an aspect ratio of
+     1.0 */
+
+  perspective.aspect = 1.0;
+
   width = cogl_texture_get_width (texture);
   height = cogl_texture_get_height (texture);
 
