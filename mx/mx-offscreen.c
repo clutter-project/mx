@@ -723,7 +723,8 @@ mx_offscreen_cogl_texture_notify (MxOffscreen *self)
      experimental. Instead we just always use an aspect ratio of
      1.0 */
 
-  perspective.aspect = 1.0;
+  if (!CLUTTER_IS_STAGE (priv->child))
+    perspective.aspect = 1.0;
 
   width = cogl_texture_get_width (texture);
   height = cogl_texture_get_height (texture);
@@ -734,13 +735,26 @@ mx_offscreen_cogl_texture_notify (MxOffscreen *self)
                     perspective.z_near,
                     perspective.z_far);
 
-  cogl_get_projection_matrix (&matrix);
-  z_camera = 0.5 * matrix.xx;
+  /* If the child is a ClutterStage then we can avoid calculating our
+     own modelview matrix and just directly use its matrix because it
+     should already be indented for the same size buffer. This gives
+     us the best chance of looking the same as what's drawn in the
+     stage */
+  if (CLUTTER_IS_STAGE (priv->child))
+    {
+      cogl_matrix_init_identity (&matrix);
+      clutter_actor_get_transformation_matrix (priv->child, &matrix);
+    }
+  else
+    {
+      cogl_get_projection_matrix (&matrix);
+      z_camera = 0.5 * matrix.xx;
 
-  cogl_matrix_init_identity (&matrix);
-  cogl_matrix_translate (&matrix, -0.5f, -0.5f, -z_camera);
-  cogl_matrix_scale (&matrix, 1.f / width, -1.f / height, 1.f / width);
-  cogl_matrix_translate (&matrix, 0.f, -1.f * height, 0.f);
+      cogl_matrix_init_identity (&matrix);
+      cogl_matrix_translate (&matrix, -0.5f, -0.5f, -z_camera);
+      cogl_matrix_scale (&matrix, 1.f / width, -1.f / height, 1.f / width);
+      cogl_matrix_translate (&matrix, 0.f, -1.f * height, 0.f);
+    }
 
   cogl_set_modelview_matrix (&matrix);
 
@@ -782,12 +796,16 @@ mx_offscreen_pre_paint_cb (ClutterActor *actor,
   cogl_push_framebuffer (priv->fbo);
   cogl_push_matrix ();
 
-  /* Clear */
-  cogl_color_set_from_4ub (&zero_colour, 0x00, 0x00, 0x00, 0x00);
-  cogl_clear (&zero_colour,
-              COGL_BUFFER_BIT_COLOR |
-              COGL_BUFFER_BIT_STENCIL |
-              COGL_BUFFER_BIT_DEPTH);
+  /* Clear. If the source actor is a stage then it will clear the
+     buffer itself so we should avoid duplicating that work here */
+  if (!CLUTTER_IS_STAGE (priv->child))
+    {
+      cogl_color_set_from_4ub (&zero_colour, 0x00, 0x00, 0x00, 0x00);
+      cogl_clear (&zero_colour,
+                  COGL_BUFFER_BIT_COLOR |
+                  COGL_BUFFER_BIT_STENCIL |
+                  COGL_BUFFER_BIT_DEPTH);
+    }
 
   return TRUE;
 }
