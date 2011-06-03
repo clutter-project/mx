@@ -1,3 +1,28 @@
+1.2.0
+=====
+
+Changes since 1.1.12
+
+  * Update sizes in Gtk light switch
+  * Add scroll-policy support to MxKineticScrollView
+  * Don't swallow all button events in MxWidget
+  * Fix MxKineticScrollView when :use-captured is FALSE
+  * Change the default step-increment in MxAdjustment to 1.0
+  * Fix many compiler warnings
+  * Allow overriding of the system icon theme
+  * Add tooltip delay property to MxWidget
+  * Fix MxOffscreen incorrect aspect ratio
+
+
+Fixed Bugs (from bugzilla.clutter-project.org):
+
+  #2653 - test-mx on OSX seems to be broken
+  #2578 - add "scroll-policy" property to MxKineticScrollView
+  #2658 - The background looks wrong when MxDialog has a stage as its parent
+  #2649 - The delay time before showing a tooltip should be settable
+  #2643 - [MxKineticScrollView] Disable per-actor motion events when panning
+  #2642 - MxGrid returns the wrong min_width_p
+
 1.1.12
 ======
 
