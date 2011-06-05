@@ -617,6 +617,7 @@ mx_tooltip_update_position (MxTooltip *tooltip)
   priv->actor_below = FALSE;
   switch (rotation)
     {
+    default:
     case MX_WINDOW_ROTATION_0:
       tooltip_x = (int)(tip_area->x + (tip_area->width / 2) -
                         (tooltip_w / 2));
@@ -679,6 +680,7 @@ mx_tooltip_update_position (MxTooltip *tooltip)
   /* Keep on the screen horizontally */
   switch (rotation)
     {
+    default:
     case MX_WINDOW_ROTATION_0:
     case MX_WINDOW_ROTATION_180:
       if (tooltip_w > stage_w)

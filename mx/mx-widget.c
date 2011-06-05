@@ -1772,7 +1772,7 @@ mx_widget_set_tooltip_delay (MxWidget *widget,
 guint
 mx_widget_get_tooltip_delay (MxWidget *widget)
 {
-  g_return_if_fail (MX_IS_WIDGET (widget));
+  g_return_val_if_fail (MX_IS_WIDGET (widget), 0);
 
   return widget->priv->tooltip_delay;
 }

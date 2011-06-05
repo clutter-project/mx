@@ -316,7 +316,7 @@ mx_texture_cache_get_item (MxTextureCache *self,
   MxTextureCachePrivate *priv;
   MxTextureCacheItem *item;
   gchar *new_file, *new_uri;
-  const gchar *file;
+  const gchar *file = NULL;
 
   priv = TEXTURE_CACHE_PRIVATE (self);
 
