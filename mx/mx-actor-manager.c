@@ -73,8 +73,7 @@ typedef enum
 {
   MX_ACTOR_MANAGER_CREATE,
   MX_ACTOR_MANAGER_ADD,
-  MX_ACTOR_MANAGER_REMOVE,
-  MX_ACTOR_MANAGER_UNREF
+  MX_ACTOR_MANAGER_REMOVE
 } MxActorManagerOperationType;
 
 typedef struct
@@ -732,15 +731,6 @@ mx_actor_manager_handle_op (MxActorManager *manager)
                              "Container destroyed before removal");
       break;
 
-    case MX_ACTOR_MANAGER_UNREF:
-      if (op->actor)
-        g_object_unref (op->actor);
-      else
-        error = g_error_new (actor_manager_error_quark,
-                             MX_ACTOR_MANAGER_ACTOR_DESTROYED,
-                             "Actor destroyed before unref");
-      break;
-
     default:
       g_warning (G_STRLOC ": Unrecognised operation type (%d) "
                  "- Memory corruption?)", op->type);
@@ -808,9 +798,6 @@ mx_actor_manager_process_operations (MxActorManager *manager)
                             G_CALLBACK (mx_actor_manager_post_paint_cb),
                             manager);
     }
-  else
-    g_message ("%s: No more operations", G_STRFUNC);
-
 
   return FALSE;
 }
@@ -997,17 +984,12 @@ mx_actor_manager_remove_container (MxActorManager   *manager,
   /* Then remove the container */
   parent = clutter_actor_get_parent (CLUTTER_ACTOR (container));
   if (parent && CLUTTER_IS_CONTAINER (parent))
-    {
-      g_object_ref (container);
-      clutter_container_remove_actor (CLUTTER_CONTAINER (parent),
-                                      CLUTTER_ACTOR (container));
-      mx_actor_manager_op_new (manager,
-                               MX_ACTOR_MANAGER_UNREF,
-                               NULL,
-                               NULL,
-                               (ClutterActor *)container,
-                               NULL);
-    }
+    mx_actor_manager_op_new (manager,
+                             MX_ACTOR_MANAGER_REMOVE,
+                             NULL,
+                             NULL,
+                             (ClutterActor *)container,
+                             (ClutterContainer *)parent);
 
   mx_actor_manager_ensure_processing (manager);
 }
