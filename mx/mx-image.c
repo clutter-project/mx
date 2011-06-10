@@ -685,27 +685,19 @@ mx_image_class_init (MxImageClass *klass)
   mx_image_cache_quark = g_quark_from_static_string ("mx-image-cache");
 }
 
-
 static void
-new_frame_cb (ClutterTimeline *timeline,
-              guint            elapsed_msecs,
-              MxImage         *image)
+create_new_material (MxImage *image,
+                     gdouble  progress)
 {
   MxImagePrivate *priv = image->priv;
   CoglHandle copy;
-  gdouble progress;
   CoglColor constant;
-
-  if (priv->material == COGL_INVALID_HANDLE)
-    return;
 
   /* You should assume that a material can only be modified once, after
    * its creation; if you need to modify it later you should use a copy
    * instead. Cogl makes copying materials reasonably cheap
    */
   copy = cogl_material_copy (priv->material);
-
-  progress = clutter_timeline_get_progress (priv->timeline);
 
   /* Create the constant color to be used when combining the two
    * material layers; we use a black color with an alpha component
@@ -722,6 +714,22 @@ new_frame_cb (ClutterTimeline *timeline,
     cogl_object_unref (priv->material);
 
   priv->material = copy;
+}
+
+static void
+new_frame_cb (ClutterTimeline *timeline,
+              guint            elapsed_msecs,
+              MxImage         *image)
+{
+  MxImagePrivate *priv = image->priv;
+  gdouble progress;
+
+  if (priv->material == COGL_INVALID_HANDLE)
+    return;
+
+  progress = clutter_timeline_get_progress (priv->timeline);
+
+  create_new_material (image, progress);
 
   clutter_actor_queue_redraw (CLUTTER_ACTOR (image));
 }
@@ -911,9 +919,14 @@ mx_image_prepare_texture (MxImage  *image)
   cogl_material_set_layer (priv->material, 1, priv->old_texture);
   cogl_material_set_layer (priv->material, 0, priv->texture);
 
-  /* start the cross fade animation */
+  /* start the cross fade animation. When not having a transition duration,
+   * we directly jump forward a create the material corresponding to the end
+   * of the transition animation */
   clutter_timeline_stop (priv->timeline);
-  clutter_timeline_start (priv->timeline);
+  if (priv->transition_duration)
+    clutter_timeline_start (priv->timeline);
+  else
+    create_new_material (image, 1.0);
 
   /* the image has changed size, so update the preferred width/height */
   clutter_actor_queue_relayout (CLUTTER_ACTOR (image));
@@ -2172,8 +2185,8 @@ mx_image_set_transition_duration (MxImage *image, guint duration)
     {
       image->priv->transition_duration = duration;
 
-      clutter_timeline_set_duration (CLUTTER_TIMELINE (image->priv->timeline),
-                                     duration);
+      if (duration != 0)
+        clutter_timeline_set_duration (image->priv->timeline, duration);
 
       g_object_notify (G_OBJECT (image), "transition-duration");
     }
