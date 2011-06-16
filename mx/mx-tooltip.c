@@ -390,23 +390,9 @@ mx_tooltip_allocate (ClutterActor          *self,
 static void
 mx_tooltip_paint (ClutterActor *self)
 {
-  gfloat width, height;
-  CoglMatrix self_matrix;
   ClutterActor *border_image, *arrow_image;
 
   MxTooltipPrivate *priv = MX_TOOLTIP (self)->priv;
-
-  clutter_actor_get_transformation_matrix (self, &self_matrix);
-  cogl_matrix_multiply (&self_matrix, &priv->stage_matrix, &self_matrix);
-  cogl_set_modelview_matrix (&self_matrix);
-
-  clutter_actor_get_size (self, &width, &height);
-  width = (gint)(width / 2.f);
-  height = (gint)(height / 2.f);
-
-  cogl_translate (width, height, 0);
-  cogl_rotate (priv->angle, 0, 0, 1);
-  cogl_translate (-width, -height, 0);
 
   border_image = mx_widget_get_border_image (MX_WIDGET (self));
   if (border_image)
@@ -420,16 +406,10 @@ mx_tooltip_paint (ClutterActor *self)
 }
 
 static void
-mx_tooltip_stage_paint_cb (ClutterActor *stage, MxTooltip *self)
-{
-  cogl_get_modelview_matrix (&self->priv->stage_matrix);
-}
-
-static void
 mx_tooltip_map (ClutterActor *self)
 {
   MxTooltipPrivate *priv = MX_TOOLTIP (self)->priv;
-  ClutterActor *border_image, *arrow_image, *stage;
+  ClutterActor *border_image, *arrow_image;
 
   CLUTTER_ACTOR_CLASS (mx_tooltip_parent_class)->map (self);
 
@@ -442,20 +422,13 @@ mx_tooltip_map (ClutterActor *self)
     clutter_actor_map (arrow_image);
 
   clutter_actor_map (priv->label);
-
-  stage = clutter_actor_get_stage (self);
-  g_signal_connect (stage, "paint",
-                    G_CALLBACK (mx_tooltip_stage_paint_cb), self);
 }
 
 static void
 mx_tooltip_unmap (ClutterActor *self)
 {
   MxTooltipPrivate *priv = MX_TOOLTIP (self)->priv;
-  ClutterActor *border_image, *arrow_image, *stage;
-
-  stage = clutter_actor_get_stage (self);
-  g_signal_handlers_disconnect_by_func (stage, mx_tooltip_stage_paint_cb, self);
+  ClutterActor *border_image, *arrow_image;
 
   CLUTTER_ACTOR_CLASS (mx_tooltip_parent_class)->unmap (self);
 

@@ -136,12 +136,12 @@ AS_CASE([$MX_WINSYS],
         [
           SUPPORT_X11=yes
 
-          WINSYS_X11_REQUIRES="clutter-x11-1.0 >= 1.4.0 xrandr >= 1.2.0"
+          WINSYS_X11_REQUIRES="clutter-x11-1.0 >= 1.6.17 xrandr >= 1.2.0"
 	  MX_REQUIRES="$MX_REQUIRES $WINSYS_X11_REQUIRES"
         ],
         [none],
         [
-          WINSYS_NONE_REQUIRES="clutter-1.0"
+          WINSYS_NONE_REQUIRES="clutter-1.0 >= 1.6.17"
 	  MX_REQUIRES="$MX_REQUIRES $WINSYS_NONE_REQUIRES"
         ],
         [AC_MSG_ERROR([Invalid winsys: use 'x11' or 'none'])]

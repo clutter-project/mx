@@ -67,7 +67,10 @@ struct _MxWidgetPrivate
   guint         is_disabled : 1;
   guint         parent_disabled : 1;
 
+  gboolean      has_tooltip;
   MxTooltip    *tooltip;
+  char         *tooltip_text;
+
   MxMenu       *menu;
 
   guint         long_press_source;
@@ -262,6 +265,22 @@ mx_widget_set_tooltip_timeout (MxWidget *widget)
 }
 
 static void
+_mx_widget_destroy_tooltip (MxWidget *widget)
+{
+  MxWidgetPrivate *priv = widget->priv;
+
+  if (priv->tooltip)
+    {
+      ClutterActor *stage =
+        clutter_actor_get_stage (CLUTTER_ACTOR (priv->tooltip));
+      clutter_container_remove_actor (CLUTTER_CONTAINER (stage),
+                                      CLUTTER_ACTOR (priv->tooltip));
+      priv->tooltip = NULL;
+    }
+  mx_widget_remove_tooltip_timeout (widget);
+}
+
+static void
 mx_widget_dispose (GObject *gobject)
 {
   MxWidget *actor = MX_WIDGET (gobject);
@@ -294,10 +313,10 @@ mx_widget_dispose (GObject *gobject)
     }
 
   if (priv->tooltip)
-    {
-      clutter_actor_unparent (CLUTTER_ACTOR (priv->tooltip));
-      priv->tooltip = NULL;
-    }
+    _mx_widget_destroy_tooltip (actor);
+
+  g_free (priv->tooltip_text);
+  priv->tooltip_text = NULL;
 
   if (priv->menu)
     {
@@ -835,7 +854,10 @@ mx_widget_motion (ClutterActor       *actor,
   MxWidget *widget = MX_WIDGET (actor);
   MxWidgetPrivate *priv = widget->priv;
 
-  if (priv->tooltip && !CLUTTER_ACTOR_IS_VISIBLE (priv->tooltip))
+  if (priv->tooltip && CLUTTER_ACTOR_IS_VISIBLE (priv->tooltip))
+    return FALSE;
+
+  if (priv->has_tooltip)
     {
       /* If tooltips are in browse mode then display the tooltip immediately */
       if (mx_tooltip_is_in_browse_mode ())
@@ -1491,26 +1513,12 @@ mx_widget_set_has_tooltip (MxWidget *widget,
 
   priv = widget->priv;
 
+  priv->has_tooltip = has_tooltip;
+
   if (has_tooltip)
-    {
-      clutter_actor_set_reactive (actor, TRUE);
-
-      if (!priv->tooltip)
-        {
-          priv->tooltip = g_object_new (MX_TYPE_TOOLTIP, NULL);
-          clutter_actor_set_parent (CLUTTER_ACTOR (priv->tooltip), actor);
-        }
-    }
+    clutter_actor_set_reactive (actor, TRUE);
   else
-    {
-      if (priv->tooltip)
-        {
-          clutter_actor_unparent (CLUTTER_ACTOR (priv->tooltip));
-          priv->tooltip = NULL;
-        }
-
-      mx_widget_remove_tooltip_timeout (widget);
-    }
+    _mx_widget_destroy_tooltip (widget);
 }
 
 /**
@@ -1529,21 +1537,16 @@ mx_widget_set_tooltip_text (MxWidget    *widget,
                             const gchar *text)
 {
   MxWidgetPrivate *priv;
-  const gchar *old_text;
 
   g_return_if_fail (MX_IS_WIDGET (widget));
 
   priv = widget->priv;
 
-  if (priv->tooltip)
-    old_text = mx_tooltip_get_text (priv->tooltip);
-  else
-    old_text = NULL;
-
   /* Don't do anything if the text hasn't changed */
-  if ((text == old_text) ||
-      (text && old_text && g_str_equal (text, old_text)))
+  if (g_strcmp0 (text, priv->tooltip_text) == 0)
     return;
+
+  priv->tooltip_text = g_strdup (text);
 
   if (text == NULL)
     mx_widget_set_has_tooltip (widget, FALSE);
@@ -1573,10 +1576,43 @@ mx_widget_get_tooltip_text (MxWidget *widget)
   g_return_val_if_fail (MX_IS_WIDGET (widget), NULL);
   priv = widget->priv;
 
-  if (!priv->tooltip)
-    return NULL;
+  return priv->tooltip_text;
+}
 
-  return mx_tooltip_get_text (widget->priv->tooltip);
+static void
+_mx_widget_notify_tooltip_destroyed (gpointer data, GObject *destroyed_tooltip)
+{
+  MxWidget *widget = data;
+  widget->priv->tooltip = NULL;
+}
+
+static gboolean
+_mx_widget_ensure_tooltip (MxWidget *widget)
+{
+  MxWidgetPrivate *priv = widget->priv;
+
+  if (!priv->tooltip)
+    {
+      ClutterActor *stage = clutter_actor_get_stage (CLUTTER_ACTOR (widget));
+
+      /* If we don't have a stage yet, we can't ensure the tooltip */
+      if (!stage)
+        return FALSE;
+
+      priv->tooltip = g_object_new (MX_TYPE_TOOLTIP, NULL);
+
+      clutter_container_add_actor (CLUTTER_CONTAINER (stage),
+                                   CLUTTER_ACTOR (priv->tooltip));
+
+      /* At this point only the stage is keeping the tooltip alive. We
+       * need to know if the tooltip is destroyed though so we take a
+       * weak reference: */
+      g_object_weak_ref (G_OBJECT (priv->tooltip),
+                         _mx_widget_notify_tooltip_destroyed,
+                         widget);
+    }
+
+  return TRUE;
 }
 
 /**
@@ -1589,6 +1625,7 @@ mx_widget_get_tooltip_text (MxWidget *widget)
 void
 mx_widget_show_tooltip (MxWidget *widget)
 {
+  MxWidgetPrivate *priv;
   gint i;
   gfloat x, y, x2, y2;
   ClutterGeometry area;
@@ -1596,8 +1633,16 @@ mx_widget_show_tooltip (MxWidget *widget)
 
   g_return_if_fail (MX_IS_WIDGET (widget));
 
+  priv = widget->priv;
+
+  if (!priv->has_tooltip)
+    return;
+
   /* Remove any timeout so we don't show the tooltip again */
   mx_widget_remove_tooltip_timeout (widget);
+
+  if (!_mx_widget_ensure_tooltip (widget))
+    return;
 
   /* XXX not necceary, but first allocate transform is wrong */
 
@@ -1624,12 +1669,9 @@ mx_widget_show_tooltip (MxWidget *widget)
   area.width = x2 - x;
   area.height = y2 - y;
 
-
-  if (widget->priv->tooltip)
-    {
-      mx_tooltip_set_tip_area (widget->priv->tooltip, &area);
-      mx_tooltip_show (widget->priv->tooltip);
-    }
+  mx_tooltip_set_tip_area (priv->tooltip, &area);
+  mx_tooltip_set_text (priv->tooltip, priv->tooltip_text);
+  mx_tooltip_show (priv->tooltip);
 }
 
 /**
