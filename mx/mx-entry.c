@@ -199,8 +199,20 @@ mx_entry_dispose (GObject *object)
 
   if (priv->entry)
     {
-      clutter_actor_unparent (priv->entry);
+      clutter_actor_destroy (priv->entry);
       priv->entry = NULL;
+    }
+
+  if (priv->primary_icon)
+    {
+      clutter_actor_destroy (priv->primary_icon);
+      priv->primary_icon = NULL;
+    }
+
+  if (priv->secondary_icon)
+    {
+      clutter_actor_destroy (priv->secondary_icon);
+      priv->secondary_icon = NULL;
     }
 
   G_OBJECT_CLASS (mx_entry_parent_class)->dispose (object);
@@ -1016,7 +1028,10 @@ mx_entry_init (MxEntry *entry)
 
   priv->spacing = 6.0f;
 
+  clutter_actor_push_internal (CLUTTER_ACTOR (entry));
   clutter_actor_set_parent (priv->entry, CLUTTER_ACTOR (entry));
+  clutter_actor_pop_internal (CLUTTER_ACTOR (entry));
+
   clutter_actor_set_reactive ((ClutterActor *) entry, TRUE);
 
   /* set cursor hidden until we receive focus */
@@ -1283,7 +1298,11 @@ _mx_entry_set_icon_from_file (MxEntry       *entry,
           return;
 
       clutter_actor_set_reactive (*icon, TRUE);
+
+      clutter_actor_push_internal (CLUTTER_ACTOR (entry));
       clutter_actor_set_parent (*icon, CLUTTER_ACTOR (entry));
+      clutter_actor_pop_internal (CLUTTER_ACTOR (entry));
+
       g_signal_connect (*icon, "button-release-event",
                         G_CALLBACK (_mx_entry_icon_press_cb), entry);
     }
