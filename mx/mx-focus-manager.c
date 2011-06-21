@@ -230,6 +230,12 @@ mx_focus_manager_set_focused (MxFocusManager *manager,
       ClutterActor *parent =
         clutter_actor_get_parent (CLUTTER_ACTOR (priv->focused));
 
+      if (priv->refocus_idle)
+        {
+          g_source_remove (priv->refocus_idle);
+          priv->refocus_idle = 0;
+        }
+
       g_signal_connect_after (priv->focused, "notify::mapped",
                               G_CALLBACK (mx_focus_manager_focused_mapped_cb),
                               manager);
