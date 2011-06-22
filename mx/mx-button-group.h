@@ -105,7 +105,7 @@ void      mx_button_group_set_allow_no_active (MxButtonGroup *group,
                                                gboolean       allow_no_active);
 gboolean  mx_button_group_get_allow_no_active (MxButtonGroup *group);
 
-G_CONST_RETURN GSList *mx_button_group_get_buttons (MxButtonGroup *group);
+const GSList *mx_button_group_get_buttons (MxButtonGroup *group);
 
 G_END_DECLS
 

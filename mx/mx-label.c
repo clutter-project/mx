@@ -635,7 +635,7 @@ mx_label_new_with_text (const gchar *text)
  *
  * Returns: the text for the label. This must not be freed by the application
  */
-G_CONST_RETURN gchar *
+const gchar *
 mx_label_get_text (MxLabel *label)
 {
   g_return_val_if_fail (MX_IS_LABEL (label), NULL);

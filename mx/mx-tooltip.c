@@ -722,7 +722,7 @@ mx_tooltip_update_position (MxTooltip *tooltip)
  * Returns: the text for the tooltip. This must not be freed by the application
  */
 
-G_CONST_RETURN gchar *
+const gchar *
 mx_tooltip_get_text (MxTooltip *tooltip)
 {
   g_return_val_if_fail (MX_IS_TOOLTIP (tooltip), NULL);
@@ -911,7 +911,7 @@ mx_tooltip_set_tip_area (MxTooltip             *tooltip,
  * Returns: the #ClutterGeometry, owned by the tooltip which must not be freed
  * by the application.
  */
-G_CONST_RETURN ClutterGeometry*
+const ClutterGeometry*
 mx_tooltip_get_tip_area (MxTooltip *tooltip)
 {
   g_return_val_if_fail (MX_IS_TOOLTIP (tooltip), NULL);

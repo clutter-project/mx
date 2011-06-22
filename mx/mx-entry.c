@@ -1068,7 +1068,7 @@ mx_entry_new_with_text (const gchar *text)
  *
  * Returns: the text for the entry. This must not be freed by the application
  */
-G_CONST_RETURN gchar *
+const gchar *
 mx_entry_get_text (MxEntry *entry)
 {
   g_return_val_if_fail (MX_IS_ENTRY (entry), NULL);
@@ -1188,7 +1188,7 @@ mx_entry_set_hint_text (MxEntry     *entry,
  * Returns: the current value of the hint property. This string is owned by the
  * #MxEntry and should not be freed or modified.
  */
-G_CONST_RETURN
+const
 gchar *
 mx_entry_get_hint_text (MxEntry *entry)
 {

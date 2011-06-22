@@ -453,7 +453,7 @@ mx_button_group_get_allow_no_active (MxButtonGroup *group)
  * Returns: a list of buttons. The list is owned by the #MxButtonGroup and
  * should not be modified by the application.
  */
-G_CONST_RETURN GSList *
+const GSList *
 mx_button_group_get_buttons (MxButtonGroup *group)
 {
   g_return_val_if_fail (MX_IS_BUTTON_GROUP (group), NULL);

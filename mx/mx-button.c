@@ -1015,7 +1015,7 @@ mx_button_new_with_label (const gchar *text)
  *
  * Returns: the text for the button. This must not be freed by the application
  */
-G_CONST_RETURN gchar *
+const gchar *
 mx_button_get_label (MxButton *button)
 {
   g_return_val_if_fail (MX_IS_BUTTON (button), NULL);
@@ -1346,7 +1346,7 @@ mx_button_get_label_visible (MxButton *button)
  *
  * Since: 1.2
  */
-G_CONST_RETURN gchar *
+const gchar *
 mx_button_get_icon_name (MxButton *button)
 {
   g_return_val_if_fail (MX_IS_BUTTON (button), NULL);

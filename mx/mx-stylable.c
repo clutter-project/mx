@@ -784,7 +784,7 @@ mx_stylable_set_style (MxStylable *stylable,
  * Returns: the pseudo class string. The string is owned by the #MxWidget and
  * should not be modified or freed.
  */
-G_CONST_RETURN gchar*
+const gchar*
 mx_stylable_get_style_pseudo_class (MxStylable *stylable)
 {
   MxStylableIface *iface;
@@ -963,7 +963,7 @@ mx_stylable_style_pseudo_class_remove (MxStylable  *stylable,
  * Returns: the class name string. The string is owned by the #MxWidget and
  * should not be modified or freed.
  */
-G_CONST_RETURN gchar*
+const gchar*
 mx_stylable_get_style_class (MxStylable *stylable)
 {
   MxStylableIface *iface;
