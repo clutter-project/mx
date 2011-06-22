@@ -829,7 +829,7 @@ mx_application_remove_window (MxApplication *application,
  *   of #MxWindow<!-- -->s. The returned list is owned by
  *   @application and must not be altered.
  */
-G_CONST_RETURN GList*
+const GList*
 mx_application_get_windows (MxApplication *application)
 {
   g_return_val_if_fail (MX_IS_APPLICATION (application), NULL);

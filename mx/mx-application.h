@@ -115,7 +115,7 @@ void                  mx_application_add_window    (MxApplication *application,
 void                  mx_application_remove_window (MxApplication *application,
                                                     MxWindow      *window);
 
-G_CONST_RETURN GList* mx_application_get_windows   (MxApplication *application);
+const GList         * mx_application_get_windows   (MxApplication *application);
 
 void                  mx_application_add_action    (MxApplication *application,
                                                     MxAction      *action);

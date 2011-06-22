@@ -82,10 +82,10 @@ GType mx_button_get_type (void) G_GNUC_CONST;
 
 ClutterActor         *mx_button_new             (void);
 ClutterActor         *mx_button_new_with_label  (const gchar *text);
-G_CONST_RETURN gchar *mx_button_get_label       (MxButton    *button);
+const gchar          *mx_button_get_label       (MxButton    *button);
 void                  mx_button_set_label       (MxButton    *button,
                                                  const gchar *text);
-G_CONST_RETURN gchar *mx_button_get_icon_name   (MxButton    *button);
+const gchar          *mx_button_get_icon_name   (MxButton    *button);
 void                  mx_button_set_icon_name   (MxButton    *button,
                                                  const gchar *icon_name);
 guint                 mx_button_get_icon_size   (MxButton    *button);

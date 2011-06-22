@@ -70,13 +70,13 @@ struct _MxStylableIface
   void       (* set_style) (MxStylable *stylable,
                             MxStyle    *style);
 
-  G_CONST_RETURN gchar* (* get_style_class) (MxStylable  *stylable);
-  void                  (* set_style_class) (MxStylable  *stylable,
-                                             const gchar *style_class);
+  const gchar* (* get_style_class) (MxStylable  *stylable);
+  void         (* set_style_class) (MxStylable  *stylable,
+                                    const gchar *style_class);
 
-  G_CONST_RETURN gchar* (* get_style_pseudo_class) (MxStylable  *stylable);
-  void                  (* set_style_pseudo_class) (MxStylable  *stylable,
-                                                    const gchar *pseudo_class);
+  const gchar* (* get_style_pseudo_class) (MxStylable  *stylable);
+  void         (* set_style_pseudo_class) (MxStylable  *stylable,
+                                           const gchar *pseudo_class);
 
   /* context virtual functions */
 
@@ -119,13 +119,13 @@ gboolean     mx_stylable_get_default_value      (MxStylable      *stylable,
                                                  GValue            *value_out);
 
 
-G_CONST_RETURN gchar* mx_stylable_get_style_class (MxStylable  *stylable);
-void                  mx_stylable_set_style_class (MxStylable  *stylable,
-                                                   const gchar *style_class);
+const gchar* mx_stylable_get_style_class (MxStylable  *stylable);
+void         mx_stylable_set_style_class (MxStylable  *stylable,
+                                          const gchar *style_class);
 
-G_CONST_RETURN gchar* mx_stylable_get_style_pseudo_class (MxStylable  *stylable);
-void                  mx_stylable_set_style_pseudo_class (MxStylable  *stylable,
-                                                          const gchar *pseudo_class);
+const gchar* mx_stylable_get_style_pseudo_class (MxStylable  *stylable);
+void         mx_stylable_set_style_pseudo_class (MxStylable  *stylable,
+                                                 const gchar *pseudo_class);
 
 void mx_stylable_style_changed (MxStylable *stylable, MxStyleChangedFlags flags);
 void mx_stylable_connect_change_notifiers (MxStylable *stylable);
