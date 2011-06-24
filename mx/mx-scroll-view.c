@@ -992,7 +992,7 @@ mx_scroll_view_set_enable_mouse_scrolling (MxScrollView *scroll,
 
   g_return_if_fail (MX_IS_SCROLL_VIEW (scroll));
 
-  priv = MX_SCROLL_VIEW (scroll)->priv;
+  priv = scroll->priv;
 
   if (priv->mouse_scroll != enabled)
     {
@@ -1013,7 +1013,7 @@ mx_scroll_view_get_enable_mouse_scrolling (MxScrollView *scroll)
 
   g_return_val_if_fail (MX_IS_SCROLL_VIEW (scroll), FALSE);
 
-  priv = MX_SCROLL_VIEW (scroll)->priv;
+  priv = scroll->priv;
 
   return priv->mouse_scroll;
 }
@@ -1026,7 +1026,7 @@ mx_scroll_view_set_enable_gestures (MxScrollView *scroll,
 
   g_return_if_fail (MX_IS_SCROLL_VIEW (scroll));
 
-  priv = MX_SCROLL_VIEW (scroll)->priv;
+  priv = scroll->priv;
 
   if (priv->enable_gestures != enabled)
     {
