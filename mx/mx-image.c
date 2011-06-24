@@ -1057,11 +1057,11 @@ mx_image_set_from_data_internal (MxImage          *image,
       blank_area = g_new0 (gint, MAX (width, height) + 2);
       cogl_texture_set_region (priv->texture, 0, 0, 0, 0,
                                width, 1, width, 1,
-                               COGL_PIXEL_FORMAT_RGBA_8888, width * 4,
+                               COGL_PIXEL_FORMAT_RGBA_8888, (width + 2) * 4,
                                (const guint8 *)blank_area);
       cogl_texture_set_region (priv->texture, 0, 0, 0, height + 1,
                                width + 2, 1, width + 2, 1,
-                               COGL_PIXEL_FORMAT_RGBA_8888, width * 4,
+                               COGL_PIXEL_FORMAT_RGBA_8888, (width + 2) * 4,
                                (const guint8 *)blank_area);
       cogl_texture_set_region (priv->texture, 0, 0, 0, 0,
                                1, height + 2, 1, height + 2,
