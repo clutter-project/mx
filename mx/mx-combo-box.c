@@ -856,6 +856,33 @@ mx_combo_box_remove_text (MxComboBox *box,
 }
 
 /**
+ * mx_combo_box_remove_all:
+ * @box: A #MxComboBox
+ *
+ * Remove all the items of @box
+ *
+ * Since: 1.4
+ */
+void
+mx_combo_box_remove_all (MxComboBox *box)
+{
+  MxComboBoxPrivate *priv = box->priv;
+  GSList *l;
+
+  g_return_if_fail (MX_IS_COMBO_BOX (box));
+
+  l = priv->actions;
+  while (l)
+    {
+      g_object_unref (l->data);
+      l = g_slist_delete_link (l, l);
+    }
+  priv->actions = NULL;
+
+  mx_combo_box_update_menu (box);
+}
+
+/**
  * mx_combo_box_set_active_text:
  * @box: A #MxComboBox
  * @text: text to display

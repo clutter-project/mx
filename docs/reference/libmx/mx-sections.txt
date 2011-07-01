@@ -215,6 +215,7 @@ mx_combo_box_insert_text_with_icon
 mx_combo_box_append_text
 mx_combo_box_prepend_text
 mx_combo_box_remove_text
+mx_combo_box_remove_all
 mx_combo_box_set_active_text
 mx_combo_box_get_active_text
 mx_combo_box_set_active_icon_name

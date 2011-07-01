@@ -105,7 +105,7 @@ void mx_combo_box_prepend_text (MxComboBox  *box,
                                 const gchar *text);
 void mx_combo_box_remove_text  (MxComboBox  *box,
                                 gint         position);
-
+void mx_combo_box_remove_all   (MxComboBox *box);
 
 void         mx_combo_box_set_active_text (MxComboBox  *box,
                                            const gchar *text);
