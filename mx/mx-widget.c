@@ -1060,6 +1060,60 @@ mx_widget_parent_set (ClutterActor *actor,
     }
 }
 
+static gboolean
+mx_widget_get_paint_volume (ClutterActor       *actor,
+                            ClutterPaintVolume *volume)
+{
+  MxWidgetPrivate *priv = MX_WIDGET (actor)->priv;
+  ClutterGeometry geometry = { 0, };
+  gboolean result;
+
+  if (!clutter_actor_has_allocation (actor))
+    return FALSE;
+
+  clutter_actor_get_allocation_geometry (actor, &geometry);
+
+  if (geometry.width == 0 || geometry.height == 0)
+    return FALSE;
+
+  /* if a background is set, the paint volume will be equal to the allocation */
+  if (priv->border_image || priv->bg_color || priv->old_border_image)
+    {
+      clutter_paint_volume_set_width (volume, geometry.width);
+      clutter_paint_volume_set_height (volume, geometry.height);
+
+      return TRUE;
+    }
+
+  if (CLUTTER_IS_CONTAINER (actor))
+    {
+      GList *l, *children;
+
+      children = clutter_container_get_children ((ClutterContainer*) actor);
+
+      for (l = children; l != NULL; l = l->next)
+        {
+          ClutterActor *child = l->data;
+          const ClutterPaintVolume *child_volume;
+
+          /* Gets the paint volume of the child transformed into the
+           * container's coordinate space. */
+          child_volume = clutter_actor_get_transformed_paint_volume (child,
+                                                                     actor);
+          if (!child_volume)
+            {
+              result = FALSE;
+              break;
+            }
+
+          clutter_paint_volume_union (volume, child_volume);
+        }
+
+      g_list_free (l);
+    }
+
+  return result;
+}
 
 static void
 mx_widget_class_init (MxWidgetClass *klass)
@@ -1088,6 +1142,8 @@ mx_widget_class_init (MxWidgetClass *klass)
 
   actor_class->hide = mx_widget_hide;
   actor_class->parent_set = mx_widget_parent_set;
+
+  actor_class->get_paint_volume = mx_widget_get_paint_volume;
 
   klass->paint_background = mx_widget_real_paint_background;
 
