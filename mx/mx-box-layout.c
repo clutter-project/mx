@@ -999,15 +999,14 @@ mx_box_layout_allocate (ClutterActor          *actor,
 
       if (CLUTTER_ACTOR_IS_VISIBLE (child))
         {
-          gboolean expand;
+          MxBoxLayoutChild *meta;
 
-          clutter_container_child_get ((ClutterContainer *) actor,
-                                       child,
-                                       "expand", &expand,
-                                       NULL);
+          meta = (MxBoxLayoutChild*)
+            clutter_container_get_child_meta ((ClutterContainer *) actor,
+                                              child);
           n_children++;
 
-          if (expand)
+          if (meta->expand)
             n_expand_children++;
 
         }
@@ -1158,19 +1157,13 @@ mx_box_layout_allocate (ClutterActor          *actor,
       ClutterActor *child = (ClutterActor*) l->data;
       ClutterActorBox child_box, old_child_box;
       gfloat child_nat, child_min;
-      gboolean xfill, yfill, expand;
-      MxAlign xalign, yalign;
+      MxBoxLayoutChild *meta;
 
       if (!CLUTTER_ACTOR_IS_VISIBLE (child))
         continue;
 
-      clutter_container_child_get ((ClutterContainer*) actor, child,
-                                   "x-fill", &xfill,
-                                   "y-fill", &yfill,
-                                   "x-align", &xalign,
-                                   "y-align", &yalign,
-                                   "expand", &expand,
-                                   NULL);
+      meta = (MxBoxLayoutChild*)
+        clutter_container_get_child_meta ((ClutterContainer *) actor, child);
 
       if (priv->orientation == MX_ORIENTATION_VERTICAL)
         {
@@ -1181,7 +1174,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
 
           if (allocate_pref)
             {
-              if (expand)
+              if (meta->expand)
                 child_box.y2 = position + child_nat + (int)extra_space;
               else
                 child_box.y2 = position + child_nat;
@@ -1211,7 +1204,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
 
           if (allocate_pref)
             {
-              if (expand)
+              if (meta->expand)
                 child_box.x2 = position + child_nat + (int)extra_space;
               else
                 child_box.x2 = position + child_nat;
@@ -1235,7 +1228,8 @@ mx_box_layout_allocate (ClutterActor          *actor,
 
       /* Adjust the box for alignment/fill */
       old_child_box = child_box;
-      mx_allocate_align_fill (child, &child_box, xalign, yalign, xfill, yfill);
+      mx_allocate_align_fill (child, &child_box, meta->x_align, meta->y_align,
+                              meta->x_fill, meta->y_fill);
 
       if (priv->is_animating)
         {
