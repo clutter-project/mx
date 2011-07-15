@@ -167,6 +167,24 @@ mx_texture_frame_paint (ClutterActor *self)
   width = box.x2 - box.x1;
   height = box.y2 - box.y1;
 
+
+  opacity = clutter_actor_get_paint_opacity (self);
+
+  /* Paint using the parent texture's material. It should already have
+     the cogl texture set as the first layer */
+  /* NB: for correct blending we need set a preumultiplied color here: */
+  cogl_material_set_color4ub (cogl_material,
+                              opacity, opacity, opacity, opacity);
+  cogl_set_source (cogl_material);
+
+  /* simple stretch */
+  if (priv->left == 0 && priv->right == 0 && priv->top == 0
+      && priv->bottom == 0)
+    {
+      cogl_rectangle (0, 0, width, height);
+      return;
+    }
+
   tx1 = priv->left / tex_width;
   tx2 = (tex_width - priv->right) / tex_width;
   ty1 = priv->top / tex_height;
@@ -180,14 +198,6 @@ mx_texture_frame_paint (ClutterActor *self)
   if (ey < priv->top)
     ey = priv->top;
 
-  opacity = clutter_actor_get_paint_opacity (self);
-
-  /* Paint using the parent texture's material. It should already have
-     the cogl texture set as the first layer */
-  /* NB: for correct blending we need set a preumultiplied color here: */
-  cogl_material_set_color4ub (cogl_material,
-                              opacity, opacity, opacity, opacity);
-  cogl_set_source (cogl_material);
 
   /* The default filter can pull from adjacent pixels which is not what we
    * want.
