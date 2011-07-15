@@ -247,7 +247,7 @@ _mx_stylable_get_style_string (MxStylable *stylable)
 
   pseudo_class = mx_stylable_get_style_pseudo_class (stylable);
 
-  string = g_string_new (type);
+  string = g_string_sized_new (512);
 
   /* Add the actor hierarchy */
   if (CLUTTER_IS_ACTOR (stylable))
@@ -264,7 +264,8 @@ _mx_stylable_get_style_string (MxStylable *stylable)
         }
     }
 
-  g_string_append_printf (string, "#%s.%s:%s",
+  g_string_append_printf (string, "%s#%s.%s:%s",
+                          type,
                           id ? id : "",
                           class ? class : "",
                           pseudo_class ? pseudo_class : "");
