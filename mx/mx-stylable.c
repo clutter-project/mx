@@ -217,11 +217,12 @@ _mx_stylable_prepend_style_string (GString    *string,
 
   pseudo_class = mx_stylable_get_style_pseudo_class (stylable);
 
-  style_string = g_strdup_printf ("%s#%s.%s:%s>",
-                                  type,
-                                  id ? id : "",
-                                  class ? class : "",
-                                  pseudo_class ? pseudo_class : "");
+  style_string = g_strconcat (type,
+                              "#", id ? id : "",
+                              ".", class ? class : "",
+                              ":", pseudo_class ? pseudo_class : "",
+                              ">",
+                              NULL);
   g_string_prepend (string, style_string);
   g_free (style_string);
 }
