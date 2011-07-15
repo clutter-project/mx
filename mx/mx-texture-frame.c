@@ -199,14 +199,6 @@ mx_texture_frame_paint (ClutterActor *self)
     ey = priv->top;
 
 
-  /* The default filter can pull from adjacent pixels which is not what we
-   * want.
-   */
-  cogl_material_set_layer_filters (cogl_material,
-                                   0,
-                                   COGL_MATERIAL_FILTER_NEAREST,
-                                   COGL_MATERIAL_FILTER_NEAREST);
-
   {
     GLfloat rectangles[] =
     {
@@ -577,10 +569,28 @@ mx_texture_frame_set_parent_texture (MxTextureFrame *frame,
 
   if (texture)
     {
+      CoglHandle cogl_material = COGL_INVALID_HANDLE;
+
       priv->parent_texture = g_object_ref_sink (texture);
 
       if (was_visible && CLUTTER_ACTOR_IS_VISIBLE (priv->parent_texture))
         clutter_actor_show (CLUTTER_ACTOR (frame));
+
+      /* set the wrap mode */
+      cogl_material = clutter_texture_get_cogl_material (priv->parent_texture);
+      cogl_material_set_layer_wrap_mode (cogl_material, 0,
+                                         COGL_MATERIAL_WRAP_MODE_REPEAT);
+
+
+      /* The default filter can pull from adjacent pixels which is not what we
+       * want.
+       */
+      cogl_material_set_layer_filters (cogl_material,
+                                       0,
+                                       COGL_MATERIAL_FILTER_NEAREST,
+                                       COGL_MATERIAL_FILTER_NEAREST);
+
+
     }
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (frame));
