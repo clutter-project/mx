@@ -446,6 +446,9 @@ mx_stack_allocate (ClutterActor           *actor,
       ClutterActor *child = c->data;
       ClutterActorBox child_box = avail_space;
 
+      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
+
       clutter_container_child_get (CLUTTER_CONTAINER (actor),
                                    child,
                                    "x-fill", &x_fill,
