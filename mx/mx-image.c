@@ -329,27 +329,30 @@ mx_image_paint (ClutterActor *actor)
 
 
   /* old texture */
-  scale = calculate_scale (priv->old_texture, priv->old_rotation, aw, ah,
-                           priv->old_mode);
+  if (priv->old_texture)
+    {
+      scale = calculate_scale (priv->old_texture, priv->old_rotation, aw, ah,
+                               priv->old_mode);
 
-  bw = cogl_texture_get_width (priv->old_texture);
-  bh = cogl_texture_get_height (priv->old_texture);
-  ratio = bw/bh;
+      bw = cogl_texture_get_width (priv->old_texture);
+      bh = cogl_texture_get_height (priv->old_texture);
+      ratio = bw/bh;
 
-  cogl_matrix_init_identity (&matrix);
-  cogl_matrix_translate (&matrix, 0.5, 0.5, 0);
+      cogl_matrix_init_identity (&matrix);
+      cogl_matrix_translate (&matrix, 0.5, 0.5, 0);
 
-  cogl_matrix_scale (&matrix, 1, ratio, 1);
-  cogl_matrix_rotate (&matrix, priv->old_rotation, 0, 0, -1);
-  cogl_matrix_scale (&matrix, 1, 1 / ratio, 1);
+      cogl_matrix_scale (&matrix, 1, ratio, 1);
+      cogl_matrix_rotate (&matrix, priv->old_rotation, 0, 0, -1);
+      cogl_matrix_scale (&matrix, 1, 1 / ratio, 1);
 
-  cogl_matrix_scale (&matrix, scale, scale, 1);
+      cogl_matrix_scale (&matrix, scale, scale, 1);
 
-  cogl_matrix_translate (&matrix, -0.5, -0.5, 0);
-  cogl_material_set_layer_matrix (priv->material, 1, &matrix);
+      cogl_matrix_translate (&matrix, -0.5, -0.5, 0);
+      cogl_material_set_layer_matrix (priv->material, 1, &matrix);
+
+    }
 
   cogl_set_source (priv->material);
-
   cogl_rectangle_with_multitexture_coords (padding.left, padding.top,
                                            padding.left + aw, padding.top + ah,
                                            tex_coords,
@@ -721,6 +724,17 @@ new_frame_cb (ClutterTimeline *timeline,
 }
 
 static void
+timeline_complete (ClutterTimeline *timeline,
+                   MxImage         *image)
+{
+  if (image->priv->old_texture)
+    {
+      cogl_object_unref (image->priv->old_texture);
+      image->priv->old_texture = NULL;
+    }
+}
+
+static void
 redraw_timeline_complete (ClutterTimeline *timeline,
                           MxImage         *image)
 {
@@ -742,6 +756,8 @@ mx_image_init (MxImage *self)
                                                CLUTTER_EASE_OUT_CUBIC);
 
   g_signal_connect (priv->timeline, "new-frame", G_CALLBACK (new_frame_cb),
+                    self);
+  g_signal_connect (priv->timeline, "completed", G_CALLBACK (timeline_complete),
                     self);
 
   g_signal_connect_swapped (priv->redraw_timeline, "new-frame",
