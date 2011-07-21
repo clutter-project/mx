@@ -738,13 +738,6 @@ timeline_complete (ClutterTimeline *timeline,
 }
 
 static void
-redraw_timeline_complete (ClutterTimeline *timeline,
-                          MxImage         *image)
-{
-  image->priv->old_mode = image->priv->mode;
-}
-
-static void
 mx_image_init (MxImage *self)
 {
   MxImagePrivate *priv;
@@ -765,8 +758,6 @@ mx_image_init (MxImage *self)
 
   g_signal_connect_swapped (priv->redraw_timeline, "new-frame",
                             G_CALLBACK (clutter_actor_queue_redraw), self);
-  g_signal_connect (priv->redraw_timeline, "completed",
-                    G_CALLBACK (redraw_timeline_complete), self);
 
   priv->blank_texture = cogl_texture_new_from_data (1, 1, COGL_TEXTURE_NO_ATLAS,
                                                     COGL_PIXEL_FORMAT_RGBA_8888,
