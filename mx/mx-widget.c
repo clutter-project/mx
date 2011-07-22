@@ -1021,6 +1021,8 @@ _mx_widget_propagate_disabled (ClutterContainer *container,
       if (CLUTTER_IS_CONTAINER (child))
         _mx_widget_propagate_disabled ((ClutterContainer *) child, disabled);
     }
+
+  g_list_free (children);
 }
 
 static void

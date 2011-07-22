@@ -230,6 +230,7 @@ mx_border_image_set_from_string (GValue *dest,
 
   g_strfreev (strv);
   g_value_set_boxed (dest, &border_image);
+  g_free (border_image.uri);
 }
 
 GType

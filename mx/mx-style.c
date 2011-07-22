@@ -401,6 +401,8 @@ mx_style_transform_css_value (MxStyleSheetValue *css_value,
         stripped = original;
 
       g_value_set_string (value, stripped);
+
+      g_free (original);
     }
   else if (g_type_is_a (pspec->value_type, G_TYPE_ENUM))
     {
