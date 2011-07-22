@@ -710,7 +710,7 @@ mx_stylable_get_style (MxStylable *stylable)
   g_return_val_if_fail (MX_IS_STYLABLE (stylable), NULL);
 
   iface = MX_STYLABLE_GET_IFACE (stylable);
-  if (iface->get_style)
+  if (G_LIKELY (iface->get_style))
     return iface->get_style (stylable);
 
   return g_object_get_data (G_OBJECT (stylable), "mx-stylable-style");
@@ -754,7 +754,7 @@ mx_stylable_set_style (MxStylable *stylable,
 
   iface = MX_STYLABLE_GET_IFACE (stylable);
 
-  if (iface->set_style)
+  if (G_LIKELY (iface->set_style))
     iface->set_style (stylable, style);
 
   /* connect to the "changed" signal of the MxStyle and take a reference to
@@ -795,7 +795,7 @@ mx_stylable_get_style_pseudo_class (MxStylable *stylable)
 
   iface = MX_STYLABLE_GET_IFACE (stylable);
 
-  if (iface->get_style_pseudo_class)
+  if (G_LIKELY (iface->get_style_pseudo_class))
     return iface->get_style_pseudo_class (stylable);
 
   g_warning ("MxStylable of type '%s' does not implement"
@@ -822,7 +822,7 @@ mx_stylable_set_style_pseudo_class (MxStylable  *stylable,
 
   iface = MX_STYLABLE_GET_IFACE (stylable);
 
-  if (iface->set_style_pseudo_class)
+  if (G_LIKELY (iface->set_style_pseudo_class))
     iface->set_style_pseudo_class (stylable, pseudo_class);
   else
     g_warning ("MxStylable of type '%s' does not implement"
@@ -974,7 +974,7 @@ mx_stylable_get_style_class (MxStylable *stylable)
 
   iface = MX_STYLABLE_GET_IFACE (stylable);
 
-  if (iface->get_style_class)
+  if (G_LIKELY (iface->get_style_class))
     return iface->get_style_class (stylable);
 
   g_warning ("MxStylable of type '%s' does not implement get_style_class()",
@@ -999,7 +999,7 @@ mx_stylable_set_style_class (MxStylable  *stylable,
 
   iface = MX_STYLABLE_GET_IFACE (stylable);
 
-  if (iface->set_style_class)
+  if (G_LIKELY (iface->set_style_class))
     iface->set_style_class (stylable, style_class);
   else
     g_warning ("MxStylable of type '%s' does not implement"
