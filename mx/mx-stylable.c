@@ -211,7 +211,7 @@ _mx_stylable_prepend_style_string (GString    *string,
   type_id = G_OBJECT_CLASS_TYPE (G_OBJECT_GET_CLASS (stylable));
   type = g_type_name (type_id);
 
-  id = clutter_actor_get_name (CLUTTER_ACTOR (stylable));
+  id = clutter_actor_get_name ((ClutterActor*) stylable);
 
   class = mx_stylable_get_style_class (stylable);
 
@@ -234,6 +234,8 @@ _mx_stylable_get_style_string (MxStylable *stylable)
   gchar *cstring;
   GString *string;
   const gchar *type, *id, *class, *pseudo_class;
+  ClutterActor *actor;
+  ClutterActor *parent;
 
   /* Create a string that contains all the properties of a
    * Stylable that can be matched against in the CSS.
@@ -241,7 +243,9 @@ _mx_stylable_get_style_string (MxStylable *stylable)
   type_id = G_OBJECT_CLASS_TYPE (G_OBJECT_GET_CLASS (stylable));
   type = g_type_name (type_id);
 
-  id = clutter_actor_get_name (CLUTTER_ACTOR (stylable));
+  actor = CLUTTER_ACTOR (stylable);
+
+  id = clutter_actor_get_name (actor);
 
   class = mx_stylable_get_style_class (stylable);
 
@@ -250,18 +254,14 @@ _mx_stylable_get_style_string (MxStylable *stylable)
   string = g_string_sized_new (512);
 
   /* Add the actor hierarchy */
-  if (CLUTTER_IS_ACTOR (stylable))
+  parent = clutter_actor_get_parent (actor);
+
+  while (parent)
     {
-      ClutterActor *parent =
-        clutter_actor_get_parent (CLUTTER_ACTOR (stylable));
+      if (MX_IS_STYLABLE (parent))
+        _mx_stylable_prepend_style_string (string, (MxStylable*) parent);
 
-      while (parent)
-        {
-          if (MX_IS_STYLABLE (parent))
-            _mx_stylable_prepend_style_string (string, MX_STYLABLE (parent));
-
-          parent = clutter_actor_get_parent (parent);
-        }
+      parent = clutter_actor_get_parent (parent);
     }
 
   g_string_append_printf (string, "%s#%s.%s:%s",
