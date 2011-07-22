@@ -134,6 +134,26 @@ mx_action_dispose (GObject *object)
 static void
 mx_action_finalize (GObject *object)
 {
+  MxActionPrivate *priv = MX_ACTION (object)->priv;
+
+  if (priv->name)
+    {
+      g_free (priv->name);
+      priv->name = NULL;
+    }
+
+  if (priv->display_name)
+    {
+      g_free (priv->display_name);
+      priv->display_name = NULL;
+    }
+
+  if (priv->icon)
+    {
+      g_free (priv->icon);
+      priv->icon = NULL;
+    }
+
   G_OBJECT_CLASS (mx_action_parent_class)->finalize (object);
 }
 

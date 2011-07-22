@@ -732,6 +732,7 @@ mx_icon_theme_theme_load_icon (MxIconTheme *self,
 
                   data = g_list_prepend (data, icon_data);
                 }
+              g_free (path);
             }
         }
       g_free (dirs);
