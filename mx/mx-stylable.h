@@ -63,8 +63,10 @@ typedef enum
 
 struct _MxStylableIface
 {
+  /*< private >*/
   GTypeInterface g_iface;
 
+  /*< public >*/
   /* virtual functions */
   MxStyle *  (* get_style) (MxStylable *stylable);
   void       (* set_style) (MxStylable *stylable,

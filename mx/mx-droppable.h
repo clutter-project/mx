@@ -50,8 +50,10 @@ typedef struct _MxDroppableIface      MxDroppableIface;
 
 struct _MxDroppableIface
 {
+  /*< private >*/
   GTypeInterface g_iface;
 
+  /*< public >*/
   /* vfuncs, not signals */
   void     (* enable)      (MxDroppable *droppable);
   void     (* disable)     (MxDroppable *droppable);
