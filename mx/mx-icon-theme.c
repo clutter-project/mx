@@ -988,6 +988,14 @@ mx_icon_theme_has_icon (MxIconTheme *theme,
     return FALSE;
 }
 
+/**
+ * mx_icon_theme_get_search_paths:
+ * @theme: a #MxIconTheme
+ *
+ * Gets the directories the #MxIconTheme will search in to find icons.
+ *
+ * Return value: (element-type utf8) (transfer none): the search paths
+ */
 const GList *
 mx_icon_theme_get_search_paths (MxIconTheme *theme)
 {

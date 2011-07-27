@@ -47,8 +47,10 @@ typedef struct _MxSettingsProviderIface MxSettingsProviderIface;
 
 struct _MxSettingsProviderIface
 {
+  /*< private >*/
   GTypeInterface parent_iface;
 
+  /*< public >*/
   /* signals, not vfuncs */
   void (* setting_changed) (MxSettingsProvider *provider,
                             MxSettingsProperty  id);
