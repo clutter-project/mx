@@ -51,8 +51,10 @@ typedef struct _MxScrollableIface MxScrollableIface;
 
 struct _MxScrollableIface
 {
+  /*< private >*/
   GTypeInterface parent;
 
+  /*< public >*/
   void (* set_adjustments) (MxScrollable  *scrollable,
                             MxAdjustment  *hadjustment,
                             MxAdjustment  *vadjustment);
