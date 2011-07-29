@@ -1,3 +1,21 @@
+1.3.0
+=====
+
+Changes since 1.2.0
+
+  * Various performance optimisations and bug fixes
+  * Add a remove_all() method to MxComboBox
+
+Fixed Bugs (from bugzilla.clutter-project.org):
+
+  #2666 - image: Allow a transition duration of 0ms
+  #2663 - Fix compiler warnings
+  #2662 - MxActorManger: unparent container before removing children
+  #2646 - Fix walking of children in MxBoxLayout
+  #2645 - Warnings when destroying an MxEntry while mouse pointer is over it.
+  #2671 - MxImage memory corruption when blitting textures
+
+
 1.2.0
 =====
 
