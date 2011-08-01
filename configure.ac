@@ -16,8 +16,8 @@ m4_define([mx_binary_age], [m4_eval(100 * mx_minor + mx_micro - mx_abi_offset)])
 
 AC_INIT([mx], [mx_version])
 AC_CONFIG_MACRO_DIR([m4])
-
-AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
+AC_CONFIG_SRCDIR([mx/mx.h])
+AM_INIT_AUTOMAKE([1.11 foreign -Wno-portability no-define no-dist-gzip dist-xz])
 
 # enable quiet ("silent") builds, if available
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
