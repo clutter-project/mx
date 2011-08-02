@@ -83,6 +83,7 @@ struct _MxKineticScrollViewPrivate
   gdouble                decel_rate;
   gdouble                overshoot;
   gdouble                accumulated_delta;
+  gdouble                acceleration_factor;
 
   MxScrollPolicy         scroll_policy;
 };
@@ -97,7 +98,8 @@ enum {
   PROP_BUTTON,
   PROP_USE_CAPTURED,
   PROP_OVERSHOOT,
-  PROP_SCROLL_POLICY
+  PROP_SCROLL_POLICY,
+  PROP_ACCELERATION_FACTOR,
 };
 
 static gboolean button_release (MxKineticScrollView *scroll,
@@ -199,6 +201,10 @@ mx_kinetic_scroll_view_get_property (GObject    *object,
       g_value_set_enum (value, priv->scroll_policy);
       break;
 
+    case PROP_ACCELERATION_FACTOR :
+      g_value_set_double (value, priv->acceleration_factor);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -258,6 +264,11 @@ mx_kinetic_scroll_view_set_property (GObject      *object,
 
     case PROP_SCROLL_POLICY:
       mx_kinetic_scroll_view_set_scroll_policy (self, g_value_get_enum (value));
+      break;
+
+    case PROP_ACCELERATION_FACTOR :
+      mx_kinetic_scroll_view_set_acceleration_factor (self,
+          g_value_get_double (value));
       break;
 
     default:
@@ -408,6 +419,13 @@ mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
                              MX_SCROLL_POLICY_BOTH,
                              MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_SCROLL_POLICY, pspec);
+
+  pspec = g_param_spec_double ("acceleration-factor",
+                               "Initial acceleration factor",
+                               "Factor applied to the initial acceleration.",
+                               0.0, G_MAXDOUBLE, 1.0,
+                               MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_ACCELERATION_FACTOR, pspec);
 
   /* MxScrollable properties */
   g_object_class_override_property (object_class,
@@ -794,8 +812,8 @@ button_release (MxKineticScrollView *scroll,
           frac = (time_diff/1000.0) / (1000.0/60.0);
 
           /* See how many units to move in 1/60th of a second */
-          priv->dx = (x_origin - event_x) / frac;
-          priv->dy = (y_origin - event_y) / frac;
+          priv->dx = (x_origin - event_x) / frac * priv->acceleration_factor;
+          priv->dy = (y_origin - event_y) / frac * priv->acceleration_factor;
 
           /* If the delta is too low for the equations to work,
            * bump the values up a bit.
@@ -1033,6 +1051,7 @@ mx_kinetic_scroll_view_init (MxKineticScrollView *self)
   priv->decel_rate = 1.1f;
   priv->button = 1;
   priv->scroll_policy = MX_SCROLL_POLICY_BOTH;
+  priv->acceleration_factor = 1.0;
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
   g_signal_connect (self, "button-press-event",
@@ -1343,4 +1362,48 @@ mx_kinetic_scroll_view_get_scroll_policy (MxKineticScrollView *scroll)
   g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), 0);
 
   return scroll->priv->scroll_policy;
+}
+
+/**
+ * mx_kinetic_scroll_view_set_acceleration_factor:
+ * @scroll: A #MxKineticScrollView
+ * @acceleration_factor: The acceleration factor
+ *
+ * Factor applied to the initial momentum.
+ *
+ * Since: 1.4
+ */
+void
+mx_kinetic_scroll_view_set_acceleration_factor (MxKineticScrollView *scroll,
+                                                gdouble              acceleration_factor)
+{
+  MxKineticScrollViewPrivate *priv;
+
+  g_return_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll));
+  g_return_if_fail (acceleration_factor >= 0.0);
+
+  priv = scroll->priv;
+
+  if (priv->acceleration_factor != acceleration_factor)
+    {
+      priv->acceleration_factor = acceleration_factor;
+      g_object_notify (G_OBJECT (scroll), "acceleration-factor");
+    }
+}
+
+/**
+ * mx_kinetic_scroll_view_get_acceleration_factor:
+ * @scroll: A #MxKineticScrollView
+ *
+ * Retrieves the initial acceleration factor of the kinetic scroll-view.
+ *
+ * Returns: The initial acceleration factor of the kinetic scroll-view
+ *
+ * Since: 1.4
+ */
+gdouble
+mx_kinetic_scroll_view_get_acceleration_factor (MxKineticScrollView *scroll)
+{
+  g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), 1.0);
+  return scroll->priv->acceleration_factor;
 }
