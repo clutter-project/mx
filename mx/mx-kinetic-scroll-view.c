@@ -377,7 +377,7 @@ mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
   pspec = g_param_spec_double ("deceleration",
                                "Deceleration",
                                "Rate at which the view will decelerate in.",
-                               1.1, G_MAXDOUBLE, 1.1,
+                               1.01, G_MAXDOUBLE, 1.1,
                                MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_DECELERATION, pspec);
 
@@ -1122,7 +1122,7 @@ mx_kinetic_scroll_view_set_deceleration (MxKineticScrollView *scroll,
   MxKineticScrollViewPrivate *priv;
 
   g_return_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll));
-  g_return_if_fail (rate >= 1.1);
+  g_return_if_fail (rate >= 1.01);
 
   priv = scroll->priv;
 
@@ -1146,7 +1146,7 @@ mx_kinetic_scroll_view_set_deceleration (MxKineticScrollView *scroll,
 gdouble
 mx_kinetic_scroll_view_get_deceleration (MxKineticScrollView *scroll)
 {
-  g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), 0.0);
+  g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), 1.01);
   return scroll->priv->decel_rate;
 }
 
