@@ -52,7 +52,7 @@ MX_LT_CURRENT=lt_current
 MX_LT_REV=lt_revision
 MX_LT_AGE=lt_age
 MX_LT_VERSION="$MX_LT_CURRENT:$MX_LT_REV:$MX_LT_AGE"
-MX_LT_LDFLAGS="-version-info $MX_LT_VERSION"
+MX_LT_LDFLAGS="-no-undefined -version-info $MX_LT_VERSION"
 
 AC_SUBST(MX_LT_VERSION)
 AC_SUBST(MX_LT_LDFLAGS)
