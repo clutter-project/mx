@@ -482,6 +482,17 @@ mx_icon_style_changed_cb (MxWidget *widget)
 
       g_object_notify (G_OBJECT (self), "icon-name");
     }
+  else if (!icon_name && !priv->icon_set && priv->icon_name)
+    {
+      /* icon has been unset */
+      g_free (priv->icon_name);
+      priv->icon_name = NULL;
+      priv->icon_set = FALSE;
+
+      changed = TRUE;
+
+      g_object_notify (G_OBJECT (self), "icon-name");
+    }
 
   if ((icon_size > 0) && !priv->size_set && (priv->icon_size != icon_size))
     {
