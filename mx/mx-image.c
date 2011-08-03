@@ -1550,7 +1550,12 @@ mx_image_set_async (MxImage         *image,
   if (!mx_image_threads)
     {
       mx_image_threads = g_thread_pool_new (mx_image_async_cb, NULL,
+#ifdef _SC_NPROCESSORS_ONLN
                                             sysconf (_SC_NPROCESSORS_ONLN),
+#else
+                                            /* FIXME: add more OSs */
+                                            1,
+#endif
                                             FALSE, &err);
       if (!mx_image_threads)
         {
