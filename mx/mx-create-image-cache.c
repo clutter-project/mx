@@ -379,34 +379,36 @@ static int make_final_image(char *filename)
 static void makecache(char *directory,
                       int   recurse)
 {
-  DIR *dir;
+  GDir *dir;
+  GError *error = NULL;
 
-  struct dirent *entry;
-
-  dir = opendir(directory);
+  dir = g_dir_open (directory, 0, &error);
   if (!dir) {
-      printf("Directory %s not found!\n", directory);
+      printf("Error opening %s: %s\n", directory, error->message);
+      g_clear_error (&error);
       return;
     }
-  do {
-      entry = readdir(dir);
-      if (!entry)
+
+  while (TRUE) {
+      const char *name = g_dir_read_name (dir);
+      char *fullpath = g_build_filename (directory, name, NULL);
+
+      if (!name)
         break;
-      if (entry->d_name[0] == '.')
+      if (name[0] == '.')
         continue;
-      if (entry->d_type == DT_DIR && recurse) {
-          char newdir[2*PATH_MAX];
-          sprintf(newdir, "%s/%s", directory, entry->d_name);
-          makecache(newdir, recurse);
+      if (recurse && g_file_test (fullpath, G_FILE_TEST_IS_DIR)) {
+          makecache(fullpath, recurse);
         }
 
-      if (entry->d_type == DT_REG) {
-          char fullpath[2*PATH_MAX];
-          sprintf(fullpath, "%s/%s", directory, entry->d_name);
+      if (recurse && g_file_test (fullpath, G_FILE_TEST_IS_REGULAR)) {
           do_one_file(fullpath);
         }
 
-    } while (entry);
+      g_free (fullpath);
+  }
+
+  g_dir_close (dir);
 
   images = g_list_sort(images, sort_by_size);
 }
