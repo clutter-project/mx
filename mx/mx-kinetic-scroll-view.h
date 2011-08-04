@@ -97,6 +97,16 @@ void mx_kinetic_scroll_view_set_acceleration_factor (MxKineticScrollView *scroll
 gdouble mx_kinetic_scroll_view_get_acceleration_factor (
     MxKineticScrollView *scroll);
 
+void mx_kinetic_scroll_view_set_clamp_duration (MxKineticScrollView *scroll,
+    guint clamp_duration);
+guint mx_kinetic_scroll_view_get_clamp_duration (
+    MxKineticScrollView *scroll);
+
+void mx_kinetic_scroll_view_set_clamp_mode (MxKineticScrollView *scroll,
+    gulong clamp_mode);
+gulong mx_kinetic_scroll_view_get_clamp_mode (
+    MxKineticScrollView *scroll);
+
 G_END_DECLS
 
 #endif /* __MX_KINETIC_SCROLL_VIEW_H__ */
