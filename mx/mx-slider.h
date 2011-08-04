@@ -71,12 +71,14 @@ struct _MxSliderClass
 {
   MxWidgetClass parent_class;
 
+  /* signals */
+  void (*slide_start) (MxSlider *slider);
+  void (*slide_stop)  (MxSlider *slider);
+
   /* padding for future expansion */
   void (*_padding_0) (void);
   void (*_padding_1) (void);
   void (*_padding_2) (void);
-  void (*_padding_3) (void);
-  void (*_padding_4) (void);
 };
 
 GType           mx_slider_get_type      (void) G_GNUC_CONST;
