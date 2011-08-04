@@ -86,6 +86,9 @@ struct _MxKineticScrollViewPrivate
   gdouble                acceleration_factor;
 
   MxScrollPolicy         scroll_policy;
+
+  guint                  clamp_duration;
+  gulong                 clamp_mode;
 };
 
 enum {
@@ -100,6 +103,8 @@ enum {
   PROP_OVERSHOOT,
   PROP_SCROLL_POLICY,
   PROP_ACCELERATION_FACTOR,
+  PROP_CLAMP_DURATION,
+  PROP_CLAMP_MODE,
 };
 
 static gboolean button_release (MxKineticScrollView *scroll,
@@ -205,6 +210,14 @@ mx_kinetic_scroll_view_get_property (GObject    *object,
       g_value_set_double (value, priv->acceleration_factor);
       break;
 
+    case PROP_CLAMP_DURATION :
+      g_value_set_uint (value, priv->clamp_duration);
+      break;
+
+    case PROP_CLAMP_MODE :
+      g_value_set_ulong (value, priv->clamp_mode);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -269,6 +282,16 @@ mx_kinetic_scroll_view_set_property (GObject      *object,
     case PROP_ACCELERATION_FACTOR :
       mx_kinetic_scroll_view_set_acceleration_factor (self,
           g_value_get_double (value));
+      break;
+
+    case PROP_CLAMP_DURATION :
+      mx_kinetic_scroll_view_set_clamp_duration (self,
+          g_value_get_uint (value));
+      break;
+
+    case PROP_CLAMP_MODE :
+      mx_kinetic_scroll_view_set_clamp_mode (self,
+          g_value_get_ulong (value));
       break;
 
     default:
@@ -427,6 +450,20 @@ mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
                                MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_ACCELERATION_FACTOR, pspec);
 
+  pspec = g_param_spec_uint ("clamp-duration",
+                             "Clamp duration",
+                             "Duration of the adjustment clamp animation.",
+                             0, G_MAXUINT, 250,
+                             MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_CLAMP_DURATION, pspec);
+
+  pspec = g_param_spec_ulong ("clamp-mode",
+                              "Clamp mode",
+                              "Animation mode to use for the clamp animation.",
+                              0, G_MAXULONG, CLUTTER_EASE_OUT_QUAD,
+                              MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_CLAMP_MODE, pspec);
+
   /* MxScrollable properties */
   g_object_class_override_property (object_class,
                                     PROP_HADJUST,
@@ -580,6 +617,7 @@ clamp_adjustments (MxKineticScrollView *scroll,
                    gboolean             horizontal,
                    gboolean             vertical)
 {
+  MxKineticScrollViewPrivate *priv = scroll->priv;
   ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
 
   if (child)
@@ -598,7 +636,7 @@ clamp_adjustments (MxKineticScrollView *scroll,
           d = (rint ((value - lower) / step_increment) *
               step_increment) + lower;
           d = CLAMP (d, lower, upper - page_size);
-          mx_adjustment_interpolate (hadj, d, duration, CLUTTER_EASE_OUT_QUAD);
+          mx_adjustment_interpolate (hadj, d, duration, priv->clamp_mode);
         }
 
       if (vertical && vadj)
@@ -609,7 +647,7 @@ clamp_adjustments (MxKineticScrollView *scroll,
           d = (rint ((value - lower) / step_increment) *
               step_increment) + lower;
           d = CLAMP (d, lower, upper - page_size);
-          mx_adjustment_interpolate (vadj, d, duration, CLUTTER_EASE_OUT_QUAD);
+          mx_adjustment_interpolate (vadj, d, duration, priv->clamp_mode);
         }
     }
 }
@@ -619,9 +657,10 @@ deceleration_completed_cb (ClutterTimeline     *timeline,
                            MxKineticScrollView *scroll)
 {
   MxKineticScrollViewPrivate *priv = scroll->priv;
+  guint duration;
 
-  clamp_adjustments (scroll, (priv->overshoot > 0.0) ? 250 : 10,
-                     priv->hmoving, priv->vmoving);
+  duration = (priv->overshoot > 0.0) ? priv->clamp_duration : 10;
+  clamp_adjustments (scroll, duration, priv->hmoving, priv->vmoving);
 
   g_object_unref (timeline);
   priv->deceleration_timeline = NULL;
@@ -674,10 +713,13 @@ deceleration_new_frame_cb (ClutterTimeline     *timeline,
                 }
               else if (priv->hmoving)
                 {
+                  guint duration;
+
                   priv->hmoving = FALSE;
-                  clamp_adjustments (scroll,
-                                     (priv->overshoot > 0.0) ? 250 : 10,
-                                     TRUE, FALSE);
+
+                  duration = (priv->overshoot > 0.0) ?
+                                priv->clamp_duration : 10;
+                  clamp_adjustments (scroll, duration, TRUE, FALSE);
                 }
             }
 
@@ -702,10 +744,13 @@ deceleration_new_frame_cb (ClutterTimeline     *timeline,
                 }
               else if (priv->vmoving)
                 {
+                  guint duration;
+
                   priv->vmoving = FALSE;
-                  clamp_adjustments (scroll,
-                                     (priv->overshoot > 0.0) ? 250 : 10,
-                                     FALSE, TRUE);
+
+                  duration = (priv->overshoot > 0.0) ?
+                                priv->clamp_duration : 10;
+                  clamp_adjustments (scroll, duration, FALSE, TRUE);
                 }
             }
 
@@ -933,7 +978,7 @@ button_release (MxKineticScrollView *scroll,
   priv->last_motion = 0;
 
   if (!decelerating)
-    clamp_adjustments (scroll, 250, TRUE, TRUE);
+    clamp_adjustments (scroll, priv->clamp_duration, TRUE, TRUE);
 
   return TRUE;
 }
@@ -1052,6 +1097,8 @@ mx_kinetic_scroll_view_init (MxKineticScrollView *self)
   priv->button = 1;
   priv->scroll_policy = MX_SCROLL_POLICY_BOTH;
   priv->acceleration_factor = 1.0;
+  priv->clamp_duration = 250;
+  priv->clamp_mode = CLUTTER_EASE_OUT_QUAD;
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
   g_signal_connect (self, "button-press-event",
@@ -1406,4 +1453,90 @@ mx_kinetic_scroll_view_get_acceleration_factor (MxKineticScrollView *scroll)
 {
   g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), 1.0);
   return scroll->priv->acceleration_factor;
+}
+
+/**
+ * mx_kinetic_scroll_view_set_clamp_duration:
+ * @scroll: A #MxKineticScrollView
+ * @clamp_duration: Clamp duration
+ *
+ * Duration of the adjustment clamp animation.
+ *
+ * Since: 1.4
+ */
+void
+mx_kinetic_scroll_view_set_clamp_duration (MxKineticScrollView *scroll,
+                                           guint                clamp_duration)
+{
+  MxKineticScrollViewPrivate *priv;
+
+  g_return_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll));
+
+  priv = scroll->priv;
+
+  if (priv->clamp_duration != clamp_duration)
+    {
+      priv->clamp_duration = clamp_duration;
+      g_object_notify (G_OBJECT (scroll), "clamp-duration");
+    }
+}
+
+/**
+ * mx_kinetic_scroll_view_get_clamp_duration:
+ * @scroll: A #MxKineticScrollView
+ *
+ * Retrieves the duration of the adjustment clamp animation.
+ *
+ * Returns: Clamp duration
+ *
+ * Since: 1.4
+ */
+guint
+mx_kinetic_scroll_view_get_clamp_duration (MxKineticScrollView *scroll)
+{
+  g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), 250);
+  return scroll->priv->clamp_duration;
+}
+
+/**
+ * mx_kinetic_scroll_view_set_clamp_mode:
+ * @scroll: A #MxKineticScrollView
+ * @clamp_mode: Clamp mode
+ *
+ * Animation mode to use for the adjustment clamp animation.
+ *
+ * Since: 1.4
+ */
+void
+mx_kinetic_scroll_view_set_clamp_mode (MxKineticScrollView *scroll,
+                                       gulong               clamp_mode)
+{
+  MxKineticScrollViewPrivate *priv;
+
+  g_return_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll));
+
+  priv = scroll->priv;
+
+  if (priv->clamp_mode != clamp_mode)
+    {
+      priv->clamp_mode = clamp_mode;
+      g_object_notify (G_OBJECT (scroll), "clamp-mode");
+    }
+}
+
+/**
+ * mx_kinetic_scroll_view_get_clamp_mode:
+ * @scroll: A #MxKineticScrollView
+ *
+ * Retrieves the animation mode to use for the adjustment clamp animation.
+ *
+ * Returns: Clamp mode
+ *
+ * Since: 1.4
+ */
+gulong
+mx_kinetic_scroll_view_get_clamp_mode (MxKineticScrollView *scroll)
+{
+  g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), CLUTTER_EASE_OUT_QUAD);
+  return scroll->priv->clamp_mode;
 }
