@@ -92,6 +92,16 @@ static void mx_slider_allocate_fill_handle (MxSlider               *self,
                                             const ClutterActorBox  *box,
                                             ClutterAllocationFlags  flags);
 
+enum
+{
+  SLIDE_START,
+  SLIDE_STOP,
+
+  LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL] = { 0, };
+
 /* MxFocusable interface */
 
 static MxFocusable*
@@ -203,6 +213,9 @@ on_handle_capture_event (ClutterActor *trough,
           mx_stylable_set_style_pseudo_class (MX_STYLABLE (priv->handle),
                                             NULL);
         }
+
+      /* emit the stop signal */
+      g_signal_emit (bar, signals[SLIDE_STOP], 0);
     }
 
   return TRUE;
@@ -300,6 +313,8 @@ on_handle_button_press_event (ClutterActor       *actor,
                                             &priv->x_origin,
                                             NULL))
     return FALSE;
+
+  g_signal_emit (bar, signals[SLIDE_START], 0);
 
   /* Account for the scrollbar-trough-handle nesting. */
   priv->x_origin += clutter_actor_get_x (priv->trough);
@@ -779,6 +794,24 @@ mx_slider_class_init (MxSliderClass *klass)
                                "Buffer Value",
                                0.0, 1.0, 0.0, G_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_BUFFER_VALUE, pspec);
+
+  signals[SLIDE_START] =
+    g_signal_new ("slide-start",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0,
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
+
+  signals[SLIDE_STOP] =
+    g_signal_new ("slide-stop",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0,
+                  NULL, NULL,
+                  g_cclosure_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
 }
 
 static void
