@@ -496,7 +496,7 @@ mx_actor_manager_get_for_stage (ClutterStage *stage)
  *
  * Gets the #ClutterStage the actor manager is associated with.
  *
- * Returns: The #ClutterStage the actor is associated with.
+ * Returns: (transfer none): The #ClutterStage the actor is associated with.
  *
  * Since: 1.2
  */

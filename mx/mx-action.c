@@ -262,7 +262,7 @@ mx_action_new (void)
  * mx_action_new_full:
  * @name: name of the action
  * @display_name: name of the action to display to the user
- * @activated_cb: callback to connect to the activated signal
+ * @activated_cb: (type Mx.ActionCallbackFunc) (scope async) (allow-none): callback to connect to the activated signal
  * @user_data: user data to be passed to the callback
  *
  * Creates a new #MxAction with the name and callback set

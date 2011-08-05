@@ -486,7 +486,8 @@ mx_texture_cache_get_actor (MxTextureCache *self,
  *
  * See mx_texture_cache_insert_meta()
  *
- * Returns: A newly allocated #ClutterTexture, or %NULL if no image was found
+ * Returns: (transfer full): A newly allocated #ClutterTexture, or
+ *   %NULL if no image was found
  *
  * Since: 1.2
  */
@@ -519,7 +520,7 @@ mx_texture_cache_get_meta_texture (MxTextureCache *self,
 }
 
 /**
- * mx_texture_cache_get_cogl_texture:
+ * mx_texture_cache_get_meta_cogl_texture:
  * @self: A #MxTextureCache
  * @uri: A URI or path to an image file
  * @ident: A unique identifier
@@ -529,8 +530,8 @@ mx_texture_cache_get_meta_texture (MxTextureCache *self,
  *
  * See mx_texture_cache_insert_meta()
  *
- * Returns: A #CoglHandle to a texture, with an added reference. %NULL if
- *   no image was found.
+ * Returns: (transfer full): A #CoglHandle to a texture, with an added
+ *   reference. %NULL if no image was found.
  *
  * Since: 1.2
  */

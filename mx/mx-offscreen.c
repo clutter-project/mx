@@ -1122,6 +1122,12 @@ mx_offscreen_get_redirect_enabled (MxOffscreen *offscreen)
 }
 
 /**
+ * MxOffscreen:buffer: (type Cogl.Handle)
+ *
+ * The off-screen buffer used to draw the child.
+ */
+
+/**
  * mx_offscreen_get_buffer:
  * @offscreen: A #MxOffscreen
  *

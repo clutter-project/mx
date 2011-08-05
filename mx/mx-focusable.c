@@ -50,6 +50,16 @@ mx_focusable_get_type (void)
   return type;
 }
 
+/**
+ * mx_focusable_move_focus:
+ * @focusable: A #MxFocusable
+ * @direction: A #MxFocusDirection
+ * @from: focusable to move the focus from
+ *
+ * Move the focus
+ *
+ * Returns: (transfer none): the newly focused focusable
+ */
 MxFocusable*
 mx_focusable_move_focus (MxFocusable      *focusable,
                          MxFocusDirection  direction,
@@ -155,6 +165,15 @@ found:
   return moved;
 }
 
+/**
+ * mx_focusable_accept_focus:
+ * @focusable: A #MxFocusable
+ * @hint: A #MxFocusHint
+ *
+ * Accept the focus
+ *
+ * Returns: (transfer none): the focusable
+ */
 MxFocusable *
 mx_focusable_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 {

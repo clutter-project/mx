@@ -559,12 +559,20 @@ mx_notebook_set_current_page (MxNotebook   *book,
   g_object_notify (G_OBJECT (book), "current-page");
 }
 
+/**
+ * mx_notebook_get_current_page:
+ * @notebook: A #MxNotebook
+ *
+ * Get the current page
+ *
+ * Returns: (transfer none): the current page
+ */
 ClutterActor *
-mx_notebook_get_current_page (MxNotebook *book)
+mx_notebook_get_current_page (MxNotebook *notebook)
 {
-  g_return_val_if_fail (MX_IS_NOTEBOOK (book), NULL);
+  g_return_val_if_fail (MX_IS_NOTEBOOK (notebook), NULL);
 
-  return book->priv->current_page;
+  return notebook->priv->current_page;
 }
 
 void

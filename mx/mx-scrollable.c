@@ -81,7 +81,7 @@ mx_scrollable_set_adjustments (MxScrollable *scrollable,
 }
 
 /**
- * mx_scroll_bar_get_adjustments:
+ * mx_scrollable_get_adjustments:
  * @hadjustment: (transfer none) (out) (allow-none): location to store the horizontal adjustment, or %NULL
  * @vadjustment: (transfer none) (out) (allow-none): location to store the vertical adjustment, or %NULL
  *

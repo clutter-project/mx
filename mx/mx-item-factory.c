@@ -61,6 +61,14 @@ mx_item_factory_get_type (void)
   return type;
 }
 
+/**
+ * mx_item_factory_create:
+ * @factory: A #MxItemFactory
+ *
+ * Create an item
+ *
+ * Returns: (transfer full): the new item
+ */
 ClutterActor *
 mx_item_factory_create (MxItemFactory *factory)
 {

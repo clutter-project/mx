@@ -356,7 +356,7 @@ mx_button_group_foreach (MxButtonGroup   *group,
 /**
  * mx_button_group_set_active_button:
  * @group: A #MxButtonGroup
- * @button: A #MxButton
+ * @button: (allow-none): A #MxButton
  *
  * Set the current active button in the group. The previous active button will
  * have #MxButton:toggled set to #FALSE.
@@ -450,8 +450,9 @@ mx_button_group_get_allow_no_active (MxButtonGroup *group)
  *
  * Get a list of the buttons in the button group.
  *
- * Returns: a list of buttons. The list is owned by the #MxButtonGroup and
- * should not be modified by the application.
+ * Returns: (element-type Mx.Button): a list of buttons. The list is
+ *   owned by the #MxButtonGroup and should not be modified by the
+ *   application.
  */
 const GSList *
 mx_button_group_get_buttons (MxButtonGroup *group)

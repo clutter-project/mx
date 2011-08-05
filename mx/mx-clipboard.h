@@ -119,7 +119,7 @@ MxClipboard* mx_clipboard_get_default (void);
 /**
  * mx_clipboard_get_text:
  * @clipboard: A #MxClipboard
- * @callback: function to be called when the text is retreived
+ * @callback: (scope async): function to be called when the text is retreived
  * @user_data: data to be passed to the callback
  *
  * Request the data from the clipboard in text form. @callback is executed

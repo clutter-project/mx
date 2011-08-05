@@ -87,6 +87,16 @@ struct _MxActionClass
 
 GType mx_action_get_type (void);
 
+/**
+ * MxActionCallbackFunc:
+ * @action: An #MxAction
+ * @user_data: user data
+ *
+ * Callback function called when action is activated.
+ */
+typedef void (*MxActionCallbackFunc) (MxAction *action,
+                                      gpointer  user_data);
+
 MxAction *mx_action_new (void);
 
 MxAction *   mx_action_new_full   (const gchar *name,
