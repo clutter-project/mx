@@ -48,7 +48,8 @@ enum
   PROP_Y_FILL,
   PROP_X_ALIGN,
   PROP_Y_ALIGN,
-  PROP_FIT
+  PROP_FIT,
+  PROP_CROP
 };
 
 static void
@@ -75,6 +76,9 @@ mx_stack_child_get_property (GObject    *object,
       break;
     case PROP_FIT:
       g_value_set_boolean (value, child->fit);
+      break;
+    case PROP_CROP:
+      g_value_set_boolean (value, child->crop);
       break;
 
     default:
@@ -107,6 +111,9 @@ mx_stack_child_set_property (GObject      *object,
       break;
     case PROP_FIT:
       child->fit = g_value_get_boolean (value);
+      break;
+    case PROP_CROP:
+      child->crop = g_value_get_boolean (value);
       break;
 
     default:
@@ -167,6 +174,15 @@ mx_stack_child_class_init (MxStackChildClass *klass)
                                 FALSE,
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_FIT, pspec);
+
+  pspec = g_param_spec_boolean ("crop", "Fill space",
+                                "Attempt to fill the parent's space by scaling"
+                                " the child and keeping its aspect ratio as"
+                                " well. The fit and fill properties are"
+                                " ignored when this property is enabled.",
+                                FALSE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_CROP, pspec);
 }
 
 static void
@@ -448,6 +464,58 @@ mx_stack_child_set_fit (MxStack      *stack,
   meta = _get_child_meta (stack, child);
 
   meta->fit = fit;
+
+  clutter_actor_queue_relayout (child);
+}
+
+/**
+ * mx_stack_child_get_crop:
+ * @stack: An #MxStack
+ * @child: A #ClutterActor
+ *
+ * Get the value of the #MxStackChild:fit property.
+ *
+ * Returns: the current value of the #MxStackChild:crop property
+ *
+ * Since: 1.4
+ */
+gboolean
+mx_stack_child_get_crop (MxStack      *stack,
+                         ClutterActor *child)
+{
+  MxStackChild *meta;
+
+  g_return_val_if_fail (MX_IS_STACK (stack), FALSE);
+  g_return_val_if_fail (CLUTTER_IS_ACTOR (child), FALSE);
+
+  meta = _get_child_meta (stack, child);
+
+  return meta->crop;
+}
+
+/**
+ * mx_stack_child_set_crop:
+ * @stack: An #MxStack
+ * @child: A #ClutterActor
+ * @crop: A #gboolean
+ *
+ * Set the value of the #MxStackChild:crop property.
+ *
+ * Since: 1.4
+ */
+void
+mx_stack_child_set_crop (MxStack      *stack,
+                         ClutterActor *child,
+                         gboolean      crop)
+{
+  MxStackChild *meta;
+
+  g_return_if_fail (MX_IS_STACK (stack));
+  g_return_if_fail (CLUTTER_IS_ACTOR (child));
+
+  meta = _get_child_meta (stack, child);
+
+  meta->crop = crop;
 
   clutter_actor_queue_relayout (child);
 }

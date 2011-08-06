@@ -71,9 +71,10 @@ struct _MxStackChild
   /*< private >*/
   ClutterChildMeta parent;
 
-  guint x_fill : 1;
-  guint y_fill : 1;
-  guint fit    : 1;
+  guint x_fill     : 1;
+  guint y_fill     : 1;
+  guint fit        : 1;
+  guint crop       : 1;
   MxAlign x_align;
   MxAlign y_align;
 };
@@ -121,6 +122,12 @@ gboolean mx_stack_child_get_fit     (MxStack      *stack,
 void     mx_stack_child_set_fit     (MxStack      *stack,
                                      ClutterActor *child,
                                      gboolean      fit);
+
+gboolean mx_stack_child_get_fill_space (MxStack      *stack,
+                                        ClutterActor *child);
+void     mx_stack_child_set_fill_space (MxStack      *stack,
+                                        ClutterActor *child,
+                                        gboolean      fill_space);
 
 
 G_END_DECLS

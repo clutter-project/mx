@@ -38,6 +38,8 @@
 #include "mx-focusable.h"
 #include "mx-utils.h"
 
+#include <string.h>
+
 static void clutter_container_iface_init (ClutterContainerIface *iface);
 static void mx_focusable_iface_init (MxFocusableIface *iface);
 
@@ -54,6 +56,8 @@ struct _MxStackPrivate
 {
   GList        *children;
   ClutterActor *current_focus;
+
+  ClutterActorBox allocation;
 };
 
 /* ClutterContainerIface */
@@ -438,9 +442,11 @@ mx_stack_allocate (ClutterActor           *actor,
 
   mx_widget_get_available_area (MX_WIDGET (actor), box, &avail_space);
 
+  memcpy (&priv->allocation, box, sizeof (priv->allocation));
+
   for (c = priv->children; c; c = c->next)
     {
-      gboolean x_fill, y_fill, fit;
+      gboolean x_fill, y_fill, fit, crop;
       MxAlign x_align, y_align;
 
       ClutterActor *child = c->data;
@@ -456,8 +462,46 @@ mx_stack_allocate (ClutterActor           *actor,
                                    "x-align", &x_align,
                                    "y-align", &y_align,
                                    "fit", &fit,
+                                   "crop", &crop,
                                    NULL);
 
+      /* when "crop" is set, fit and fill properties are ignored */
+      if (crop)
+        {
+          gfloat available_height, available_width;
+          gfloat natural_width, natural_height;
+          gfloat ratio_width, ratio_height, ratio_child;
+
+          available_width  = avail_space.x2 - avail_space.x1;
+          available_height = avail_space.y2 - avail_space.y1;
+
+          clutter_actor_get_preferred_size (child,
+                                            NULL, NULL,
+                                            &natural_width,
+                                            &natural_height);
+
+          ratio_child = natural_width / natural_height;
+          ratio_width = available_width / natural_width;
+          ratio_height = available_height / natural_height;
+          if (ratio_width > ratio_height)
+            {
+              natural_width = available_width;
+              natural_height = natural_width / ratio_child;
+            }
+          else
+            {
+              natural_height = available_height;
+              natural_width = ratio_child * natural_height;
+            }
+
+          child_box.x1 = (available_width - natural_width) / 2;
+          child_box.y1 = (available_height - natural_height) / 2;
+          child_box.x2 = natural_width;
+          child_box.y2 = natural_height;
+
+          clutter_actor_allocate (child, &child_box, flags);
+          continue;
+        }
 
       /* when "fit" is set, fill properties are ignored */
       if (fit)
@@ -611,7 +655,31 @@ mx_stack_paint (ClutterActor *actor)
   CLUTTER_ACTOR_CLASS (mx_stack_parent_class)->paint (actor);
 
   for (c = priv->children; c; c = c->next)
-    clutter_actor_paint (c->data);
+    {
+      ClutterActor *child = c->data;
+      gboolean crop;
+
+      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
+
+      clutter_container_child_get (CLUTTER_CONTAINER (actor),
+                                   child,
+                                   "crop", &crop,
+                                   NULL);
+
+      if (crop)
+        {
+          /* clip */
+          cogl_clip_push_rectangle (priv->allocation.x1,
+                                    priv->allocation.y1,
+                                    priv->allocation.x2,
+                                    priv->allocation.y2);
+          clutter_actor_paint (c->data);
+          cogl_clip_pop ();
+        }
+      else
+        clutter_actor_paint (c->data);
+    }
 }
 
 static void
