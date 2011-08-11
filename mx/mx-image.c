@@ -294,11 +294,19 @@ mx_image_paint (ClutterActor *actor)
   ratio = bw/bh;
 
   alpha = clutter_actor_get_paint_opacity (actor);
-
-  /* Paint opacity is applied using a constant on the third layer of the
-   * material. This ensures the paint opacity is applied to both textures. */
   cogl_color_init_from_4ub (&color, alpha, alpha, alpha, alpha);
-  cogl_material_set_layer_combine_constant (priv->material, 2, &color);
+
+  if (priv->old_texture)
+    {
+      /* Paint opacity is applied using a constant on the third layer of the
+       * material. This ensures the paint opacity is applied to both textures. */
+      cogl_material_set_layer_combine_constant (priv->material, 2, &color);
+    }
+  else
+    {
+      cogl_material_set_color (priv->material, &color);
+      cogl_material_set_layer (priv->material, 0, priv->texture);
+    }
 
   /* calculate texture co-ordinates */
   get_center_coords (priv->texture, priv->rotation, aw, ah, tex_coords);
@@ -693,6 +701,18 @@ create_new_material (MxImage *image,
   CoglHandle copy;
   CoglColor constant;
 
+  if (!priv->old_texture)
+    {
+      if (priv->material)
+        cogl_object_unref (priv->material);
+
+      priv->material = cogl_material_new ();
+      cogl_material_set_layer_wrap_mode (priv->material, 0,
+                                         COGL_MATERIAL_WRAP_MODE_CLAMP_TO_EDGE);
+
+      return;
+    }
+
   /* You should assume that a material can only be modified once, after
    * its creation; if you need to modify it later you should use a copy
    * instead. Cogl makes copying materials reasonably cheap
@@ -743,6 +763,7 @@ timeline_complete (ClutterTimeline *timeline,
       cogl_object_unref (image->priv->old_texture);
       image->priv->old_texture = NULL;
     }
+  create_new_material (image, 1.0);
 }
 
 static void
