@@ -268,7 +268,7 @@ mx_image_paint (ClutterActor *actor)
   float tex_coords[8];
   MxPadding padding;
   CoglMatrix matrix;
-  gfloat scale = 1, previous_scale = 1;
+  gfloat scale = 1;
   gfloat ratio;
   CoglColor color;
 
@@ -315,12 +315,13 @@ mx_image_paint (ClutterActor *actor)
 
   /* current texture */
   scale = calculate_scale (priv->texture, priv->rotation, aw, ah, priv->mode);
-  previous_scale = calculate_scale (priv->texture, priv->rotation, aw, ah,
-                                    priv->previous_mode);
 
   if (clutter_timeline_is_playing (priv->redraw_timeline))
     {
-      gfloat progress;
+      gfloat progress, previous_scale;
+
+      previous_scale = calculate_scale (priv->texture, priv->rotation, aw, ah,
+                                        priv->previous_mode);
 
       progress = clutter_alpha_get_alpha (priv->redraw_alpha);
       scale = scale + (previous_scale - scale) * (1 - progress);
