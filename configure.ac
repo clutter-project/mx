@@ -122,6 +122,7 @@ AC_SUBST(MX_MAINTAINER_CFLAGS)
 dnl = Required Packages ====================================================
 
 MX_REQUIRES="gdk-pixbuf-2.0"
+CLUTTER_VERSION_REQUIRED="1.4.0"
 
 dnl = Winsys ===============================================================
 
@@ -136,12 +137,12 @@ AS_CASE([$MX_WINSYS],
         [
           SUPPORT_X11=yes
 
-          WINSYS_X11_REQUIRES="clutter-x11-1.0 >= 1.4.0 xrandr >= 1.2.0"
+          WINSYS_X11_REQUIRES="clutter-x11-1.0 >= $CLUTTER_VERSION_REQUIRED xrandr >= 1.2.0"
 	  MX_REQUIRES="$MX_REQUIRES $WINSYS_X11_REQUIRES"
         ],
         [none],
         [
-          WINSYS_NONE_REQUIRES="clutter-1.0"
+          WINSYS_NONE_REQUIRES="clutter-1.0 >= $CLUTTER_VERSION_REQUIRED"
 	  MX_REQUIRES="$MX_REQUIRES $WINSYS_NONE_REQUIRES"
         ],
         [AC_MSG_ERROR([Invalid winsys: use 'x11' or 'none'])]

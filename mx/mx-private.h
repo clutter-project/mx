@@ -43,23 +43,6 @@ G_BEGIN_DECLS
 
 #define MX_ALIGN_TO_FLOAT(x) ((x == MX_ALIGN_START) ? 0.0 : (x == MX_ALIGN_MIDDLE) ? 0.5 : 1.0)
 
-#if !CLUTTER_CHECK_VERSION (1, 3, 13)
-#define CLUTTER_KEY_Return              CLUTTER_Return
-#define CLUTTER_KEY_KP_Enter            CLUTTER_KP_Enter
-#define CLUTTER_KEY_ISO_Enter           CLUTTER_ISO_Enter
-#define CLUTTER_KEY_space               CLUTTER_space
-#define CLUTTER_KEY_Tab                 CLUTTER_Tab
-#define CLUTTER_KEY_ISO_Left_Tab        CLUTTER_ISO_Left_Tab
-#define CLUTTER_KEY_Up                  CLUTTER_Up
-#define CLUTTER_KEY_Down                CLUTTER_Down
-#define CLUTTER_KEY_Left                CLUTTER_Left
-#define CLUTTER_KEY_Right               CLUTTER_Right
-#define CLUTTER_KEY_c                   CLUTTER_c
-#define CLUTTER_KEY_v                   CLUTTER_v
-#define CLUTTER_KEY_x                   CLUTTER_x
-#define CLUTTER_KEY_z                   CLUTTER_z
-#endif
-
 struct _MxTableChild
 {
   ClutterChildMeta parent_instance;

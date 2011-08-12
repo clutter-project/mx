@@ -102,11 +102,7 @@ mx_floating_widget_pick_from_stage (ClutterActor       *stage,
     {
       gfloat x, y, w, h;
       clutter_actor_get_clip (CLUTTER_ACTOR (widget), &x, &y, &w, &h);
-#if CLUTTER_CHECK_VERSION (1, 1, 3)
       cogl_clip_push_rectangle (x, y, x + w, y + h);
-#else
-      cogl_clip_push (x, y, w, h);
-#endif
     }
 
   if (klass->floating_pick)
@@ -138,11 +134,7 @@ mx_floating_widget_paint_from_stage (ClutterActor     *stage,
     {
       gfloat x, y, w, h;
       clutter_actor_get_clip (CLUTTER_ACTOR (widget), &x, &y, &w, &h);
-#if CLUTTER_CHECK_VERSION (1, 1, 3)
       cogl_clip_push_rectangle (x, y, x + w, y + h);
-#else
-      cogl_clip_push (x, y, w, h);
-#endif
     }
 
   if (klass->floating_paint)
