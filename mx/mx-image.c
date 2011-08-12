@@ -310,8 +310,6 @@ mx_image_paint (ClutterActor *actor)
 
   /* calculate texture co-ordinates */
   get_center_coords (priv->texture, priv->rotation, aw, ah, tex_coords);
-  get_center_coords (priv->old_texture, priv->old_rotation, aw, ah,
-                     tex_coords + 4);
 
   /* current texture */
   scale = calculate_scale (priv->texture, priv->rotation, aw, ah, priv->mode);
@@ -343,6 +341,9 @@ mx_image_paint (ClutterActor *actor)
   /* old texture */
   if (priv->old_texture)
     {
+      get_center_coords (priv->old_texture, priv->old_rotation, aw, ah,
+                         tex_coords + 4);
+
       scale = calculate_scale (priv->old_texture, priv->old_rotation, aw, ah,
                                priv->old_mode);
 
