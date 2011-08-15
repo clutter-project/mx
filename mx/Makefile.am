@@ -286,7 +286,7 @@ Mx_@MX_API_VERSION_AM@_gir_FILES     = \
 	$(top_builddir)/mx/mx-version.h \
 	$(top_builddir)/mx/mx-enum-types.h \
 	$(source_c)
-Mx_@MX_API_VERSION_AM@_gir_CFLAGS = $(common_includes)
+Mx_@MX_API_VERSION_AM@_gir_CFLAGS = $(common_includes) $(MX_CFLAGS)
 Mx_@MX_API_VERSION_AM@_gir_INCLUDES = Clutter-1.0
 Mx_@MX_API_VERSION_AM@_gir_SCANNERFLAGS = \
 	--warn-all \
