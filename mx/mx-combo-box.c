@@ -519,8 +519,7 @@ mx_combo_box_update_menu (MxComboBox *box)
 }
 
 static gboolean
-mx_combo_box_button_press_event (ClutterActor       *actor,
-                                 ClutterButtonEvent *event)
+mx_combo_box_open_menu (MxComboBox *actor)
 {
   ClutterActor *menu;
 
@@ -534,25 +533,20 @@ mx_combo_box_button_press_event (ClutterActor       *actor,
 }
 
 static gboolean
+mx_combo_box_button_press_event (ClutterActor       *actor,
+                                 ClutterButtonEvent *event)
+{
+  return mx_combo_box_open_menu (MX_COMBO_BOX (actor));
+}
+
+static gboolean
 mx_combo_box_key_press_event (ClutterActor    *actor,
                               ClutterKeyEvent *event)
 {
-  MxComboBoxPrivate *priv = MX_COMBO_BOX (actor)->priv;
-  gint n_items;
-
-  n_items = g_slist_length (priv->actions);
-
   switch (event->keyval)
     {
-    case CLUTTER_KEY_Down:
-      mx_combo_box_set_index (MX_COMBO_BOX (actor),
-                              CLAMP (priv->index + 1, 0, n_items -1));
-      return TRUE;
-
-    case CLUTTER_KEY_Up:
-      mx_combo_box_set_index (MX_COMBO_BOX (actor),
-                              CLAMP (priv->index - 1, 0, n_items -1));
-      return TRUE;
+    case CLUTTER_KEY_Return:
+      return mx_combo_box_open_menu (MX_COMBO_BOX (actor));
 
     default:
       return FALSE;
