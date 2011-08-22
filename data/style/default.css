@@ -349,19 +349,16 @@ MxMenu {
   border-image: url('menu.png') 5;
 }
 
-MxMenu > MxBoxLayout {
+MxMenu > MxButton {
   padding: 3;
   border-image: none;
 }
 
-MxMenu > MxBoxLayout:hover,
-MxMenu > MxBoxLayout:active {
+MxMenu > MxButton:hover,
+MxMenu > MxButton:focus,
+MxMenu > MxButton:active {
   border-image: url('menu-item.png') 2;
-}
-
-MxMenu > MxBoxLayout:hover > MxLabel,
-MxMenu > MxBoxLayout:active > MxLabel {
-  color: white;
+  padding: 3;
 }
 
 MxMenu MxIcon {

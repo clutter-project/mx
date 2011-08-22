@@ -28,16 +28,16 @@
 
 #include "mx-menu.h"
 #include "mx-label.h"
-#include "mx-box-layout.h"
-#include "mx-icon.h"
-#include "mx-icon-theme.h"
+#include "mx-button.h"
 #include "mx-stylable.h"
+#include "mx-focusable.h"
+#include "mx-focus-manager.h"
 
-static void mx_stylable_iface_init (MxStylableIface *iface);
+static void mx_focusable_iface_init (MxFocusableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxMenu, mx_menu, MX_TYPE_FLOATING_WIDGET,
-                         G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
-                                                mx_stylable_iface_init))
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
+                                                mx_focusable_iface_init))
 
 #define MENU_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_MENU, MxMenuPrivate))
@@ -50,7 +50,6 @@ typedef struct
 
 struct _MxMenuPrivate
 {
-  gint     spacing;
   GArray  *children;
   gboolean transition_out;
 
@@ -71,25 +70,114 @@ static gboolean mx_menu_captured_event_handler (ClutterActor *actor,
                                                 ClutterEvent *event,
                                                 ClutterActor *menu);
 
-static void
-mx_stylable_iface_init (MxStylableIface *iface)
+/* MxFocusable Interface */
+
+static MxFocusable*
+mx_menu_move_focus (MxFocusable      *focusable,
+                    MxFocusDirection  direction,
+                    MxFocusable      *from)
 {
-  static gboolean is_initialised = FALSE;
+  MxMenuPrivate *priv = MX_MENU (focusable)->priv;
+  MxFocusable *result;
+  MxMenuChild *child;
+  gint i, start;
 
-  if (!is_initialised)
+  /* find the current focused child */
+  for (i = 0; i < priv->children->len; i++)
     {
-      GParamSpec *pspec;
-
-      is_initialised = TRUE;
-
-      pspec = g_param_spec_int ("x-mx-spacing",
-                                "Spacing",
-                                "Spacing to use between elements inside the "
-                                "menu.",
-                                0, G_MAXINT, 8,
-                                G_PARAM_READWRITE);
-      mx_stylable_iface_install_property (iface, MX_TYPE_MENU, pspec);
+      child = &g_array_index (priv->children, MxMenuChild, i);
+      if ((MxFocusable*) child->box == from)
+        break;
+      else
+        child = NULL;
     }
+
+  if (!child)
+    return NULL;
+
+  start = i;
+
+  switch (direction)
+    {
+    case MX_FOCUS_DIRECTION_UP:
+      if (i == 0)
+        i = priv->children->len - 1;
+      else
+        i--;
+
+      while (i >= 0)
+        {
+          if (i == start)
+            break;
+
+          child = &g_array_index (priv->children, MxMenuChild, i);
+
+          result = mx_focusable_accept_focus (MX_FOCUSABLE (child->box), 0);
+
+          if (result)
+            return result;
+
+          /* loop */
+          if (i == 0)
+            i = priv->children->len;
+
+          i--;
+        }
+
+
+    case MX_FOCUS_DIRECTION_DOWN:
+      if (i == priv->children->len - 1)
+        i = 0;
+      else
+        i++;
+
+      while (i < priv->children->len)
+        {
+          if (i == start)
+            break;
+
+          child = &g_array_index (priv->children, MxMenuChild, i);
+
+          result = mx_focusable_accept_focus (MX_FOCUSABLE (child->box), 0);
+
+          if (result)
+            return result;
+
+          /* loop */
+          if (i == priv->children->len - 1)
+            i = -1;
+
+          i++;
+        }
+
+    case MX_FOCUS_DIRECTION_OUT:
+      return NULL;
+
+    default:
+      break;
+    }
+
+  clutter_actor_hide (CLUTTER_ACTOR (focusable));
+  return NULL;
+}
+
+static MxFocusable*
+mx_menu_accept_focus (MxFocusable *focusable,
+                      MxFocusHint  hint)
+{
+  MxMenuPrivate *priv = MX_MENU (focusable)->priv;
+  MxMenuChild *child;
+
+  child = &g_array_index (priv->children, MxMenuChild, 0);
+
+  return mx_focusable_accept_focus (MX_FOCUSABLE (child->box), 0);
+}
+
+static void
+mx_focusable_iface_init (MxFocusableIface *iface)
+{
+  iface->move_focus = mx_menu_move_focus;
+  iface->accept_focus = mx_menu_accept_focus;
 }
 
 static void
@@ -445,6 +533,7 @@ static void
 mx_menu_show (ClutterActor *actor)
 {
   ClutterAnimation *animation = NULL;
+  ClutterStage *stage;
 
   /* set reactive and opacity, since these may have been set by the fade-out
    * animation (e.g. from captured_event_handler or button_release_cb) */
@@ -457,6 +546,14 @@ mx_menu_show (ClutterActor *actor)
 
   /* chain up to run show after re-setting properties above */
   CLUTTER_ACTOR_CLASS (mx_menu_parent_class)->show (actor);
+
+  clutter_actor_grab_key_focus (actor);
+
+  stage = (ClutterStage*) clutter_actor_get_stage (actor);
+
+  mx_focus_manager_push_focus (mx_focus_manager_get_for_stage (stage),
+                               MX_FOCUSABLE (actor));
+
 }
 
 static void
@@ -470,21 +567,7 @@ mx_menu_style_changed (MxMenu              *menu,
                        MxStyleChangedFlags  flags)
 {
   MxMenuPrivate *priv = menu->priv;
-  gint i, spacing;
-
-  mx_stylable_get (MX_STYLABLE (menu),
-                   "x-mx-spacing", &spacing,
-                   NULL);
-
-  if (priv->spacing != spacing)
-    {
-      priv->spacing = spacing;
-      for (i = 0; i < priv->children->len; i++)
-        {
-          MxMenuChild *child = &g_array_index (priv->children, MxMenuChild, i);
-          mx_box_layout_set_spacing (MX_BOX_LAYOUT (child->box), priv->spacing);
-        }
-    }
+  gint i;
 
   for (i = 0; i < priv->children->len; i++)
     {
@@ -560,14 +643,13 @@ mx_menu_new (void)
   return g_object_new (MX_TYPE_MENU, NULL);
 }
 
-static gboolean
-mx_menu_button_release_cb (MxBoxLayout  *box,
-                           ClutterEvent *event,
+static void
+mx_menu_button_clicked_cb (ClutterActor *box,
                            MxAction     *action)
 {
   MxMenu *menu;
 
-  menu = MX_MENU (clutter_actor_get_parent (CLUTTER_ACTOR (box)));
+  menu = MX_MENU (clutter_actor_get_parent (box));
 
   /* set the menu unreactive to prevent other items being hilighted */
   clutter_actor_set_reactive ((ClutterActor*) menu, FALSE);
@@ -586,9 +668,24 @@ mx_menu_button_release_cb (MxBoxLayout  *box,
 
   g_object_unref (action);
   g_object_unref (menu);
+}
 
-  /* allow the default handler to apply the correct styling rules */
-  return FALSE;
+static gboolean
+mx_menu_button_enter_event_cb (ClutterActor *box,
+                               ClutterEvent *event,
+                               gpointer      user_data)
+{
+  ClutterStage *stage;
+
+  /* each menu item grabs focus when hovered */
+
+  stage = (ClutterStage *) clutter_actor_get_stage (box);
+
+  mx_focus_manager_push_focus (mx_focus_manager_get_for_stage (stage),
+                               MX_FOCUSABLE (box));
+
+  /* prevent the hover pseudo-class from being applied */
+  return TRUE;
 }
 
 /**
@@ -604,7 +701,6 @@ mx_menu_add_action (MxMenu   *menu,
                     MxAction *action)
 {
   MxMenuChild child;
-  ClutterActor *label, *icon;
 
   g_return_if_fail (MX_IS_MENU (menu));
   g_return_if_fail (MX_IS_ACTION (action));
@@ -613,37 +709,16 @@ mx_menu_add_action (MxMenu   *menu,
 
   child.action = g_object_ref_sink (action);
   /* TODO: Connect to notify signals in case action properties change */
-  child.box = g_object_new (MX_TYPE_BOX_LAYOUT,
-                            "reactive", TRUE,
-                            "spacing", priv->spacing,
+  child.box = g_object_new (MX_TYPE_BUTTON,
+                            "action", child.action,
+                            "x-align", MX_ALIGN_START,
                             NULL);
+  mx_button_set_action (MX_BUTTON (child.box), child.action);
 
-  if (mx_action_get_icon (action))
-    {
-      MxIconTheme *theme = mx_icon_theme_get_default ();
-
-      if (mx_icon_theme_has_icon (theme, mx_action_get_icon (action)))
-        {
-          icon = mx_icon_new ();
-          mx_icon_set_icon_name (MX_ICON (icon), mx_action_get_icon (action));
-
-          clutter_container_add_actor (CLUTTER_CONTAINER (child.box), icon);
-          clutter_container_child_set (CLUTTER_CONTAINER (child.box), icon,
-                                       "y-fill", FALSE,
-                                       NULL);
-        }
-    }
-
-  label = mx_label_new_with_text (mx_action_get_display_name (action));
-
-  clutter_container_add_actor (CLUTTER_CONTAINER (child.box), label);
-
-  clutter_container_child_set (CLUTTER_CONTAINER (child.box), label,
-                               "y-fill", FALSE,
-                               NULL);
-
-  g_signal_connect (child.box, "button-release-event",
-                    G_CALLBACK (mx_menu_button_release_cb), action);
+  g_signal_connect (child.box, "clicked",
+                    G_CALLBACK (mx_menu_button_clicked_cb), action);
+  g_signal_connect (child.box, "enter-event",
+                    G_CALLBACK (mx_menu_button_enter_event_cb), NULL);
   clutter_actor_set_parent (CLUTTER_ACTOR (child.box),
                             CLUTTER_ACTOR (menu));
 
