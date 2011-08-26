@@ -476,6 +476,22 @@ mx_menu_event (ClutterActor *actor,
     case CLUTTER_BUTTON_RELEASE:
     case CLUTTER_SCROLL:
       return TRUE;
+
+    case CLUTTER_KEY_PRESS:
+    case CLUTTER_KEY_RELEASE:
+      /* hide the menu if the escape key was pressed */
+      if (((ClutterKeyEvent*) event)->keyval == CLUTTER_KEY_Escape
+          && CLUTTER_ACTOR_IS_VISIBLE (actor))
+        {
+          clutter_actor_set_reactive (actor, FALSE);
+          clutter_actor_animate (actor, CLUTTER_LINEAR, 250,
+                                 "opacity", (guchar) 0,
+                                 "signal-swapped::completed",
+                                 clutter_actor_hide,
+                                 actor,
+                                 NULL);
+        }
+
     default:
       return FALSE;
     }
