@@ -55,6 +55,8 @@ struct _MxMenuPrivate
 
   ClutterActor *stage;
   gulong captured_event_handler;
+
+  gulong internal_focus_push : 1;
 };
 
 enum
@@ -151,7 +153,12 @@ mx_menu_move_focus (MxFocusable      *focusable,
         }
 
     case MX_FOCUS_DIRECTION_OUT:
-      return NULL;
+      if (priv->internal_focus_push)
+        {
+          /* do nothing if this notification was caused internally */
+          priv->internal_focus_push = FALSE;
+          return NULL;
+        }
 
     default:
       break;
@@ -691,11 +698,15 @@ mx_menu_button_enter_event_cb (ClutterActor *box,
                                ClutterEvent *event,
                                gpointer      user_data)
 {
+  MxMenuPrivate *priv = MX_MENU (user_data)->priv;
   ClutterStage *stage;
 
   /* each menu item grabs focus when hovered */
 
   stage = (ClutterStage *) clutter_actor_get_stage (box);
+
+  /* ensure the menu is not closed when focus is pushed to another actor */
+  priv->internal_focus_push = TRUE;
 
   mx_focus_manager_push_focus (mx_focus_manager_get_for_stage (stage),
                                MX_FOCUSABLE (box));
@@ -734,7 +745,7 @@ mx_menu_add_action (MxMenu   *menu,
   g_signal_connect (child.box, "clicked",
                     G_CALLBACK (mx_menu_button_clicked_cb), action);
   g_signal_connect (child.box, "enter-event",
-                    G_CALLBACK (mx_menu_button_enter_event_cb), NULL);
+                    G_CALLBACK (mx_menu_button_enter_event_cb), menu);
   clutter_actor_set_parent (CLUTTER_ACTOR (child.box),
                             CLUTTER_ACTOR (menu));
 
