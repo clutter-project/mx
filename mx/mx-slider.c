@@ -87,6 +87,11 @@ enum
   PROP_BUFFER_VALUE,
 };
 
+
+static void mx_slider_allocate_fill_handle (MxSlider               *self,
+                                            const ClutterActorBox  *box,
+                                            ClutterAllocationFlags  flags);
+
 /* MxFocusable interface */
 
 static MxFocusable*
@@ -148,6 +153,10 @@ drag_handle (MxSlider *bar,
 
   value = pos / fill_size;
   mx_slider_set_value (bar, value);
+
+  /* update the handle position */
+  mx_slider_allocate_fill_handle (bar, NULL, 0);
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (bar));
 }
 
 static gboolean
@@ -174,6 +183,10 @@ on_handle_capture_event (ClutterActor *trough,
         {
           g_signal_handler_disconnect (stage, priv->capture_handler);
           priv->capture_handler = 0;
+
+          /* update the handle position */
+          mx_slider_allocate_fill_handle (bar, NULL, 0);
+          clutter_actor_queue_redraw (CLUTTER_ACTOR (bar));
         }
 
       clutter_set_motion_events_enabled (TRUE);
@@ -558,7 +571,8 @@ mx_slider_allocate (ClutterActor           *actor,
   priv->trough_box_y1 = trough_box.y1;
   priv->trough_box_y2 = trough_box.y2;
 
-  mx_slider_allocate_fill_handle (self, box, flags);
+  if (!priv->capture_handler)
+    mx_slider_allocate_fill_handle (self, box, flags);
 
   clutter_actor_allocate (priv->trough, &trough_box, flags);
 }
@@ -916,8 +930,11 @@ mx_slider_set_value (MxSlider *bar,
 
   priv->value = value;
 
-  mx_slider_allocate_fill_handle (bar, NULL, 0);
-  clutter_actor_queue_redraw (CLUTTER_ACTOR (bar));
+  if (!priv->capture_handler)
+    {
+      mx_slider_allocate_fill_handle (bar, NULL, 0);
+      clutter_actor_queue_redraw (CLUTTER_ACTOR (bar));
+    }
 
   g_object_notify (G_OBJECT (bar), "value");
 }
