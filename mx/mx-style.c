@@ -387,6 +387,12 @@ mx_style_transform_css_value (MxStyleSheetValue *css_value,
 
       g_value_init (value, pspec->value_type);
 
+      if (!g_strcmp0 (css_value->string, "none"))
+        {
+          g_value_set_string (value, NULL);
+          return;
+        }
+
 
       original = g_strdup (css_value->string);
       len = strlen (original);
