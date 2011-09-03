@@ -282,7 +282,12 @@ PKG_CHECK_MODULES(MX, [$MX_REQUIRES])
 PKG_CHECK_MODULES(MX_IMAGE_CACHE, [gdk-pixbuf-2.0])
 
 # check for gtk-doc
-GTK_DOC_CHECK([1.14])
+
+# gtkdocize greps for ^GTK_DOC_CHECK and parses it, so you need to have
+# it on it's own line.
+m4_ifdef([GTK_DOC_CHECK], [
+GTK_DOC_CHECK([1.14], [--flavour no-tmpl])
+])
 
 GOBJECT_INTROSPECTION_CHECK([0.6.4])
 

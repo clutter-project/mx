@@ -20,6 +20,7 @@ GTKDOCIZE=`which gtkdocize`
 if test -z $GTKDOCIZE; then
         echo "*** No gtk-doc support ***"
         echo "EXTRA_DIST =" > gtk-doc.make
+        echo "CLEANFILES =" >> gtk-doc.make
 else
         gtkdocize || exit $?
         sed -e 's#) --mode=compile#) --tag=CC --mode=compile#' gtk-doc.make \
