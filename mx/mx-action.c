@@ -126,12 +126,6 @@ mx_action_set_property (GObject      *object,
 }
 
 static void
-mx_action_dispose (GObject *object)
-{
-  G_OBJECT_CLASS (mx_action_parent_class)->dispose (object);
-}
-
-static void
 mx_action_finalize (GObject *object)
 {
   MxActionPrivate *priv = MX_ACTION (object)->priv;
@@ -166,7 +160,6 @@ mx_action_class_init (MxActionClass *klass)
 
   object_class->get_property = mx_action_get_property;
   object_class->set_property = mx_action_set_property;
-  object_class->dispose = mx_action_dispose;
   object_class->finalize = mx_action_finalize;
 
   g_object_class_install_property (object_class,
