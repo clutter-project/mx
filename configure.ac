@@ -57,11 +57,6 @@ MX_LT_LDFLAGS="-no-undefined -version-info $MX_LT_VERSION"
 AC_SUBST(MX_LT_VERSION)
 AC_SUBST(MX_LT_LDFLAGS)
 
-dnl programs
-dnl AM_PATH_GLIB_2_0 will find these for us
-#AC_PATH_PROG([GLIB_MKENUMS], [glib-mkenums])
-#AC_PATH_PROG([GLIB_GENMARSHAL], [glib-genmarshal])
-
 dnl = Enable debug level ===================================================
 
 m4_define([debug_default],
