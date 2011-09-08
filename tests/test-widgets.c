@@ -296,11 +296,132 @@ create_combo_box ()
   return combo;
 }
 
+static void
+rotate_left_clicked_cb (ClutterActor *button,
+                        MxWindow     *window)
+{
+  MxWindowRotation rotation = mx_window_get_window_rotation (window);
+
+  switch (rotation)
+    {
+    case MX_WINDOW_ROTATION_0:
+      rotation = MX_WINDOW_ROTATION_270;
+      break;
+    case MX_WINDOW_ROTATION_90:
+      rotation = MX_WINDOW_ROTATION_0;
+      break;
+    case MX_WINDOW_ROTATION_180:
+      rotation = MX_WINDOW_ROTATION_90;
+      break;
+    case MX_WINDOW_ROTATION_270:
+      rotation = MX_WINDOW_ROTATION_180;
+      break;
+    }
+
+  mx_window_set_window_rotation (window, rotation);
+}
+
+static void
+rotate_right_clicked_cb (ClutterActor *button,
+                         MxWindow     *window)
+{
+  MxWindowRotation rotation = mx_window_get_window_rotation (window);
+
+  switch (rotation)
+    {
+    case MX_WINDOW_ROTATION_0:
+      rotation = MX_WINDOW_ROTATION_90;
+      break;
+    case MX_WINDOW_ROTATION_90:
+      rotation = MX_WINDOW_ROTATION_180;
+      break;
+    case MX_WINDOW_ROTATION_180:
+      rotation = MX_WINDOW_ROTATION_270;
+      break;
+    case MX_WINDOW_ROTATION_270:
+      rotation = MX_WINDOW_ROTATION_0;
+      break;
+    }
+
+  mx_window_set_window_rotation (window, rotation);
+}
+
+static void
+rotate_180_clicked_cb (ClutterActor *button,
+                       MxWindow     *window)
+{
+  MxWindowRotation rotation = mx_window_get_window_rotation (window);
+
+  switch (rotation)
+    {
+    case MX_WINDOW_ROTATION_0:
+      rotation = MX_WINDOW_ROTATION_180;
+      break;
+    case MX_WINDOW_ROTATION_90:
+      rotation = MX_WINDOW_ROTATION_270;
+      break;
+    case MX_WINDOW_ROTATION_180:
+      rotation = MX_WINDOW_ROTATION_0;
+      break;
+    case MX_WINDOW_ROTATION_270:
+      rotation = MX_WINDOW_ROTATION_90;
+      break;
+    }
+
+  mx_window_set_window_rotation (window, rotation);
+}
+
+static ClutterActor *
+create_rotate_box (MxWindow *window)
+{
+  ClutterActor *button, *icon, *icon2, *layout2;
+  ClutterActor *layout = mx_box_layout_new ();
+
+  /* Create rotate-left button */
+  icon = mx_icon_new ();
+  mx_icon_set_icon_name (MX_ICON (icon), "object-rotate-left");
+  mx_icon_set_icon_size (MX_ICON (icon), 16);
+  button = mx_button_new ();
+  mx_bin_set_child (MX_BIN (button), icon);
+  g_signal_connect (button, "clicked",
+                    G_CALLBACK (rotate_left_clicked_cb), window);
+  clutter_container_add_actor (CLUTTER_CONTAINER (layout), button);
+
+  /* Create rotate-180 button */
+  icon = mx_icon_new ();
+  mx_icon_set_icon_name (MX_ICON (icon), "object-rotate-left");
+  mx_icon_set_icon_size (MX_ICON (icon), 16);
+  icon2 = mx_icon_new ();
+  mx_icon_set_icon_name (MX_ICON (icon2), "object-rotate-right");
+  mx_icon_set_icon_size (MX_ICON (icon2), 16);
+  layout2 = mx_box_layout_new ();
+  clutter_container_add (CLUTTER_CONTAINER (layout2), icon, icon2, NULL);
+  button = mx_button_new ();
+  mx_bin_set_child (MX_BIN (button), layout2);
+  g_signal_connect (button, "clicked",
+                    G_CALLBACK (rotate_180_clicked_cb), window);
+  clutter_container_add_actor (CLUTTER_CONTAINER (layout), button);
+
+  /* Create rotate-right button */
+  icon = mx_icon_new ();
+  mx_icon_set_icon_name (MX_ICON (icon), "object-rotate-right");
+  mx_icon_set_icon_size (MX_ICON (icon), 16);
+  button = mx_button_new ();
+  mx_bin_set_child (MX_BIN (button), icon);
+  g_signal_connect (button, "clicked",
+                    G_CALLBACK (rotate_right_clicked_cb), window);
+  clutter_container_add_actor (CLUTTER_CONTAINER (layout), button);
+
+  return layout;
+}
+
 int
 main (int argc, char **argv)
 {
   MxApplication *application;
   MxWindow *window;
+  ClutterActor *box;
+  MxToolbar *toolbar;
 
   application = mx_application_new (&argc, &argv, "test-widgets", 0);
 
@@ -315,9 +436,19 @@ main (int argc, char **argv)
 
   mx_window_set_child (window, data.table);
 
-  /* combo box */
-  mx_bin_set_child (MX_BIN (mx_window_get_toolbar (window)),
-                    create_combo_box ());
+  /* toolbar */
+  box = mx_box_layout_new ();
+  mx_box_layout_add_actor_with_properties (MX_BOX_LAYOUT (box),
+                                           create_combo_box (), 0,
+                                           "expand", TRUE,
+                                           "x-fill", FALSE,
+                                           "x-align", MX_ALIGN_START,
+                                           NULL);
+  mx_box_layout_add_actor (MX_BOX_LAYOUT (box), create_rotate_box (window), 1);
+
+  toolbar = mx_window_get_toolbar (window);
+  mx_bin_set_child (MX_BIN (toolbar), box);
+  mx_bin_set_fill (MX_BIN (toolbar), TRUE, TRUE);
 
 
   /* show the window */
