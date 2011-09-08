@@ -29,6 +29,7 @@ noinst_PROGRAMS = 			\
 	test-box-layout			\
 	test-focus			\
 	test-mx				\
+	test-widgets			\
 	$(NULL)
 
 if ENABLE_GTK_WIDGETS
@@ -37,6 +38,7 @@ noinst_PROGRAMS += test-gtk
 test_gtk_SOURCES = test-gtk.c
 endif
 
+test_widgets_SOURCES = test-widgets.c
 test_table_SOURCES = test-table.c
 test_table_2_SOURCES = test-table-2.c
 test_texture_frame_SOURCES = test-texture-frame.c
