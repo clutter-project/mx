@@ -91,6 +91,7 @@ struct _MxKineticScrollViewPrivate
 
   guint                  clamp_duration;
   gulong                 clamp_mode;
+  gboolean               clamp_to_center;
 
   MxKineticScrollViewState state;
 };
@@ -110,6 +111,7 @@ enum {
   PROP_CLAMP_DURATION,
   PROP_CLAMP_MODE,
   PROP_STATE,
+  PROP_CLAMP_TO_CENTER,
 };
 
 static gboolean button_release (MxKineticScrollView *scroll,
@@ -227,6 +229,10 @@ mx_kinetic_scroll_view_get_property (GObject    *object,
       g_value_set_enum (value, priv->state);
       break;
 
+    case PROP_CLAMP_TO_CENTER :
+      g_value_set_boolean (value, priv->clamp_to_center);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -301,6 +307,11 @@ mx_kinetic_scroll_view_set_property (GObject      *object,
     case PROP_CLAMP_MODE :
       mx_kinetic_scroll_view_set_clamp_mode (self,
           g_value_get_ulong (value));
+      break;
+
+    case PROP_CLAMP_TO_CENTER :
+      mx_kinetic_scroll_view_set_clamp_to_center (self,
+          g_value_get_boolean (value));
       break;
 
     default:
@@ -480,6 +491,13 @@ mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
                              MX_KINETIC_SCROLL_VIEW_STATE_IDLE,
                              MX_PARAM_READABLE);
   g_object_class_install_property (object_class, PROP_STATE, pspec);
+
+  pspec = g_param_spec_boolean ("clamp-to-center",
+                                "Clamp to center",
+                                "Whether to clamp to step increments based on the center of the page.",
+                                FALSE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_CLAMP_TO_CENTER, pspec);
 
   /* MxScrollable properties */
   g_object_class_override_property (object_class,
@@ -670,6 +688,9 @@ clamp_adjustment (MxKineticScrollView *scroll,
   /* Snap to the nearest step increment on hadjustment */
   mx_adjustment_get_values (adj, &value, &lower, &upper,
                             &step_increment, NULL, &page_size);
+
+  if (priv->clamp_to_center)
+    lower += ((int) page_size % (int) step_increment) * 2;
 
   d = (rint ((value - lower) / step_increment) *
       step_increment) + lower;
@@ -1603,4 +1624,47 @@ mx_kinetic_scroll_view_get_clamp_mode (MxKineticScrollView *scroll)
 {
   g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), CLUTTER_EASE_OUT_QUAD);
   return scroll->priv->clamp_mode;
+}
+
+/**
+ * mx_kinetic_scroll_view_set_clamp_to_center:
+ * @scroll: A #MxKineticScrollView
+ * @clamp_to_center: Clamp to center
+ *
+ * Set whether to clamp to step increments based on the center of the page.
+ *
+ * Since: 1.4
+ */
+void
+mx_kinetic_scroll_view_set_clamp_to_center (MxKineticScrollView *scroll,
+                                            gboolean             clamp_to_center)
+{
+  MxKineticScrollViewPrivate *priv;
+
+  g_return_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll));
+
+  priv = scroll->priv;
+
+  if (priv->clamp_to_center != clamp_to_center)
+    {
+      priv->clamp_to_center = clamp_to_center;
+      g_object_notify (G_OBJECT (scroll), "clamp-to-center");
+    }
+}
+
+/**
+ * mx_kinetic_scroll_view_get_clamp_to_center:
+ * @scroll: A #MxKineticScrollView
+ *
+ * Retrieves whether to clamp to step increments based on the center of the page.
+ *
+ * Returns: Clamp to center
+ *
+ * Since: 1.4
+ */
+gboolean
+mx_kinetic_scroll_view_get_clamp_to_center (MxKineticScrollView *scroll)
+{
+  g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), FALSE);
+  return scroll->priv->clamp_to_center;
 }

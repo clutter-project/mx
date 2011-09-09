@@ -114,6 +114,11 @@ void mx_kinetic_scroll_view_set_clamp_mode (MxKineticScrollView *scroll,
 gulong mx_kinetic_scroll_view_get_clamp_mode (
     MxKineticScrollView *scroll);
 
+void mx_kinetic_scroll_view_set_clamp_to_center (MxKineticScrollView *scroll,
+    gboolean clamp_to_center);
+gboolean mx_kinetic_scroll_view_get_clamp_to_center (
+    MxKineticScrollView *scroll);
+
 G_END_DECLS
 
 #endif /* __MX_KINETIC_SCROLL_VIEW_H__ */
