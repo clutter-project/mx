@@ -635,7 +635,8 @@ clamp_adjustments (MxKineticScrollView *scroll,
                                     &step_increment, NULL, &page_size);
           d = (rint ((value - lower) / step_increment) *
               step_increment) + lower;
-          d = CLAMP (d, lower, upper - page_size);
+          if (mx_adjustment_get_clamp_value (hadj))
+            d = CLAMP (d, lower, upper - page_size);
           mx_adjustment_interpolate (hadj, d, duration, priv->clamp_mode);
         }
 
@@ -646,7 +647,8 @@ clamp_adjustments (MxKineticScrollView *scroll,
                                     &step_increment, NULL, &page_size);
           d = (rint ((value - lower) / step_increment) *
               step_increment) + lower;
-          d = CLAMP (d, lower, upper - page_size);
+          if (mx_adjustment_get_clamp_value (vadj))
+            d = CLAMP (d, lower, upper - page_size);
           mx_adjustment_interpolate (vadj, d, duration, priv->clamp_mode);
         }
     }
