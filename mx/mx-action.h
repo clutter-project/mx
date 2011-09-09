@@ -97,7 +97,13 @@ GType mx_action_get_type (void);
 typedef void (*MxActionCallbackFunc) (MxAction *action,
                                       gpointer  user_data);
 
-MxAction *mx_action_new (void);
+MxAction *    mx_action_new                (void);
+
+MxAction *    mx_action_new_with_parameter (const gchar        *name,
+                                            const GVariantType *parameter_type);
+MxAction *    mx_action_new_stateful       (const gchar        *name,
+                                            const GVariantType *parameter_type,
+                                            GVariant           *state);
 
 MxAction *   mx_action_new_full   (const gchar *name,
                                    const gchar *display_name,

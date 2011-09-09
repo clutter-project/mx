@@ -1441,6 +1441,8 @@ MX_SCROLL_BAR_GET_CLASS
 MxAction
 MxActionClass
 mx_action_new
+mx_action_new_with_parameter
+mx_action_new_stateful
 mx_action_new_full
 mx_action_get_name
 mx_action_set_name
