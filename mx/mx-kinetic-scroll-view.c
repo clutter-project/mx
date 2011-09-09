@@ -611,46 +611,47 @@ motion_event_cb (ClutterActor        *actor,
   return TRUE;
 }
 
+
+static void
+clamp_adjustment (MxKineticScrollView *scroll,
+                  MxAdjustment        *adj,
+                  guint                duration)
+{
+  MxKineticScrollViewPrivate *priv = scroll->priv;
+  gdouble d, value, lower, upper, step_increment, page_size;
+
+  /* Snap to the nearest step increment on hadjustment */
+  mx_adjustment_get_values (adj, &value, &lower, &upper,
+                            &step_increment, NULL, &page_size);
+
+  d = (rint ((value - lower) / step_increment) *
+      step_increment) + lower;
+
+  if (mx_adjustment_get_clamp_value (adj))
+    d = CLAMP (d, lower, upper - page_size);
+
+  mx_adjustment_interpolate (adj, d, duration, priv->clamp_mode);
+}
+
 static void
 clamp_adjustments (MxKineticScrollView *scroll,
                    guint                duration,
                    gboolean             horizontal,
                    gboolean             vertical)
 {
-  MxKineticScrollViewPrivate *priv = scroll->priv;
   ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
 
   if (child)
     {
-      gdouble d, value, lower, upper, step_increment, page_size;
       MxAdjustment *hadj, *vadj;
 
-      mx_scrollable_get_adjustments (MX_SCROLLABLE (child),
-                                     &hadj, &vadj);
+      mx_scrollable_get_adjustments (MX_SCROLLABLE (child), &hadj, &vadj);
 
       if (horizontal && hadj)
-        {
-          /* Snap to the nearest step increment on hadjustment */
-          mx_adjustment_get_values (hadj, &value, &lower, &upper,
-                                    &step_increment, NULL, &page_size);
-          d = (rint ((value - lower) / step_increment) *
-              step_increment) + lower;
-          if (mx_adjustment_get_clamp_value (hadj))
-            d = CLAMP (d, lower, upper - page_size);
-          mx_adjustment_interpolate (hadj, d, duration, priv->clamp_mode);
-        }
+        clamp_adjustment (scroll, hadj, duration);
 
       if (vertical && vadj)
-        {
-          /* Snap to the nearest step increment on vadjustment */
-          mx_adjustment_get_values (vadj, &value, &lower, &upper,
-                                    &step_increment, NULL, &page_size);
-          d = (rint ((value - lower) / step_increment) *
-              step_increment) + lower;
-          if (mx_adjustment_get_clamp_value (vadj))
-            d = CLAMP (d, lower, upper - page_size);
-          mx_adjustment_interpolate (vadj, d, duration, priv->clamp_mode);
-        }
+        clamp_adjustment (scroll, vadj, duration);
     }
 }
 
