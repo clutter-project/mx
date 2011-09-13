@@ -69,7 +69,6 @@ struct _MxTooltipPrivate
   ClutterGeometry *tip_area;
 
   CoglMatrix       stage_matrix;
-  gfloat           angle;
 
   MxTooltipAnimation animation_mode;
 };
@@ -391,22 +390,13 @@ static void
 mx_tooltip_paint (ClutterActor *self)
 {
   gfloat width, height;
-  CoglMatrix self_matrix;
   ClutterActor *border_image, *arrow_image;
 
   MxTooltipPrivate *priv = MX_TOOLTIP (self)->priv;
 
-  clutter_actor_get_transformation_matrix (self, &self_matrix);
-  cogl_matrix_multiply (&self_matrix, &priv->stage_matrix, &self_matrix);
-  cogl_set_modelview_matrix (&self_matrix);
-
   clutter_actor_get_size (self, &width, &height);
   width = (gint)(width / 2.f);
   height = (gint)(height / 2.f);
-
-  cogl_translate (width, height, 0);
-  cogl_rotate (priv->angle, 0, 0, 1);
-  cogl_translate (-width, -height, 0);
 
   border_image = mx_widget_get_border_image (MX_WIDGET (self));
   if (border_image)
@@ -420,16 +410,10 @@ mx_tooltip_paint (ClutterActor *self)
 }
 
 static void
-mx_tooltip_stage_paint_cb (ClutterActor *stage, MxTooltip *self)
-{
-  cogl_get_modelview_matrix (&self->priv->stage_matrix);
-}
-
-static void
 mx_tooltip_map (ClutterActor *self)
 {
   MxTooltipPrivate *priv = MX_TOOLTIP (self)->priv;
-  ClutterActor *border_image, *arrow_image, *stage;
+  ClutterActor *border_image, *arrow_image;
 
   CLUTTER_ACTOR_CLASS (mx_tooltip_parent_class)->map (self);
 
@@ -442,20 +426,13 @@ mx_tooltip_map (ClutterActor *self)
     clutter_actor_map (arrow_image);
 
   clutter_actor_map (priv->label);
-
-  stage = clutter_actor_get_stage (self);
-  g_signal_connect (stage, "paint",
-                    G_CALLBACK (mx_tooltip_stage_paint_cb), self);
 }
 
 static void
 mx_tooltip_unmap (ClutterActor *self)
 {
   MxTooltipPrivate *priv = MX_TOOLTIP (self)->priv;
-  ClutterActor *border_image, *arrow_image, *stage;
-
-  stage = clutter_actor_get_stage (self);
-  g_signal_handlers_disconnect_by_func (stage, mx_tooltip_stage_paint_cb, self);
+  ClutterActor *border_image, *arrow_image;
 
   CLUTTER_ACTOR_CLASS (mx_tooltip_parent_class)->unmap (self);
 
@@ -564,11 +541,10 @@ static void
 mx_tooltip_update_position (MxTooltip *tooltip)
 {
   MxTooltipPrivate *priv = tooltip->priv;
-  ClutterGeometry *tip_area = tooltip->priv->tip_area;
+  ClutterGeometry tip_area = *tooltip->priv->tip_area;
   gfloat tooltip_w, tooltip_h, tooltip_x, tooltip_y, abs_x, abs_y;
   ClutterActor *stage, *parent;
-  MxWindowRotation rotation;
-  gfloat stage_w, stage_h;
+  gfloat stage_w, stage_h, parent_w, parent_h;
   MxWindow *window;
 
   /* If there's no stage, bail out - there's nothing we can do */
@@ -576,8 +552,13 @@ mx_tooltip_update_position (MxTooltip *tooltip)
   if (!stage)
     return;
 
+  /* find out the stage's size to keep the tooltip on-screen */
+  clutter_actor_get_size (stage, &stage_w, &stage_h);
+
+
   parent = clutter_actor_get_parent ((ClutterActor *) tooltip);
   clutter_actor_get_transformed_position (parent, &abs_x, &abs_y);
+  clutter_actor_get_size (parent, &parent_w, &parent_h);
 
   /* ensure the tooltip with is not fixed size */
   clutter_actor_set_size ((ClutterActor*) tooltip, -1, -1);
@@ -592,12 +573,66 @@ mx_tooltip_update_position (MxTooltip *tooltip)
   /* check if we're in a window and if there's rotation */
   window = mx_window_get_for_stage (CLUTTER_STAGE (stage));
   if (window)
-    g_object_get (G_OBJECT (window),
-                  "window-rotation", &rotation,
-                  "window-rotation-angle", &priv->angle,
-                  NULL);
-  else
-    rotation = MX_WINDOW_ROTATION_0;
+    {
+      MxWindowRotation rotation;
+      gfloat old_x;
+
+      g_object_get (G_OBJECT (window),
+                    "window-rotation", &rotation,
+                    NULL);
+
+      if (rotation == MX_WINDOW_ROTATION_90
+          || rotation == MX_WINDOW_ROTATION_270)
+        {
+          /* swap stage width and height */
+          old_x = stage_w;
+          stage_w = stage_h;
+          stage_h = old_x;
+
+          /* swap tip area width and height */
+          old_x = tip_area.width;
+          tip_area.width = tip_area.height;
+          tip_area.height = old_x;
+        }
+
+      switch (rotation)
+        {
+        case MX_WINDOW_ROTATION_90:
+          /* absolute position */
+          old_x = abs_x;
+          abs_x = abs_y;
+          abs_y = stage_h - old_x;
+
+          /* tip area */
+          old_x = tip_area.x;
+          tip_area.x = tip_area.y;
+          tip_area.y = stage_h - old_x - tip_area.height;
+          break;
+
+        case MX_WINDOW_ROTATION_180:
+          tip_area.x = stage_w - tip_area.x - tip_area.width;
+          tip_area.y = stage_h - tip_area.y - tip_area.height;
+
+          abs_x = stage_w - abs_x;
+          abs_y = stage_h - abs_y;
+          break;
+
+        case MX_WINDOW_ROTATION_270:
+          /* absolute position */
+          old_x = abs_x;
+          abs_x = stage_w - abs_y;
+          abs_y = old_x;
+
+          /* tip area */
+          old_x = tip_area.x;
+          tip_area.x = stage_w - tip_area.y - tip_area.width;
+          tip_area.y = old_x;
+          break;
+
+        default:
+          break;
+        }
+    }
 
   /* we need to have a style in case there are padding values to take into
    * account when calculating width/height */
@@ -606,113 +641,48 @@ mx_tooltip_update_position (MxTooltip *tooltip)
   /* find out the tooltip's size */
   clutter_actor_get_size ((ClutterActor*) tooltip, &tooltip_w, &tooltip_h);
 
-  /* find out the stage's size to keep the tooltip on-screen */
-  clutter_actor_get_size (stage, &stage_w, &stage_h);
-
   /* attempt to place the tooltip */
   /* This special-cases the 4 window rotations, as doing this with
    * arbitrary rotations would massively complicate the code for
    * little benefit.
    */
   priv->actor_below = FALSE;
-  switch (rotation)
+
+  tooltip_x = (int)(tip_area.x + (tip_area.width / 2) -
+                    (tooltip_w / 2));
+  tooltip_y = (int)(tip_area.y + tip_area.height);
+
+  /* Keep on the screen vertically */
+  if (tooltip_y + tooltip_h > stage_h)
     {
-    default:
-    case MX_WINDOW_ROTATION_0:
-      tooltip_x = (int)(tip_area->x + (tip_area->width / 2) -
-                        (tooltip_w / 2));
-      tooltip_y = (int)(tip_area->y + tip_area->height);
+      priv->actor_below = TRUE;
 
-      /* Keep on the screen vertically */
-      if (tooltip_y + tooltip_h > stage_h)
-        {
-          priv->actor_below = TRUE;
-
-          /* re-query size as may have changed */
-          clutter_actor_get_preferred_height ((ClutterActor*) tooltip,
-                                              -1, NULL, &tooltip_h);
-          tooltip_y = tip_area->y - tooltip_h;
-        }
-      break;
-
-    case MX_WINDOW_ROTATION_180:
-      tooltip_x = (int)(tip_area->x + (tip_area->width / 2) -
-                        (tooltip_w / 2));
-      tooltip_y = (int)(tip_area->y - tooltip_h);
-
-      /* Keep on the screen vertically */
-      if (tooltip_y < 0)
-        {
-          priv->actor_below = TRUE;
-          tooltip_y = tip_area->y + tip_area->height;
-        }
-      break;
-
-    case MX_WINDOW_ROTATION_90:
-      tooltip_x = (int)(tip_area->x - (tooltip_w / 2) - (tooltip_h / 2));
-      tooltip_y = (int)(tip_area->y + (tip_area->height / 2) -
-                        (tooltip_h / 2));
-
-      /* Keep on the screen vertically */
-      if (tooltip_x + tooltip_w / 2 - tooltip_h / 2 < 0)
-        {
-          priv->actor_below = TRUE;
-          tooltip_x = tip_area->x + tip_area->width + tooltip_h / 2 -
-                      tooltip_w / 2;
-        }
-      break;
-
-    case MX_WINDOW_ROTATION_270:
-      tooltip_x = (int)(tip_area->x + tip_area->width -
-                        (tooltip_w / 2) + (tooltip_h / 2));
-      tooltip_y = (int)(tip_area->y + (tip_area->height / 2) -
-                        (tooltip_h / 2));
-
-      /* Keep on the screen vertically */
-      if (tooltip_x + tooltip_w / 2 + tooltip_h / 2 > stage_w)
-        {
-          priv->actor_below = TRUE;
-          tooltip_x = tip_area->x - tooltip_h / 2 - tooltip_w / 2;
-        }
-      break;
+      /* re-query size as may have changed */
+      clutter_actor_get_preferred_height ((ClutterActor*) tooltip,
+                                          -1, NULL, &tooltip_h);
+      tooltip_y = tip_area.y - tooltip_h;
     }
+
 
   /* Keep on the screen horizontally */
-  switch (rotation)
+  if (tooltip_w > stage_w)
     {
-    default:
-    case MX_WINDOW_ROTATION_0:
-    case MX_WINDOW_ROTATION_180:
-      if (tooltip_w > stage_w)
-        {
-          tooltip_x = 0;
-          clutter_actor_set_width ((ClutterActor*) tooltip, stage_w);
-        }
-      else if (tooltip_x < 0)
-        tooltip_x = 0;
-      else if (tooltip_x + tooltip_w > stage_w)
-        tooltip_x = (int)(stage_w) - tooltip_w;
-      break;
-
-    case MX_WINDOW_ROTATION_90:
-    case MX_WINDOW_ROTATION_270:
-      if (tooltip_w > stage_h)
-        {
-          tooltip_y = stage_h / 2 - tooltip_h / 2;
-          tooltip_x += (tooltip_w - stage_h) / 2;
-
-          clutter_actor_set_width ((ClutterActor*) tooltip, stage_h);
-        }
-      else if (tooltip_y - tooltip_w / 2 + tooltip_h / 2 < 0)
-        tooltip_y = tooltip_w / 2 - tooltip_h / 2;
-      else if (tooltip_y + tooltip_w / 2 + tooltip_h / 2 > stage_h)
-        tooltip_y = (int)(stage_h - tooltip_w / 2 - tooltip_h / 2);
-      break;
+      tooltip_x = 0;
+      clutter_actor_set_width ((ClutterActor*) tooltip, stage_w);
     }
+  else if (tooltip_x < 0)
+    tooltip_x = 0;
+  else if (tooltip_x + tooltip_w > stage_w)
+    tooltip_x = (int)(stage_w) - tooltip_w;
+
+  gfloat pos_x, pos_y;
+
+  pos_x = tooltip_x - abs_x;
+  pos_y = tooltip_y - abs_y;
 
   /* calculate the arrow offset */
-  priv->arrow_offset = tip_area->x + tip_area->width / 2 - tooltip_x;
-  clutter_actor_set_position ((ClutterActor*) tooltip, tooltip_x, tooltip_y);
+  priv->arrow_offset = tip_area.x + tip_area.width / 2 - tooltip_x;
+  clutter_actor_set_position ((ClutterActor*) tooltip, pos_x, pos_y);
 }
 
 /**
