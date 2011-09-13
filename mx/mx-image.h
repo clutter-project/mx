@@ -21,7 +21,6 @@
 #define _MX_IMAGE
 
 #include <glib-object.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
 #include "mx-widget.h"
 
 G_BEGIN_DECLS

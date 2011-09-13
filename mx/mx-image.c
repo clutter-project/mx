@@ -36,6 +36,8 @@
 #include "mx-marshal.h"
 #include "mx-texture-cache.h"
 
+#include <gdk-pixbuf/gdk-pixbuf.h>
+
 G_DEFINE_TYPE (MxImage, mx_image, MX_TYPE_WIDGET)
 
 #define MX_IMAGE_GET_PRIVATE(obj)    \
