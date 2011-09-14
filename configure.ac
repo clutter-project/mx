@@ -122,7 +122,7 @@ AC_SUBST(MX_MAINTAINER_CFLAGS)
 dnl = Required Packages ====================================================
 
 MX_REQUIRES="gdk-pixbuf-2.0"
-CLUTTER_VERSION_REQUIRED="1.4.0"
+CLUTTER_VERSION_REQUIRED="1.7.91"
 
 dnl = Winsys ===============================================================
 

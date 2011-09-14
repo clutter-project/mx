@@ -252,6 +252,8 @@ mx_stylable_iface_init (MxStylableIface *iface)
       GParamSpec *pspec;
       static const ClutterColor default_color
         = { 0x0, 0x9c, 0xcf, 0xff };
+      static const ClutterColor white
+        = { 0xff, 0xff, 0xff, 0xff };
 
       is_initialized = TRUE;
 
@@ -266,6 +268,13 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                         "Selection Background Color",
                                         "Color of the entry's selection",
                                         &default_color,
+                                        G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_ENTRY, pspec);
+
+      pspec = clutter_param_spec_color ("selected-text-color",
+                                        "Selected Text Color",
+                                        "Color of the selected text",
+                                        &white,
                                         G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_ENTRY, pspec);
     }
@@ -291,10 +300,12 @@ mx_entry_style_changed (MxWidget *self)
   MxEntryPrivate *priv = MX_ENTRY_PRIV (self);
   ClutterColor *caret_color = NULL;
   ClutterColor *selection_background_color = NULL;
+  ClutterColor *selected_text_color = NULL;
 
   mx_stylable_get (MX_STYLABLE (self),
                    "caret-color", &caret_color,
                    "selection-background-color", &selection_background_color,
+                   "selected-text-color", &selected_text_color,
                    NULL);
 
   if (caret_color)
@@ -308,6 +319,13 @@ mx_entry_style_changed (MxWidget *self)
       clutter_text_set_selection_color (CLUTTER_TEXT (priv->entry),
                                         selection_background_color);
       clutter_color_free (selection_background_color);
+    }
+
+  if (selected_text_color)
+    {
+      clutter_text_set_selected_text_color (CLUTTER_TEXT (priv->entry),
+                                            selected_text_color);
+      clutter_color_free (selected_text_color);
     }
 
   mx_stylable_apply_clutter_text_attributes (MX_STYLABLE (self),
