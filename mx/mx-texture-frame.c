@@ -412,6 +412,16 @@ mx_texture_frame_dispose (GObject *gobject)
   G_OBJECT_CLASS (mx_texture_frame_parent_class)->dispose (gobject);
 }
 
+static gboolean
+mx_texture_frame_get_paint_volume (ClutterActor       *actor,
+                                   ClutterPaintVolume *volume)
+{
+  if (G_OBJECT_TYPE (actor) != mx_texture_frame_get_type ())
+    return FALSE;
+
+  return clutter_paint_volume_set_from_allocation (volume, actor);
+}
+
 static void
 mx_texture_frame_class_init (MxTextureFrameClass *klass)
 {
@@ -426,6 +436,7 @@ mx_texture_frame_class_init (MxTextureFrameClass *klass)
   actor_class->get_preferred_height =
     mx_texture_frame_get_preferred_height;
   actor_class->paint = mx_texture_frame_paint;
+  actor_class->get_paint_volume = mx_texture_frame_get_paint_volume;
 
   gobject_class->set_property = mx_texture_frame_set_property;
   gobject_class->get_property = mx_texture_frame_get_property;

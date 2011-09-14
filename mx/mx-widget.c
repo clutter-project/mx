@@ -1060,6 +1060,22 @@ mx_widget_parent_set (ClutterActor *actor,
     }
 }
 
+static gboolean
+mx_widget_get_paint_volume (ClutterActor       *actor,
+                            ClutterPaintVolume *volume)
+{
+  ClutterGeometry geometry = { 0, };
+
+  if (!clutter_actor_has_allocation (actor))
+    return FALSE;
+
+  clutter_actor_get_allocation_geometry (actor, &geometry);
+
+  clutter_paint_volume_set_width (volume, geometry.width);
+  clutter_paint_volume_set_height (volume, geometry.height);
+
+  return TRUE;
+}
 
 static void
 mx_widget_class_init (MxWidgetClass *klass)
@@ -1088,6 +1104,8 @@ mx_widget_class_init (MxWidgetClass *klass)
 
   actor_class->hide = mx_widget_hide;
   actor_class->parent_set = mx_widget_parent_set;
+
+  actor_class->get_paint_volume = mx_widget_get_paint_volume;
 
   klass->paint_background = mx_widget_real_paint_background;
 
