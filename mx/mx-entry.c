@@ -110,14 +110,17 @@ struct _MxEntryPrivate
 
   gfloat        spacing;
 
-  gboolean hint_visible;
   gunichar password_char;
 
-  gboolean  pause_undo;
   GQueue   *undo_history;
   gulong    undo_timeout_source;
 
-  gboolean scrolling;
+  guint hint_visible : 1;
+  guint pause_undo : 1;
+  guint scrolling : 1;
+  guint unicode_input_mode : 1;
+
+  GString *preedit_string;
 };
 
 static guint entry_signals[LAST_SIGNAL] = { 0, };
@@ -237,6 +240,12 @@ mx_entry_finalize (GObject *object)
     {
       g_source_remove (priv->undo_timeout_source);
       priv->undo_timeout_source = 0;
+    }
+
+  if (priv->preedit_string)
+    {
+      g_string_free (priv->preedit_string, TRUE);
+      priv->preedit_string = NULL;
     }
 
   G_OBJECT_CLASS (mx_entry_parent_class)->finalize (object);
@@ -695,6 +704,87 @@ mx_entry_clipboard_callback (MxClipboard *clipboard,
   clutter_text_insert_text (ctext, text, cursor_pos);
 }
 
+static void
+mx_entry_update_preedit (MxEntry *entry)
+{
+  PangoAttrList *list;
+  PangoAttribute *attr;
+
+  attr = pango_attr_underline_new (PANGO_UNDERLINE_SINGLE);
+  list = pango_attr_list_new ();
+  pango_attr_list_insert (list, attr);
+  clutter_text_set_preedit_string (CLUTTER_TEXT (entry->priv->entry),
+                                   entry->priv->preedit_string->str,
+                                   list, 0);
+  pango_attr_list_unref (list);
+}
+
+static gboolean
+mx_entry_captured_event (ClutterActor *actor,
+                         ClutterEvent *event)
+{
+  MxEntryPrivate *priv = MX_ENTRY_PRIV (actor);
+  ClutterKeyEvent *kevent;
+
+  /* handle key events during unicode input mode */
+  if (event->type == CLUTTER_KEY_PRESS && priv->unicode_input_mode)
+    {
+      kevent = (ClutterKeyEvent*) event;
+
+      if (kevent->keyval == CLUTTER_KEY_space
+          || kevent->keyval == CLUTTER_KEY_Return
+          || kevent->keyval == CLUTTER_KEY_Escape)
+        {
+          gunichar unichar;
+
+          if (sscanf (priv->preedit_string->str + 1, "%x", &unichar) == 1)
+            {
+              clutter_text_set_preedit_string (CLUTTER_TEXT (priv->entry), NULL,
+                                               NULL, 0);
+              if (kevent->keyval != CLUTTER_KEY_Escape)
+                clutter_text_insert_unichar (CLUTTER_TEXT (priv->entry),
+                                             unichar);
+              g_string_free (priv->preedit_string, TRUE);
+              priv->preedit_string = NULL;
+            }
+
+          priv->unicode_input_mode = FALSE;
+
+          return TRUE;
+        }
+      else if (kevent->keyval == CLUTTER_KEY_BackSpace)
+        {
+          g_string_truncate (priv->preedit_string,
+                             MAX (1, priv->preedit_string->len - 1));
+          mx_entry_update_preedit (MX_ENTRY (actor));
+        }
+      else
+        {
+          if (g_unichar_isxdigit (kevent->unicode_value))
+            {
+              g_string_append_c (priv->preedit_string, kevent->unicode_value);
+              mx_entry_update_preedit (MX_ENTRY (actor));
+            }
+        }
+
+      return TRUE;
+    }
+
+  /* button press should cancel unicode input mode */
+  if (event->type == CLUTTER_BUTTON_PRESS && priv->unicode_input_mode)
+    {
+      clutter_text_set_preedit_string (CLUTTER_TEXT (priv->entry), NULL,
+                                       NULL, 0);
+      g_string_free (priv->preedit_string, TRUE);
+      priv->preedit_string = NULL;
+      priv->unicode_input_mode = FALSE;
+    }
+
+
+  return FALSE;
+}
+
+
 static gboolean
 mx_entry_key_press_event (ClutterActor    *actor,
                           ClutterKeyEvent *event)
@@ -783,6 +873,18 @@ mx_entry_key_press_event (ClutterActor    *actor,
       return TRUE;
     }
 
+  /* unicode input mode */
+  if (event->modifier_state & CLUTTER_CONTROL_MASK
+      && event->modifier_state & CLUTTER_SHIFT_MASK
+      && event->keyval == CLUTTER_KEY_U)
+  {
+    priv->unicode_input_mode = TRUE;
+
+    priv->preedit_string = g_string_new ("u");
+    mx_entry_update_preedit (MX_ENTRY (actor));
+  }
+
+
   return FALSE;
 }
 
@@ -867,6 +969,7 @@ mx_entry_class_init (MxEntryClass *klass)
   actor_class->button_press_event = mx_entry_swallow_button_event;
   actor_class->button_release_event = mx_entry_swallow_button_event;
 
+  actor_class->captured_event = mx_entry_captured_event;
   actor_class->key_press_event = mx_entry_key_press_event;
   actor_class->key_focus_in = mx_entry_key_focus_in;
 
