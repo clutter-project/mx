@@ -1317,6 +1317,28 @@ mx_box_layout_apply_transform (ClutterActor *a,
   cogl_matrix_translate (m, (int) -x, (int) -y, 0);
 }
 
+static gboolean
+mx_box_layout_get_paint_volume (ClutterActor       *actor,
+                                ClutterPaintVolume *volume)
+{
+  MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (actor)->priv;
+  ClutterVertex vertex;
+
+  if (!clutter_paint_volume_set_from_allocation (volume, actor))
+    return FALSE;
+
+  clutter_paint_volume_get_origin (volume, &vertex);
+
+  if (priv->hadjustment)
+    vertex.x -= mx_adjustment_get_value (priv->hadjustment);
+
+  if (priv->vadjustment)
+    vertex.y = mx_adjustment_get_value (priv->vadjustment);
+
+  clutter_paint_volume_set_origin (volume, &vertex);
+
+  return TRUE;
+}
 
 static void
 mx_box_layout_paint (ClutterActor *actor)
@@ -1435,6 +1457,7 @@ mx_box_layout_class_init (MxBoxLayoutClass *klass)
   actor_class->get_preferred_width = mx_box_layout_get_preferred_width;
   actor_class->get_preferred_height = mx_box_layout_get_preferred_height;
   actor_class->apply_transform = mx_box_layout_apply_transform;
+  actor_class->get_paint_volume = mx_box_layout_get_paint_volume;
 
   actor_class->paint = mx_box_layout_paint;
   actor_class->pick = mx_box_layout_pick;
