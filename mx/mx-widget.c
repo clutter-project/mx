@@ -1064,17 +1064,13 @@ static gboolean
 mx_widget_get_paint_volume (ClutterActor       *actor,
                             ClutterPaintVolume *volume)
 {
-  ClutterGeometry geometry = { 0, };
-
-  if (!clutter_actor_has_allocation (actor))
+  /* the allocation of scrollable widgets cannot be used as the paint volume
+   * because it does not account for any transformations applied during
+   * scrolling */
+  if (MX_IS_SCROLLABLE (actor))
     return FALSE;
 
-  clutter_actor_get_allocation_geometry (actor, &geometry);
-
-  clutter_paint_volume_set_width (volume, geometry.width);
-  clutter_paint_volume_set_height (volume, geometry.height);
-
-  return TRUE;
+  return clutter_paint_volume_set_from_allocation (volume, actor);
 }
 
 static void
