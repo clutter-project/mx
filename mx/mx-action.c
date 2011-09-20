@@ -419,7 +419,11 @@ mx_action_class_init (MxActionClass *klass)
 
 
 
-  /* deprecated in favor on "enabled" (part of GAction) */
+  /**
+   * MxAction:active
+   *
+   * Deprecated: 1.4: use the #GAction:enabled property instead
+   */
   g_object_class_install_property (object_class,
                                    PROP_ACTIVE,
                                    g_param_spec_boolean ("active",
@@ -428,9 +432,8 @@ mx_action_class_init (MxActionClass *klass)
                                                          "is active.",
                                                          TRUE,
                                                          G_PARAM_READWRITE |
-                                                         G_PARAM_STATIC_NAME |
-                                                         G_PARAM_STATIC_NICK |
-                                                         G_PARAM_STATIC_BLURB));
+                                                         G_PARAM_STATIC_STRINGS |
+                                                         G_PARAM_DEPRECATED));
 
   /**
    * MxAction:parameter-type:
