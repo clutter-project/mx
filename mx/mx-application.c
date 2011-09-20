@@ -632,9 +632,18 @@ mx_application_new (gint                *argc,
                     MxApplicationFlags   flags)
 {
   MxApplication *app;
+  ClutterInitError result;
+  GError *error = NULL;
 
   /* initialise clutter and the type system */
-  clutter_init_with_args (argc, argv, name, NULL, NULL, NULL);
+  result = clutter_init_with_args (argc, argv, name, NULL, NULL, &error);
+
+  if (result != CLUTTER_INIT_SUCCESS)
+    {
+      /* abort the application if Clutter failed to initialise */
+      g_error ("Failed to initialise Clutter: %s", error->message);
+    }
+
 
   mx_set_locale ();
 
