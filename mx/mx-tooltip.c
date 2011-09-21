@@ -909,3 +909,47 @@ mx_tooltip_is_in_browse_mode (void)
 {
   return mx_tooltip_in_browse_mode;
 }
+
+/**
+ * mx_tooltip_set_tip_area_from_actor:
+ * @tooltip: A #MxTooltip
+ * @actor: A #ClutterActor
+ *
+ * Utility function to set the geometry of the tooltip area
+ * from an existing actor.
+ * See also mx_tooltip_set_tip_area
+ *
+ */
+void mx_tooltip_set_tip_area_from_actor (MxTooltip    *tooltip,
+                                         ClutterActor *actor)
+{
+  ClutterVertex verts[4];
+  ClutterGeometry area;
+  gfloat x, y, x2, y2;
+  gint i;
+
+  /* Work out the bounding box */
+
+  clutter_actor_get_abs_allocation_vertices (actor, verts);
+
+  x = y = G_MAXFLOAT;
+  x2 = y2 = -G_MAXFLOAT;
+  for (i = 0; i < G_N_ELEMENTS (verts); i++)
+    {
+      if (verts[i].x < x)
+        x = verts[i].x;
+      if (verts[i].x > x2)
+        x2 = verts[i].x;
+      if (verts[i].y < y)
+        y = verts[i].y;
+      if (verts[i].y > y2)
+        y2 = verts[i].y;
+    }
+
+  area.x = x;
+  area.y = y;
+  area.width = x2 - x;
+  area.height = y2 - y;
+
+  mx_tooltip_set_tip_area (tooltip, &area);
+}

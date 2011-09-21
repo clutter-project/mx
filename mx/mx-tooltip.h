@@ -87,6 +87,9 @@ const ClutterGeometry* mx_tooltip_get_tip_area (MxTooltip             *tooltip);
 
 gboolean              mx_tooltip_is_in_browse_mode (void);
 
+void                mx_tooltip_set_tip_area_from_actor (MxTooltip    *tooltip,
+                                                        ClutterActor *actor);
+
 G_END_DECLS
 
 #endif /* __MX_TOOLTIP_H__ */
