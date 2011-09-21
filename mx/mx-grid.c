@@ -395,10 +395,10 @@ mx_grid_get_paint_volume (ClutterActor       *actor,
   clutter_paint_volume_get_origin (volume, &vertex);
 
   if (priv->hadjustment)
-    vertex.x -= mx_adjustment_get_value (priv->hadjustment);
+    vertex.x += mx_adjustment_get_value (priv->hadjustment);
 
   if (priv->vadjustment)
-    vertex.y = mx_adjustment_get_value (priv->vadjustment);
+    vertex.y += mx_adjustment_get_value (priv->vadjustment);
 
   clutter_paint_volume_set_origin (volume, &vertex);
 
