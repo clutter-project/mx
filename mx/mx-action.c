@@ -286,7 +286,7 @@ mx_action_set_property (GObject      *object,
 
     case PROP_PARAMETER_TYPE:
       /* construct only */
-      priv->parameter_type = g_value_get_boxed (value);
+      priv->parameter_type = g_value_dup_boxed (value);
       break;
 
     case PROP_ENABLED:
