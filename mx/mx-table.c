@@ -733,7 +733,7 @@ mx_table_calculate_col_widths (MxTable *table,
 
   g_array_set_size (priv->columns, 0);
   g_array_set_size (priv->columns, priv->n_cols);
-  columns = (DimensionData *) priv->columns->data;
+  columns = &g_array_index (priv->columns, DimensionData, 0);
 
 
   /* take off the padding values to calculate the allocatable width */
@@ -1025,9 +1025,9 @@ mx_table_calculate_row_heights (MxTable *table,
 
   g_array_set_size (priv->rows, 0);
   g_array_set_size (priv->rows, priv->n_rows);
-  rows = (DimensionData*) priv->rows->data;
+  rows = &g_array_index (priv->rows, DimensionData, 0);
 
-  columns = (DimensionData*) priv->columns->data;
+  columns = &g_array_index (priv->columns, DimensionData, 0);
 
   /* Reset the visible rows */
   priv->visible_rows = 0;
@@ -1338,8 +1338,8 @@ mx_table_preferred_allocate (ClutterActor          *self,
 
   mx_table_calculate_dimensions (table, box->x2 - box->x1, box->y2 - box->y1);
 
-  rows = (DimensionData *) priv->rows->data;
-  columns = (DimensionData *) priv->columns->data;
+  rows = &g_array_index (priv->rows, DimensionData, 0);
+  columns = &g_array_index (priv->columns, DimensionData, 0);
 
   for (list = priv->children; list; list = g_list_next (list))
     {
@@ -1496,7 +1496,7 @@ mx_table_get_preferred_width (ClutterActor *self,
 
   mx_table_calculate_dimensions (MX_TABLE (self), -1, for_height);
 
-  columns = (DimensionData*) priv->columns->data;
+  columns = &g_array_index (priv->columns, DimensionData, 0);
 
   total_min_width = padding.left + padding.right
                     + (priv->visible_cols - 1) * (float) priv->col_spacing;
@@ -1535,7 +1535,7 @@ mx_table_get_preferred_height (ClutterActor *self,
   /* use min_widths to help allocation of height-for-width widgets */
   mx_table_calculate_dimensions (MX_TABLE (self), for_width, -1);
 
-  rows = (DimensionData*) priv->rows->data;
+  rows = &g_array_index (priv->rows, DimensionData, 0);
 
   mx_widget_get_padding (MX_WIDGET (self), &padding);
 
@@ -1580,8 +1580,8 @@ mx_table_paint (ClutterActor *self)
       gfloat pos = 0;
       DimensionData *rows, *cols;
 
-      rows = (DimensionData*) priv->rows->data;
-      cols = (DimensionData*) priv->columns->data;
+      rows = &g_array_index (priv->rows, DimensionData, 0);
+      cols = &g_array_index (priv->columns, DimensionData, 0);
 
       clutter_actor_get_size (self, &width, &height);
 

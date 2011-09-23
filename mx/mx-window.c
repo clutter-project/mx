@@ -404,7 +404,7 @@ debug_paint (ClutterActor *stage,
       const char *class = NULL;
       const char *type_name = G_OBJECT_TYPE_NAME (current);
 
-      if (MX_IS_STYLABLE (class))
+      if (MX_IS_STYLABLE (current))
         class = mx_stylable_get_style_class (current);
 
       g_debug ("%s%s%s%s%s (%.1f, %.1f) (%.1f x %.1f)",
