@@ -206,7 +206,8 @@ main (int argc, char *argv[])
 {
   ClutterActor *stage, *box, *scrollview;
 
-  clutter_init (&argc, &argv);
+  if (clutter_init (&argc, &argv) != CLUTTER_INIT_SUCCESS)
+    return 1;
 
   mx_style_load_from_file (mx_style_get_default(), "style/default.css", NULL);
 

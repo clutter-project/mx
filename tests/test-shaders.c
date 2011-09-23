@@ -96,7 +96,8 @@ main (int argc, char **argv)
   ClutterShader *shader;
   ClutterActor *stage, *offscreen, *button, *texture, *box, *slider;
 
-  clutter_init (&argc, &argv);
+  if (clutter_init (&argc, &argv) != CLUTTER_INIT_SUCCESS)
+    return 1;
 
   window = mx_window_new ();
   stage = (ClutterActor *)mx_window_get_clutter_stage (window);

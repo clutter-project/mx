@@ -194,7 +194,8 @@ main (int argc, char **argv)
   gfloat layout_width, layout_height;
   int i;
 
-  clutter_init (&argc, &argv);
+  if (clutter_init (&argc, &argv) != CLUTTER_INIT_SUCCESS)
+    return 1;
 
   data.corner = -1;
 

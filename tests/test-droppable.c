@@ -487,7 +487,8 @@ main (int argc, char *argv[])
   ClutterColor rect_color3 = { 255, 122,   2, 255 };
   ClutterColor rect_color4 = { 141, 195, 233, 255 };
 
-  clutter_init (&argc, &argv);
+  if (clutter_init (&argc, &argv) != CLUTTER_INIT_SUCCESS)
+    return 1;
 
   stage = clutter_stage_get_default ();
   clutter_stage_set_title (CLUTTER_STAGE (stage), "Droppable Example");
