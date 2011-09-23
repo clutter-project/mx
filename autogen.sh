@@ -41,5 +41,5 @@ fi
 
 cd $olddir
 
-$srcdir/configure --disable-static "$@" && \
+$srcdir/configure --disable-static --enable-maintainer-flags "$@" && \
   echo "Now type 'make' to compile $PROJECT."
