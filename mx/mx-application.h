@@ -127,6 +127,9 @@ GList               * mx_application_get_actions   (MxApplication *application);
 
 void                  mx_application_invoke_action (MxApplication *application,
                                                     const gchar   *name);
+void                  mx_application_invoke_action_with_parameter (MxApplication *application,
+                                                                   const gchar   *name,
+                                                                   GVariant      *variant);
 
 gboolean              mx_application_is_running    (MxApplication *application);
 

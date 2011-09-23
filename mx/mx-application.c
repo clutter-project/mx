@@ -868,26 +868,35 @@ mx_application_create_window (MxApplication *application)
  */
 #define g_marshal_value_peek_pointer(v)  (v)->data[0].v_pointer
 static void
-dbus_glib_marshal_mx_application_BOOLEAN_POINTER (GClosure     *closure,
-                                                  GValue       *return_value,
-                                                  guint         n_param_values,
-                                                  const GValue *param_values,
-                                                  gpointer      invocation_hint,
-                                                  gpointer      marshal_data)
+dbus_glib_marshal_mx_application_action (GClosure     *closure,
+                                         GValue       *return_value,
+                                         guint         n_param_values,
+                                         const GValue *param_values,
+                                         gpointer      invocation_hint,
+                                         gpointer      marshal_data)
 {
-  typedef gboolean (*GMarshalFunc_BOOLEAN__POINTER) (gpointer     data1,
-                                                     gpointer     arg_1,
-                                                     gpointer     data2);
-  register GCClosure *cc = (GCClosure*) closure;
-  register MxAction *action;
+  GCClosure *cc = (GCClosure*) closure;
+  MxAction *action;
+  GVariant *variant = NULL;
 
   g_return_if_fail (return_value != NULL);
-  g_return_if_fail (n_param_values == 2);
 
-  /*application = (MxApplication *)data1;*/
-  /*GError **error = g_marshal_value_peek_pointer (param_values + 1);*/
   action = (MxAction *)(marshal_data ? marshal_data : cc->callback);
-  g_signal_emit_by_name (action, "activated", NULL);
+
+  /* collect the action parameter */
+  if (n_param_values == 3)
+    {
+      GArray *array;
+      array = g_value_get_boxed (&param_values[1]);
+      variant = g_variant_new_from_data (g_action_get_parameter_type (G_ACTION (action)),
+                                         array->data, array->len,
+                                         FALSE, NULL, NULL);
+    }
+
+  if (variant)
+    g_action_activate (G_ACTION (action), variant);
+  else
+    g_signal_emit_by_name (action, "activated", NULL);
 
   g_value_set_boolean (return_value, TRUE);
 }
@@ -1053,8 +1062,19 @@ mx_application_register_actions (MxApplication *application)
       g_string_append_c (data, '\0');
       g_string_append_c (data, 'S');              /* A/S (Synchronous) */
       g_string_append_c (data, '\0');
-      /* Arguments would go here */
-      g_string_append_c (data, '\0');
+      if (g_action_get_parameter_type (G_ACTION (action)))
+        {
+          g_string_append (data, "action-parameter");
+          g_string_append_c (data, '\0');
+          g_string_append_c (data, 'I');
+          g_string_append_c (data, '\0');
+          g_string_append (data, "ay");
+          g_string_append_c (data, '\0');
+        }
+      else
+        {
+          g_string_append_c (data, '\0');
+        }
       g_string_append_c (data, '\0');
 
       g_free (name);
@@ -1062,7 +1082,7 @@ mx_application_register_actions (MxApplication *application)
       /* Fill in method info */
       method_info->function = (GCallback)action;
       method_info->marshaller =
-        dbus_glib_marshal_mx_application_BOOLEAN_POINTER;
+        dbus_glib_marshal_mx_application_action;
       method_info->data_offset = offset;
 
       /* Update offset to point to the beginning of the next string */
@@ -1293,12 +1313,40 @@ void
 mx_application_invoke_action (MxApplication *application,
                               const gchar   *name)
 {
+  mx_application_invoke_action_with_parameter (application, name, NULL);
+}
+
+/**
+ * mx_application_invoke_action_with_parameter:
+ * @application: an #MxApplication
+ * @name: name of the action to invoke
+ * @variant: parameter for the action
+ *
+ * Run the named action for the application, passing @variant as the parameter
+ * for the action.
+ *
+ * Since: 1.4
+ */
+void
+mx_application_invoke_action_with_parameter (MxApplication *application,
+                                             const gchar   *name,
+                                             GVariant      *variant)
+{
   MxApplicationPrivate *priv = application->priv;
 
   if (priv->is_proxy)
     {
 #ifdef HAVE_DBUS
       DBusGProxy *proxy = mx_application_get_dbus_proxy (application);
+      GArray data = { 0, };
+
+      if (variant)
+        {
+          data.data = g_new0 (gchar, g_variant_get_size (variant));
+          g_variant_store (variant, data.data);
+          data.len = g_variant_get_size (variant);
+        }
+
 
       if (proxy)
         {
@@ -1307,6 +1355,8 @@ mx_application_invoke_action (MxApplication *application,
           if (!dbus_g_proxy_call (proxy,
                                   safe_name,
                                   &error,
+                                  (variant) ? DBUS_TYPE_G_UCHAR_ARRAY : G_TYPE_INVALID,
+                                  (variant) ? &data : G_TYPE_INVALID,
                                   G_TYPE_INVALID,
                                   G_TYPE_INVALID))
             {
@@ -1315,6 +1365,11 @@ mx_application_invoke_action (MxApplication *application,
             }
           g_free (safe_name);
           g_object_unref (proxy);
+
+          if (variant)
+            {
+              g_free (data.data);
+            }
         }
 #endif
     }
@@ -1322,7 +1377,12 @@ mx_application_invoke_action (MxApplication *application,
     {
       MxAction *action = g_hash_table_lookup (priv->actions, name);
       if (action)
-        g_signal_emit_by_name (action, "activated", NULL);
+        {
+          if (variant)
+            g_action_activate (G_ACTION (action), variant);
+          else
+            g_signal_emit_by_name (action, "activated", NULL);
+        }
     }
 }
 
