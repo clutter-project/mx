@@ -22,7 +22,7 @@
 #include <string.h>
 
 #include <cogl/cogl.h>
-#include <cogl/cogl-pango.h>
+#include <cogl-pango/cogl-pango.h>
 #include <clutter/clutter.h>
 #include <mx/mx.h>
 
