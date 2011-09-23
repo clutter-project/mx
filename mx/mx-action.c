@@ -95,7 +95,7 @@ mx_g_action_get_name (GAction *action)
   return mx_action->priv->name;
 }
 
-const GVariantType *
+static const GVariantType *
 mx_action_get_parameter_type (GAction *action)
 {
   MxAction *mx_action = MX_ACTION (action);
