@@ -374,6 +374,8 @@ mx_stack_get_preferred_width (ClutterActor *actor,
   for (c = priv->children; c; c = c->next)
     {
       ClutterActor *child = c->data;
+      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
       clutter_actor_get_preferred_width (child, for_height,
                                          &child_min_width, &child_nat_width);
       if (child_min_width > min_width)
@@ -411,6 +413,8 @@ mx_stack_get_preferred_height (ClutterActor *actor,
   for (c = priv->children; c; c = c->next)
     {
       ClutterActor *child = c->data;
+      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
       clutter_actor_get_preferred_height (child, for_width,
                                           &child_min_height, &child_nat_height);
       if (child_min_height > min_height)
