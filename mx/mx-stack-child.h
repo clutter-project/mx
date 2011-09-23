@@ -123,11 +123,11 @@ void     mx_stack_child_set_fit     (MxStack      *stack,
                                      ClutterActor *child,
                                      gboolean      fit);
 
-gboolean mx_stack_child_get_fill_space (MxStack      *stack,
-                                        ClutterActor *child);
-void     mx_stack_child_set_fill_space (MxStack      *stack,
-                                        ClutterActor *child,
-                                        gboolean      fill_space);
+gboolean mx_stack_child_get_crop (MxStack      *stack,
+                                  ClutterActor *child);
+void     mx_stack_child_set_crop (MxStack      *stack,
+                                  ClutterActor *child,
+                                  gboolean      crop);
 
 
 G_END_DECLS
