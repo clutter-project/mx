@@ -46,6 +46,13 @@ typedef struct _MxKineticScrollView          MxKineticScrollView;
 typedef struct _MxKineticScrollViewPrivate   MxKineticScrollViewPrivate;
 typedef struct _MxKineticScrollViewClass     MxKineticScrollViewClass;
 
+typedef enum {
+  MX_KINETIC_SCROLL_VIEW_STATE_IDLE,
+  MX_KINETIC_SCROLL_VIEW_STATE_PANNING,
+  MX_KINETIC_SCROLL_VIEW_STATE_SCROLLING,
+  MX_KINETIC_SCROLL_VIEW_STATE_CLAMPING,
+} MxKineticScrollViewState;
+
 struct _MxKineticScrollView
 {
   /*< private >*/

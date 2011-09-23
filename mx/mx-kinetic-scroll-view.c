@@ -70,6 +70,8 @@ struct _MxKineticScrollViewPrivate
   guint                  in_drag      : 1;
   guint                  hmoving      : 1;
   guint                  vmoving      : 1;
+  guint                  hclamping    : 1;
+  guint                  vclamping    : 1;
   guint32                button;
 
   /* Mouse motion event information */
@@ -89,6 +91,8 @@ struct _MxKineticScrollViewPrivate
 
   guint                  clamp_duration;
   gulong                 clamp_mode;
+
+  MxKineticScrollViewState state;
 };
 
 enum {
@@ -105,6 +109,7 @@ enum {
   PROP_ACCELERATION_FACTOR,
   PROP_CLAMP_DURATION,
   PROP_CLAMP_MODE,
+  PROP_STATE,
 };
 
 static gboolean button_release (MxKineticScrollView *scroll,
@@ -216,6 +221,10 @@ mx_kinetic_scroll_view_get_property (GObject    *object,
 
     case PROP_CLAMP_MODE :
       g_value_set_ulong (value, priv->clamp_mode);
+      break;
+
+    case PROP_STATE :
+      g_value_set_enum (value, priv->state);
       break;
 
     default:
@@ -464,6 +473,14 @@ mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
                               MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_CLAMP_MODE, pspec);
 
+  pspec = g_param_spec_enum ("state",
+                             "State",
+                             "State of the scrolling",
+                             MX_TYPE_KINETIC_SCROLL_VIEW_STATE,
+                             MX_KINETIC_SCROLL_VIEW_STATE_IDLE,
+                             MX_PARAM_READABLE);
+  g_object_class_install_property (object_class, PROP_STATE, pspec);
+
   /* MxScrollable properties */
   g_object_class_override_property (object_class,
                                     PROP_HADJUST,
@@ -472,6 +489,15 @@ mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
   g_object_class_override_property (object_class,
                                     PROP_VADJUST,
                                     "vertical-adjustment");
+}
+
+static void
+set_state (MxKineticScrollView *scroll, MxKineticScrollViewState state)
+{
+  MxKineticScrollViewPrivate *priv = scroll->priv;
+
+  priv->state = state;
+  g_object_notify (G_OBJECT (scroll), "state");
 }
 
 static gboolean
@@ -553,6 +579,8 @@ motion_event_cb (ClutterActor        *actor,
               clutter_set_motion_events_enabled (FALSE);
               priv->in_drag = TRUE;
 
+              set_state (scroll, MX_KINETIC_SCROLL_VIEW_STATE_PANNING);
+
               if (!priv->use_captured)
                 {
                   g_signal_handlers_disconnect_by_func (actor,
@@ -611,6 +639,25 @@ motion_event_cb (ClutterActor        *actor,
   return TRUE;
 }
 
+static void
+interpolation_completed_cb (MxAdjustment *adj, MxKineticScrollView *scroll)
+{
+  MxKineticScrollViewPrivate *priv = scroll->priv;
+  MxAdjustment *hadj, *vadj;
+
+  g_signal_handlers_disconnect_by_func (adj, interpolation_completed_cb,
+                                        scroll);
+
+  mx_scrollable_get_adjustments (MX_SCROLLABLE (scroll), &hadj, &vadj);
+  if (adj == hadj)
+    priv->hclamping = FALSE;
+  else
+    priv->vclamping = FALSE;
+
+  if (!priv->hclamping && !priv->vclamping && \
+      priv->state == MX_KINETIC_SCROLL_VIEW_STATE_CLAMPING)
+    set_state (scroll, MX_KINETIC_SCROLL_VIEW_STATE_IDLE);
+}
 
 static void
 clamp_adjustment (MxKineticScrollView *scroll,
@@ -630,6 +677,8 @@ clamp_adjustment (MxKineticScrollView *scroll,
   if (mx_adjustment_get_clamp_value (adj))
     d = CLAMP (d, lower, upper - page_size);
 
+  g_signal_connect (adj, "interpolation-completed",
+                    G_CALLBACK (interpolation_completed_cb), scroll);
   mx_adjustment_interpolate (adj, d, duration, priv->clamp_mode);
 }
 
@@ -639,6 +688,7 @@ clamp_adjustments (MxKineticScrollView *scroll,
                    gboolean             horizontal,
                    gboolean             vertical)
 {
+  MxKineticScrollViewPrivate *priv = scroll->priv;
   ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
 
   if (child)
@@ -648,11 +698,21 @@ clamp_adjustments (MxKineticScrollView *scroll,
       mx_scrollable_get_adjustments (MX_SCROLLABLE (child), &hadj, &vadj);
 
       if (horizontal && hadj)
-        clamp_adjustment (scroll, hadj, duration);
+        {
+          priv->hclamping = TRUE;
+          clamp_adjustment (scroll, hadj, duration);
+        }
 
       if (vertical && vadj)
-        clamp_adjustment (scroll, vadj, duration);
+        {
+          priv->vclamping = TRUE;
+          clamp_adjustment (scroll, vadj, duration);
+        };
     }
+
+
+  if (priv->hclamping && priv->vclamping)
+    set_state (scroll, MX_KINETIC_SCROLL_VIEW_STATE_CLAMPING);
 }
 
 static void
@@ -973,6 +1033,7 @@ button_release (MxKineticScrollView *scroll,
               priv->hmoving = priv->vmoving = TRUE;
               clutter_timeline_start (priv->deceleration_timeline);
               decelerating = TRUE;
+              set_state (scroll, MX_KINETIC_SCROLL_VIEW_STATE_SCROLLING);
             }
         }
     }
