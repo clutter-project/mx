@@ -784,8 +784,8 @@ button_release_event_cb (ClutterActor        *stage,
 
 static gboolean
 button_release (MxKineticScrollView *scroll,
-                gint                 x,
-                gint                 y)
+                gint                 x_pos,
+                gint                 y_pos)
 {
   ClutterActor *actor = CLUTTER_ACTOR (scroll);
   ClutterActor *stage = clutter_actor_get_stage (actor);
@@ -812,7 +812,7 @@ button_release (MxKineticScrollView *scroll,
     {
       gfloat event_x, event_y;
 
-      if (clutter_actor_transform_stage_point (actor, x, y,
+      if (clutter_actor_transform_stage_point (actor, x_pos, y_pos,
                                                &event_x, &event_y))
         {
           gdouble value, lower, upper, step_increment, page_size,
