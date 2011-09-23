@@ -308,27 +308,6 @@ mx_action_set_property (GObject      *object,
 }
 
 static void
-activated_emitted_cb (MxAction *action,
-                      gpointer  user_data)
-{
-  /* we can't resuse g_action_activate() or mx_action_activate() as it would
-   * create an infinte loop */
-  if (action->priv->enabled)
-    g_signal_emit (action, signals[ACTIVATE], 0, NULL);
-}
-
-static void
-mx_action_constructed (GObject *object)
-{
-  /* we connect to activate to emulate the old behaviour when using
-   * g_action_activate () */
-  g_signal_connect (object, "activated",
-                    G_CALLBACK (activated_emitted_cb), NULL);
-
-  G_OBJECT_CLASS (mx_action_parent_class)->constructed (object);
-}
-
-static void
 mx_action_finalize (GObject *object)
 {
   MxActionPrivate *priv = MX_ACTION (object)->priv;
@@ -368,7 +347,6 @@ mx_action_class_init (MxActionClass *klass)
 
   object_class->get_property = mx_action_get_property;
   object_class->set_property = mx_action_set_property;
-  object_class->constructed = mx_action_constructed;
   object_class->finalize = mx_action_finalize;
 
   /**
