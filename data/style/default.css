@@ -352,6 +352,7 @@ MxMenu {
 MxMenu > MxButton {
   padding: 3;
   border-image: none;
+  -mx-icon-size: 16;
 }
 
 MxMenu > MxButton:hover,
@@ -359,10 +360,6 @@ MxMenu > MxButton:focus,
 MxMenu > MxButton:active {
   border-image: url('menu-item.png') 2;
   padding: 3;
-}
-
-MxMenu MxIcon {
-  -mx-icon-size: 16;
 }
 
 MxToggle {
