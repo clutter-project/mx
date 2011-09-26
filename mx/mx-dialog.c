@@ -85,25 +85,7 @@ struct _MxDialogPrivate
   GList         *actions;
 };
 
-#ifdef COGL_HAS_GLES2
-
-#define GLES2_VARS \
-  "precision mediump float;\n" \
-  "varying vec2 tex_coord;\n" \
-  "varying vec4 frag_color;\n"
-#define TEX_COORD "tex_coord"
-#define COLOR_VAR "frag_color"
-
-#else
-
-#define GLES2_VARS ""
-#define TEX_COORD "gl_TexCoord[0]"
-#define COLOR_VAR "gl_Color"
-
-#endif
-
 static gchar *blur_shader =
-  GLES2_VARS
   "uniform sampler2D tex;\n"
   "uniform float x_step, y_step;\n"
 
@@ -119,18 +101,18 @@ static gchar *blur_shader =
   "      for (v = -1.0; v <= 1.0; v++)\n"
   "        {\n"
   "          color += texture2D(tex, \n"
-  "              vec2(" TEX_COORD ".s + u * x_step, \n"
-  "                   " TEX_COORD ".t + v * y_step));\n"
+  "              vec2(cogl_tex_coord_in[0].s + u * x_step, \n"
+  "                   cogl_tex_coord_in[0].t + v * y_step));\n"
   "          count ++;\n"
   "        }\n"
 
   "    color = color / float (count);\n"
-  "    gl_FragColor = color * "COLOR_VAR";\n"
+  "    cogl_color_out = color * cogl_color_in;\n"
   "  }\n";
 #else
   "vec4 get_rgba_rel(sampler2D tex, float dx, float dy)\n"
   "{\n"
-  "  return texture2D (tex, " TEX_COORD ".st \n"
+  "  return texture2D (tex, cogl_tex_coord_in[0].st \n"
   "                         + vec2(dx, dy));\n"
   "}\n"
 
@@ -148,7 +130,7 @@ static gchar *blur_shader =
   "    color += get_rgba_rel (tex,  x_step,  0.0);\n"
   "    color += get_rgba_rel (tex,  x_step,  y_step);\n"
   "    color = color / 9.0;\n"
-  "    gl_FragColor = color * "COLOR_VAR";\n"
+  "    cogl_color_out = color * cogl_color_in;\n"
   "  }\n";
 #endif
 
