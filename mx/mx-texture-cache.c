@@ -75,7 +75,7 @@ typedef struct MxTextureCacheItem {
   char          filename[256];
   int           width, height;
   int           posX, posY;
-  CoglHandle   *ptr;
+  CoglHandle    ptr;
   GHashTable   *meta;
 } MxTextureCacheItem;
 

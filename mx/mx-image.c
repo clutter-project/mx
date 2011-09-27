@@ -198,7 +198,7 @@ mx_image_async_data_new (MxImage *parent)
 }
 
 static void
-get_center_coords (CoglObject *tex,
+get_center_coords (CoglHandle  tex,
                    float       rotation,
                    float       aw,
                    float       ah,
@@ -216,11 +216,11 @@ get_center_coords (CoglObject *tex,
 }
 
 static gfloat
-calculate_scale (CoglObject       *texture,
-                 float             rotation,
-                 float             aw,
-                 float             ah,
-                 MxImageScaleMode  mode)
+calculate_scale (CoglHandle       texture,
+                 float            rotation,
+                 float            aw,
+                 float            ah,
+                 MxImageScaleMode mode)
 {
   float bw, bh, tmp, factor;
 
