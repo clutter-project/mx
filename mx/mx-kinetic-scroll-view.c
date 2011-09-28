@@ -1100,6 +1100,9 @@ button_press_event_cb (ClutterActor        *actor,
               clutter_timeline_stop (priv->deceleration_timeline);
               g_object_unref (priv->deceleration_timeline);
               priv->deceleration_timeline = NULL;
+
+              clamp_adjustments (scroll, priv->clamp_duration, priv->hmoving,
+                                 priv->vmoving);
             }
 
           if (priv->use_captured)
