@@ -227,6 +227,12 @@ mx_application_constructed (GObject *object)
   MxApplicationPrivate *priv = self->priv;
   gboolean success = FALSE;
 
+#if defined (HAVE_STARTUP_NOTIFICATION) && defined (HAVE_X11)
+  SnDisplay *display;
+  Display *xdisplay;
+  int screen;
+#endif
+
 #ifdef HAVE_DBUS
   GError *error = NULL;
 
@@ -329,6 +335,20 @@ mx_application_constructed (GObject *object)
   if (settings)
     g_signal_connect (settings, "notify::small-screen",
                       G_CALLBACK (mx_application_notify_small_screen_cb), self);
+
+
+#if defined (HAVE_STARTUP_NOTIFICATION) && defined (HAVE_X11)
+  xdisplay = clutter_x11_get_default_display ();
+  screen = clutter_x11_get_default_screen ();
+
+  if (g_getenv ("LIBSN_SYNC"))
+    XSynchronize (xdisplay, True);
+
+  display = sn_display_new (xdisplay, NULL, NULL);
+  priv->sn_context = sn_launchee_context_new_from_environment (display,
+                                                               screen);
+#endif
+
 }
 
 static void
@@ -472,7 +492,10 @@ mx_application_finalize (GObject *object)
 
 #ifdef HAVE_STARTUP_NOTIFICATION
   if (priv->sn_context)
-    sn_launchee_context_unref (priv->sn_context);
+    {
+      sn_launchee_context_complete (priv->sn_context);
+      sn_launchee_context_unref (priv->sn_context);
+    }
 #endif
 
 #ifdef HAVE_DBUS
@@ -751,24 +774,12 @@ mx_application_add_window (MxApplication *application,
       gboolean small_screen;
 #if defined (HAVE_X11) && defined (HAVE_STARTUP_NOTIFICATION)
       ClutterStage *stage;
-      SnDisplay *display;
-      Display *xdisplay;
-      int screen;
 #endif
 
       first_window = FALSE;
 
 #if defined (HAVE_X11) && defined (HAVE_STARTUP_NOTIFICATION)
-      xdisplay = clutter_x11_get_default_display ();
-      screen = clutter_x11_get_default_screen ();
       stage = mx_window_get_clutter_stage (window);
-
-      if (g_getenv ("LIBSN_SYNC"))
-        XSynchronize (xdisplay, True);
-
-      display = sn_display_new (xdisplay, NULL, NULL);
-      priv->sn_context = sn_launchee_context_new_from_environment (display,
-                                                                   screen);
 
       if (priv->sn_context)
         {
