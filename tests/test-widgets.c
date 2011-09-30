@@ -265,7 +265,7 @@ change_widget (MxComboBox *box,
                                       NULL);
 }
 
-ClutterActor*
+static ClutterActor*
 create_combo_box ()
 {
   ClutterActor *combo;
