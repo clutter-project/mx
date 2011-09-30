@@ -204,7 +204,12 @@ g_action_iface_init (GActionInterface *iface)
   iface->get_state_hint = mx_action_get_state_hint;
   iface->get_enabled = mx_action_get_enabled;
   iface->get_state = mx_action_get_state;
+  /* the set_state virtual function was renamed to change_state in glib 2.30 */
+#if GLIB_CHECK_VERSION (2, 30, 0)
+  iface->change_state = mx_action_set_state;
+#else
   iface->set_state = mx_action_set_state;
+#endif
   iface->activate = mx_action_activate;
 }
 
