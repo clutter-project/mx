@@ -1,3 +1,22 @@
+1.3.2
+=====
+
+Changes since 1.3.1
+
+  * Implement the get_paint_volume virtual function on MxWidget and
+    MxTextureFrame to enable clipped redraws and automatic culling.
+  * Allow building from git without gtk-doc
+  * MxEntry: Implement Unicode input mode
+  * Implement the GAction interface on MxAction
+  * MxApplication: Add a function to call a remote action with a parameter
+
+Fixed Bugs (from bugzilla.clutter-project.org):
+
+  #2680 - kinetic-scroll-view: Respect MxAdjustment::clamp-values
+  #2683 - MxStack preferred width and height use hidden children
+  #2684 - Mx doesn't work with multi-driver Cogl builds
+
+
 1.3.1
 =====
 
