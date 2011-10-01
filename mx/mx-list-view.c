@@ -144,13 +144,20 @@ mx_list_view_dispose (GObject *object)
 }
 
 static void
+free_attribute (AttributeData *data)
+{
+  g_free (data->name);
+  g_free (data);
+}
+
+static void
 mx_list_view_finalize (GObject *object)
 {
   MxListViewPrivate *priv = MX_LIST_VIEW (object)->priv;
 
   if (priv->attributes)
     {
-      g_slist_foreach (priv->attributes, (GFunc) g_free, NULL);
+      g_slist_foreach (priv->attributes, (GFunc) free_attribute, NULL);
       g_slist_free (priv->attributes);
       priv->attributes = NULL;
     }

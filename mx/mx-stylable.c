@@ -612,6 +612,7 @@ _set_from_xsettings (GParamSpec *pspec,
         return FALSE;
 
       descr = pango_font_description_from_string (font_string);
+      g_free (font_string);
 
       set_fields = pango_font_description_get_set_fields (descr);
 
