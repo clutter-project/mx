@@ -477,6 +477,7 @@ scrollable_set_adjustments (MxScrollable *scrollable,
         }
 
       priv->hadjustment = hadjustment;
+      g_object_notify (G_OBJECT (scrollable), "horizontal-adjustment");
     }
 
   if (vadjustment != priv->vadjustment)
@@ -498,6 +499,7 @@ scrollable_set_adjustments (MxScrollable *scrollable,
         }
 
       priv->vadjustment = vadjustment;
+      g_object_notify (G_OBJECT (scrollable), "vertical-adjustment");
     }
 }
 
