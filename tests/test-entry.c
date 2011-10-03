@@ -101,6 +101,13 @@ entry_main (ClutterContainer *stage)
                                          "edit-find.png");
   mx_entry_set_secondary_icon_from_file (MX_ENTRY (entry),
                                            "edit-clear.png");
+
+  mx_entry_set_icon_highlight_suffix (MX_ENTRY (entry), "-highlight");
+
+  mx_entry_set_secondary_icon_tooltip_text (MX_ENTRY (entry), "one");
+
+  mx_entry_set_primary_icon_tooltip_text (MX_ENTRY (entry), "two");
+
   g_signal_connect (entry, "primary-icon-clicked",
                     G_CALLBACK (print_notice), "primary icon clicked\n");
   g_signal_connect (entry, "secondary-icon-clicked",
