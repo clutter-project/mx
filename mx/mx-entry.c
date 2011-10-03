@@ -119,6 +119,7 @@ struct _MxEntryPrivate
   guint pause_undo : 1;
   guint scrolling : 1;
   guint unicode_input_mode : 1;
+  guint pointer_in_entry : 1;
 
   GString *preedit_string;
 };
@@ -898,32 +899,36 @@ mx_entry_key_focus_in (ClutterActor *actor)
   clutter_actor_grab_key_focus (priv->entry);
 }
 
+static void
+mx_entry_set_cursor (MxEntry  *entry,
+                     gboolean  use_ibeam)
+{
+  Display *dpy;
+  ClutterActor *stage, *actor = CLUTTER_ACTOR (entry);
+  Window wid;
+  static Cursor ibeam = None;
+
+  dpy = clutter_x11_get_default_display ();
+  stage = clutter_actor_get_stage (actor);
+  wid = clutter_x11_get_stage_window (CLUTTER_STAGE (stage));
+
+  if (ibeam == None)
+    ibeam = XCreateFontCursor (dpy, XC_xterm);
+
+  if (use_ibeam)
+    XDefineCursor (dpy, wid, ibeam);
+  else
+    XUndefineCursor (dpy, wid);
+}
+
 static gboolean
 mx_entry_swallow_crossing_event (ClutterActor         *actor,
                                  ClutterCrossingEvent *event)
 {
 
 #ifdef HAVE_X11
-  if (event->source == MX_ENTRY (actor)->priv->entry
-      && event->related != NULL)
-    {
-      Display *dpy;
-      ClutterActor *stage;
-      Window wid;
-      static Cursor ibeam = None;
-
-      dpy = clutter_x11_get_default_display ();
-      stage = clutter_actor_get_stage (actor);
-      wid = clutter_x11_get_stage_window (CLUTTER_STAGE (stage));
-
-      if (ibeam == None)
-        ibeam = XCreateFontCursor (dpy, XC_xterm);
-
-      if (event->type == CLUTTER_ENTER)
-        XDefineCursor (dpy, wid, ibeam);
-      else
-        XUndefineCursor (dpy, wid);
-    }
+  if (event->source == MX_ENTRY (actor)->priv->entry && event->related != NULL)
+    mx_entry_set_cursor (MX_ENTRY (actor), (event->type == CLUTTER_ENTER));
 #endif
 
   /* swallow enter and leave events, since the pseudo-class must not be set to
@@ -1116,6 +1121,38 @@ clutter_text_changed_cb (ClutterText *text,
   mx_entry_store_undo_history (text, entry);
 }
 
+
+static gboolean
+entry_event (ClutterActor *actor,
+             ClutterEvent *event,
+             MxEntry      *entry)
+{
+  /* ensure the cursor is in the correct state when the mouse button is
+   * released */
+  if (event->type == CLUTTER_BUTTON_RELEASE)
+    mx_entry_set_cursor (entry, entry->priv->pointer_in_entry);
+
+  /* don't track enter and leave events for actors other than the entry */
+  if (event->any.source != actor)
+    return FALSE;
+
+  switch (event->type)
+    {
+    case CLUTTER_LEAVE:
+      entry->priv->pointer_in_entry = FALSE;
+      break;
+
+    case CLUTTER_ENTER:
+      entry->priv->pointer_in_entry = TRUE;
+      break;
+
+    default:
+      break;
+    }
+
+  return FALSE;
+}
+
 static void
 mx_entry_init (MxEntry *entry)
 {
@@ -1146,6 +1183,7 @@ mx_entry_init (MxEntry *entry)
   g_signal_connect (priv->entry, "key-press-event",
                     G_CALLBACK (mx_entry_store_undo_on_keypress), entry);
 
+  g_signal_connect (priv->entry, "event", G_CALLBACK (entry_event), entry);
 
   priv->spacing = 6.0f;
 
