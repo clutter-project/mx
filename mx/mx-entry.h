@@ -94,8 +94,13 @@ gunichar              mx_entry_get_password_char (MxEntry  *entry);
 
 void mx_entry_set_primary_icon_from_file   (MxEntry     *entry,
                                             const gchar *filename);
+void mx_entry_set_primary_icon_tooltip_text (MxEntry     *entry,
+                                             const gchar *text);
+
 void mx_entry_set_secondary_icon_from_file (MxEntry     *entry,
                                             const gchar *filename);
+void mx_entry_set_secondary_icon_tooltip_text (MxEntry     *entry,
+                                               const gchar *text);
 
 G_END_DECLS
 
