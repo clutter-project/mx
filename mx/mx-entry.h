@@ -102,6 +102,12 @@ void mx_entry_set_secondary_icon_from_file (MxEntry     *entry,
 void mx_entry_set_secondary_icon_tooltip_text (MxEntry     *entry,
                                                const gchar *text);
 
+
+void mx_entry_set_icon_highlight_suffix (MxEntry     *entry,
+                                         const gchar *suffix);
+
+const gchar *mx_entry_get_icon_highlight_suffix (MxEntry     *entry);
+
 G_END_DECLS
 
 #endif /* __MX_ENTRY_H__ */

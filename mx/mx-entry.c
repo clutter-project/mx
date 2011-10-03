@@ -88,6 +88,7 @@ enum
   PROP_HINT_TEXT,
   PROP_TEXT,
   PROP_PASSWORD_CHAR,
+  PROP_ICON_HIGHLIGHT_SUFFIX,
   PROP_PRIMARY_ICON_TOOLTIP_TEXT,
   PROP_SECONDARY_ICON_TOOLTIP_TEXT
 };
@@ -111,10 +112,17 @@ struct _MxEntryPrivate
   gchar        *hint;
 
   ClutterActor *primary_icon;
+  ClutterActor *primary_icon_highlight;
   MxTooltip    *primary_icon_tooltip;
 
   ClutterActor *secondary_icon;
+  ClutterActor *secondary_icon_highlight;
   MxTooltip    *secondary_icon_tooltip;
+
+  gchar  *primary_icon_filename;
+  gchar  *secondary_icon_filename;
+
+  gchar  *icon_highlight_suffix;
 
   gfloat        spacing;
 
@@ -167,6 +175,11 @@ mx_entry_set_property (GObject      *gobject,
       mx_entry_set_password_char (entry, g_value_get_uint (value));
       break;
 
+    case PROP_ICON_HIGHLIGHT_SUFFIX:
+      mx_entry_set_icon_highlight_suffix (entry,
+                                          g_value_get_string (value));
+      break;
+
     case PROP_PRIMARY_ICON_TOOLTIP_TEXT:
       mx_entry_set_primary_icon_tooltip_text (entry,
                                               g_value_get_string (value));
@@ -210,6 +223,10 @@ mx_entry_get_property (GObject    *gobject,
       g_value_set_uint (value, priv->password_char);
       break;
 
+    case PROP_ICON_HIGHLIGHT_SUFFIX:
+      g_value_set_string (value, priv->icon_highlight_suffix);
+      break;
+
     case PROP_PRIMARY_ICON_TOOLTIP_TEXT:
       if (priv->primary_icon_tooltip)
         g_value_set_string (value,
@@ -249,6 +266,18 @@ mx_entry_dispose (GObject *object)
     {
       clutter_actor_destroy (priv->secondary_icon);
       priv->secondary_icon = NULL;
+    }
+
+  if (priv->primary_icon_highlight)
+    {
+      clutter_actor_destroy (priv->primary_icon_highlight);
+      priv->primary_icon_highlight = NULL;
+    }
+
+  if (priv->secondary_icon_highlight)
+    {
+      clutter_actor_destroy (priv->secondary_icon_highlight);
+      priv->secondary_icon_highlight = NULL;
     }
 
   if (priv->primary_icon_tooltip)
@@ -297,6 +326,24 @@ mx_entry_finalize (GObject *object)
     {
       g_string_free (priv->preedit_string, TRUE);
       priv->preedit_string = NULL;
+    }
+
+  if (priv->primary_icon_filename)
+    {
+      g_free (priv->primary_icon_filename);
+      priv->primary_icon_filename = NULL;
+    }
+
+  if (priv->secondary_icon_filename)
+    {
+      g_free (priv->secondary_icon_filename);
+      priv->secondary_icon_filename = NULL;
+    }
+
+  if (priv->icon_highlight_suffix)
+    {
+      g_free (priv->icon_highlight_suffix);
+      priv->icon_highlight_suffix = NULL;
     }
 
   G_OBJECT_CLASS (mx_entry_parent_class)->finalize (object);
@@ -541,6 +588,13 @@ mx_entry_allocate (ClutterActor          *actor,
       if (priv->primary_icon_tooltip)
         mx_tooltip_set_tip_area_from_actor (priv->primary_icon_tooltip,
                                             priv->primary_icon);
+
+      if (priv->primary_icon_highlight)
+        {
+          clutter_actor_allocate (priv->primary_icon_highlight,
+                                  &icon_box,
+                                  flags);
+        }
     }
 
   if (priv->secondary_icon)
@@ -566,6 +620,13 @@ mx_entry_allocate (ClutterActor          *actor,
       if (priv->secondary_icon_tooltip)
         mx_tooltip_set_tip_area_from_actor (priv->secondary_icon_tooltip,
                                             priv->secondary_icon);
+
+      if (priv->secondary_icon_highlight)
+        {
+          clutter_actor_allocate (priv->secondary_icon_highlight,
+                                  &icon_box,
+                                  flags);
+        }
     }
 
   clutter_actor_get_preferred_height (priv->entry, child_box.x2 - child_box.x1,
@@ -656,11 +717,17 @@ mx_entry_paint (ClutterActor *actor)
   if (priv->primary_icon)
     clutter_actor_paint (priv->primary_icon);
 
+  if (priv->primary_icon_highlight)
+    clutter_actor_paint (priv->primary_icon_highlight);
+
   if (priv->primary_icon_tooltip)
     clutter_actor_paint (CLUTTER_ACTOR (priv->primary_icon_tooltip));
 
   if (priv->secondary_icon)
     clutter_actor_paint (priv->secondary_icon);
+
+  if (priv->secondary_icon_highlight)
+    clutter_actor_paint (priv->secondary_icon_highlight);
 
   if (priv->secondary_icon_tooltip)
     clutter_actor_paint (CLUTTER_ACTOR (priv->secondary_icon_tooltip));
@@ -736,8 +803,15 @@ mx_entry_map (ClutterActor *actor)
   if (priv->primary_icon)
     clutter_actor_map (priv->primary_icon);
 
+  if (priv->primary_icon_highlight)
+    clutter_actor_map (priv->primary_icon_highlight);
+
   if (priv->secondary_icon)
     clutter_actor_map (priv->secondary_icon);
+
+  if (priv->secondary_icon_highlight)
+    clutter_actor_map (priv->secondary_icon_highlight);
+
   if (priv->secondary_icon_tooltip)
     clutter_actor_map (CLUTTER_ACTOR (priv->secondary_icon_tooltip));
 
@@ -757,11 +831,18 @@ mx_entry_unmap (ClutterActor *actor)
   if (priv->primary_icon)
     clutter_actor_unmap (priv->primary_icon);
 
+  if (priv->primary_icon_highlight)
+    clutter_actor_unmap (priv->primary_icon_highlight);
+
   if (priv->primary_icon_tooltip)
     clutter_actor_unmap (CLUTTER_ACTOR (priv->primary_icon_tooltip));
 
   if (priv->secondary_icon)
     clutter_actor_unmap (priv->secondary_icon);
+
+  if (priv->secondary_icon_highlight)
+    clutter_actor_unmap (priv->secondary_icon_highlight);
+
   if (priv->secondary_icon_tooltip)
     clutter_actor_unmap (CLUTTER_ACTOR (priv->secondary_icon_tooltip));
 }
@@ -1083,6 +1164,13 @@ mx_entry_class_init (MxEntryClass *klass)
                                 "Character to display instead of entered text",
                                 0, G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_PASSWORD_CHAR, pspec);
+
+  pspec = g_param_spec_string ("icon-highlight-suffix",
+                               "Icon highlight suffix",
+                               "The filename suffix for the highligh icon",
+                               NULL, G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_ICON_HIGHLIGHT_SUFFIX,
+                                   pspec);
 
   pspec = g_param_spec_string ("primary-icon-tooltip-text",
                                "Tooltip for the primary icon",
@@ -1558,6 +1646,58 @@ _mx_entry_which_icon (ClutterActor *actor, MxEntry *entry)
   return 0;
 }
 
+static gchar *
+_mx_entry_make_highlight_filename (MxEntry     *entry,
+                                   const gchar *original_filename)
+{
+  MxEntryPrivate *priv = entry->priv;
+
+  gchar *extension, *highlight_icon_path, *filepath;
+
+  extension = g_strrstr (original_filename, ".");
+  filepath = g_strndup (original_filename, (strlen (original_filename)
+                                            - strlen (extension)));
+
+  highlight_icon_path = g_strconcat (filepath,
+                                     priv->icon_highlight_suffix,
+                                     extension,
+                                     NULL);
+
+  g_free (filepath);
+
+  if (!g_file_test (highlight_icon_path, G_FILE_TEST_EXISTS))
+    {
+      g_free (highlight_icon_path);
+      highlight_icon_path = NULL;
+    }
+
+  return highlight_icon_path;
+}
+
+static void
+_mx_entry_switch_to_highlight_icon (ClutterActor *icon,
+                                    ClutterActor *icon_highlight,
+                                    gboolean highlighted)
+{
+  /* Switches round the highlight icon to visible or the normal icon
+   * depending on highlighted
+   */
+  guint icon_opacity;
+  guint highlight_icon_opacity;
+
+  if (!icon_highlight)
+    return;
+
+  icon_opacity = !highlighted*255;
+  highlight_icon_opacity = highlighted*255;
+
+  if (clutter_actor_get_opacity (icon) != icon_opacity)
+    clutter_actor_set_opacity (icon, icon_opacity);
+  if(clutter_actor_get_opacity (icon_highlight) != highlight_icon_opacity)
+    clutter_actor_set_opacity (icon_highlight, highlight_icon_opacity);
+}
+
+
 static gboolean
 _mx_entry_icon_motion_event_cb (ClutterActor *actor,
                                 ClutterEvent *event,
@@ -1572,10 +1712,19 @@ _mx_entry_icon_motion_event_cb (ClutterActor *actor,
   if (icon_position  == 1)
     {
       target_tooltip = priv->primary_icon_tooltip;
+
+      _mx_entry_switch_to_highlight_icon (priv->primary_icon,
+                                          priv->primary_icon_highlight,
+                                          TRUE);
     }
   else if (icon_position == 2)
     {
       target_tooltip = priv->secondary_icon_tooltip;
+
+
+      _mx_entry_switch_to_highlight_icon (priv->secondary_icon,
+                                          priv->secondary_icon_highlight,
+                                          TRUE);
     }
 
   /* Show the tooltip if it's not already visible */
@@ -1620,10 +1769,18 @@ _mx_entry_icon_leave_cb (ClutterActor *actor,
   if (icon_position == 1)
     {
       target_tooltip = priv->primary_icon_tooltip;
+
+      _mx_entry_switch_to_highlight_icon (priv->primary_icon,
+                                          priv->primary_icon_highlight,
+                                          FALSE);
     }
   else if (icon_position == 2)
     {
       target_tooltip = priv->secondary_icon_tooltip;
+
+      _mx_entry_switch_to_highlight_icon (priv->secondary_icon,
+                                          priv->secondary_icon_highlight,
+                                          FALSE);
     }
 
   if (priv->tooltip_timeout)
@@ -1636,6 +1793,7 @@ _mx_entry_icon_leave_cb (ClutterActor *actor,
 
   return FALSE;
 }
+
 
 static void
 _mx_entry_set_icon_from_file (MxEntry       *entry,
@@ -1678,9 +1836,55 @@ _mx_entry_set_icon_from_file (MxEntry       *entry,
 
       g_signal_connect (*icon, "button-release-event",
                         G_CALLBACK (_mx_entry_icon_press_cb), entry);
+
+      g_signal_connect (*icon, "motion-event",
+                        G_CALLBACK (_mx_entry_icon_motion_event_cb),
+                        entry);
+
+      g_signal_connect (*icon, "leave-event",
+                        G_CALLBACK (_mx_entry_icon_leave_cb),
+                        entry);
     }
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (entry));
+}
+
+
+static void
+_mx_entry_create_highlight_icon (MxEntry *entry, guint icon_position)
+{
+  MxEntryPrivate *priv = entry->priv;
+
+  ClutterActor **target = NULL;
+  const gchar *filename = NULL;
+  gchar *highlight_filename;
+
+  if (!priv->icon_highlight_suffix)
+    return;
+
+  if (icon_position == 1)
+    {
+      target = &priv->primary_icon_highlight;
+      filename = priv->primary_icon_filename;
+    }
+  else if (icon_position == 2)
+    {
+      target = &priv->secondary_icon_highlight;
+      filename = priv->secondary_icon_filename;
+    }
+
+  if (!filename)
+    return;
+
+  highlight_filename = _mx_entry_make_highlight_filename (entry, filename);
+
+  if (highlight_filename)
+    {
+      _mx_entry_set_icon_from_file (entry, target, highlight_filename);
+
+      clutter_actor_set_opacity (*target, 0x0);
+      g_free (highlight_filename);
+    }
 }
 
 /**
@@ -1700,8 +1904,13 @@ mx_entry_set_primary_icon_from_file (MxEntry     *entry,
 
   priv = entry->priv;
 
-  _mx_entry_set_icon_from_file (entry, &priv->primary_icon, filename);
+  if (priv->primary_icon_filename)
+    g_free (priv->primary_icon_filename);
 
+  priv->primary_icon_filename = g_strdup (filename);
+
+  _mx_entry_set_icon_from_file (entry, &priv->primary_icon, filename);
+  _mx_entry_create_highlight_icon (entry, 1);
 }
 
 /**
@@ -1721,7 +1930,13 @@ mx_entry_set_secondary_icon_from_file (MxEntry     *entry,
 
   priv = entry->priv;
 
+  if (priv->secondary_icon_filename)
+    g_free (priv->secondary_icon_filename);
+
+  priv->secondary_icon_filename = g_strdup (filename);
+
   _mx_entry_set_icon_from_file (entry, &priv->secondary_icon, filename);
+  _mx_entry_create_highlight_icon (entry, 2);
 }
 
 /**
@@ -1790,4 +2005,56 @@ mx_entry_set_primary_icon_tooltip_text (MxEntry *entry,
     {
       mx_tooltip_set_text (priv->primary_icon_tooltip, text);
     }
+}
+
+/**
+ * mx_entry_get_icon_highlight_suffix:
+ * @entry: a #MxEntry
+ *
+ * Get the suffix appended to the filename to use for the highlighted version
+ * of the icon.
+ *
+ * Returns: the highlight filename suffix. This string is owned by the
+ * #MxEntry and should not be freed or modified.
+*/
+const gchar *mx_entry_get_icon_highlight_suffix (MxEntry *entry)
+{
+  MxEntryPrivate *priv;
+
+  g_return_val_if_fail (MX_IS_ENTRY (entry), NULL);
+
+  priv = entry->priv;
+
+  return priv->icon_highlight_suffix;
+}
+
+/**
+ * mx_entry_set_icon_highlight_suffix:
+ * @entry: a #MxEntry
+ * @suffix: the suffix to append to the filename for the highlight version
+ *
+ * Sets the suffix appended to the filename to use for the highlighted version
+ * of the icon. e.g. if you have set your primay icon to "primary-icon.png" 
+ * and the suffix to "-highlight" #MxEntry will look for
+ * "primary-icon-highlight.png"
+*/
+void
+mx_entry_set_icon_highlight_suffix (MxEntry *entry, const gchar* suffix)
+{
+  MxEntryPrivate *priv;
+
+  g_return_if_fail (MX_IS_ENTRY (entry));
+
+  priv = entry->priv;
+
+  if (g_strcmp0 (priv->icon_highlight_suffix, suffix) == 0)
+      return;
+
+  if (priv->icon_highlight_suffix)
+    g_free (priv->icon_highlight_suffix);
+
+  priv->icon_highlight_suffix = g_strdup (suffix);
+
+  _mx_entry_create_highlight_icon (entry, 1);
+  _mx_entry_create_highlight_icon (entry, 2);
 }
