@@ -66,6 +66,7 @@
 #include "mx-clipboard.h"
 #include "mx-focusable.h"
 #include "mx-private.h"
+#include "mx-tooltip.h"
 
 #ifdef HAVE_X11
 /* for pointer cursor support */
@@ -76,6 +77,8 @@
 
 #define HAS_FOCUS(actor) (clutter_actor_get_stage (actor) && clutter_stage_get_key_focus ((ClutterStage *) clutter_actor_get_stage (actor)) == actor)
 
+#define MX_ENTRY_TOOLTIP_DELAY 500
+
 /* properties */
 enum
 {
@@ -84,7 +87,9 @@ enum
   PROP_CLUTTER_TEXT,
   PROP_HINT_TEXT,
   PROP_TEXT,
-  PROP_PASSWORD_CHAR
+  PROP_PASSWORD_CHAR,
+  PROP_PRIMARY_ICON_TOOLTIP_TEXT,
+  PROP_SECONDARY_ICON_TOOLTIP_TEXT
 };
 
 /* signals */
@@ -106,7 +111,10 @@ struct _MxEntryPrivate
   gchar        *hint;
 
   ClutterActor *primary_icon;
+  MxTooltip    *primary_icon_tooltip;
+
   ClutterActor *secondary_icon;
+  MxTooltip    *secondary_icon_tooltip;
 
   gfloat        spacing;
 
@@ -122,6 +130,8 @@ struct _MxEntryPrivate
   guint pointer_in_entry : 1;
 
   GString *preedit_string;
+
+  guint tooltip_timeout;
 };
 
 static guint entry_signals[LAST_SIGNAL] = { 0, };
@@ -157,6 +167,16 @@ mx_entry_set_property (GObject      *gobject,
       mx_entry_set_password_char (entry, g_value_get_uint (value));
       break;
 
+    case PROP_PRIMARY_ICON_TOOLTIP_TEXT:
+      mx_entry_set_primary_icon_tooltip_text (entry,
+                                              g_value_get_string (value));
+      break;
+
+    case PROP_SECONDARY_ICON_TOOLTIP_TEXT:
+      mx_entry_set_secondary_icon_tooltip_text (entry,
+                                                g_value_get_string (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -190,6 +210,18 @@ mx_entry_get_property (GObject    *gobject,
       g_value_set_uint (value, priv->password_char);
       break;
 
+    case PROP_PRIMARY_ICON_TOOLTIP_TEXT:
+      if (priv->primary_icon_tooltip)
+        g_value_set_string (value,
+                            mx_tooltip_get_text (priv->primary_icon_tooltip));
+      break;
+
+    case PROP_SECONDARY_ICON_TOOLTIP_TEXT:
+      if (priv->secondary_icon_tooltip)
+        g_value_set_string (value,
+                            mx_tooltip_get_text (priv->secondary_icon_tooltip));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
       break;
@@ -219,6 +251,18 @@ mx_entry_dispose (GObject *object)
       priv->secondary_icon = NULL;
     }
 
+  if (priv->primary_icon_tooltip)
+    {
+      clutter_actor_destroy (CLUTTER_ACTOR (priv->primary_icon_tooltip));
+      priv->primary_icon_tooltip = NULL;
+    }
+
+  if (priv->secondary_icon_tooltip)
+    {
+      clutter_actor_destroy (CLUTTER_ACTOR (priv->secondary_icon_tooltip));
+      priv->secondary_icon_tooltip = NULL;
+    }
+
   G_OBJECT_CLASS (mx_entry_parent_class)->dispose (object);
 }
 
@@ -241,6 +285,12 @@ mx_entry_finalize (GObject *object)
     {
       g_source_remove (priv->undo_timeout_source);
       priv->undo_timeout_source = 0;
+    }
+
+  if (priv->tooltip_timeout)
+    {
+      g_source_remove (priv->tooltip_timeout);
+      priv->tooltip_timeout = 0;
     }
 
   if (priv->preedit_string)
@@ -487,6 +537,10 @@ mx_entry_allocate (ClutterActor          *actor,
 
       /* reduce the size for the entry */
       child_box.x1 += icon_w + priv->spacing;
+
+      if (priv->primary_icon_tooltip)
+        mx_tooltip_set_tip_area_from_actor (priv->primary_icon_tooltip,
+                                            priv->primary_icon);
     }
 
   if (priv->secondary_icon)
@@ -508,6 +562,10 @@ mx_entry_allocate (ClutterActor          *actor,
 
       /* reduce the size for the entry */
       child_box.x2 -= icon_w - priv->spacing;
+
+      if (priv->secondary_icon_tooltip)
+        mx_tooltip_set_tip_area_from_actor (priv->secondary_icon_tooltip,
+                                            priv->secondary_icon);
     }
 
   clutter_actor_get_preferred_height (priv->entry, child_box.x2 - child_box.x1,
@@ -523,6 +581,13 @@ mx_entry_allocate (ClutterActor          *actor,
   child_box.y2 = child_box.y1 + entry_h;
 
   clutter_actor_allocate (priv->entry, &child_box, flags);
+
+ if (priv->secondary_icon_tooltip)
+   clutter_actor_allocate_preferred_size (CLUTTER_ACTOR (priv->secondary_icon_tooltip), flags);
+
+ if (priv->primary_icon_tooltip)
+   clutter_actor_allocate_preferred_size (CLUTTER_ACTOR (priv->primary_icon_tooltip), flags);
+
 }
 
 static void
@@ -591,9 +656,14 @@ mx_entry_paint (ClutterActor *actor)
   if (priv->primary_icon)
     clutter_actor_paint (priv->primary_icon);
 
+  if (priv->primary_icon_tooltip)
+    clutter_actor_paint (CLUTTER_ACTOR (priv->primary_icon_tooltip));
+
   if (priv->secondary_icon)
     clutter_actor_paint (priv->secondary_icon);
 
+  if (priv->secondary_icon_tooltip)
+    clutter_actor_paint (CLUTTER_ACTOR (priv->secondary_icon_tooltip));
 
   /* draw a shadow if the entry is not focused and the text is scrolling */
   stage = (ClutterStage *) clutter_actor_get_stage (priv->entry);
@@ -668,6 +738,11 @@ mx_entry_map (ClutterActor *actor)
 
   if (priv->secondary_icon)
     clutter_actor_map (priv->secondary_icon);
+  if (priv->secondary_icon_tooltip)
+    clutter_actor_map (CLUTTER_ACTOR (priv->secondary_icon_tooltip));
+
+  if (priv->primary_icon_tooltip)
+    clutter_actor_map (CLUTTER_ACTOR (priv->primary_icon_tooltip));
 }
 
 static void
@@ -682,8 +757,13 @@ mx_entry_unmap (ClutterActor *actor)
   if (priv->primary_icon)
     clutter_actor_unmap (priv->primary_icon);
 
+  if (priv->primary_icon_tooltip)
+    clutter_actor_unmap (CLUTTER_ACTOR (priv->primary_icon_tooltip));
+
   if (priv->secondary_icon)
     clutter_actor_unmap (priv->secondary_icon);
+  if (priv->secondary_icon_tooltip)
+    clutter_actor_unmap (CLUTTER_ACTOR (priv->secondary_icon_tooltip));
 }
 
 static void
@@ -1003,6 +1083,22 @@ mx_entry_class_init (MxEntryClass *klass)
                                 "Character to display instead of entered text",
                                 0, G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_PASSWORD_CHAR, pspec);
+
+  pspec = g_param_spec_string ("primary-icon-tooltip-text",
+                               "Tooltip for the primary icon",
+                               "The tooltip text for the primary icon",
+                               NULL, G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class,
+                                   PROP_PRIMARY_ICON_TOOLTIP_TEXT,
+                                   pspec);
+
+  pspec = g_param_spec_string ("secondary-icon-tooltip-text",
+                               "Tooltip for the secondary icon",
+                               "The tooltip text for the secondary icon",
+                               NULL, G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class,
+                                   PROP_SECONDARY_ICON_TOOLTIP_TEXT,
+                                   pspec);
 
   /* signals */
   /**
@@ -1422,9 +1518,121 @@ _mx_entry_icon_press_cb (ClutterActor       *actor,
   MxEntryPrivate *priv = entry->priv;
 
   if (actor == priv->primary_icon)
-    g_signal_emit (entry, entry_signals[PRIMARY_ICON_CLICKED], 0);
+    {
+      g_signal_emit (entry, entry_signals[PRIMARY_ICON_CLICKED], 0);
+      if (priv->primary_icon_tooltip)
+        mx_tooltip_hide (MX_TOOLTIP (priv->primary_icon_tooltip));
+    }
   else
-    g_signal_emit (entry, entry_signals[SECONDARY_ICON_CLICKED], 0);
+    {
+      g_signal_emit (entry, entry_signals[SECONDARY_ICON_CLICKED], 0);
+      if (priv->secondary_icon_tooltip)
+        mx_tooltip_hide (MX_TOOLTIP (priv->secondary_icon_tooltip));
+    }
+
+  return FALSE;
+}
+
+
+static gboolean _mx_entry_tooltip_timeout_cb (gpointer data)
+{
+  if (!CLUTTER_ACTOR_IS_VISIBLE (CLUTTER_ACTOR (data)))
+    mx_tooltip_show (MX_TOOLTIP (data));
+  else
+    mx_tooltip_hide (MX_TOOLTIP (data));
+
+  return FALSE;
+}
+
+
+static guint
+_mx_entry_which_icon (ClutterActor *actor, MxEntry *entry)
+{
+  MxEntryPrivate *priv = entry->priv;
+
+  if (actor == priv->primary_icon)
+    return 1;
+  else if (actor == priv->secondary_icon)
+    return 2;
+
+  return 0;
+}
+
+static gboolean
+_mx_entry_icon_motion_event_cb (ClutterActor *actor,
+                                ClutterEvent *event,
+                                MxEntry      *entry)
+{
+  MxEntryPrivate *priv = entry->priv;
+  MxTooltip *target_tooltip = NULL;
+  guint icon_position;
+
+  icon_position = _mx_entry_which_icon (actor, entry);
+
+  if (icon_position  == 1)
+    {
+      target_tooltip = priv->primary_icon_tooltip;
+    }
+  else if (icon_position == 2)
+    {
+      target_tooltip = priv->secondary_icon_tooltip;
+    }
+
+  /* Show the tooltip if it's not already visible */
+
+  if (target_tooltip && !CLUTTER_ACTOR_IS_VISIBLE (target_tooltip))
+    {
+      if (mx_tooltip_is_in_browse_mode ())
+        {
+          mx_tooltip_show (target_tooltip);
+
+          if (priv->tooltip_timeout)
+            {
+              g_source_remove (priv->tooltip_timeout);
+              priv->tooltip_timeout = 0;
+            }
+        }
+      else
+        {
+          /* Not in browse mode so add a small delay before showing tooltip */
+          if (!priv->tooltip_timeout)
+            priv->tooltip_timeout =
+              clutter_threads_add_timeout (MX_ENTRY_TOOLTIP_DELAY,
+                                           _mx_entry_tooltip_timeout_cb,
+                                           target_tooltip);
+        }
+    }
+  return FALSE;
+}
+
+static gboolean
+_mx_entry_icon_leave_cb (ClutterActor *actor,
+                         ClutterEvent *event,
+                         MxEntry      *entry)
+{
+  MxEntryPrivate *priv = entry->priv;
+  MxTooltip *target_tooltip = NULL;
+
+  guint icon_position;
+
+  icon_position = _mx_entry_which_icon (actor, entry);
+
+  if (icon_position == 1)
+    {
+      target_tooltip = priv->primary_icon_tooltip;
+    }
+  else if (icon_position == 2)
+    {
+      target_tooltip = priv->secondary_icon_tooltip;
+    }
+
+  if (priv->tooltip_timeout)
+    {
+      g_source_remove (priv->tooltip_timeout);
+      priv->tooltip_timeout = 0;
+    }
+
+  mx_tooltip_hide (target_tooltip);
 
   return FALSE;
 }
@@ -1438,6 +1646,12 @@ _mx_entry_set_icon_from_file (MxEntry       *entry,
     {
       g_signal_handlers_disconnect_by_func (*icon,
                                             _mx_entry_icon_press_cb,
+                                            entry);
+      g_signal_handlers_disconnect_by_func (*icon,
+                                            _mx_entry_icon_motion_event_cb,
+                                            entry);
+      g_signal_handlers_disconnect_by_func (*icon,
+                                            _mx_entry_icon_leave_cb,
                                             entry);
       clutter_actor_unparent (*icon);
       *icon = NULL;
@@ -1508,6 +1722,72 @@ mx_entry_set_secondary_icon_from_file (MxEntry     *entry,
   priv = entry->priv;
 
   _mx_entry_set_icon_from_file (entry, &priv->secondary_icon, filename);
-
 }
 
+/**
+ * mx_entry_set_secondary_icon_tooltip:
+ * @entry: a #MxEntry
+ * @text: the secondary icon tooltip
+ *
+ * Set the secondary icon tooltip text
+*/
+void
+mx_entry_set_secondary_icon_tooltip_text (MxEntry     *entry,
+                                          const gchar *text)
+{
+  MxEntryPrivate *priv;
+
+  g_return_if_fail (MX_IS_ENTRY (entry));
+
+  priv = entry->priv;
+
+  if (!priv->secondary_icon_tooltip)
+    {
+      priv->secondary_icon_tooltip = g_object_new (MX_TYPE_TOOLTIP,
+                                                  "text", text,
+                                                  NULL);
+
+      mx_tooltip_set_text (priv->secondary_icon_tooltip, text);
+      clutter_actor_set_parent (CLUTTER_ACTOR (priv->secondary_icon_tooltip),
+                                CLUTTER_ACTOR (entry));
+    }
+  else
+    {
+      mx_tooltip_set_text (priv->secondary_icon_tooltip, text);
+    }
+}
+
+/**
+ * mx_entry_set_primary_icon_tooltip:
+ * @entry: a #MxEntry
+ * @text: the primary icon tooltip
+ *
+ * Set the primary icon tooltip text
+*/
+void
+mx_entry_set_primary_icon_tooltip_text (MxEntry *entry,
+                                          const gchar *text)
+{
+  MxEntryPrivate *priv;
+
+  g_return_if_fail (MX_IS_ENTRY (entry));
+
+  priv = entry->priv;
+
+  if (!priv->primary_icon_tooltip)
+    {
+      priv->primary_icon_tooltip = g_object_new (MX_TYPE_TOOLTIP,
+                                                  "text", text,
+                                                  NULL);
+
+      mx_tooltip_set_text (priv->primary_icon_tooltip, text);
+      clutter_actor_set_parent (CLUTTER_ACTOR (priv->primary_icon_tooltip),
+                                CLUTTER_ACTOR (entry));
+
+
+    }
+  else
+    {
+      mx_tooltip_set_text (priv->primary_icon_tooltip, text);
+    }
+}
