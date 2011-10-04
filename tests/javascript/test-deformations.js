@@ -22,7 +22,7 @@ const Clutter = imports.gi.Clutter;
 const Mx = imports.gi.Mx;
 const grey = new Clutter.Color(); grey.from_string ("grey");
 
-Clutter.init (0, null);
+Clutter.init (null);
 let app = new Mx.Application ({"application-name": "Test deformations"});
 
 let win = app.create_window ();

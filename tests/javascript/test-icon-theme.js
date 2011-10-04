@@ -21,7 +21,7 @@
 const Clutter = imports.gi.Clutter;
 const Mx = imports.gi.Mx;
 
-Clutter.init (0, null);
+Clutter.init (null);
 
 let stage = Clutter.Stage.get_default ();
 stage.title = "Test Icon Theme"

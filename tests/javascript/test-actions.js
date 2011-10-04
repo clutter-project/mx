@@ -54,7 +54,7 @@ function connect_cb (text)
   stage.show ();
 }
 
-Clutter.init (0, null);
+Clutter.init (null);
 
 let main_stage = Clutter.Stage.get_default ();
 main_stage.title = "Test Mx Actions";

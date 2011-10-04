@@ -31,7 +31,7 @@ function add_button (name, box, group)
   return button;
 }
 
-Clutter.init (0, null);
+Clutter.init (null);
 
 let stage = Clutter.Stage.get_default ();
 stage.title = "Test Toolkit"

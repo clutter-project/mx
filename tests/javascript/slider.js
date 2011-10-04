@@ -21,7 +21,7 @@
 const Clutter = imports.gi.Clutter;
 const Mx = imports.gi.Mx;
 
-Clutter.init (0, null);
+Clutter.init (null);
 
 Mx.Style.get_default ().load_from_file ("tests.css");
 
