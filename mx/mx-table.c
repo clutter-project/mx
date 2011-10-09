@@ -719,8 +719,6 @@ mx_table_dispose (GObject *gobject)
   G_OBJECT_CLASS (mx_table_parent_class)->dispose (gobject);
 }
 
-#define CLAMP_TO_PIXEL(x) ((float)((int)(x)))
-
 static void
 mx_table_calculate_col_widths (MxTable *table,
                                gint     for_width)
@@ -1485,8 +1483,6 @@ mx_table_get_preferred_width (ClutterActor *self,
   MxPadding padding;
   DimensionData *columns;
 
-  mx_widget_get_padding (MX_WIDGET (self), &padding);
-
   if (priv->n_cols < 1)
     {
       *min_width_p = 0;
@@ -1494,12 +1490,16 @@ mx_table_get_preferred_width (ClutterActor *self,
       return;
     }
 
+  /* use min_widths to help allocation of height-for-width widgets */
   mx_table_calculate_dimensions (MX_TABLE (self), -1, for_height);
 
   columns = &g_array_index (priv->columns, DimensionData, 0);
 
-  total_min_width = padding.left + padding.right
-                    + (priv->visible_cols - 1) * (float) priv->col_spacing;
+  mx_widget_get_padding (MX_WIDGET (self), &padding);
+
+  /* start off with padding plus row spacing */
+  total_min_width = padding.left + padding.right + (priv->visible_cols - 1) *
+                    (float)(priv->col_spacing);
   total_pref_width = total_min_width;
 
   for (i = 0; i < priv->n_cols; i++)
@@ -1520,8 +1520,9 @@ mx_table_get_preferred_height (ClutterActor *self,
                                gfloat       *min_height_p,
                                gfloat       *natural_height_p)
 {
+  gfloat total_min_height, total_pref_height;
   MxTablePrivate *priv = MX_TABLE (self)->priv;
-  gint i, total_min_height, total_pref_height;
+  gint i;
   MxPadding padding;
   DimensionData *rows;
 
@@ -1656,8 +1657,6 @@ mx_table_class_init (MxTableClass *klass)
   GParamSpec *pspec;
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-
-  /* MxWidgetClass *mx_widget_class = MX_WIDGET_CLASS (klass); */
 
   g_type_class_add_private (klass, sizeof (MxTablePrivate));
 
