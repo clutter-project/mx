@@ -82,7 +82,6 @@ enum
 typedef struct
 {
   guint expand : 1;
-  guint shrink : 1;
   guint is_visible : 1;
 
   gfloat min_size;
