@@ -783,7 +783,6 @@ mx_table_calculate_col_widths (MxTable *table,
     {
       MxTableChild *meta;
       ClutterActor *child;
-      DimensionData *col;
       gfloat c_min, c_pref;
       gfloat min_width, pref_width;
       gint start_col, end_col;
@@ -800,7 +799,6 @@ mx_table_calculate_col_widths (MxTable *table,
       if (meta->col_span < 2)
         continue;
 
-      col = &columns[meta->col];
       start_col = meta->col;
       end_col = meta->col + meta->col_span - 1;
 
@@ -823,9 +821,9 @@ mx_table_calculate_col_widths (MxTable *table,
 
           /* If this child is visible, then the columns it spans
              are also visible */
-          if (!col->is_visible)
+          if (!columns[i].is_visible)
             {
-              col->is_visible = TRUE;
+              columns[i].is_visible = TRUE;
               priv->visible_cols++;
             }
         }
