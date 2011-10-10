@@ -1117,7 +1117,7 @@ mx_scroll_bar_init (MxScrollBar *self)
   self->priv->handle = (ClutterActor *) mx_button_new ();
   mx_stylable_set_style_class (MX_STYLABLE (self->priv->handle), "hhandle");
   clutter_actor_set_parent (CLUTTER_ACTOR (self->priv->handle),
-                            self->priv->trough);
+                            CLUTTER_ACTOR (self));
   g_signal_connect (self->priv->handle, "button-press-event",
                     G_CALLBACK (handle_button_press_event_cb), self);
 
