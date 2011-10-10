@@ -273,10 +273,6 @@ mx_action_set_property (GObject      *object,
 
   switch (property_id)
     {
-    case PROP_NAME:
-      mx_action_set_name (action, g_value_get_string (value));
-      break;
-
     case PROP_DISPLAY_NAME:
       mx_action_set_display_name (action, g_value_get_string (value));
       break;
@@ -287,24 +283,6 @@ mx_action_set_property (GObject      *object,
 
     case PROP_ACTIVE:
       mx_action_set_active (action, g_value_get_boolean (value));
-      break;
-
-    case PROP_PARAMETER_TYPE:
-      /* construct only */
-      priv->parameter_type = g_value_dup_boxed (value);
-      break;
-
-    case PROP_ENABLED:
-      priv->enabled = g_value_get_boolean (value);
-      break;
-
-    case PROP_STATE:
-      {
-        GVariant *state = g_value_get_variant (value);
-
-        if (state)
-          mx_action_set_state (g_action, state);
-      }
       break;
 
     default:
@@ -362,16 +340,7 @@ mx_action_class_init (MxActionClass *klass)
    *
    * Since: 1.4
    */
-  g_object_class_install_property (object_class,
-                                   PROP_NAME,
-                                   g_param_spec_string ("name",
-                                                        "Name",
-                                                        "Action name.",
-                                                        NULL,
-                                                        G_PARAM_READWRITE |
-                                                        G_PARAM_STATIC_NAME |
-                                                        G_PARAM_STATIC_NICK |
-                                                        G_PARAM_STATIC_BLURB));
+  g_object_class_override_property (object_class, PROP_NAME, "name");
 
   g_object_class_install_property (object_class,
                                    PROP_DISPLAY_NAME,
@@ -426,16 +395,8 @@ mx_action_class_init (MxActionClass *klass)
    *
    * Since: 1.4
    */
-  g_object_class_install_property (object_class,
-                                   PROP_PARAMETER_TYPE,
-                                   g_param_spec_boxed ("parameter-type",
-                                                       "Parameter Type",
-                                                       "The type of GVariant "
-                                                       "passed to activate()",
-                                                       G_TYPE_VARIANT_TYPE,
-                                                       G_PARAM_READWRITE |
-                                                       G_PARAM_CONSTRUCT_ONLY |
-                                                       G_PARAM_STATIC_STRINGS));
+  g_object_class_override_property (object_class, PROP_PARAMETER_TYPE,
+                                    "parameter-type");
 
   /**
    * MxAction:enabled:
@@ -447,16 +408,7 @@ mx_action_class_init (MxActionClass *klass)
    *
    * Since: 1.4
    */
-  g_object_class_install_property (object_class,
-                                   PROP_ENABLED,
-                                   g_param_spec_boolean ("enabled",
-                                                         "Enabled",
-                                                         "If the action can be "
-                                                         "activated",
-                                                         TRUE,
-                                                         G_PARAM_CONSTRUCT |
-                                                         G_PARAM_READWRITE |
-                                                         G_PARAM_STATIC_STRINGS));
+  g_object_class_override_property (object_class, PROP_ENABLED, "enabled");
 
   /**
    * MxAction:state-type:
@@ -466,15 +418,8 @@ mx_action_class_init (MxActionClass *klass)
    *
    * Since: 1.4
    */
-  g_object_class_install_property (object_class,
-                                   PROP_STATE_TYPE,
-                                   g_param_spec_boxed ("state-type",
-                                                       "State Type",
-                                                       "The type of the state "
-                                                       "kept by the action",
-                                                       G_TYPE_VARIANT_TYPE,
-                                                       G_PARAM_READABLE |
-                                                       G_PARAM_STATIC_STRINGS));
+  g_object_class_override_property (object_class, PROP_STATE_TYPE,
+                                    "state-type");
 
   /**
    * MxAction:state:
@@ -483,17 +428,7 @@ mx_action_class_init (MxActionClass *klass)
    *
    * Since: 1.4
    */
-  g_object_class_install_property (object_class,
-                                   PROP_STATE,
-                                   g_param_spec_variant ("state",
-                                                         "State",
-                                                         "The state the action "
-                                                         "is in",
-                                                         G_VARIANT_TYPE_ANY,
-                                                         NULL,
-                                                         G_PARAM_CONSTRUCT |
-                                                         G_PARAM_READWRITE |
-                                                         G_PARAM_STATIC_STRINGS));
+  g_object_class_override_property (object_class, PROP_STATE, "state");
 
   /**
    * MxAction::activated
@@ -575,10 +510,11 @@ mx_action_new_with_parameter (const gchar        *name,
 
   g_return_val_if_fail (name != NULL, NULL);
 
-  action = g_object_new (MX_TYPE_ACTION,
-                         "name", name,
-                         "parameter-type", parameter_type,
-                         NULL);
+  action = g_object_new (MX_TYPE_ACTION, NULL);
+
+  mx_action_set_name (action, name);
+
+  action->priv->parameter_type = g_variant_type_copy (parameter_type);
 
   return action;
 }
@@ -609,11 +545,13 @@ mx_action_new_stateful (const gchar        *name,
   g_return_val_if_fail (name != NULL, NULL);
   g_return_val_if_fail (state != NULL, NULL);
 
-  action = g_object_new (MX_TYPE_ACTION,
-                         "name", name,
-                         "parameter-type", parameter_type,
-                         "state", state,
-                         NULL);
+  action = g_object_new (MX_TYPE_ACTION, NULL);
+
+  mx_action_set_name (action, name);
+
+  action->priv->parameter_type = g_variant_type_copy (parameter_type);
+
+  mx_action_set_state (G_ACTION (action), state);
 
   return action;
 }
@@ -636,9 +574,10 @@ mx_action_new_full (const gchar *name,
                     gpointer     user_data)
 {
   MxAction *action = g_object_new (MX_TYPE_ACTION,
-                                   "name", name,
                                    "display-name", display_name,
                                    NULL);
+
+  mx_action_set_name (action, name);
 
   if (activated_cb)
     g_signal_connect (action, "activated", activated_cb, user_data);
