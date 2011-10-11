@@ -1,3 +1,23 @@
+1.4.0
+=====
+
+Changes since 1.3.2
+
+  * Add new testing applications for widgets and containers
+  * Prevent the cursor from being stuck as an I beam after selecting text in
+    MxEntry
+  * Add "state" and "clamp-to-center" properties for MxKineticScrollView
+  * Add tooltips for MxEntry icons
+  * Allow highlight icons for MxEntry icons
+  * Fix a painting issue with MxScrollBar and clipped redraws
+  * Add "show-tooltip" property to MxLabel to show a tooltip when the text does
+    not fit in the current allocated size.
+
+Fixed Bugs (from bugzilla.clutter-project.org):
+
+  #2685 - stylable/listview: fix some memory leaks
+  #2682 - No tooltip for icons in MxEntry
+
 1.3.2
 =====
 
