@@ -18,6 +18,7 @@
  */
 #include <mx/mx.h>
 #include <stdlib.h>
+#include <string.h>
 
 static struct
 {
@@ -266,10 +267,11 @@ change_widget (MxComboBox *box,
 }
 
 static ClutterActor*
-create_combo_box ()
+create_combo_box (gchar *selected_widget)
 {
   ClutterActor *combo;
-  gint i;
+  gint i, set_index = 0;
+  gchar *needle;
   GType types[] = {
    mx_button_get_type (),
    mx_combo_box_get_type (),
@@ -286,12 +288,27 @@ create_combo_box ()
 
   combo = mx_combo_box_new ();
 
+  needle = g_ascii_strdown (selected_widget, -1);
+
   for (i = 0; i < G_N_ELEMENTS (types); i++)
-    mx_combo_box_append_text (MX_COMBO_BOX (combo), g_type_name (types[i]));
+    {
+      gchar *haystack;
+
+      haystack = g_ascii_strdown (g_type_name (types[i]), -1);
+
+      if (strstr (haystack, needle))
+        set_index = i;
+
+      g_free (haystack);
+
+      mx_combo_box_append_text (MX_COMBO_BOX (combo), g_type_name (types[i]));
+    }
+
+  g_free (needle);
 
   g_signal_connect (combo, "notify::index", G_CALLBACK (change_widget), NULL);
 
-  mx_combo_box_set_index (MX_COMBO_BOX (combo), 0);
+  mx_combo_box_set_index (MX_COMBO_BOX (combo), set_index);
 
   return combo;
 }
@@ -422,10 +439,14 @@ main (int argc, char **argv)
   MxWindow *window;
   ClutterActor *box;
   MxToolbar *toolbar;
+  gchar *selected_widget;
 
   application = mx_application_new (&argc, &argv, "test-widgets", 0);
 
   window = mx_application_create_window (application);
+
+  if (argc > 1)
+    selected_widget = argv[1];
 
   /* main content */
   data.table = mx_table_new ();
@@ -439,7 +460,8 @@ main (int argc, char **argv)
   /* toolbar */
   box = mx_box_layout_new ();
   mx_box_layout_add_actor_with_properties (MX_BOX_LAYOUT (box),
-                                           create_combo_box (), 0,
+                                           create_combo_box (selected_widget),
+                                           0,
                                            "expand", TRUE,
                                            "x-fill", FALSE,
                                            "x-align", MX_ALIGN_START,
