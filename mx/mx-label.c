@@ -59,7 +59,8 @@ enum
   PROP_X_ALIGN,
   PROP_Y_ALIGN,
   PROP_LINE_WRAP,
-  PROP_FADE_OUT
+  PROP_FADE_OUT,
+  PROP_SHOW_TOOLTIP
 };
 
 #define MX_LABEL_GET_PRIVATE(obj)     (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_LABEL, MxLabelPrivate))
@@ -79,6 +80,7 @@ struct _MxLabelPrivate
 
   guint fade_out           : 1;
   guint label_should_fade  : 1;
+  guint show_tooltip       : 1;
 };
 
 G_DEFINE_TYPE (MxLabel, mx_label, MX_TYPE_WIDGET);
@@ -115,6 +117,10 @@ mx_label_set_property (GObject      *gobject,
 
     case PROP_FADE_OUT:
       mx_label_set_fade_out (label, g_value_get_boolean (value));
+      break;
+
+    case PROP_SHOW_TOOLTIP:
+      mx_label_set_show_tooltip (label, g_value_get_boolean (value));
       break;
 
     default:
@@ -161,6 +167,10 @@ mx_label_get_property (GObject    *gobject,
 
     case PROP_FADE_OUT:
       g_value_set_boolean (value, priv->fade_out);
+      break;
+
+    case PROP_SHOW_TOOLTIP:
+      g_value_set_boolean (value, priv->show_tooltip);
       break;
 
     default:
@@ -287,6 +297,21 @@ mx_label_allocate (ClutterActor          *actor,
 
   /* Allocate the label */
   clutter_actor_allocate (priv->label, &child_box, flags);
+
+  if (priv->show_tooltip)
+    {
+      PangoLayout *layout;
+      const gchar *text;
+
+      layout = clutter_text_get_layout (CLUTTER_TEXT (priv->label));
+
+      if (pango_layout_is_ellipsized (layout))
+        text = clutter_text_get_text (CLUTTER_TEXT (priv->label));
+      else
+        text = NULL;
+
+      mx_widget_set_tooltip_text (MX_WIDGET (actor), text);
+    }
 
   /* Animate in/out the faded end of the label */
   if (label_did_fade != priv->label_should_fade)
@@ -458,6 +483,23 @@ mx_label_class_init (MxLabelClass *klass)
                                 FALSE,
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_FADE_OUT, pspec);
+
+  /**
+   * MxLabel:show-tooltip:
+   *
+   * Show a tooltip when there is not enough space to display the text. If set
+   * to %TRUE, this will also cause the #ClutterActor:reactive property to be
+   * enabled.
+   *
+   * Since: 1.4
+   */
+  pspec = g_param_spec_boolean ("show-tooltip",
+                                "Show Tooltip",
+                                "Show a tooltip when there is not enough space"
+                                " to display the text.",
+                                FALSE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_SHOW_TOOLTIP, pspec);
 }
 
 static void
@@ -883,3 +925,49 @@ mx_label_get_fade_out (MxLabel *label)
   return label->priv->fade_out;
 }
 
+/**
+ * mx_label_set_show_tooltip:
+ * @label: A #MxLabel
+ * @show_tooltip: %TRUE if the tooltip should be shown
+ *
+ * Set the value of the #MxLabel:show-tooltip property
+ *
+ * Since: 1.4
+ */
+void
+mx_label_set_show_tooltip (MxLabel *label,
+                           gboolean show_tooltip)
+{
+  MxLabelPrivate *priv;
+
+  g_return_if_fail (MX_IS_LABEL (label));
+
+  priv = label->priv;
+
+  if (priv->show_tooltip != show_tooltip)
+    {
+      priv->show_tooltip = show_tooltip;
+
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (label));
+
+      g_object_notify (G_OBJECT (label), "show-tooltip");
+    }
+}
+
+/**
+ * mx_label_get_show_tooltip:
+ * @label: A #MxLabel
+ *
+ * Returns the current value of the #MxLabel:show-tooltip property.
+ *
+ * Returns: %TRUE if the #MxLabel:show-tooltip property is enabled
+ *
+ * Since: 1.4
+ */
+gboolean
+mx_label_get_show_tooltip (MxLabel *label)
+{
+  g_return_val_if_fail (MX_IS_LABEL (label), FALSE);
+
+  return label->priv->show_tooltip;
+}

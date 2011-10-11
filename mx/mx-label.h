@@ -96,6 +96,9 @@ void                  mx_label_set_line_wrap    (MxLabel  *label,
 void     mx_label_set_fade_out (MxLabel *label, gboolean fade);
 gboolean mx_label_get_fade_out (MxLabel *label);
 
+void     mx_label_set_show_tooltip (MxLabel *label, gboolean show_tooltip);
+gboolean mx_label_get_show_tooltip (MxLabel *label);
+
 G_END_DECLS
 
 #endif /* __MX_LABEL_H__ */
