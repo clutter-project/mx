@@ -268,8 +268,6 @@ mx_action_set_property (GObject      *object,
                         GParamSpec   *pspec)
 {
   MxAction *action = MX_ACTION (object);
-  MxActionPrivate *priv = action->priv;
-  GAction *g_action = G_ACTION (object);
 
   switch (property_id)
     {

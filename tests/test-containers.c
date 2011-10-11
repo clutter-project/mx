@@ -328,14 +328,12 @@ change_widget (MxComboBox *box,
     }
   else
     {
-      gfloat offset;
       gint row = 0, col = 0;
       gint n_children = 200;
 
       if (MX_IS_STACK (actor))
         {
           n_children = 5;
-          offset = n_children * 5;
         }
       else if (MX_IS_TABLE (actor))
         n_children = 50;
@@ -368,7 +366,12 @@ change_widget (MxComboBox *box,
 
           if (MX_IS_STACK (actor))
             {
-              clutter_actor_set_anchor_point (button, offset, offset -= 5);
+              gfloat offset;
+              offset = n_children * 5;
+
+              clutter_actor_set_anchor_point (button, offset, offset - 5);
+              offset -= 5;
+
               mx_stack_child_set_x_fill (MX_STACK (actor), button, FALSE);
               mx_stack_child_set_y_fill (MX_STACK (actor), button, FALSE);
             }
