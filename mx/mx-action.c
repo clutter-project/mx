@@ -283,6 +283,15 @@ mx_action_set_property (GObject      *object,
       mx_action_set_active (action, g_value_get_boolean (value));
       break;
 
+#if !GLIB_CHECK_VERSION (2, 30, 0)
+    /* these properties were writable construct properties before glib 2.30.0 */
+    case PROP_NAME:
+    case PROP_PARAMETER_TYPE:
+    case PROP_ENABLED:
+    case PROP_STATE:
+      break;
+#endif
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
