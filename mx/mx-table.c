@@ -826,6 +826,7 @@ mx_table_calculate_col_widths (MxTable *table,
               columns[i].is_visible = TRUE;
               priv->visible_cols++;
             }
+          columns[i].expand = MAX (columns[i].expand, meta->x_expand);
         }
       min_width += priv->col_spacing * (meta->col_span - 1);
       pref_width += priv->col_spacing * (meta->col_span - 1);
@@ -1115,6 +1116,7 @@ mx_table_calculate_row_heights (MxTable *table,
               rows[i].is_visible = TRUE;
               priv->visible_rows++;
             }
+          rows[i].expand = MAX (rows[i].expand, meta->y_expand);
         }
       min_height += priv->row_spacing * (meta->row_span - 1);
       pref_height += priv->row_spacing * (meta->row_span - 1);
