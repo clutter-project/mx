@@ -328,7 +328,7 @@ mx_toggle_handle_button_press_event (ClutterActor       *actor,
                                      ClutterButtonEvent *event,
                                      MxToggle           *toggle)
 {
-  if (mx_widget_get_disabled (MX_WIDGET (actor)))
+  if (mx_widget_get_disabled (MX_WIDGET (toggle)))
     return FALSE;
 
   clutter_grab_pointer (actor);
@@ -349,7 +349,7 @@ mx_toggle_handle_button_release_event (ClutterActor       *actor,
 {
   ClutterActorBox box;
 
-  if (mx_widget_get_disabled (MX_WIDGET (actor)))
+  if (mx_widget_get_disabled (MX_WIDGET (toggle)))
     return FALSE;
 
   if (toggle->priv->last_move == 0)
@@ -379,7 +379,7 @@ mx_toggle_handle_motion_event (ClutterActor       *actor,
 {
   MxTogglePrivate *priv = toggle->priv;
 
-  if (mx_widget_get_disabled (MX_WIDGET (actor)))
+  if (mx_widget_get_disabled (MX_WIDGET (toggle)))
     return FALSE;
 
 
