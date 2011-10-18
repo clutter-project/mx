@@ -36,7 +36,6 @@
 
 #include "mx-widget.h"
 
-#include "mx-marshal.h"
 #include "mx-private.h"
 #include "mx-stylable.h"
 #include "mx-texture-cache.h"
@@ -1180,8 +1179,7 @@ mx_widget_class_init (MxWidgetClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxWidgetClass, long_press),
-                  NULL, NULL,
-                  _mx_marshal_BOOL__FLOAT_FLOAT_ENUM,
+                  NULL, NULL, NULL,
                   G_TYPE_BOOLEAN, 3, G_TYPE_FLOAT, G_TYPE_FLOAT,
                   MX_TYPE_LONG_PRESS_ACTION);
 

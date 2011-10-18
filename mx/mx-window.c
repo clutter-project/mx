@@ -44,7 +44,6 @@
 #include "mx-toolbar.h"
 #include "mx-focus-manager.h"
 #include "mx-private.h"
-#include "mx-marshal.h"
 
 #ifdef HAVE_X11
 #include "x11/mx-window-x11.h"
@@ -890,8 +889,7 @@ mx_window_class_init (MxWindowClass *klass)
                                    G_TYPE_FROM_CLASS (klass),
                                    G_SIGNAL_RUN_LAST,
                                    G_STRUCT_OFFSET (MxWindowClass, destroy),
-                                   NULL, NULL,
-                                   _mx_marshal_VOID__VOID,
+                                   NULL, NULL, NULL,
                                    G_TYPE_NONE, 0);
 
   window_quark = g_quark_from_static_string ("mx-window");

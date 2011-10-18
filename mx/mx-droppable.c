@@ -28,7 +28,6 @@
 
 #include "mx-droppable.h"
 #include "mx-enum-types.h"
-#include "mx-marshal.h"
 #include "mx-private.h"
 
 typedef struct _DropContext DropContext;
@@ -298,8 +297,7 @@ mx_droppable_base_init (gpointer g_iface)
                       iface_type,
                       G_SIGNAL_RUN_FIRST,
                       G_STRUCT_OFFSET (MxDroppableIface, over_in),
-                      NULL, NULL,
-                      _mx_marshal_VOID__OBJECT,
+                      NULL, NULL, NULL,
                       G_TYPE_NONE, 1,
                       CLUTTER_TYPE_ACTOR);
 
@@ -308,8 +306,7 @@ mx_droppable_base_init (gpointer g_iface)
                       iface_type,
                       G_SIGNAL_RUN_FIRST,
                       G_STRUCT_OFFSET (MxDroppableIface, over_out),
-                      NULL, NULL,
-                      _mx_marshal_VOID__OBJECT,
+                      NULL, NULL, NULL,
                       G_TYPE_NONE, 1,
                       CLUTTER_TYPE_ACTOR);
 
@@ -318,8 +315,7 @@ mx_droppable_base_init (gpointer g_iface)
                       iface_type,
                       G_SIGNAL_RUN_FIRST,
                       G_STRUCT_OFFSET (MxDroppableIface, drop),
-                      NULL, NULL,
-                      _mx_marshal_VOID__OBJECT_FLOAT_FLOAT_INT_ENUM,
+                      NULL, NULL, NULL,
                       G_TYPE_NONE, 5,
                       CLUTTER_TYPE_ACTOR,
                       G_TYPE_FLOAT,

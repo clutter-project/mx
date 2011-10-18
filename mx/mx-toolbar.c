@@ -31,7 +31,6 @@
 
 #include "mx-toolbar.h"
 #include "mx-private.h"
-#include "mx-marshal.h"
 #include <clutter/clutter.h>
 
 static void mx_focusable_iface_init (MxFocusableIface *iface);
@@ -477,8 +476,7 @@ mx_toolbar_class_init (MxToolbarClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxToolbarClass, close_button_clicked),
-                  NULL, NULL,
-                  _mx_marshal_BOOL__VOID,
+                  NULL, NULL, NULL,
                   G_TYPE_BOOLEAN, 0);
 
 

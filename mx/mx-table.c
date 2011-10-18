@@ -58,7 +58,6 @@
 #include <clutter/clutter.h>
 
 #include "mx-enum-types.h"
-#include "mx-marshal.h"
 #include "mx-private.h"
 #include "mx-table-child.h"
 #include "mx-stylable.h"

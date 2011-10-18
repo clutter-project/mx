@@ -24,7 +24,6 @@
 #include <string.h>
 #include <gio/gio.h>
 #include "mx-icon-theme.h"
-#include "mx-marshal.h"
 #include "mx-texture-cache.h"
 #include "mx-private.h"
 #include "mx-settings.h"

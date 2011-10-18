@@ -39,7 +39,6 @@
 #include <string.h>
 
 #include "mx-texture-cache.h"
-#include "mx-marshal.h"
 #include "mx-private.h"
 
 G_DEFINE_TYPE (MxTextureCache, mx_texture_cache, G_TYPE_OBJECT)

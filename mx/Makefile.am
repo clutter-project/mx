@@ -8,9 +8,7 @@ mx_create_image_cache_CFLAGS = $(MX_IMAGE_CACHE_CFLAGS) $(MX_MAINTAINER_CFLAGS)
 
 BUILT_SOURCES = 		\
 	mx-enum-types.h 	\
-	mx-enum-types.c 	\
-	mx-marshal.h 		\
-	mx-marshal.c
+	mx-enum-types.c
 
 if HAVE_X11
 WINSYS_SRC = \
@@ -172,34 +170,13 @@ source_c = \
 	$(NULL)
 
 EXTRA_DIST = \
-	mx-marshal.list \
 	mx-enum-types.h.in \
 	mx-enum-types.c.in \
 	mx-version.h.in
 
-STAMP_FILES = stamp-mx-marshal.h stamp-mx-enum-types.h
+STAMP_FILES = stamp-mx-enum-types.h
 
 CLEANFILES = $(STAMP_FILES) $(BUILT_SOURCES)
-
-mx-marshal.h: stamp-mx-marshal.h
-	@true
-stamp-mx-marshal.h: Makefile mx-marshal.list
-	$(AM_V_GEN)$(GLIB_GENMARSHAL) \
-		--prefix=_mx_marshal \
-		--header \
-	$(srcdir)/mx-marshal.list > xgen-tmh && \
-	(cmp -s xgen-tmh mx-marshal.h || cp -f xgen-tmh mx-marshal.h) && \
-	rm -f xgen-tmh && \
-	echo timestamp > $(@F)
-
-mx-marshal.c: Makefile mx-marshal.list
-	$(AM_V_GEN)(echo "#include \"mx-marshal.h\"" ; \
-	 $(GLIB_GENMARSHAL) \
-		--prefix=_mx_marshal \
-		--body \
-	 $(srcdir)/mx-marshal.list ) > xgen-tmc && \
-	cp -f xgen-tmc mx-marshal.c && \
-	rm -f xgen-tmc
 
 mx-enum-types.h: stamp-mx-enum-types.h Makefile
 	@true

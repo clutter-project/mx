@@ -29,7 +29,6 @@
 #include "mx-window-x11.h"
 #include "mx-toolbar.h"
 #include "mx-private.h"
-#include "mx-marshal.h"
 
 #include <clutter/x11/clutter-x11.h>
 #include <X11/Xlib.h>

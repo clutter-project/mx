@@ -42,7 +42,6 @@
 #include <gobject/gvaluecollector.h>
 #include <gobject/gobjectnotifyqueue.c>
 
-#include "mx-marshal.h"
 #include "mx-private.h"
 #include "mx-stylable.h"
 #include "mx-settings.h"
@@ -161,8 +160,7 @@ mx_stylable_base_init (gpointer g_iface)
                   iface_type,
                   G_SIGNAL_RUN_FIRST,
                   G_STRUCT_OFFSET (MxStylableIface, style_changed),
-                  NULL, NULL,
-                  _mx_marshal_VOID__FLAGS,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 1, MX_TYPE_STYLE_CHANGED_FLAGS);
 
 #if 0
@@ -172,8 +170,7 @@ mx_stylable_base_init (gpointer g_iface)
                   G_SIGNAL_RUN_FIRST | G_SIGNAL_NO_RECURSE | G_SIGNAL_DETAILED
                   | G_SIGNAL_NO_HOOKS | G_SIGNAL_ACTION,
                   G_STRUCT_OFFSET (MxStylableIface, style_notify),
-                  NULL, NULL,
-                  _mx_marshal_VOID__PARAM,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 1,
                   G_TYPE_PARAM);
 #endif

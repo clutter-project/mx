@@ -40,7 +40,6 @@
 #include <clutter/clutter.h>
 
 #include "mx-adjustment.h"
-#include "mx-marshal.h"
 #include "mx-private.h"
 
 G_DEFINE_TYPE (MxAdjustment, mx_adjustment, G_TYPE_OBJECT)
@@ -384,8 +383,7 @@ mx_adjustment_class_init (MxAdjustmentClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxAdjustmentClass, changed),
-                  NULL, NULL,
-                  _mx_marshal_VOID__VOID,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
 
   /**
@@ -398,8 +396,7 @@ mx_adjustment_class_init (MxAdjustmentClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxAdjustmentClass, interpolation_completed),
-                  NULL, NULL,
-                  _mx_marshal_VOID__VOID,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
 }
 

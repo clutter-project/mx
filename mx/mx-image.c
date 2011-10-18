@@ -33,7 +33,6 @@
 
 #include "mx-image.h"
 #include "mx-enum-types.h"
-#include "mx-marshal.h"
 #include "mx-texture-cache.h"
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
@@ -672,8 +671,7 @@ mx_image_class_init (MxImageClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxImageClass, image_loaded),
-                  NULL, NULL,
-                  _mx_marshal_VOID__VOID,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
 
   /**
@@ -690,8 +688,7 @@ mx_image_class_init (MxImageClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxImageClass, image_load_error),
-                  NULL, NULL,
-                  _mx_marshal_VOID__BOXED,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 1, G_TYPE_ERROR);
 
   mx_image_cache_quark = g_quark_from_static_string ("mx-image-cache");
