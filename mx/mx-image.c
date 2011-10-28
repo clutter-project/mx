@@ -1448,6 +1448,7 @@ mx_image_pixbuf_new (const gchar  *filename,
         {
           if (error)
             g_propagate_error (error, err);
+          gdk_pixbuf_loader_close (loader, NULL);
           g_object_unref (loader);
           return NULL;
         }
@@ -1457,6 +1458,7 @@ mx_image_pixbuf_new (const gchar  *filename,
 
   if (!buffer)
     {
+      gdk_pixbuf_loader_close (loader, NULL);
       g_object_unref (loader);
       return NULL;
     }
@@ -1465,6 +1467,7 @@ mx_image_pixbuf_new (const gchar  *filename,
     {
       if (error)
         g_propagate_error (error, err);
+      gdk_pixbuf_loader_close (loader, NULL);
       g_object_unref (loader);
       return NULL;
     }
