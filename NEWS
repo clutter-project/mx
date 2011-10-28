@@ -1,3 +1,14 @@
+1.4.1
+=====
+
+Changes since 1.4.0
+
+  * Prevent warnings from MxImage by not closing the pixbuf loader before
+    calling g_object_unref.
+  * Honor the disabled property in MxToggle.
+  * Prevent warnings when using MxAction with glib 2.28.
+
+
 1.4.0
 =====
 
