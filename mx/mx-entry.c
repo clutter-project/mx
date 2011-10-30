@@ -2034,7 +2034,7 @@ const gchar *mx_entry_get_icon_highlight_suffix (MxEntry *entry)
  * @suffix: the suffix to append to the filename for the highlight version
  *
  * Sets the suffix appended to the filename to use for the highlighted version
- * of the icon. e.g. if you have set your primay icon to "primary-icon.png" 
+ * of the icon. e.g. if you have set your primay icon to "primary-icon.png"
  * and the suffix to "-highlight" #MxEntry will look for
  * "primary-icon-highlight.png"
 */

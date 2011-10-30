@@ -48,7 +48,7 @@ main (int     argc,
   mx_table_add_actor (MX_TABLE (table), label, 0, 0);
 
   label2 = mx_label_new_with_text ("");
-  
+
   txt = mx_label_get_clutter_text(MX_LABEL(label2));
   clutter_text_set_ellipsize (CLUTTER_TEXT (txt), PANGO_ELLIPSIZE_NONE);
   clutter_text_set_line_alignment (CLUTTER_TEXT (txt), PANGO_ALIGN_LEFT);

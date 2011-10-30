@@ -26,7 +26,7 @@
  * @short_description: a container which the user can show or hide its child
  *
  * #MxExpander is a single child container that allows the user to show or
- * hide its child. It displays a clickable bar (with a text label), 
+ * hide its child. It displays a clickable bar (with a text label),
  * which (by default) when clicked toggles display of the child.
  *
  * <figure id="mx-expander-expanded">
@@ -688,7 +688,7 @@ mx_expander_set_label (MxExpander  *expander,
  * @expander: A #MxExpander
  * @expanded: the state of the expander to set
  *
- * Set the state (the #MxExpander:expanded property) of the expander. 
+ * Set the state (the #MxExpander:expanded property) of the expander.
  * This will cause the expander to open or close.
  */
 void

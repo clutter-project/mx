@@ -33,9 +33,9 @@
  *
  * <figure id="mx-scroll-view">
  *   <title>#MxScrollView around an #MxBoxLayout</title>
- *   <para>An example of an #MxScrollView wrapped around an #MxBoxLayout 
- *   actor (which implements #MxScrollable). The #MxBoxLayout contains 
- *   nine #ClutterRectangle instances, but the stage is too small for 
+ *   <para>An example of an #MxScrollView wrapped around an #MxBoxLayout
+ *   actor (which implements #MxScrollable). The #MxBoxLayout contains
+ *   nine #ClutterRectangle instances, but the stage is too small for
  *   all of them to be visible. The #MxScrollView adds the appropriate
  *   horizontal scroll, which makes it possible to scroll to the end
  *   of the row of rectangles.</para>

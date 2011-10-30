@@ -62,7 +62,7 @@ main (int argc, char *argv[])
 {
   ClutterActor *stage, *texture, *frame;
   GError *err = NULL;
-  
+
   if (clutter_init (&argc, &argv) != CLUTTER_INIT_SUCCESS)
     return 1;
 

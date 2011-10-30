@@ -23,7 +23,7 @@
  */
 #include "mx-private.h"
 
-static GDebugKey debug_keys[] = 
+static GDebugKey debug_keys[] =
 {
     {"layout", MX_DEBUG_LAYOUT},
     {"inspector", MX_DEBUG_INSPECTOR},

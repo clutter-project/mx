@@ -21,7 +21,7 @@ m4_define([_GOBJECT_INTROSPECTION_CHECK_INTERNAL],
     ],[dnl
         AC_ARG_ENABLE(introspection,
                   AS_HELP_STRING([--enable-introspection[=@<:@no/auto/yes@:>@]],
-                                 [Enable introspection for this build]),, 
+                                 [Enable introspection for this build]),,
                                  [enable_introspection=auto])
     ])dnl
 
@@ -42,7 +42,7 @@ m4_define([_GOBJECT_INTROSPECTION_CHECK_INTERNAL],
     [auto],[dnl
         PKG_CHECK_EXISTS([gobject-introspection-1.0 >= $1], found_introspection=yes, found_introspection=no)
     ],dnl
-    [dnl	
+    [dnl
         AC_MSG_ERROR([invalid argument passed to --enable-introspection, should be one of @<:@no/auto/yes@:>@])
     ])dnl
 

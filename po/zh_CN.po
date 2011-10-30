@@ -2,7 +2,7 @@
 # Copyright Intel(C) 2009
 # This file is distributed under the same license as the PACKAGE package.
 # Zhu Yanhai <yanhai.zhu@linux.intel.com>, 2009.
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: MX\n"
