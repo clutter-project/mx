@@ -1060,6 +1060,7 @@ mx_entry_key_focus_in (ClutterActor *actor)
   clutter_actor_grab_key_focus (priv->entry);
 }
 
+#ifdef HAVE_X11
 static void
 mx_entry_set_cursor (MxEntry  *entry,
                      gboolean  use_ibeam)
@@ -1081,6 +1082,7 @@ mx_entry_set_cursor (MxEntry  *entry,
   else
     XUndefineCursor (dpy, wid);
 }
+#endif
 
 static gboolean
 mx_entry_swallow_crossing_event (ClutterActor         *actor,
@@ -1311,10 +1313,12 @@ entry_event (ClutterActor *actor,
              ClutterEvent *event,
              MxEntry      *entry)
 {
+#ifdef HAVE_X11
   /* ensure the cursor is in the correct state when the mouse button is
    * released */
   if (event->type == CLUTTER_BUTTON_RELEASE)
     mx_entry_set_cursor (entry, entry->priv->pointer_in_entry);
+#endif
 
   /* don't track enter and leave events for actors other than the entry */
   if (event->any.source != actor)
