@@ -60,6 +60,8 @@ struct _MxOffscreenPrivate
 
   guint         in_dispose  : 1;
 
+  guint         pre_paint_done : 1;
+
   ClutterActor *child;
 
   CoglHandle    fbo;
@@ -780,8 +782,15 @@ mx_offscreen_pre_paint_cb (ClutterActor *actor,
                            MxOffscreen  *offscreen)
 {
   CoglColor zero_colour;
-
+  gfloat width, height;
   MxOffscreenPrivate *priv = offscreen->priv;
+
+  priv->pre_paint_done = FALSE;
+
+  clutter_actor_get_size (actor, &width, &height);
+
+  if (width * height < 1)
+    return FALSE;
 
   if (!mx_offscreen_ensure_buffers (offscreen))
     {
@@ -807,6 +816,8 @@ mx_offscreen_pre_paint_cb (ClutterActor *actor,
                   COGL_BUFFER_BIT_DEPTH);
     }
 
+  priv->pre_paint_done = TRUE;
+
   return TRUE;
 }
 
@@ -816,7 +827,7 @@ mx_offscreen_post_paint_cb (ClutterActor *actor,
 {
   MxOffscreenPrivate *priv = offscreen->priv;
 
-  if (!priv->fbo)
+  if (!priv->fbo || !priv->pre_paint_done)
     return;
 
   /* Restore state */
