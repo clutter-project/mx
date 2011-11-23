@@ -278,7 +278,7 @@ xsettings_notify_func (const char       *name,
 {
   MxSettingsX11Private *priv = MX_SETTINGS_X11 (cb_data)->priv;
 
-  if (!name)
+  if (!name || !setting)
     return;
 
   if (!strcmp (name, "Net/IconThemeName"))
