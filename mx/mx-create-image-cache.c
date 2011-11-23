@@ -32,6 +32,11 @@
 #include <glib.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
+
+#ifndef PATH_MAX
+#define PATH_MAX 1024
+#endif
+
 struct imgcache_element {
   char  filename[256];
   int   width, height;
