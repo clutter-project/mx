@@ -671,7 +671,8 @@ mx_scroll_view_class_init (MxScrollViewClass *klass)
 
   pspec = g_param_spec_boolean ("enable-gestures",
                                 "Enable Gestures",
-                                "Enable use of pointer gestures for scrolling",
+                                "Enable use of pointer gestures for scrolling "
+                                "if Mx was built with ClutterGesture support",
                                 FALSE,
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_ENABLE_GESTURES, pspec);
