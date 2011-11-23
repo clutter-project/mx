@@ -209,9 +209,7 @@ change_widget (MxComboBox *box,
   if (data.inspector)
     clutter_actor_destroy (data.inspector);
 
-  vbox = mx_box_layout_new ();
-  mx_box_layout_set_orientation (MX_BOX_LAYOUT (vbox),
-                                 MX_ORIENTATION_VERTICAL);
+  vbox = mx_box_layout_new_with_orientation (MX_ORIENTATION_VERTICAL);
 
   properties = g_object_class_list_properties (class, &n_properties);
 

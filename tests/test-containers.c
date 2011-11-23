@@ -200,9 +200,7 @@ create_child_inspector (ClutterActor *button)
   if (data.child_inspector)
     clutter_actor_destroy (data.child_inspector);
 
-  data.child_inspector = vbox = mx_box_layout_new ();
-  mx_box_layout_set_orientation (MX_BOX_LAYOUT (vbox),
-                                 MX_ORIENTATION_VERTICAL);
+  data.child_inspector = vbox = mx_box_layout_new_with_orientation (MX_ORIENTATION_VERTICAL);
 
   class = G_OBJECT_GET_CLASS (data.container);
 
@@ -288,9 +286,7 @@ change_widget (MxComboBox *box,
   if (data.child_inspector)
     clutter_actor_destroy (data.child_inspector);
 
-  vbox = mx_box_layout_new ();
-  mx_box_layout_set_orientation (MX_BOX_LAYOUT (vbox),
-                                 MX_ORIENTATION_VERTICAL);
+  vbox = mx_box_layout_new_with_orientation (MX_ORIENTATION_VERTICAL);
 
   /* title */
   label = mx_label_new_with_text ("<b>Container Properties</b>");

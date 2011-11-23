@@ -1561,6 +1561,12 @@ mx_box_layout_new (void)
   return g_object_new (MX_TYPE_BOX_LAYOUT, NULL);
 }
 
+ClutterActor *
+mx_box_layout_new_with_orientation (MxOrientation orientation)
+{
+  return g_object_new (MX_TYPE_BOX_LAYOUT, "orientation", orientation, NULL);
+}
+
 /**
  * mx_box_layout_set_orientation:
  * @box: A #MxBoxLayout

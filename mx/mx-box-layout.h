@@ -88,6 +88,7 @@ GType mx_box_layout_get_type (void);
 
 ClutterActor *mx_box_layout_new (void);
 
+ClutterActor *mx_box_layout_new_with_orientation (MxOrientation orientation);
 
 void          mx_box_layout_set_orientation (MxBoxLayout *box,
                                              MxOrientation orientation);
