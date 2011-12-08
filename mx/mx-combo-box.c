@@ -454,6 +454,9 @@ mx_combo_box_allocate (ClutterActor          *actor,
   childbox.x2 = (box->x2 - box->x1);
   childbox.y1 = (box->y2 - box->y1);
 
+  childbox.y2 = childbox.y1 + nat_menu_h;
+
+
   stage = clutter_actor_get_stage (actor);
   if (stage != NULL)
     {
@@ -465,14 +468,39 @@ mx_combo_box_allocate (ClutterActor          *actor,
       clutter_actor_apply_transform_to_point (actor, &point, &point);
 
       /* If the menu would appear off the stage, flip it around. */
-      if ((point.x < 0) || (point.x >= stage_w) ||
-          (point.y < 0) || (point.y >= stage_h))
+      if ((point.y < 0) || (point.y >= stage_h))
+      {
+        childbox.y1 = -nat_menu_h;
+        point.y = -nat_menu_h;
+        clutter_actor_apply_transform_to_point (actor, &point, &point);
+        /* if the menu would still appear out of the stage, force
+         * it to appear on the top of the stage.
+         */
+        if(point.y<0)
         {
-          childbox.y1 = -nat_menu_h;
+          gfloat xactor, yactor;
+          clutter_actor_get_transformed_position(actor, &xactor, &yactor);
+          childbox.y1 = -yactor;
         }
+      }
+      
+      point.y = childbox.y1 + nat_menu_h;
+      clutter_actor_apply_transform_to_point (actor, &point, &point);
+      if( point.y >= stage_h)
+      {
+        gfloat xactor, yactor;
+        clutter_actor_get_transformed_position(actor, &xactor, &yactor);
+        /*
+         * clamp so that the menu doesn't appear out of the screen
+         */
+        clutter_actor_transform_stage_point (actor, xactor, stage_h,
+            NULL, &childbox.y2);
+      }
+      else
+      {
+        childbox.y2 = childbox.y1 + nat_menu_h;
+      }
     }
-
-  childbox.y2 = childbox.y1 + nat_menu_h;
   clutter_actor_allocate (menu, &childbox, flags);
 }
 
