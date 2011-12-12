@@ -988,8 +988,11 @@ mx_table_calculate_col_widths (MxTable *table,
           i = 0;
           while (remaining)
             {
-              columns[i].final_size++;
-              i++;
+              if (columns[i].expand || !n_expand)
+                {
+                  columns[i].final_size++;
+                  i++;
+                }
               remaining--;
             }
         }
@@ -1280,8 +1283,11 @@ mx_table_calculate_row_heights (MxTable *table,
           i = 0;
           while (remaining)
             {
-              rows[i].final_size++;
-              i++;
+              if (rows[i].expand || !n_expand)
+                {
+                  rows[i].final_size++;
+                  i++;
+                }
               remaining--;
             }
         }
