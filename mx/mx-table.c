@@ -975,18 +975,11 @@ mx_table_calculate_col_widths (MxTable *table,
           for (i = 0; i < priv->n_cols; i++)
             {
               if (columns[i].expand)
-                {
-                  if (n_expand)
-                    {
-                      columns[i].final_size =
-                        columns[i].pref_size + (extra_width / n_expand);
-                    }
-                  else
-                    {
-                      columns[i].final_size =
-                        columns[i].pref_size + (extra_width / priv->n_cols);
-                    }
-                }
+                columns[i].final_size =
+                  columns[i].pref_size + (extra_width / n_expand);
+              else if (!n_expand)
+                columns[i].final_size =
+                  columns[i].pref_size + (extra_width / priv->n_cols);
               else
                 columns[i].final_size = columns[i].pref_size;
             }
@@ -1274,18 +1267,11 @@ mx_table_calculate_row_heights (MxTable *table,
           for (i = 0; i < priv->n_rows; i++)
             {
               if (rows[i].expand)
-                {
-                  if (n_expand)
-                    {
-                      rows[i].final_size =
-                        rows[i].pref_size + (extra_height / n_expand);
-                    }
-                  else
-                    {
-                      rows[i].final_size =
-                        rows[i].pref_size + (extra_height / priv->n_rows);
-                    }
-                }
+                rows[i].final_size =
+                  rows[i].pref_size + (extra_height / n_expand);
+              else if (!n_expand)
+                rows[i].final_size =
+                  rows[i].pref_size + (extra_height / priv->n_rows);
               else
                 rows[i].final_size = rows[i].pref_size;
             }
