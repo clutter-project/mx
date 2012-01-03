@@ -137,39 +137,32 @@ _mx_bin_get_align_factors (MxBin   *bin,
 }
 
 static void
-mx_bin_add (ClutterContainer *container,
-            ClutterActor     *actor)
-{
-  mx_bin_set_child (MX_BIN (container), actor);
-}
-
-static void
-mx_bin_remove (ClutterContainer *container,
-               ClutterActor     *actor)
+mx_bin_actor_added (ClutterContainer *container,
+                    ClutterActor     *actor)
 {
   MxBinPrivate *priv = MX_BIN (container)->priv;
 
-  if (priv->child == actor)
-    mx_bin_set_child (MX_BIN (container), NULL);
+  priv->child = actor;
+  g_object_notify (G_OBJECT (container), "child");
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
 }
 
 static void
-mx_bin_foreach (ClutterContainer *container,
-                ClutterCallback   callback,
-                gpointer          user_data)
+mx_bin_actor_removed (ClutterContainer *container,
+                      ClutterActor     *actor)
 {
   MxBinPrivate *priv = MX_BIN (container)->priv;
 
-  if (priv->child)
-    callback (priv->child, user_data);
+  priv->child = NULL;
+  g_object_notify (G_OBJECT (container), "child");
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
 }
 
 static void
 clutter_container_iface_init (ClutterContainerIface *iface)
 {
-  iface->add = mx_bin_add;
-  iface->remove = mx_bin_remove;
-  iface->foreach = mx_bin_foreach;
+  iface->actor_added = mx_bin_actor_added;
+  iface->actor_removed = mx_bin_actor_removed;
 }
 
 static MxFocusable*
@@ -188,7 +181,6 @@ mx_bin_focusable_iface_init (MxFocusableIface *iface)
 {
   iface->accept_focus = mx_bin_accept_focus;
 }
-
 
 static void
 mx_bin_paint (ClutterActor *self)
@@ -539,26 +531,10 @@ mx_bin_set_child (MxBin        *bin,
     return;
 
   if (priv->child)
-    {
-      ClutterActor *old_child = priv->child;
-
-      g_object_ref (old_child);
-
-      priv->child = NULL;
-      clutter_actor_remove_child ((ClutterActor*) bin, old_child);
-
-      g_object_unref (old_child);
-    }
+    clutter_actor_remove_child ((ClutterActor *) bin, priv->child);
 
   if (child)
-    {
-      priv->child = child;
-      clutter_actor_add_child (CLUTTER_ACTOR (bin), child);
-    }
-
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (bin));
-
-  g_object_notify (G_OBJECT (bin), "child");
+    clutter_actor_add_child ((ClutterActor *) bin, child);
 }
 
 /**
