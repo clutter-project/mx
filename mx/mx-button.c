@@ -114,14 +114,56 @@ static guint button_signals[LAST_SIGNAL] = { 0, };
 
 static void mx_button_update_contents (MxButton *self);
 
+static void clutter_container_iface_init (ClutterContainerIface *iface);
 static void mx_stylable_iface_init (MxStylableIface *iface);
 static void mx_focusable_iface_init (MxFocusableIface *iface);
 
+static ClutterContainerIface *container_parent_class = NULL;
+
 G_DEFINE_TYPE_WITH_CODE (MxButton, mx_button, MX_TYPE_BIN,
+                         G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
+                                                clutter_container_iface_init)
                          G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
                                                 mx_stylable_iface_init)
                          G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
                                                 mx_focusable_iface_init));
+
+static void
+mx_button_actor_added (ClutterContainer *container,
+                       ClutterActor     *actor)
+{
+  MxButtonPrivate *priv = MX_BUTTON (container)->priv;
+
+  if (actor != priv->content_image)
+    {
+      /* chain up */
+      container_parent_class->actor_added (container, actor);
+    }
+}
+
+static void
+mx_button_actor_removed (ClutterContainer *container,
+                         ClutterActor     *actor)
+{
+  MxButtonPrivate *priv = MX_BUTTON (container)->priv;
+
+  if (actor != priv->content_image)
+    {
+      /* chain up */
+      container_parent_class->actor_removed (container, actor);
+    }
+}
+
+static void
+clutter_container_iface_init (ClutterContainerIface *iface)
+{
+  container_parent_class = g_type_interface_peek_parent (iface);
+
+  iface->actor_added = mx_button_actor_added;
+  iface->actor_removed = mx_button_actor_removed;
+}
+
+/**/
 
 static void
 mx_stylable_iface_init (MxStylableIface *iface)
@@ -165,6 +207,8 @@ mx_stylable_iface_init (MxStylableIface *iface)
     }
 }
 
+/**/
+
 static MxFocusable*
 mx_button_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 {
@@ -203,7 +247,6 @@ mx_button_update_label_style (MxButton *button)
                                              CLUTTER_TEXT (priv->label));
 }
 
-
 static void
 mx_button_style_changed (MxWidget *widget)
 {
@@ -226,10 +269,8 @@ mx_button_style_changed (MxWidget *widget)
       GError *err = NULL;
 
       if (priv->content_image)
-        {
-          clutter_actor_remove_child (CLUTTER_ACTOR (widget),
-                                      priv->content_image);
-        }
+        clutter_actor_remove_child (CLUTTER_ACTOR (widget),
+                                    priv->content_image);
 
       priv->content_image = clutter_texture_new_from_file (content_image->uri,
                                                            &err);
@@ -566,16 +607,16 @@ mx_button_dispose (GObject *gobject)
 {
   MxButtonPrivate *priv = MX_BUTTON (gobject)->priv;
 
+  if (priv->hbox)
+    {
+      clutter_actor_destroy (priv->hbox);
+      priv->hbox = NULL;
+    }
+
   if (priv->action)
     {
       g_object_unref (priv->action);
       priv->action = NULL;
-    }
-
-  if (priv->content_image)
-    {
-      clutter_actor_remove_child (CLUTTER_ACTOR (gobject), priv->content_image);
-      priv->content_image = NULL;
     }
 
   G_OBJECT_CLASS (mx_button_parent_class)->dispose (gobject);
@@ -601,8 +642,8 @@ mx_button_allocate (ClutterActor           *actor,
 
       clutter_actor_allocate (priv->content_image, &childbox, flags);
     }
-
-  mx_bin_allocate_child (MX_BIN (actor), box, flags);
+  else
+    mx_bin_allocate_child (MX_BIN (actor), box, flags);
 }
 
 static void
@@ -673,6 +714,20 @@ mx_button_paint (ClutterActor *actor)
 }
 
 static void
+mx_button_pick (ClutterActor *actor, const ClutterColor *color)
+{
+  MxButtonPrivate *priv = MX_BUTTON (actor)->priv;
+
+  CLUTTER_ACTOR_CLASS (mx_button_parent_class)->pick (actor, color);
+
+  if (priv->content_image)
+    clutter_actor_paint (priv->content_image);
+  else
+    clutter_actor_paint (mx_bin_get_child (MX_BIN (actor)));
+    /* CLUTTER_ACTOR_CLASS (mx_button_parent_class)->paint (actor); */
+}
+
+static void
 mx_button_update_contents (MxButton *self)
 {
   MxButtonPrivate *priv = self->priv;
@@ -715,7 +770,7 @@ mx_button_update_contents (MxButton *self)
     {
       clutter_actor_show (priv->icon);
       clutter_actor_hide (priv->label);
-      clutter_actor_lower_bottom (priv->icon);
+      clutter_actor_set_child_below_sibling (priv->hbox, priv->icon, NULL);
       return;
     }
 
@@ -723,7 +778,7 @@ mx_button_update_contents (MxButton *self)
     {
       clutter_actor_hide (priv->icon);
       clutter_actor_show (priv->label);
-      clutter_actor_lower_bottom (priv->label);
+      clutter_actor_set_child_below_sibling (priv->hbox, priv->label, NULL);
       return;
     }
 
@@ -736,7 +791,7 @@ mx_button_update_contents (MxButton *self)
     case MX_POSITION_TOP:
       mx_box_layout_set_orientation (MX_BOX_LAYOUT (priv->hbox),
                                      MX_ORIENTATION_VERTICAL);
-      clutter_actor_lower_bottom (priv->icon);
+      clutter_actor_set_child_below_sibling (priv->hbox, priv->icon, NULL);
 
       clutter_container_child_set (CLUTTER_CONTAINER (priv->hbox),
                                    priv->label, "x-align", MX_ALIGN_MIDDLE,
@@ -749,7 +804,7 @@ mx_button_update_contents (MxButton *self)
     case MX_POSITION_RIGHT:
       mx_box_layout_set_orientation (MX_BOX_LAYOUT (priv->hbox),
                                      MX_ORIENTATION_HORIZONTAL);
-      clutter_actor_raise_top (priv->icon);
+      clutter_actor_set_child_above_sibling (priv->hbox, priv->icon, NULL);
 
       clutter_container_child_set (CLUTTER_CONTAINER (priv->hbox),
                                    priv->label, "x-align", MX_ALIGN_START,
@@ -762,7 +817,7 @@ mx_button_update_contents (MxButton *self)
     case MX_POSITION_BOTTOM:
       mx_box_layout_set_orientation (MX_BOX_LAYOUT (priv->hbox),
                                      MX_ORIENTATION_VERTICAL);
-      clutter_actor_raise_top (priv->icon);
+      clutter_actor_set_child_above_sibling (priv->hbox, priv->icon, NULL);
 
       mx_box_layout_child_set_x_align (MX_BOX_LAYOUT (priv->hbox),
                                        priv->label, MX_ALIGN_MIDDLE);
@@ -777,7 +832,7 @@ mx_button_update_contents (MxButton *self)
     case MX_POSITION_LEFT:
       mx_box_layout_set_orientation (MX_BOX_LAYOUT (priv->hbox),
                                      MX_ORIENTATION_HORIZONTAL);
-      clutter_actor_lower_bottom (priv->icon);
+      clutter_actor_set_child_below_sibling (priv->hbox, priv->icon, NULL);
 
       clutter_container_child_set (CLUTTER_CONTAINER (priv->hbox),
                                    priv->label, "x-align", MX_ALIGN_END,
@@ -812,6 +867,7 @@ mx_button_class_init (MxButtonClass *klass)
   actor_class->get_preferred_width = mx_button_get_preferred_width;
   actor_class->get_preferred_height = mx_button_get_preferred_height;
   actor_class->paint = mx_button_paint;
+  actor_class->pick = mx_button_pick;
 
   actor_class->allocate = mx_button_allocate;
 
@@ -906,7 +962,7 @@ mx_button_init (MxButton *button)
   priv->icon_position = MX_POSITION_LEFT;
 
   /* take an extra reference to the hbox */
-  priv->hbox = g_object_ref (mx_box_layout_new ());
+  priv->hbox = g_object_ref_sink (mx_box_layout_new ());
   mx_bin_set_child (MX_BIN (button), priv->hbox);
 
   priv->icon = mx_icon_new ();
@@ -915,8 +971,8 @@ mx_button_init (MxButton *button)
                               "ellipsize", PANGO_ELLIPSIZE_END,
                               NULL);
 
-  clutter_container_add (CLUTTER_CONTAINER (priv->hbox), priv->icon,
-                         priv->label, NULL);
+  clutter_actor_add_child (priv->hbox, priv->icon);
+  clutter_actor_add_child (priv->hbox, priv->label);
 
   mx_box_layout_child_set_expand (MX_BOX_LAYOUT (priv->hbox),
                                   priv->label, TRUE);
