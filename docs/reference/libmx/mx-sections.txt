@@ -1514,6 +1514,8 @@ MxNotebookClass
 mx_notebook_new
 mx_notebook_set_current_page
 mx_notebook_get_current_page
+mx_notebook_previous_page
+mx_notebook_next_page
 mx_notebook_get_enable_gestures
 mx_notebook_set_enable_gestures
 <SUBSECTION Private>

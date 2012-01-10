@@ -91,6 +91,9 @@ void mx_notebook_set_current_page (MxNotebook   *notebook,
                                    ClutterActor *page);
 ClutterActor *mx_notebook_get_current_page (MxNotebook   *notebook);
 
+void mx_notebook_previous_page (MxNotebook *notebook);
+void mx_notebook_next_page (MxNotebook *notebook);
+
 gboolean mx_notebook_get_enable_gestures (MxNotebook *book);
 void     mx_notebook_set_enable_gestures (MxNotebook *book,
                                           gboolean    enabled);
