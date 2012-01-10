@@ -467,23 +467,11 @@ mx_notebook_gesture_slide_event_cb (ClutterGesture           *gesture,
     }
 
   if (event->direction % 2)
-    {
-      /* up, left (1, 3) */
-      if (item->prev)
-        mx_notebook_set_current_page (book, (ClutterActor *)item->prev->data);
-      else
-        mx_notebook_set_current_page (book,
-                                      (ClutterActor *)g_list_last (item)->data);
-    }
+    /* up, left (1, 3) */
+    mx_notebook_previous_page (book);
   else
-    {
-      /* down, right (2, 4) */
-      if (item->next)
-        mx_notebook_set_current_page (book, (ClutterActor *)item->next->data);
-      else
-        mx_notebook_set_current_page (book,
-                                      (ClutterActor *)priv->children->data);
-    }
+    /* down, right (2, 4) */
+    mx_notebook_next_page (book);
 
   return TRUE;
 }
@@ -573,6 +561,66 @@ mx_notebook_get_current_page (MxNotebook *notebook)
   g_return_val_if_fail (MX_IS_NOTEBOOK (notebook), NULL);
 
   return notebook->priv->current_page;
+}
+
+/**
+ * mx_notebook_previous_page:
+ * @notebook: A #MxNotebook
+ *
+ * Change the current page to previous one.
+ */
+void
+mx_notebook_previous_page (MxNotebook *notebook)
+{
+  GList *item;
+  MxNotebookPrivate *priv;
+
+  g_return_if_fail (MX_IS_NOTEBOOK (notebook));
+  priv = notebook->priv;
+
+  item = g_list_find (priv->children, priv->current_page);
+  if (!item)
+    {
+      g_warning ("Current page not found in child list");
+      return;
+    }
+
+  if (item->prev)
+    mx_notebook_set_current_page (notebook,
+                                  (ClutterActor *)item->prev->data);
+  else
+    mx_notebook_set_current_page (notebook,
+                                  (ClutterActor *)g_list_last (item)->data);
+}
+
+/**
+ * mx_notebook_next_page:
+ * @notebook: A #MxNotebook
+ *
+ * Change the current page to next one.
+ */
+void
+mx_notebook_next_page (MxNotebook *notebook)
+{
+  GList *item;
+  MxNotebookPrivate *priv;
+
+  g_return_if_fail (MX_IS_NOTEBOOK (notebook));
+  priv = notebook->priv;
+
+  item = g_list_find (priv->children, priv->current_page);
+  if (!item)
+    {
+      g_warning ("Current page not found in child list");
+      return;
+    }
+
+  if (item->next)
+    mx_notebook_set_current_page (notebook,
+                                  (ClutterActor *)item->next->data);
+  else
+    mx_notebook_set_current_page (notebook,
+                                  (ClutterActor *)priv->children->data);
 }
 
 void
