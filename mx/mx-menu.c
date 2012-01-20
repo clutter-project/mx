@@ -57,6 +57,14 @@ struct _MxMenuPrivate
   gulong captured_event_handler;
 
   gulong internal_focus_push : 1;
+
+  gulong scrolling_mode : 1;
+  gint id_offset;
+  gint last_shown_id;
+  ClutterActor *up_button;
+  ClutterActor *down_button;
+  gulong up_source;
+  gulong down_source;
 };
 
 enum
@@ -103,9 +111,21 @@ mx_menu_move_focus (MxFocusable      *focusable,
     {
     case MX_FOCUS_DIRECTION_UP:
       if (i == 0)
-        i = priv->children->len - 1;
+        {
+          i = priv->children->len - 1;
+          gint nb_elts = priv->last_shown_id - priv->id_offset;
+          priv->id_offset = i - nb_elts;
+          clutter_actor_queue_redraw (CLUTTER_ACTOR(focusable));
+        }
       else
-        i--;
+        {
+          i--;
+          if (i < priv->id_offset)
+            {
+              priv->id_offset--;
+              clutter_actor_queue_redraw (CLUTTER_ACTOR(focusable));
+            }
+        }
 
       while (i >= 0)
         {
@@ -129,9 +149,20 @@ mx_menu_move_focus (MxFocusable      *focusable,
 
     case MX_FOCUS_DIRECTION_DOWN:
       if (i == priv->children->len - 1)
-        i = 0;
+        {
+          priv->id_offset = 0;
+          i = 0;
+          clutter_actor_queue_redraw (CLUTTER_ACTOR(focusable));
+        }
       else
-        i++;
+        {
+          i++;
+          if (i > priv->last_shown_id)
+            {
+              priv->id_offset++;
+              clutter_actor_queue_redraw (CLUTTER_ACTOR(focusable));
+            }
+        }
 
       while (i < priv->children->len)
         {
@@ -340,12 +371,54 @@ mx_menu_allocate (ClutterActor           *actor,
   ClutterActorBox child_box;
   MxMenuPrivate *priv = MX_MENU (actor)->priv;
 
+  gfloat available_h = box->y2-box->y1;
+
+  /* 
+   * first of all, we have to check if the allocated height is our
+   * natural height...
+   */
+  gfloat menu_nat_h;
+  mx_menu_get_preferred_height (actor, box->x2-box->x1, NULL, &menu_nat_h);
+  if (available_h < menu_nat_h)
+    {
+      /*
+       * ...if not, we have to draw 2 buttons in order to let the
+       * user be able to navigate in the whole menu.
+       */
+      priv->scrolling_mode = TRUE;
+    }
+  else
+    {
+      priv->scrolling_mode = FALSE;
+    }
+
   /* Allocate children */
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
   child_box.x1 = padding.left;
   child_box.y1 = padding.top;
   child_box.x2 = box->x2 - box->x1 - padding.right;
-  for (i = 0; i < priv->children->len; i++)
+
+  gfloat down_but_height;
+  clutter_actor_get_preferred_height (priv->down_button,
+                                      child_box.x2 - child_box.x1,
+                                      NULL,
+                                      &down_but_height);
+
+  if (priv->scrolling_mode)
+    {
+      clutter_actor_get_preferred_height (priv->up_button,
+                                          child_box.x2 - child_box.x1,
+                                          NULL,
+                                          &child_box.y2);
+      child_box.y2 += child_box.y1;
+      clutter_actor_allocate (priv->up_button, &child_box, flags);
+      child_box.y1 = child_box.y2 + 1;
+
+      available_h -= down_but_height;
+    }
+
+  
+  for (i = priv->id_offset; i < priv->children->len; i++)
     {
       gfloat natural_height;
 
@@ -357,12 +430,26 @@ mx_menu_allocate (ClutterActor           *actor,
                                           NULL,
                                           &natural_height);
       child_box.y2 = child_box.y1 + natural_height;
+      if (child_box.y2 >= available_h)
+        {
+          priv->last_shown_id = i-1;
+          break;
+        }
 
       clutter_actor_allocate (CLUTTER_ACTOR (child->box), &child_box, flags);
 
       child_box.y1 = child_box.y2 + 1;
     }
+    if (priv->children->len == i)
+      {
+        priv->last_shown_id = i-1;
+      }
 
+    if (priv->scrolling_mode)
+      {
+        child_box.y2 = child_box.y1 + down_but_height;
+        clutter_actor_allocate (priv->down_button, &child_box, flags);
+      }
   /* Chain up and allocate background */
   CLUTTER_ACTOR_CLASS (mx_menu_parent_class)->allocate (actor, box, flags);
 }
@@ -377,11 +464,17 @@ mx_menu_floating_paint (ClutterActor *menu)
   MX_FLOATING_WIDGET_CLASS (mx_menu_parent_class)->floating_paint (menu);
 
   /* Paint children */
-  for (i = 0; i < priv->children->len; i++)
+  for (i = priv->id_offset; i <= priv->last_shown_id; i++)
     {
       MxMenuChild *child = &g_array_index (priv->children, MxMenuChild,
                                             i);
       clutter_actor_paint (CLUTTER_ACTOR (child->box));
+    }
+  
+  if(priv->scrolling_mode)
+    {
+      clutter_actor_paint (priv->up_button);
+      clutter_actor_paint (priv->down_button);
     }
 }
 
@@ -397,7 +490,7 @@ mx_menu_floating_pick (ClutterActor       *menu,
   MX_FLOATING_WIDGET_CLASS (mx_menu_parent_class)->floating_pick (menu, color);
 
   /* pick children */
-  for (i = 0; i < priv->children->len; i++)
+  for (i = priv->id_offset; i <= priv->last_shown_id; i++)
     {
       MxMenuChild *child = &g_array_index (priv->children, MxMenuChild, i);
 
@@ -405,6 +498,11 @@ mx_menu_floating_pick (ClutterActor       *menu,
         {
           clutter_actor_paint (CLUTTER_ACTOR (child->box));
         }
+    }
+  if(priv->scrolling_mode)
+    {
+      clutter_actor_paint(priv->up_button);
+      clutter_actor_paint(priv->down_button);
     }
 }
 
@@ -423,6 +521,8 @@ mx_menu_map (ClutterActor *actor)
 
   CLUTTER_ACTOR_CLASS (mx_menu_parent_class)->map (actor);
 
+  clutter_actor_map (priv->up_button);
+  clutter_actor_map (priv->down_button);
   for (i = 0; i < priv->children->len; i++)
     {
       MxMenuChild *child = &g_array_index (priv->children, MxMenuChild,
@@ -450,6 +550,8 @@ mx_menu_unmap (ClutterActor *actor)
 
   CLUTTER_ACTOR_CLASS (mx_menu_parent_class)->unmap (actor);
 
+  clutter_actor_unmap (priv->up_button);
+  clutter_actor_unmap (priv->down_button);
   for (i = 0; i < priv->children->len; i++)
     {
       MxMenuChild *child = &g_array_index (priv->children, MxMenuChild,
@@ -528,6 +630,8 @@ mx_menu_captured_event_handler (ClutterActor *actor,
       if (source == (ClutterActor*) child->box)
         return FALSE;
     }
+  if (source == priv->up_button || source == priv->down_button)
+    return FALSE;
 
   /* hide the menu if the user clicks outside the menu */
   if (event->type == CLUTTER_BUTTON_PRESS)
@@ -638,6 +742,73 @@ mx_menu_class_init (MxMenuClass *klass)
                   G_TYPE_NONE, 1, MX_TYPE_ACTION);
 }
 
+static gboolean
+_up_callback (MxMenu *self)
+{
+  MxMenuPrivate *priv = self->priv;
+  if (0 < priv->id_offset)
+    {
+      priv->id_offset--;
+      clutter_actor_queue_relayout (CLUTTER_ACTOR(self));
+    }
+  return TRUE;
+}
+
+static gboolean
+mx_menu_up_enter (ClutterActor         *actor, 
+                  ClutterCrossingEvent *event, 
+                  MxMenu               *self)
+{
+  MxMenuPrivate *priv = self->priv;
+  priv->up_source = g_timeout_add (250, (GSourceFunc)_up_callback, self);
+  return FALSE;
+}
+
+static gboolean
+mx_menu_up_leave (ClutterActor         *actor, 
+                  ClutterCrossingEvent *event, 
+                  MxMenu               *self)
+{
+  MxMenuPrivate *priv = self->priv;
+  g_source_remove (priv->up_source);
+  return FALSE;
+}
+
+static gboolean
+_down_callback (MxMenu *self)
+{
+  MxMenuPrivate *priv = self->priv;
+  gint last_id_offset = (priv->children->len - 1) - 
+    (priv->last_shown_id - priv->id_offset);
+
+  if(last_id_offset > priv->id_offset)
+  {
+    priv->id_offset++;
+    clutter_actor_queue_relayout (CLUTTER_ACTOR(self));
+  }
+  return TRUE;
+}
+
+static gboolean
+mx_menu_down_enter (ClutterActor         *actor,
+                    ClutterCrossingEvent *event, 
+                    MxMenu               *self)
+{
+  MxMenuPrivate *priv = self->priv;
+  priv->down_source = g_timeout_add (250, (GSourceFunc)_down_callback, self);
+  return FALSE;
+}
+
+static gboolean
+mx_menu_down_leave (ClutterActor         *actor, 
+                    ClutterCrossingEvent *event,
+                    MxMenu               *self)
+{
+  MxMenuPrivate *priv = self->priv;
+  g_source_remove (priv->down_source);
+  return FALSE;
+}
+
 static void
 mx_menu_init (MxMenu *self)
 {
@@ -651,6 +822,23 @@ mx_menu_init (MxMenu *self)
 
   g_signal_connect (self, "style-changed", G_CALLBACK (mx_menu_style_changed),
                     NULL);
+  priv->id_offset = 0;
+  priv->last_shown_id = 0;
+  
+  priv->up_button = mx_button_new_with_label("/\\");
+  clutter_actor_set_parent (CLUTTER_ACTOR (priv->up_button),
+                            CLUTTER_ACTOR (self));
+  g_signal_connect (priv->up_button, "enter-event", 
+                    G_CALLBACK(mx_menu_up_enter), self);
+  g_signal_connect (priv->up_button, "leave-event", 
+                    G_CALLBACK(mx_menu_up_leave), self);
+  priv->down_button = mx_button_new_with_label ("\\/");
+  clutter_actor_set_parent (CLUTTER_ACTOR (priv->down_button),
+                            CLUTTER_ACTOR (self));
+  g_signal_connect (priv->down_button, "enter-event", 
+                    G_CALLBACK(mx_menu_down_enter), self);
+  g_signal_connect (priv->down_button, "leave-event", 
+                    G_CALLBACK(mx_menu_down_leave), self);
 }
 
 /**
