@@ -28,16 +28,16 @@
  * SECTION:mx-viewport
  * @short_description: single child scrollable container
  *
- * #MxViewport allows non-scrollable children (like images or text) 
- * to be scrollable by implementing the #MxScrollable and #ClutterContainer 
+ * #MxViewport allows non-scrollable children (like images or text)
+ * to be scrollable by implementing the #MxScrollable and #ClutterContainer
  * interface.
  *
- * To use it, add the non-scrollable child to an #MxViewport; then sit the 
+ * To use it, add the non-scrollable child to an #MxViewport; then sit the
  * viewport inside an #MxScrollView to get the scrollbars.
  *
  * <figure id="mx-viewport">
  *   <title>#MxViewport around an #MxLabel</title>
- *   <para>An example of a large label (which isn't normally scrollable), 
+ *   <para>An example of a large label (which isn't normally scrollable),
  *   placed inside an #MxViewport, which is in turn inside an #MxScrollView.
  *   </para>
  *   <graphic fileref="MxViewport.png" format="PNG"/>

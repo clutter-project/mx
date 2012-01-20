@@ -41,15 +41,15 @@
  * This layout is particularly flexible, with the following configuration possibilities:
  *
  * <itemizedlist>
- *   <listitem><para>Column and row spacing are controllable 
+ *   <listitem><para>Column and row spacing are controllable
  *   (#MxGrid:column_spacing and #MxGrid:row_spacing)</para></listitem>
- *   <listitem><para>Column and row sizes can be made consistent, regardless of the size 
+ *   <listitem><para>Column and row sizes can be made consistent, regardless of the size
  *   of the contained actors (#MxGrid:homogenous_columns and #MxGrid:homogenous_rows)
  *   </para></listitem>
  *   <listitem><para>Prefer to pack children vertically first,
  *   rather than horizontally (#MxGrid:orientation)</para></listitem>
- *   <listitem><para>Specify the maximum number of rows or columns 
- *   to allow in the layout, to prevent it from being excessively stretched 
+ *   <listitem><para>Specify the maximum number of rows or columns
+ *   to allow in the layout, to prevent it from being excessively stretched
  *   (#MxGrid:max_stride).</para></listitem>
  * </itemizedlist>
  *
@@ -57,9 +57,9 @@
  *
  * <figure id="mx-grid">
  *   <title>MxGrid flowing across multiple rows</title>
- *   <para>An #MxGrid containing 9 child actors; 
- *   #MxGrid:orientation is set to the default (MX_ORIENTATION_HORIZONTAL, 
- *   i.e. lay out horizontally first); #MxGrid:max_stride has not been set 
+ *   <para>An #MxGrid containing 9 child actors;
+ *   #MxGrid:orientation is set to the default (MX_ORIENTATION_HORIZONTAL,
+ *   i.e. lay out horizontally first); #MxGrid:max_stride has not been set
  *   (so there's no maximum row size); #MxGrid:column_spacing and #MxGrid:row_spacing have
  *   been set so that there is spacing between cells vertically and horizontally.</para>
  *   <graphic fileref="MxGrid-3x3.png" format="PNG"/>
@@ -74,12 +74,12 @@
  *
  * <figure id="mx-grid-two-rows">
  *   <title>MxGrid flowing onto two rows</title>
- *   <para>The same #MxGrid with 9 children wrapping onto two rows: notice 
- *   how the "odd" rectangle is on the end of a row, rather than at the 
- *   bottom of a column. This is because preference 
- *   is being given to packing onto the end of rows, rather than columns, 
- *   because #MxGrid:orientation is set to MX_ORIENTATION_HORIZONTAL. Even though 
- *   there is room for the rectangle at the bottom of the column, the 
+ *   <para>The same #MxGrid with 9 children wrapping onto two rows: notice
+ *   how the "odd" rectangle is on the end of a row, rather than at the
+ *   bottom of a column. This is because preference
+ *   is being given to packing onto the end of rows, rather than columns,
+ *   because #MxGrid:orientation is set to MX_ORIENTATION_HORIZONTAL. Even though
+ *   there is room for the rectangle at the bottom of the column, the
  *   layout prefers to place children onto the end of a row if there is room.</para>
  *   <graphic fileref="MxGrid-2rows-row-major.png" format="PNG"/>
  * </figure>

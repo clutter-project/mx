@@ -2,7 +2,7 @@
 # Copyright (C) 2009 the mx copyright holder
 # This file is distributed under the same license as the mx package.
 # Milo Casagrande <milo@ubuntu.com>, 2009.
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: mx\n"

@@ -15,7 +15,7 @@
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL RED HAT
  * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Owen Taylor, Red Hat, Inc.
@@ -63,7 +63,7 @@ notify_changes (XSettingsClient *client,
   while (old_iter || new_iter)
     {
       int cmp;
-      
+
       if (old_iter && new_iter)
 	cmp = strcmp (old_iter->setting->name, new_iter->setting->name);
       else if (old_iter)
@@ -123,7 +123,7 @@ fetch_card16 (XSettingsBuffer *buffer,
 
   x = *(CARD16 *)buffer->pos;
   buffer->pos += 2;
-  
+
   if (buffer->byte_order == local_byte_order)
     *result = x;
   else
@@ -134,10 +134,10 @@ fetch_card16 (XSettingsBuffer *buffer,
 
 static XSettingsResult
 fetch_ushort (XSettingsBuffer *buffer,
-	      unsigned short  *result) 
+	      unsigned short  *result)
 {
   CARD16 x;
-  XSettingsResult r;  
+  XSettingsResult r;
 
   r = fetch_card16 (buffer, &x);
   if (r == XSETTINGS_SUCCESS)
@@ -157,12 +157,12 @@ fetch_card32 (XSettingsBuffer *buffer,
 
   x = *(CARD32 *)buffer->pos;
   buffer->pos += 4;
-  
+
   if (buffer->byte_order == local_byte_order)
     *result = x;
   else
     *result = (x << 24) | ((x & 0xff00) << 8) | ((x & 0xff0000) >> 8) | (x >> 24);
-  
+
   return XSETTINGS_SUCCESS;
 }
 
@@ -192,12 +192,12 @@ parse_settings (unsigned char *data,
   CARD32 n_entries;
   CARD32 i;
   XSettingsSetting *setting = NULL;
-  
+
   local_byte_order = xsettings_byte_order ();
 
   buffer.pos = buffer.data = data;
   buffer.len = len;
-  
+
   result = fetch_card8 (&buffer, (unsigned char *)&buffer.byte_order);
   if (buffer.byte_order != MSBFirst &&
       buffer.byte_order != LSBFirst)
@@ -223,7 +223,7 @@ parse_settings (unsigned char *data,
       CARD16 name_len;
       CARD32 v_int;
       size_t pad_len;
-      
+
       result = fetch_card8 (&buffer, &type);
       if (result != XSETTINGS_SUCCESS)
 	goto out;
@@ -293,7 +293,7 @@ parse_settings (unsigned char *data,
 	      result = XSETTINGS_NO_MEM;
 	      goto out;
 	    }
-	  
+
 	  memcpy (setting->data.v_string, buffer.pos, v_int);
 	  setting->data.v_string[v_int] = '\0';
 	  buffer.pos += pad_len;
@@ -370,7 +370,7 @@ read_settings (XSettingsClient *client)
   int result;
 
   int (*old_handler) (Display *, XErrorEvent *);
-  
+
   XSettingsList *old_list = client->settings;
 
   client->settings = NULL;
@@ -383,7 +383,7 @@ read_settings (XSettingsClient *client)
 				   False, client->xsettings_atom,
 				   &type, &format, &n_items, &bytes_after, &data);
       XSetErrorHandler (old_handler);
-      
+
       if (result == Success && type != None)
 	{
 	  if (type != client->xsettings_atom)
@@ -396,7 +396,7 @@ read_settings (XSettingsClient *client)
 	    }
 	  else
 	    client->settings = parse_settings (data, n_items);
-	  
+
 	  XFree (data);
 	}
     }
@@ -437,12 +437,12 @@ check_manager_window (XSettingsClient *client)
     client->ungrab (client->display);
   else
     XUngrabServer (client->display);
-  
+
   XFlush (client->display);
 
   if (client->manager_window && client->watch)
     {
-      if (!client->watch (client->manager_window, True, 
+      if (!client->watch (client->manager_window, True,
 			  PropertyChangeMask | StructureNotifyMask,
 			  client->cb_data))
 	{
@@ -453,8 +453,8 @@ check_manager_window (XSettingsClient *client)
 	  return;
 	}
     }
-      
-  
+
+
   read_settings (client);
 }
 
@@ -482,7 +482,7 @@ xsettings_client_new_with_grab_funcs (Display             *display,
   char buffer[256];
   char *atom_names[3];
   Atom atoms[3];
-  
+
   client = malloc (sizeof *client);
   if (!client)
     return NULL;
@@ -494,7 +494,7 @@ xsettings_client_new_with_grab_funcs (Display             *display,
   client->cb_data = cb_data;
   client->grab = grab;
   client->ungrab = ungrab;
-  
+
   client->manager_window = None;
   client->settings = NULL;
 
@@ -510,7 +510,7 @@ xsettings_client_new_with_grab_funcs (Display             *display,
   atoms[1] = XInternAtom (display, atom_names[1], False);
   atoms[2] = XInternAtom (display, atom_names[2], False);
 #endif
-  
+
   client->selection_atom = atoms[0];
   client->xsettings_atom = atoms[1];
   client->manager_atom = atoms[2];
@@ -551,7 +551,7 @@ xsettings_client_destroy (XSettingsClient *client)
 		   False, 0, client->cb_data);
   if (client->manager_window && client->watch)
     client->watch (client->manager_window, False, 0, client->cb_data);
-  
+
   xsettings_list_free (client->settings);
   free (client);
 }
@@ -596,7 +596,7 @@ xsettings_client_process_event (XSettingsClient *client,
 	{
 	  check_manager_window (client);
           /* let GDK do its cleanup */
-	  return False; 
+	  return False;
 	}
       else if (xev->xany.type == PropertyNotify)
 	{
@@ -604,6 +604,6 @@ xsettings_client_process_event (XSettingsClient *client,
 	  return True;
 	}
     }
-  
+
   return False;
 }

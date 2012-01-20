@@ -584,7 +584,7 @@ Changes since 0.6.0:
  * Fixed bugs:
 
    MB#9570 - [widget] Bug in mx_widget_set_tooltip_text
-   MB#9529 - [table] Calculate row_spacing correctly 
+   MB#9529 - [table] Calculate row_spacing correctly
    MB#9346 - Memory leak in widgets implementing MxScrollable
    MB#9055 - Unable to set the popup location of MxComboBox
    MB#9656 - [MxListView] Missing break statement in mx_list_view_set_property

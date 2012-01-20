@@ -67,8 +67,8 @@ scroll_bar_main (ClutterContainer *stage)
   MxAdjustment  *adjustment;
 
   adjustment = mx_adjustment_new_with_values (50., 0., 100., 1., 10., 10.);
-  g_signal_connect (adjustment, "notify::value", 
-                    G_CALLBACK (changed_cb), NULL);  
+  g_signal_connect (adjustment, "notify::value",
+                    G_CALLBACK (changed_cb), NULL);
 
   scroll = mx_scroll_bar_new_with_adjustment (adjustment);
   clutter_actor_set_position (scroll, 50, 100);

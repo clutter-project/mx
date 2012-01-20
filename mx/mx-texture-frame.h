@@ -53,11 +53,11 @@ struct _MxTextureFrame
 {
   /*< private >*/
   ClutterActor parent_instance;
-  
+
   MxTextureFramePrivate    *priv;
 };
 
-struct _MxTextureFrameClass 
+struct _MxTextureFrameClass
 {
   ClutterActorClass parent_class;
 
