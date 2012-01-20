@@ -422,7 +422,7 @@ static void write_cache_file(char *directory,
                              char *pngfile)
 {
   FILE *file;
-  char filename[PATH_MAX *2];
+  char *filename = NULL;
   struct imgcache_element element;
   struct imgcache_element *elm;
   GList *item;
@@ -431,11 +431,12 @@ static void write_cache_file(char *directory,
 
   strcpy(&element.filename[0], pngfile);
 
-  sprintf(filename, "%s/mx.cache", directory);
+  filename = g_strdup_printf("%s/mx.cache", directory);
 
   file = fopen(filename, "w");
   if (!file) {
       fprintf(stderr, "Cannot write cache file: %s\n", filename);
+      g_free (filename);
       return;
     }
   fwrite(&element, 1, sizeof(element), file);
@@ -447,6 +448,7 @@ static void write_cache_file(char *directory,
       elm->ptr = NULL;
       fwrite(elm, 1, sizeof(element), file);
     }
+  g_free (filename);
   fclose(file);
 
 }
@@ -454,7 +456,8 @@ static void write_cache_file(char *directory,
 int main(int    argc,
          char **argv)
 {
-  char image_file[PATH_MAX];
+  char *image_file = NULL;
+
   if (argc <= 1) {
       printf("Usage:\n\t\tmakecache <directory>\n");
       return EXIT_FAILURE;
@@ -462,8 +465,9 @@ int main(int    argc,
   g_type_init();
   makecache(argv[1], 1);
   optimal_placement();
-  sprintf(image_file, "/var/cache/mx/%08x.png", g_str_hash(argv[1]));
+  image_file = g_strdup_printf("/var/cache/mx/%08x.png", g_str_hash(argv[1]));
   if (make_final_image(image_file))
     write_cache_file(argv[1], image_file);
+  g_free (image_file);
   return EXIT_SUCCESS;
 }
