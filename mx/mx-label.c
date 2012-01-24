@@ -699,7 +699,6 @@ mx_label_set_text (MxLabel     *label,
   MxLabelPrivate *priv;
 
   g_return_if_fail (MX_IS_LABEL (label));
-  g_return_if_fail (text != NULL);
 
   priv = label->priv;
 
