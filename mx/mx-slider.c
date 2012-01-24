@@ -77,6 +77,9 @@ struct _MxSliderPrivate
 
   gdouble       value;
   gdouble       buffer_value;
+
+  gboolean      live_update;
+  gdouble       stashed_value;
 };
 
 enum
@@ -85,6 +88,7 @@ enum
 
   PROP_VALUE,
   PROP_BUFFER_VALUE,
+  PROP_LIVE_UPDATE,
 };
 
 
@@ -152,7 +156,10 @@ drag_handle (MxSlider *bar,
   pos = CLAMP (pos, 0, fill_size);
 
   value = pos / fill_size;
-  mx_slider_set_value (bar, value);
+  if (priv->live_update)
+    mx_slider_set_value (bar, value);
+  else
+    priv->stashed_value = value;
 
   /* update the handle position */
   mx_slider_allocate_fill_handle (bar, NULL, 0);
@@ -178,6 +185,12 @@ on_handle_capture_event (ClutterActor *trough,
       ClutterActor *stage, *target;
 
       stage = clutter_actor_get_stage(priv->trough);
+
+      if (!priv->live_update && priv->stashed_value >= 0)
+        {
+          mx_slider_set_value (bar, priv->stashed_value);
+          priv->stashed_value = -1;
+        }
 
       if (priv->capture_handler)
         {
@@ -455,6 +468,10 @@ mx_slider_allocate_fill_handle (MxSlider               *self,
   ClutterActorBox  buffer_box;
   ClutterActorBox  handle_box;
   guint            handle_width_2;
+  gdouble          value;
+
+
+  value = priv->stashed_value < 0 ? priv->value : priv->stashed_value;
 
   if (box == NULL)
     {
@@ -470,7 +487,7 @@ mx_slider_allocate_fill_handle (MxSlider               *self,
   fill_box.x1 = padding.left;
   fill_box.y1 = priv->trough_box_y1;
   fill_box.x2 = ((box->x2 - box->x1 - padding.left - padding.right -
-                  priv->handle_width) * priv->value) + padding.left +
+                  priv->handle_width) * value) + padding.left +
                   handle_width_2;
   fill_box.x2 = CLAMP (fill_box.x2,
                        priv->handle_middle_start,
@@ -646,6 +663,10 @@ mx_slider_get_property (GObject    *object,
       g_value_set_double (value, mx_slider_get_buffer_value (self));
       break;
 
+    case PROP_LIVE_UPDATE:
+      g_value_set_boolean (value, mx_slider_get_live_update (self));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -667,6 +688,10 @@ mx_slider_set_property (GObject      *object,
 
     case PROP_BUFFER_VALUE:
       mx_slider_set_buffer_value (self, g_value_get_double (value));
+      break;
+
+    case PROP_LIVE_UPDATE:
+      mx_slider_set_live_update (self, g_value_get_boolean (value));
       break;
 
     default:
@@ -779,6 +804,13 @@ mx_slider_class_init (MxSliderClass *klass)
                                "Buffer Value",
                                0.0, 1.0, 0.0, G_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_BUFFER_VALUE, pspec);
+
+  pspec = g_param_spec_boolean ("live-update",
+                                "Value live updated",
+                                "Value live updated",
+                                TRUE,
+                                G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_LIVE_UPDATE, pspec);
 }
 
 static void
@@ -854,6 +886,8 @@ mx_slider_init (MxSlider *self)
   MxSliderPrivate *priv;
 
   self->priv = priv = SLIDER_PRIVATE (self);
+
+  priv->stashed_value = -1;
 
   g_signal_connect (self, "style-changed",
                     G_CALLBACK (mx_slider_style_changed_cb), NULL);
@@ -1003,4 +1037,46 @@ mx_slider_get_buffer_value (MxSlider *slider)
 
 
   return slider->priv->buffer_value;
+}
+
+/**
+ * mx_slider_set_update_value_update:
+ * @slider: A #MxSlider
+ * @value: #TRUE to update value of the slider in live.
+ *
+ * #MxSlider:live-update property.
+ *
+ * Since: 1.4
+ */
+void
+mx_slider_set_live_update (MxSlider *slider,
+                           gboolean  value)
+{
+  MxSliderPrivate *priv;
+
+  g_return_if_fail (MX_IS_SLIDER (slider));
+
+  priv = slider->priv;
+
+  priv->live_update = value;
+
+  g_object_notify (G_OBJECT (slider), "live-value");
+}
+
+/**
+ * mx_slider_get_live_update:
+ * @slider: A #MxSlider
+ *
+ * Get the value of the #MxSlider:live-update property.
+ *
+ * Returns: The current value of the "live-update" property.
+ *
+ * Since: 1.4
+ */
+gboolean
+mx_slider_get_live_update (MxSlider *slider)
+{
+  g_return_val_if_fail (MX_IS_SLIDER (slider), FALSE);
+
+  return slider->priv->live_update;
 }
