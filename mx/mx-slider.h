@@ -91,6 +91,10 @@ void            mx_slider_set_buffer_value  (MxSlider *slider,
                                              gdouble   value);
 gdouble         mx_slider_get_buffer_value  (MxSlider *slider);
 
+void            mx_slider_set_live_update (MxSlider *slider,
+                                           gboolean  value);
+gboolean        mx_slider_get_live_update (MxSlider *slider);
+
 G_END_DECLS
 
 #endif /* __MX_SLIDER_H__ */
