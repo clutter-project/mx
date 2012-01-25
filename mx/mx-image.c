@@ -1146,7 +1146,7 @@ mx_image_set_from_data_internal (MxImage          *image,
 /**
  * mx_image_set_from_data:
  * @image: An #MxImage
- * @data: Image data
+ * @data: (array): Image data
  * @pixel_format: The #CoglPixelFormat of the buffer
  * @width: Width in pixels of image data.
  * @height: Height in pixels of image data
@@ -1872,9 +1872,10 @@ mx_image_set_from_cogl_texture (MxImage    *image,
 /**
  * mx_image_set_from_buffer:
  * @image: An #MxImage
- * @buffer: A buffer pointing to encoded image data
+ * @buffer: (array length=buffer_size) (transfer full): A buffer
+ *   pointing to encoded image data
  * @buffer_size: The size of @buffer, in bytes
- * @buffer_free_func: A function to free @buffer, or %NULL
+ * @buffer_free_func: (allow-none): A function to free @buffer, or %NULL
  * @error: Return location for a #GError, or #NULL
  *
  * Set the image data from unencoded image data, stored in memory. In case of
@@ -1900,9 +1901,10 @@ mx_image_set_from_buffer (MxImage         *image,
 /**
  * mx_image_set_from_buffer_at_size:
  * @image: An #MxImage
- * @buffer: A buffer pointing to encoded image data
+ * @buffer: (array length=buffer_size) (transfer full): A buffer
+ *   pointing to encoded image data
  * @buffer_size: The size of @buffer, in bytes
- * @buffer_free_func: A function to free @buffer, or %NULL
+ * @buffer_free_func: (allow-none): A function to free @buffer, or %NULL
  * @width: Width to scale the image to, or -1
  * @height: Height to scale the image to, or -1
  * @error: Return location for a #GError, or #NULL
