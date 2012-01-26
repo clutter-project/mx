@@ -66,6 +66,9 @@ struct _MxBorderImage
   gint left;
 };
 
+gboolean mx_border_image_equal (MxBorderImage *b1, MxBorderImage *b2);
+
+
 void mx_border_image_set_from_string (GValue *value,
                                       const gchar *str,
                                       const gchar *filename);
