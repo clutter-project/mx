@@ -130,6 +130,36 @@ mx_padding_get_type (void)
   return our_type;
 }
 
+gboolean
+mx_border_image_equal (MxBorderImage *b1, MxBorderImage *b2)
+{
+  if (b1 == b2)
+    return FALSE;
+
+  if (!b1 && b2)
+    return TRUE;
+
+  if (!b2 && b1)
+    return TRUE;
+
+  if (g_strcmp0 (b1->uri, b2->uri))
+    return TRUE;
+
+  if (b1->top != b2->top)
+    return TRUE;
+
+  if (b1->right != b2->right)
+    return TRUE;
+
+  if (b1->bottom != b2->bottom)
+    return TRUE;
+
+  if (b1->left != b2->left)
+    return TRUE;
+
+  return FALSE;
+}
+
 
 static MxBorderImage *
 mx_border_image_copy (const MxBorderImage *border_image)

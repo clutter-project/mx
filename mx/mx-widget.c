@@ -567,38 +567,6 @@ old_background_faded_cb (ClutterAnimation *animation, ClutterActor *self)
   clutter_actor_unparent (self);
 }
 
-/* TODO: move to mx-types.c */
-static gboolean
-mx_border_image_equal (MxBorderImage *v1,
-                       MxBorderImage *v2)
-{
-  if (v1 == v2)
-    return FALSE;
-
-  if (!v1 && v2)
-    return TRUE;
-
-  if (!v2 && v1)
-    return TRUE;
-
-  if (g_strcmp0 (v1->uri, v2->uri))
-    return TRUE;
-
-  if (v1->top != v2->top)
-    return TRUE;
-
-  if (v1->right != v2->right)
-    return TRUE;
-
-  if (v1->bottom != v2->bottom)
-    return TRUE;
-
-  if (v1->left != v2->left)
-    return TRUE;
-
-  return FALSE;
-}
-
 static void
 mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
 {
