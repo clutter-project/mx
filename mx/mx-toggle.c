@@ -125,10 +125,13 @@ mx_toggle_handle_init (MxToggleHandle *self)
 /* mx-toggle */
 
 static void mx_toggle_stylable_iface_init (MxStylableIface *iface);
+static void mx_toggle_focusable_iface_init (MxFocusableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxToggle, mx_toggle, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
-                                                mx_toggle_stylable_iface_init))
+                                                mx_toggle_stylable_iface_init)
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
+                                                mx_toggle_focusable_iface_init))
 
 #define TOGGLE_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_TOGGLE, MxTogglePrivate))
@@ -165,6 +168,43 @@ mx_toggle_stylable_iface_init (MxStylableIface *iface)
                                "",
                                MX_PARAM_READWRITE);
   mx_stylable_iface_install_property (iface, MX_TYPE_TOGGLE, pspec);
+}
+
+static MxFocusable*
+mx_toggle_accept_focus (MxFocusable *focusable, MxFocusHint hint)
+{
+  MxTogglePrivate *priv = MX_TOGGLE (focusable)->priv;
+
+  mx_stylable_style_pseudo_class_add (MX_STYLABLE (focusable), "focus");
+  mx_stylable_style_pseudo_class_add (MX_STYLABLE (priv->handle), "focus");
+
+  clutter_actor_grab_key_focus (CLUTTER_ACTOR (focusable));
+
+  return focusable;
+}
+
+static MxFocusable*
+mx_toggle_move_focus (MxFocusable      *focusable,
+                      MxFocusDirection  direction,
+                      MxFocusable      *from)
+{
+  /* check if focus is being moved from us */
+  if (focusable == from)
+    {
+      MxTogglePrivate *priv = MX_TOGGLE (focusable)->priv;
+
+      mx_stylable_style_pseudo_class_remove (MX_STYLABLE (focusable), "focus");
+      mx_stylable_style_pseudo_class_remove (MX_STYLABLE (priv->handle), "focus");
+    }
+
+  return NULL;
+}
+
+static void
+mx_toggle_focusable_iface_init (MxFocusableIface *iface)
+{
+  iface->accept_focus = mx_toggle_accept_focus;
+  iface->move_focus = mx_toggle_move_focus;
 }
 
 static void
@@ -435,6 +475,25 @@ mx_toggle_enter_event (ClutterActor         *actor,
   return FALSE;
 }
 
+static gboolean
+mx_toggle_key_press (ClutterActor    *actor,
+                     ClutterKeyEvent *event)
+{
+  if (event->keyval == CLUTTER_KEY_Return ||
+      event->keyval == CLUTTER_KEY_KP_Enter ||
+      event->keyval == CLUTTER_KEY_ISO_Enter ||
+      event->keyval == CLUTTER_KEY_space)
+    {
+      MxToggle *toggle = (MxToggle *) actor;
+
+      mx_toggle_set_active (toggle, !toggle->priv->active);
+
+      return TRUE;
+    }
+
+  return FALSE;
+}
+
 static void
 mx_toggle_apply_style (MxWidget *widget,
                        MxStyle  *style)
@@ -472,6 +531,7 @@ mx_toggle_class_init (MxToggleClass *klass)
   actor_class->button_press_event = mx_toggle_button_press_event;
   actor_class->leave_event = mx_toggle_leave_event;
   actor_class->enter_event = mx_toggle_enter_event;
+  actor_class->key_press_event = mx_toggle_key_press;
 
   widget_class->apply_style = mx_toggle_apply_style;
 
