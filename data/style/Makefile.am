@@ -1,5 +1,6 @@
 styledir = ${datadir}/mx/style
 dist_style_DATA = \
+		button-checked.png \
 		button-disabled.png \
 		button-active.png \
 		button-hover.png \
@@ -12,11 +13,6 @@ dist_style_DATA = \
 		checkbox-background-hover.png \
 		checkbox-check.png \
 		checkbox-check-disabled.png \
-		combobox.png \
-		combobox-focus.png \
-		combobox-hover.png \
-		combobox-active.png \
-		combobox-disabled.png \
 		combobox-marker.png \
 		combobox-marker-hover.png \
 		combobox-marker-active.png \
@@ -45,6 +41,13 @@ dist_style_DATA = \
 		expander-open-disabled.png \
 		frame-background.png \
 		resize-grip.png \
+		radiobutton-background.png \
+		radiobutton-background-active.png \
+		radiobutton-background-disabled.png \
+		radiobutton-background-focus.png \
+		radiobutton-background-hover.png \
+		radiobutton-check.png \
+		radiobutton-check-disabled.png \
 		scroll-hbackground.png \
 		scroll-hbackground-disabled.png \
 		scroll-vbackground.png \
