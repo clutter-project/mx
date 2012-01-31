@@ -1,17 +1,15 @@
 m4_define([mx_major], [1])
-m4_define([mx_minor], [4])
-m4_define([mx_micro], [1])
+m4_define([mx_minor], [99])
+m4_define([mx_micro], [0])
 
 m4_define([mx_version], [mx_major.mx_minor.mx_micro])
-m4_define([mx_api_version], [mx_major.0])
-m4_define([mx_api_version_am], [mx_major\_0])
+m4_define([mx_api_version], [2.0])
+m4_define([mx_api_version_am], [2\_0])
 
 # increase the interface age of 2 for each release
 # set to 0 if the API changes
 m4_define([mx_interface_age], [0])
-# binary compatibility changed at interface 2, so the binary age needs to
-# reflect this
-m4_define([mx_abi_offset], [2])
+m4_define([mx_abi_offset], [0])
 m4_define([mx_binary_age], [m4_eval(100 * mx_minor + mx_micro - mx_abi_offset)])
 
 AC_INIT([mx], [mx_version])
