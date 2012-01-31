@@ -57,7 +57,6 @@ CFILE_GLOB=$(top_srcdir)/mx/*.c
 IGNORE_HFILES= \
 	mx.h \
 	mx-css.h \
-	mx-gtk.h \
 	mx-enum-types.h \
 	mx-marshal.c \
 	mx-marshal.h \

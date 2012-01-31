@@ -232,28 +232,6 @@ AS_IF([test "x$with_glade" = xyes],
 AM_CONDITIONAL(WITH_GLADE, test "x$with_glade" = xyes)
 AC_SUBST([catalogdir])
 
-
-#
-# Gtk+ widgets library
-#
-
-# If no parameter given default to yes otherwise use the enable value
-# --enable-widgets == yes and --disable-widgets == no
-AC_ARG_ENABLE([gtk-widgets],
-              [AC_HELP_STRING([--disable-gtk-widgets],
-                              [disable building the gtk+ widgets library])],
-              [],
-              [enable_gtk_widgets=yes])
-
-
-AS_IF([test "x$enable_gtk_widgets" = "xyes"],
-      [PKG_CHECK_MODULES(GTK, [gtk+-2.0 >= 2.20])
-       GTK_CFLAGS="$GTK_CFLAGS -DGSEAL_ENABLE=1"],
-      []
-)
-
-AM_CONDITIONAL(ENABLE_GTK_WIDGETS, test "x$enable_gtk_widgets" = xyes)
-
 dnl ***************************************************************************
 dnl Internationalization
 dnl ***************************************************************************
@@ -287,18 +265,13 @@ GOBJECT_INTROSPECTION_CHECK([0.6.4])
 AC_CONFIG_FILES([
         Makefile
         mx.pc
-        mx-gtk.pc
         data/Makefile
-        data/glade/Makefile
         data/style/Makefile
         docs/Makefile
         docs/reference/Makefile
         docs/reference/libmx/Makefile
         docs/reference/libmx/version.xml
-        docs/reference/libmx-gtk/Makefile
-        docs/reference/libmx-gtk/version.xml
         mx/Makefile
-        mx-gtk/Makefile
         mx/mx-version.h
         po/Makefile.in
         tests/Makefile
@@ -312,7 +285,6 @@ echo ""
 echo " Mx Toolkit - $VERSION"
 echo ""
 echo " Features:"
-echo "   GTK+ widgets:         $enable_gtk_widgets"
 echo "   Clutter-Imcontext:    $with_clutter_imcontext"
 echo "   Clutter-Gesture:      $with_clutter_gesture"
 echo "   Startup Notification: $with_startup_notification"

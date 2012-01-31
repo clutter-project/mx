@@ -1,9 +1,5 @@
 SUBDIRS = mx
 
-if ENABLE_GTK_WIDGETS
-SUBDIRS += mx-gtk
-endif
-
 SUBDIRS += data tests docs po
 
 
@@ -25,22 +21,13 @@ DISTCHECK_CONFIGURE_FLAGS=--enable-gtk-doc
 
 pcfiles = mx-$(MX_API_VERSION).pc
 
-if ENABLE_GTK_WIDGETS
-pcfiles += mx-gtk-$(MX_API_VERSION).pc
-endif
-
 mx-$(MX_API_VERSION).pc: mx.pc
 	@cp -f $< $@
-
-if ENABLE_GTK_WIDGETS
-mx-gtk-$(MX_API_VERSION).pc: mx-gtk.pc
-	@cp -f $< $@
-endif
 
 pkgconfig_DATA = $(pcfiles)
 pkgconfigdir = $(libdir)/pkgconfig
 
-EXTRA_DIST = $(mxdoc_DATA) mx.pc.in mx-gtk.pc.in
+EXTRA_DIST = $(mxdoc_DATA) mx.pc.in
 
 CLEANFILES = $(pcfiles)
 

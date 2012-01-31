@@ -3,11 +3,6 @@ NULL =
 AM_CFLAGS = $(MX_CFLAGS) $(MX_MAINTAINER_CFLAGS)
 LDADD = $(top_builddir)/mx/libmx-$(MX_API_VERSION).la $(MX_LIBS)
 
-if ENABLE_GTK_WIDGETS
-AM_CFLAGS += $(GTK_CFLAGS)
-LDADD += $(top_builddir)/mx-gtk/libmx-gtk-$(MX_API_VERSION).la $(GTK_LIBS)
-endif
-
 INCLUDES = \
 	-I$(top_srcdir) \
 	-I$(top_builddir)
@@ -20,12 +15,6 @@ noinst_PROGRAMS = 			\
 	test-widgets			\
 	test-containers			\
 	$(NULL)
-
-if ENABLE_GTK_WIDGETS
-noinst_PROGRAMS += test-gtk
-
-test_gtk_SOURCES = test-gtk.c
-endif
 
 test_widgets_SOURCES = test-widgets.c
 test_containers_SOURCES = test-containers.c
