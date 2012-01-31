@@ -1,3 +1,19 @@
+1.4.2
+=====
+
+Changes since 1.4.1
+
+ * create-image-cache: use dynamic memory allocation for paths
+ * entry: conditionally disable code that depends on X11
+ * kinetic-scroll-view: correctly clamp to the center
+ * offscreen: only restore the cogl state if it had been modified
+
+Fixed bugs (from bugzilla.clutter-project.org):
+
+  #2614 - Document the need for ClutterGesture for MxScrollView gestures
+  #2686 - Crash in xsettings_notify_func() due to NULL setting
+
+
 1.4.1
 =====
 
