@@ -635,8 +635,8 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
   /* border-image property */
 
   /* check whether the border-image has changed */
-  border_image_changed = mx_border_image_equal (priv->mx_border_image,
-                                                border_image);
+  border_image_changed = !mx_border_image_equal (priv->mx_border_image,
+                                                 border_image);
 
   /* remove the old border-image if it has changed */
   if (border_image_changed && priv->border_image)
