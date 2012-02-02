@@ -195,7 +195,7 @@ mx_style_load (MxStyle *style)
 
   if (!rc_file)
     rc_file = g_build_filename (PACKAGE_DATA_DIR,
-                                "mx",
+                                "mx-2.0",
                                 "style",
                                 "default.css",
                                 NULL);
