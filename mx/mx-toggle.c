@@ -115,6 +115,10 @@ mx_toggle_get_preferred_height (ClutterActor *actor,
 static void
 mx_toggle_handle_class_init (MxToggleHandleClass *klass)
 {
+  ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
+
+  actor_class->get_preferred_height = mx_toggle_get_preferred_height;
+  actor_class->get_preferred_width = mx_toggle_get_preferred_width;
 }
 
 static void
@@ -335,7 +339,7 @@ mx_toggle_allocate (ClutterActor          *actor,
       child_box.x2 = child_box.x1 + width;
     }
 
-  handle_w = (int)((child_box.x2 - child_box.x1) / 2.f);
+  clutter_actor_get_preferred_width (priv->handle, -1, NULL, &handle_w);
   toggle_pos = child_box.x2 - handle_w - child_box.x1;
   priv->slide_length = toggle_pos;
 
