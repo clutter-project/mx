@@ -639,13 +639,13 @@ mx_toggle_set_active (MxToggle *toggle,
 
       timeline = clutter_alpha_get_timeline (priv->alpha);
 
-      if (clutter_timeline_is_playing (timeline))
-        return;
-
       if (active)
         clutter_timeline_set_direction (timeline, CLUTTER_TIMELINE_FORWARD);
       else
         clutter_timeline_set_direction (timeline, CLUTTER_TIMELINE_BACKWARD);
+
+      if (clutter_timeline_is_playing (timeline))
+        return;
 
       clutter_timeline_rewind (timeline);
 
