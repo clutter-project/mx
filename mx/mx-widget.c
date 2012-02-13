@@ -63,7 +63,6 @@ struct _MxWidgetPrivate
   ClutterActor *background_image;
   ClutterColor *bg_color;
 
-  guint         is_hovered : 1;
   guint         is_disabled : 1;
   guint         parent_disabled : 1;
 
@@ -761,13 +760,11 @@ mx_widget_enter (ClutterActor         *actor,
                  ClutterCrossingEvent *event)
 {
   MxWidget *widget = MX_WIDGET (actor);
-  MxWidgetPrivate *priv = widget->priv;
 
   /* This is also expected to handle enter events from child actors
      because they will bubble up */
 
   mx_stylable_style_pseudo_class_add (MX_STYLABLE (widget), "hover");
-  priv->is_hovered = TRUE;
 
   return FALSE;
 }
@@ -777,7 +774,6 @@ mx_widget_leave (ClutterActor         *actor,
                  ClutterCrossingEvent *event)
 {
   MxWidget *widget = MX_WIDGET (actor);
-  MxWidgetPrivate *priv = widget->priv;
 
   /* If the leave event is simply moving to a child actor then we'll
      ignore it so that the actor will retain its hover state until the
@@ -791,7 +787,6 @@ mx_widget_leave (ClutterActor         *actor,
   mx_widget_long_press_cancel (widget);
   mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "active");
   mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "hover");
-  priv->is_hovered = FALSE;
 
   return FALSE;
 }
@@ -1425,6 +1420,8 @@ mx_widget_set_has_tooltip (MxWidget *widget,
         {
           priv->tooltip = g_object_new (MX_TYPE_TOOLTIP, NULL);
           clutter_actor_set_parent (CLUTTER_ACTOR (priv->tooltip), actor);
+          if (mx_stylable_style_pseudo_class_contains (MX_STYLABLE (widget), "hover"))
+            mx_widget_show_tooltip (widget);
         }
     }
   else
