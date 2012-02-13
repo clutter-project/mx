@@ -90,7 +90,6 @@ struct _MxButtonPrivate
   guint8            old_opacity;
 
   guint             is_pressed : 1;
-  guint             is_hover : 1;
   guint             is_toggle : 1;
   guint             is_toggled : 1;
 
@@ -395,7 +394,6 @@ static gboolean
 mx_button_enter (ClutterActor         *actor,
                  ClutterCrossingEvent *event)
 {
-  MxButton *button = MX_BUTTON (actor);
   MxWidget *widget = MX_WIDGET (actor);
 
   if (event->source != actor)
@@ -407,8 +405,6 @@ mx_button_enter (ClutterActor         *actor,
 
 
   mx_stylable_style_pseudo_class_add (MX_STYLABLE (widget), "hover");
-
-  button->priv->is_hover = 1;
 
   return FALSE;
 }
@@ -430,9 +426,6 @@ mx_button_leave (ClutterActor         *actor,
   /* check if the widget is disabled */
   if (mx_widget_get_disabled (MX_WIDGET (actor)))
     return FALSE;
-
-
-  button->priv->is_hover = 0;
 
   if (button->priv->is_pressed)
     {
