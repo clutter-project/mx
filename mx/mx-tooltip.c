@@ -721,6 +721,9 @@ mx_tooltip_set_text (MxTooltip   *tooltip,
 
   clutter_text_set_text (CLUTTER_TEXT (priv->label), text);
 
+  if (CLUTTER_ACTOR_IS_VISIBLE (tooltip))
+    mx_tooltip_update_position (tooltip);
+
   g_object_notify (G_OBJECT (tooltip), "text");
 }
 
