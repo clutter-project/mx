@@ -608,27 +608,6 @@ mx_button_unmap (ClutterActor *self)
 }
 
 static void
-mx_button_paint_background (MxWidget           *widget,
-                            ClutterActor       *background,
-                            const ClutterColor *color)
-{
-  MxButtonPrivate *priv;
-
-  priv = MX_BUTTON (widget)->priv;
-
-  if (priv->content_image)
-    {
-      clutter_actor_paint (priv->content_image);
-
-      return;
-    }
-
-  MX_WIDGET_CLASS (mx_button_parent_class)->paint_background (widget,
-                                                              background,
-                                                              color);
-}
-
-static void
 mx_button_allocate (ClutterActor           *actor,
                     const ClutterActorBox  *box,
                     ClutterAllocationFlags  flags)
@@ -827,7 +806,6 @@ mx_button_class_init (MxButtonClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  MxWidgetClass *widget_class = MX_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (MxButtonPrivate));
@@ -850,8 +828,6 @@ mx_button_class_init (MxButtonClass *klass)
   actor_class->map = mx_button_map;
   actor_class->unmap = mx_button_unmap;
   actor_class->allocate = mx_button_allocate;
-
-  widget_class->paint_background = mx_button_paint_background;
 
   pspec = g_param_spec_string ("label",
                                "Label",

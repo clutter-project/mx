@@ -446,52 +446,38 @@ mx_widget_allocate (ClutterActor          *actor,
 }
 
 static void
-mx_widget_real_paint_background (MxWidget           *self,
-                                 ClutterActor       *background,
-                                 const ClutterColor *color)
+mx_widget_paint (ClutterActor *self)
 {
-  /* Default implementation just draws the background
-   * colour and the image on top
-   */
-  if (color && color->alpha != 0)
+  MxWidgetPrivate *priv = MX_WIDGET (self)->priv;
+  MxWidgetClass *klass = MX_WIDGET_GET_CLASS (self);
+
+  /* paint the background color first */
+  if (priv->bg_color && priv->bg_color->alpha != 0)
     {
       ClutterActor *actor = CLUTTER_ACTOR (self);
       ClutterActorBox allocation = { 0, };
-      ClutterColor bg_color = *color;
       gfloat w, h;
 
-      bg_color.alpha = clutter_actor_get_paint_opacity (actor)
-                       * bg_color.alpha
-                       / 255;
+      priv->bg_color->alpha = clutter_actor_get_paint_opacity (actor) *
+        priv->bg_color->alpha / 255;
 
       clutter_actor_get_allocation_box (actor, &allocation);
 
       w = allocation.x2 - allocation.x1;
       h = allocation.y2 - allocation.y1;
 
-      cogl_set_source_color4ub (bg_color.red,
-                                bg_color.green,
-                                bg_color.blue,
-                                bg_color.alpha);
+      cogl_set_source_color4ub (priv->bg_color->red,
+                                priv->bg_color->green,
+                                priv->bg_color->blue,
+                                priv->bg_color->alpha);
       cogl_rectangle (0, 0, w, h);
     }
 
-  if (background)
-    clutter_actor_paint (background);
+  if (priv->border_image)
+    clutter_actor_paint (priv->border_image);
 
-  if (self->priv->old_border_image)
-    clutter_actor_paint (self->priv->old_border_image);
-}
-
-static void
-mx_widget_paint (ClutterActor *self)
-{
-  MxWidgetPrivate *priv = MX_WIDGET (self)->priv;
-  MxWidgetClass *klass = MX_WIDGET_GET_CLASS (self);
-
-  klass->paint_background (MX_WIDGET (self),
-                           priv->border_image,
-                           priv->bg_color);
+  if (priv->old_border_image)
+    clutter_actor_paint (priv->old_border_image);
 
   if (priv->background_image != NULL)
     clutter_actor_paint (priv->background_image);
@@ -1066,8 +1052,6 @@ mx_widget_class_init (MxWidgetClass *klass)
 
   actor_class->get_paint_volume = mx_widget_get_paint_volume;
 
-  klass->paint_background = mx_widget_real_paint_background;
-
   /* stylable interface properties */
   g_object_class_override_property (gobject_class, PROP_STYLE, "style");
   widget_properties[PROP_STYLE] = g_object_class_find_property (gobject_class,
@@ -1571,33 +1555,6 @@ mx_widget_hide_tooltip (MxWidget *widget)
 
   if (widget->priv->tooltip)
     mx_tooltip_hide (widget->priv->tooltip);
-}
-
-/**
- * mx_widget_paint_background:
- * @widget: a #MxWidget
- *
- * Invokes #MxWidget::paint_background() using the default background
- * image and/or color from the @widget style
- *
- * This function should be used by subclasses of #MxWidget that override
- * the paint() virtual function and cannot chain up
- */
-void
-mx_widget_paint_background (MxWidget *self)
-{
-  MxWidgetPrivate *priv;
-  MxWidgetClass *klass;
-
-  g_return_if_fail (MX_IS_WIDGET (self));
-
-  priv = self->priv;
-
-  klass = MX_WIDGET_GET_CLASS (self);
-  klass->paint_background (MX_WIDGET (self),
-                          priv->border_image,
-                          priv->bg_color);
-
 }
 
 /**

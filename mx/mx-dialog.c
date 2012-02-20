@@ -670,8 +670,6 @@ mx_dialog_paint (ClutterActor *actor)
       clutter_actor_paint (priv->blur);
     }
 
-  mx_widget_paint_background (MX_WIDGET (actor));
-
   cogl_translate (width/2, height/2, 0);
   cogl_scale (priv->zoom, priv->zoom, 1.f);
   cogl_rotate (priv->angle, 0, 0, 1);

@@ -79,9 +79,6 @@ struct _MxWidgetClass
   ClutterActorClass parent_class;
 
   /* vfuncs */
-  void (* paint_background) (MxWidget           *self,
-                             ClutterActor       *background,
-                             const ClutterColor *color);
   gboolean (* long_press) (MxWidget          *widget,
                            MxLongPressAction  action,
                            gfloat             x,
@@ -133,7 +130,6 @@ ClutterActor *mx_widget_get_background_image (MxWidget  *actor);
 ClutterActor *mx_widget_get_border_image     (MxWidget  *actor);
 void          mx_widget_get_padding          (MxWidget  *widget,
                                               MxPadding *padding);
-void          mx_widget_paint_background     (MxWidget  *widget);
 void          mx_widget_apply_style          (MxWidget  *widget,
                                               MxStyle   *style);
 void          mx_widget_get_available_area   (MxWidget              *widget,
