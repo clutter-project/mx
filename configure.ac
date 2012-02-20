@@ -199,23 +199,6 @@ AS_IF([test "x$with_startup_notification" != xno],
                         with_startup_notification=no]]
       ))
 
-AC_ARG_WITH([dbus],
-            [AC_HELP_STRING([--without-dbus],
-                            [disable DBus support])],
-            [],
-            [with_dbus=auto])
-
-AS_IF([test "x$with_dbus" != xno],
-      [PKG_CHECK_EXISTS([dbus-glib-1 >= 0.82],
-                        [AC_DEFINE([HAVE_DBUS], [1],
-                                   [Define if DBus support is enabled])
-                        MX_REQUIRES="$MX_REQUIRES dbus-glib-1 >= 0.82"
-                        with_dbus=yes],
-                        [AS_IF([test "x$with_debug" = xyes],
-                               AC_MSG_FAILURE([Could not find dbus-glib. Use --without-dbus to disable DBus support.]))
-                        with_dbus=no]]
-      ))
-
 AC_ARG_WITH([glade],
             [AC_HELP_STRING([--with-glade],
                             [enable glade3 support])],
@@ -288,7 +271,6 @@ echo " Features:"
 echo "   Clutter-Imcontext:    $with_clutter_imcontext"
 echo "   Clutter-Gesture:      $with_clutter_gesture"
 echo "   Startup Notification: $with_startup_notification"
-echo "   Dbus:                 $with_dbus"
 echo "   Windowing system:     $MX_WINSYS"
 echo ""
 echo " Documentation:"
