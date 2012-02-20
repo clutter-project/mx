@@ -199,22 +199,6 @@ AS_IF([test "x$with_startup_notification" != xno],
                         with_startup_notification=no]]
       ))
 
-AC_ARG_WITH([glade],
-            [AC_HELP_STRING([--with-glade],
-                            [enable glade3 support])],
-            [],
-            [with_glade=no])
-
-AS_IF([test "x$with_glade" = xyes],
-      [PKG_CHECK_EXISTS([gladeui-1.0 >= 3.4.5],
-                        [PKG_PROG_PKG_CONFIG()
-                         catalogdir=`${PKG_CONFIG} --variable=catalogdir gladeui-1.0`],
-                        [AC_MSG_FAILURE([Could not find gladeui-1.0 >= 3.4.5])]]
-      ))
-
-AM_CONDITIONAL(WITH_GLADE, test "x$with_glade" = xyes)
-AC_SUBST([catalogdir])
-
 dnl ***************************************************************************
 dnl Internationalization
 dnl ***************************************************************************
