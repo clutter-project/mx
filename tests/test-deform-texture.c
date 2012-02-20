@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Intel Corporation.
+ * Copyright 2010, 2012 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -128,11 +128,10 @@ completed_cb (ClutterAnimation *animation, ClutterActor *texture)
     func = 0;
 }
 
-int
-main (int argc, char *argv[])
+static void
+startup_cb (MxApplication *app)
 {
   MxWindow *window;
-  MxApplication *app;
   gfloat width, height;
   ClutterActor *stage, *texture, *front, *back;
   ClutterColor stage_color = { 0xcc, 0xcc, 0xcc, 0xb0 };
@@ -142,9 +141,8 @@ main (int argc, char *argv[])
   clutter_x11_set_use_argb_visual (TRUE);
 #endif
 
-  app = mx_application_new (&argc, &argv, "Test deformations", 0);
+  window = mx_application_create_window (app, "Test Deform Texture");
 
-  window = mx_application_create_window (app);
   stage = (ClutterActor *)mx_window_get_clutter_stage (window);
 
   clutter_stage_set_color (CLUTTER_STAGE (stage), &stage_color);
@@ -154,27 +152,13 @@ main (int argc, char *argv[])
 
   /* Create a page-turn deformation */
   texture = mx_deform_page_turn_new ();
-  if (argc > 1)
-    {
-      front = clutter_texture_new_from_file (argv[1], NULL);
-    }
-  else
-    {
-      front = mx_offscreen_new ();
-      mx_offscreen_set_child (MX_OFFSCREEN (front),
-                              mx_button_new_with_label ("Front face"));
-    }
+  front = mx_offscreen_new ();
+  mx_offscreen_set_child (MX_OFFSCREEN (front),
+                          mx_button_new_with_label ("Front face"));
 
-  if (argc > 2)
-    {
-      back = clutter_texture_new_from_file (argv[2], NULL);
-    }
-  else
-    {
-      back = mx_offscreen_new ();
-      mx_offscreen_set_child (MX_OFFSCREEN (back),
-                              mx_button_new_with_label ("Back face"));
-    }
+  back = mx_offscreen_new ();
+  mx_offscreen_set_child (MX_OFFSCREEN (back),
+                          mx_button_new_with_label ("Back face"));
 
   mx_deform_texture_set_textures (MX_DEFORM_TEXTURE (texture),
                                   (ClutterTexture *)front,
@@ -195,7 +179,18 @@ main (int argc, char *argv[])
 
   /* Begin */
   clutter_actor_show (stage);
-  mx_application_run (app);
+}
+
+int
+main (int argc, char *argv[])
+{
+  MxApplication *app;
+
+  app = mx_application_new ("org.clutter-project.Mx.TestDeformTexture", 0);
+
+  g_signal_connect_after (app, "startup", G_CALLBACK (startup_cb), NULL);
+
+  g_application_run (G_APPLICATION (app), argc, argv);
 
   return 0;
 }

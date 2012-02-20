@@ -97,16 +97,13 @@ rotate_clicked_cb (ClutterActor *button,
   mx_window_set_window_rotation (window, rotation);
 }
 
-int
-main (int argc, char **argv)
+static void
+startup_cb (MxApplication *app)
 {
   MxWindow *window;
-  MxApplication *app;
   ClutterActor *stage, *toggle, *label, *table, *button, *icon;
 
-  app = mx_application_new (&argc, &argv, "Test PathBar", 0);
-
-  window = mx_application_create_window (app);
+  window = mx_application_create_window (app, "Test Window");
   stage = (ClutterActor *)mx_window_get_clutter_stage (window);
   mx_window_set_icon_name (window, "window-new");
 
@@ -231,8 +228,18 @@ main (int argc, char **argv)
                         MX_ALIGN_END, MX_ALIGN_MIDDLE);
 
   clutter_actor_show (stage);
+}
 
-  mx_application_run (app);
+int
+main (int argc, char **argv)
+{
+  MxApplication *app;
+
+  app = mx_application_new ("org.clutter-project.Mx.TestWindow", 0);
+
+  g_signal_connect_after (app, "startup", G_CALLBACK (startup_cb), NULL);
+
+  g_application_run (G_APPLICATION (app), argc, argv);
 
   return 0;
 }

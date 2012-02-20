@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Intel Corporation.
+ * Copyright 2011, 2012 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -26,6 +26,7 @@ static struct
   ClutterActor *table;
   ClutterActor *frame;
   ClutterActor *inspector;
+  gchar *selected_widget;
 } data;
 
 /* skip properties that have no effect or could cause other problems */
@@ -430,21 +431,14 @@ create_rotate_box (MxWindow *window)
   return layout;
 }
 
-int
-main (int argc, char **argv)
+static void
+startup_cb (MxApplication *application)
 {
-  MxApplication *application;
   MxWindow *window;
   ClutterActor *box;
   MxToolbar *toolbar;
-  gchar *selected_widget;
 
-  application = mx_application_new (&argc, &argv, "test-widgets", 0);
-
-  window = mx_application_create_window (application);
-
-  if (argc > 1)
-    selected_widget = argv[1];
+  window = mx_application_create_window (application, "Test Widgets");
 
   /* main content */
   data.table = mx_table_new ();
@@ -458,7 +452,7 @@ main (int argc, char **argv)
   /* toolbar */
   box = mx_box_layout_new ();
   mx_box_layout_add_actor_with_properties (MX_BOX_LAYOUT (box),
-                                           create_combo_box (selected_widget),
+                                           create_combo_box (data.selected_widget),
                                            0,
                                            "expand", TRUE,
                                            "x-fill", FALSE,
@@ -473,9 +467,27 @@ main (int argc, char **argv)
 
   /* show the window */
   mx_window_show (window);
+}
+
+int
+main (int argc, char **argv)
+{
+  MxApplication *application;
+
+  application = mx_application_new ("org.clutter-project.Mx.TestWidgets", 0);
+
+  g_signal_connect_after (application, "startup", G_CALLBACK (startup_cb), NULL);
+
+  if (argc > 1)
+    {
+      data.selected_widget = argv[1];
+      argc--;
+    }
+  else
+    data.selected_widget = "";
 
   /* run the application */
-  mx_application_run (application);
+  g_application_run (G_APPLICATION (application), argc, argv);
 
   return 0;
 }

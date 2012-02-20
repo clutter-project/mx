@@ -1,7 +1,7 @@
 /*
  * mx-application: application class
  *
- * Copyright 2010 Intel Corporation.
+ * Copyright 2010, 2012 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -66,21 +66,14 @@ typedef struct _MxApplicationPrivate MxApplicationPrivate;
  */
 struct _MxApplication
 {
-  GObject parent;
+  GApplication parent;
 
   MxApplicationPrivate *priv;
 };
 
 struct _MxApplicationClass
 {
-  GObjectClass parent_class;
-
-  /* vfuncs */
-  MxWindow* (*create_window)   (MxApplication *application);
-  void      (*raise)           (MxApplication *application);
-
-  /* signals */
-  void          (*actions_changed) (MxApplication *app);
+  GApplicationClass parent_class;
 
   /* padding for future expansion */
   void (*_padding_0) (void);
@@ -92,47 +85,19 @@ struct _MxApplicationClass
 
 GType mx_application_get_type (void) G_GNUC_CONST;
 
-typedef enum
-{
-  MX_APPLICATION_SINGLE_INSTANCE = 1,
-  MX_APPLICATION_KEEP_ALIVE      = 1 << 2,
-} MxApplicationFlags;
 
+MxApplication* mx_application_new           (const gchar       *application_id,
+                                             GApplicationFlags  flags);
 
-MxApplication* mx_application_new (gint                 *argc,
-                                   gchar              ***argv,
-                                   const gchar          *name,
-                                   MxApplicationFlags    flags);
-void           mx_application_run  (MxApplication      *application);
-void           mx_application_quit (MxApplication      *application);
+void           mx_application_add_window    (MxApplication *application,
+                                             MxWindow      *window);
+void           mx_application_remove_window (MxApplication *application,
+                                             MxWindow      *window);
 
-MxWindow * mx_application_create_window (MxApplication *application);
+const GList*   mx_application_get_windows   (MxApplication *application);
 
-MxApplicationFlags    mx_application_get_flags     (MxApplication *application);
-
-void                  mx_application_add_window    (MxApplication *application,
-                                                    MxWindow      *window);
-void                  mx_application_remove_window (MxApplication *application,
-                                                    MxWindow      *window);
-
-const GList         * mx_application_get_windows   (MxApplication *application);
-
-void                  mx_application_add_action    (MxApplication *application,
-                                                    MxAction      *action);
-
-void                  mx_application_remove_action (MxApplication *application,
-                                                    const gchar   *name);
-
-GList               * mx_application_get_actions   (MxApplication *application);
-
-void                  mx_application_invoke_action (MxApplication *application,
-                                                    const gchar   *name);
-void                  mx_application_invoke_action_with_parameter (MxApplication *application,
-                                                                   const gchar   *name,
-                                                                   GVariant      *variant);
-
-gboolean              mx_application_is_running    (MxApplication *application);
-
+MxWindow*      mx_application_create_window (MxApplication *application,
+                                             const gchar   *window_title);
 G_END_DECLS
 
 #endif /* _MX_APPLICATION_H */
