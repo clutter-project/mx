@@ -33,7 +33,6 @@
 
 #include "mx-image.h"
 #include "mx-enum-types.h"
-#include "mx-marshal.h"
 #include "mx-texture-cache.h"
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
@@ -67,7 +66,7 @@ typedef struct
 {
   MxImage   *parent;
 
-  GMutex         *mutex;
+  GMutex          mutex;
   guint           complete  : 1;
   guint           cancelled : 1;
   guint           upscale   : 1;
@@ -162,7 +161,7 @@ mx_image_error_quark (void)
 static void
 mx_image_async_data_free (MxImageAsyncData *data)
 {
-  g_mutex_free (data->mutex);
+  g_mutex_clear (&data->mutex);
 
   if (data->free_func)
     data->free_func (data->buffer);
@@ -186,8 +185,8 @@ mx_image_async_data_new (MxImage *parent)
 {
   MxImageAsyncData *data = g_new0 (MxImageAsyncData, 1);
 
+  g_mutex_init (&data->mutex);
   data->parent = parent;
-  data->mutex = g_mutex_new ();
   data->width = -1;
   data->height = -1;
   data->upscale = parent->priv->upscale;
@@ -672,8 +671,7 @@ mx_image_class_init (MxImageClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxImageClass, image_loaded),
-                  NULL, NULL,
-                  _mx_marshal_VOID__VOID,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
 
   /**
@@ -690,8 +688,7 @@ mx_image_class_init (MxImageClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxImageClass, image_load_error),
-                  NULL, NULL,
-                  _mx_marshal_VOID__BOXED,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 1, G_TYPE_ERROR);
 
   mx_image_cache_quark = g_quark_from_static_string ("mx-image-cache");
@@ -1287,8 +1284,8 @@ mx_image_load_complete_cb (gpointer task_data)
    * the mutex, and freeing a locked mutex results in undefined behaviour
    * (well, it crashes on Linux with an assert in pthreads...)
    */
-  g_mutex_lock (data->mutex);
-  g_mutex_unlock (data->mutex);
+  g_mutex_lock (&data->mutex);
+  g_mutex_unlock (&data->mutex);
 
   /* Reset the idle handler id so we don't try to remove it when we free
    * the data later on.
@@ -1500,7 +1497,7 @@ mx_image_async_cb (gpointer task_data,
   gboolean scaled;
   MxImageAsyncData *data = task_data;
 
-  g_mutex_lock (data->mutex);
+  g_mutex_lock (&data->mutex);
 
   /* Check if the task has been cancelled and bail out - leave to the main
    * thread to free the data.
@@ -1510,9 +1507,7 @@ mx_image_async_cb (gpointer task_data,
       data->idle_handler =
         clutter_threads_add_idle_full (G_PRIORITY_HIGH_IDLE,
                                        mx_image_load_complete_cb, data, NULL);
-      g_mutex_unlock (data->mutex);
-
-      return;
+      goto out;
     }
 
   /* Try to load the pixbuf */
@@ -1535,7 +1530,8 @@ mx_image_async_cb (gpointer task_data,
     clutter_threads_add_idle_full (G_PRIORITY_HIGH_IDLE,
                                    mx_image_load_complete_cb, data, NULL);
 
-  g_mutex_unlock (data->mutex);
+ out:
+  g_mutex_unlock (&data->mutex);
 }
 
 static gboolean
@@ -1597,7 +1593,7 @@ mx_image_set_async (MxImage         *image,
     {
       MxImageAsyncData *old_data = priv->async_load_data;
 
-      if (!g_mutex_trylock (old_data->mutex))
+      if (!g_mutex_trylock (&old_data->mutex))
         {
           /* The thread is busy, cancel it and start a new one */
           old_data->cancelled = TRUE;
@@ -1608,7 +1604,7 @@ mx_image_set_async (MxImage         *image,
             {
               /* The load finished, cancel the upload */
               old_data->cancelled = TRUE;
-              g_mutex_unlock (old_data->mutex);
+              g_mutex_unlock (&old_data->mutex);
             }
           else
             {
@@ -1621,7 +1617,7 @@ mx_image_set_async (MxImage         *image,
               old_data->width = width;
               old_data->height = height;
               old_data->cancelled = FALSE;
-              g_mutex_unlock (old_data->mutex);
+              g_mutex_unlock (&old_data->mutex);
 
               data = old_data;
             }

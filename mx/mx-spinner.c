@@ -29,7 +29,6 @@
  */
 
 #include "mx-spinner.h"
-#include "mx-marshal.h"
 #include "mx-private.h"
 #include "mx-stylable.h"
 
@@ -320,8 +319,7 @@ mx_spinner_class_init (MxSpinnerClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxSpinnerClass, looped),
-                  NULL, NULL,
-                  _mx_marshal_VOID__VOID,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
 }
 

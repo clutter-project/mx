@@ -46,7 +46,6 @@
  * </figure>
  */
 
-#include "mx-marshal.h"
 #include "mx-expander.h"
 #include "mx-private.h"
 #include "mx-stylable.h"
@@ -620,8 +619,7 @@ mx_expander_class_init (MxExpanderClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxExpanderClass, expand_complete),
-                  NULL, NULL,
-                  _mx_marshal_VOID__VOID,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
 }
 

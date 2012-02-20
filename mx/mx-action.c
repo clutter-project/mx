@@ -450,8 +450,7 @@ mx_action_class_init (MxActionClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxActionClass, activated),
-                  NULL, NULL,
-                  g_cclosure_marshal_VOID__VOID,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
 
   /**
@@ -469,8 +468,7 @@ mx_action_class_init (MxActionClass *klass)
   signals[ACTIVATE] = g_signal_new ("activate",
                                     MX_TYPE_ACTION,
                                     G_SIGNAL_RUN_LAST,
-                                    0, NULL, NULL,
-                                    g_cclosure_marshal_VOID__VARIANT,
+                                    0, NULL, NULL, NULL,
                                     G_TYPE_NONE, 1,
                                     G_TYPE_VARIANT);
 }

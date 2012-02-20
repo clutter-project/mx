@@ -36,7 +36,6 @@
 
 #include "mx-actor-manager.h"
 #include "mx-enum-types.h"
-#include "mx-marshal.h"
 #include "mx-private.h"
 
 G_DEFINE_TYPE (MxActorManager, mx_actor_manager, G_TYPE_OBJECT)
@@ -295,8 +294,7 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxActorManagerClass, actor_created),
-                  NULL, NULL,
-                  _mx_marshal_VOID__ULONG_OBJECT,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 2,
                   G_TYPE_ULONG, CLUTTER_TYPE_ACTOR);
 
@@ -316,8 +314,7 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxActorManagerClass, actor_added),
-                  NULL, NULL,
-                  _mx_marshal_VOID__ULONG_OBJECT_OBJECT,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 3,
                   G_TYPE_ULONG, CLUTTER_TYPE_ACTOR, CLUTTER_TYPE_ACTOR);
 
@@ -337,8 +334,7 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxActorManagerClass, actor_removed),
-                  NULL, NULL,
-                  _mx_marshal_VOID__ULONG_OBJECT_OBJECT,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 3,
                   G_TYPE_ULONG, CLUTTER_TYPE_ACTOR, CLUTTER_TYPE_ACTOR);
 
@@ -356,8 +352,7 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxActorManagerClass, actor_created),
-                  NULL, NULL,
-                  _mx_marshal_VOID__OBJECT,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 1,
                   CLUTTER_TYPE_ACTOR);
 
@@ -375,8 +370,7 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxActorManagerClass, operation_completed),
-                  NULL, NULL,
-                  _mx_marshal_VOID__ULONG,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 1,
                   G_TYPE_ULONG);
 
@@ -394,8 +388,7 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxActorManagerClass, operation_cancelled),
-                  NULL, NULL,
-                  _mx_marshal_VOID__ULONG,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 1,
                   G_TYPE_ULONG);
 
@@ -414,8 +407,7 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxActorManagerClass, operation_failed),
-                  NULL, NULL,
-                  _mx_marshal_VOID__ULONG_BOXED,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 2,
                   G_TYPE_ULONG, G_TYPE_ERROR);
 

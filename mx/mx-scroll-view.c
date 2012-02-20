@@ -44,7 +44,6 @@
  */
 
 #include "mx-scroll-view.h"
-#include "mx-marshal.h"
 #include "mx-scroll-bar.h"
 #include "mx-scrollable.h"
 #include "mx-stylable.h"

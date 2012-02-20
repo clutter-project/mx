@@ -62,7 +62,6 @@
 #include "mx-widget.h"
 #include "mx-stylable.h"
 #include "mx-texture-cache.h"
-#include "mx-marshal.h"
 #include "mx-clipboard.h"
 #include "mx-focusable.h"
 #include "mx-private.h"
@@ -1201,8 +1200,7 @@ mx_entry_class_init (MxEntryClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxEntryClass, primary_icon_clicked),
-                  NULL, NULL,
-                  _mx_marshal_VOID__VOID,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
   /**
    * MxEntry::secondary-icon-clicked:
@@ -1214,8 +1212,7 @@ mx_entry_class_init (MxEntryClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxEntryClass, secondary_icon_clicked),
-                  NULL, NULL,
-                  _mx_marshal_VOID__VOID,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
 }
 

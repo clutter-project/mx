@@ -39,7 +39,6 @@
 
 #include "mx-scroll-bar.h"
 #include "mx-frame.h"
-#include "mx-marshal.h"
 #include "mx-stylable.h"
 #include "mx-enum-types.h"
 #include "mx-private.h"
@@ -660,8 +659,7 @@ mx_scroll_bar_class_init (MxScrollBarClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxScrollBarClass, scroll_start),
-                  NULL, NULL,
-                  g_cclosure_marshal_VOID__VOID,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
 
   signals[SCROLL_STOP] =
@@ -669,8 +667,7 @@ mx_scroll_bar_class_init (MxScrollBarClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxScrollBarClass, scroll_stop),
-                  NULL, NULL,
-                  g_cclosure_marshal_VOID__VOID,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
 }
 

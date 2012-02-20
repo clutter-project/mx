@@ -45,7 +45,6 @@
 
 #include "mx-button.h"
 
-#include "mx-marshal.h"
 #include "mx-stylable.h"
 #include "mx-style.h"
 #include "mx-texture-frame.h"
@@ -922,8 +921,7 @@ mx_button_class_init (MxButtonClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (MxButtonClass, clicked),
-                  NULL, NULL,
-                  _mx_marshal_VOID__VOID,
+                  NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
 }
 

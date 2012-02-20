@@ -39,7 +39,6 @@
 
 #include "mx-kinetic-scroll-view.h"
 #include "mx-enum-types.h"
-#include "mx-marshal.h"
 #include "mx-private.h"
 #include "mx-scrollable.h"
 #include <math.h>

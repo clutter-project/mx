@@ -28,7 +28,6 @@
 
 #include "mx-draggable.h"
 #include "mx-enum-types.h"
-#include "mx-marshal.h"
 #include "mx-private.h"
 
 typedef struct _DragContext DragContext;
@@ -484,8 +483,7 @@ mx_draggable_base_init (gpointer g_iface)
                       iface_type,
                       G_SIGNAL_RUN_FIRST,
                       G_STRUCT_OFFSET (MxDraggableIface, drag_begin),
-                      NULL, NULL,
-                      _mx_marshal_VOID__FLOAT_FLOAT_INT_ENUM,
+                      NULL, NULL, NULL,
                       G_TYPE_NONE, 4,
                       G_TYPE_FLOAT,
                       G_TYPE_FLOAT,
@@ -497,8 +495,7 @@ mx_draggable_base_init (gpointer g_iface)
                       iface_type,
                       G_SIGNAL_RUN_FIRST,
                       G_STRUCT_OFFSET (MxDraggableIface, drag_motion),
-                      NULL, NULL,
-                      _mx_marshal_VOID__FLOAT_FLOAT,
+                      NULL, NULL, NULL,
                       G_TYPE_NONE, 2,
                       G_TYPE_FLOAT,
                       G_TYPE_FLOAT);
@@ -508,8 +505,7 @@ mx_draggable_base_init (gpointer g_iface)
                       iface_type,
                       G_SIGNAL_RUN_FIRST,
                       G_STRUCT_OFFSET (MxDraggableIface, drag_end),
-                      NULL, NULL,
-                      _mx_marshal_VOID__FLOAT_FLOAT,
+                      NULL, NULL, NULL,
                       G_TYPE_NONE, 2,
                       G_TYPE_FLOAT,
                       G_TYPE_FLOAT);

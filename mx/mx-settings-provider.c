@@ -21,7 +21,6 @@
 
 #include "mx-settings-provider.h"
 #include "mx-enum-types.h"
-#include "mx-marshal.h"
 
 enum
 {
@@ -57,8 +56,7 @@ mx_settings_provider_base_init (gpointer g_iface)
                       G_SIGNAL_RUN_LAST,
                       G_STRUCT_OFFSET (MxSettingsProviderIface,
                                        setting_changed),
-                      NULL, NULL,
-                      _mx_marshal_VOID__UINT,
+                      NULL, NULL, NULL,
                       G_TYPE_NONE, 1, G_TYPE_UINT);
     }
 }
