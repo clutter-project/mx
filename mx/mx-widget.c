@@ -3,7 +3,7 @@
  * mx-widget.c: Base class for Mx actors
  *
  * Copyright 2007 OpenedHand
- * Copyright 2008, 2009, 2010 Intel Corporation.
+ * Copyright 2008, 2009, 2010, 2012 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -58,8 +58,8 @@ struct _MxWidgetPrivate
   gchar         *style_class;
   MxBorderImage *mx_border_image;
 
-  ClutterActor *border_image;
-  ClutterActor *old_border_image;
+  CoglHandle    border_image;
+  CoglHandle    old_border_image;
   ClutterActor *background_image;
   ClutterColor *bg_color;
 
@@ -274,15 +274,13 @@ mx_widget_dispose (GObject *gobject)
 
   if (priv->border_image)
     {
-      clutter_actor_unparent (priv->border_image);
+      cogl_handle_unref (priv->border_image);
       priv->border_image = NULL;
     }
 
   if (priv->old_border_image)
     {
-      g_object_remove_weak_pointer (G_OBJECT (priv->old_border_image),
-                                    (gpointer)&priv->old_border_image);
-      clutter_actor_unparent (priv->old_border_image);
+      cogl_handle_unref (priv->old_border_image);
       priv->old_border_image = NULL;
     }
 
@@ -372,16 +370,6 @@ mx_widget_allocate (ClutterActor          *actor,
       mx_tooltip_set_tip_area (priv->tooltip, &area);
     }
 
-
-
-  /* allocate border images */
-  if (priv->border_image)
-    clutter_actor_allocate (priv->border_image, &frame_box, flags);
-
-  if (priv->old_border_image)
-    clutter_actor_allocate (priv->old_border_image, &frame_box, flags);
-
-
   if (priv->background_image)
     {
       gfloat w, h;
@@ -446,38 +434,50 @@ mx_widget_allocate (ClutterActor          *actor,
 }
 
 static void
-mx_widget_paint (ClutterActor *self)
+mx_widget_paint (ClutterActor *actor)
 {
-  MxWidgetPrivate *priv = MX_WIDGET (self)->priv;
-  MxWidgetClass *klass = MX_WIDGET_GET_CLASS (self);
+  MxWidgetPrivate *priv = MX_WIDGET (actor)->priv;
+
+  ClutterActorBox allocation = { 0, };
+  gfloat width, height;
+
+  clutter_actor_get_allocation_box (actor, &allocation);
+
+
+  width = allocation.x2 - allocation.x1;
+  height = allocation.y2 - allocation.y1;
 
   /* paint the background color first */
   if (priv->bg_color && priv->bg_color->alpha != 0)
     {
-      ClutterActor *actor = CLUTTER_ACTOR (self);
-      ClutterActorBox allocation = { 0, };
-      gfloat w, h;
-
       priv->bg_color->alpha = clutter_actor_get_paint_opacity (actor) *
         priv->bg_color->alpha / 255;
 
-      clutter_actor_get_allocation_box (actor, &allocation);
-
-      w = allocation.x2 - allocation.x1;
-      h = allocation.y2 - allocation.y1;
 
       cogl_set_source_color4ub (priv->bg_color->red,
                                 priv->bg_color->green,
                                 priv->bg_color->blue,
                                 priv->bg_color->alpha);
-      cogl_rectangle (0, 0, w, h);
+      cogl_rectangle (0, 0, width, height);
     }
 
   if (priv->border_image)
-    clutter_actor_paint (priv->border_image);
+    mx_texture_frame_paint_texture (priv->border_image,
+                                    clutter_actor_get_paint_opacity (actor),
+                                    priv->mx_border_image->top,
+                                    priv->mx_border_image->right,
+                                    priv->mx_border_image->bottom,
+                                    priv->mx_border_image->left,
+                                    width, height);
 
-  if (priv->old_border_image)
-    clutter_actor_paint (priv->old_border_image);
+  if (priv->border_image)
+    mx_texture_frame_paint_texture (priv->border_image,
+                                    clutter_actor_get_paint_opacity (actor),
+                                    priv->mx_border_image->top,
+                                    priv->mx_border_image->right,
+                                    priv->mx_border_image->bottom,
+                                    priv->mx_border_image->left,
+                                    width, height);
 
   if (priv->background_image != NULL)
     clutter_actor_paint (priv->background_image);
@@ -507,12 +507,6 @@ mx_widget_map (ClutterActor *actor)
 
   CLUTTER_ACTOR_CLASS (mx_widget_parent_class)->map (actor);
 
-  if (priv->border_image)
-    clutter_actor_map (priv->border_image);
-
-  if (priv->old_border_image)
-    clutter_actor_map (priv->old_border_image);
-
   if (priv->background_image)
     clutter_actor_map (priv->background_image);
 
@@ -529,12 +523,6 @@ mx_widget_unmap (ClutterActor *actor)
   MxWidgetPrivate *priv = MX_WIDGET (actor)->priv;
 
   CLUTTER_ACTOR_CLASS (mx_widget_parent_class)->unmap (actor);
-
-  if (priv->border_image)
-    clutter_actor_unmap (priv->border_image);
-
-  if (priv->old_border_image)
-    clutter_actor_unmap (CLUTTER_ACTOR (priv->old_border_image));
 
   if (priv->background_image)
     clutter_actor_unmap (priv->background_image);
@@ -558,7 +546,7 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
   MxWidgetPrivate *priv = MX_WIDGET (self)->priv;
   MxBorderImage *border_image = NULL, *background_image = NULL;
   MxTextureCache *texture_cache;
-  ClutterTexture *texture;
+  CoglHandle texture;
   gchar *bg_file;
   MxPadding *padding = NULL;
   gboolean relayout_needed = FALSE;
@@ -628,28 +616,7 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
     {
       if (duration == 0)
         {
-          clutter_actor_unparent (priv->border_image);
-        }
-      else
-        {
-          if (priv->old_border_image)
-            {
-              g_object_remove_weak_pointer (G_OBJECT (priv->old_border_image),
-                                            (gpointer)&priv->old_border_image);
-              clutter_actor_unparent (priv->old_border_image);
-            }
-
-          priv->old_border_image = priv->border_image;
-          g_object_add_weak_pointer (G_OBJECT (priv->old_border_image),
-                                     (gpointer)&priv->old_border_image);
-          clutter_actor_animate (priv->old_border_image,
-                                 CLUTTER_LINEAR,
-                                 duration,
-                                 "opacity", 0x0,
-                                 "signal-after::completed",
-                                   old_background_faded_cb,
-                                   priv->old_border_image,
-                                 NULL);
+          cogl_handle_unref (priv->border_image);
         }
 
       priv->border_image = NULL;
@@ -660,25 +627,9 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
   if (border_image_changed && border_image && border_image->uri)
     {
       gint border_left, border_right, border_top, border_bottom;
-      gint width, height;
 
-      texture = mx_texture_cache_get_texture (texture_cache,
-                                              border_image->uri);
-
-      clutter_texture_get_base_size (CLUTTER_TEXTURE (texture),
-                                     &width, &height);
-
-      border_left = border_image->left;
-      border_top = border_image->top;
-      border_right = border_image->right;
-      border_bottom = border_image->bottom;
-
-      priv->border_image = mx_texture_frame_new (texture,
-                                                 border_top,
-                                                 border_right,
-                                                 border_bottom,
-                                                 border_left);
-      clutter_actor_set_parent (priv->border_image, CLUTTER_ACTOR (self));
+      priv->border_image = mx_texture_cache_get_cogl_texture (texture_cache,
+                                                              border_image->uri);
 
       has_changed = TRUE;
       relayout_needed = TRUE;
@@ -712,8 +663,8 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
       if (bg_file != NULL &&
           strcmp (bg_file, "none"))
         {
-          texture = mx_texture_cache_get_texture (texture_cache, bg_file);
-          priv->background_image = (ClutterActor*) texture;
+          priv->background_image =
+            (ClutterActor*) mx_texture_cache_get_texture (texture_cache, bg_file);
 
           if (priv->background_image != NULL)
             {
