@@ -3,7 +3,7 @@
  * mx-texture-frame.h: Expandible texture actor
  *
  * Copyright 2007 OpenedHand
- * Copyright 2009 Intel Corporation.
+ * Copyright 2009, 2012 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -130,17 +130,134 @@ mx_texture_frame_get_preferred_height (ClutterActor *self,
     }
 }
 
+void
+mx_texture_frame_paint_texture (CoglHandle *texture,
+                                guint8      opacity,
+                                gfloat      top,
+                                gfloat      right,
+                                gfloat      bottom,
+                                gfloat      left,
+                                gfloat      width,
+                                gfloat      height)
+{
+  gfloat tex_width, tex_height;
+  gfloat ex, ey;
+  gfloat tx1, ty1, tx2, ty2;
+  static CoglHandle template_material;
+  CoglHandle material;
+
+
+  /* setup the template material */
+  if (!template_material)
+    template_material = cogl_material_new ();
+
+  /* create the material and apply opacity */
+  material = cogl_material_copy (template_material);
+  cogl_material_set_color4ub (material, opacity, opacity, opacity, opacity);
+
+  /* add the texture */
+  cogl_material_set_layer (material, 0, texture);
+
+  /* set the source */
+  cogl_set_source (material);
+
+
+
+  tex_width  = cogl_texture_get_width (texture);
+  tex_height = cogl_texture_get_height (texture);
+
+  /* simple stretch */
+  if (left == 0 && right == 0 && top == 0
+      && bottom == 0)
+    {
+      cogl_rectangle (0, 0, width, height);
+      return;
+    }
+
+  tx1 = left / tex_width;
+  tx2 = (tex_width - right) / tex_width;
+  ty1 = top / tex_height;
+  ty2 = (tex_height - bottom) / tex_height;
+
+  ex = width - right;
+  if (ex < left)
+    ex = left;
+
+  ey = height - bottom;
+  if (ey < top)
+    ey = top;
+
+
+  {
+    GLfloat rectangles[] =
+    {
+      /* top left corner */
+      0, 0,
+      left, top,
+      0.0, 0.0,
+      tx1, ty1,
+
+      /* top middle */
+      left, 0,
+      MAX (left, ex), top,
+      tx1, 0.0,
+      tx2, ty1,
+
+      /* top right */
+      ex, 0,
+      MAX (ex + right, width), top,
+      tx2, 0.0,
+      1.0, ty1,
+
+      /* mid left */
+      0, top,
+      left,  ey,
+      0.0, ty1,
+      tx1, ty2,
+
+      /* center */
+      left, top,
+      ex, ey,
+      tx1, ty1,
+      tx2, ty2,
+
+      /* mid right */
+      ex, top,
+      MAX (ex + right, width), ey,
+      tx2, ty1,
+      1.0, ty2,
+
+      /* bottom left */
+      0, ey,
+      left, MAX (ey + bottom, height),
+      0.0, ty2,
+      tx1, 1.0,
+
+      /* bottom center */
+      left, ey,
+      ex, MAX (ey + bottom, height),
+      tx1, ty2,
+      tx2, 1.0,
+
+      /* bottom right */
+      ex, ey,
+      MAX (ex + right, width), MAX (ey + bottom, height),
+      tx2, ty2,
+      1.0, 1.0
+    };
+
+    cogl_rectangles_with_texture_coords (rectangles, 9);
+  }
+}
+
 static void
 mx_texture_frame_paint (ClutterActor *self)
 {
   MxTextureFramePrivate *priv = MX_TEXTURE_FRAME (self)->priv;
-  CoglHandle cogl_texture = COGL_INVALID_HANDLE;
   CoglHandle cogl_material = COGL_INVALID_HANDLE;
+  CoglHandle cogl_texture = COGL_INVALID_HANDLE;
   ClutterActorBox box = { 0, };
   gfloat width, height;
-  gfloat tex_width, tex_height;
-  gfloat ex, ey;
-  gfloat tx1, ty1, tx2, ty2;
   guint8 opacity;
 
   /* no need to paint stuff if we don't have a texture */
@@ -156,12 +273,11 @@ mx_texture_frame_paint (ClutterActor *self)
   cogl_texture = clutter_texture_get_cogl_texture (priv->parent_texture);
   if (cogl_texture == COGL_INVALID_HANDLE)
     return;
+
   cogl_material = clutter_texture_get_cogl_material (priv->parent_texture);
   if (cogl_material == COGL_INVALID_HANDLE)
     return;
 
-  tex_width  = cogl_texture_get_width (cogl_texture);
-  tex_height = cogl_texture_get_height (cogl_texture);
 
   clutter_actor_get_allocation_box (self, &box);
   width = box.x2 - box.x1;
@@ -170,95 +286,8 @@ mx_texture_frame_paint (ClutterActor *self)
 
   opacity = clutter_actor_get_paint_opacity (self);
 
-  /* Paint using the parent texture's material. It should already have
-     the cogl texture set as the first layer */
-  /* NB: for correct blending we need set a preumultiplied color here: */
-  cogl_material_set_color4ub (cogl_material,
-                              opacity, opacity, opacity, opacity);
-  cogl_set_source (cogl_material);
-
-  /* simple stretch */
-  if (priv->left == 0 && priv->right == 0 && priv->top == 0
-      && priv->bottom == 0)
-    {
-      cogl_rectangle (0, 0, width, height);
-      return;
-    }
-
-  tx1 = priv->left / tex_width;
-  tx2 = (tex_width - priv->right) / tex_width;
-  ty1 = priv->top / tex_height;
-  ty2 = (tex_height - priv->bottom) / tex_height;
-
-  ex = width - priv->right;
-  if (ex < priv->left)
-    ex = priv->left;
-
-  ey = height - priv->bottom;
-  if (ey < priv->top)
-    ey = priv->top;
-
-
-  {
-    GLfloat rectangles[] =
-    {
-      /* top left corner */
-      0, 0,
-      priv->left, priv->top,
-      0.0, 0.0,
-      tx1, ty1,
-
-      /* top middle */
-      priv->left, 0,
-      MAX (priv->left, ex), priv->top,
-      tx1, 0.0,
-      tx2, ty1,
-
-      /* top right */
-      ex, 0,
-      MAX (ex + priv->right, width), priv->top,
-      tx2, 0.0,
-      1.0, ty1,
-
-      /* mid left */
-      0, priv->top,
-      priv->left,  ey,
-      0.0, ty1,
-      tx1, ty2,
-
-      /* center */
-      priv->left, priv->top,
-      ex, ey,
-      tx1, ty1,
-      tx2, ty2,
-
-      /* mid right */
-      ex, priv->top,
-      MAX (ex + priv->right, width), ey,
-      tx2, ty1,
-      1.0, ty2,
-
-      /* bottom left */
-      0, ey,
-      priv->left, MAX (ey + priv->bottom, height),
-      0.0, ty2,
-      tx1, 1.0,
-
-      /* bottom center */
-      priv->left, ey,
-      ex, MAX (ey + priv->bottom, height),
-      tx1, ty2,
-      tx2, 1.0,
-
-      /* bottom right */
-      ex, ey,
-      MAX (ex + priv->right, width), MAX (ey + priv->bottom, height),
-      tx2, ty2,
-      1.0, 1.0
-    };
-
-    cogl_rectangles_with_texture_coords (rectangles, 9);
-  }
+  mx_texture_frame_paint_texture (cogl_texture, opacity, priv->top, priv->right,
+                                  priv->bottom, priv->left, width, height);
 }
 
 static inline void
