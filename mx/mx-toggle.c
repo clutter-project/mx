@@ -575,6 +575,8 @@ mx_toggle_init (MxToggle *self)
   self->priv->handle = g_object_new (MX_TYPE_TOGGLE_HANDLE,
                                      "reactive", TRUE, NULL);
   clutter_actor_set_parent (self->priv->handle, CLUTTER_ACTOR (self));
+  g_object_bind_property (self, "disabled", self->priv->handle, "disabled",
+                          G_BINDING_SYNC_CREATE);
 
   timeline = clutter_timeline_new (300);
   g_signal_connect (timeline, "new-frame",
