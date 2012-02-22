@@ -1722,6 +1722,11 @@ mx_widget_set_disabled (MxWidget *widget,
     {
       priv->is_disabled = disabled;
 
+      if (disabled)
+        mx_stylable_style_pseudo_class_add (MX_STYLABLE (widget), "disabled");
+      else
+        mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "disabled");
+
       /* Propagate the disabled state to our children, if necessary */
       if (!priv->parent_disabled && CLUTTER_IS_CONTAINER (widget))
         _mx_widget_propagate_disabled ((ClutterContainer *) widget, disabled);
