@@ -535,18 +535,11 @@ mx_widget_unmap (ClutterActor *actor)
 }
 
 static void
-old_background_faded_cb (ClutterAnimation *animation, ClutterActor *self)
-{
-  clutter_actor_unparent (self);
-}
-
-static void
 mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
 {
   MxWidgetPrivate *priv = MX_WIDGET (self)->priv;
   MxBorderImage *border_image = NULL, *background_image = NULL;
   MxTextureCache *texture_cache;
-  CoglHandle texture;
   gchar *bg_file;
   MxPadding *padding = NULL;
   gboolean relayout_needed = FALSE;
@@ -626,8 +619,6 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
   /* apply the new border-image, as long as there is a valid URI */
   if (border_image_changed && border_image && border_image->uri)
     {
-      gint border_left, border_right, border_top, border_bottom;
-
       priv->border_image = mx_texture_cache_get_cogl_texture (texture_cache,
                                                               border_image->uri);
 
