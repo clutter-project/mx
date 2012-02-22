@@ -1450,12 +1450,18 @@ mx_entry_get_text (MxEntry *entry)
  */
 void
 mx_entry_set_text (MxEntry     *entry,
-                   const gchar *text)
+                   const gchar *entry_text)
 {
   MxEntryPrivate *priv;
   gunichar password_char;
+  const gchar *text;
 
   g_return_if_fail (MX_IS_ENTRY (entry));
+
+  if (entry_text)
+    text = entry_text;
+  else
+    text = "";
 
   priv = entry->priv;
 
