@@ -218,7 +218,7 @@ on_handle_capture_event (ClutterActor *trough,
       g_signal_emit (bar, signals[SLIDE_STOP], 0);
     }
 
-  return TRUE;
+  return FALSE;
 }
 
 static void
@@ -328,7 +328,7 @@ on_handle_button_press_event (ClutterActor       *actor,
                             G_CALLBACK (on_handle_capture_event),
                             bar);
 
-  return TRUE;
+  return FALSE;
 }
 
 /*
@@ -586,8 +586,7 @@ mx_slider_allocate (ClutterActor           *actor,
   priv->trough_box_y1 = trough_box.y1;
   priv->trough_box_y2 = trough_box.y2;
 
-  if (!priv->capture_handler)
-    mx_slider_allocate_fill_handle (self, box, flags);
+  mx_slider_allocate_fill_handle (self, box, flags);
 
   clutter_actor_allocate (priv->trough, &trough_box, flags);
 }
