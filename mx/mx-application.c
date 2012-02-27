@@ -163,6 +163,11 @@ mx_application_startup (GApplication *application)
   MxApplication *self = MX_APPLICATION (application);
   MxApplicationPrivate *priv = self->priv;
 
+
+  /* chain up */
+  G_APPLICATION_CLASS (mx_application_parent_class)->startup (application);
+
+
   error = clutter_init (0, 0);
 
   if (error != CLUTTER_INIT_SUCCESS)
