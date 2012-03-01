@@ -147,6 +147,7 @@ dnl = Required Packages ====================================================
 
 MX_REQUIRES="gdk-pixbuf-2.0"
 CLUTTER_VERSION_REQUIRED="1.11.8"
+GJS_MIN_VERSION="1.32.0"
 
 dnl = Winsys ===============================================================
 
@@ -189,6 +190,22 @@ AM_CONDITIONAL([HAVE_WAYLAND], [test "x$SUPPORT_WAYLAND" = "xyes"])
 AC_SUBST(MX_WINSYS)
 
 dnl = Optional Packages ====================================================
+
+AC_ARG_WITH([gjs],
+            [AC_HELP_STRING([--without-gjs],
+                            [disable javascript bits of Mx])],
+            [],
+            [with_gjs=auto])
+
+AS_IF([test "x$with_gjs" != xno],
+      [PKG_CHECK_EXISTS([gjs-internals-1.0 >= $GJS_MIN_VERSION],
+                        [AC_DEFINE([HAVE_GJS], [1],
+                                   [Define you have gjs])
+                         MX_REQUIRES="$MX_REQUIRES gjs-internals-1.0"
+                         with_gjs=yes],
+                        [AS_IF([test "x$with_gjs" = xyes],AC_MSG_FAILURE([Could not find gjs. Use --without-gjs to disable javascript support.]))
+                        with_gjs=no]]
+      ))
 
 AC_ARG_WITH([clutter-imcontext],
             [AC_HELP_STRING([--without-clutter-imcontext],
@@ -266,6 +283,7 @@ AC_CONFIG_FILES([
         docs/reference/libmx/version.xml
         mx/Makefile
         mx/mx-version.h
+        mx/js/Makefile
         po/Makefile.in
         tests/Makefile
         tools/Makefile
@@ -280,6 +298,7 @@ echo " Mx Toolkit - $VERSION"
 echo ""
 echo " Features:"
 echo "   Clutter-Imcontext:    $with_clutter_imcontext"
+echo "   GJS:                  $with_gjs"
 echo "   Startup Notification: $with_startup_notification"
 echo "   Windowing system:     $MX_WINSYS"
 echo ""
