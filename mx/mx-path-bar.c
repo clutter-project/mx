@@ -413,32 +413,6 @@ mx_path_bar_get_preferred_height (ClutterActor *actor,
   min_height += padding.top + padding.bottom;
   nat_height += padding.top + padding.bottom;
 
-  /* Check if the border-image is taller than our height.
-   * If so, say we want this larger size instead - this is to
-   * avoid stretching the border-image vertically.
-   */
-  if (priv->crumbs)
-    {
-      ClutterActor *border =
-        mx_widget_get_border_image (MX_WIDGET (priv->crumbs->data));
-      if (border)
-        {
-          ClutterTexture *texture =
-            mx_texture_frame_get_parent_texture (MX_TEXTURE_FRAME (border));
-
-          if (texture)
-            {
-              gint border_height;
-
-              clutter_texture_get_base_size (texture, NULL, &border_height);
-              if (border_height > nat_height)
-                nat_height = border_height;
-              if (border_height > min_height)
-                min_height = border_height;
-            }
-        }
-    }
-
   if (min_height_p)
     *min_height_p = min_height;
   if (nat_height_p)
