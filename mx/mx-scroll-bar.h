@@ -56,14 +56,14 @@ typedef struct _MxScrollBarClass     MxScrollBarClass;
 struct _MxScrollBar
 {
   /*< private >*/
-  MxBin parent_instance;
+  MxWidget parent_instance;
 
   MxScrollBarPrivate *priv;
 };
 
 struct _MxScrollBarClass
 {
-  MxBinClass parent_class;
+  MxWidgetClass parent_class;
 
   /* signals */
   void (*scroll_start) (MxScrollBar *bar);

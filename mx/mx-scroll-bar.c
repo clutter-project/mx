@@ -47,7 +47,7 @@
 
 static void mx_stylable_iface_init (MxStylableIface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (MxScrollBar, mx_scroll_bar, MX_TYPE_BIN,
+G_DEFINE_TYPE_WITH_CODE (MxScrollBar, mx_scroll_bar, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
                                                 mx_stylable_iface_init))
 
