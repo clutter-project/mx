@@ -49,6 +49,8 @@ typedef struct _MxStyleClass          MxStyleClass;
 typedef struct _MxStylable            MxStylable; /* dummy typedef */
 typedef struct _MxStylableIface       MxStylableIface;
 
+#include <mx/mx-css.h>
+
 typedef enum { /*< prefix=MX_STYLE_ERROR >*/
   MX_STYLE_ERROR_INVALID_FILE,
   MX_STYLE_ERROR_PARSE_ERROR
@@ -111,6 +113,10 @@ void     mx_style_get_valist     (MxStyle      *style,
                                   MxStylable   *stylable,
                                   const gchar  *first_property_name,
                                   va_list       va_args);
+
+GHashTable *mx_style_get_stylable_properties (MxStyle    *style,
+                                              MxStylable *stylable);
+
 
 G_END_DECLS
 

@@ -17,13 +17,13 @@
  * Author: Thomas Wood <thos@gnome.org>
  *
  */
-#include "mx-css.h"
 #include <clutter/clutter.h>
 #include <string.h>
 
 #include <unistd.h>
 #include <fcntl.h>
 
+#include "mx-css.h"
 #include "mx-private.h"
 
 struct _MxStyleSheet
@@ -51,18 +51,37 @@ struct _MxSelector
 
 /* MxStyleSheetValue */
 
-static MxStyleSheetValue *
-mx_style_sheet_value_new ()
+static gpointer
+mx_style_sheet_value_copy (gpointer data)
 {
-  return g_slice_new0 (MxStyleSheetValue);
+  return g_slice_dup (MxStyleSheetValue, data);
 }
 
 static void
-mx_style_sheet_value_free (MxStyleSheetValue *value)
+mx_style_sheet_value_free (gpointer data)
 {
-  g_slice_free (MxStyleSheetValue, value);
+  if (G_LIKELY (data))
+    g_slice_free (MxStyleSheetValue, data);
 }
 
+GType
+mx_style_sheet_value_get_type (void)
+{
+  static GType our_type = 0;
+
+  if (G_UNLIKELY (our_type == 0))
+    our_type = g_boxed_type_register_static (g_intern_static_string ("MxStyleSheetValue"),
+                                             mx_style_sheet_value_copy,
+                                             mx_style_sheet_value_free);
+
+  return our_type;
+}
+
+static MxStyleSheetValue *
+mx_style_sheet_value_new (void)
+{
+  return g_slice_new0 (MxStyleSheetValue);
+}
 
 static gchar*
 append (gchar *str1, const gchar *str2)
@@ -235,6 +254,7 @@ css_parse_simple_selector (GScanner      *scanner,
     case G_TOKEN_IDENTIFIER:
       g_scanner_get_next_token (scanner);
       selector->type = g_strdup (scanner->value.v_identifier);
+      /* g_print ("sel->type=%s\n", selector->type); */
       break;
     default:
       break;
@@ -253,6 +273,7 @@ css_parse_simple_selector (GScanner      *scanner,
           if (token != G_TOKEN_IDENTIFIER)
             return G_TOKEN_IDENTIFIER;
           selector->id = g_strdup (scanner->value.v_identifier);
+          /* g_print ("sel->id=%s\n", selector->id); */
           break;
           /* class */
         case '.':
@@ -261,6 +282,7 @@ css_parse_simple_selector (GScanner      *scanner,
           if (token != G_TOKEN_IDENTIFIER)
             return G_TOKEN_IDENTIFIER;
           selector->class = g_strdup (scanner->value.v_identifier);
+          /* g_print ("sel->class=%s\n", selector->class); */
           break;
           /* pseudo-class */
         case ':':
@@ -277,6 +299,7 @@ css_parse_simple_selector (GScanner      *scanner,
                                                   NULL);
           else
             selector->pseudo_class = g_strdup (scanner->value.v_identifier);
+          /* g_print ("sel->pseudo_class=%s\n", selector->pseudo_class); */
 
           g_free (tmp);
 
@@ -852,6 +875,7 @@ css_table_copy (gpointer                    *key,
   css_value = mx_style_sheet_value_new ();
   css_value->source = data->filename;
   css_value->string = (gchar*) value;
+  /* g_print ("%s -> %s\n", css_value->source, css_value->string); */
 
   g_hash_table_insert (data->table, key, css_value);
 }
@@ -944,6 +968,13 @@ mx_style_sheet_get_properties (MxStyleSheet *sheet,
     }
 
   return result;
+}
+
+GList *
+mx_style_sheet_get_selectors (MxStyleSheet *sheet,
+                              MxStylable   *node)
+{
+
 }
 
 MxStyleSheet *

@@ -6,8 +6,9 @@ BUILT_SOURCES = 		\
 	mx-marshal.h 		\
 	mx-marshal.c
 
-if ENABLE_DEFAULT_STYLE
-mx-default-style.c: $(top_srcdir)/data/default-style.gresource.xml
+SUBDIRS = js
+
+mx-default-style.c: $(top_srcdir)/data/default-style.gresource.xml $(UI_FILES)
 	$(GLIB_COMPILE_RESOURCES) --target=$@ --sourcedir=$(top_srcdir)/data \
 		--generate-source --c-name mx $(top_srcdir)/data/default-style.gresource.xml
 
@@ -15,9 +16,13 @@ mx-default-style.h: $(top_srcdir)/data/default-style.gresource.xml
 	$(GLIB_COMPILE_RESOURCES) --target=$@  --sourcedir=$(top_srcdir)/data \
 		--generate-header --c-name mx $(top_srcdir)/data/default-style.gresource.xml
 
-BUILT_SOURCES += mx-default-style.c mx-default-style.h
-endif
-
+BUILT_SOURCES = 		\
+	mx-default-style.c	\
+	mx-default-style.h	\
+	mx-enum-types.h 	\
+	mx-enum-types.c 	\
+	mx-marshal.h 		\
+	mx-marshal.c
 
 WINSYS_SRC = $(NULL)
 if HAVE_X11
@@ -54,6 +59,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-box-layout.h		\
 	$(top_srcdir)/mx/mx-box-layout-child.h	\
 	$(top_srcdir)/mx/mx-combo-box.h 		\
+	$(top_srcdir)/mx/mx-css.h		\
 	$(top_srcdir)/mx/mx-button.h 		\
 	$(top_srcdir)/mx/mx-button-group.h 	\
 	$(top_srcdir)/mx/mx-dialog.h 		\
@@ -107,7 +113,7 @@ source_h = \
 	$(NULL)
 
 source_h_priv = \
-	$(top_srcdir)/mx/mx-css.h		\
+	$(top_srcdir)/mx/mx-css-editor.h	\
 	$(top_srcdir)/mx/mx-native-window.h	\
 	$(top_srcdir)/mx/mx-path-bar-button.h	\
 	$(top_srcdir)/mx/mx-progress-bar-fill.h	\
@@ -125,6 +131,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-box-layout.c		\
 	$(top_srcdir)/mx/mx-box-layout-child.c	\
 	$(top_srcdir)/mx/mx-css.c		\
+	$(top_srcdir)/mx/mx-css-editor.c	\
 	$(top_srcdir)/mx/mx-combo-box.c		\
 	$(top_srcdir)/mx/mx-button.c 		\
 	$(top_srcdir)/mx/mx-button-group.c 	\

@@ -999,3 +999,22 @@ mx_style_get (MxStyle     *style,
   va_end (va_args);
 }
 
+
+/**
+ * mx_style_get_stylable_properties:
+ * @style: the style data store object
+ *
+ * Returns: (element-type Mx.StyleSheetValue) (transfer container):
+ */
+GHashTable *
+mx_style_get_stylable_properties (MxStyle    *style,
+                                  MxStylable *stylable)
+{
+  MxStylePrivate *priv;
+
+  g_return_val_if_fail (MX_IS_STYLE (style), NULL);
+
+  priv = style->priv;
+
+  return mx_style_sheet_get_properties (priv->stylesheet, stylable);
+}

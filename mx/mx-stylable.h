@@ -31,8 +31,8 @@
 #define __MX_STYLABLE_H__
 
 #include <glib-object.h>
-#include <mx/mx-style.h>
 #include <clutter/clutter.h>
+#include <mx/mx-style.h>
 
 G_BEGIN_DECLS
 

@@ -529,14 +529,24 @@ mx_stylable_get_style_property (MxStylable  *stylable,
       return;
     }
 
-  if (G_VALUE_TYPE (value) != G_PARAM_SPEC_VALUE_TYPE (pspec))
+  /* auto-conversion of the callers value type
+   */
+  if (G_VALUE_TYPE (value) == pspec->value_type)
     {
-      g_warning ("Passed value is not of the requested type `%s' for "
-                 "the style property `%s' of class `%s'",
-                 g_type_name (G_PARAM_SPEC_VALUE_TYPE (pspec)),
-                 pspec->name,
-                 g_type_name (G_OBJECT_TYPE (stylable)));
+      g_value_reset (value);
+    }
+  else if (value->g_type != 0 &&
+           !g_value_type_transformable (pspec->value_type, G_VALUE_TYPE (value)))
+    {
+      g_warning ("%s: can't retrieve property `%s' of type `%s' as value of type `%s'",
+                 G_STRFUNC, pspec->name,
+                 g_type_name (pspec->value_type),
+                 G_VALUE_TYPE_NAME (value));
       return;
+    }
+  else
+    {
+      g_value_init (value, pspec->value_type);
     }
 
   mx_stylable_get_property_internal (stylable, pspec, value);
