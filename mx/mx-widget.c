@@ -1307,6 +1307,23 @@ mx_widget_get_background_image (MxWidget *actor)
 }
 
 /**
+ * mx_widget_get_background_color:
+ * @actor: A #MxWidget
+ *
+ * Get the color used as the background. This is set using the
+ * "background-color" CSS property. This function should normally only
+ * be used by subclasses.
+ *
+ * Returns: (transfer none): a #ClutterColor
+ */
+ClutterColor *
+mx_widget_get_background_color (MxWidget *actor)
+{
+  MxWidgetPrivate *priv = MX_WIDGET (actor)->priv;
+  return priv->bg_color;
+}
+
+/**
  * mx_widget_get_padding:
  * @widget: A #MxWidget
  * @padding: A pointer to an #MxPadding to fill
