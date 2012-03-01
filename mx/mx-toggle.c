@@ -55,9 +55,7 @@ mx_toggle_get_preferred_width (ClutterActor *actor,
   ClutterActor *background;
   gfloat pref_w;
 
-  background = mx_widget_get_border_image (MX_WIDGET (actor));
-  if (!background)
-    background = mx_widget_get_background_image (MX_WIDGET (actor));
+  background = mx_widget_get_background_image (MX_WIDGET (actor));
 
   if (!background)
     {
@@ -87,9 +85,7 @@ mx_toggle_get_preferred_height (ClutterActor *actor,
   ClutterActor *background;
   gfloat pref_h;
 
-  background = mx_widget_get_border_image (MX_WIDGET (actor));
-  if (!background)
-    background = mx_widget_get_background_image (MX_WIDGET (actor));
+  background = mx_widget_get_background_image (MX_WIDGET (actor));
 
   if (!background)
     {
