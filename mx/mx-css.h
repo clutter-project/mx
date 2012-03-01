@@ -29,15 +29,6 @@ typedef struct _MxNode MxNode;
 typedef struct _MxStyleSheetValue MxStyleSheetValue;
 typedef struct _MxStyleSheet MxStyleSheet;
 
-struct _MxNode
-{
-  gchar *type;
-  gchar *id;
-  gchar *class;
-  gchar *pseudo_class;
-  MxNode *parent;
-};
-
 struct _MxStyleSheetValue
 {
   const gchar *string;
