@@ -47,6 +47,7 @@
 #include "mx-widget.h"
 #include "mx-stylable.h"
 #include "mx-private.h"
+#include "mx-texture-frame.h"
 
 enum
 {
@@ -69,6 +70,9 @@ struct _MxTooltipPrivate
   ClutterGeometry *tip_area;
 
   CoglMatrix       stage_matrix;
+
+  MxBorderImage   *border_image;
+  CoglObject      *border_image_texture;
 
   MxTooltipAnimation animation_mode;
 };
@@ -165,6 +169,7 @@ mx_tooltip_style_changed (MxWidget *self)
   gchar *font_name;
   gchar *font_string;
   gint font_size;
+  MxBorderImage *border_image;
 
   priv = MX_TOOLTIP (self)->priv;
 
@@ -173,6 +178,7 @@ mx_tooltip_style_changed (MxWidget *self)
                    "font-family", &font_name,
                    "font-size", &font_size,
                    "x-mx-tooltip-animation", &priv->animation_mode,
+                   "border-image", &border_image,
                    NULL);
 
   if (color)
@@ -199,6 +205,31 @@ mx_tooltip_style_changed (MxWidget *self)
       g_free (font_string);
     }
 
+
+  /* remove existing border image */
+  if (priv->border_image)
+    {
+      g_boxed_free (MX_TYPE_BORDER_IMAGE, priv->border_image);
+      priv->border_image = NULL;
+    }
+
+
+  if (priv->border_image_texture)
+    {
+      cogl_object_unref (priv->border_image_texture);
+      priv->border_image_texture = NULL;
+    }
+
+  if (border_image)
+    {
+      priv->border_image_texture =
+        mx_texture_cache_get_cogl_texture (mx_texture_cache_get_default (),
+                                           border_image->uri);
+
+      priv->border_image = border_image;
+    }
+
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
 }
 
 static void
@@ -333,7 +364,7 @@ mx_tooltip_allocate (ClutterActor          *self,
   MxTooltipPrivate *priv = MX_TOOLTIP (self)->priv;
   ClutterActorBox child_box, arrow_box;
   gfloat arrow_height, arrow_width;
-  ClutterActor *border_image, *arrow_image;
+  ClutterActor *arrow_image;
   MxPadding padding;
 
   CLUTTER_ACTOR_CLASS (mx_tooltip_parent_class)->allocate (self,
@@ -369,10 +400,6 @@ mx_tooltip_allocate (ClutterActor          *self,
   /* remove the space that is used by the arrow */
   child_box.y1 += arrow_height;
 
-  border_image = mx_widget_get_border_image (MX_WIDGET (self));
-  if (border_image)
-    clutter_actor_allocate (border_image, &child_box, flags);
-
   if (priv->label)
     {
       /* now remove the padding */
@@ -398,9 +425,14 @@ mx_tooltip_paint (ClutterActor *self)
   width = (gint)(width / 2.f);
   height = (gint)(height / 2.f);
 
-  border_image = mx_widget_get_border_image (MX_WIDGET (self));
-  if (border_image)
-    clutter_actor_paint (border_image);
+  if (priv->border_image_texture)
+    mx_texture_frame_paint_texture (priv->border_image_texture,
+                                    clutter_actor_get_paint_opacity (self),
+                                    priv->border_image->top,
+                                    priv->border_image->right,
+                                    priv->border_image->bottom,
+                                    priv->border_image->left,
+                                    width, height);
 
   arrow_image = mx_widget_get_background_image (MX_WIDGET (self));
   if (arrow_image && !priv->actor_below)
@@ -413,13 +445,9 @@ static void
 mx_tooltip_map (ClutterActor *self)
 {
   MxTooltipPrivate *priv = MX_TOOLTIP (self)->priv;
-  ClutterActor *border_image, *arrow_image;
+  ClutterActor *arrow_image;
 
   CLUTTER_ACTOR_CLASS (mx_tooltip_parent_class)->map (self);
-
-  border_image = mx_widget_get_border_image (MX_WIDGET (self));
-  if (border_image)
-    clutter_actor_map (border_image);
 
   arrow_image = mx_widget_get_background_image (MX_WIDGET (self));
   if (arrow_image)
@@ -432,13 +460,9 @@ static void
 mx_tooltip_unmap (ClutterActor *self)
 {
   MxTooltipPrivate *priv = MX_TOOLTIP (self)->priv;
-  ClutterActor *border_image, *arrow_image;
+  ClutterActor *arrow_image;
 
   CLUTTER_ACTOR_CLASS (mx_tooltip_parent_class)->unmap (self);
-
-  border_image = mx_widget_get_border_image (MX_WIDGET (self));
-  if (border_image)
-    clutter_actor_unmap (border_image);
 
   arrow_image = mx_widget_get_background_image (MX_WIDGET (self));
   if (arrow_image)
@@ -450,12 +474,24 @@ mx_tooltip_unmap (ClutterActor *self)
 static void
 mx_tooltip_dispose (GObject *object)
 {
-  MxTooltip *tooltip = MX_TOOLTIP (object);
+  MxTooltipPrivate *priv = MX_TOOLTIP (object)->priv;
 
-  if (tooltip->priv->label)
+  if (priv->label)
     {
-      clutter_actor_destroy (tooltip->priv->label);
-      tooltip->priv->label = NULL;
+      clutter_actor_destroy (priv->label);
+      priv->label = NULL;
+    }
+
+  if (priv->border_image)
+    {
+      g_boxed_free (MX_TYPE_BORDER_IMAGE, priv->border_image);
+      priv->border_image = NULL;
+    }
+
+  if (priv->border_image_texture)
+    {
+      cogl_object_unref (priv->border_image_texture);
+      priv->border_image_texture = NULL;
     }
 
   G_OBJECT_CLASS (mx_tooltip_parent_class)->dispose (object);
