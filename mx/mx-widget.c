@@ -1262,24 +1262,6 @@ mx_widget_init (MxWidget *actor)
   mx_stylable_connect_change_notifiers (MX_STYLABLE (actor));
 }
 
-
-/**
- * mx_widget_get_border_image:
- * @actor: A #MxWidget
- *
- * Get the texture used as the border image. This is set using the
- * "border-image" CSS property. This function should normally only be used
- * by subclasses.
- *
- * Returns: (transfer none): #ClutterActor
- */
-ClutterActor *
-mx_widget_get_border_image (MxWidget *actor)
-{
-  MxWidgetPrivate *priv = MX_WIDGET (actor)->priv;
-  return priv->border_image;
-}
-
 /**
  * mx_widget_get_background_image:
  * @actor: A #MxWidget
