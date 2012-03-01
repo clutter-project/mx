@@ -470,15 +470,6 @@ mx_widget_paint (ClutterActor *actor)
                                     priv->mx_border_image->left,
                                     width, height);
 
-  if (priv->border_image)
-    mx_texture_frame_paint_texture (priv->border_image,
-                                    clutter_actor_get_paint_opacity (actor),
-                                    priv->mx_border_image->top,
-                                    priv->mx_border_image->right,
-                                    priv->mx_border_image->bottom,
-                                    priv->mx_border_image->left,
-                                    width, height);
-
   if (priv->background_image != NULL)
     clutter_actor_paint (priv->background_image);
 
