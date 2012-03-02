@@ -50,6 +50,10 @@
 #include "x11/mx-window-x11.h"
 #endif
 
+#ifdef HAVE_WAYLAND
+#include "wayland/mx-window-wayland.h"
+#endif
+
 G_DEFINE_TYPE (MxWindow, mx_window, G_TYPE_OBJECT)
 
 static GQuark window_quark = 0;
@@ -767,6 +771,10 @@ mx_window_constructed (GObject *object)
 
 #ifdef HAVE_X11
   priv->native_window = _mx_window_x11_new (self);
+#endif
+
+#ifdef HAVE_WAYLAND
+  priv->native_window = _mx_window_wayland_new (self);
 #endif
 }
 
