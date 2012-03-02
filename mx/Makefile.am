@@ -6,8 +6,9 @@ BUILT_SOURCES = 		\
 	mx-marshal.h 		\
 	mx-marshal.c
 
+WINSYS_SRC = $(NULL)
 if HAVE_X11
-WINSYS_SRC = \
+WINSYS_SRC += \
 	$(top_srcdir)/mx/x11/mx-clipboard-x11.c	\
 	$(top_srcdir)/mx/x11/mx-settings-x11.c	\
 	$(top_srcdir)/mx/x11/mx-settings-x11.h	\
@@ -19,7 +20,13 @@ WINSYS_SRC = \
 	$(top_srcdir)/mx/x11/xsettings-common.h	\
 	$(NULL)
 else
-WINSYS_SRC = \
+if HAVE_WAYLAND
+WINSYS_SRC += \
+	$(top_srcdir)/mx/wayland/mx-window-wayland.c \
+	$(top_srcdir)/mx/wayland/mx-window-wayland.h \
+	$(NULL)
+endif
+WINSYS_SRC += \
 	$(top_srcdir)/mx/mx-clipboard-default.c	\
 	$(NULL)
 endif

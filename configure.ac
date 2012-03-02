@@ -136,6 +136,12 @@ AS_CASE([$MX_WINSYS],
           WINSYS_X11_REQUIRES="clutter-x11-1.0 >= $CLUTTER_VERSION_REQUIRED xrandr >= 1.2.0"
 	  MX_REQUIRES="$MX_REQUIRES $WINSYS_X11_REQUIRES"
         ],
+        [wayland],
+        [
+           SUPPORT_WAYLAND=yes
+           WINSYS_WAYLAND_REQUIRES="clutter-wayland-1.0 wayland-client"
+           MX_REQUIRES="$MX_REQUIRES $WINSYS_WAYLAND_REQUIRES"
+        ],
         [none],
         [
           WINSYS_NONE_REQUIRES="clutter-1.0 >= $CLUTTER_VERSION_REQUIRED"
@@ -147,6 +153,11 @@ AS_CASE([$MX_WINSYS],
 AS_IF([test "x$SUPPORT_X11" = "xyes"],
       [AC_DEFINE([HAVE_X11], [1], [Mx supports the X11 window system])])
 AM_CONDITIONAL([HAVE_X11], [test "x$SUPPORT_X11" = "xyes"])
+
+AS_IF([test "x$SUPPORT_WAYLAND" = "xyes"],
+      [AC_DEFINE([HAVE_WAYLAND], [1], [Mx supports the WAYLAND window system])])
+AM_CONDITIONAL([HAVE_WAYLAND], [test "x$SUPPORT_WAYLAND" = "xyes"])
+
 AC_SUBST(MX_WINSYS)
 
 dnl = Optional Packages ====================================================
