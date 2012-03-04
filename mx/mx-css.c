@@ -32,15 +32,15 @@ struct _MxStyleSheet
   GList *filenames;
 };
 
-typedef struct _MxSelector MxSelector;
-struct _MxSelector
+typedef struct _MxInternalSelector MxInternalSelector;
+struct _MxInternalSelector
 {
   gchar *type;
   gchar *id;
   gchar *class;
   gchar *pseudo_class;
-  MxSelector *parent;
-  MxSelector *ancestor;
+  MxInternalSelector *parent;
+  MxInternalSelector *ancestor;
   GHashTable *style;
   const gchar *filename; /* origin of this selector */
   guint line;
@@ -48,6 +48,42 @@ struct _MxSelector
   gint priority;
 };
 
+/* MxSelector */
+
+static gpointer
+mx_selector_copy (gpointer data)
+{
+  MxSelector *sel = (MxSelector *) g_slice_dup (MxPadding, data);
+
+  sel->filename = g_strdup (((MxSelector *)data)->filename);
+
+  return sel;
+}
+
+static void
+mx_selector_free (gpointer data)
+{
+  if (G_LIKELY (data))
+    {
+      MxSelector *sel = (MxSelector *) data;
+
+      g_free (sel->filename);
+      g_slice_free (MxPadding, data);
+    }
+}
+
+GType
+mx_selector_get_type (void)
+{
+  static GType our_type = 0;
+
+  if (G_UNLIKELY (our_type == 0))
+    our_type = g_boxed_type_register_static (g_intern_static_string ("MxSelector"),
+                                             mx_selector_copy,
+                                             mx_selector_free);
+
+  return our_type;
+}
 
 /* MxStyleSheetValue */
 
@@ -237,8 +273,8 @@ css_parse_style (GScanner *scanner, GHashTable *table)
 
 
 static GTokenType
-css_parse_simple_selector (GScanner      *scanner,
-                           MxSelector    *selector)
+css_parse_simple_selector (GScanner           *scanner,
+                           MxInternalSelector *selector)
 {
   guint token;
   gchar *tmp;
@@ -316,7 +352,7 @@ css_parse_simple_selector (GScanner      *scanner,
 }
 
 static char*
-selector_to_string (MxSelector *selector)
+selector_to_string (MxInternalSelector *selector)
 {
   gchar *ancestor, *string, *tmp, *parent, *ret;
 
@@ -349,7 +385,8 @@ selector_to_string (MxSelector *selector)
 
   ret = g_strconcat ((ancestor) ? ancestor : "",
                      (parent) ? parent : "",
-                     string, NULL);
+                     string,
+                     NULL);
 
   g_free (string);
 
@@ -360,8 +397,8 @@ selector_to_string (MxSelector *selector)
 }
 
 static void
-print_selector (MxSelector *selector,
-                gint        score)
+print_selector (MxInternalSelector *selector,
+                gint                score)
 {
   gchar *string;
 
@@ -372,16 +409,15 @@ print_selector (MxSelector *selector,
   g_free (string);
 }
 
-
-static MxSelector *
-mx_selector_new (const gchar *filename,
-                 gint         priority,
-                 guint        line,
-                 guint        position)
+static MxInternalSelector *
+mx_internal_selector_new (const gchar *filename,
+                          gint         priority,
+                          guint        line,
+                          guint        position)
 {
-  MxSelector *s;
+  MxInternalSelector *s;
 
-  s = g_slice_new0 (MxSelector);
+  s = g_slice_new0 (MxInternalSelector);
   s->filename = filename;
   s->priority = priority;
   s->position = position;
@@ -391,7 +427,7 @@ mx_selector_new (const gchar *filename,
 }
 
 static void
-mx_selector_free (MxSelector *selector)
+mx_internal_selector_free (MxInternalSelector *selector)
 {
   if (!selector)
     return;
@@ -403,16 +439,16 @@ mx_selector_free (MxSelector *selector)
 
   g_hash_table_unref (selector->style);
 
-  mx_selector_free (selector->parent);
+  mx_internal_selector_free (selector->parent);
 
-  g_slice_free (MxSelector, selector);
+  g_slice_free (MxInternalSelector, selector);
 }
 
 static GTokenType
 css_parse_ruleset (GScanner *scanner, GList **selectors)
 {
   guint token;
-  MxSelector *selector, *parent;
+  MxInternalSelector *selector, *parent;
 
   /* parse the first selector, then keep going until we find left curly */
   token = g_scanner_peek_next_token (scanner);
@@ -437,9 +473,10 @@ css_parse_ruleset (GScanner *scanner, GList **selectors)
           /* check if there was a previous selector and if so, the new one
            * should use the previous selector to match an ancestor */
 
-          selector = mx_selector_new (scanner->input_name,
-                                      GPOINTER_TO_INT (scanner->user_data),
-                                      scanner->line, scanner->position);
+          selector = mx_internal_selector_new (scanner->input_name,
+                                               GPOINTER_TO_INT (scanner->user_data),
+                                               scanner->next_line,
+                                               scanner->next_position);
           *selectors = g_list_prepend (*selectors, selector);
 
           if (parent)
@@ -463,9 +500,10 @@ css_parse_ruleset (GScanner *scanner, GList **selectors)
 
           parent = selector;
 
-          selector = mx_selector_new (scanner->input_name,
-                                      GPOINTER_TO_INT (scanner->user_data),
-                                      scanner->line, scanner->position);
+          selector = mx_internal_selector_new (scanner->input_name,
+                                               GPOINTER_TO_INT (scanner->user_data),
+                                               scanner->next_line,
+                                               scanner->next_position);
           *selectors = g_list_prepend (*selectors, selector);
 
           /* remove parent from list of selectors and link it to the new
@@ -482,13 +520,13 @@ css_parse_ruleset (GScanner *scanner, GList **selectors)
         case ',':
           g_scanner_get_next_token (scanner);
 
-          selector = mx_selector_new (scanner->input_name,
-                                      GPOINTER_TO_INT (scanner->user_data),
-                                      scanner->line, scanner->position);
+          selector = mx_internal_selector_new (scanner->input_name,
+                                               GPOINTER_TO_INT (scanner->user_data),
+                                               scanner->next_line,
+                                               scanner->next_position);
           *selectors = g_list_prepend (*selectors, selector);
 
           token = css_parse_simple_selector (scanner, selector);
-
           if (token != G_TOKEN_NONE)
             return token;
 
@@ -513,7 +551,6 @@ css_parse_block (GScanner *scanner, GList **selectors)
   GHashTable *table;
   GList *l, *list = NULL;
 
-
   token = css_parse_ruleset (scanner, &list);
   if (token != G_TOKEN_NONE)
     return token;
@@ -528,9 +565,9 @@ css_parse_block (GScanner *scanner, GList **selectors)
   /* assign all the selectors to this style */
   for (l = list; l; l = l->next)
     {
-      MxSelector* sl;
+      MxInternalSelector* sl;
 
-      sl = (MxSelector*) l->data;
+      sl = (MxInternalSelector*) l->data;
 
       sl->style = g_hash_table_ref (table);
     }
@@ -642,8 +679,8 @@ list_contains (const gchar *needle,
 }
 
 static gint
-css_node_matches_selector (MxSelector *selector,
-                           MxStylable *stylable)
+css_node_matches_selector (MxInternalSelector *selector,
+                           MxStylable         *stylable)
 {
   gint score;
   gint a, b, c;
@@ -834,7 +871,7 @@ css_node_matches_selector (MxSelector *selector,
 
 typedef struct _SelectorMatch
 {
-  MxSelector *selector;
+  MxInternalSelector *selector;
   gint score;
 } SelectorMatch;
 
@@ -970,11 +1007,60 @@ mx_style_sheet_get_properties (MxStyleSheet *sheet,
   return result;
 }
 
+/**
+ * mx_style_sheet_get_selectors:
+ * @sheet: a #MxStyleSheet
+ * @stylable: a #MxStylable
+ *
+ * Retrieves matching selectors for a given #MxStylable.
+ *
+ * Return value: (element-type Mx.Selector) (transfer full): a list
+ *   of #MxSelector<!-- -->s. Use g_list_free() on the returned
+ *   list when done.
+ *
+ * Since: 2.0
+ */
 GList *
 mx_style_sheet_get_selectors (MxStyleSheet *sheet,
                               MxStylable   *node)
 {
+  GList *l, *matching_selectors = NULL, *external_selectors = NULL;
 
+  /* find matching selectors */
+  for (l = sheet->selectors; l != NULL; l = l->next)
+    {
+      gint score;
+
+      score = css_node_matches_selector (l->data, node);
+
+      if (score >= 0)
+        {
+          SelectorMatch *match = g_slice_new (SelectorMatch);
+          match->selector = l->data;
+          match->score = score;
+          matching_selectors = g_list_prepend (matching_selectors, match);
+        }
+    }
+
+  /* score the selectors by their score */
+  matching_selectors = g_list_sort (matching_selectors,
+                                    (GCompareFunc) compare_selector_matches);
+
+  for (l = matching_selectors; l != NULL; l = l->next)
+    {
+      SelectorMatch *match = (SelectorMatch *) l->data;
+      MxSelector *sel = g_slice_new (MxSelector);
+
+      sel->filename = g_strdup (match->selector->filename);
+      sel->line = match->selector->line;
+
+      external_selectors = g_list_append (external_selectors, sel);
+    }
+
+  g_list_foreach (matching_selectors, (GFunc) free_selector_match, NULL);
+  g_list_free (matching_selectors);
+
+  return external_selectors;
 }
 
 MxStyleSheet *
@@ -986,7 +1072,7 @@ mx_style_sheet_new ()
 void
 mx_style_sheet_destroy (MxStyleSheet *sheet)
 {
-  g_list_foreach (sheet->selectors, (GFunc) mx_selector_free, NULL);
+  g_list_foreach (sheet->selectors, (GFunc) mx_internal_selector_free, NULL);
   g_list_free (sheet->selectors);
 
   g_list_foreach (sheet->filenames, (GFunc) g_free, NULL);

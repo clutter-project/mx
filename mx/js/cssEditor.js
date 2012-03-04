@@ -23,151 +23,10 @@
 
 const Lang = imports.lang;
 const GLib = imports.gi.GLib;
+const Mainloop = imports.mainloop;
 const GObject = imports.gi.GObject;
 const Clutter = imports.gi.Clutter;
 const Mx = imports.gi.Mx;
-
-//
-// Composed properties (MxBorderImage/MxPadding)
-//
-
-function CssSubProperty(name, value, scope, callback)
-{
-    this._init(name, value, scope, callback);
-}
-
-CssSubProperty.prototype = {
-    _init: function(name, value, scope, callback) {
-        this.name = name;
-        this.scope = scope;
-        this.callback = callback
-
-        this.actor = new Mx.BoxLayout({ orientation: Mx.Orientation.HORIZONTAL });
-
-        //log("\t" + name + " -> " + value);
-
-        var label_actor = new Mx.Label({ text: name + ":" });
-        this.actor.add_actor(label_actor, 0);
-
-        var value_actor = new Mx.Entry({ text: "" + value });
-        this.actor.add_actor(value_actor, 1);
-
-        value_actor.connect('event',
-                            Lang.bind(this, this._value_event_captured));
-
-    },
-
-    _value_event_captured: function(value_actor, event) {
-        if (event.type() == Clutter.EventType.KEY_RELEASE) {
-            var symbol = event.get_key_symbol();
-            if (symbol == Clutter.KEY_Return) {
-                this.callback(this.scope, this.name, value_actor.get_text());
-            }
-        }
-
-        return false;
-    }
-};
-
-function ComposedCssProperty(widget, prop_name)
-{
-    this._init(widget, prop_name);
-}
-
-ComposedCssProperty.prototype = {
-    _init: function(widget, prop_name) {
-        this.widget = widget;
-        this.prop_name = prop_name;
-
-        this.actor = new Mx.BoxLayout({ orientation: Mx.Orientation.HORIZONTAL });
-
-        var prop_value = widget.get_property(prop_name);
-
-        //log("Added composed prop " + prop_name + " -> " + prop_value);
-
-        var label = new Mx.Label({ text: prop_name + ":" });
-        this.actor.add_actor(label, 0);
-
-        var pbox = new Mx.BoxLayout({ orientation: Mx.Orientation.VERTICAL });
-        this.actor.add_actor(pbox, 1);
-
-        this._sub_props = new Array();
-        for (var name in prop_value) {
-            var value = prop_value[name];
-            var sub_prop = new CssSubProperty(name, value,
-                                              this, this._value_updated)
-            this._sub_props.push(sub_prop);
-            pbox.add_actor(sub_prop.actor, 0);
-        }
-    },
-
-    _value_updated: function(name, value) {
-        var prop_value = this.widget.get_property(this.prop_name);
-
-        if (typeof(prop_value[name]) == "string")
-            prop_value[name] = value;
-        else if (typeof(prop_value[name]) == "integer")
-            prop_value[name] = parseInt(value, 10);
-        else {
-            log("WTF: can't handle type for  " + name + " -> " + value);
-            return;
-        }
-
-        this.widget.set_property(this.prop_name, prop_value);
-    }
-};
-
-//
-// Simple properties
-//
-
-function LitteralCssProperty(widget, prop_name)
-{
-    this._init(widget, prop_name);
-}
-
-LitteralCssProperty.prototype = {
-    _init: function(widget, prop_name) {
-        this.widget = widget;
-        this.prop_name = prop_name;
-
-        this.actor = new Mx.BoxLayout({ orientation: Mx.Orientation.HORIZONTAL });
-
-        var prop_value = widget.get_property(prop_name);
-
-        //log("Added simple prop " + prop_name + " -> " + prop_value);
-
-        var label = new Mx.Label({ text: prop_name + ":" });
-        this.actor.add_actor(label, 0);
-
-        this._entry = new Mx.Entry({ text: "" + prop_value });
-        this.actor.add_actor(this._entry, 1);
-
-        this._entry.connect('event', Lang.bind(this, this._value_event_captured));
-    },
-
-    _value_event_captured: function(actor, event) {
-        if (event.type() == Clutter.EventType.KEY_RELEASE) {
-            var symbol = event.get_key_symbol();
-            if (symbol == Clutter.KEY_Return) {
-                var prop_value = this.widget.get_property(this.prop_name);
-
-                if (typeof(prop_value) == "string") {
-                    prop_value = actor.get_text();
-                } else if (typeof(prop_value == "integer")) {
-                    prop_value = parseInt(actor.get_text(), 10);
-                } else {
-                    log("WTF: can't handle type for  " + name + " -> " + value);
-                    return false;
-                }
-
-                this.widget.set_property(this.prop_name, prop_value);
-            }
-        }
-
-        return false;
-    }
-};
 
 //
 // Inspector
@@ -209,6 +68,7 @@ LiveInspector.prototype = {
                                   Lang.bind(this, this._event_captured));
         }
 
+        // this._window_visible = false;
         this._inspect_window.show();
     },
 
@@ -218,6 +78,16 @@ LiveInspector.prototype = {
     },
 
     _event_captured: function(stage, event) {
+        // if (!this._window_visible) {
+        //     if (event.type() == Clutter.EventType.KEY_PRESS &&
+        //         event.modifier_state & Clutter.CONTROL_MASK &&
+        //        ) {
+
+
+        //     }
+        //     return false;
+        // }
+
         if (event.type() == Clutter.EventType.BUTTON_PRESS) {
             var [x, y] = event.get_coords();
 
@@ -236,12 +106,6 @@ LiveInspector.prototype = {
     //
     // Inspection part
     //
-
-    _clean_style: function() {
-        this._style_box.foreach(Lang.bind(this, function(child) {
-            this._style_box.remove_actor(child);
-        }));
-    },
 
     _clean_inspector: function() {
         this._parent_box.foreach(Lang.bind(this, function(child) {
@@ -266,15 +130,6 @@ LiveInspector.prototype = {
         stage.add_actor(this._overlay);
         this._overlay.raise_top();
         this._overlay.hide();
-
-
-        // var style = widget.get_style();
-        // var stylesheetval = style.get_stylable_properties(widget);
-
-        // for (var i in stylesheetval) {
-        //     log ("" + i + " -> " + stylesheetval[i]);
-        // }
-
 
         // Inspect from lower child up to top parent
         this._inspected_widget = widget;
@@ -327,6 +182,38 @@ LiveInspector.prototype = {
         }
     },
 
+    _create_css_view: function(text, begin_offset, end_offset) {
+        var scroll = new Mx.ScrollView();
+        var view = new Mx.Viewport();
+        var ctext = new Clutter.Text({ text: text,
+                                       editable: true,
+                                       selectable: true,
+                                       reactive: true });
+        var coords = ctext.position_to_coords(begin_offset);
+
+        ctext.set_selection(begin_offset, end_offset);
+        view.set_child(ctext);
+        scroll.set_child(view);
+        log(coords);
+        Mainloop.timeout_add(10,
+                  Lang.bind(this,
+                            function() {
+                                log("  ->" + coords + " " + begin_offset + "/" + end_offset);
+                                scroll.ensure_visible(new Clutter.Geometry({x: coords[1],
+                                                                            y: coords[2],
+                                                                            width: 10,
+                                                                            height: coords[3] * 5}));
+                            }));
+
+        return scroll;
+    },
+
+    _clean_style: function() {
+        this._style_box.foreach(Lang.bind(this, function(child) {
+            this._style_box.remove_actor(child);
+        }));
+    },
+
     _inspect_style: function(widget) {
         this._style_box.foreach(Lang.bind(this, function(child) {
             this._style_box.remove_actor(child);
@@ -335,30 +222,32 @@ LiveInspector.prototype = {
         this._inspected_widget = widget;
         log("Inspecting style for " + widget);
 
-        var props = widget.list_properties();
-        for (var i in props) {
-            if (props[i].name != undefined) {
-                var prop_name = props[i].name;
-                var prop = props[i];
+        var style = widget.get_style();
+        var selectors = style.get_selectors(widget);
 
-                if (prop != undefined || prop != null) {
-                    var prop_value = widget.get_property(prop_name);
-                    var prop_entry;
+        for (var i in selectors) {
+            log(selectors[i].filename + ":" + selectors[i].line);
 
-                    if (prop_value != null) {
-                        var b;
-                        if (typeof(prop_value) == "object") {
-                            prop_entry = new ComposedCssProperty(widget, prop_name);
-                        } else {
-                            prop_entry = new LitteralCssProperty(widget, prop_name);
-                        }
-
-                        this._style_box.add_actor(prop_entry.actor, 0);
-                        this._style_box.child_set_expand(prop_entry.actor, true);
-                        this._style_box.child_set_x_fill(prop_entry.actor, true);
+            var ctext = GLib.file_get_contents(selectors[i].filename);
+            var text = "" + ctext;
+            var begin_offset = 0;
+            var end_offset;
+            var nb_lines = 0;
+            for (var j in text) {
+                begin_offset++;
+                if (text[j] == '\n')
+                    nb_lines++;
+                if (nb_lines >= selectors[i].line) {
+                    end_offset = begin_offset;
+                    while (end_offset < text.length &&
+                           text[end_offset] != '\n') {
+                        end_offset++;
                     }
+                    break;
                 }
             }
+
+            this._style_box.add_actor(this._create_css_view("" + text, begin_offset, end_offset), i);
         }
     }
 };

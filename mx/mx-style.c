@@ -999,22 +999,29 @@ mx_style_get (MxStyle     *style,
   va_end (va_args);
 }
 
-
 /**
- * mx_style_get_stylable_properties:
- * @style: the style data store object
+ * mx_style_get_selectors:
+ * @sheet: a #MxStyle
+ * @stylable: a #MxStylable
  *
- * Returns: (element-type Mx.StyleSheetValue) (transfer container):
+ * Retrieves matching selectors for a given #MxStylable.
+ *
+ * Return value: (element-type Mx.Selector) (transfer full): a list of
+ *   #MxSelector<!-- -->s. Free each element and use g_list_free() on
+ *   the returned list when done.
+ *
+ * Since: 2.0
  */
-GHashTable *
-mx_style_get_stylable_properties (MxStyle    *style,
-                                  MxStylable *stylable)
+GList *
+mx_style_get_selectors (MxStyle    *style,
+                        MxStylable *stylable)
 {
   MxStylePrivate *priv;
 
   g_return_val_if_fail (MX_IS_STYLE (style), NULL);
+  g_return_val_if_fail (MX_IS_STYLABLE (stylable), NULL);
 
   priv = style->priv;
 
-  return mx_style_sheet_get_properties (priv->stylesheet, stylable);
+  return mx_style_sheet_get_selectors (priv->stylesheet, stylable);
 }

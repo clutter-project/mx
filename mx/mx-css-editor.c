@@ -30,9 +30,9 @@
 
 #ifdef HAVE_GJS
 # include <gjs/gjs.h>
-#endif /* HAVE_GJS */
 
 static GjsContext *js_context = NULL;
+#endif /* HAVE_GJS */
 
 void
 mx_css_editor_init (void)
