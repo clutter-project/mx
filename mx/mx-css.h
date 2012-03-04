@@ -25,7 +25,6 @@
 #include <glib.h>
 #include "mx-stylable.h"
 
-typedef struct _MxNode MxNode;
 typedef struct _MxStyleSheetValue MxStyleSheetValue;
 typedef struct _MxStyleSheet MxStyleSheet;
 
