@@ -72,7 +72,7 @@ struct _MxTooltipPrivate
   CoglMatrix       stage_matrix;
 
   MxBorderImage   *border_image;
-  CoglObject      *border_image_texture;
+  CoglHandle       border_image_texture;
 
   MxTooltipAnimation animation_mode;
 };
@@ -216,7 +216,7 @@ mx_tooltip_style_changed (MxWidget *self)
 
   if (priv->border_image_texture)
     {
-      cogl_object_unref (priv->border_image_texture);
+      cogl_handle_unref (priv->border_image_texture);
       priv->border_image_texture = NULL;
     }
 
@@ -490,7 +490,7 @@ mx_tooltip_dispose (GObject *object)
 
   if (priv->border_image_texture)
     {
-      cogl_object_unref (priv->border_image_texture);
+      cogl_handle_unref (priv->border_image_texture);
       priv->border_image_texture = NULL;
     }
 

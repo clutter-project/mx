@@ -131,7 +131,7 @@ mx_texture_frame_get_preferred_height (ClutterActor *self,
 }
 
 void
-mx_texture_frame_paint_texture (CoglHandle *texture,
+mx_texture_frame_paint_texture (CoglHandle  texture,
                                 guint8      opacity,
                                 gfloat      top,
                                 gfloat      right,

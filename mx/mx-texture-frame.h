@@ -90,7 +90,7 @@ void            mx_texture_frame_get_border_values  (MxTextureFrame *frame,
                                                      gfloat         *bottom,
                                                      gfloat         *left);
 
-void mx_texture_frame_paint_texture (CoglHandle *texture,
+void mx_texture_frame_paint_texture (CoglHandle  texture,
                                      guint8      opacity,
                                      gfloat      top,
                                      gfloat      right,
