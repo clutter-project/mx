@@ -1,3 +1,18 @@
+1.4.3
+=====
+
+Changes since 1.4.2
+
+
+ * slider: allow the handle button press and release events to propagate
+ * widget: ensure the "disabled" pseudo class is set when needed
+ * toggle: bind the "disabled" property of the handle and the toggle
+ * entry: use an empty string if the "text" property is set to NULL
+ * tooltip: update position when changing the text
+ * button/widget: don't rely on private variables to track hover state
+ * toggle: change timeline direction even if playing already
+
+
 1.4.2
 =====
 
