@@ -597,34 +597,6 @@ mx_slider_allocate (ClutterActor           *actor,
 }
 
 static void
-mx_slider_map (ClutterActor *actor)
-{
-  MxSlider *self = MX_SLIDER (actor);
-  MxSliderPrivate *priv = self->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_slider_parent_class)->map (actor);
-  clutter_actor_map (priv->trough_bg);
-  clutter_actor_map (priv->fill);
-  clutter_actor_map (priv->trough);
-  clutter_actor_map (priv->handle);
-  clutter_actor_map (priv->buffer);
-}
-
-static void
-mx_slider_unmap (ClutterActor *actor)
-{
-  MxSlider *self = MX_SLIDER (actor);
-  MxSliderPrivate *priv = self->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_slider_parent_class)->unmap (actor);
-  clutter_actor_unmap (priv->trough_bg);
-  clutter_actor_unmap (priv->fill);
-  clutter_actor_unmap (priv->trough);
-  clutter_actor_unmap (priv->handle);
-  clutter_actor_unmap (priv->buffer);
-}
-
-static void
 mx_slider_apply_style (MxWidget *widget,
                        MxStyle  *style)
 {
@@ -755,8 +727,6 @@ mx_slider_class_init (MxSliderClass *klass)
   actor_class->get_preferred_width = mx_slider_get_preferred_width;
   actor_class->get_preferred_height = mx_slider_get_preferred_height;
   actor_class->allocate = mx_slider_allocate;
-  actor_class->map = mx_slider_map;
-  actor_class->unmap = mx_slider_unmap;
   actor_class->key_press_event = mx_slider_key_press_event;
 
   widget_class->apply_style = mx_slider_apply_style;

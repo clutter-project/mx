@@ -358,26 +358,6 @@ mx_label_pick (ClutterActor *actor,
 }
 
 static void
-mx_label_map (ClutterActor *actor)
-{
-  MxLabelPrivate *priv = MX_LABEL (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_label_parent_class)->map (actor);
-
-  clutter_actor_map (priv->label);
-}
-
-static void
-mx_label_unmap (ClutterActor *actor)
-{
-  MxLabelPrivate *priv = MX_LABEL (actor)->priv;
-
-  clutter_actor_unmap (priv->label);
-
-  CLUTTER_ACTOR_CLASS (mx_label_parent_class)->unmap (actor);
-}
-
-static void
 mx_label_dispose (GObject *actor)
 {
   MxLabelPrivate *priv = MX_LABEL (actor)->priv;
@@ -416,8 +396,6 @@ mx_label_class_init (MxLabelClass *klass)
   actor_class->allocate = mx_label_allocate;
   actor_class->get_preferred_width = mx_label_get_preferred_width;
   actor_class->get_preferred_height = mx_label_get_preferred_height;
-  actor_class->map = mx_label_map;
-  actor_class->unmap = mx_label_unmap;
 
   pspec = g_param_spec_object ("clutter-text",
                                "Clutter Text",

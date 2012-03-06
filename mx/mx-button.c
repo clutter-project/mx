@@ -582,28 +582,6 @@ mx_button_dispose (GObject *gobject)
 }
 
 static void
-mx_button_map (ClutterActor *self)
-{
-  MxButtonPrivate *priv = MX_BUTTON (self)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_button_parent_class)->map (self);
-
-  if (priv->content_image)
-    clutter_actor_map (priv->content_image);
-}
-
-static void
-mx_button_unmap (ClutterActor *self)
-{
-  MxButtonPrivate *priv = MX_BUTTON (self)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_button_parent_class)->unmap (self);
-
-  if (priv->content_image)
-    clutter_actor_unmap (priv->content_image);
-}
-
-static void
 mx_button_allocate (ClutterActor           *actor,
                     const ClutterActorBox  *box,
                     ClutterAllocationFlags  flags)
@@ -835,8 +813,6 @@ mx_button_class_init (MxButtonClass *klass)
   actor_class->get_preferred_height = mx_button_get_preferred_height;
   actor_class->paint = mx_button_paint;
 
-  actor_class->map = mx_button_map;
-  actor_class->unmap = mx_button_unmap;
   actor_class->allocate = mx_button_allocate;
 
   pspec = g_param_spec_string ("label",

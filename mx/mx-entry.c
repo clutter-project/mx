@@ -767,61 +767,6 @@ mx_entry_pick (ClutterActor       *actor,
     clutter_actor_paint (priv->secondary_icon);
 }
 
-static void
-mx_entry_map (ClutterActor *actor)
-{
-  MxEntryPrivate *priv = MX_ENTRY (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_entry_parent_class)->map (actor);
-
-  clutter_actor_map (priv->entry);
-
-  if (priv->primary_icon)
-    clutter_actor_map (priv->primary_icon);
-
-  if (priv->primary_icon_highlight)
-    clutter_actor_map (priv->primary_icon_highlight);
-
-  if (priv->secondary_icon)
-    clutter_actor_map (priv->secondary_icon);
-
-  if (priv->secondary_icon_highlight)
-    clutter_actor_map (priv->secondary_icon_highlight);
-
-  if (priv->secondary_icon_tooltip)
-    clutter_actor_map (CLUTTER_ACTOR (priv->secondary_icon_tooltip));
-
-  if (priv->primary_icon_tooltip)
-    clutter_actor_map (CLUTTER_ACTOR (priv->primary_icon_tooltip));
-}
-
-static void
-mx_entry_unmap (ClutterActor *actor)
-{
-  MxEntryPrivate *priv = MX_ENTRY (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_entry_parent_class)->unmap (actor);
-
-  clutter_actor_unmap (priv->entry);
-
-  if (priv->primary_icon)
-    clutter_actor_unmap (priv->primary_icon);
-
-  if (priv->primary_icon_highlight)
-    clutter_actor_unmap (priv->primary_icon_highlight);
-
-  if (priv->primary_icon_tooltip)
-    clutter_actor_unmap (CLUTTER_ACTOR (priv->primary_icon_tooltip));
-
-  if (priv->secondary_icon)
-    clutter_actor_unmap (priv->secondary_icon);
-
-  if (priv->secondary_icon_highlight)
-    clutter_actor_unmap (priv->secondary_icon_highlight);
-
-  if (priv->secondary_icon_tooltip)
-    clutter_actor_unmap (CLUTTER_ACTOR (priv->secondary_icon_tooltip));
-}
 
 static void
 mx_entry_clipboard_callback (MxClipboard *clipboard,
@@ -1105,8 +1050,6 @@ mx_entry_class_init (MxEntryClass *klass)
   actor_class->allocate = mx_entry_allocate;
   actor_class->paint = mx_entry_paint;
   actor_class->pick = mx_entry_pick;
-  actor_class->map = mx_entry_map;
-  actor_class->unmap = mx_entry_unmap;
   actor_class->enter_event = mx_entry_swallow_crossing_event;
   actor_class->leave_event = mx_entry_swallow_crossing_event;
   actor_class->button_press_event = mx_entry_swallow_button_event;

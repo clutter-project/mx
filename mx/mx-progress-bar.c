@@ -153,22 +153,6 @@ mx_progress_bar_allocate (ClutterActor          *actor,
 }
 
 static void
-mx_progress_bar_map (ClutterActor *actor)
-{
-  MxProgressBarPrivate *priv = MX_PROGRESS_BAR (actor)->priv;
-  CLUTTER_ACTOR_CLASS (mx_progress_bar_parent_class)->map (actor);
-  clutter_actor_map (priv->fill);
-}
-
-static void
-mx_progress_bar_unmap (ClutterActor *actor)
-{
-  MxProgressBarPrivate *priv = MX_PROGRESS_BAR (actor)->priv;
-  CLUTTER_ACTOR_CLASS (mx_progress_bar_parent_class)->unmap (actor);
-  clutter_actor_unmap (priv->fill);
-}
-
-static void
 mx_progress_bar_apply_style (MxWidget *widget,
                              MxStyle  *style)
 {
@@ -249,8 +233,6 @@ mx_progress_bar_class_init (MxProgressBarClass *klass)
   actor_class->get_preferred_width = mx_progress_bar_get_preferred_width;
   actor_class->get_preferred_height = mx_progress_bar_get_preferred_height;
   actor_class->allocate = mx_progress_bar_allocate;
-  actor_class->map = mx_progress_bar_map;
-  actor_class->unmap = mx_progress_bar_unmap;
 
   widget_class->apply_style = mx_progress_bar_apply_style;
 

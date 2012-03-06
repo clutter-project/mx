@@ -452,36 +452,6 @@ mx_tooltip_paint (ClutterActor *self)
 }
 
 static void
-mx_tooltip_map (ClutterActor *self)
-{
-  MxTooltipPrivate *priv = MX_TOOLTIP (self)->priv;
-  ClutterActor *arrow_image;
-
-  CLUTTER_ACTOR_CLASS (mx_tooltip_parent_class)->map (self);
-
-  arrow_image = mx_widget_get_background_image (MX_WIDGET (self));
-  if (arrow_image)
-    clutter_actor_map (arrow_image);
-
-  clutter_actor_map (priv->label);
-}
-
-static void
-mx_tooltip_unmap (ClutterActor *self)
-{
-  MxTooltipPrivate *priv = MX_TOOLTIP (self)->priv;
-  ClutterActor *arrow_image;
-
-  CLUTTER_ACTOR_CLASS (mx_tooltip_parent_class)->unmap (self);
-
-  arrow_image = mx_widget_get_background_image (MX_WIDGET (self));
-  if (arrow_image)
-    clutter_actor_unmap (arrow_image);
-
-  clutter_actor_unmap (priv->label);
-}
-
-static void
 mx_tooltip_dispose (GObject *object)
 {
   MxTooltipPrivate *priv = MX_TOOLTIP (object)->priv;
@@ -533,8 +503,6 @@ mx_tooltip_class_init (MxTooltipClass *klass)
   actor_class->get_preferred_width = mx_tooltip_get_preferred_width;
   actor_class->get_preferred_height = mx_tooltip_get_preferred_height;
   actor_class->allocate = mx_tooltip_allocate;
-  actor_class->map = mx_tooltip_map;
-  actor_class->unmap = mx_tooltip_unmap;
 
   floating_class->floating_paint = mx_tooltip_paint;
 

@@ -169,38 +169,6 @@ mx_combo_box_finalize (GObject *object)
 }
 
 static void
-mx_combo_box_map (ClutterActor *actor)
-{
-  MxComboBoxPrivate *priv = MX_COMBO_BOX (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_combo_box_parent_class)->map (actor);
-
-  clutter_actor_map (priv->label);
-
-  if (priv->icon)
-    clutter_actor_map (priv->icon);
-
-  if (priv->marker)
-    clutter_actor_map (priv->marker);
-}
-
-static void
-mx_combo_box_unmap (ClutterActor *actor)
-{
-  MxComboBoxPrivate *priv = MX_COMBO_BOX (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_combo_box_parent_class)->unmap (actor);
-
-  clutter_actor_unmap (priv->label);
-
-  if (priv->icon)
-    clutter_actor_unmap (priv->icon);
-
-  if (priv->marker)
-    clutter_actor_unmap (priv->marker);
-}
-
-static void
 mx_combo_box_paint (ClutterActor *actor)
 {
   MxComboBoxPrivate *priv = MX_COMBO_BOX (actor)->priv;
@@ -623,8 +591,6 @@ mx_combo_box_class_init (MxComboBoxClass *klass)
   object_class->set_property = mx_combo_box_set_property;
   object_class->finalize = mx_combo_box_finalize;
 
-  actor_class->map = mx_combo_box_map;
-  actor_class->unmap = mx_combo_box_unmap;
   actor_class->paint = mx_combo_box_paint;
 
   actor_class->get_preferred_width = mx_combo_box_get_preferred_width;

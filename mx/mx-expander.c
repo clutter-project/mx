@@ -472,28 +472,6 @@ mx_expander_paint (ClutterActor *actor)
   clutter_actor_paint (((MxExpander* ) actor)->priv->arrow);
 }
 
-static void
-mx_expander_map (ClutterActor *actor)
-{
-  MxExpanderPrivate *priv = MX_EXPANDER (actor)->priv;
-  ClutterActorClass *parent_parent_class = g_type_class_peek_parent (mx_expander_parent_class);
-
-  CLUTTER_ACTOR_CLASS (parent_parent_class)->map (actor);
-
-  clutter_actor_map (priv->label);
-  clutter_actor_map (priv->arrow);
-}
-
-static void
-mx_expander_unmap (ClutterActor *actor)
-{
-  MxExpanderPrivate *priv = MX_EXPANDER (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_expander_parent_class)->unmap (actor);
-
-  clutter_actor_unmap (priv->label);
-  clutter_actor_unmap (priv->arrow);
-}
 
 static void
 mx_expander_apply_style (MxWidget *widget,
@@ -584,8 +562,6 @@ mx_expander_class_init (MxExpanderClass *klass)
   actor_class->get_preferred_width = mx_expander_get_preferred_width;
   actor_class->get_preferred_height = mx_expander_get_preferred_height;
   actor_class->paint = mx_expander_paint;
-  actor_class->map = mx_expander_map;
-  actor_class->unmap = mx_expander_unmap;
 
   widget_class->apply_style = mx_expander_apply_style;
 

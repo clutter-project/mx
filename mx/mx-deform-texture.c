@@ -404,34 +404,6 @@ mx_deform_texture_allocate (ClutterActor           *actor,
 }
 
 static void
-mx_deform_texture_map (ClutterActor *actor)
-{
-  MxDeformTexturePrivate *priv = MX_DEFORM_TEXTURE (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_deform_texture_parent_class)->map (actor);
-
-  if (priv->front)
-    clutter_actor_map (priv->front);
-
-  if (priv->back)
-    clutter_actor_map (priv->back);
-}
-
-static void
-mx_deform_texture_unmap (ClutterActor *actor)
-{
-  MxDeformTexturePrivate *priv = MX_DEFORM_TEXTURE (actor)->priv;
-
-  if (priv->front)
-    clutter_actor_unmap (priv->front);
-
-  if (priv->back)
-    clutter_actor_unmap (priv->back);
-
-  CLUTTER_ACTOR_CLASS (mx_deform_texture_parent_class)->unmap (actor);
-}
-
-static void
 mx_deform_texture_class_init (MxDeformTextureClass *klass)
 {
   GParamSpec *pspec;
@@ -450,8 +422,6 @@ mx_deform_texture_class_init (MxDeformTextureClass *klass)
   actor_class->get_preferred_height = mx_deform_texture_get_preferred_height;
   actor_class->allocate = mx_deform_texture_allocate;
   actor_class->paint = mx_deform_texture_paint;
-  actor_class->map = mx_deform_texture_map;
-  actor_class->unmap = mx_deform_texture_unmap;
 
   pspec = g_param_spec_int ("tiles-x",
                             "Horizontal tiles",

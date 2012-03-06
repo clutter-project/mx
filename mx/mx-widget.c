@@ -493,40 +493,7 @@ mx_widget_pick (ClutterActor *self, const ClutterColor *color)
 
   if (priv->menu)
     clutter_actor_paint (CLUTTER_ACTOR (priv->menu));
-}
 
-static void
-mx_widget_map (ClutterActor *actor)
-{
-  MxWidgetPrivate *priv = MX_WIDGET (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_widget_parent_class)->map (actor);
-
-  if (priv->background_image)
-    clutter_actor_map (priv->background_image);
-
-  if (priv->tooltip)
-    clutter_actor_map (CLUTTER_ACTOR (priv->tooltip));
-
-  if (priv->menu)
-    clutter_actor_map (CLUTTER_ACTOR (priv->menu));
-}
-
-static void
-mx_widget_unmap (ClutterActor *actor)
-{
-  MxWidgetPrivate *priv = MX_WIDGET (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_widget_parent_class)->unmap (actor);
-
-  if (priv->background_image)
-    clutter_actor_unmap (priv->background_image);
-
-  if (priv->tooltip)
-    clutter_actor_unmap (CLUTTER_ACTOR (priv->tooltip));
-
-  if (priv->menu)
-    clutter_actor_unmap (CLUTTER_ACTOR (priv->menu));
 }
 
 static void
@@ -975,8 +942,6 @@ mx_widget_class_init (MxWidgetClass *klass)
   actor_class->allocate = mx_widget_allocate;
   actor_class->paint = mx_widget_paint;
   actor_class->pick = mx_widget_pick;
-  actor_class->map = mx_widget_map;
-  actor_class->unmap = mx_widget_unmap;
 
   actor_class->enter_event = mx_widget_enter;
   actor_class->leave_event = mx_widget_leave;

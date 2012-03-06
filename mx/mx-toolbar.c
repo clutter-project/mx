@@ -215,28 +215,6 @@ mx_toolbar_finalize (GObject *object)
 }
 
 static void
-mx_toolbar_map (ClutterActor *actor)
-{
-  MxToolbarPrivate *priv = MX_TOOLBAR (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_toolbar_parent_class)->map (actor);
-
-  if (priv->close_button)
-    clutter_actor_map (priv->close_button);
-}
-
-static void
-mx_toolbar_unmap (ClutterActor *actor)
-{
-  MxToolbarPrivate *priv = MX_TOOLBAR (actor)->priv;
-
-  if (priv->close_button)
-    clutter_actor_unmap (priv->close_button);
-
-  CLUTTER_ACTOR_CLASS (mx_toolbar_parent_class)->unmap (actor);
-}
-
-static void
 mx_toolbar_get_preferred_width (ClutterActor *actor,
                                 gfloat        for_height,
                                 gfloat       *min_width,
@@ -444,8 +422,6 @@ mx_toolbar_class_init (MxToolbarClass *klass)
   object_class->dispose = mx_toolbar_dispose;
   object_class->finalize = mx_toolbar_finalize;
 
-  actor_class->map = mx_toolbar_map;
-  actor_class->unmap = mx_toolbar_unmap;
   actor_class->get_preferred_width = mx_toolbar_get_preferred_width;
   actor_class->get_preferred_height = mx_toolbar_get_preferred_height;
   actor_class->allocate = mx_toolbar_allocate;

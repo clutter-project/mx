@@ -268,25 +268,6 @@ mx_toggle_paint (ClutterActor *actor)
   clutter_actor_paint (MX_TOGGLE (actor)->priv->handle);
 }
 
-static void
-mx_toggle_map (ClutterActor *actor)
-{
-  MxTogglePrivate *priv = MX_TOGGLE (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_toggle_parent_class)->map (actor);
-
-  clutter_actor_map (priv->handle);
-}
-
-static void
-mx_toggle_unmap (ClutterActor *actor)
-{
-  MxTogglePrivate *priv = MX_TOGGLE (actor)->priv;
-
-  clutter_actor_unmap (priv->handle);
-
-  CLUTTER_ACTOR_CLASS (mx_toggle_parent_class)->unmap (actor);
-}
 
 static void
 mx_toggle_allocate (ClutterActor          *actor,
@@ -506,8 +487,6 @@ mx_toggle_class_init (MxToggleClass *klass)
 
   actor_class->pick = mx_toggle_pick;
   actor_class->paint = mx_toggle_paint;
-  actor_class->map = mx_toggle_map;
-  actor_class->unmap = mx_toggle_unmap;
   actor_class->get_preferred_width = mx_toggle_get_preferred_width;
   actor_class->get_preferred_height = mx_toggle_get_preferred_height;
   actor_class->allocate = mx_toggle_allocate;

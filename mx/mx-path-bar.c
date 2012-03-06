@@ -492,36 +492,6 @@ mx_path_bar_allocate (ClutterActor           *actor,
 }
 
 static void
-mx_path_bar_map (ClutterActor *actor)
-{
-  GList *c;
-  MxPathBarPrivate *priv = MX_PATH_BAR (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_path_bar_parent_class)->map (actor);
-
-  for (c = priv->crumbs; c; c = c->next)
-    clutter_actor_map (CLUTTER_ACTOR (c->data));
-
-  if (priv->entry)
-    clutter_actor_map (priv->entry);
-}
-
-static void
-mx_path_bar_unmap (ClutterActor *actor)
-{
-  GList *c;
-  MxPathBarPrivate *priv = MX_PATH_BAR (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_path_bar_parent_class)->unmap (actor);
-
-  for (c = priv->crumbs; c; c = c->next)
-    clutter_actor_unmap (CLUTTER_ACTOR (c->data));
-
-  if (priv->entry)
-    clutter_actor_unmap (priv->entry);
-}
-
-static void
 mx_path_bar_paint (ClutterActor *actor)
 {
   GList *c;
@@ -575,8 +545,6 @@ mx_path_bar_class_init (MxPathBarClass *klass)
   actor_class->get_preferred_width = mx_path_bar_get_preferred_width;
   actor_class->get_preferred_height = mx_path_bar_get_preferred_height;
   actor_class->allocate = mx_path_bar_allocate;
-  actor_class->map = mx_path_bar_map;
-  actor_class->unmap = mx_path_bar_unmap;
   actor_class->paint = mx_path_bar_paint;
   actor_class->pick = mx_path_bar_pick;
 

@@ -311,28 +311,6 @@ mx_icon_paint (ClutterActor *actor)
 }
 
 static void
-mx_icon_map (ClutterActor *actor)
-{
-  MxIconPrivate *priv = MX_ICON (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_icon_parent_class)->map (actor);
-
-  if (priv->icon_texture)
-    clutter_actor_map (priv->icon_texture);
-}
-
-static void
-mx_icon_unmap (ClutterActor *actor)
-{
-  MxIconPrivate *priv = MX_ICON (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_icon_parent_class)->unmap (actor);
-
-  if (priv->icon_texture)
-    clutter_actor_unmap (priv->icon_texture);
-}
-
-static void
 mx_icon_class_init (MxIconClass *klass)
 {
   GParamSpec *pspec;
@@ -351,8 +329,6 @@ mx_icon_class_init (MxIconClass *klass)
   actor_class->get_preferred_width = mx_icon_get_preferred_width;
   actor_class->allocate = mx_icon_allocate;
   actor_class->paint = mx_icon_paint;
-  actor_class->map = mx_icon_map;
-  actor_class->unmap = mx_icon_unmap;
 
   pspec = g_param_spec_string ("icon-name",
                                "Icon name",

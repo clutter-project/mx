@@ -209,35 +209,6 @@ mx_scroll_bar_pick (ClutterActor       *actor,
     clutter_actor_paint (priv->handle);
 }
 
-static void
-mx_scroll_bar_map (ClutterActor *actor)
-{
-  MxScrollBarPrivate *priv = MX_SCROLL_BAR (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_scroll_bar_parent_class)->map (actor);
-
-  clutter_actor_map (priv->bw_stepper);
-  clutter_actor_map (priv->fw_stepper);
-  clutter_actor_map (priv->trough);
-
-  if (priv->handle)
-    clutter_actor_map (priv->handle);
-}
-
-static void
-mx_scroll_bar_unmap (ClutterActor *actor)
-{
-  MxScrollBarPrivate *priv = MX_SCROLL_BAR (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_scroll_bar_parent_class)->unmap (actor);
-
-  clutter_actor_unmap (priv->bw_stepper);
-  clutter_actor_unmap (priv->fw_stepper);
-  clutter_actor_unmap (priv->trough);
-
-  if (priv->handle)
-    clutter_actor_unmap (priv->handle);
-}
 
 static void
 mx_scroll_bar_apply_style (MxWidget *widget,
@@ -614,8 +585,6 @@ mx_scroll_bar_class_init (MxScrollBarClass *klass)
   actor_class->paint          = mx_scroll_bar_paint;
   actor_class->pick           = mx_scroll_bar_pick;
   actor_class->scroll_event   = mx_scroll_bar_scroll_event;
-  actor_class->map            = mx_scroll_bar_map;
-  actor_class->unmap          = mx_scroll_bar_unmap;
 
   widget_class->apply_style = mx_scroll_bar_apply_style;
 
