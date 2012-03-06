@@ -1140,6 +1140,7 @@ mx_button_set_action (MxButton *button,
                       MxAction *action)
 {
   MxButtonPrivate *priv;
+  const gchar *display_name;
 
   g_return_if_fail (MX_IS_BUTTON (button));
   g_return_if_fail (MX_IS_ACTION (action));
@@ -1157,9 +1158,11 @@ mx_button_set_action (MxButton *button,
 
   priv->action = g_object_ref_sink (action);
 
+  display_name = mx_action_get_display_name (action);
+
   mx_icon_set_icon_name (MX_ICON (priv->icon), mx_action_get_icon (action));
   clutter_text_set_text (CLUTTER_TEXT (priv->label),
-                                       mx_action_get_display_name (action));
+                         (display_name) ? display_name : "");
 
   /* bind action properties to button properties */
   priv->action_label_binding = g_object_bind_property (action, "display-name",
