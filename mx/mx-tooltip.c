@@ -486,12 +486,6 @@ mx_tooltip_dispose (GObject *object)
 {
   MxTooltipPrivate *priv = MX_TOOLTIP (object)->priv;
 
-  if (priv->label)
-    {
-      clutter_actor_destroy (priv->label);
-      priv->label = NULL;
-    }
-
   if (priv->border_image)
     {
       g_boxed_free (MX_TYPE_BORDER_IMAGE, priv->border_image);

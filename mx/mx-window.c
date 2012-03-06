@@ -246,9 +246,6 @@ mx_window_dispose (GObject *object)
       priv->icon_texture = NULL;
     }
 
-  if (priv->toolbar)
-    mx_window_set_toolbar (self, NULL);
-
   if (priv->resize_grip)
     {
       g_object_remove_weak_pointer (G_OBJECT (priv->resize_grip),

@@ -708,32 +708,6 @@ mx_slider_dispose (GObject *object)
       priv->capture_handler = 0;
     }
 
-  if (priv->trough_bg)
-    {
-      clutter_actor_destroy (priv->trough_bg);
-      priv->trough_bg = NULL;
-    }
-
-  if (priv->fill)
-    {
-      clutter_actor_destroy (priv->fill);
-      priv->fill = NULL;
-    }
-
-  /* unparent the handle before the trough, as the handle is parented on the
-   * trough */
-  if (priv->handle)
-    {
-      clutter_actor_destroy (priv->handle);
-      priv->handle = NULL;
-    }
-
-  if (priv->trough)
-    {
-      clutter_actor_destroy (priv->trough);
-      priv->trough = NULL;
-    }
-
   G_OBJECT_CLASS (mx_slider_parent_class)->dispose (object);
 }
 

@@ -155,32 +155,6 @@ mx_combo_box_set_property (GObject      *object,
 }
 
 static void
-mx_combo_box_dispose (GObject *object)
-{
-  MxComboBoxPrivate *priv = MX_COMBO_BOX (object)->priv;
-
-  if (priv->label)
-    {
-      clutter_actor_destroy (priv->label);
-      priv->label = NULL;
-    }
-
-  if (priv->icon)
-    {
-      clutter_actor_destroy (priv->icon);
-      priv->icon = NULL;
-    }
-
-  if (priv->marker)
-    {
-      clutter_actor_destroy (priv->marker);
-      priv->marker = NULL;
-    }
-
-  G_OBJECT_CLASS (mx_combo_box_parent_class)->dispose (object);
-}
-
-static void
 mx_combo_box_finalize (GObject *object)
 {
   MxComboBoxPrivate *priv = MX_COMBO_BOX (object)->priv;
@@ -647,7 +621,6 @@ mx_combo_box_class_init (MxComboBoxClass *klass)
 
   object_class->get_property = mx_combo_box_get_property;
   object_class->set_property = mx_combo_box_set_property;
-  object_class->dispose = mx_combo_box_dispose;
   object_class->finalize = mx_combo_box_finalize;
 
   actor_class->map = mx_combo_box_map;

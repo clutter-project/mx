@@ -395,12 +395,6 @@ mx_label_dispose (GObject *actor)
       priv->fade_alpha = NULL;
     }
 
-  if (priv->label)
-    {
-      clutter_actor_destroy (priv->label);
-      priv->label = NULL;
-    }
-
   G_OBJECT_CLASS (mx_label_parent_class)->dispose (actor);
 }
 

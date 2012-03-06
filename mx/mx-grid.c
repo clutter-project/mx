@@ -106,7 +106,6 @@
 
 typedef struct _MxGridActorData MxGridActorData;
 
-static void mx_grid_dispose             (GObject *object);
 static void mx_grid_finalize            (GObject *object);
 
 static void mx_grid_set_property        (GObject      *object,
@@ -415,7 +414,6 @@ mx_grid_class_init (MxGridClass *klass)
 
   GParamSpec *pspec;
 
-  gobject_class->dispose = mx_grid_dispose;
   gobject_class->finalize = mx_grid_finalize;
 
   gobject_class->set_property = mx_grid_set_property;
@@ -710,18 +708,6 @@ mx_grid_init (MxGrid *self)
                              g_direct_equal,
                              NULL,
                              mx_grid_free_actor_data);
-}
-
-static void
-mx_grid_dispose (GObject *object)
-{
-  /* Destroy all of the children. This will cause them to be removed
-     from the container and unparented */
-  clutter_container_foreach (CLUTTER_CONTAINER (object),
-                             (ClutterCallback) clutter_actor_destroy,
-                             NULL);
-
-  G_OBJECT_CLASS (mx_grid_parent_class)->dispose (object);
 }
 
 static void

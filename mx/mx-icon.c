@@ -170,12 +170,6 @@ mx_icon_dispose (GObject *gobject)
 {
   MxIconPrivate *priv = MX_ICON (gobject)->priv;
 
-  if (priv->icon_texture)
-    {
-      clutter_actor_destroy (priv->icon_texture);
-      priv->icon_texture = NULL;
-    }
-
   if (mx_icon_theme_get_default ())
     {
       g_signal_handlers_disconnect_by_func (mx_icon_theme_get_default (),

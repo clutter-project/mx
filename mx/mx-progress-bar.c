@@ -92,20 +92,6 @@ mx_progress_bar_set_property (GObject      *object,
 }
 
 static void
-mx_progress_bar_dispose (GObject *object)
-{
-  MxProgressBarPrivate *priv = MX_PROGRESS_BAR (object)->priv;
-
-  if (priv->fill)
-    {
-      clutter_actor_destroy (CLUTTER_ACTOR (priv->fill));
-      priv->fill = NULL;
-    }
-
-  G_OBJECT_CLASS (mx_progress_bar_parent_class)->dispose (object);
-}
-
-static void
 mx_progress_bar_finalize (GObject *object)
 {
   G_OBJECT_CLASS (mx_progress_bar_parent_class)->finalize (object);
@@ -257,7 +243,6 @@ mx_progress_bar_class_init (MxProgressBarClass *klass)
 
   object_class->get_property = mx_progress_bar_get_property;
   object_class->set_property = mx_progress_bar_set_property;
-  object_class->dispose = mx_progress_bar_dispose;
   object_class->finalize = mx_progress_bar_finalize;
 
   actor_class->paint = mx_progress_bar_paint;

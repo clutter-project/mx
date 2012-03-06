@@ -280,17 +280,6 @@ mx_notebook_dispose (GObject *object)
 }
 
 static void
-mx_notebook_destroy (ClutterActor *actor)
-{
-  MxNotebookPrivate *priv = MX_NOTEBOOK (actor)->priv;
-
-  g_list_foreach (priv->children, (GFunc) clutter_actor_destroy, NULL);
-
-  if (CLUTTER_ACTOR_CLASS (mx_notebook_parent_class)->destroy)
-    CLUTTER_ACTOR_CLASS (mx_notebook_parent_class)->destroy (actor);
-}
-
-static void
 mx_notebook_finalize (GObject *object)
 {
   G_OBJECT_CLASS (mx_notebook_parent_class)->finalize (object);
@@ -492,7 +481,6 @@ mx_notebook_class_init (MxNotebookClass *klass)
   actor_class->get_preferred_height = mx_notebook_get_preferred_height;
   actor_class->paint = mx_notebook_paint;
   actor_class->pick = mx_notebook_pick;
-  actor_class->destroy = mx_notebook_destroy;
 
   pspec = g_param_spec_object ("current-page",
                                "Current page",

@@ -700,21 +700,6 @@ mx_table_finalize (GObject *gobject)
 }
 
 static void
-mx_table_dispose (GObject *gobject)
-{
-  MxTablePrivate *priv = MX_TABLE (gobject)->priv;
-
-  /* destroy the children
-   * clutter_actor_destroy() will call clutter_container_remove() which will
-   * remove the children from the internal list
-   */
-  while (priv->children)
-    clutter_actor_destroy (CLUTTER_ACTOR (priv->children->data));
-
-  G_OBJECT_CLASS (mx_table_parent_class)->dispose (gobject);
-}
-
-static void
 mx_table_calculate_col_widths (MxTable *table,
                                gint     for_width)
 {
@@ -1657,7 +1642,6 @@ mx_table_class_init (MxTableClass *klass)
 
   gobject_class->set_property = mx_table_set_property;
   gobject_class->get_property = mx_table_get_property;
-  gobject_class->dispose = mx_table_dispose;
   gobject_class->finalize = mx_table_finalize;
 
   actor_class->paint = mx_table_paint;

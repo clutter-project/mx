@@ -346,20 +346,6 @@ mx_bin_get_preferred_height (ClutterActor *self,
 }
 
 static void
-mx_bin_dispose (GObject *gobject)
-{
-  MxBinPrivate *priv = MX_BIN (gobject)->priv;
-
-  if (priv->child)
-    {
-      clutter_actor_destroy (priv->child);
-      priv->child = NULL;
-    }
-
-  G_OBJECT_CLASS (mx_bin_parent_class)->dispose (gobject);
-}
-
-static void
 mx_bin_set_property (GObject      *gobject,
                      guint         prop_id,
                      const GValue *value,
@@ -448,7 +434,6 @@ mx_bin_class_init (MxBinClass *klass)
 
   gobject_class->set_property = mx_bin_set_property;
   gobject_class->get_property = mx_bin_get_property;
-  gobject_class->dispose = mx_bin_dispose;
 
   actor_class->get_preferred_width = mx_bin_get_preferred_width;
   actor_class->get_preferred_height = mx_bin_get_preferred_height;

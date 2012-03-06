@@ -280,29 +280,6 @@ mx_path_bar_set_property (GObject      *object,
 }
 
 static void
-mx_path_bar_dispose (GObject *object)
-{
-  MxPathBarPrivate *priv = MX_PATH_BAR (object)->priv;
-
-  while (priv->crumbs)
-    {
-      clutter_actor_remove_child (CLUTTER_ACTOR (object),
-                                  CLUTTER_ACTOR (priv->crumbs->data));
-      priv->crumbs = g_list_delete_link (priv->crumbs, priv->crumbs);
-    }
-
-  if (priv->entry)
-    {
-      clutter_actor_remove_child (CLUTTER_ACTOR (object),
-                                  priv->entry);
-      priv->entry = NULL;
-      priv->editable = FALSE;
-    }
-
-  G_OBJECT_CLASS (mx_path_bar_parent_class)->dispose (object);
-}
-
-static void
 mx_path_bar_finalize (GObject *object)
 {
   G_OBJECT_CLASS (mx_path_bar_parent_class)->finalize (object);
@@ -593,7 +570,6 @@ mx_path_bar_class_init (MxPathBarClass *klass)
 
   object_class->get_property = mx_path_bar_get_property;
   object_class->set_property = mx_path_bar_set_property;
-  object_class->dispose = mx_path_bar_dispose;
   object_class->finalize = mx_path_bar_finalize;
 
   actor_class->get_preferred_width = mx_path_bar_get_preferred_width;

@@ -783,13 +783,6 @@ mx_box_layout_dispose (GObject *object)
   /* cleanup any running animation */
   _mx_box_layout_finish_animation (MX_BOX_LAYOUT (object));
 
-  /* destroy the children
-   * clutter_actor_destroy() will call clutter_container_remove() which will
-   * remove the children from the internal list
-   */
-  while (priv->children)
-    clutter_actor_destroy (CLUTTER_ACTOR (priv->children->data));
-
   if (priv->hadjustment)
     {
       g_object_unref (priv->hadjustment);

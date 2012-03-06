@@ -246,56 +246,6 @@ mx_entry_get_property (GObject    *gobject,
 }
 
 static void
-mx_entry_dispose (GObject *object)
-{
-  MxEntryPrivate *priv = MX_ENTRY_PRIV (object);
-
-  if (priv->entry)
-    {
-      clutter_actor_destroy (priv->entry);
-      priv->entry = NULL;
-    }
-
-  if (priv->primary_icon)
-    {
-      clutter_actor_destroy (priv->primary_icon);
-      priv->primary_icon = NULL;
-    }
-
-  if (priv->secondary_icon)
-    {
-      clutter_actor_destroy (priv->secondary_icon);
-      priv->secondary_icon = NULL;
-    }
-
-  if (priv->primary_icon_highlight)
-    {
-      clutter_actor_destroy (priv->primary_icon_highlight);
-      priv->primary_icon_highlight = NULL;
-    }
-
-  if (priv->secondary_icon_highlight)
-    {
-      clutter_actor_destroy (priv->secondary_icon_highlight);
-      priv->secondary_icon_highlight = NULL;
-    }
-
-  if (priv->primary_icon_tooltip)
-    {
-      clutter_actor_destroy (CLUTTER_ACTOR (priv->primary_icon_tooltip));
-      priv->primary_icon_tooltip = NULL;
-    }
-
-  if (priv->secondary_icon_tooltip)
-    {
-      clutter_actor_destroy (CLUTTER_ACTOR (priv->secondary_icon_tooltip));
-      priv->secondary_icon_tooltip = NULL;
-    }
-
-  G_OBJECT_CLASS (mx_entry_parent_class)->dispose (object);
-}
-
-static void
 mx_entry_finalize (GObject *object)
 {
   MxEntryPrivate *priv = MX_ENTRY_PRIV (object);
@@ -1149,7 +1099,6 @@ mx_entry_class_init (MxEntryClass *klass)
   gobject_class->set_property = mx_entry_set_property;
   gobject_class->get_property = mx_entry_get_property;
   gobject_class->finalize = mx_entry_finalize;
-  gobject_class->dispose = mx_entry_dispose;
 
   actor_class->get_preferred_width = mx_entry_get_preferred_width;
   actor_class->get_preferred_height = mx_entry_get_preferred_height;

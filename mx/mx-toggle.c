@@ -246,20 +246,6 @@ mx_toggle_set_property (GObject      *object,
 }
 
 static void
-mx_toggle_dispose (GObject *object)
-{
-  MxTogglePrivate *priv = MX_TOGGLE (object)->priv;
-
-  if (priv->handle)
-    {
-      clutter_actor_destroy (priv->handle);
-      priv->handle = NULL;
-    }
-
-  G_OBJECT_CLASS (mx_toggle_parent_class)->dispose (object);
-}
-
-static void
 mx_toggle_finalize (GObject *object)
 {
   G_OBJECT_CLASS (mx_toggle_parent_class)->finalize (object);
@@ -516,7 +502,6 @@ mx_toggle_class_init (MxToggleClass *klass)
 
   object_class->get_property = mx_toggle_get_property;
   object_class->set_property = mx_toggle_set_property;
-  object_class->dispose = mx_toggle_dispose;
   object_class->finalize = mx_toggle_finalize;
 
   actor_class->pick = mx_toggle_pick;

@@ -359,21 +359,23 @@ mx_dialog_dispose (GObject *object)
 
   if (priv->blur)
     {
-      clutter_actor_destroy (priv->blur);
+      clutter_actor_remove_child (CLUTTER_ACTOR (object), priv->blur);
       priv->blur = NULL;
     }
 
   if (priv->background)
     {
-      clutter_actor_destroy (priv->background);
+      clutter_actor_remove_child (CLUTTER_ACTOR (object), priv->background);
       priv->background = NULL;
     }
 
   if (priv->button_box)
     {
-      clutter_actor_destroy (priv->button_box);
+      clutter_actor_remove_child (CLUTTER_ACTOR (object), priv->button_box);
       priv->button_box = NULL;
     }
+
+
 
   if (priv->shader)
     {

@@ -566,23 +566,16 @@ mx_button_dispose (GObject *gobject)
 {
   MxButtonPrivate *priv = MX_BUTTON (gobject)->priv;
 
-  if (priv->content_image)
-    {
-      clutter_actor_remove_child (CLUTTER_ACTOR (gobject),
-                                  priv->content_image);
-      priv->content_image = NULL;
-    }
-
   if (priv->action)
     {
       g_object_unref (priv->action);
       priv->action = NULL;
     }
 
-  if (priv->hbox)
+  if (priv->content_image)
     {
-      g_object_unref (priv->hbox);
-      priv->hbox = NULL;
+      clutter_actor_remove_child (CLUTTER_ACTOR (gobject), priv->content_image);
+      priv->content_image = NULL;
     }
 
   G_OBJECT_CLASS (mx_button_parent_class)->dispose (gobject);

@@ -338,18 +338,6 @@ mx_focusable_iface_init (MxFocusableIface *iface)
 }
 
 /* Actor implementation */
-
-static void
-mx_stack_dispose (GObject *object)
-{
-  MxStackPrivate *priv = MX_STACK (object)->priv;
-
-  while (priv->children)
-    clutter_actor_destroy (CLUTTER_ACTOR (priv->children->data));
-
-  G_OBJECT_CLASS (mx_stack_parent_class)->dispose (object);
-}
-
 static void
 mx_stack_get_preferred_width (ClutterActor *actor,
                               gfloat        for_height,
@@ -701,12 +689,9 @@ mx_stack_pick (ClutterActor       *actor,
 static void
 mx_stack_class_init (MxStackClass *klass)
 {
-  GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
 
   g_type_class_add_private (klass, sizeof (MxStackPrivate));
-
-  object_class->dispose = mx_stack_dispose;
 
   actor_class->get_preferred_width = mx_stack_get_preferred_width;
   actor_class->get_preferred_height = mx_stack_get_preferred_height;
