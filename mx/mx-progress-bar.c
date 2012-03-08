@@ -178,8 +178,11 @@ static void
 mx_progress_bar_unmap (ClutterActor *actor)
 {
   MxProgressBarPrivate *priv = MX_PROGRESS_BAR (actor)->priv;
+
+  if (priv->fill)
+    clutter_actor_unmap (priv->fill);
+
   CLUTTER_ACTOR_CLASS (mx_progress_bar_parent_class)->unmap (actor);
-  clutter_actor_unmap (priv->fill);
 }
 
 static void

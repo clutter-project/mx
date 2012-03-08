@@ -596,12 +596,22 @@ mx_slider_unmap (ClutterActor *actor)
   MxSlider *self = MX_SLIDER (actor);
   MxSliderPrivate *priv = self->priv;
 
+  if (priv->trough_bg)
+    clutter_actor_unmap (priv->trough_bg);
+
+  if (priv->fill)
+    clutter_actor_unmap (priv->fill);
+
+  if (priv->trough)
+    clutter_actor_unmap (priv->trough);
+
+  if (priv->handle)
+    clutter_actor_unmap (priv->handle);
+
+  if (priv->buffer)
+    clutter_actor_unmap (priv->buffer);
+
   CLUTTER_ACTOR_CLASS (mx_slider_parent_class)->unmap (actor);
-  clutter_actor_unmap (priv->trough_bg);
-  clutter_actor_unmap (priv->fill);
-  clutter_actor_unmap (priv->trough);
-  clutter_actor_unmap (priv->handle);
-  clutter_actor_unmap (priv->buffer);
 }
 
 static void
@@ -712,6 +722,12 @@ mx_slider_dispose (GObject *object)
     {
       clutter_actor_unparent (priv->trough);
       priv->trough = NULL;
+    }
+
+  if (priv->buffer)
+    {
+      clutter_actor_destroy (priv->buffer);
+      priv->buffer = NULL;
     }
 
   G_OBJECT_CLASS (mx_slider_parent_class)->dispose (object);

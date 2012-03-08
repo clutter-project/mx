@@ -217,7 +217,8 @@ mx_combo_box_unmap (ClutterActor *actor)
 
   CLUTTER_ACTOR_CLASS (mx_combo_box_parent_class)->unmap (actor);
 
-  clutter_actor_unmap (priv->label);
+  if (priv->label)
+    clutter_actor_unmap (priv->label);
 
   if (priv->icon)
     clutter_actor_unmap (priv->icon);

@@ -372,7 +372,8 @@ mx_label_unmap (ClutterActor *actor)
 {
   MxLabelPrivate *priv = MX_LABEL (actor)->priv;
 
-  clutter_actor_unmap (priv->label);
+  if (priv->label)
+    clutter_actor_unmap (priv->label);
 
   CLUTTER_ACTOR_CLASS (mx_label_parent_class)->unmap (actor);
 }

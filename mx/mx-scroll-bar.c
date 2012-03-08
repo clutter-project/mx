@@ -250,9 +250,14 @@ mx_scroll_bar_unmap (ClutterActor *actor)
 
   CLUTTER_ACTOR_CLASS (mx_scroll_bar_parent_class)->unmap (actor);
 
-  clutter_actor_unmap (priv->bw_stepper);
-  clutter_actor_unmap (priv->fw_stepper);
-  clutter_actor_unmap (priv->trough);
+  if (priv->bw_stepper)
+    clutter_actor_unmap (priv->bw_stepper);
+
+  if (priv->fw_stepper)
+    clutter_actor_unmap (priv->fw_stepper);
+
+  if (priv->trough)
+    clutter_actor_unmap (priv->trough);
 
   if (priv->handle)
     clutter_actor_unmap (priv->handle);

@@ -257,7 +257,8 @@ mx_toggle_unmap (ClutterActor *actor)
 {
   MxTogglePrivate *priv = MX_TOGGLE (actor)->priv;
 
-  clutter_actor_unmap (priv->handle);
+  if (priv->handle)
+    clutter_actor_unmap (priv->handle);
 
   CLUTTER_ACTOR_CLASS (mx_toggle_parent_class)->unmap (actor);
 }

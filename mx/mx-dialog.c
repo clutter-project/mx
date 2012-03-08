@@ -772,8 +772,11 @@ mx_dialog_unmap (ClutterActor *actor)
                                               actor);
     }
 
-  clutter_actor_unmap (priv->button_box);
-  clutter_actor_unmap (priv->background);
+  if (priv->button_box)
+    clutter_actor_unmap (priv->button_box);
+
+  if (priv->background)
+    clutter_actor_unmap (priv->background);
 
   if (priv->blur)
     clutter_actor_unmap (priv->blur);

@@ -197,6 +197,10 @@ change_widget (MxComboBox *box,
   guint n_properties;
   gint i;
 
+  /* test the destroy sequence */
+  if (mx_bin_get_child (MX_BIN (data.frame)))
+    clutter_actor_destroy (mx_bin_get_child (MX_BIN (data.frame)));
+
   typename = mx_combo_box_get_active_text (box);
   id = g_type_from_name (typename);
 

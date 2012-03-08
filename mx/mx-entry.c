@@ -826,7 +826,8 @@ mx_entry_unmap (ClutterActor *actor)
 
   CLUTTER_ACTOR_CLASS (mx_entry_parent_class)->unmap (actor);
 
-  clutter_actor_unmap (priv->entry);
+  if (priv->entry)
+    clutter_actor_unmap (priv->entry);
 
   if (priv->primary_icon)
     clutter_actor_unmap (priv->primary_icon);
