@@ -1,3 +1,12 @@
+1.4.4
+=====
+
+Changes since 1.4.3
+
+ * Improved compatibility with Clutter 1.9
+ * button: avoid setting the ClutterText "text" property to NULL
+
+
 1.4.3
 =====
 
