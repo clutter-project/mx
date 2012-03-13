@@ -72,6 +72,7 @@ struct _MxTooltipPrivate
   CoglMatrix       stage_matrix;
 
   MxBorderImage   *border_image;
+  ClutterActorBox  text_allocation;
   CoglHandle       border_image_texture;
 
   MxTooltipAnimation animation_mode;
@@ -400,6 +401,8 @@ mx_tooltip_allocate (ClutterActor          *self,
   /* remove the space that is used by the arrow */
   child_box.y1 += arrow_height;
 
+  priv->text_allocation = child_box;
+
   if (priv->label)
     {
       /* now remove the padding */
@@ -417,13 +420,18 @@ static void
 mx_tooltip_paint (ClutterActor *self)
 {
   gfloat width, height;
-  ClutterActor *border_image, *arrow_image;
+  ClutterActor *arrow_image;
 
   MxTooltipPrivate *priv = MX_TOOLTIP (self)->priv;
 
   clutter_actor_get_size (self, &width, &height);
   width = (gint)(width / 2.f);
   height = (gint)(height / 2.f);
+
+  cogl_push_matrix ();
+  cogl_translate (priv->text_allocation.x1,
+                  priv->text_allocation.y1,
+                  0);
 
   if (priv->border_image_texture)
     mx_texture_frame_paint_texture (priv->border_image_texture,
@@ -432,7 +440,9 @@ mx_tooltip_paint (ClutterActor *self)
                                     priv->border_image->right,
                                     priv->border_image->bottom,
                                     priv->border_image->left,
-                                    width, height);
+                                    priv->text_allocation.x2 - priv->text_allocation.x1,
+                                    priv->text_allocation.y2 - priv->text_allocation.y1);
+  cogl_pop_matrix ();
 
   arrow_image = mx_widget_get_background_image (MX_WIDGET (self));
   if (arrow_image && !priv->actor_below)
