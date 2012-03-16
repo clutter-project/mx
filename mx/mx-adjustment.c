@@ -117,6 +117,8 @@ static void mx_adjustment_clamp_page (MxAdjustment *adjustment,
                                       gdouble       lower,
                                       gdouble       upper);
 
+static void mx_adjustment_emit_changed (MxAdjustment *adjustment);
+
 static void
 mx_adjustment_constructed (GObject *object)
 {
@@ -588,6 +590,7 @@ mx_adjustment_set_value (MxAdjustment *adjustment,
       priv->value = value;
 
       g_object_notify (G_OBJECT (adjustment), "value");
+      mx_adjustment_emit_changed (adjustment);
     }
 }
 
