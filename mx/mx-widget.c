@@ -450,14 +450,14 @@ mx_widget_paint (ClutterActor *actor)
   /* paint the background color first */
   if (priv->bg_color && priv->bg_color->alpha != 0)
     {
-      priv->bg_color->alpha = clutter_actor_get_paint_opacity (actor) *
+      guint tmp_alpha = clutter_actor_get_paint_opacity (actor) *
         priv->bg_color->alpha / 255;
 
 
       cogl_set_source_color4ub (priv->bg_color->red,
                                 priv->bg_color->green,
                                 priv->bg_color->blue,
-                                priv->bg_color->alpha);
+                                tmp_alpha);
       cogl_rectangle (0, 0, width, height);
     }
 
