@@ -641,8 +641,15 @@ mx_button_get_preferred_width (ClutterActor *actor,
 
   if (priv->content_image)
     {
+      gfloat width;
+
       clutter_actor_get_preferred_width (priv->content_image, for_height,
-                                         min_width, pref_width);
+                                         NULL, &width);
+      if (min_width)
+        *min_width = width;
+      if (pref_width)
+        *pref_width = width;
+
       return;
     }
 
@@ -662,8 +669,15 @@ mx_button_get_preferred_height (ClutterActor *actor,
 
   if (priv->content_image)
     {
+      gfloat height;
+
       clutter_actor_get_preferred_height (priv->content_image, for_width,
-                                          min_height, pref_height);
+                                          NULL, &height);
+      if (min_height)
+        *min_height = height;
+      if (pref_height)
+        *pref_height = height;
+
       return;
     }
 
