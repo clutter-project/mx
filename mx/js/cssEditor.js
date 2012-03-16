@@ -27,6 +27,70 @@ const Mainloop = imports.mainloop;
 const GObject = imports.gi.GObject;
 const Clutter = imports.gi.Clutter;
 const Mx = imports.gi.Mx;
+const CssEditorPaths = imports.cssEditorPaths;
+
+function Overlay()
+{
+    this._init();
+}
+
+Overlay.prototype = {
+    _init: function() {
+        this._frame = new Mx.Frame({ name: 'mx-css-editor-overlay' });
+        this._frame.set_opacity(0x80);
+        this._tooltip = new Mx.Tooltip({ name: 'mx-css-editor-tooltip' });
+
+        // var overlay_color = new Clutter.Color();
+        // overlay_color.from_pixel(0x2266bb80);
+        // var rectangle = new Clutter.Rectangle({ color: overlay_color });
+        // this._overlay.set_child(rectangle);
+    },
+
+    add: function(stage) {
+        log("add");
+        if (this._stage == stage)
+            return;
+        this._stage = stage;
+
+        this._stage.add_actor(this._frame);
+        this._frame.raise_top();
+        this._frame.hide();
+        this._stage.add_actor(this._tooltip);
+        this._tooltip.hide();
+    },
+
+    remove: function() {
+        log("remove");
+        this._frame.hide();
+        this._stage.remove_actor(this._frame);
+        this._tooltip.hide();
+        this._stage.remove_actor(this._tooltip);
+
+        this._stage = null;
+    },
+
+    set_geometry: function(x, y, width, height) {
+        this._tooltip.set_tip_area(new Clutter.Geometry({ x: x,
+                                                          y: y,
+                                                          width: width,
+                                                          height: height }));
+        this._tooltip.set_text("" + Math.round(x) + "x" + Math.round(y) +
+                               " -> " + Math.round(width) + "x" + Math.round(height));
+        log(this._tooltip.get_text());
+        this._tooltip.raise_top();
+        this._tooltip.show();
+
+        this._frame.set_position(x, y);
+        this._frame.set_size(width, height);
+        this._frame.show();
+    },
+
+    hide: function() {
+        log("hide");
+        this._frame.hide();
+        this._tooltip.hide();
+    }
+};
 
 //
 // Inspector
@@ -39,6 +103,9 @@ function LiveInspector()
 
 LiveInspector.prototype = {
     _init: function() {
+        var style = Mx.Style.get_default();
+        style.load_from_file(CssEditorPaths.get_css_editor_dir() + "/cssEditor.css");
+
         this._inspect_window = new Mx.Window();
 
         var main_box = new Mx.BoxLayout({ orientation: Mx.Orientation.HORIZONTAL });
@@ -54,10 +121,6 @@ LiveInspector.prototype = {
         main_box.child_set_expand(this._style_box, true);
         main_box.child_set_y_fill(this._style_box, true);
 
-        var overlay_color = new Clutter.Color();
-        overlay_color.from_pixel(0x2266bb80);
-        this._overlay = new Clutter.Rectangle({ color: overlay_color });
-
         var manager = Clutter.StageManager.get_default();
         manager.connect('stage-added', Lang.bind(this, this._stage_added));
 
@@ -67,6 +130,8 @@ LiveInspector.prototype = {
                 stages[i].connect('captured-event',
                                   Lang.bind(this, this._event_captured));
         }
+
+        this._overlay = new Overlay();
 
         // this._window_visible = false;
         this._inspect_window.show();
@@ -116,9 +181,8 @@ LiveInspector.prototype = {
         // Remove overlay
         if (this._inspected_widget) {
             var stage = this._inspected_widget.get_stage();
-            this._overlay.hide();
 
-            stage.remove_actor(this._overlay);
+            this._overlay.remove();
         }
 
         this._inspected_widget = null;
@@ -127,9 +191,7 @@ LiveInspector.prototype = {
     _inspect_element: function(widget) {
         // Add overlay
         var stage = widget.get_stage();
-        stage.add_actor(this._overlay);
-        this._overlay.raise_top();
-        this._overlay.hide();
+        this._overlay.add(stage);
 
         // Inspect from lower child up to top parent
         this._inspected_widget = widget;
@@ -165,13 +227,12 @@ LiveInspector.prototype = {
                                var pos = widget.get_transformed_position();
                                var size = widget.get_transformed_size();
 
-                               this._overlay.set_position(pos[0], pos[1]);
-                               this._overlay.set_size(size[0], size[1]);
-                               this._overlay.show();
+                               this._overlay.set_geometry(pos[0], pos[1],
+                                                          size[0], size[1]);
                            }));
             button.connect('leave-event',
                            Lang.bind(this, function(button) {
-                               this._overlay.hide();
+                               //this._overlay.hide();
                            }));
 
             this._parent_box.add_actor(button, 0);
