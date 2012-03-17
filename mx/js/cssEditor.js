@@ -39,15 +39,9 @@ Overlay.prototype = {
         this._frame = new Mx.Frame({ name: 'mx-css-editor-overlay' });
         this._frame.set_opacity(0x80);
         this._tooltip = new Mx.Tooltip({ name: 'mx-css-editor-tooltip' });
-
-        // var overlay_color = new Clutter.Color();
-        // overlay_color.from_pixel(0x2266bb80);
-        // var rectangle = new Clutter.Rectangle({ color: overlay_color });
-        // this._overlay.set_child(rectangle);
     },
 
     add: function(stage) {
-        log("add");
         if (this._stage == stage)
             return;
         this._stage = stage;
@@ -60,7 +54,6 @@ Overlay.prototype = {
     },
 
     remove: function() {
-        log("remove");
         this._frame.hide();
         this._stage.remove_actor(this._frame);
         this._tooltip.hide();
@@ -74,9 +67,8 @@ Overlay.prototype = {
                                                           y: y,
                                                           width: width,
                                                           height: height }));
-        this._tooltip.set_text("" + Math.round(x) + "x" + Math.round(y) +
-                               " -> " + Math.round(width) + "x" + Math.round(height));
-        log(this._tooltip.get_text());
+        this._tooltip.set_text(Math.round(width) + "x" + Math.round(height) +
+                               " @ " + Math.round(x) + "x" + Math.round(y));
         this._tooltip.raise_top();
         this._tooltip.show();
 
@@ -86,7 +78,6 @@ Overlay.prototype = {
     },
 
     hide: function() {
-        log("hide");
         this._frame.hide();
         this._tooltip.hide();
     }
@@ -133,7 +124,7 @@ LiveInspector.prototype = {
 
         this._overlay = new Overlay();
 
-        // this._window_visible = false;
+        //this._window_visible = false;
         this._inspect_window.show();
     },
 
@@ -144,11 +135,10 @@ LiveInspector.prototype = {
 
     _event_captured: function(stage, event) {
         // if (!this._window_visible) {
-        //     if (event.type() == Clutter.EventType.KEY_PRESS &&
-        //         event.modifier_state & Clutter.CONTROL_MASK &&
-        //        ) {
-
-
+        //     log("window not visible " + event.modifier_state()  + "/" + Clutter.CONTROL_MASK);
+        //     if (event.modifier_state & Clutter.CONTROL_MASK &&
+        //         event.modifier_state & Clutter.SHIFT_MASK) {
+        //         log ("plop");
         //     }
         //     return false;
         // }
@@ -232,7 +222,7 @@ LiveInspector.prototype = {
                            }));
             button.connect('leave-event',
                            Lang.bind(this, function(button) {
-                               //this._overlay.hide();
+                               this._overlay.hide();
                            }));
 
             this._parent_box.add_actor(button, 0);
