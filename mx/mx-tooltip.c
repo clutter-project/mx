@@ -706,7 +706,7 @@ mx_tooltip_update_position (MxTooltip *tooltip)
       /* re-query size as may have changed */
       clutter_actor_get_preferred_height ((ClutterActor*) tooltip,
                                           -1, NULL, &tooltip_h);
-      tooltip_y = tip_area.y - tooltip_h;
+      tooltip_y = MAX (0, tip_area.y - tooltip_h);
     }
 
 
