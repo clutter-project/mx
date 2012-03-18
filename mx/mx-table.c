@@ -574,7 +574,7 @@ mx_table_depth_sort_cb (gconstpointer a,
                         gconstpointer b)
 {
   gfloat depth_a = clutter_actor_get_depth ((ClutterActor *)a);
-  gfloat depth_b = clutter_actor_get_depth ((ClutterActor *)a);
+  gfloat depth_b = clutter_actor_get_depth ((ClutterActor *)b);
 
   if (depth_a < depth_b)
     return -1;
