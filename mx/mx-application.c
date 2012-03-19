@@ -109,7 +109,7 @@ mx_application_constructor (GType                  type,
         G_OBJECT_CLASS (mx_application_parent_class)->constructor (type,
                                                                    n_construct_params,
                                                                    construct_params);
-      app_singleton = MX_APPLICATION (app_singleton);
+      app_singleton = MX_APPLICATION (object);
     }
   else
     object = g_object_ref (G_OBJECT (app_singleton));
