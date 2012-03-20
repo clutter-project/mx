@@ -161,7 +161,6 @@ mx_application_startup (GApplication *application)
   MxSettings *settings;
 
   MxApplication *self = MX_APPLICATION (application);
-  MxApplicationPrivate *priv = self->priv;
 
 
   /* chain up */
@@ -184,6 +183,7 @@ mx_application_startup (GApplication *application)
 
 #if defined (HAVE_STARTUP_NOTIFICATION) && defined (HAVE_X11)
     {
+      MxApplicationPrivate *priv = self->priv;
       SnDisplay *display;
       Display *xdisplay;
       int screen;
