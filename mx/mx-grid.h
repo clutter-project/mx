@@ -90,7 +90,7 @@ GType mx_grid_get_type (void) G_GNUC_CONST;
 ClutterActor  *mx_grid_new                    (void);
 void           mx_grid_set_line_alignment     (MxGrid   *self,
                                                MxAlign  value);
-gboolean       mx_grid_get_line_alignment     (MxGrid   *self);
+MxAlign        mx_grid_get_line_alignment     (MxGrid   *self);
 void           mx_grid_set_homogenous_rows    (MxGrid   *self,
                                                gboolean  value);
 gboolean       mx_grid_get_homogenous_rows    (MxGrid   *self);

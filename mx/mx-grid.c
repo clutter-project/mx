@@ -725,32 +725,48 @@ void
 mx_grid_set_line_alignment (MxGrid  *self,
                             MxAlign  value)
 {
-  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  priv->line_alignment = value;
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+  MxGridPrivate *priv;
+
+  priv = self->priv;
+
+  if (value != priv->line_alignment)
+    {
+      priv->line_alignment = value;
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+    }
 }
 
-gboolean
+MxAlign
 mx_grid_get_line_alignment (MxGrid *self)
 {
-  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  return priv->line_alignment;
+  g_return_val_if_fail (MX_IS_GRID (self), MX_ALIGN_START);
+
+  return self->priv->line_alignment;
 }
 
 void
 mx_grid_set_homogenous_rows (MxGrid  *self,
                              gboolean value)
 {
-  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  priv->homogenous_rows = value;
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+  MxGridPrivate *priv;
+
+  g_return_if_fail (MX_IS_GRID (self));
+
+  priv = self->priv;
+
+  if (value != priv->homogenous_rows)
+    {
+      priv->homogenous_rows = value;
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+    }
 }
 
 gboolean
 mx_grid_get_homogenous_rows (MxGrid *self)
 {
-  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  return priv->homogenous_rows;
+  g_return_val_if_fail (MX_IS_GRID (self), FALSE);
+
+  return self->priv->homogenous_rows;
 }
 
 
@@ -758,35 +774,46 @@ void
 mx_grid_set_homogenous_columns (MxGrid  *self,
                                 gboolean value)
 {
-  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  priv->homogenous_columns = value;
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+  MxGridPrivate *priv;
+
+  g_return_if_fail (MX_IS_GRID (self));
+
+  priv = self->priv;
+
+  if (value != priv->homogenous_columns)
+    {
+      priv->homogenous_columns = value;
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+    }
 }
 
 
 gboolean
 mx_grid_get_homogenous_columns (MxGrid *self)
 {
-  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  return priv->homogenous_columns;
+  g_return_val_if_fail (MX_IS_GRID (self), FALSE);
+
+  return self->priv->homogenous_columns;
 }
 
 
 void
-mx_grid_set_orientation (MxGrid *grid,
-                         MxOrientation orientation)
+mx_grid_set_orientation (MxGrid        *self,
+                         MxOrientation  orientation)
 {
-  MxGridPrivate *priv = grid->priv;
+  MxGridPrivate *priv;
 
-  g_return_if_fail (MX_IS_GRID (grid));
+  g_return_if_fail (MX_IS_GRID (self));
+
+  priv = self->priv;
 
   if (priv->orientation != orientation)
     {
       priv->orientation = orientation;
 
-      clutter_actor_queue_relayout (CLUTTER_ACTOR (grid));
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
 
-      g_object_notify (G_OBJECT (grid), "orientation");
+      g_object_notify (G_OBJECT (self), "orientation");
     }
 }
 
@@ -800,53 +827,78 @@ mx_grid_get_orientation (MxGrid *grid)
 
 void
 mx_grid_set_column_spacing (MxGrid *self,
-                        gfloat  value)
+                            gfloat  value)
 {
-  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  priv->column_spacing = value;
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+  MxGridPrivate *priv;
+
+  g_return_if_fail (MX_IS_GRID (self));
+
+  priv = self->priv;
+
+  if (priv->column_spacing != value)
+    {
+      priv->column_spacing = value;
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+    }
 }
 
 gfloat
 mx_grid_get_column_spacing (MxGrid *self)
 {
-  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  return priv->column_spacing;
+  g_return_val_if_fail (MX_IS_GRID (self), 0.0);
+
+  return self->priv->column_spacing;
 }
-
-
 
 void
 mx_grid_set_row_spacing (MxGrid *self,
-                     gfloat  value)
+                         gfloat  value)
 {
-  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  priv->row_spacing = value;
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+  MxGridPrivate *priv;
+
+  g_return_if_fail (MX_IS_GRID (self));
+
+  priv = self->priv;
+
+  if (value != priv->row_spacing)
+    {
+      priv->row_spacing = value;
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+    }
 }
 
 gfloat
 mx_grid_get_row_spacing (MxGrid *self)
 {
-  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  return priv->row_spacing;
+  g_return_val_if_fail (MX_IS_GRID (self), 0.0);
+
+  return self->priv->row_spacing;
 }
 
 void
 mx_grid_set_child_y_align (MxGrid  *self,
                            MxAlign  value)
 {
-  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  priv->child_y_align = value;
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+  MxGridPrivate *priv;
+
+  g_return_if_fail (MX_IS_GRID (self));
+
+  priv = self->priv;
+
+  if (value != priv->child_y_align)
+    {
+      priv->child_y_align = value;
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+    }
 }
 
 
 MxAlign
 mx_grid_get_child_y_align (MxGrid *self)
 {
-  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  return priv->child_y_align;
+  g_return_val_if_fail (MX_IS_GRID (self), MX_ALIGN_START);
+
+  return self->priv->child_y_align;
 }
 
 void
@@ -854,26 +906,42 @@ mx_grid_set_child_x_align (MxGrid  *self,
                            MxAlign  value)
 
 {
-  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  priv->child_x_align = value;
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+  MxGridPrivate *priv;
+
+  g_return_if_fail (MX_IS_GRID (self));
+
+  priv = self->priv;
+
+  if (value != priv->child_x_align)
+    {
+      priv->child_x_align = value;
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+    }
 }
 
 MxAlign
 mx_grid_get_child_x_align (MxGrid *self)
 {
-  MxGridPrivate *priv = MX_GRID_GET_PRIVATE (self);
-  return priv->child_x_align;
+  g_return_val_if_fail (MX_IS_GRID (self), MX_ALIGN_START);
+
+  return self->priv->child_x_align;
 }
 
 void
 mx_grid_set_max_stride (MxGrid *self,
                         gint    value)
 {
+  MxGridPrivate *priv;
+
   g_return_if_fail (MX_IS_GRID (self));
 
-  self->priv->max_stride = value;
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+  priv = self->priv;
+
+  if (value != priv->max_stride)
+    {
+      priv->max_stride = value;
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
+    }
 }
 
 gint
