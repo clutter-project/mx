@@ -651,6 +651,8 @@ mx_entry_allocate (ClutterActor          *actor,
 
 }
 
+static void clutter_text_changed_cb (ClutterText *text, MxEntry     *entry);
+
 static void
 clutter_text_focus_in_cb (ClutterText  *text,
                           ClutterActor *actor)
@@ -662,7 +664,19 @@ clutter_text_focus_in_cb (ClutterText  *text,
     {
       priv->hint_visible = FALSE;
 
+      /* We don't want to emit the notify text change when we're swapping
+       * between the hint text and blank for entry.
+       */
+      g_signal_handlers_block_by_func (priv->entry,
+                                       clutter_text_changed_cb,
+                                       MX_ENTRY (actor));
+
       clutter_text_set_text (text, "");
+
+      g_signal_handlers_unblock_by_func (priv->entry,
+                                         clutter_text_changed_cb,
+                                         MX_ENTRY (actor));
+
 
       if (priv->password_char != 0)
         {
@@ -687,7 +701,19 @@ clutter_text_focus_out_cb (ClutterText  *text,
     {
       priv->hint_visible = TRUE;
 
+      /* We don't want to emit the notify text change when we're swapping
+       * between the hint text and blank for entry.
+       */
+      g_signal_handlers_block_by_func (priv->entry,
+                                       clutter_text_changed_cb,
+                                       MX_ENTRY (actor));
+
       clutter_text_set_text (text, priv->hint);
+
+      g_signal_handlers_unblock_by_func (priv->entry,
+                                         clutter_text_changed_cb,
+                                         MX_ENTRY (actor));
+
       mx_stylable_set_style_pseudo_class (MX_STYLABLE (actor), "indeterminate");
 
       if (clutter_text_get_password_char (text) != 0)
