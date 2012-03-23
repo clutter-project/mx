@@ -274,10 +274,7 @@ mx_application_window_map_cb (ClutterActor  *actor,
 
 /**
  * mx_application_new:
- * @argc: (inout): The number of arguments in argv.
- * @argv: (array length=argc) (inout) (allow-none): A pointer to an array of
- *   arguments
- * @name: Unique application name.
+ * @application_id: Unique application name.
  * @flags: Application flags.
  *
  * Intialises everything needed to operate Clutter and use #MxApplication.
@@ -434,7 +431,7 @@ mx_application_get_windows (MxApplication *application)
  * Creates a new #MxWindow and adds it to MxApplication. The application must be
  * registered before this function is run.
  *
- * Returns: The newly created MxWindow
+ * Returns: (transfer full): The newly created MxWindow
  */
 MxWindow*
 mx_application_create_window (MxApplication *application,
