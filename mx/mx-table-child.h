@@ -123,4 +123,4 @@ void     mx_table_child_set_y_align         (MxTable      *table,
 
 G_END_DECLS
 
-#endif /* __MX_TABLE_H__ */
+#endif /* __MX_TABLE_CHILD_H__ */
