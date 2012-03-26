@@ -553,7 +553,8 @@ mx_scroll_view_scroll_event (ClutterActor       *self,
                              ClutterScrollEvent *event)
 {
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (self)->priv;
-  gdouble lower, value, upper, step;
+  gdouble hlower, hvalue, hupper, hstep;
+  gdouble vlower, vvalue, vupper, vstep;
   MxAdjustment *vadjustment, *hadjustment;
 
   /* don't handle scroll events if requested not to */
@@ -569,10 +570,10 @@ mx_scroll_view_scroll_event (ClutterActor       *self,
     case CLUTTER_SCROLL_DOWN:
       if (vadjustment)
         g_object_get (vadjustment,
-                      "lower", &lower,
-                      "step-increment", &step,
-                      "value", &value,
-                      "upper", &upper,
+                      "lower", &vlower,
+                      "step-increment", &vstep,
+                      "value", &vvalue,
+                      "upper", &vupper,
                       NULL);
       else
         return FALSE;
@@ -581,45 +582,97 @@ mx_scroll_view_scroll_event (ClutterActor       *self,
     case CLUTTER_SCROLL_RIGHT:
       if (hadjustment)
         g_object_get (hadjustment,
-                      "lower", &lower,
-                      "step-increment", &step,
-                      "value", &value,
-                      "upper", &upper,
+                      "lower", &hlower,
+                      "step-increment", &hstep,
+                      "value", &hvalue,
+                      "upper", &hupper,
                       NULL);
       else
         return FALSE;
+      break;
+
+    case CLUTTER_SCROLL_SMOOTH:
+      if (!hadjustment && !vadjustment)
+        return FALSE;
+      if (hadjustment)
+        g_object_get (hadjustment,
+                      "lower", &hlower,
+                      "value", &hvalue,
+                      "upper", &hupper,
+                      NULL);
+      if (vadjustment)
+        g_object_get (vadjustment,
+                      "lower", &vlower,
+                      "value", &vvalue,
+                      "upper", &vupper,
+                      NULL);
       break;
     }
 
   switch (event->direction)
     {
     case CLUTTER_SCROLL_UP:
-      if (value == lower)
+      if (vvalue == vlower)
         return FALSE;
       else
-        mx_adjustment_interpolate_relative (vadjustment, -step,
+        mx_adjustment_interpolate_relative (vadjustment, -vstep,
                                             250, CLUTTER_EASE_OUT_CUBIC);
       break;
     case CLUTTER_SCROLL_DOWN:
-      if (value == upper)
+      if (vvalue == vupper)
         return FALSE;
       else
-        mx_adjustment_interpolate_relative (vadjustment, step,
+        mx_adjustment_interpolate_relative (vadjustment, vstep,
                                             250, CLUTTER_EASE_OUT_CUBIC);
       break;
     case CLUTTER_SCROLL_LEFT:
-      if (value == lower)
+      if (hvalue == hlower)
         return FALSE;
       else
-        mx_adjustment_interpolate_relative (hadjustment, -step,
+        mx_adjustment_interpolate_relative (hadjustment, -hstep,
                                             250, CLUTTER_EASE_OUT_CUBIC);
       break;
     case CLUTTER_SCROLL_RIGHT:
-      if (value == upper)
+      if (hvalue == hupper)
         return FALSE;
       else
-        mx_adjustment_interpolate_relative (hadjustment, step,
+        mx_adjustment_interpolate_relative (hadjustment, hstep,
                                             250, CLUTTER_EASE_OUT_CUBIC);
+      break;
+
+    case CLUTTER_SCROLL_SMOOTH:
+      {
+        gdouble dx, dy;
+        gboolean handled = FALSE;
+
+        clutter_event_get_scroll_delta ((ClutterEvent *) event, &dx, &dy);
+
+        if (hadjustment)
+          {
+            /* value have to stay in the [lower, upper] bounds */
+            if (!(((hvalue == hlower) && (dx < 0)) &&
+                  ((hvalue == hupper) && (dx > 0))))
+              {
+                mx_adjustment_interpolate_relative (hadjustment, dx,
+                                                    250, CLUTTER_EASE_OUT_CUBIC);
+                handled = TRUE;
+              }
+          }
+
+        if (vadjustment)
+          {
+            /* value have to stay in the [lower, upper] bounds */
+            if (!(((vvalue == vlower) && (dy < 0)) &&
+                  ((vvalue == vupper) && (dy > 0))))
+              {
+                mx_adjustment_interpolate_relative (vadjustment, dy,
+                                                    250, CLUTTER_EASE_OUT_CUBIC);
+                handled = TRUE;
+              }
+          }
+
+        return handled;
+      }
       break;
     }
 
