@@ -596,16 +596,16 @@ mx_grid_move_focus (MxFocusable      *focusable,
     {
       for (l = childlink->next; l; l = g_list_next (l))
         {
-          if (MX_IS_FOCUSABLE (l->data))
-            {
-              MxFocusable *focused;
+          MxFocusable *child = (MxFocusable *) l->data;
 
-              focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data),
-                                                   MX_FOCUS_HINT_FIRST);
+          if (MX_IS_FOCUSABLE (child))
+            {
+              MxFocusable *focused =
+                mx_focusable_accept_focus (child, MX_FOCUS_HINT_FIRST);
 
               if (focused)
                 {
-                  update_adjustments (MX_GRID (focusable), focused);
+                  update_adjustments (MX_GRID (focusable), child);
                   return focused;
                 }
             }
@@ -615,16 +615,16 @@ mx_grid_move_focus (MxFocusable      *focusable,
     {
       for (l = g_list_previous (childlink); l; l = g_list_previous (l))
         {
-          if (MX_IS_FOCUSABLE (l->data))
-            {
-              MxFocusable *focused;
+          MxFocusable *child = (MxFocusable *) l->data;
 
-              focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data),
-                                                   MX_FOCUS_HINT_LAST);
+          if (MX_IS_FOCUSABLE (child))
+            {
+              MxFocusable *focused =
+                mx_focusable_accept_focus (child, MX_FOCUS_HINT_LAST);
 
               if (focused)
                 {
-                  update_adjustments (MX_GRID (focusable), focused);
+                  update_adjustments (MX_GRID (focusable), child);
                   return focused;
                 }
             }
@@ -668,14 +668,15 @@ mx_grid_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 
   for (l = list; l; l = g_list_next (l))
     {
-      if (MX_IS_FOCUSABLE (l->data))
+      MxFocusable *child = (MxFocusable *) l->data;
+
+      if (MX_IS_FOCUSABLE (child))
         {
-          return_focusable = mx_focusable_accept_focus (MX_FOCUSABLE (l->data),
-                                                        hint);
+          return_focusable = mx_focusable_accept_focus (child, hint);
 
           if (return_focusable)
             {
-              update_adjustments (MX_GRID (focusable), return_focusable);
+              update_adjustments (MX_GRID (focusable), child);
               break;
             }
         }
