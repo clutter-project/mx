@@ -308,11 +308,21 @@ change_widget (MxComboBox *box,
 
   if (MX_IS_VIEWPORT (actor) || MX_IS_KINETIC_SCROLL_VIEW (actor))
     {
-      ClutterActor *child;
+      ClutterActor *child, *texture;
+      gint x, y;
 
-      child = clutter_texture_new_from_file ("redhand.png", NULL);
-      clutter_texture_set_keep_aspect_ratio (CLUTTER_TEXTURE (child), TRUE);
-      clutter_actor_set_width (child, 1000);
+      child = clutter_group_new ();
+
+      for (x = 0; x < 10; x++)
+        for (y = 0; y < 10; y++)
+          {
+            texture = clutter_texture_new_from_file ("redhand.png", NULL);
+            clutter_texture_set_keep_aspect_ratio (CLUTTER_TEXTURE (texture), TRUE);
+            clutter_container_add_actor (CLUTTER_CONTAINER (child), texture);
+
+            clutter_actor_set_width (texture, 100);
+            clutter_actor_set_position (texture, x * 100, y * 100);
+          }
 
       if (MX_IS_KINETIC_SCROLL_VIEW (actor))
         {
