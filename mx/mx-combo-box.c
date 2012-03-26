@@ -438,11 +438,19 @@ mx_combo_box_allocate (ClutterActor          *actor,
            */
           clutter_actor_transform_stage_point (actor, xactor, stage_h,
                                                NULL, &childbox.y2);
+          /*
+           * The previous transformation can lead to negative height
+           * allocation if the top-left corner of the menu is already
+           * flipped around. This happens when you put a combobox deep
+           * enough in a scrollview taller that the stage.
+           */
+          childbox.y2 = MAX (childbox.y1, childbox.y2);
         }
       else
         {
           childbox.y2 = childbox.y1 + nat_menu_h;
         }
+
     }
   clutter_actor_allocate (menu, &childbox, flags);
 }
