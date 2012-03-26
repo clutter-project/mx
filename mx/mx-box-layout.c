@@ -556,16 +556,17 @@ mx_box_layout_move_focus (MxFocusable      *focusable,
     {
       for (l = childlink->next; l; l = g_list_next (l))
         {
-          if (MX_IS_FOCUSABLE (l->data))
-            {
-              MxFocusable *focused, *child;
+          MxFocusable *child = (MxFocusable *) l->data;
 
-              child = MX_FOCUSABLE (l->data);
+          if (MX_IS_FOCUSABLE (child))
+            {
+              MxFocusable *focused;
+
               focused = mx_focusable_accept_focus (child, hint);
 
               if (focused)
                 {
-                  update_adjustments (MX_BOX_LAYOUT (focusable), focused);
+                  update_adjustments (MX_BOX_LAYOUT (focusable), child);
                   return focused;
                 }
             }
@@ -575,16 +576,17 @@ mx_box_layout_move_focus (MxFocusable      *focusable,
     {
       for (l = g_list_previous (childlink); l; l = g_list_previous (l))
         {
-          if (MX_IS_FOCUSABLE (l->data))
-            {
-              MxFocusable *focused, *child;
+          MxFocusable *child = (MxFocusable *) l->data;
 
-              child = MX_FOCUSABLE (l->data);
+          if (MX_IS_FOCUSABLE (child))
+            {
+              MxFocusable *focused;
+
               focused = mx_focusable_accept_focus (child, hint);
 
               if (focused)
                 {
-                  update_adjustments (MX_BOX_LAYOUT (focusable), focused);
+                  update_adjustments (MX_BOX_LAYOUT (focusable), child);
                   return focused;
                 }
             }
@@ -647,12 +649,13 @@ mx_box_layout_accept_focus (MxFocusable *focusable, MxFocusHint hint)
     {
       if (MX_IS_FOCUSABLE (l->data))
         {
-          return_focusable = mx_focusable_accept_focus (MX_FOCUSABLE (l->data),
-                                                        hint);
+          MxFocusable *child = MX_FOCUSABLE (l->data);
+
+          return_focusable = mx_focusable_accept_focus (child, hint);
 
           if (return_focusable)
             {
-              update_adjustments (MX_BOX_LAYOUT (focusable), return_focusable);
+              update_adjustments (MX_BOX_LAYOUT (focusable), child);
               break;
             }
         }
