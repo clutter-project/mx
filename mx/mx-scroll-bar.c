@@ -559,6 +559,26 @@ mx_scroll_bar_scroll_event (ClutterActor       *actor,
         mx_adjustment_interpolate_relative (priv->adjustment, step,
                                             250, CLUTTER_EASE_OUT_CUBIC);
       break;
+
+    case CLUTTER_SCROLL_SMOOTH:
+      {
+        gdouble delta;
+
+        if (priv->orientation == MX_ORIENTATION_VERTICAL)
+          clutter_event_get_scroll_delta ((ClutterEvent *) event, &delta, NULL);
+        else
+          clutter_event_get_scroll_delta ((ClutterEvent *) event, NULL, &delta);
+
+        if ((value == lower) && (delta < 0))
+          return FALSE;
+        if ((value == upper) && (delta > 0))
+          return FALSE;
+
+        mx_adjustment_interpolate_relative (priv->adjustment, delta,
+                                            250, CLUTTER_EASE_OUT_CUBIC);
+        break;
+      }
+      break;
     }
 
   return TRUE;
