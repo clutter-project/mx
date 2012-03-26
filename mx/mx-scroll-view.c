@@ -219,7 +219,10 @@ mx_scroll_view_paint (ClutterActor *actor)
   clutter_color_free (color);
 
   /* MxBin will paint the child */
+  clutter_actor_get_allocation_box (priv->child, &box);
+  cogl_clip_push_rectangle (0, 0, (box.x2 - box.x1), (box.y2 - box.y1));
   CLUTTER_ACTOR_CLASS (mx_scroll_view_parent_class)->paint (actor);
+  cogl_clip_pop ();
 
 
   clutter_actor_get_allocation_box (actor, &box);
@@ -884,8 +887,7 @@ mx_scroll_view_init (MxScrollView *self)
 
   /* mouse scroll is enabled by default, so we also need to be reactive */
   priv->mouse_scroll = TRUE;
-  g_object_set (G_OBJECT (self), "reactive", TRUE, "clip-to-allocation", TRUE,
-                NULL);
+  g_object_set (G_OBJECT (self), "reactive", TRUE, NULL);
 
   g_signal_connect (self, "style-changed",
                     G_CALLBACK (mx_scroll_view_style_changed), NULL);
