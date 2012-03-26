@@ -101,14 +101,14 @@ guint         mx_box_layout_get_spacing    (MxBoxLayout *box);
 gboolean      mx_box_layout_get_enable_animations (MxBoxLayout *box);
 void          mx_box_layout_set_enable_animations (MxBoxLayout *box,
                                                    gboolean     enable_animations);
-void          mx_box_layout_add_actor      (MxBoxLayout  *box,
+void          mx_box_layout_insert_actor   (MxBoxLayout  *box,
                                             ClutterActor *actor,
                                             gint          position);
-void          mx_box_layout_add_actor_with_properties (MxBoxLayout  *box,
-                                                       ClutterActor *actor,
-                                                       gint          position,
-                                                       const char   *first_property,
-                                                       ...);
+void          mx_box_layout_insert_actor_with_properties (MxBoxLayout  *box,
+                                                          ClutterActor *actor,
+                                                          gint          position,
+                                                          const char   *first_property,
+                                                          ...);
 
 void         mx_box_layout_set_scroll_to_focused (MxBoxLayout *box,
                                                   gboolean     scroll_to_focused);

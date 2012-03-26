@@ -283,13 +283,13 @@ main (int argc, char *argv[])
   mx_combo_box_append_text (MX_COMBO_BOX (combo), "Hello");
   mx_combo_box_append_text (MX_COMBO_BOX (combo), "World");
 
-  mx_box_layout_add_actor_with_properties (MX_BOX_LAYOUT (layout),
-                                           create_rotate_box (window),
-                                           1,
-                                           "x-fill", FALSE,
-                                           "x-align", MX_ALIGN_END,
-                                           "expand", TRUE,
-                                           NULL);
+  mx_box_layout_insert_actor_with_properties (MX_BOX_LAYOUT (layout),
+                                              create_rotate_box (window),
+                                              1,
+                                              "x-fill", FALSE,
+                                              "x-align", MX_ALIGN_END,
+                                              "expand", TRUE,
+                                              NULL);
 
   clutter_container_add_actor (CLUTTER_CONTAINER (toolbar), layout);
 

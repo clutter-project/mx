@@ -47,7 +47,7 @@ main (int argc, char *argv[])
   button = mx_button_new_with_label ("button #1 (activate to remove)");
   g_signal_connect (button, "clicked",
                     G_CALLBACK (button_clicked_cb), NULL);
-  mx_box_layout_add_actor (MX_BOX_LAYOUT (box), button, -1);
+  mx_box_layout_insert_actor (MX_BOX_LAYOUT (box), button, -1);
 
   mx_focus_manager_push_focus (mx_focus_manager_get_for_stage (CLUTTER_STAGE (stage)),
                                MX_FOCUSABLE (button));
@@ -56,17 +56,17 @@ main (int argc, char *argv[])
   button = mx_button_new_with_label ("button #2 (activate to remove)");
   g_signal_connect (button, "clicked",
                     G_CALLBACK (button_clicked_cb), NULL);
-  mx_box_layout_add_actor (MX_BOX_LAYOUT (box), button, -1);
+  mx_box_layout_insert_actor (MX_BOX_LAYOUT (box), button, -1);
 
   button = mx_button_new_with_label ("button #3 (activate to remove)");
   g_signal_connect (button, "clicked",
                     G_CALLBACK (button_clicked_cb), NULL);
-  mx_box_layout_add_actor (MX_BOX_LAYOUT (box), button, -1);
+  mx_box_layout_insert_actor (MX_BOX_LAYOUT (box), button, -1);
 
   button = mx_button_new_with_label ("button #4 (activate to remove)");
   g_signal_connect (button, "clicked",
                     G_CALLBACK (button_clicked_cb), NULL);
-  mx_box_layout_add_actor (MX_BOX_LAYOUT (box), button, -1);
+  mx_box_layout_insert_actor (MX_BOX_LAYOUT (box), button, -1);
 
   clutter_actor_show (stage);
 

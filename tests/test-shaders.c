@@ -112,10 +112,10 @@ main (int argc, char **argv)
   clutter_container_add_actor (CLUTTER_CONTAINER (offscreen), button);
 
   box = mx_box_layout_new ();
-  mx_box_layout_add_actor_with_properties (MX_BOX_LAYOUT (box), offscreen, 0,
-                                           "expand", TRUE,
-                                           NULL);
-  mx_box_layout_add_actor (MX_BOX_LAYOUT (box), texture, 1);
+  mx_box_layout_insert_actor_with_properties (MX_BOX_LAYOUT (box), offscreen, 0,
+                                              "expand", TRUE,
+                                              NULL);
+  mx_box_layout_insert_actor (MX_BOX_LAYOUT (box), texture, 1);
   mx_window_set_child (window, box);
 
   /* Set Clutter shader */

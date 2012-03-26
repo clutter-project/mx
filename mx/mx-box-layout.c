@@ -1759,7 +1759,7 @@ mx_box_layout_create_child_meta (MxBoxLayout  *box,
 }
 
 /**
- * mx_box_layout_add_actor:
+ * mx_box_layout_insert_actor:
  * @box: a #MxBoxLayout
  * @actor: the #ClutterActor actor to add to the box layout
  * @position: the position where to insert the actor
@@ -1767,9 +1767,9 @@ mx_box_layout_create_child_meta (MxBoxLayout  *box,
  * Inserts @actor at @position in @box.
  */
 void
-mx_box_layout_add_actor (MxBoxLayout  *box,
-                         ClutterActor *actor,
-                         gint          position)
+mx_box_layout_insert_actor (MxBoxLayout  *box,
+                            ClutterActor *actor,
+                            gint          position)
 {
   MxBoxLayoutPrivate *priv;
 
@@ -1804,7 +1804,7 @@ mx_box_layout_add_actor (MxBoxLayout  *box,
 }
 
 /**
- * mx_box_layout_add_actor_with_properties:
+ * mx_box_layout_insert_actor_with_properties:
  * @box: a #MxBoxLayout
  * @actor: the #ClutterActor actor to add to the box layout
  * @position: the position where to insert the actor
@@ -1819,15 +1819,15 @@ mx_box_layout_add_actor (MxBoxLayout  *box,
  * layout, the new actor is added on to the end of the list.
  */
 void
-mx_box_layout_add_actor_with_properties (MxBoxLayout  *box,
-                                         ClutterActor *actor,
-                                         gint          position,
-                                         const char   *first_property,
-                                         ...)
+mx_box_layout_insert_actor_with_properties (MxBoxLayout  *box,
+                                            ClutterActor *actor,
+                                            gint          position,
+                                            const char   *first_property,
+                                            ...)
 {
   va_list var_args;
 
-  mx_box_layout_add_actor (box, actor, position);
+  mx_box_layout_insert_actor (box, actor, position);
 
   if (first_property == NULL || *first_property == '\0')
     return;

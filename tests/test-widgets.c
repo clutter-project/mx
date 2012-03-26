@@ -451,14 +451,14 @@ startup_cb (MxApplication *application)
 
   /* toolbar */
   box = mx_box_layout_new ();
-  mx_box_layout_add_actor_with_properties (MX_BOX_LAYOUT (box),
-                                           create_combo_box (data.selected_widget),
-                                           0,
-                                           "expand", TRUE,
-                                           "x-fill", FALSE,
-                                           "x-align", MX_ALIGN_START,
-                                           NULL);
-  mx_box_layout_add_actor (MX_BOX_LAYOUT (box), create_rotate_box (window), 1);
+  mx_box_layout_insert_actor_with_properties (MX_BOX_LAYOUT (box),
+                                              create_combo_box (data.selected_widget),
+                                              0,
+                                              "expand", TRUE,
+                                              "x-fill", FALSE,
+                                              "x-align", MX_ALIGN_START,
+                                              NULL);
+  mx_box_layout_insert_actor (MX_BOX_LAYOUT (box), create_rotate_box (window), 1);
 
   toolbar = mx_window_get_toolbar (window);
   mx_bin_set_child (MX_BIN (toolbar), box);
