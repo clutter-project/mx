@@ -576,7 +576,6 @@ mx_scroll_bar_scroll_event (ClutterActor       *actor,
 
         mx_adjustment_interpolate_relative (priv->adjustment, delta,
                                             250, CLUTTER_EASE_OUT_CUBIC);
-        break;
       }
       break;
     }
