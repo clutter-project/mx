@@ -113,7 +113,7 @@ MxStyle *    mx_stylable_get_style              (MxStylable      *stylable);
 void         mx_stylable_get                    (MxStylable      *stylable,
                                                  const gchar       *first_property_name,
                                                  ...) G_GNUC_NULL_TERMINATED;
-void         mx_stylable_get_property           (MxStylable      *stylable,
+void         mx_stylable_get_style_property     (MxStylable      *stylable,
                                                  const gchar       *property_name,
                                                  GValue            *value);
 gboolean     mx_stylable_get_default_value      (MxStylable      *stylable,

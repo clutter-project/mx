@@ -444,7 +444,7 @@ mx_stylable_find_property
 mx_stylable_set_style
 mx_stylable_get_style
 mx_stylable_get
-mx_stylable_get_property
+mx_stylable_get_style_property
 mx_stylable_get_default_value
 mx_stylable_get_style_class
 mx_stylable_set_style_class
