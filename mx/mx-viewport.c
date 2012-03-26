@@ -222,29 +222,6 @@ mx_viewport_dispose (GObject *gobject)
 }
 
 static void
-mx_viewport_paint (ClutterActor *self)
-{
-  MxViewportPrivate *priv = MX_VIEWPORT (self)->priv;
-
-  cogl_push_matrix ();
-
-  cogl_translate ((int) priv->x * -1,
-                  (int) priv->y * -1,
-                  (int) priv->z * -1);
-
-  CLUTTER_ACTOR_CLASS (mx_viewport_parent_class)->paint (self);
-
-  cogl_pop_matrix ();
-}
-
-static void
-mx_viewport_pick (ClutterActor       *self,
-                  const ClutterColor *color)
-{
-  mx_viewport_paint (self);
-}
-
-static void
 mx_viewport_allocate (ClutterActor          *self,
                       const ClutterActorBox *box,
                       ClutterAllocationFlags flags)
@@ -363,6 +340,52 @@ mx_viewport_allocate (ClutterActor          *self,
     }
 }
 
+static gboolean
+mx_viewport_get_paint_volume (ClutterActor       *actor,
+                          ClutterPaintVolume *volume)
+{
+  MxViewportPrivate *priv = MX_VIEWPORT (actor)->priv;
+  ClutterVertex vertex;
+
+  if (!clutter_paint_volume_set_from_allocation (volume, actor))
+    return FALSE;
+
+  clutter_paint_volume_get_origin (volume, &vertex);
+
+  if (priv->hadjustment)
+    vertex.x += mx_adjustment_get_value (priv->hadjustment);
+
+  if (priv->vadjustment)
+    vertex.y += mx_adjustment_get_value (priv->vadjustment);
+
+  clutter_paint_volume_set_origin (volume, &vertex);
+
+  return TRUE;
+}
+
+static void
+mx_viewport_apply_transform (ClutterActor *actor,
+                             CoglMatrix   *matrix)
+{
+  MxViewportPrivate *priv = MX_VIEWPORT (actor)->priv;
+  gdouble x, y;
+
+  CLUTTER_ACTOR_CLASS (mx_viewport_parent_class)->apply_transform (actor, matrix);
+
+  if (priv->hadjustment)
+    x = mx_adjustment_get_value (priv->hadjustment);
+  else
+    x = 0;
+
+  if (priv->vadjustment)
+    y = mx_adjustment_get_value (priv->vadjustment);
+  else
+    y = 0;
+
+  cogl_matrix_translate (matrix, (int) -x, (int) -y, 0);
+}
+
+
 static void
 mx_viewport_class_init (MxViewportClass *klass)
 {
@@ -376,9 +399,9 @@ mx_viewport_class_init (MxViewportClass *klass)
   gobject_class->set_property = mx_viewport_set_property;
   gobject_class->dispose = mx_viewport_dispose;
 
-  actor_class->paint = mx_viewport_paint;
-  actor_class->pick = mx_viewport_pick;
   actor_class->allocate = mx_viewport_allocate;
+  actor_class->get_paint_volume = mx_viewport_get_paint_volume;
+  actor_class->apply_transform = mx_viewport_apply_transform;
 
 
   pspec = g_param_spec_float ("x-origin",
@@ -577,7 +600,6 @@ mx_viewport_init (MxViewport *self)
 
   g_object_set (G_OBJECT (self),
                 "reactive", FALSE,
-                "clip-to-allocation", TRUE,
                 "x-align", MX_ALIGN_START,
                 "y-align", MX_ALIGN_START,
                 NULL);
