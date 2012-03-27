@@ -76,7 +76,7 @@ enum
   PROP_COL_COUNT,
 };
 
-#define MX_TABLE_GET_PRIVATE(obj)    \
+#define MX_TABLE_GET_PRIVATE(obj)                                       \
   (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_TABLE, MxTablePrivate))
 
 typedef struct
@@ -92,8 +92,6 @@ typedef struct
 
 struct _MxTablePrivate
 {
-  GList *children;
-
   guint   ignore_css_col_spacing : 1;
   guint   ignore_css_row_spacing : 1;
   gint    col_spacing;
@@ -132,22 +130,21 @@ mx_table_find_actor_at (MxTable *table,
                         int      row,
                         int      column)
 {
-  MxTablePrivate *priv;
-  GList *l;
+  ClutterActorIter iter;
+  ClutterActor *child;
 
-  priv = table->priv;
-
-  for (l = priv->children; l; l = g_list_next (l))
+  clutter_actor_iter_init (&iter, (ClutterActor *) table);
+  while (clutter_actor_iter_next (&iter, &child))
     {
-      MxTableChild *child;
-      ClutterActor *actor_child = CLUTTER_ACTOR (l->data);
+      MxTableChild *meta_child;
 
-      child = (MxTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (table),
-                                                                 actor_child);
+      meta_child =
+        (MxTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (table),
+                                                           child);
 
-      if ((row >= child->row && row <= child->row + (child->row_span - 1)) &&
-          (column >= child->col && column <= child->col + (child->col_span - 1)))
-        return actor_child;
+      if ((row >= meta_child->row && row <= meta_child->row + (meta_child->row_span - 1)) &&
+          (column >= meta_child->col && column <= meta_child->col + (meta_child->col_span - 1)))
+        return child;
     }
 
   return NULL;
@@ -160,22 +157,27 @@ mx_table_move_focus (MxFocusable      *focusable,
 {
   MxTablePrivate *priv = MX_TABLE (focusable)->priv;
   MxTable *table = MX_TABLE (focusable);
-  GList *l, *childlink;
   MxTableChild *child_meta;
   ClutterActor *child_actor;
   MxFocusable *focused;
   gint row, column;
-  ClutterActor *found;
+  ClutterActor *found = NULL;
+  ClutterActorIter iter;
 
   /* find the current focus */
-  childlink = g_list_find (priv->children, from);
+  clutter_actor_iter_init (&iter, (ClutterActor *) focusable);
+  while (clutter_actor_iter_next (&iter, &child_actor))
+    {
+      if (child_actor == (ClutterActor *) from)
+        break;
+      child_actor = NULL;
+    }
 
-  if (!childlink)
+  if (!child_actor)
     return NULL;
 
   priv->last_focus = from;
 
-  child_actor = CLUTTER_ACTOR (childlink->data);
   child_meta = (MxTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (focusable),
                                                                   child_actor);
 
@@ -183,12 +185,11 @@ mx_table_move_focus (MxFocusable      *focusable,
   switch (direction)
     {
     case MX_FOCUS_DIRECTION_NEXT:
-
-      for (l = childlink->next; l; l = g_list_next (l))
+      while (clutter_actor_iter_next (&iter, &child_actor))
         {
-          if (MX_IS_FOCUSABLE (l->data))
+          if (MX_IS_FOCUSABLE (child_actor))
             {
-              focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data),
+              focused = mx_focusable_accept_focus (MX_FOCUSABLE (child_actor),
                                                    MX_FOCUS_HINT_FIRST);
 
               if (focused)
@@ -200,19 +201,17 @@ mx_table_move_focus (MxFocusable      *focusable,
       return NULL;
 
     case MX_FOCUS_DIRECTION_PREVIOUS:
-
-      for (l = g_list_previous (childlink); l; l = g_list_previous (l))
+      while (clutter_actor_iter_prev (&iter, &child_actor))
         {
-          if (MX_IS_FOCUSABLE (l->data))
+          if (MX_IS_FOCUSABLE (child_actor))
             {
-              focused = mx_focusable_accept_focus (MX_FOCUSABLE (l->data),
+              focused = mx_focusable_accept_focus (MX_FOCUSABLE (child_actor),
                                                    MX_FOCUS_HINT_LAST);
 
               if (focused)
                 return focused;
             }
         }
-
       /* no widget found in the previous position */
       return NULL;
 
@@ -365,44 +364,62 @@ mx_table_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 {
   MxTablePrivate *priv = MX_TABLE (focusable)->priv;
   MxFocusable *return_focusable;
-  GList* list, *l;
+  ClutterActorIter iter;
+  ClutterActor *child;
+  gboolean reverse = FALSE;
 
   return_focusable = NULL;
+
+  clutter_actor_iter_init (&iter, CLUTTER_ACTOR (focusable));
 
   /* find the first/last focusable widget */
   switch (hint)
     {
     case MX_FOCUS_HINT_LAST:
-      list = g_list_reverse (g_list_copy (priv->children));
+      reverse = TRUE;
       break;
 
     case MX_FOCUS_HINT_PRIOR:
-      if (priv->last_focus)
+      while (clutter_actor_iter_next (&iter, &child))
         {
-          list = g_list_copy (g_list_find (priv->children, priv->last_focus));
-          if (list)
+          if (priv->last_focus == (MxFocusable *) child)
             break;
+          child = NULL;
         }
       /* This intentionally runs into the next switch case */
 
     default:
     case MX_FOCUS_HINT_FIRST:
-      list = g_list_copy (priv->children);
+      clutter_actor_iter_init (&iter, CLUTTER_ACTOR (focusable));
       break;
     }
 
-  for (l = list; l; l = g_list_next (l))
+  if (reverse)
     {
-      if (MX_IS_FOCUSABLE (l->data))
+      while (clutter_actor_iter_prev (&iter, &child))
         {
-          return_focusable = mx_focusable_accept_focus (MX_FOCUSABLE (l->data),
-                                                        hint);
-          if (return_focusable)
-            break;
+          if (MX_IS_FOCUSABLE (child))
+            {
+              return_focusable =
+                mx_focusable_accept_focus (MX_FOCUSABLE (child), hint);
+              if (return_focusable)
+                break;
+            }
         }
     }
-
-  g_list_free (list);
+  else
+    {
+      while (clutter_actor_iter_next (&iter, &child))
+        {
+          if (MX_IS_FOCUSABLE (child))
+            {
+              return_focusable =
+                mx_focusable_accept_focus (MX_FOCUSABLE (child), hint);
+              if (return_focusable)
+                break;
+            }
+        }
+    }
 
   return return_focusable;
 }
@@ -414,194 +431,35 @@ mx_focusable_iface_init (MxFocusableIface *iface)
   iface->accept_focus = mx_table_accept_focus;
 }
 
-/*
- * ClutterContainer Implementation
- */
 static void
-mx_container_add_actor (ClutterContainer *container,
+mx_table_actor_removed (ClutterContainer *container,
                         ClutterActor     *actor)
 {
   MxTablePrivate *priv = MX_TABLE (container)->priv;
-  MxTableChild *meta;
-
-  clutter_actor_add_child (CLUTTER_ACTOR (container), actor);
-
-  priv->children = g_list_append (priv->children, actor);
-
-  meta = (MxTableChild *) clutter_container_get_child_meta (container, actor);
-
-  /* default position of the actor is 0, 0 */
-  _mx_table_update_row_col (MX_TABLE (container), meta);
-
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
-}
-
-static void
-mx_container_remove_actor (ClutterContainer *container,
-                           ClutterActor     *actor)
-{
-  MxTablePrivate *priv = MX_TABLE (container)->priv;
-  gint rows, cols;
-
-  GList *item = NULL;
-  MxTableChild *meta;
-  GList *l;
-
-  item = g_list_find (priv->children, actor);
-
-  if (item == NULL)
-    {
-      g_warning ("Widget of type '%s' is not a child of container of type '%s'",
-                 g_type_name (G_OBJECT_TYPE (actor)),
-                 g_type_name (G_OBJECT_TYPE (container)));
-      return;
-    }
-
-  g_object_ref (actor);
-
-  if ((ClutterActor *)priv->last_focus == actor)
-    priv->last_focus = NULL;
-
-  priv->children = g_list_delete_link (priv->children, item);
-  clutter_actor_remove_child (CLUTTER_ACTOR (container), actor);
+  ClutterActorIter iter;
+  ClutterActor *child;
+  gint cols, rows;
 
   /* update row/column count */
   rows = 0;
   cols = 0;
-  for (l = priv->children; l; l = l->next)
+  clutter_actor_iter_init (&iter, (ClutterActor *) container);
+  while (clutter_actor_iter_next (&iter, &child))
     {
-      ClutterActor *child = CLUTTER_ACTOR (l->data);
-      meta = (MxTableChild *) clutter_container_get_child_meta (container,
-                                                                  child);
+      MxTableChild *meta =
+        (MxTableChild *) clutter_container_get_child_meta (container,
+                                                           child);
       rows = MAX (rows, meta->row + meta->row_span);
       cols = MAX (cols, meta->col + meta->col_span);
     }
   priv->n_rows = rows;
   priv->n_cols = cols;
-
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
-
-  g_object_unref (actor);
-}
-
-static void
-mx_container_foreach (ClutterContainer *container,
-                      ClutterCallback   callback,
-                      gpointer          callback_data)
-{
-  MxTablePrivate *priv = MX_TABLE (container)->priv;
-
-  g_list_foreach (priv->children, (GFunc) callback, callback_data);
-}
-
-static void
-mx_container_lower (ClutterContainer *container,
-                    ClutterActor     *actor,
-                    ClutterActor     *sibling)
-{
-  gint i;
-  GList *c, *position, *actor_link = NULL;
-
-  MxTablePrivate *priv = MX_TABLE (container)->priv;
-
-  if (priv->children && (priv->children->data == actor))
-    return;
-
-  position = priv->children;
-  for (c = priv->children, i = 0; c; c = c->next, i++)
-    {
-      if (c->data == actor)
-        actor_link = c;
-      if (c->data == sibling)
-        position = c;
-    }
-
-  if (!actor_link)
-    {
-      g_warning (G_STRLOC ": Actor of type '%s' is not a child of container "
-                 "of type '%s'",
-                 g_type_name (G_OBJECT_TYPE (actor)),
-                 g_type_name (G_OBJECT_TYPE (container)));
-      return;
-    }
-
-  priv->children = g_list_delete_link (priv->children, actor_link);
-  priv->children = g_list_insert_before (priv->children, position, actor);
-
-  clutter_actor_queue_redraw (CLUTTER_ACTOR (container));
-}
-
-static void
-mx_container_raise (ClutterContainer *container,
-                    ClutterActor     *actor,
-                    ClutterActor     *sibling)
-{
-  gint i;
-  GList *c, *actor_link = NULL;
-
-  gint position = -1;
-  MxTablePrivate *priv = MX_TABLE (container)->priv;
-
-  for (c = priv->children, i = 0; c; c = c->next, i++)
-    {
-      if (c->data == actor)
-        actor_link = c;
-      if (c->data == sibling)
-        position = i;
-    }
-
-  if (!actor_link)
-    {
-      g_warning (G_STRLOC ": Actor of type '%s' is not a child of container "
-                 "of type '%s'",
-                 g_type_name (G_OBJECT_TYPE (actor)),
-                 g_type_name (G_OBJECT_TYPE (container)));
-      return;
-    }
-
-  if (!actor_link->next)
-    return;
-
-  priv->children = g_list_delete_link (priv->children, actor_link);
-  priv->children = g_list_insert (priv->children, actor, position);
-
-  clutter_actor_queue_redraw (CLUTTER_ACTOR (container));
-}
-
-static gint
-mx_table_depth_sort_cb (gconstpointer a,
-                        gconstpointer b)
-{
-  gfloat depth_a = clutter_actor_get_depth ((ClutterActor *)a);
-  gfloat depth_b = clutter_actor_get_depth ((ClutterActor *)b);
-
-  if (depth_a < depth_b)
-    return -1;
-  else if (depth_a > depth_b)
-    return 1;
-  else
-    return 0;
-}
-
-static void
-mx_container_sort_depth_order (ClutterContainer *container)
-{
-  MxTablePrivate *priv = MX_TABLE (container)->priv;
-
-  priv->children = g_list_sort (priv->children, mx_table_depth_sort_cb);
-
-  clutter_actor_queue_redraw (CLUTTER_ACTOR (container));
 }
 
 static void
 mx_container_iface_init (ClutterContainerIface *iface)
 {
-  iface->add = mx_container_add_actor;
-  iface->remove = mx_container_remove_actor;
-  iface->foreach = mx_container_foreach;
-  iface->lower = mx_container_lower;
-  iface->raise = mx_container_raise;
-  iface->sort_depth_order = mx_container_sort_depth_order;
+  iface->actor_removed = mx_table_actor_removed;
   iface->child_meta_type = MX_TYPE_TABLE_CHILD;
 }
 
@@ -709,8 +567,9 @@ mx_table_calculate_col_widths (MxTable *table,
   gint i;
   MxTablePrivate *priv = table->priv;
   DimensionData *columns;
-  GList *l;
   MxPadding padding;
+  ClutterActorIter iter;
+  ClutterActor *child;
 
   g_array_set_size (priv->columns, 0);
   g_array_set_size (priv->columns, priv->n_cols);
@@ -728,14 +587,12 @@ mx_table_calculate_col_widths (MxTable *table,
     columns[i].is_visible = FALSE;
 
   /* STAGE ONE: calculate column widths for non-spanned children */
-  for (l = priv->children; l; l = g_list_next (l))
+  clutter_actor_iter_init (&iter, CLUTTER_ACTOR (table));
+  while (clutter_actor_iter_next (&iter, &child))
     {
       MxTableChild *meta;
-      ClutterActor *child;
       DimensionData *col;
       gfloat c_min, c_pref;
-
-      child = CLUTTER_ACTOR (l->data);
 
       if (!CLUTTER_ACTOR_IS_VISIBLE (child))
         continue;
@@ -763,16 +620,14 @@ mx_table_calculate_col_widths (MxTable *table,
     }
 
   /* STAGE TWO: take spanning children into account */
-  for (l = priv->children; l; l = g_list_next (l))
+  clutter_actor_iter_init (&iter, CLUTTER_ACTOR (table));
+  while (clutter_actor_iter_next (&iter, &child))
     {
       MxTableChild *meta;
-      ClutterActor *child;
       gfloat c_min, c_pref;
       gfloat min_width, pref_width;
       gint start_col, end_col;
       gint n_expand;
-
-      child = CLUTTER_ACTOR (l->data);
 
       if (!CLUTTER_ACTOR_IS_VISIBLE (child))
         continue;
@@ -993,10 +848,11 @@ mx_table_calculate_row_heights (MxTable *table,
                                 gint     for_height)
 {
   MxTablePrivate *priv = MX_TABLE (table)->priv;
-  GList *l;
   gint i;
   DimensionData *rows, *columns;
   MxPadding padding;
+  ClutterActorIter iter;
+  ClutterActor *child;
 
   mx_widget_get_padding (MX_WIDGET (table), &padding);
 
@@ -1015,14 +871,12 @@ mx_table_calculate_row_heights (MxTable *table,
     rows[i].is_visible = FALSE;
 
   /* STAGE ONE: calculate row heights for non-spanned children */
-  for (l = priv->children; l; l = g_list_next (l))
+  clutter_actor_iter_init (&iter, CLUTTER_ACTOR (table));
+  while (clutter_actor_iter_next (&iter, &child))
     {
       MxTableChild *meta;
-      ClutterActor *child;
       DimensionData *row;
       gfloat c_min, c_pref;
-
-      child = CLUTTER_ACTOR (l->data);
 
       if (!CLUTTER_ACTOR_IS_VISIBLE (child))
         continue;
@@ -1053,16 +907,14 @@ mx_table_calculate_row_heights (MxTable *table,
 
 
   /* STAGE TWO: take spanning children into account */
-  for (l = priv->children; l; l = g_list_next (l))
+  clutter_actor_iter_init (&iter, CLUTTER_ACTOR (table));
+  while (clutter_actor_iter_next (&iter, &child))
     {
       MxTableChild *meta;
-      ClutterActor *child;
       gfloat c_min, c_pref;
       gfloat min_height, pref_height;
       gint start_row, end_row;
       gint n_expand;
-
-      child = CLUTTER_ACTOR (l->data);
 
       if (!CLUTTER_ACTOR_IS_VISIBLE (child))
         continue;
@@ -1077,7 +929,7 @@ mx_table_calculate_row_heights (MxTable *table,
       end_row = meta->row + meta->row_span - 1;
 
       clutter_actor_get_preferred_height (child, columns[meta->col].final_size,
-                                         &c_min, &c_pref);
+                                          &c_min, &c_pref);
 
 
       /* check there is enough room for this actor */
@@ -1301,13 +1153,14 @@ mx_table_preferred_allocate (ClutterActor          *self,
                              const ClutterActorBox *box,
                              gboolean               flags)
 {
-  GList *list;
   gint row_spacing, col_spacing;
   gint i;
   MxTable *table;
   MxTablePrivate *priv;
   MxPadding padding;
   DimensionData *rows, *columns;
+  ClutterActorIter iter;
+  ClutterActor *child;
 
   table = MX_TABLE (self);
   priv = MX_TABLE (self)->priv;
@@ -1322,21 +1175,21 @@ mx_table_preferred_allocate (ClutterActor          *self,
   rows = &g_array_index (priv->rows, DimensionData, 0);
   columns = &g_array_index (priv->columns, DimensionData, 0);
 
-  for (list = priv->children; list; list = g_list_next (list))
+  clutter_actor_iter_init (&iter, self);
+  while (clutter_actor_iter_next (&iter, &child))
     {
       gint row, col, row_span, col_span;
       gint col_width, row_height;
       MxTableChild *meta;
-      ClutterActor *child;
       ClutterActorBox childbox;
       gint child_x, child_y;
       gdouble x_align_d, y_align_d;
       gboolean x_fill, y_fill;
       MxAlign x_align, y_align;
 
-      child = CLUTTER_ACTOR (list->data);
-
-      meta = (MxTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
+      meta =
+        (MxTableChild *) clutter_container_get_child_meta (CLUTTER_CONTAINER (self),
+                                                           child);
 
       if (!CLUTTER_ACTOR_IS_VISIBLE (child))
         continue;
@@ -1482,7 +1335,7 @@ mx_table_get_preferred_width (ClutterActor *self,
 
   /* start off with padding plus row spacing */
   total_min_width = padding.left + padding.right + (priv->visible_cols - 1) *
-                    (float)(priv->col_spacing);
+    (float)(priv->col_spacing);
   total_pref_width = total_min_width;
 
   for (i = 0; i < priv->n_cols; i++)
@@ -1525,7 +1378,7 @@ mx_table_get_preferred_height (ClutterActor *self,
 
   /* start off with padding plus row spacing */
   total_min_height = padding.top + padding.bottom + (priv->visible_rows - 1) *
-                     (float)(priv->row_spacing);
+    (float)(priv->row_spacing);
 
   total_pref_height = total_min_height;
 
@@ -1545,14 +1398,15 @@ static void
 mx_table_paint (ClutterActor *self)
 {
   MxTablePrivate *priv = MX_TABLE (self)->priv;
-  GList *list;
+  ClutterActorIter iter;
+  ClutterActor *child;
 
   /* make sure the background gets painted first */
   CLUTTER_ACTOR_CLASS (mx_table_parent_class)->paint (self);
 
-  for (list = priv->children; list; list = g_list_next (list))
+  clutter_actor_iter_init (&iter, self);
+  while (clutter_actor_iter_next (&iter, &child))
     {
-      ClutterActor *child = CLUTTER_ACTOR (list->data);
       if (CLUTTER_ACTOR_IS_VISIBLE (child))
         clutter_actor_paint (child);
     }
@@ -1597,41 +1451,18 @@ static void
 mx_table_pick (ClutterActor       *self,
                const ClutterColor *color)
 {
-  MxTablePrivate *priv = MX_TABLE (self)->priv;
-  GList *list;
+  ClutterActorIter iter;
+  ClutterActor *child;
 
   /* Chain up so we get a bounding box painted (if we are reactive) */
   CLUTTER_ACTOR_CLASS (mx_table_parent_class)->pick (self, color);
 
-  for (list = priv->children; list; list = g_list_next (list))
+  clutter_actor_iter_init (&iter, self);
+  while (clutter_actor_iter_next (&iter, &child))
     {
-      if (CLUTTER_ACTOR_IS_VISIBLE (list->data))
-        clutter_actor_paint (CLUTTER_ACTOR (list->data));
+      if (CLUTTER_ACTOR_IS_VISIBLE (child))
+        clutter_actor_paint (child);
     }
-}
-
-static void
-mx_table_show_all (ClutterActor *table)
-{
-  MxTablePrivate *priv = MX_TABLE (table)->priv;
-  GList *l;
-
-  for (l = priv->children; l; l = l->next)
-    clutter_actor_show_all (CLUTTER_ACTOR (l->data));
-
-  clutter_actor_show (table);
-}
-
-static void
-mx_table_hide_all (ClutterActor *table)
-{
-  MxTablePrivate *priv = MX_TABLE (table)->priv;
-  GList *l;
-
-  clutter_actor_hide (table);
-
-  for (l = priv->children; l; l = l->next)
-    clutter_actor_hide_all (CLUTTER_ACTOR (l->data));
 }
 
 static void
@@ -1652,9 +1483,6 @@ mx_table_class_init (MxTableClass *klass)
   actor_class->allocate = mx_table_allocate;
   actor_class->get_preferred_width = mx_table_get_preferred_width;
   actor_class->get_preferred_height = mx_table_get_preferred_height;
-  actor_class->show_all = mx_table_show_all;
-  actor_class->hide_all = mx_table_hide_all;
-
 
   pspec = g_param_spec_int ("column-spacing",
                             "Column Spacing",
@@ -1884,7 +1712,7 @@ mx_table_insert_actor (MxTable      *table,
   if (column < 0)
     column = table->priv->n_cols + 1;
 
-  container = CLUTTER_CONTAINER (table);
+  container = (ClutterContainer *) table;
   clutter_container_add_actor (container, actor);
 
   meta = (MxTableChild *) clutter_container_get_child_meta (container, actor);
