@@ -321,7 +321,7 @@ selector_to_string (MxSelector *selector)
                             (selector->class) ? selector->class : "",
                             (selector->id) ? "#" : "",
                             (selector->id) ? selector->id : "",
-                            (selector->pseudo_class) ? "#" : "",
+                            (selector->pseudo_class) ? ":" : "",
                             (selector->pseudo_class)
                             ? selector->pseudo_class : "");
 
