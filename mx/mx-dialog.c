@@ -983,7 +983,8 @@ mx_dialog_init (MxDialog *self)
 
   /* Compile the shader when creating the instance so it's ready when we need
    * it */
-  if (clutter_feature_available (CLUTTER_FEATURE_SHADERS_GLSL) &&
+  if (!CLUTTER_CHECK_VERSION (1, 10, 0) &&
+      clutter_feature_available (CLUTTER_FEATURE_SHADERS_GLSL) &&
       clutter_feature_available (CLUTTER_FEATURE_OFFSCREEN))
     {
       GError *error = NULL;
