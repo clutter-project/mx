@@ -1045,7 +1045,7 @@ mx_combo_box_set_index (MxComboBox *box,
   if (!item)
     {
       box->priv->index = -1;
-      clutter_text_set_text ((ClutterText*) box->priv->label, NULL);
+      clutter_text_set_text ((ClutterText*) box->priv->label, "");
       return;
     }
 
