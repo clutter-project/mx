@@ -63,163 +63,8 @@ struct _MxStackPrivate
 /* ClutterContainerIface */
 
 static void
-mx_stack_add_actor (ClutterContainer *container,
-                    ClutterActor     *actor)
-{
-  MxStackPrivate *priv = MX_STACK (container)->priv;
-
-  clutter_actor_add_child (CLUTTER_ACTOR (container), actor);
-  priv->children = g_list_append (priv->children, actor);
-}
-
-static void
-mx_stack_remove_actor (ClutterContainer *container,
-                       ClutterActor     *actor)
-{
-  GList *actor_link;
-
-  MxStackPrivate *priv = MX_STACK (container)->priv;
-
-  actor_link = g_list_find (priv->children, actor);
-
-  if (!actor_link)
-    {
-      g_warning (G_STRLOC ": Actor of type '%s' is not a child of container "
-                 "of type '%s'",
-                 g_type_name (G_OBJECT_TYPE (actor)),
-                 g_type_name (G_OBJECT_TYPE (container)));
-      return;
-    }
-
-  g_object_ref (actor);
-
-  if (priv->current_focus == actor)
-    priv->current_focus = NULL;
-
-  priv->children = g_list_delete_link (priv->children, actor_link);
-  clutter_actor_remove_child (CLUTTER_ACTOR (container), actor);
-
-  g_object_unref (actor);
-}
-
-static void
-mx_stack_foreach (ClutterContainer *container,
-                  ClutterCallback   callback,
-                  gpointer          callback_data)
-{
-  MxStackPrivate *priv = MX_STACK (container)->priv;
-  g_list_foreach (priv->children, (GFunc)callback, callback_data);
-}
-
-static void
-mx_stack_lower (ClutterContainer *container,
-                ClutterActor     *actor,
-                ClutterActor     *sibling)
-{
-  gint i;
-  GList *c, *position, *actor_link = NULL;
-
-  MxStackPrivate *priv = MX_STACK (container)->priv;
-
-  if (priv->children && (priv->children->data == actor))
-    return;
-
-  position = priv->children;
-  for (c = priv->children, i = 0; c; c = c->next, i++)
-    {
-      if (c->data == actor)
-        actor_link = c;
-      if (c->data == sibling)
-        position = c;
-    }
-
-  if (!actor_link)
-    {
-      g_warning (G_STRLOC ": Actor of type '%s' is not a child of container "
-                 "of type '%s'",
-                 g_type_name (G_OBJECT_TYPE (actor)),
-                 g_type_name (G_OBJECT_TYPE (container)));
-      return;
-    }
-
-  priv->children = g_list_delete_link (priv->children, actor_link);
-  priv->children = g_list_insert_before (priv->children, position, actor);
-
-  clutter_actor_queue_redraw (CLUTTER_ACTOR (container));
-}
-
-static void
-mx_stack_raise (ClutterContainer *container,
-                ClutterActor     *actor,
-                ClutterActor     *sibling)
-{
-  gint i;
-  GList *c, *actor_link = NULL;
-
-  gint position = -1;
-  MxStackPrivate *priv = MX_STACK (container)->priv;
-
-  for (c = priv->children, i = 0; c; c = c->next, i++)
-    {
-      if (c->data == actor)
-        actor_link = c;
-      if (c->data == sibling)
-        position = i;
-    }
-
-  if (!actor_link)
-    {
-      g_warning (G_STRLOC ": Actor of type '%s' is not a child of container "
-                 "of type '%s'",
-                 g_type_name (G_OBJECT_TYPE (actor)),
-                 g_type_name (G_OBJECT_TYPE (container)));
-      return;
-    }
-
-  if (!actor_link->next)
-    return;
-
-  priv->children = g_list_delete_link (priv->children, actor_link);
-  priv->children = g_list_insert (priv->children, actor, position);
-
-  clutter_actor_queue_redraw (CLUTTER_ACTOR (container));
-}
-
-static gint
-mx_stack_depth_sort_cb (gconstpointer a,
-                        gconstpointer b)
-{
-  gfloat depth_a = clutter_actor_get_depth ((ClutterActor *)a);
-  gfloat depth_b = clutter_actor_get_depth ((ClutterActor *)a);
-
-  if (depth_a < depth_b)
-    return -1;
-  else if (depth_a > depth_b)
-    return 1;
-  else
-    return 0;
-}
-
-static void
-mx_stack_sort_depth_order (ClutterContainer *container)
-{
-  MxStackPrivate *priv = MX_STACK (container)->priv;
-
-  priv->children = g_list_sort (priv->children, mx_stack_depth_sort_cb);
-
-  clutter_actor_queue_redraw (CLUTTER_ACTOR (container));
-}
-
-static void
 clutter_container_iface_init (ClutterContainerIface *iface)
 {
-  iface->add = mx_stack_add_actor;
-  iface->remove = mx_stack_remove_actor;
-  iface->foreach = mx_stack_foreach;
-  iface->lower = mx_stack_lower;
-  iface->raise = mx_stack_raise;
-  iface->sort_depth_order = mx_stack_sort_depth_order;
-
   iface->child_meta_type = MX_TYPE_STACK_CHILD;
 }
 
@@ -344,20 +189,19 @@ mx_stack_get_preferred_width (ClutterActor *actor,
                               gfloat       *min_width_p,
                               gfloat       *nat_width_p)
 {
-  GList *c;
   MxPadding padding;
   gfloat min_width, nat_width, child_min_width, child_nat_width;
-
-  MxStackPrivate *priv = MX_STACK (actor)->priv;
+  ClutterActorIter iter;
+  ClutterActor *child;
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
   if (for_height >= 0)
     for_height = MAX (0, for_height - padding.top - padding.bottom);
 
   min_width = nat_width = 0;
-  for (c = priv->children; c; c = c->next)
+  clutter_actor_iter_init (&iter, actor);
+  while (clutter_actor_iter_next (&iter, &child))
     {
-      ClutterActor *child = c->data;
       if (!CLUTTER_ACTOR_IS_VISIBLE (child))
         continue;
       clutter_actor_get_preferred_width (child, for_height,
@@ -383,20 +227,19 @@ mx_stack_get_preferred_height (ClutterActor *actor,
                                gfloat       *min_height_p,
                                gfloat       *nat_height_p)
 {
-  GList *c;
   MxPadding padding;
   gfloat min_height, nat_height, child_min_height, child_nat_height;
-
-  MxStackPrivate *priv = MX_STACK (actor)->priv;
+  ClutterActorIter iter;
+  ClutterActor *child;
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
   if (for_width >= 0)
     for_width = MAX (0, for_width - padding.left - padding.right);
 
   min_height = nat_height = 0;
-  for (c = priv->children; c; c = c->next)
+  clutter_actor_iter_init (&iter, actor);
+  while (clutter_actor_iter_next (&iter, &child))
     {
-      ClutterActor *child = c->data;
       if (!CLUTTER_ACTOR_IS_VISIBLE (child))
         continue;
       clutter_actor_get_preferred_height (child, for_width,
@@ -421,10 +264,10 @@ mx_stack_allocate (ClutterActor           *actor,
                    const ClutterActorBox  *box,
                    ClutterAllocationFlags  flags)
 {
-  GList *c;
-  ClutterActorBox avail_space;
-
   MxStackPrivate *priv = MX_STACK (actor)->priv;
+  ClutterActorBox avail_space;
+  ClutterActorIter iter;
+  ClutterActor *child;
 
   CLUTTER_ACTOR_CLASS (mx_stack_parent_class)->allocate (actor, box, flags);
 
@@ -432,12 +275,11 @@ mx_stack_allocate (ClutterActor           *actor,
 
   memcpy (&priv->allocation, box, sizeof (priv->allocation));
 
-  for (c = priv->children; c; c = c->next)
+  clutter_actor_iter_init (&iter, actor);
+  while (clutter_actor_iter_next (&iter, &child))
     {
       gboolean x_fill, y_fill, fit, crop;
       MxAlign x_align, y_align;
-
-      ClutterActor *child = c->data;
       ClutterActorBox child_box = avail_space;
 
       if (!CLUTTER_ACTOR_IS_VISIBLE (child))
@@ -636,12 +478,12 @@ static void
 mx_stack_paint_children (ClutterActor *actor)
 {
   MxStackPrivate *priv = MX_STACK (actor)->priv;
+  ClutterActorIter iter;
+  ClutterActor *child;
 
-  GList *c;
-
-  for (c = priv->children; c; c = c->next)
+  clutter_actor_iter_init (&iter, actor);
+  while (clutter_actor_iter_next (&iter, &child))
     {
-      ClutterActor *child = c->data;
       gboolean crop;
 
       if (!CLUTTER_ACTOR_IS_VISIBLE (child))
@@ -659,11 +501,11 @@ mx_stack_paint_children (ClutterActor *actor)
                                     priv->allocation.y1,
                                     priv->allocation.x2,
                                     priv->allocation.y2);
-          clutter_actor_paint (c->data);
+          clutter_actor_paint (child);
           cogl_clip_pop ();
         }
       else
-        clutter_actor_paint (c->data);
+        clutter_actor_paint (child);
     }
 }
 
@@ -672,7 +514,6 @@ mx_stack_paint (ClutterActor *actor)
 {
   /* allow MxWidget to paint the background */
   CLUTTER_ACTOR_CLASS (mx_stack_parent_class)->paint (actor);
-
 
   mx_stack_paint_children (actor);
 }
