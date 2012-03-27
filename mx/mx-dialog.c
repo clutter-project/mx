@@ -294,7 +294,8 @@ mx_dialog_allocate_cb (ClutterActor           *parent,
   child_box.x2 = box->x2 - box->x1;
   child_box.y2 = box->y2 - box->y1;
 
-  clutter_actor_allocate (CLUTTER_ACTOR (self), &child_box, flags);
+  clutter_actor_set_width (self, box->x2 - box->x1);
+  clutter_actor_set_height (self, box->y2 - box->y1);
 }
 
 static void
@@ -1064,6 +1065,7 @@ mx_dialog_show (ClutterActor *self)
   if (!priv->visible)
     {
       ClutterActor *parent = clutter_actor_get_parent (self);
+      ClutterActorBox box;
 
       if (!parent)
         return;
@@ -1126,6 +1128,11 @@ mx_dialog_show (ClutterActor *self)
       clutter_timeline_start (priv->timeline);
 
       mx_dialog_steal_focus (dialog);
+
+
+      /* ensure the initial size is correct */
+      clutter_actor_get_allocation_box (parent, &box);
+      mx_dialog_allocate_cb (parent, &box, CLUTTER_ALLOCATION_NONE, dialog);
     }
 }
 
