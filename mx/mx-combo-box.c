@@ -568,10 +568,6 @@ mx_combo_box_style_changed (MxComboBox *combo, MxStyleChangedFlags flags)
   mx_stylable_apply_clutter_text_attributes (MX_STYLABLE (combo),
                                              CLUTTER_TEXT (combo->priv->label));
 
-  /* make sure the popup is also up-to-date */
-  mx_stylable_style_changed (MX_STYLABLE (mx_widget_get_menu (MX_WIDGET (combo))),
-                             flags | MX_STYLE_CHANGED_FORCE);
-
   clutter_actor_queue_relayout (CLUTTER_ACTOR (combo));
 }
 

@@ -548,14 +548,20 @@ static void
 mx_scroll_view_style_changed (MxWidget *widget, MxStyleChangedFlags flags)
 {
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (widget)->priv;
-
-  mx_stylable_style_changed (MX_STYLABLE (priv->hscroll), flags);
-  mx_stylable_style_changed (MX_STYLABLE (priv->vscroll), flags);
+  gint scrollbar_width, scrollbar_height;
 
   mx_stylable_get (MX_STYLABLE (widget),
-                   "x-mx-scrollbar-width", &priv->scrollbar_width,
-                   "x-mx-scrollbar-height", &priv->scrollbar_height,
+                   "x-mx-scrollbar-width", &scrollbar_width,
+                   "x-mx-scrollbar-height", &scrollbar_height,
                    NULL);
+
+  if (scrollbar_width != priv->scrollbar_width ||
+      scrollbar_height != priv->scrollbar_height)
+    {
+      priv->scrollbar_width = scrollbar_width;
+      priv->scrollbar_height = scrollbar_height;
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (widget));
+    }
 }
 
 static gboolean

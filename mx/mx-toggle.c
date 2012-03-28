@@ -507,12 +507,6 @@ mx_toggle_update_position (ClutterTimeline *timeline,
 }
 
 static void
-mx_toggle_style_changed (MxToggle *toggle)
-{
-  mx_stylable_style_changed (MX_STYLABLE (toggle->priv->handle), 0);
-}
-
-static void
 mx_toggle_init (MxToggle *self)
 {
   ClutterTimeline *timeline;
@@ -542,10 +536,6 @@ mx_toggle_init (MxToggle *self)
                     G_CALLBACK (mx_toggle_handle_button_release_event), self);
   g_signal_connect (self->priv->handle, "motion-event",
                     G_CALLBACK (mx_toggle_handle_motion_event), self);
-
-  g_signal_connect (self, "style-changed", G_CALLBACK (mx_toggle_style_changed),
-                    NULL);
-
 }
 
 ClutterActor *

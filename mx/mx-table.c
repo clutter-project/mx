@@ -1528,17 +1528,29 @@ mx_table_style_changed (MxWidget *widget,
   MxTable *table = MX_TABLE (widget);
   MxTablePrivate *priv = table->priv;
   guint row_spacing, col_spacing;
+  gboolean need_relayout = FALSE;
 
   mx_stylable_get (MX_STYLABLE (widget),
                    "x-mx-column-spacing", &col_spacing,
                    "x-mx-row-spacing", &row_spacing,
                    NULL);
 
-  if (!priv->ignore_css_col_spacing)
-    priv->col_spacing = col_spacing;
+  if (!priv->ignore_css_col_spacing &&
+      priv->col_spacing != col_spacing)
+    {
+      priv->col_spacing = col_spacing;
+      need_relayout = TRUE;
+    }
 
-  if (!priv->ignore_css_row_spacing)
-    priv->row_spacing = row_spacing;
+  if (!priv->ignore_css_row_spacing &&
+      priv->row_spacing != row_spacing)
+    {
+      priv->row_spacing = row_spacing;
+      need_relayout = TRUE;
+    }
+
+  if (need_relayout)
+    clutter_actor_queue_relayout (CLUTTER_ACTOR (widget));
 }
 
 static void

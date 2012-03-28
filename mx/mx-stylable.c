@@ -1055,6 +1055,8 @@ static void
 mx_stylable_style_changed_internal (MxStylable          *stylable,
                                     MxStyleChangedFlags  flags)
 {
+  ClutterActorIter iter;
+  MxStylable *child;
 
   /* don't update stylables until they are mapped (unless ensure is set) */
   if (G_LIKELY (CLUTTER_IS_ACTOR (stylable)) &&
@@ -1062,33 +1064,27 @@ mx_stylable_style_changed_internal (MxStylable          *stylable,
       !(flags & MX_STYLE_CHANGED_FORCE))
     return;
 
-  if (flags & MX_STYLE_CHANGED_INVALIDATE_CACHE)
-    _mx_style_invalidate_cache (stylable);
+  if (MX_IS_STYLABLE (stylable))
+    {
+      if (flags & MX_STYLE_CHANGED_INVALIDATE_CACHE)
+        _mx_style_invalidate_cache (stylable);
 
-  /* If the parent style has changed, child cache needs to be
-   * invalidated. This needs to happen for internal children as
-   * well, which is why it's here and not in the container block
-   * lower down.
-   */
-  flags |= MX_STYLE_CHANGED_INVALIDATE_CACHE;
+      /* If the parent style has changed, child cache needs to be
+       * invalidated. This needs to happen for internal children as
+       * well, which is why it's here and not in the container block
+       * lower down.
+       */
+      flags |= MX_STYLE_CHANGED_INVALIDATE_CACHE;
 
-  g_signal_emit (stylable, stylable_signals[STYLE_CHANGED], 0, flags);
+      g_signal_emit (stylable, stylable_signals[STYLE_CHANGED], 0, flags);
+    }
 
   /* propagate the style-changed signal to children, since their style may
    * depend on one or more properties of the parent */
-
-  if (CLUTTER_IS_CONTAINER (stylable))
+  clutter_actor_iter_init (&iter, CLUTTER_ACTOR (stylable));
+  while (clutter_actor_iter_next (&iter, (ClutterActor **) &child))
     {
-      ClutterActorIter iter;
-      MxStylable *child;
-
-      /* notify our children that their parent stylable has changed */
-      clutter_actor_iter_init (&iter, CLUTTER_ACTOR (stylable));
-      while (clutter_actor_iter_next (&iter, (ClutterActor **) &child))
-        {
-          if (MX_IS_STYLABLE (child))
-            mx_stylable_style_changed_internal (child, flags);
-        }
+      mx_stylable_style_changed_internal (child, flags);
     }
 }
 
@@ -1108,6 +1104,8 @@ mx_stylable_style_changed_internal (MxStylable          *stylable,
 void
 mx_stylable_style_changed (MxStylable *stylable, MxStyleChangedFlags flags)
 {
+  g_return_if_fail (MX_IS_STYLABLE (stylable));
+
   mx_stylable_style_changed_internal (stylable, flags);
 }
 

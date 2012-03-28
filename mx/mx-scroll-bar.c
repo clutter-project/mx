@@ -457,16 +457,17 @@ static void
 mx_scroll_bar_style_changed (MxWidget *widget, MxStyleChangedFlags flags)
 {
   MxScrollBarPrivate *priv = MX_SCROLL_BAR (widget)->priv;
+  guint handle_min_size;
 
   mx_stylable_get (MX_STYLABLE (widget),
-                   "mx-min-size", &priv->handle_min_size,
+                   "mx-min-size", &handle_min_size,
                    NULL);
 
-  mx_stylable_style_changed ((MxStylable *) priv->bw_stepper, flags);
-  mx_stylable_style_changed ((MxStylable *) priv->fw_stepper, flags);
-  mx_stylable_style_changed ((MxStylable *) priv->trough, flags);
-  mx_stylable_style_changed ((MxStylable *) priv->handle, flags);
-
+  if (handle_min_size != priv->handle_min_size)
+    {
+      priv->handle_min_size = handle_min_size;
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (widget));
+    }
 }
 
 static void
