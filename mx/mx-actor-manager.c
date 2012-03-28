@@ -87,7 +87,7 @@ typedef struct
   gpointer                     userdata;
 
   ClutterActor                *actor;
-  ClutterContainer            *container;
+  ClutterActor                *container;
 } MxActorManagerOperation;
 
 struct _MxActorManagerPrivate
@@ -593,7 +593,7 @@ mx_actor_manager_op_new (MxActorManager              *manager,
   op->create_func = create_func;
   op->userdata = userdata;
   op->actor = actor;
-  op->container = container;
+  op->container = CLUTTER_ACTOR (container);
 
   g_queue_push_tail (priv->ops, op);
   op_link = g_queue_peek_tail_link (priv->ops);
@@ -697,7 +697,7 @@ mx_actor_manager_handle_op (MxActorManager *manager)
         {
           if (op->actor)
             {
-              clutter_container_add_actor (op->container, op->actor);
+              clutter_actor_add_child (op->container, op->actor);
               g_signal_emit (manager, signals[ACTOR_ADDED], 0,
                              op->id, op->container, op->actor);
             }
@@ -717,7 +717,7 @@ mx_actor_manager_handle_op (MxActorManager *manager)
         {
           if (op->actor)
             {
-              clutter_container_remove_actor (op->container, op->actor);
+              clutter_actor_remove_child (op->container, op->actor);
               g_signal_emit (manager, signals[ACTOR_REMOVED], 0,
                              op->id, op->container, op->actor);
             }
@@ -980,7 +980,7 @@ mx_actor_manager_remove_container (MxActorManager   *manager,
   mx_actor_manager_cancel_operations (manager, CLUTTER_ACTOR (container));
 
   /* Remove all children */
-  children = clutter_container_get_children (container);
+  children = clutter_actor_get_children (container);
   while (children)
     {
       ClutterActor *child = children->data;
@@ -998,8 +998,7 @@ mx_actor_manager_remove_container (MxActorManager   *manager,
   if (parent && CLUTTER_IS_CONTAINER (parent))
     {
       g_object_ref (container);
-      clutter_container_remove_actor (CLUTTER_CONTAINER (parent),
-                                      CLUTTER_ACTOR (container));
+      clutter_actor_remove_child (parent, CLUTTER_ACTOR (container));
       mx_actor_manager_op_new (manager,
                                MX_ACTOR_MANAGER_UNREF,
                                NULL,
