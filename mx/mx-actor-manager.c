@@ -980,7 +980,7 @@ mx_actor_manager_remove_container (MxActorManager   *manager,
   mx_actor_manager_cancel_operations (manager, CLUTTER_ACTOR (container));
 
   /* Remove all children */
-  children = clutter_actor_get_children (container);
+  children = clutter_actor_get_children (CLUTTER_ACTOR (container));
   while (children)
     {
       ClutterActor *child = children->data;

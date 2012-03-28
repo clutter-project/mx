@@ -69,8 +69,7 @@ struct _MxStylableIface
   /*< public >*/
   /* virtual functions */
   MxStyle *  (* get_style) (MxStylable *stylable);
-  void       (* set_style) (MxStylable *stylable,
-                            MxStyle    *style);
+  void       (* set_style) (MxStylable *stylable, MxStyle *style);
 
   const gchar* (* get_style_class) (MxStylable  *stylable);
   void         (* set_style_class) (MxStylable  *stylable,

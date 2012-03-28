@@ -1513,7 +1513,8 @@ mx_widget_set_menu (MxWidget *widget,
 
   if (priv->menu)
     {
-      clutter_actor_destroy (CLUTTER_ACTOR (priv->menu));
+      clutter_actor_remove_child (CLUTTER_ACTOR (widget),
+                                  CLUTTER_ACTOR (priv->menu));
       priv->menu = NULL;
     }
 
