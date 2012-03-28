@@ -70,5 +70,5 @@ styles_main (ClutterContainer *stage)
   button = mx_button_new_with_label ("Container Test");
   mx_stylable_set_style (MX_STYLABLE (button), style);
   clutter_actor_set_name (button, "container-button");
-  mx_table_add_actor (MX_TABLE (table), button, 0, 0);
+  mx_table_insert_actor (MX_TABLE (table), button, 0, 0);
 }

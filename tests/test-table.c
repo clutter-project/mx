@@ -190,16 +190,16 @@ main (int argc, char *argv[])
   button9 = mx_button_new_with_label ("button9");
   button10 = mx_button_new_with_label ("button10");
 
-  mx_table_add_actor (MX_TABLE (table), button1, 0, 0);
-  mx_table_add_actor (MX_TABLE (table), button2, 0, 1);
-  mx_table_add_actor (MX_TABLE (table), button3, 1, 1);
-  mx_table_add_actor (MX_TABLE (table), button4, 2, 0);
-  mx_table_add_actor (MX_TABLE (table), button5, 3, 0);
-  mx_table_add_actor (MX_TABLE (table), button6, 3, 1);
-  mx_table_add_actor (MX_TABLE (table), button7, 4, 1);
-  mx_table_add_actor (MX_TABLE (table), button8, 4, 0);
-  mx_table_add_actor (MX_TABLE (table), button9, 5, 0);
-  mx_table_add_actor (MX_TABLE (table), button10, -1, 0);
+  mx_table_insert_actor (MX_TABLE (table), button1, 0, 0);
+  mx_table_insert_actor (MX_TABLE (table), button2, 0, 1);
+  mx_table_insert_actor (MX_TABLE (table), button3, 1, 1);
+  mx_table_insert_actor (MX_TABLE (table), button4, 2, 0);
+  mx_table_insert_actor (MX_TABLE (table), button5, 3, 0);
+  mx_table_insert_actor (MX_TABLE (table), button6, 3, 1);
+  mx_table_insert_actor (MX_TABLE (table), button7, 4, 1);
+  mx_table_insert_actor (MX_TABLE (table), button8, 4, 0);
+  mx_table_insert_actor (MX_TABLE (table), button9, 5, 0);
+  mx_table_insert_actor (MX_TABLE (table), button10, -1, 0);
   mx_table_child_set_row_span (MX_TABLE (table), button1, 2);
   mx_table_child_set_row_span (MX_TABLE (table), button7, 2);
   mx_table_child_set_column_span (MX_TABLE (table), button4, 2);

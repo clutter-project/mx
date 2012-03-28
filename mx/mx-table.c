@@ -34,7 +34,7 @@
  * While other layouts (like #MxGrid) allow you to achieve
  * table-like effects, #MxTable is the only layout which allows
  * you to precisely (and easily) place elements at particular grid coordinates,
- * via mx_table_add_actor().
+ * via mx_table_insert_actor().
  *
  * <figure id="mx-table">
  *   <title>#MxTable, 3 rows by 3 columns</title>
@@ -1852,21 +1852,21 @@ mx_table_get_column_spacing (MxTable *table)
 }
 
 /**
- * mx_table_add_actor:
+ * mx_table_insert_actor:
  * @table: a #MxTable
  * @actor: the child to insert
  * @row: the row to place the child into
  * @column: the column to place the child into
  *
- * Add an actor at the specified row and column
+ * Insert an actor at the specified row and column
  *
  * Note, column and rows numbers start from zero
  */
 void
-mx_table_add_actor (MxTable      *table,
-                    ClutterActor *actor,
-                    gint          row,
-                    gint          column)
+mx_table_insert_actor (MxTable      *table,
+                       ClutterActor *actor,
+                       gint          row,
+                       gint          column)
 {
   MxTableChild *meta;
   ClutterContainer *container;
@@ -1894,7 +1894,7 @@ mx_table_add_actor (MxTable      *table,
 }
 
 /**
- * mx_table_add_actor_with_properties
+ * mx_table_insert_actor_with_properties
  * @table: a #MxTable
  * @actor: the child #ClutterActor
  * @row: the row to place the child into
@@ -1906,12 +1906,12 @@ mx_table_add_actor (MxTable      *table,
  * properties to set.
  */
 void
-mx_table_add_actor_with_properties (MxTable      *table,
-                                    ClutterActor *actor,
-                                    gint          row,
-                                    gint          column,
-                                    const gchar  *first_property_name,
-                                    ...)
+mx_table_insert_actor_with_properties (MxTable      *table,
+                                       ClutterActor *actor,
+                                       gint          row,
+                                       gint          column,
+                                       const gchar  *first_property_name,
+                                       ...)
 {
   va_list args;
   MxTableChild *meta;

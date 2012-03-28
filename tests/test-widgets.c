@@ -259,10 +259,10 @@ change_widget (MxComboBox *box,
   data.inspector = mx_scroll_view_new ();
   clutter_actor_set_width (data.inspector, 300);
   clutter_container_add_actor (CLUTTER_CONTAINER (data.inspector), vbox);
-  mx_table_add_actor_with_properties (MX_TABLE (data.table), data.inspector,
-                                      0, 1,
-                                      "x-expand", FALSE,
-                                      NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (data.table), data.inspector,
+                                         0, 1,
+                                         "x-expand", FALSE,
+                                         NULL);
 }
 
 static ClutterActor*
@@ -445,7 +445,7 @@ startup_cb (MxApplication *application)
   data.frame = mx_frame_new ();
   data.inspector = NULL;
 
-  mx_table_add_actor (MX_TABLE (data.table), data.frame, 0, 0);
+  mx_table_insert_actor (MX_TABLE (data.table), data.frame, 0, 0);
 
   mx_window_set_child (window, data.table);
 

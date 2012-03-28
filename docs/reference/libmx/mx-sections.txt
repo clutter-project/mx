@@ -161,10 +161,10 @@ mx_table_set_column_spacing
 mx_table_get_column_spacing
 mx_table_set_row_spacing
 mx_table_get_row_spacing
-mx_table_add_actor
-mx_table_add_actor_with_properties
 mx_table_get_row_count
 mx_table_get_column_count
+mx_table_insert_actor
+mx_table_insert_actor_with_properties
 <SUBSECTION Private>
 MxTablePrivate
 <SUBSECTION Standard>

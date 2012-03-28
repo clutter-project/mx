@@ -118,103 +118,103 @@ startup_cb (MxApplication *app)
   label = mx_label_new_with_text ("Toggle small-screen mode");
   g_signal_connect (toggle, "notify::active",
                     G_CALLBACK (small_screen_cb), window);
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      toggle,
-                                      0, 0,
-                                      "x-expand", TRUE,
-                                      "x-align", MX_ALIGN_END,
-                                      "x-fill", FALSE,
-                                      NULL);
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      label,
-                                      0, 1,
-                                      "x-expand", TRUE,
-                                      "x-align", MX_ALIGN_START,
-                                      "y-fill", FALSE,
-                                      "x-fill", FALSE,
-                                      NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         toggle,
+                                         0, 0,
+                                         "x-expand", TRUE,
+                                         "x-align", MX_ALIGN_END,
+                                         "x-fill", FALSE,
+                                         NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         label,
+                                         0, 1,
+                                         "x-expand", TRUE,
+                                         "x-align", MX_ALIGN_START,
+                                         "y-fill", FALSE,
+                                         "x-fill", FALSE,
+                                         NULL);
 
   toggle = mx_toggle_new ();
   label = mx_label_new_with_text ("Toggle full-screen mode");
   g_signal_connect (toggle, "notify::active",
                     G_CALLBACK (fullscreen_cb), stage);
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      toggle,
-                                      1, 0,
-                                      "x-expand", TRUE,
-                                      "x-align", MX_ALIGN_END,
-                                      "x-fill", FALSE,
-                                      NULL);
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      label,
-                                      1, 1,
-                                      "x-expand", TRUE,
-                                      "x-align", MX_ALIGN_START,
-                                      "y-fill", FALSE,
-                                      "x-fill", FALSE,
-                                      NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         toggle,
+                                         1, 0,
+                                         "x-expand", TRUE,
+                                         "x-align", MX_ALIGN_END,
+                                         "x-fill", FALSE,
+                                         NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         label,
+                                         1, 1,
+                                         "x-expand", TRUE,
+                                         "x-align", MX_ALIGN_START,
+                                         "y-fill", FALSE,
+                                         "x-fill", FALSE,
+                                         NULL);
 
   toggle = mx_toggle_new ();
   label = mx_label_new_with_text ("Toggle custom window icon");
   g_signal_connect (toggle, "notify::active",
                     G_CALLBACK (icon_cb), window);
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      toggle,
-                                      2, 0,
-                                      "x-expand", TRUE,
-                                      "x-align", MX_ALIGN_END,
-                                      "x-fill", FALSE,
-                                      NULL);
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      label,
-                                      2, 1,
-                                      "x-expand", TRUE,
-                                      "x-align", MX_ALIGN_START,
-                                      "y-fill", FALSE,
-                                      "x-fill", FALSE,
-                                      NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         toggle,
+                                         2, 0,
+                                         "x-expand", TRUE,
+                                         "x-align", MX_ALIGN_END,
+                                         "x-fill", FALSE,
+                                         NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         label,
+                                         2, 1,
+                                         "x-expand", TRUE,
+                                         "x-align", MX_ALIGN_START,
+                                         "y-fill", FALSE,
+                                         "x-fill", FALSE,
+                                         NULL);
 
   toggle = mx_toggle_new ();
   mx_toggle_set_active (MX_TOGGLE (toggle), TRUE);
   label = mx_label_new_with_text ("Toggle user-resizable");
   g_signal_connect (toggle, "notify::active",
                     G_CALLBACK (resizable_cb), stage);
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      toggle,
-                                      3, 0,
-                                      "x-expand", TRUE,
-                                      "x-align", MX_ALIGN_END,
-                                      "x-fill", FALSE,
-                                      NULL);
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      label,
-                                      3, 1,
-                                      "x-expand", TRUE,
-                                      "x-align", MX_ALIGN_START,
-                                      "y-fill", FALSE,
-                                      "x-fill", FALSE,
-                                      NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         toggle,
+                                         3, 0,
+                                         "x-expand", TRUE,
+                                         "x-align", MX_ALIGN_END,
+                                         "x-fill", FALSE,
+                                         NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         label,
+                                         3, 1,
+                                         "x-expand", TRUE,
+                                         "x-align", MX_ALIGN_START,
+                                         "y-fill", FALSE,
+                                         "x-fill", FALSE,
+                                         NULL);
 
   toggle = mx_toggle_new ();
   mx_toggle_set_active (MX_TOGGLE (toggle), TRUE);
   label = mx_label_new_with_text ("Toggle toolbar");
   g_signal_connect (toggle, "notify::active",
                     G_CALLBACK (toolbar_cb), window);
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      toggle,
-                                      4, 0,
-                                      "x-expand", TRUE,
-                                      "x-align", MX_ALIGN_END,
-                                      "x-fill", FALSE,
-                                      NULL);
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      label,
-                                      4, 1,
-                                      "x-expand", TRUE,
-                                      "x-align", MX_ALIGN_START,
-                                      "y-fill", FALSE,
-                                      "x-fill", FALSE,
-                                      NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         toggle,
+                                         4, 0,
+                                         "x-expand", TRUE,
+                                         "x-align", MX_ALIGN_END,
+                                         "x-fill", FALSE,
+                                         NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         label,
+                                         4, 1,
+                                         "x-expand", TRUE,
+                                         "x-align", MX_ALIGN_START,
+                                         "y-fill", FALSE,
+                                         "x-fill", FALSE,
+                                         NULL);
 
   icon = mx_icon_new ();
   mx_icon_set_icon_name (MX_ICON (icon), "object-rotate-right");

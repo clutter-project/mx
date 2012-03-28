@@ -45,7 +45,7 @@ main (int     argc,
   clutter_container_add (CLUTTER_CONTAINER (stage), table, NULL);
 
   label = mx_label_new_with_text ("Short top text");
-  mx_table_add_actor (MX_TABLE (table), label, 0, 0);
+  mx_table_insert_actor (MX_TABLE (table), label, 0, 0);
 
   label2 = mx_label_new_with_text ("");
 
@@ -54,7 +54,7 @@ main (int     argc,
   clutter_text_set_line_alignment (CLUTTER_TEXT (txt), PANGO_ALIGN_LEFT);
   clutter_text_set_line_wrap (CLUTTER_TEXT (txt), TRUE);
 
-  mx_table_add_actor (MX_TABLE (table), label2, 1, 0);
+  mx_table_insert_actor (MX_TABLE (table), label2, 1, 0);
 
   clutter_container_child_set (CLUTTER_CONTAINER (table),
                                label2,
@@ -63,7 +63,7 @@ main (int     argc,
                                NULL);
 
   label = mx_label_new_with_text ("Short Bottom text");
-  mx_table_add_actor (MX_TABLE (table), label, 2, 0);
+  mx_table_insert_actor (MX_TABLE (table), label, 2, 0);
 
   mx_label_set_text (MX_LABEL (label2), "Really really long long long long long long long long long long long long long long long long long long (ooooh this is verrrrrrry long!) long longlong long long longlong long long long \nlong longlong long long long longlonglonglonglonglonglonglonglonglonglonglonglong long long long long long long long long long Loooooooooooooooong text");
 

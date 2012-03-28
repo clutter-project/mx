@@ -100,21 +100,21 @@ scroll_grid_main (ClutterContainer *stage)
 
   label = mx_label_new_with_text ("Make button visible:");
   visible_entry = mx_entry_new ();
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      label,
-                                      0, 0,
-                                      "x-expand", FALSE,
-                                      NULL);
-  mx_table_add_actor (MX_TABLE (table), visible_entry, 0, 1);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         label,
+                                         0, 0,
+                                         "x-expand", FALSE,
+                                         NULL);
+  mx_table_insert_actor (MX_TABLE (table), visible_entry, 0, 1);
 
   label = mx_label_new_with_text ("Set max-stride:");
   stride_entry = mx_entry_new ();
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      label,
-                                      1, 0,
-                                      "x-expand", FALSE,
-                                      NULL);
-  mx_table_add_actor (MX_TABLE (table), stride_entry, 1, 1);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         label,
+                                         1, 0,
+                                         "x-expand", FALSE,
+                                         NULL);
+  mx_table_insert_actor (MX_TABLE (table), stride_entry, 1, 1);
 
   clutter_actor_set_position (table, 10, 420);
   clutter_actor_set_width (table, 400);

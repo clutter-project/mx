@@ -122,11 +122,11 @@ main (int argc, char *argv[])
   mx_table_set_row_spacing (MX_TABLE (table), 12);
 
   /* Add the texture first */
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      texture,
-                                      0, 0,
-                                      "column-span", 3,
-                                      NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         texture,
+                                         0, 0,
+                                         "column-span", 3,
+                                         NULL);
 
   label = mx_label_new_with_text ("Period");
   slider = mx_slider_new ();
@@ -134,33 +134,33 @@ main (int argc, char *argv[])
   clutter_actor_set_width (slider, 200);
   g_signal_connect (slider, "notify::value",
                     G_CALLBACK (on_value_changed), &properties_info[0]);
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      label,
-                                      1, 0,
-                                      "x-expand", TRUE,
-                                      "y-expand", FALSE,
-                                      "x-align", MX_ALIGN_END,
-                                      "y-fill", FALSE,
-                                      "x-fill", TRUE,
-                                      NULL);
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      slider,
-                                      1, 1,
-                                      "x-expand", TRUE,
-                                      "y-expand", FALSE,
-                                      "x-align", MX_ALIGN_MIDDLE,
-                                      "y-fill", FALSE,
-                                      "x-fill", FALSE,
-                                      NULL);
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      properties_info[0].value_label,
-                                      1, 2,
-                                      "x-expand", TRUE,
-                                      "y-expand", FALSE,
-                                      "x-align", MX_ALIGN_MIDDLE,
-                                      "y-fill", FALSE,
-                                      "x-fill", FALSE,
-                                      NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         label,
+                                         1, 0,
+                                         "x-expand", TRUE,
+                                         "y-expand", FALSE,
+                                         "x-align", MX_ALIGN_END,
+                                         "y-fill", FALSE,
+                                         "x-fill", TRUE,
+                                         NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         slider,
+                                         1, 1,
+                                         "x-expand", TRUE,
+                                         "y-expand", FALSE,
+                                         "x-align", MX_ALIGN_MIDDLE,
+                                         "y-fill", FALSE,
+                                         "x-fill", FALSE,
+                                         NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         properties_info[0].value_label,
+                                         1, 2,
+                                         "x-expand", TRUE,
+                                         "y-expand", FALSE,
+                                         "x-align", MX_ALIGN_MIDDLE,
+                                         "y-fill", FALSE,
+                                         "x-fill", FALSE,
+                                         NULL);
 
   label = mx_label_new_with_text ("Angle");
   slider = mx_slider_new ();
@@ -168,34 +168,34 @@ main (int argc, char *argv[])
   clutter_actor_set_width (slider, 200);
   g_signal_connect (slider, "notify::value",
                     G_CALLBACK (on_value_changed), &properties_info[1]);
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      label,
-                                      2, 0,
-                                      "x-expand", TRUE,
-                                      "y-expand", TRUE,
-                                      "x-align", MX_ALIGN_END,
-                                      "y-expand", FALSE,
-                                      "y-fill", FALSE,
-                                      "x-fill", TRUE,
-                                      NULL);
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      slider,
-                                      2, 1,
-                                      "x-expand", TRUE,
-                                      "y-expand", FALSE,
-                                      "x-align", MX_ALIGN_MIDDLE,
-                                      "y-fill", FALSE,
-                                      "x-fill", FALSE,
-                                      NULL);
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      properties_info[1].value_label,
-                                      2, 2,
-                                      "x-expand", TRUE,
-                                      "y-expand", FALSE,
-                                      "x-align", MX_ALIGN_MIDDLE,
-                                      "y-fill", FALSE,
-                                      "x-fill", FALSE,
-                                      NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         label,
+                                         2, 0,
+                                         "x-expand", TRUE,
+                                         "y-expand", TRUE,
+                                         "x-align", MX_ALIGN_END,
+                                         "y-expand", FALSE,
+                                         "y-fill", FALSE,
+                                         "x-fill", TRUE,
+                                         NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         slider,
+                                         2, 1,
+                                         "x-expand", TRUE,
+                                         "y-expand", FALSE,
+                                         "x-align", MX_ALIGN_MIDDLE,
+                                         "y-fill", FALSE,
+                                         "x-fill", FALSE,
+                                         NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         properties_info[1].value_label,
+                                         2, 2,
+                                         "x-expand", TRUE,
+                                         "y-expand", FALSE,
+                                         "x-align", MX_ALIGN_MIDDLE,
+                                         "y-fill", FALSE,
+                                         "x-fill", FALSE,
+                                         NULL);
 
   label = mx_label_new_with_text ("Radius");
   slider = mx_slider_new ();
@@ -204,34 +204,34 @@ main (int argc, char *argv[])
   mx_slider_set_value (MX_SLIDER (slider), 0.24);
   g_signal_connect (slider, "notify::value",
                     G_CALLBACK (on_value_changed), &properties_info[2]);
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      label,
-                                      3, 0,
-                                      "x-expand", TRUE,
-                                      "y-expand", TRUE,
-                                      "x-align", MX_ALIGN_END,
-                                      "y-expand", FALSE,
-                                      "y-fill", FALSE,
-                                      "x-fill", TRUE,
-                                      NULL);
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      slider,
-                                      3, 1,
-                                      "x-expand", TRUE,
-                                      "y-expand", FALSE,
-                                      "x-align", MX_ALIGN_MIDDLE,
-                                      "y-fill", FALSE,
-                                      "x-fill", FALSE,
-                                      NULL);
-  mx_table_add_actor_with_properties (MX_TABLE (table),
-                                      properties_info[2].value_label,
-                                      3, 2,
-                                      "x-expand", TRUE,
-                                      "y-expand", FALSE,
-                                      "x-align", MX_ALIGN_MIDDLE,
-                                      "y-fill", FALSE,
-                                      "x-fill", FALSE,
-                                      NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         label,
+                                         3, 0,
+                                         "x-expand", TRUE,
+                                         "y-expand", TRUE,
+                                         "x-align", MX_ALIGN_END,
+                                         "y-expand", FALSE,
+                                         "y-fill", FALSE,
+                                         "x-fill", TRUE,
+                                         NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         slider,
+                                         3, 1,
+                                         "x-expand", TRUE,
+                                         "y-expand", FALSE,
+                                         "x-align", MX_ALIGN_MIDDLE,
+                                         "y-fill", FALSE,
+                                         "x-fill", FALSE,
+                                         NULL);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         properties_info[2].value_label,
+                                         3, 2,
+                                         "x-expand", TRUE,
+                                         "y-expand", FALSE,
+                                         "x-align", MX_ALIGN_MIDDLE,
+                                         "y-fill", FALSE,
+                                         "x-fill", FALSE,
+                                         NULL);
   /* Add the table to the window */
   mx_window_set_child (window, table);
 
