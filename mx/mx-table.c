@@ -422,13 +422,16 @@ mx_container_add_actor (ClutterContainer *container,
                         ClutterActor     *actor)
 {
   MxTablePrivate *priv = MX_TABLE (container)->priv;
+  MxTableChild *meta;
 
   clutter_actor_add_child (CLUTTER_ACTOR (container), actor);
 
   priv->children = g_list_append (priv->children, actor);
 
+  meta = (MxTableChild *) clutter_container_get_child_meta (container, actor);
+
   /* default position of the actor is 0, 0 */
-  _mx_table_update_row_col (MX_TABLE (container), 0, 0);
+  _mx_table_update_row_col (MX_TABLE (container), meta);
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
 }
@@ -1726,15 +1729,14 @@ mx_table_init (MxTable *table)
 }
 
 /* used by MxTableChild to update row/column count */
-void _mx_table_update_row_col (MxTable *table,
-                               gint     row,
-                               gint     col)
+void _mx_table_update_row_col (MxTable      *table,
+                               MxTableChild *meta)
 {
-  if (col > -1)
-    table->priv->n_cols = MAX (table->priv->n_cols, col + 1);
+  if (meta->col > -1)
+    table->priv->n_cols = MAX (table->priv->n_cols, meta->col + meta->col_span);
 
-  if (row > -1)
-    table->priv->n_rows = MAX (table->priv->n_rows, row + 1);
+  if (meta->row > -1)
+    table->priv->n_rows = MAX (table->priv->n_rows, meta->row + meta->row_span);
 
 }
 
@@ -1888,7 +1890,7 @@ mx_table_insert_actor (MxTable      *table,
   meta = (MxTableChild *) clutter_container_get_child_meta (container, actor);
   meta->row = row;
   meta->col = column;
-  _mx_table_update_row_col (table, row, column);
+  _mx_table_update_row_col (table, meta);
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
 }
@@ -1935,11 +1937,12 @@ mx_table_insert_actor_with_properties (MxTable      *table,
   meta = (MxTableChild *) clutter_container_get_child_meta (container, actor);
   meta->row = row;
   meta->col = column;
-  _mx_table_update_row_col (table, row, column);
 
   va_start (args, first_property_name);
   g_object_set_valist ((GObject*) meta, first_property_name, args);
   va_end (args);
+
+  _mx_table_update_row_col (table, meta);
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
 }

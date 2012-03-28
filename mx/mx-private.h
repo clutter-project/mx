@@ -26,6 +26,7 @@
 
 #include <glib.h>
 #include "mx.h"
+#include "mx-table-child.h"
 
 G_BEGIN_DECLS
 
@@ -78,9 +79,8 @@ void _mx_bin_get_align_factors (MxBin   *bin,
                                 gdouble *y_align);
 
 /* used by MxTableChild to update row/column count */
-void _mx_table_update_row_col (MxTable *table,
-                               gint     row,
-                               gint     col);
+void _mx_table_update_row_col (MxTable      *table,
+                               MxTableChild *meta);
 
 CoglHandle _mx_window_get_icon_cogl_texture (MxWindow *window);
 

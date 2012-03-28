@@ -69,12 +69,12 @@ table_child_set_property (GObject      *gobject,
     {
     case CHILD_PROP_COLUMN:
       child->col = g_value_get_int (value);
-      _mx_table_update_row_col (table, -1, child->col);
+      _mx_table_update_row_col (table, child);
       clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
     case CHILD_PROP_ROW:
       child->row = g_value_get_int (value);
-      _mx_table_update_row_col (table, child->row, -1);
+      _mx_table_update_row_col (table, child);
       clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
       break;
     case CHILD_PROP_COLUMN_SPAN:
@@ -817,7 +817,7 @@ mx_table_child_set_column (MxTable      *table,
 
   meta->col = col;
 
-  _mx_table_update_row_col (table, -1, meta->col);
+  _mx_table_update_row_col (table, meta);
   clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
 }
 
@@ -869,6 +869,6 @@ mx_table_child_set_row (MxTable      *table,
 
   meta->row = row;
 
-  _mx_table_update_row_col (table, meta->row, -1);
+  _mx_table_update_row_col (table, meta);
   clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
 }
