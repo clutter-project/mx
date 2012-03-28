@@ -54,11 +54,11 @@
 
 static void clutter_container_iface_init (ClutterContainerIface *iface);
 
+static ClutterContainerIface *container_parent_class = NULL;
+
 G_DEFINE_TYPE_WITH_CODE (MxExpander, mx_expander, MX_TYPE_BIN,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
                                                 clutter_container_iface_init))
-
-static ClutterContainerIface *container_parent_class = NULL;
 
 #define GET_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_EXPANDER, MxExpanderPrivate))
@@ -489,30 +489,16 @@ mx_expander_style_changed (MxStylable *stylable)
 }
 
 static void
-mx_expander_foreach (ClutterContainer *container,
-                     ClutterCallback   callback,
-                     gpointer          user_data)
+mx_expander_actor_added (ClutterContainer *container,
+                         ClutterActor     *actor)
 {
-  ClutterActor *child;
-
-  child = mx_bin_get_child (MX_BIN (container));
-
-  if (child)
-    callback (child, user_data);
-}
-
-static void
-mx_expander_add (ClutterContainer *container,
-                 ClutterActor     *actor)
-{
-  MxExpander *expander = MX_EXPANDER (container);
-  MxExpanderPrivate *priv = expander->priv;
+  MxExpanderPrivate *priv = MX_EXPANDER (container)->priv;
 
   /* Override the container add method so we can hide the actor if the
      expander is not expanded */
 
   /* chain up */
-  container_parent_class->add (container, actor);
+  container_parent_class->actor_added (container, actor);
 
   if (!priv->expanded)
     {
@@ -527,8 +513,7 @@ clutter_container_iface_init (ClutterContainerIface *iface)
 {
   container_parent_class = g_type_interface_peek_parent (iface);
 
-  iface->foreach = mx_expander_foreach;
-  iface->add = mx_expander_add;
+  iface->actor_added = mx_expander_actor_added;
 }
 
 static void
