@@ -87,15 +87,18 @@ GType mx_notebook_get_type (void) G_GNUC_CONST;
 
 ClutterActor *mx_notebook_new (void);
 
-void mx_notebook_set_current_page (MxNotebook   *notebook,
-                                   ClutterActor *page);
-ClutterActor *mx_notebook_get_current_page (MxNotebook   *notebook);
+void          mx_notebook_set_current_page (MxNotebook *self,
+                                            gint        page_num);
+gint          mx_notebook_get_current_page (MxNotebook *self);
+ClutterActor *mx_notebook_get_nth_page     (MxNotebook *self,
+                                            gint        page_num);
+gint          mx_notebook_get_n_pages      (MxNotebook *self);
 
-void mx_notebook_previous_page (MxNotebook *notebook);
-void mx_notebook_next_page (MxNotebook *notebook);
+void          mx_notebook_previous_page    (MxNotebook *self);
+void          mx_notebook_next_page        (MxNotebook *self);
 
-gboolean mx_notebook_get_enable_gestures (MxNotebook *book);
-void     mx_notebook_set_enable_gestures (MxNotebook *book,
+gboolean mx_notebook_get_enable_gestures (MxNotebook *self);
+void     mx_notebook_set_enable_gestures (MxNotebook *self,
                                           gboolean    enabled);
 G_END_DECLS
 
