@@ -690,23 +690,6 @@ mx_menu_hide (ClutterActor *actor)
 }
 
 static void
-mx_menu_style_changed (MxMenu              *menu,
-                       MxStyleChangedFlags  flags)
-{
-  MxMenuPrivate *priv = menu->priv;
-  gint i;
-
-  for (i = 0; i < priv->children->len; i++)
-    {
-      MxMenuChild *child;
-
-      child = &g_array_index (priv->children, MxMenuChild, i);
-
-      mx_stylable_style_changed (MX_STYLABLE (child->box), flags);
-    }
-}
-
-static void
 mx_menu_class_init (MxMenuClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -820,8 +803,6 @@ mx_menu_init (MxMenu *self)
                 "show-on-set-parent", FALSE,
                 NULL);
 
-  g_signal_connect (self, "style-changed", G_CALLBACK (mx_menu_style_changed),
-                    NULL);
   priv->id_offset = 0;
   priv->last_shown_id = 0;
 
