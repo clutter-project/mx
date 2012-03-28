@@ -472,17 +472,6 @@ mx_expander_paint (ClutterActor *actor)
   clutter_actor_paint (((MxExpander* ) actor)->priv->arrow);
 }
 
-
-static void
-mx_expander_apply_style (MxWidget *widget,
-                         MxStyle  *style)
-{
-  MxExpanderPrivate *priv = MX_EXPANDER (widget)->priv;
-
-  if (priv->arrow != NULL)
-    mx_stylable_set_style (MX_STYLABLE (priv->arrow), style);
-}
-
 static void
 mx_expander_style_changed (MxStylable *stylable)
 {
@@ -547,7 +536,6 @@ mx_expander_class_init (MxExpanderClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  MxWidgetClass *widget_class = MX_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (MxExpanderPrivate));
@@ -562,8 +550,6 @@ mx_expander_class_init (MxExpanderClass *klass)
   actor_class->get_preferred_width = mx_expander_get_preferred_width;
   actor_class->get_preferred_height = mx_expander_get_preferred_height;
   actor_class->paint = mx_expander_paint;
-
-  widget_class->apply_style = mx_expander_apply_style;
 
   pspec = g_param_spec_boolean ("expanded",
                                 "Expanded",

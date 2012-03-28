@@ -734,6 +734,47 @@ disconnect_style_changed_signal (SignalData *data)
   g_slice_free (SignalData, data);
 }
 
+static void
+mx_stylable_set_style_internal (MxStylable *stylable,
+                                MxStyle    *style)
+{
+  ClutterActorIter iter;
+  MxStylable *child;
+
+  /* Pass on style change to children. */
+  clutter_actor_iter_init (&iter, (ClutterActor *) stylable);
+  while (clutter_actor_iter_next (&iter, (ClutterActor **) &child))
+    mx_stylable_set_style_internal (child, style);
+
+  /* Notify style change on current node */
+  if (MX_IS_STYLABLE (stylable))
+    {
+      SignalData *data;
+      MxStylableIface *iface = MX_STYLABLE_GET_IFACE (stylable);
+
+      if (G_LIKELY (iface->set_style))
+        return iface->set_style (stylable, style);
+
+      /* connect to the "changed" signal of the MxStyle and take a
+       * reference to the style */
+      data = g_slice_new (SignalData);
+      data->instance = g_object_ref_sink (style);
+      data->handler_id =
+        g_signal_connect_swapped (style, "changed",
+                                  G_CALLBACK (mx_stylable_property_changed_notify),
+                                  stylable);
+
+      g_object_set_qdata_full (G_OBJECT (stylable),
+                               quark_style,
+                               data,
+                               (GDestroyNotify) disconnect_style_changed_signal);
+
+      mx_stylable_style_changed (stylable, MX_STYLE_CHANGED_INVALIDATE_CACHE);
+
+      g_object_notify (G_OBJECT (stylable), "style");
+    }
+}
+
 /**
  * mx_stylable_set_style:
  * @stylable: a #MxStylable
@@ -750,34 +791,10 @@ void
 mx_stylable_set_style (MxStylable *stylable,
                        MxStyle    *style)
 {
-  MxStylableIface *iface;
-  SignalData *data;
-
   g_return_if_fail (MX_IS_STYLABLE (stylable));
   g_return_if_fail (MX_IS_STYLE (style));
 
-  iface = MX_STYLABLE_GET_IFACE (stylable);
-
-  if (G_LIKELY (iface->set_style))
-    iface->set_style (stylable, style);
-
-  /* connect to the "changed" signal of the MxStyle and take a reference to
-   * the style */
-  data = g_slice_new (SignalData);
-  data->instance = g_object_ref_sink (style);
-  data->handler_id =
-    g_signal_connect_swapped (style, "changed",
-                              G_CALLBACK (mx_stylable_property_changed_notify),
-                              stylable);
-
-  g_object_set_qdata_full (G_OBJECT (stylable),
-                           quark_style,
-                           data,
-                           (GDestroyNotify) disconnect_style_changed_signal);
-
-  mx_stylable_style_changed (stylable, MX_STYLE_CHANGED_INVALIDATE_CACHE);
-
-  g_object_notify (G_OBJECT (stylable), "style");
+  mx_stylable_set_style_internal (stylable, style);
 }
 
 /**

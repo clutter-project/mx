@@ -398,21 +398,10 @@ mx_toolbar_paint (ClutterActor *actor)
 }
 
 static void
-mx_toolbar_apply_style (MxWidget *widget,
-                        MxStyle  *style)
-{
-  MxToolbarPrivate *priv = MX_TOOLBAR (widget)->priv;
-
-  if (priv->close_button != NULL)
-    mx_stylable_set_style (MX_STYLABLE (priv->close_button), style);
-}
-
-static void
 mx_toolbar_class_init (MxToolbarClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  MxWidgetClass *widget_class = MX_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (MxToolbarPrivate));
@@ -427,8 +416,6 @@ mx_toolbar_class_init (MxToolbarClass *klass)
   actor_class->allocate = mx_toolbar_allocate;
   actor_class->pick = mx_toolbar_pick;
   actor_class->paint = mx_toolbar_paint;
-
-  widget_class->apply_style = mx_toolbar_apply_style;
 
   /**
    * MxToolbar::close-button-clicked:

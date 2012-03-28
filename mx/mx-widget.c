@@ -774,17 +774,9 @@ mx_widget_long_press_cancel (MxWidget *widget)
  */
 void
 mx_widget_apply_style (MxWidget *widget,
-                       MxStyle  *style)
+                            MxStyle  *style)
 {
-  MxWidgetClass *klass;
-
-  g_return_if_fail (MX_IS_WIDGET (widget));
-  g_return_if_fail (style != NULL);
-
-  klass = MX_WIDGET_GET_CLASS (widget);
-
-  if (klass->apply_style != NULL)
-    klass->apply_style (widget, style);
+  mx_stylable_set_style (MX_STYLABLE (widget), style);
 }
 
 static gboolean
@@ -1054,8 +1046,6 @@ mx_widget_set_style (MxStylable *stylable,
     g_object_unref (priv->style);
 
   priv->style = g_object_ref_sink (style);
-
-  mx_widget_apply_style (MX_WIDGET (stylable), style);
 }
 
 static void

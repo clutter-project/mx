@@ -84,9 +84,6 @@ struct _MxWidgetClass
                            gfloat             x,
                            gfloat             y);
 
-  void (* apply_style) (MxWidget *widget,
-                        MxStyle  *style);
-
   /*< private >*/
   /* padding for future expansion */
   void (*_padding_0) (void);

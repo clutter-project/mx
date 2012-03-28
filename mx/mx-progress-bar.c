@@ -153,16 +153,6 @@ mx_progress_bar_allocate (ClutterActor          *actor,
 }
 
 static void
-mx_progress_bar_apply_style (MxWidget *widget,
-                             MxStyle  *style)
-{
-  MxProgressBarPrivate *priv = MX_PROGRESS_BAR (widget)->priv;
-
-  if (priv->fill != NULL)
-    mx_stylable_set_style (MX_STYLABLE (priv->fill), style);
-}
-
-static void
 mx_progress_bar_get_preferred_width (ClutterActor *actor,
                                      gfloat        for_height,
                                      gfloat       *min_width_p,
@@ -221,7 +211,6 @@ mx_progress_bar_class_init (MxProgressBarClass *klass)
   GParamSpec *pspec;
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  MxWidgetClass *widget_class = MX_WIDGET_CLASS (klass);
 
   g_type_class_add_private (klass, sizeof (MxProgressBarPrivate));
 
@@ -233,8 +222,6 @@ mx_progress_bar_class_init (MxProgressBarClass *klass)
   actor_class->get_preferred_width = mx_progress_bar_get_preferred_width;
   actor_class->get_preferred_height = mx_progress_bar_get_preferred_height;
   actor_class->allocate = mx_progress_bar_allocate;
-
-  widget_class->apply_style = mx_progress_bar_apply_style;
 
   pspec = g_param_spec_double ("progress",
                                "Progress",

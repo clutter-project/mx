@@ -596,25 +596,6 @@ mx_slider_allocate (ClutterActor           *actor,
   clutter_actor_allocate (priv->trough, &trough_box, flags);
 }
 
-static void
-mx_slider_apply_style (MxWidget *widget,
-                       MxStyle  *style)
-{
-  MxSliderPrivate *priv = MX_SLIDER (widget)->priv;
-
-  if (priv->trough_bg != NULL)
-    mx_stylable_set_style (MX_STYLABLE (priv->trough_bg), style);
-
-  if (priv->fill != NULL)
-    mx_stylable_set_style (MX_STYLABLE (priv->fill), style);
-
-  if (priv->trough != NULL)
-    mx_stylable_set_style (MX_STYLABLE (priv->trough), style);
-
-  if (priv->handle != NULL)
-    mx_stylable_set_style (MX_STYLABLE (priv->handle), style);
-}
-
 /*
  * GObject overloading
  */
@@ -713,7 +694,6 @@ mx_slider_class_init (MxSliderClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  MxWidgetClass *widget_class = MX_WIDGET_CLASS (klass);
   GParamSpec *pspec;
 
   g_type_class_add_private (klass, sizeof (MxSliderPrivate));
@@ -728,8 +708,6 @@ mx_slider_class_init (MxSliderClass *klass)
   actor_class->get_preferred_height = mx_slider_get_preferred_height;
   actor_class->allocate = mx_slider_allocate;
   actor_class->key_press_event = mx_slider_key_press_event;
-
-  widget_class->apply_style = mx_slider_apply_style;
 
   pspec = g_param_spec_double ("value",
                                "Value",

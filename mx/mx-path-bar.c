@@ -514,27 +514,12 @@ mx_path_bar_pick (ClutterActor       *actor,
 }
 
 static void
-mx_path_bar_apply_style (MxWidget *widget,
-                         MxStyle  *style)
-{
-  MxPathBarPrivate *priv = MX_PATH_BAR (widget)->priv;
-  GList *c;
-
-  for (c = priv->crumbs; c; c = c->next)
-    mx_stylable_set_style (MX_STYLABLE (c->data), style);
-
-  if (priv->entry != NULL)
-    mx_stylable_set_style (MX_STYLABLE (priv->entry), style);
-}
-
-static void
 mx_path_bar_class_init (MxPathBarClass *klass)
 {
   GParamSpec *pspec;
 
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  MxWidgetClass *widget_class = MX_WIDGET_CLASS (klass);
 
   g_type_class_add_private (klass, sizeof (MxPathBarPrivate));
 
@@ -547,8 +532,6 @@ mx_path_bar_class_init (MxPathBarClass *klass)
   actor_class->allocate = mx_path_bar_allocate;
   actor_class->paint = mx_path_bar_paint;
   actor_class->pick = mx_path_bar_pick;
-
-  widget_class->apply_style = mx_path_bar_apply_style;
 
   pspec = g_param_spec_boolean ("editable",
                                 "Editable",

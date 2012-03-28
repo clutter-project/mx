@@ -680,25 +680,11 @@ mx_scroll_view_scroll_event (ClutterActor       *self,
 }
 
 static void
-mx_scroll_view_apply_style (MxWidget *widget,
-                            MxStyle  *style)
-{
-  MxScrollViewPrivate *priv = MX_SCROLL_VIEW (widget)->priv;
-
-  if (priv->hscroll != NULL)
-    mx_stylable_set_style (MX_STYLABLE (priv->hscroll), style);
-
-  if (priv->vscroll != NULL)
-    mx_stylable_set_style (MX_STYLABLE (priv->vscroll), style);
-}
-
-static void
 mx_scroll_view_class_init (MxScrollViewClass *klass)
 {
   GParamSpec *pspec;
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
-  MxWidgetClass *widget_class = MX_WIDGET_CLASS (klass);
 
   g_type_class_add_private (klass, sizeof (MxScrollViewPrivate));
 
@@ -713,8 +699,6 @@ mx_scroll_view_class_init (MxScrollViewClass *klass)
   actor_class->get_preferred_height = mx_scroll_view_get_preferred_height;
   actor_class->allocate = mx_scroll_view_allocate;
   actor_class->scroll_event = mx_scroll_view_scroll_event;
-
-  widget_class->apply_style = mx_scroll_view_apply_style;
 
   pspec = g_param_spec_boolean ("enable-mouse-scrolling",
                                 "Enable Mouse Scrolling",
