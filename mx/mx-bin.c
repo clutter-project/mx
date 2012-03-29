@@ -142,6 +142,9 @@ mx_bin_actor_added (ClutterContainer *container,
 {
   MxBinPrivate *priv = MX_BIN (container)->priv;
 
+  if (priv->child != NULL)
+    g_warning ("Trying to more than one actor to a MxBin.");
+
   priv->child = actor;
   g_object_notify (G_OBJECT (container), "child");
   clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
