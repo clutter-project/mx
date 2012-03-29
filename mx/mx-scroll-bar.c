@@ -1023,11 +1023,11 @@ mx_scroll_bar_init (MxScrollBar *self)
 {
   self->priv = MX_SCROLL_BAR_GET_PRIVATE (self);
 
-  self->priv->bw_stepper = (ClutterActor *) mx_button_new ();
+  self->priv->bw_stepper = mx_button_new ();
   mx_stylable_set_style_class (MX_STYLABLE (self->priv->bw_stepper),
                                "backward-stepper");
   clutter_actor_add_child (CLUTTER_ACTOR (self),
-                           CLUTTER_ACTOR (self->priv->bw_stepper));
+                           self->priv->bw_stepper);
   g_signal_connect (self->priv->bw_stepper, "button-press-event",
                     G_CALLBACK (stepper_button_press_event_cb), self);
   g_signal_connect (self->priv->bw_stepper, "button-release-event",
@@ -1035,11 +1035,11 @@ mx_scroll_bar_init (MxScrollBar *self)
   g_signal_connect (self->priv->bw_stepper, "leave-event",
                     G_CALLBACK (stepper_button_release_cb), self);
 
-  self->priv->fw_stepper = (ClutterActor *) mx_button_new ();
+  self->priv->fw_stepper = mx_button_new ();
   mx_stylable_set_style_class (MX_STYLABLE (self->priv->fw_stepper),
                                "forward-stepper");
   clutter_actor_add_child (CLUTTER_ACTOR (self),
-                           CLUTTER_ACTOR (self->priv->fw_stepper));
+                           self->priv->fw_stepper);
   g_signal_connect (self->priv->fw_stepper, "button-press-event",
                     G_CALLBACK (stepper_button_press_event_cb), self);
   g_signal_connect (self->priv->fw_stepper, "button-release-event",
@@ -1048,10 +1048,10 @@ mx_scroll_bar_init (MxScrollBar *self)
                     G_CALLBACK (stepper_button_release_cb), self);
 
   self->priv->trough = mx_frame_new ();
-  clutter_actor_set_reactive ((ClutterActor *) self->priv->trough, TRUE);
+  clutter_actor_set_reactive (self->priv->trough, TRUE);
   mx_stylable_set_style_class (MX_STYLABLE (self->priv->trough), "htrough");
   clutter_actor_add_child (CLUTTER_ACTOR (self),
-                           CLUTTER_ACTOR (self->priv->trough));
+                           self->priv->trough);
   g_signal_connect (self->priv->trough, "button-press-event",
                     G_CALLBACK (trough_button_press_event_cb), self);
   g_signal_connect (self->priv->trough, "button-release-event",
@@ -1059,10 +1059,10 @@ mx_scroll_bar_init (MxScrollBar *self)
   g_signal_connect (self->priv->trough, "leave-event",
                     G_CALLBACK (trough_leave_event_cb), self);
 
-  self->priv->handle = (ClutterActor *) mx_button_new ();
+  self->priv->handle = mx_button_new ();
   mx_stylable_set_style_class (MX_STYLABLE (self->priv->handle), "hhandle");
   clutter_actor_add_child (CLUTTER_ACTOR (self),
-                           CLUTTER_ACTOR (self->priv->handle));
+                           self->priv->handle);
   g_signal_connect (self->priv->handle, "button-press-event",
                     G_CALLBACK (handle_button_press_event_cb), self);
 
