@@ -263,29 +263,43 @@ mx_focus_manager_start_focus (MxFocusManager *manager, MxFocusHint hint)
 {
   MxFocusManagerPrivate *priv = manager->priv;
   MxFocusable *focusable, *new_focused;
+  ClutterActorIter iter;
+  ClutterActor *child;
 
-  GList *children, *l;
-
-  children = clutter_container_get_children (CLUTTER_CONTAINER (priv->stage));
   focusable = NULL;
 
+  clutter_actor_iter_init (&iter, priv->stage);
+
   if (hint == MX_FOCUS_HINT_LAST)
-    children = g_list_reverse (children);
-
-  for (l = children; l; l = g_list_next (l))
     {
-      if (MX_IS_FOCUSABLE (l->data))
+      while (clutter_actor_iter_prev (&iter, &child))
         {
-          focusable = MX_FOCUSABLE (l->data);
-          new_focused = mx_focusable_accept_focus (focusable, hint);
-          mx_focus_manager_set_focused (manager, new_focused);
+          if (MX_IS_FOCUSABLE (child))
+            {
+              focusable = MX_FOCUSABLE (child);
+              new_focused = mx_focusable_accept_focus (focusable, hint);
+              mx_focus_manager_set_focused (manager, new_focused);
 
-          if (new_focused)
-            break;
+              if (new_focused)
+                break;
+            }
         }
     }
+  else
+    {
+      while (clutter_actor_iter_next (&iter, &child))
+        {
+          if (MX_IS_FOCUSABLE (child))
+            {
+              focusable = MX_FOCUSABLE (child);
+              new_focused = mx_focusable_accept_focus (focusable, hint);
+              mx_focus_manager_set_focused (manager, new_focused);
 
-  g_list_free (children);
+              if (new_focused)
+                break;
+            }
+        }
+    }
 }
 
 static gboolean
