@@ -763,11 +763,6 @@ handle_button_press_event_cb (ClutterActor       *actor,
 
   stage = clutter_actor_get_stage (priv->trough);
 
-
-  /* Account for the scrollbar-trough-handle nesting. */
-  priv->x_origin += clutter_actor_get_x (priv->trough);
-  priv->y_origin += clutter_actor_get_y (priv->trough);
-
   /* Turn off picking for motion events */
   clutter_stage_set_motion_events_enabled (CLUTTER_STAGE (stage), FALSE);
 
