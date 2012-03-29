@@ -34,9 +34,14 @@
 #include "mx-marshal.h"
 #include <clutter/clutter.h>
 
+static void clutter_container_iface_init (ClutterContainerIface *iface);
 static void mx_focusable_iface_init (MxFocusableIface *iface);
 
+static ClutterContainerIface *container_parent_class = NULL;
+
 G_DEFINE_TYPE_WITH_CODE (MxToolbar, mx_toolbar, MX_TYPE_BIN,
+                         G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
+                                                clutter_container_iface_init)
                          G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
                                                 mx_focusable_iface_init))
 
@@ -391,6 +396,37 @@ mx_toolbar_paint (ClutterActor *actor)
 
   if (priv->close_button)
     clutter_actor_paint (priv->close_button);
+}
+
+static void
+mx_toolbar_actor_added (ClutterContainer *container,
+                        ClutterActor     *actor)
+{
+  MxToolbarPrivate *priv = MX_TOOLBAR (container)->priv;
+
+  /* chain up only if actor isn't the close button */
+  if (actor != priv->close_button)
+    container_parent_class->actor_added (container, actor);
+}
+
+static void
+mx_toolbar_actor_removed (ClutterContainer *container,
+                          ClutterActor     *actor)
+{
+  MxToolbarPrivate *priv = MX_TOOLBAR (container)->priv;
+
+  /* chain up only if actor isn't the close button */
+  if (actor != priv->close_button)
+    container_parent_class->actor_removed (container, actor);
+}
+
+static void
+clutter_container_iface_init (ClutterContainerIface *iface)
+{
+  container_parent_class = g_type_interface_peek_parent (iface);
+
+  iface->actor_added = mx_toolbar_actor_added;
+  iface->actor_removed = mx_toolbar_actor_removed;
 }
 
 static void
