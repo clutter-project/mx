@@ -173,17 +173,8 @@ mx_scroll_view_dispose (GObject *object)
 {
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (object)->priv;
 
-  if (priv->vscroll)
-    {
-      clutter_actor_remove_child (CLUTTER_ACTOR (object), priv->vscroll);
-      priv->vscroll = NULL;
-    }
-
-  if (priv->hscroll)
-    {
-      clutter_actor_remove_child (CLUTTER_ACTOR (object), priv->hscroll);
-      priv->hscroll = NULL;
-    }
+  priv->vscroll = NULL;
+  priv->hscroll = NULL;
 
 #ifdef HAVE_CLUTTER_GESTURE
   if (priv->gesture)

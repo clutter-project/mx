@@ -287,27 +287,9 @@ mx_widget_dispose (GObject *gobject)
       priv->old_border_image = NULL;
     }
 
-  if (priv->background_image)
-    {
-      clutter_actor_remove_child (CLUTTER_ACTOR (actor),
-                                  priv->background_image);
-      priv->background_image = NULL;
-    }
-
-  if (priv->tooltip)
-    {
-      clutter_actor_remove_child (CLUTTER_ACTOR (actor),
-                                  CLUTTER_ACTOR (priv->tooltip));
-      priv->tooltip = NULL;
-    }
-
-  if (priv->menu)
-    {
-      clutter_actor_remove_child (CLUTTER_ACTOR (actor),
-                                  CLUTTER_ACTOR (priv->menu));
-      priv->menu = NULL;
-    }
-
+  priv->background_image = NULL;
+  priv->tooltip = NULL;
+  priv->menu = NULL;
 
   G_OBJECT_CLASS (mx_widget_parent_class)->dispose (gobject);
 }

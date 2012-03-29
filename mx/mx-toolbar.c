@@ -199,11 +199,7 @@ mx_toolbar_dispose (GObject *object)
 {
   MxToolbarPrivate *priv = MX_TOOLBAR (object)->priv;
 
-  if (priv->close_button)
-    {
-      clutter_actor_remove_child (CLUTTER_ACTOR (object), priv->close_button);
-      priv->close_button = NULL;
-    }
+  priv->close_button = NULL;
 
   G_OBJECT_CLASS (mx_toolbar_parent_class)->dispose (object);
 }

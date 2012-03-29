@@ -136,17 +136,8 @@ mx_expander_dispose (GObject *object)
 {
   MxExpanderPrivate *priv = MX_EXPANDER (object)->priv;
 
-  if (priv->label)
-    {
-      clutter_actor_remove_child (CLUTTER_ACTOR (object), priv->label);
-      priv->label = NULL;
-    }
-
-  if (priv->arrow)
-    {
-      clutter_actor_remove_child (CLUTTER_ACTOR (object), priv->arrow);
-      priv->arrow = NULL;
-    }
+  priv->label = NULL;
+  priv->arrow = NULL;
 
   if (priv->timeline)
     {
