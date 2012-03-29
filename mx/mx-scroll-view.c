@@ -60,6 +60,8 @@
 static void clutter_container_iface_init (ClutterContainerIface *iface);
 static void mx_stylable_iface_init (MxStylableIface *iface);
 
+static ClutterContainerIface *container_parent_class = NULL;
+
 G_DEFINE_TYPE_WITH_CODE (MxScrollView, mx_scroll_view, MX_TYPE_BIN,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
                                                 clutter_container_iface_init)
@@ -72,12 +74,6 @@ G_DEFINE_TYPE_WITH_CODE (MxScrollView, mx_scroll_view, MX_TYPE_BIN,
 
 struct _MxScrollViewPrivate
 {
-  /* a pointer to the child; this is actually stored
-   * inside MxBin:child, but we keep it to avoid
-   * calling mx_bin_get_child() every time we need it
-   */
-  ClutterActor *child;
-
   ClutterActor *hscroll;
   ClutterActor *vscroll;
 
@@ -220,7 +216,7 @@ mx_scroll_view_paint (ClutterActor *actor)
   clutter_color_free (color);
 
   /* MxBin will paint the child */
-  clutter_actor_get_allocation_box (priv->child, &box);
+  clutter_actor_get_allocation_box (mx_bin_get_child (MX_BIN (actor)), &box);
   cogl_clip_push_rectangle (0, 0, (box.x2 - box.x1), (box.y2 - box.y1));
   CLUTTER_ACTOR_CLASS (mx_scroll_view_parent_class)->paint (actor);
   cogl_clip_pop ();
@@ -373,19 +369,20 @@ mx_scroll_view_get_preferred_width (ClutterActor *actor,
                                     gfloat       *min_width_p,
                                     gfloat       *natural_width_p)
 {
+  MxScrollViewPrivate *priv = MX_SCROLL_VIEW (actor)->priv;
+  ClutterActor *child = mx_bin_get_child (MX_BIN (actor));
   MxPadding padding;
   gfloat child_min_w, child_nat_w;
   gfloat vscroll_w;
 
-  MxScrollViewPrivate *priv = MX_SCROLL_VIEW (actor)->priv;
 
-  if (!priv->child)
+  if (!child)
     return;
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
   /* Our natural width is the natural width of the child */
-  clutter_actor_get_preferred_width (priv->child,
+  clutter_actor_get_preferred_width (child,
                                      for_height,
                                      &child_min_w,
                                      &child_nat_w);
@@ -396,7 +393,7 @@ mx_scroll_view_get_preferred_width (ClutterActor *actor,
     {
       gfloat natural_height;
 
-      clutter_actor_get_preferred_height (priv->child, -1.0,
+      clutter_actor_get_preferred_height (child, -1.0,
                                           NULL,
                                           &natural_height);
       if (for_height < natural_height)
@@ -428,19 +425,20 @@ mx_scroll_view_get_preferred_height (ClutterActor *actor,
                                      gfloat       *min_height_p,
                                      gfloat       *natural_height_p)
 {
+  MxScrollViewPrivate *priv = MX_SCROLL_VIEW (actor)->priv;
+  ClutterActor *child = mx_bin_get_child (MX_BIN (actor));
   MxPadding padding;
   gfloat min_child_h, nat_child_h;
   gfloat scroll_h;
 
-  MxScrollViewPrivate *priv = MX_SCROLL_VIEW (actor)->priv;
 
-  if (!priv->child)
+  if (!child)
     return;
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
   /* Our natural height is the natural height of the child */
-  clutter_actor_get_preferred_height (priv->child,
+  clutter_actor_get_preferred_height (child,
                                       for_width,
                                       &min_child_h,
                                       &nat_child_h);
@@ -451,7 +449,7 @@ mx_scroll_view_get_preferred_height (ClutterActor *actor,
     {
       gfloat natural_width;
 
-      clutter_actor_get_preferred_width (priv->child, -1.0,
+      clutter_actor_get_preferred_width (child, -1.0,
                                          NULL,
                                          &natural_width);
       if (for_width < natural_width)
@@ -479,11 +477,10 @@ mx_scroll_view_allocate (ClutterActor          *actor,
                          const ClutterActorBox *box,
                          ClutterAllocationFlags flags)
 {
+  MxScrollViewPrivate *priv = MX_SCROLL_VIEW (actor)->priv;
   MxPadding padding;
   ClutterActorBox child_box;
   gfloat avail_width, avail_height, sb_width, sb_height;
-
-  MxScrollViewPrivate *priv = MX_SCROLL_VIEW (actor)->priv;
 
   CLUTTER_ACTOR_CLASS (mx_scroll_view_parent_class)->
     allocate (actor, box, flags);
@@ -531,8 +528,7 @@ mx_scroll_view_allocate (ClutterActor          *actor,
   child_box.y1 = padding.top;
   child_box.y2 = avail_height - sb_height;
 
-  if (priv->child)
-    clutter_actor_allocate (priv->child, &child_box, flags);
+  mx_bin_allocate_child (MX_BIN (actor), &child_box, flags);
 }
 
 static void
@@ -965,15 +961,13 @@ static void
 mx_scroll_view_actor_added (ClutterContainer *container,
                             ClutterActor     *actor)
 {
-  MxScrollView *self = MX_SCROLL_VIEW (container);
-  MxScrollViewPrivate *priv = self->priv;
-
   if (MX_IS_SCROLL_BAR (actor))
     return;
 
   if (MX_IS_SCROLLABLE (actor))
     {
-      priv->child = actor;
+      /* chain up */
+      container_parent_class->actor_added (container, actor);
 
       /* Get adjustments for scroll-bars */
       g_signal_connect (actor, "notify::horizontal-adjustment",
@@ -998,46 +992,25 @@ static void
 mx_scroll_view_actor_removed (ClutterContainer *container,
                               ClutterActor     *actor)
 {
-  MxScrollViewPrivate *priv = MX_SCROLL_VIEW (container)->priv;
-
-  if (actor == priv->child)
+  if (actor == mx_bin_get_child (MX_BIN (container)))
     {
-      g_object_ref (priv->child);
-
-      g_signal_handlers_disconnect_by_func (priv->child,
+      g_signal_handlers_disconnect_by_func (actor,
                                             child_hadjustment_notify_cb,
                                             container);
-      g_signal_handlers_disconnect_by_func (priv->child,
+      g_signal_handlers_disconnect_by_func (actor,
                                             child_vadjustment_notify_cb,
                                             container);
-      mx_scrollable_set_adjustments ((MxScrollable*) priv->child, NULL, NULL);
+      mx_scrollable_set_adjustments ((MxScrollable*) actor, NULL, NULL);
 
-      g_object_unref (priv->child);
-      priv->child = NULL;
+      /* chain up */
+      container_parent_class->actor_removed (container, actor);
     }
-}
-
-static void
-mx_scroll_view_foreach_with_internals (ClutterContainer *container,
-                                       ClutterCallback   callback,
-                                       gpointer          user_data)
-{
-  MxScrollViewPrivate *priv = MX_SCROLL_VIEW (container)->priv;
-
-  if (priv->child != NULL)
-    callback (priv->child, user_data);
-
-  if (priv->hscroll != NULL)
-    callback (priv->hscroll, user_data);
-
-  if (priv->vscroll != NULL)
-    callback (priv->vscroll, user_data);
 }
 
 static void
 clutter_container_iface_init (ClutterContainerIface *iface)
 {
-  iface->foreach_with_internals = mx_scroll_view_foreach_with_internals;
+  container_parent_class = g_type_interface_peek_parent (iface);
 
   iface->actor_added = mx_scroll_view_actor_added;
   iface->actor_removed = mx_scroll_view_actor_removed;
