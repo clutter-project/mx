@@ -46,18 +46,18 @@ Overlay.prototype = {
             return;
         this._stage = stage;
 
-        this._stage.add_actor(this._frame);
+        this._stage.add_child(this._frame);
         this._frame.raise_top();
         this._frame.hide();
-        this._stage.add_actor(this._tooltip);
+        this._stage.add_child(this._tooltip);
         this._tooltip.hide();
     },
 
     remove: function() {
         this._frame.hide();
-        this._stage.remove_actor(this._frame);
+        this._stage.remove_child(this._frame);
         this._tooltip.hide();
-        this._stage.remove_actor(this._tooltip);
+        this._stage.remove_child(this._tooltip);
 
         this._stage = null;
     },
@@ -163,9 +163,7 @@ LiveInspector.prototype = {
     //
 
     _clean_inspector: function() {
-        this._parent_box.foreach(Lang.bind(this, function(child) {
-            this._parent_box.remove_actor(child);
-        }));
+        this._parent_box.remove_all_children();
         this._clean_style();
 
         // Remove overlay
@@ -225,7 +223,7 @@ LiveInspector.prototype = {
                                this._overlay.hide();
                            }));
 
-            this._parent_box.add_actor(button, 0);
+            this._parent_box.insert_actor(button, 0);
             this._parent_box.child_set_y_fill(button, true);
             this._parent_box.child_set_expand(button, true);
 
@@ -261,13 +259,13 @@ LiveInspector.prototype = {
 
     _clean_style: function() {
         this._style_box.foreach(Lang.bind(this, function(child) {
-            this._style_box.remove_actor(child);
+            this._style_box.remove_child(child);
         }));
     },
 
     _inspect_style: function(widget) {
         this._style_box.foreach(Lang.bind(this, function(child) {
-            this._style_box.remove_actor(child);
+            this._style_box.remove_child(child);
         }));
 
         this._inspected_widget = widget;
@@ -298,7 +296,7 @@ LiveInspector.prototype = {
                 }
             }
 
-            this._style_box.add_actor(this._create_css_view("" + text, begin_offset, end_offset), i);
+            this._style_box.insert_actor(this._create_css_view("" + text, begin_offset, end_offset), i);
         }
     }
 };
