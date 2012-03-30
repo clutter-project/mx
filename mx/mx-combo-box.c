@@ -185,6 +185,22 @@ mx_combo_box_paint (ClutterActor *actor)
 }
 
 static void
+mx_combo_box_pick (ClutterActor *actor, const ClutterColor *color)
+{
+  MxComboBoxPrivate *priv = MX_COMBO_BOX (actor)->priv;
+
+  CLUTTER_ACTOR_CLASS (mx_combo_box_parent_class)->pick (actor, color);
+
+  clutter_actor_paint (priv->label);
+
+  if (priv->icon)
+    clutter_actor_paint (priv->icon);
+
+  if (priv->marker)
+    clutter_actor_paint (priv->marker);
+}
+
+static void
 mx_combo_box_get_preferred_width (ClutterActor *actor,
                                   gfloat        for_height,
                                   gfloat       *min_width_p,
@@ -585,6 +601,7 @@ mx_combo_box_class_init (MxComboBoxClass *klass)
   object_class->finalize = mx_combo_box_finalize;
 
   actor_class->paint = mx_combo_box_paint;
+  actor_class->pick = mx_combo_box_pick;
 
   actor_class->get_preferred_width = mx_combo_box_get_preferred_width;
   actor_class->get_preferred_height = mx_combo_box_get_preferred_height;
