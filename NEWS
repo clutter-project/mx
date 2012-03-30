@@ -1,3 +1,21 @@
+1.4.5
+=====
+
+Changes since 1.4.4
+
+ * dialog: ensure that the initial size of the dialog is correct
+ * dialog: disable the blurred background when using Clutter ≥ 1.10
+ * css: pseudo-class should be identified by ':' in debug output
+ * combo-box: don't use NULL when setting the ClutterText "text" property
+ * test-containers: create a grid of actors in a group for viewport tests
+ * viewport: implement apply_transform and get_paint_volume
+ * scroll-view: clip around the child instead of setting clip-to-allocation
+ * table: fix sorting depth
+ * entry: Don't emit the notify text signal on switching between the hint text
+ * application: ensure the singleton variable is properly assigned
+ * adjustment: emit the "changed" signal if the value property changes
+
+
 1.4.4
 =====
 
