@@ -479,6 +479,7 @@ mx_scroll_view_allocate (ClutterActor          *actor,
 {
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (actor)->priv;
   MxPadding padding;
+  ClutterActor *child = mx_bin_get_child (MX_BIN (actor));
   ClutterActorBox child_box;
   gfloat avail_width, avail_height, sb_width, sb_height;
 
@@ -528,7 +529,8 @@ mx_scroll_view_allocate (ClutterActor          *actor,
   child_box.y1 = padding.top;
   child_box.y2 = avail_height - sb_height;
 
-  mx_bin_allocate_child (MX_BIN (actor), &child_box, flags);
+  if (child)
+  clutter_actor_allocate (child, &child_box, flags);
 }
 
 static void
