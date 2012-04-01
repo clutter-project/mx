@@ -62,6 +62,7 @@ struct _MxWidgetPrivate
   CoglHandle    old_border_image;
   ClutterActor *background_image;
   ClutterColor *bg_color;
+  gfloat        opacity;
 
   guint         is_disabled : 1;
   guint         parent_disabled : 1;
@@ -508,6 +509,7 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
   gboolean has_changed = FALSE;
   ClutterColor *color;
   guint duration;
+  gfloat opacity = -1;
   gboolean border_image_changed = FALSE;
 
   /* cache these values for use in the paint function */
@@ -516,6 +518,7 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
                    "background-image", &background_image,
                    "border-image", &border_image,
                    "padding", &padding,
+                   "opacity", &opacity,
                    "x-mx-border-image-transition-duration", &duration,
                    NULL);
 
@@ -541,7 +544,12 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
       has_changed = TRUE;
     }
 
-
+  if ((opacity >= 0) && (priv->opacity != opacity))
+    {
+      priv->opacity = opacity;
+      clutter_actor_set_opacity (CLUTTER_ACTOR (self), 255 * opacity);
+      has_changed = TRUE;
+    }
 
   if (padding)
     {
@@ -1127,6 +1135,13 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                         "The color of the text of an actor",
                                         &color,
                                         G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
+
+      pspec = g_param_spec_float ("opacity",
+                                  "Opacity",
+                                  "Opacity of an actor",
+                                  0.0, 1.0, 1.0,
+                                  G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
 
       pspec = g_param_spec_boxed ("background-image",
