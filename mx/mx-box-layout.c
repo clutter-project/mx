@@ -1745,19 +1745,6 @@ mx_box_layout_set_property_valist (MxBoxLayout  *box,
     }
 }
 
-static void
-mx_box_layout_create_child_meta (MxBoxLayout  *box,
-                                 ClutterActor *actor)
-{
-  ClutterContainer *container = CLUTTER_CONTAINER (box);
-  ClutterContainerIface *iface = CLUTTER_CONTAINER_GET_IFACE (container);
-
-  g_assert (g_type_is_a (iface->child_meta_type, MX_TYPE_BOX_LAYOUT_CHILD));
-
-  if (G_LIKELY (iface->create_child_meta))
-      iface->create_child_meta (container, actor);
-}
-
 /**
  * mx_box_layout_insert_actor:
  * @box: a #MxBoxLayout
@@ -1771,36 +1758,10 @@ mx_box_layout_insert_actor (MxBoxLayout  *box,
                             ClutterActor *actor,
                             gint          position)
 {
-  MxBoxLayoutPrivate *priv;
-
   g_return_if_fail (MX_IS_BOX_LAYOUT (box));
   g_return_if_fail (CLUTTER_IS_ACTOR (actor));
 
-  priv = box->priv;
-
-  /* this is really mx_box_container_add_actor() with a different insert() */
-  priv->children = g_list_insert (priv->children,
-                                  actor,
-                                  position);
-  mx_box_layout_create_child_meta (box, actor);
-  clutter_actor_add_child ((ClutterActor*) box, actor);
-
-  if (priv->enable_animations)
-    {
-      _mx_box_layout_start_animation (box);
-
-      if (priv->timeline)
-        {
-          /* fade in the new actor when there is room */
-          clutter_actor_set_opacity (actor, 0);
-          g_signal_connect_swapped (priv->timeline, "completed",
-                                    G_CALLBACK (fade_in_actor), actor);
-        }
-    }
-  else
-    {
-      clutter_actor_queue_relayout ((ClutterActor *) box);
-    }
+  clutter_actor_insert_child_at_index ((ClutterActor*) box, actor, position);
 }
 
 /**
