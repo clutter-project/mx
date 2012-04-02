@@ -88,6 +88,7 @@ struct _MxScrollViewPrivate
   guint         scrollbar_height;
 
   MxScrollPolicy scroll_policy;
+  MxScrollPolicy scroll_visibility;
 
 #ifdef HAVE_CLUTTER_GESTURE
   ClutterGesture *gesture;
@@ -100,7 +101,8 @@ enum {
 
   PROP_MOUSE_SCROLL,
   PROP_ENABLE_GESTURES,
-  PROP_SCROLL_POLICY
+  PROP_SCROLL_POLICY,
+  PROP_SCROLL_VISIBILITY
 };
 
 static void
@@ -123,6 +125,10 @@ mx_scroll_view_get_property (GObject    *object,
 
     case PROP_SCROLL_POLICY:
       g_value_set_enum (value, priv->scroll_policy);
+      break;
+
+    case PROP_SCROLL_VISIBILITY:
+      g_value_set_enum (value, priv->scroll_visibility);
       break;
 
     default:
@@ -151,6 +157,10 @@ mx_scroll_view_set_property (GObject      *object,
 
     case PROP_SCROLL_POLICY:
       mx_scroll_view_set_scroll_policy (view, g_value_get_enum (value));
+      break;
+
+    case PROP_SCROLL_VISIBILITY:
+      mx_scroll_view_set_scroll_visibility (view, g_value_get_enum (value));
       break;
 
     default:
@@ -724,6 +734,14 @@ mx_scroll_view_class_init (MxScrollViewClass *klass)
                              MX_SCROLL_POLICY_BOTH,
                              MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_SCROLL_POLICY, pspec);
+
+  pspec = g_param_spec_enum ("scroll-visibility",
+                             "Scroll Visibility",
+                             "The scroll visibility",
+                             MX_TYPE_SCROLL_POLICY,
+                             MX_SCROLL_POLICY_BOTH,
+                             MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_SCROLL_VISIBILITY, pspec);
 }
 
 static void
@@ -755,12 +773,24 @@ mx_stylable_iface_init (MxStylableIface *iface)
 
 static void
 child_adjustment_changed_cb (MxAdjustment *adjustment,
-                             ClutterActor *bar)
+                             MxScrollView *self)
 {
-  MxScrollView *scroll;
+  MxScrollViewPrivate *priv = self->priv;
   gdouble lower, upper, page_size;
+  MxScrollPolicy policy;
+  ClutterActor *actor;
 
-  scroll = MX_SCROLL_VIEW (clutter_actor_get_parent (bar));
+  if (adjustment ==
+      mx_scroll_bar_get_adjustment (MX_SCROLL_BAR (priv->vscroll)))
+    {
+      policy = MX_SCROLL_POLICY_VERTICAL;
+      actor = priv->vscroll;
+    }
+  else
+    {
+      policy = MX_SCROLL_POLICY_HORIZONTAL;
+      actor = priv->hscroll;
+    }
 
   /* Determine if this scroll-bar should be visible */
   mx_adjustment_get_values (adjustment, NULL,
@@ -768,13 +798,15 @@ child_adjustment_changed_cb (MxAdjustment *adjustment,
                             NULL, NULL,
                             &page_size);
 
-  if ((upper - lower) > page_size)
-    clutter_actor_show (bar);
+  if (((upper - lower) > page_size) &&
+      ((priv->scroll_visibility == MX_SCROLL_POLICY_BOTH) ||
+       (priv->scroll_visibility == policy)))
+    clutter_actor_show (actor);
   else
-    clutter_actor_hide (bar);
+    clutter_actor_hide (actor);
 
   /* Request a resize */
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (scroll));
+  clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
 }
 
 static void
@@ -782,24 +814,24 @@ child_hadjustment_notify_cb (GObject    *gobject,
                              GParamSpec *arg1,
                              gpointer    user_data)
 {
+  MxScrollView *self = MX_SCROLL_VIEW (user_data);
+  MxScrollViewPrivate *priv = self->priv;
+  ClutterActor *actor = CLUTTER_ACTOR (gobject);
   MxAdjustment *hadjust;
 
-  ClutterActor *actor = CLUTTER_ACTOR (gobject);
-  MxScrollViewPrivate *priv = MX_SCROLL_VIEW (user_data)->priv;
-
-  hadjust = mx_scroll_bar_get_adjustment (MX_SCROLL_BAR(priv->hscroll));
+  hadjust = mx_scroll_bar_get_adjustment (MX_SCROLL_BAR (priv->hscroll));
   if (hadjust)
     g_signal_handlers_disconnect_by_func (hadjust,
                                           child_adjustment_changed_cb,
-                                          priv->hscroll);
+                                          self);
 
   mx_scrollable_get_adjustments (MX_SCROLLABLE (actor), &hadjust, NULL);
   if (hadjust)
     {
-      mx_scroll_bar_set_adjustment (MX_SCROLL_BAR(priv->hscroll), hadjust);
-      g_signal_connect (hadjust, "changed", G_CALLBACK (
-                          child_adjustment_changed_cb), priv->hscroll);
-      child_adjustment_changed_cb (hadjust, priv->hscroll);
+      mx_scroll_bar_set_adjustment (MX_SCROLL_BAR (priv->hscroll), hadjust);
+      g_signal_connect (hadjust, "changed",
+                        G_CALLBACK (child_adjustment_changed_cb), self);
+      child_adjustment_changed_cb (hadjust, self);
     }
 }
 
@@ -808,24 +840,24 @@ child_vadjustment_notify_cb (GObject    *gobject,
                              GParamSpec *arg1,
                              gpointer    user_data)
 {
+  MxScrollView *self = MX_SCROLL_VIEW (user_data);
+  MxScrollViewPrivate *priv = self->priv;
+  ClutterActor *actor = CLUTTER_ACTOR (gobject);
   MxAdjustment *vadjust;
 
-  ClutterActor *actor = CLUTTER_ACTOR (gobject);
-  MxScrollViewPrivate *priv = MX_SCROLL_VIEW (user_data)->priv;
-
-  vadjust = mx_scroll_bar_get_adjustment (MX_SCROLL_BAR(priv->vscroll));
+  vadjust = mx_scroll_bar_get_adjustment (MX_SCROLL_BAR (priv->vscroll));
   if (vadjust)
     g_signal_handlers_disconnect_by_func (vadjust,
                                           child_adjustment_changed_cb,
-                                          priv->vscroll);
+                                          self);
 
   mx_scrollable_get_adjustments (MX_SCROLLABLE(actor), NULL, &vadjust);
   if (vadjust)
     {
       mx_scroll_bar_set_adjustment (MX_SCROLL_BAR(priv->vscroll), vadjust);
-      g_signal_connect (vadjust, "changed", G_CALLBACK (
-                          child_adjustment_changed_cb), priv->vscroll);
-      child_adjustment_changed_cb (vadjust, priv->vscroll);
+      g_signal_connect (vadjust, "changed",
+                        G_CALLBACK (child_adjustment_changed_cb), self);
+      child_adjustment_changed_cb (vadjust, self);
     }
 }
 
@@ -916,6 +948,7 @@ mx_scroll_view_init (MxScrollView *self)
                                 NULL);
 
   priv->scroll_policy = MX_SCROLL_POLICY_BOTH;
+  priv->scroll_visibility = MX_SCROLL_POLICY_BOTH;
 
   clutter_actor_add_child (CLUTTER_ACTOR (self), priv->hscroll);
   clutter_actor_add_child (CLUTTER_ACTOR (self), priv->vscroll);
@@ -1130,6 +1163,34 @@ mx_scroll_view_get_scroll_policy (MxScrollView *scroll)
   g_return_val_if_fail (MX_IS_SCROLL_VIEW (scroll), 0);
 
   return scroll->priv->scroll_policy;
+}
+
+void
+mx_scroll_view_set_scroll_visibility (MxScrollView  *scroll,
+                                      MxScrollPolicy visibility)
+{
+  MxScrollViewPrivate *priv;
+
+  g_return_if_fail (MX_IS_SCROLL_VIEW (scroll));
+
+  priv = scroll->priv;
+
+  if (priv->scroll_visibility != visibility)
+    {
+      priv->scroll_visibility = visibility;
+
+      g_object_notify (G_OBJECT (scroll), "scroll-visibility");
+
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (scroll));
+    }
+}
+
+MxScrollPolicy
+mx_scroll_view_get_scroll_visibility (MxScrollView *scroll)
+{
+  g_return_val_if_fail (MX_IS_SCROLL_VIEW (scroll), 0);
+
+  return scroll->priv->scroll_visibility;
 }
 
 static void

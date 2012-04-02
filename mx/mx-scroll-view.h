@@ -81,12 +81,16 @@ void           mx_scroll_view_set_enable_mouse_scrolling (MxScrollView  *scroll,
                                                           gboolean       enabled);
 gboolean       mx_scroll_view_get_enable_mouse_scrolling (MxScrollView  *scroll);
 
-void           mx_scroll_view_set_enable_gestures (MxScrollView  *scroll,
-                                                   gboolean       enabled);
-gboolean       mx_scroll_view_get_enable_gestures (MxScrollView  *scroll);
-void           mx_scroll_view_set_scroll_policy   (MxScrollView  *scroll,
-                                                   MxScrollPolicy policy);
-MxScrollPolicy mx_scroll_view_get_scroll_policy   (MxScrollView  *scroll);
+void           mx_scroll_view_set_enable_gestures   (MxScrollView  *scroll,
+                                                     gboolean       enabled);
+gboolean       mx_scroll_view_get_enable_gestures   (MxScrollView  *scroll);
+void           mx_scroll_view_set_scroll_policy     (MxScrollView  *scroll,
+                                                     MxScrollPolicy policy);
+MxScrollPolicy mx_scroll_view_get_scroll_policy     (MxScrollView  *scroll);
+void           mx_scroll_view_set_scroll_visibility (MxScrollView  *scroll,
+                                                     MxScrollPolicy visibility);
+MxScrollPolicy mx_scroll_view_get_scroll_visibility (MxScrollView *scroll);
+
 void           mx_scroll_view_ensure_visible (MxScrollView          *scroll,
                                               const ClutterGeometry *geometry);
 
