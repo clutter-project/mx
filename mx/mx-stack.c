@@ -649,14 +649,11 @@ mx_stack_allocate (ClutterActor           *actor,
 }
 
 static void
-mx_stack_paint (ClutterActor *actor)
+mx_stack_paint_children (ClutterActor *actor)
 {
-  GList *c;
-
   MxStackPrivate *priv = MX_STACK (actor)->priv;
 
-  /* allow MxWidget to paint the background */
-  CLUTTER_ACTOR_CLASS (mx_stack_parent_class)->paint (actor);
+  GList *c;
 
   for (c = priv->children; c; c = c->next)
     {
@@ -687,10 +684,22 @@ mx_stack_paint (ClutterActor *actor)
 }
 
 static void
+mx_stack_paint (ClutterActor *actor)
+{
+  /* allow MxWidget to paint the background */
+  CLUTTER_ACTOR_CLASS (mx_stack_parent_class)->paint (actor);
+
+
+  mx_stack_paint_children (actor);
+}
+
+static void
 mx_stack_pick (ClutterActor       *actor,
                const ClutterColor *color)
 {
-  mx_stack_paint (actor);
+  CLUTTER_ACTOR_CLASS (mx_stack_parent_class)->pick (actor, color);
+
+  mx_stack_paint_children (actor);
 }
 
 static void
