@@ -223,7 +223,7 @@ LiveInspector.prototype = {
                                this._overlay.hide();
                            }));
 
-            this._parent_box.insert_actor(button, 0);
+            this._parent_box.insert_actor(button, -1);
             this._parent_box.child_set_y_fill(button, true);
             this._parent_box.child_set_expand(button, true);
 
