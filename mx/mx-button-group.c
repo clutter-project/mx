@@ -243,10 +243,14 @@ void
 mx_button_group_add (MxButtonGroup   *group,
                      MxButton        *button)
 {
+  MxButtonGroupPrivate *priv;
+
   g_return_if_fail (MX_IS_BUTTON_GROUP (group));
   g_return_if_fail (MX_IS_BUTTON (button));
 
-  group->priv->children = g_slist_prepend (group->priv->children, button);
+  priv = group->priv;
+
+  priv->children = g_slist_prepend (priv->children, button);
 
   g_signal_connect (button, "notify::toggled",
                     G_CALLBACK (button_toggled_notify_cb), group);
@@ -257,6 +261,9 @@ mx_button_group_add (MxButtonGroup   *group,
 
   g_object_weak_ref (G_OBJECT (button), (GWeakNotify) button_weak_notify,
                      group);
+
+  if (!priv->allow_no_active && !priv->active_button)
+    mx_button_set_toggled (button, TRUE);
 }
 
 /**
