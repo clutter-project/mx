@@ -1,0 +1,5 @@
+const CSS_EDITOR_DIR = "@datadir@/mx-2.0/js";
+
+function get_css_editor_dir() {
+    return CSS_EDITOR_DIR;
+}

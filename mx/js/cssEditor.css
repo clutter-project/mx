@@ -1,0 +1,9 @@
+#mx-css-editor-overlay {
+  background-color: #2266bb;
+  opacity: 0.5;
+}
+
+#mx-css-editor-tooltip {
+  font-family: "MonoSpace";
+  font-size: 11;
+}
