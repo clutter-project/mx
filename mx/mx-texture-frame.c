@@ -64,6 +64,8 @@ struct _MxTextureFramePrivate
   gfloat          left;
 };
 
+static CoglHandle template_material = NULL;
+
 static void
 mx_texture_frame_get_preferred_width (ClutterActor *self,
                                       gfloat        for_height,
@@ -143,9 +145,7 @@ mx_texture_frame_paint_texture (CoglHandle  texture,
   gfloat tex_width, tex_height;
   gfloat ex, ey;
   gfloat tx1, ty1, tx2, ty2;
-  static CoglHandle template_material;
   CoglHandle material;
-
 
   /* setup the template material */
   if (!template_material)
@@ -248,6 +248,33 @@ mx_texture_frame_paint_texture (CoglHandle  texture,
 
     cogl_rectangles_with_texture_coords (rectangles, 9);
   }
+}
+
+void
+mx_texture_frame_paint_background (CoglHandle  texture,
+                                   guint8      opacity,
+                                   gfloat      x,
+                                   gfloat      y,
+                                   gfloat      width,
+                                   gfloat      height)
+{
+  CoglHandle material;
+
+  /* setup the template material */
+  if (!template_material)
+    template_material = cogl_material_new ();
+
+  /* create the material and apply opacity */
+  material = cogl_material_copy (template_material);
+  cogl_material_set_color4ub (material, opacity, opacity, opacity, opacity);
+
+  /* add the texture */
+  cogl_material_set_layer (material, 0, texture);
+
+  /* set the source */
+  cogl_set_source (material);
+
+  cogl_rectangle (x, y, x + width, y + height);
 }
 
 static void
