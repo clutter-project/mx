@@ -262,7 +262,7 @@ libmx_@MX_API_VERSION@_la_SOURCES =	\
 	$(top_srcdir)/mx/mx.h 		\
 	$(NULL)
 
-libmx_@MX_API_VERSION@_la_LIBADD = $(MX_LIBS)
+libmx_@MX_API_VERSION@_la_LIBADD = $(MX_LIBS) -lm
 
 if HAVE_INTROSPECTION
 -include $(INTROSPECTION_MAKEFILE)
