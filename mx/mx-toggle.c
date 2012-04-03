@@ -52,10 +52,10 @@ mx_toggle_get_preferred_width (ClutterActor *actor,
                                gfloat       *min_width_p,
                                gfloat       *pref_width_p)
 {
-  ClutterActor *background;
+  CoglHandle background;
   gfloat pref_w;
 
-  background = mx_widget_get_background_image (MX_WIDGET (actor));
+  background = mx_widget_get_background_texture (MX_WIDGET (actor));
 
   if (!background)
     {
@@ -67,7 +67,7 @@ mx_toggle_get_preferred_width (ClutterActor *actor,
       return;
     }
 
-  clutter_actor_get_preferred_width (background, -1, NULL, &pref_w);
+  pref_w = cogl_texture_get_width (background);
 
   if (min_width_p)
     *min_width_p = pref_w;
@@ -82,10 +82,10 @@ mx_toggle_get_preferred_height (ClutterActor *actor,
                                 gfloat       *min_height_p,
                                 gfloat       *pref_height_p)
 {
-  ClutterActor *background;
+  CoglHandle background;
   gfloat pref_h;
 
-  background = mx_widget_get_background_image (MX_WIDGET (actor));
+  background = mx_widget_get_background_texture (MX_WIDGET (actor));
 
   if (!background)
     {
@@ -97,7 +97,7 @@ mx_toggle_get_preferred_height (ClutterActor *actor,
       return;
     }
 
-  clutter_actor_get_preferred_height (background, -1, NULL, &pref_h);
+  pref_h = cogl_texture_get_height (background);
 
   if (min_height_p)
     *min_height_p = pref_h;
@@ -276,7 +276,7 @@ mx_toggle_allocate (ClutterActor          *actor,
 {
   MxTogglePrivate *priv = MX_TOGGLE (actor)->priv;
   ClutterActorBox handle_box, child_box;
-  ClutterActor *background;
+  CoglHandle background;
   gfloat handle_w;
   gfloat toggle_pos;
 
@@ -287,14 +287,14 @@ mx_toggle_allocate (ClutterActor          *actor,
   /* background-image don't get stretched, so adjust the child box so that the
    * handle appears in the correct place.
    */
-  background = mx_widget_get_background_image (MX_WIDGET (actor));
+  background = mx_widget_get_background_texture (MX_WIDGET (actor));
   if (background)
     {
       gfloat width;
       MxPadding padding;
 
       mx_widget_get_padding (MX_WIDGET (actor), &padding);
-      clutter_actor_get_preferred_width (background, -1, NULL, &width);
+      width = cogl_texture_get_width (background);
       width -= padding.left + padding.right;
 
       child_box.x1 += (child_box.x2 - child_box.x1) / 2.f;
