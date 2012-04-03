@@ -594,7 +594,12 @@ motion_event_cb (ClutterActor        *actor,
 
           if (threshold_passed)
             {
-              clutter_set_motion_events_enabled (FALSE);
+              ClutterActor *stage;
+
+              stage = clutter_actor_get_stage (actor);
+
+              clutter_stage_set_motion_events_enabled (CLUTTER_STAGE (stage),
+                                                       FALSE);
               priv->in_drag = TRUE;
 
               set_state (scroll, MX_KINETIC_SCROLL_VIEW_STATE_PANNING);
@@ -604,7 +609,7 @@ motion_event_cb (ClutterActor        *actor,
                   g_signal_handlers_disconnect_by_func (actor,
                                                         motion_event_cb,
                                                         scroll);
-                  g_signal_connect (clutter_actor_get_stage (actor),
+                  g_signal_connect (stage,
                                     "captured-event",
                                     G_CALLBACK (motion_event_cb),
                                     scroll);
@@ -896,7 +901,7 @@ button_release (MxKineticScrollView *scroll,
   if (!priv->in_drag)
     return FALSE;
 
-  clutter_set_motion_events_enabled (TRUE);
+  clutter_stage_set_motion_events_enabled (CLUTTER_STAGE (stage), TRUE);
 
   if (child)
     {
@@ -1135,7 +1140,8 @@ button_press_event_cb (ClutterActor        *actor,
           if (threshold == 0)
             {
               priv->in_drag = TRUE;
-              clutter_set_motion_events_enabled (FALSE);
+              clutter_stage_set_motion_events_enabled (CLUTTER_STAGE (stage),
+                                                       FALSE);
 
               /* Swallow the press event */
               return TRUE;

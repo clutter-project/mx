@@ -199,7 +199,7 @@ on_handle_capture_event (ClutterActor *trough,
           clutter_actor_queue_redraw (CLUTTER_ACTOR (bar));
         }
 
-      clutter_set_motion_events_enabled (TRUE);
+      clutter_stage_set_motion_events_enabled (CLUTTER_STAGE (stage), TRUE);
 
       /* check if the mouse pointer has left the handle during the drag and
        * remove the hover state if it has */
@@ -253,6 +253,7 @@ on_trough_bg_button_press_event (ClutterActor       *actor,
                                  MxSlider           *self)
 {
   MxSliderPrivate *priv = self->priv;
+  ClutterActor *stage;
 
   if (event->button != 1)
     return FALSE;
@@ -263,11 +264,13 @@ on_trough_bg_button_press_event (ClutterActor       *actor,
 
   move_handle (self, event->x, event->y);
 
+  stage = clutter_actor_get_stage (priv->handle);
+
   /* Turn off picking for motion events */
-  clutter_set_motion_events_enabled (FALSE);
+  clutter_stage_set_motion_events_enabled (CLUTTER_STAGE (stage), FALSE);
 
   priv->capture_handler =
-    g_signal_connect_after (clutter_actor_get_stage (priv->handle),
+    g_signal_connect_after (stage,
                             "captured-event",
                             G_CALLBACK (on_handle_capture_event),
                             self);
@@ -300,6 +303,7 @@ on_handle_button_press_event (ClutterActor       *actor,
                               MxSlider           *bar)
 {
   MxSliderPrivate *priv = bar->priv;
+  ClutterActor *stage;
 
   if (mx_widget_get_disabled (MX_WIDGET (actor)))
     return FALSE;
@@ -320,10 +324,11 @@ on_handle_button_press_event (ClutterActor       *actor,
   priv->x_origin += clutter_actor_get_x (priv->trough);
 
   /* Turn off picking for motion events */
-  clutter_set_motion_events_enabled (FALSE);
+  stage = clutter_actor_get_stage (priv->trough);
+  clutter_stage_set_motion_events_enabled (CLUTTER_STAGE (stage), FALSE);
 
   priv->capture_handler =
-    g_signal_connect_after (clutter_actor_get_stage (priv->trough),
+    g_signal_connect_after (stage,
                             "captured-event",
                             G_CALLBACK (on_handle_capture_event),
                             bar);

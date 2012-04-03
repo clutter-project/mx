@@ -773,7 +773,7 @@ handle_capture_event_cb (ClutterActor *trough,
           bar->priv->capture_handler = 0;
         }
 
-      clutter_set_motion_events_enabled (TRUE);
+      clutter_stage_set_motion_events_enabled (CLUTTER_STAGE (stage), TRUE);
       g_signal_emit (bar, signals[SCROLL_STOP], 0);
 
       /* check if the mouse pointer has left the handle during the drag and
@@ -803,6 +803,7 @@ handle_button_press_event_cb (ClutterActor       *actor,
                               MxScrollBar        *bar)
 {
   MxScrollBarPrivate *priv = bar->priv;
+  ClutterActor *stage;
 
   if (event->button != 1)
     return FALSE;
@@ -814,15 +815,18 @@ handle_button_press_event_cb (ClutterActor       *actor,
                                             &priv->y_origin))
     return FALSE;
 
+  stage = clutter_actor_get_stage (priv->trough);
+
+
   /* Account for the scrollbar-trough-handle nesting. */
   priv->x_origin += clutter_actor_get_x (priv->trough);
   priv->y_origin += clutter_actor_get_y (priv->trough);
 
   /* Turn off picking for motion events */
-  clutter_set_motion_events_enabled (FALSE);
+  clutter_stage_set_motion_events_enabled (CLUTTER_STAGE (stage), FALSE);
 
   priv->capture_handler = g_signal_connect_after (
-    clutter_actor_get_stage (priv->trough),
+    stage,
     "captured-event",
     G_CALLBACK (handle_capture_event_cb),
     bar);

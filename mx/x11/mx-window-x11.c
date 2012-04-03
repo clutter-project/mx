@@ -507,7 +507,7 @@ mx_window_x11_button_press_event_cb (ClutterActor *actor,
   priv->drag_y_start = y;
 
   /* Disable motion events on other actors */
-  clutter_set_motion_events_enabled (FALSE);
+  clutter_stage_set_motion_events_enabled (CLUTTER_STAGE (actor), FALSE);
 
   /* Grab the mouse so that we receive the release if the cursor
    * goes off-stage.
@@ -518,15 +518,16 @@ mx_window_x11_button_press_event_cb (ClutterActor *actor,
 }
 
 static void
-mx_window_x11_button_release (MxWindowX11 *self)
+mx_window_x11_button_release (MxWindowX11  *self,
+                              ClutterStage *stage)
 {
   MxWindowX11Private *priv = self->priv;
 
   if (priv->is_moving != -1)
     {
       clutter_ungrab_pointer_for_device (priv->is_moving);
-      clutter_set_motion_events_enabled (TRUE);
       priv->is_moving = -1;
+      clutter_stage_set_motion_events_enabled (stage, TRUE);
     }
 }
 
@@ -540,7 +541,7 @@ mx_window_x11_button_release_event_cb (ClutterActor *actor,
   if (clutter_event_get_device_id (event) == priv->is_moving &&
       clutter_event_get_button (event) == 1)
     {
-      mx_window_x11_button_release (self);
+      mx_window_x11_button_release (self, CLUTTER_STAGE (actor));
       return TRUE;
     }
 
@@ -651,7 +652,7 @@ mx_window_x11_motion_event_cb (ClutterActor *actor,
    */
   if (!(clutter_event_get_state (event) & CLUTTER_BUTTON1_MASK))
     {
-      mx_window_x11_button_release (self);
+      mx_window_x11_button_release (self, CLUTTER_STAGE (actor));
       return TRUE;
     }
 
@@ -770,8 +771,8 @@ mx_window_x11_notify_small_screen_cb (MxWindow    *window,
   if (priv->is_moving != -1)
     {
       clutter_ungrab_pointer_for_device (priv->is_moving);
-      clutter_set_motion_events_enabled (TRUE);
       priv->is_moving = -1;
+      clutter_stage_set_motion_events_enabled (stage, TRUE);
       if (priv->is_resizing)
         {
           XUndefineCursor (dpy, win);
