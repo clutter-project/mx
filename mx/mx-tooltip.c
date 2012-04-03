@@ -64,6 +64,7 @@ struct _MxTooltipPrivate
 {
   ClutterActor    *label;
 
+  ClutterActorBox  arrow_box;
   gfloat           arrow_offset;
   gboolean         actor_below;
 
@@ -242,18 +243,15 @@ mx_tooltip_get_preferred_width (ClutterActor *self,
   MxTooltipPrivate *priv = MX_TOOLTIP (self)->priv;
   gfloat min_label_w, natural_label_w;
   gfloat label_height, arrow_height;
-  ClutterActor *arrow_image;
+  CoglHandle arrow_image;
   MxPadding padding;
 
   mx_widget_get_padding (MX_WIDGET (self), &padding);
 
-  arrow_image = mx_widget_get_background_image (MX_WIDGET (self));
+  arrow_image = mx_widget_get_background_texture (MX_WIDGET (self));
   if (arrow_image)
     {
-      clutter_actor_get_preferred_height (arrow_image,
-                                          -1,
-                                          NULL,
-                                          &arrow_height);
+      arrow_height = cogl_texture_get_height (arrow_image);
     }
   else
     {
@@ -304,17 +302,14 @@ mx_tooltip_get_preferred_height (ClutterActor *self,
   gfloat arrow_height;
   gfloat min_label_h, natural_label_h;
   gfloat label_width;
-  ClutterActor *arrow_image;
+  CoglHandle arrow_image;
   MxPadding padding;
 
-  arrow_image = mx_widget_get_background_image (MX_WIDGET (self));
+  arrow_image = mx_widget_get_background_texture (MX_WIDGET (self));
 
   if (arrow_image && !priv->actor_below)
     {
-      clutter_actor_get_preferred_height (arrow_image,
-                                          -1,
-                                          NULL,
-                                          &arrow_height);
+      arrow_height = cogl_texture_get_height (arrow_image);
     }
   else
     {
@@ -365,7 +360,7 @@ mx_tooltip_allocate (ClutterActor          *self,
   MxTooltipPrivate *priv = MX_TOOLTIP (self)->priv;
   ClutterActorBox child_box, arrow_box;
   gfloat arrow_height, arrow_width;
-  ClutterActor *arrow_image;
+  CoglHandle arrow_image;
   MxPadding padding;
 
   CLUTTER_ACTOR_CLASS (mx_tooltip_parent_class)->allocate (self,
@@ -374,19 +369,17 @@ mx_tooltip_allocate (ClutterActor          *self,
 
   mx_widget_get_padding (MX_WIDGET (self), &padding);
 
-  arrow_image = mx_widget_get_background_image (MX_WIDGET (self));
+  arrow_image = mx_widget_get_background_texture (MX_WIDGET (self));
 
   if (arrow_image && !priv->actor_below)
     {
-      clutter_actor_get_preferred_height (arrow_image, -1, NULL, &arrow_height);
-      clutter_actor_get_preferred_width (arrow_image, -1, NULL, &arrow_width);
+      arrow_height = cogl_texture_get_height (arrow_image);
+      arrow_width = cogl_texture_get_width (arrow_image);
 
-      arrow_box.x1 = (float)(priv->arrow_offset) - (int)(arrow_width / 2);
-      arrow_box.y1 = 0;
-      arrow_box.x2 = arrow_box.x1 + arrow_width;
-      arrow_box.y2 = arrow_box.y1 + arrow_height;
-
-      clutter_actor_allocate (arrow_image, &arrow_box, flags);
+      priv->arrow_box.x1 = (float)(priv->arrow_offset) - (int)(arrow_width / 2);
+      priv->arrow_box.y1 = 0;
+      priv->arrow_box.x2 = arrow_box.x1 + arrow_width;
+      priv->arrow_box.y2 = arrow_box.y1 + arrow_height;
     }
   else
     {
@@ -419,14 +412,16 @@ mx_tooltip_allocate (ClutterActor          *self,
 static void
 mx_tooltip_paint (ClutterActor *self)
 {
-  gfloat width, height;
-  ClutterActor *arrow_image;
-
   MxTooltipPrivate *priv = MX_TOOLTIP (self)->priv;
+  gfloat width, height;
+  CoglHandle arrow_image;
+  guint alpha;
 
   clutter_actor_get_size (self, &width, &height);
   width = (gint)(width / 2.f);
   height = (gint)(height / 2.f);
+
+  alpha = clutter_actor_get_paint_opacity (self);
 
   cogl_push_matrix ();
   cogl_translate (priv->text_allocation.x1,
@@ -435,7 +430,7 @@ mx_tooltip_paint (ClutterActor *self)
 
   if (priv->border_image_texture)
     mx_texture_frame_paint_texture (priv->border_image_texture,
-                                    clutter_actor_get_paint_opacity (self),
+                                    alpha,
                                     priv->border_image->top,
                                     priv->border_image->right,
                                     priv->border_image->bottom,
@@ -444,9 +439,14 @@ mx_tooltip_paint (ClutterActor *self)
                                     priv->text_allocation.y2 - priv->text_allocation.y1);
   cogl_pop_matrix ();
 
-  arrow_image = mx_widget_get_background_image (MX_WIDGET (self));
+  arrow_image = mx_widget_get_background_texture (MX_WIDGET (self));
   if (arrow_image && !priv->actor_below)
-    clutter_actor_paint (arrow_image);
+    {
+      mx_texture_frame_paint_background (arrow_image, alpha,
+                                         priv->arrow_box.x1, priv->arrow_box.y1,
+                                         priv->arrow_box.x2 - priv->arrow_box.x1,
+                                         priv->arrow_box.y2 - priv->arrow_box.y1);
+    }
 
   clutter_actor_paint (priv->label);
 }
