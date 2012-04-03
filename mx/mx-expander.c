@@ -138,13 +138,13 @@ mx_expander_dispose (GObject *object)
 
   if (priv->label)
     {
-      clutter_actor_unparent (priv->label);
+      clutter_actor_remove_child (CLUTTER_ACTOR (object), priv->label);
       priv->label = NULL;
     }
 
   if (priv->arrow)
     {
-      clutter_actor_unparent (priv->arrow);
+      clutter_actor_remove_child (CLUTTER_ACTOR (object), priv->arrow);
       priv->arrow = NULL;
     }
 
@@ -631,10 +631,10 @@ mx_expander_init (MxExpander *self)
   MxExpanderPrivate *priv = self->priv = GET_PRIVATE (self);
 
   priv->label = clutter_text_new ();
-  clutter_actor_set_parent (priv->label, (ClutterActor *) self);
+  clutter_actor_add_child ((ClutterActor *) self, priv->label);
 
   priv->arrow = (ClutterActor *) mx_icon_new ();
-  clutter_actor_set_parent (priv->arrow, (ClutterActor *) self);
+  clutter_actor_add_child ((ClutterActor*) self, priv->arrow);
   clutter_actor_set_name (priv->arrow, "mx-expander-arrow-closed");
 
   /* TODO: make this a style property */

@@ -956,10 +956,8 @@ mx_dialog_init (MxDialog *self)
   priv->button_group = mx_button_group_new ();
   priv->child_has_focus = TRUE;
 
-  clutter_actor_push_internal (actor);
-  clutter_actor_set_parent (priv->background, actor);
-  clutter_actor_set_parent (priv->button_box, actor);
-  clutter_actor_pop_internal (actor);
+  clutter_actor_add_child (actor, priv->background);
+  clutter_actor_add_child (actor, priv->button_box);
 
   g_signal_connect (priv->timeline, "completed",
                     G_CALLBACK (mx_dialog_completed_cb), self);
@@ -1032,9 +1030,7 @@ mx_dialog_set_transient_parent (MxDialog *dialog,
   g_return_if_fail (MX_IS_DIALOG (dialog));
   g_return_if_fail (CLUTTER_IS_ACTOR (actor));
 
-  clutter_actor_push_internal (actor);
-  clutter_actor_set_parent (CLUTTER_ACTOR (dialog), actor);
-  clutter_actor_pop_internal (actor);
+  clutter_actor_add_child (actor, CLUTTER_ACTOR (dialog));
 }
 
 static void
@@ -1085,9 +1081,7 @@ mx_dialog_show (ClutterActor *self)
           gint width, height;
 
           priv->blur = mx_offscreen_new ();
-          clutter_actor_push_internal (self);
-          clutter_actor_set_parent (priv->blur, self);
-          clutter_actor_pop_internal (self);
+          clutter_actor_add_child (self, priv->blur);
 
           mx_offscreen_set_child (MX_OFFSCREEN (priv->blur), parent);
           clutter_actor_set_shader (priv->blur, priv->shader);

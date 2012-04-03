@@ -412,7 +412,7 @@ mx_icon_update (MxIcon *icon)
                                         priv->icon_size);
 
       if (priv->icon_texture)
-        clutter_actor_set_parent (priv->icon_texture, CLUTTER_ACTOR (icon));
+        clutter_actor_add_child (CLUTTER_ACTOR (icon), priv->icon_texture);
     }
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (icon));
@@ -459,7 +459,7 @@ mx_icon_style_changed_cb (MxWidget *widget)
         priv->icon_texture = clutter_texture_new_from_file (content_image->uri,
                                                             &error);
       if (priv->icon_texture)
-        clutter_actor_set_parent (priv->icon_texture, CLUTTER_ACTOR (widget));
+        clutter_actor_add_child (CLUTTER_ACTOR (widget), priv->icon_texture);
 
       if (error)
         {

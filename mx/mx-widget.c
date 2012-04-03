@@ -286,19 +286,19 @@ mx_widget_dispose (GObject *gobject)
 
   if (priv->background_image)
     {
-      clutter_actor_unparent (priv->background_image);
+      clutter_actor_destroy (priv->background_image);
       priv->background_image = NULL;
     }
 
   if (priv->tooltip)
     {
-      clutter_actor_unparent (CLUTTER_ACTOR (priv->tooltip));
+      clutter_actor_destroy (CLUTTER_ACTOR (priv->tooltip));
       priv->tooltip = NULL;
     }
 
   if (priv->menu)
     {
-      clutter_actor_unparent (CLUTTER_ACTOR (priv->menu));
+      clutter_actor_destroy (CLUTTER_ACTOR (priv->menu));
       priv->menu = NULL;
     }
 
@@ -635,7 +635,7 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
   /* background-image property */
   if (priv->background_image)
     {
-      clutter_actor_unparent (priv->background_image);
+      clutter_actor_destroy (priv->background_image);
       priv->background_image = NULL;
     }
 
@@ -650,8 +650,8 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
 
           if (priv->background_image != NULL)
             {
-              clutter_actor_set_parent (priv->background_image,
-                                        CLUTTER_ACTOR (self));
+              clutter_actor_add_child (CLUTTER_ACTOR (self),
+                                       priv->background_image);
             }
           else
             g_warning ("Could not load %s", bg_file);
@@ -1342,7 +1342,7 @@ mx_widget_set_has_tooltip (MxWidget *widget,
       if (!priv->tooltip)
         {
           priv->tooltip = g_object_new (MX_TYPE_TOOLTIP, NULL);
-          clutter_actor_set_parent (CLUTTER_ACTOR (priv->tooltip), actor);
+          clutter_actor_add_child (actor, CLUTTER_ACTOR (priv->tooltip));
           if (mx_stylable_style_pseudo_class_contains (MX_STYLABLE (widget), "hover"))
             mx_widget_show_tooltip (widget);
         }
@@ -1351,7 +1351,7 @@ mx_widget_set_has_tooltip (MxWidget *widget,
     {
       if (priv->tooltip)
         {
-          clutter_actor_unparent (CLUTTER_ACTOR (priv->tooltip));
+          clutter_actor_destroy (CLUTTER_ACTOR (priv->tooltip));
           priv->tooltip = NULL;
         }
 
@@ -1537,14 +1537,14 @@ mx_widget_set_menu (MxWidget *widget,
 
   if (priv->menu)
     {
-      clutter_actor_unparent (CLUTTER_ACTOR (priv->menu));
+      clutter_actor_destroy (CLUTTER_ACTOR (priv->menu));
       priv->menu = NULL;
     }
 
   if (menu)
     {
       priv->menu = menu;
-      clutter_actor_set_parent (CLUTTER_ACTOR (menu), CLUTTER_ACTOR (widget));
+      clutter_actor_add_child (CLUTTER_ACTOR (widget), CLUTTER_ACTOR (menu));
     }
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (widget));

@@ -611,7 +611,7 @@ mx_label_init (MxLabel *label)
                               "ellipsize", PANGO_ELLIPSIZE_END,
                               NULL);
 
-  clutter_actor_set_parent (priv->label, CLUTTER_ACTOR (label));
+  clutter_actor_add_child (CLUTTER_ACTOR (label), priv->label);
 
   priv->fade_effect = mx_fade_effect_new ();
   mx_fade_effect_set_color (MX_FADE_EFFECT (priv->fade_effect), &opaque);

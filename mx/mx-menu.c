@@ -253,7 +253,7 @@ mx_menu_free_action_at (MxMenu   *menu,
   MxMenuChild *child = &g_array_index (priv->children, MxMenuChild,
                                         index);
 
-  clutter_actor_unparent (CLUTTER_ACTOR (child->box));
+  clutter_actor_remove_child (CLUTTER_ACTOR (menu), CLUTTER_ACTOR (child->box));
   g_object_unref (child->action);
 
   if (remove_action)
@@ -826,15 +826,15 @@ mx_menu_init (MxMenu *self)
   priv->last_shown_id = 0;
 
   priv->up_button = mx_button_new_with_label("/\\");
-  clutter_actor_set_parent (CLUTTER_ACTOR (priv->up_button),
-                            CLUTTER_ACTOR (self));
+  clutter_actor_add_child (CLUTTER_ACTOR (self),
+                           CLUTTER_ACTOR (priv->up_button));
   g_signal_connect (priv->up_button, "enter-event",
                     G_CALLBACK(mx_menu_up_enter), self);
   g_signal_connect (priv->up_button, "leave-event",
                     G_CALLBACK(mx_menu_up_leave), self);
   priv->down_button = mx_button_new_with_label ("\\/");
-  clutter_actor_set_parent (CLUTTER_ACTOR (priv->down_button),
-                            CLUTTER_ACTOR (self));
+  clutter_actor_add_child (CLUTTER_ACTOR (self),
+                           CLUTTER_ACTOR (priv->down_button));
   g_signal_connect (priv->down_button, "enter-event",
                     G_CALLBACK(mx_menu_down_enter), self);
   g_signal_connect (priv->down_button, "leave-event",
@@ -934,8 +934,7 @@ mx_menu_add_action (MxMenu   *menu,
                     G_CALLBACK (mx_menu_button_clicked_cb), action);
   g_signal_connect (child.box, "enter-event",
                     G_CALLBACK (mx_menu_button_enter_event_cb), menu);
-  clutter_actor_set_parent (CLUTTER_ACTOR (child.box),
-                            CLUTTER_ACTOR (menu));
+  clutter_actor_add_child (CLUTTER_ACTOR (menu), CLUTTER_ACTOR (child.box));
 
   g_array_append_val (priv->children, child);
 

@@ -570,7 +570,7 @@ mx_toggle_init (MxToggle *self)
 
   self->priv->handle = g_object_new (MX_TYPE_TOGGLE_HANDLE,
                                      "reactive", TRUE, NULL);
-  clutter_actor_set_parent (self->priv->handle, CLUTTER_ACTOR (self));
+  clutter_actor_add_child (CLUTTER_ACTOR (self), self->priv->handle);
   g_object_bind_property (self, "disabled", self->priv->handle, "disabled",
                           G_BINDING_SYNC_CREATE);
 

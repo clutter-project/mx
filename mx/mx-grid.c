@@ -1035,14 +1035,12 @@ mx_grid_real_add (ClutterContainer *container,
 
   g_object_ref (actor);
 
-  clutter_actor_set_parent (actor, CLUTTER_ACTOR (container));
+  clutter_actor_add_child (CLUTTER_ACTOR (container), actor);
 
   data = g_slice_alloc0 (sizeof (MxGridActorData));
 
   priv->list = g_list_append (priv->list, actor);
   g_hash_table_insert (priv->hash_table, actor, data);
-
-  g_signal_emit_by_name (container, "actor-added", actor);
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
 
@@ -1060,11 +1058,9 @@ mx_grid_real_remove (ClutterContainer *container,
 
   if (g_hash_table_remove (priv->hash_table, actor))
     {
-      clutter_actor_unparent (actor);
+      clutter_actor_remove_child (CLUTTER_ACTOR (container), actor);
 
       clutter_actor_queue_relayout (CLUTTER_ACTOR (layout));
-
-      g_signal_emit_by_name (container, "actor-removed", actor);
     }
   priv->list = g_list_remove (priv->list, actor);
 

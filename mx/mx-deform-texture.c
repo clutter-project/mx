@@ -169,13 +169,13 @@ mx_deform_texture_dispose (GObject *object)
 
   if (priv->front)
     {
-      clutter_actor_unparent (priv->front);
+      clutter_actor_remove_child (CLUTTER_ACTOR (object), priv->front);
       priv->front = NULL;
     }
 
   if (priv->back)
     {
-      clutter_actor_unparent (priv->back);
+      clutter_actor_remove_child (CLUTTER_ACTOR (object), priv->back);
       priv->back = NULL;
     }
 
@@ -620,14 +620,14 @@ mx_deform_texture_set_textures (MxDeformTexture *texture,
     {
       if (priv->front)
         {
-          clutter_actor_unparent (priv->front);
+          clutter_actor_remove_child (CLUTTER_ACTOR (texture), priv->front);
           priv->front = NULL;
         }
 
       if (front)
         {
           priv->front = (ClutterActor *)front;
-          clutter_actor_set_parent (priv->front, CLUTTER_ACTOR (texture));
+          clutter_actor_add_child (CLUTTER_ACTOR (texture), priv->front);
         }
 
       g_object_notify (G_OBJECT (texture), "front");
@@ -637,14 +637,14 @@ mx_deform_texture_set_textures (MxDeformTexture *texture,
     {
       if (priv->back)
         {
-          clutter_actor_unparent (priv->back);
+          clutter_actor_remove_child (CLUTTER_ACTOR (texture), priv->back);
           priv->back = NULL;
         }
 
       if (back)
         {
           priv->back = (ClutterActor *)back;
-          clutter_actor_set_parent (priv->back, CLUTTER_ACTOR (texture));
+          clutter_actor_add_child (CLUTTER_ACTOR (texture), priv->back);
         }
 
       g_object_notify (G_OBJECT (texture), "back");

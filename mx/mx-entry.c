@@ -1401,9 +1401,7 @@ mx_entry_init (MxEntry *entry)
 
   priv->spacing = 6.0f;
 
-  clutter_actor_push_internal (CLUTTER_ACTOR (entry));
-  clutter_actor_set_parent (priv->entry, CLUTTER_ACTOR (entry));
-  clutter_actor_pop_internal (CLUTTER_ACTOR (entry));
+  clutter_actor_add_child (CLUTTER_ACTOR (entry), priv->entry);
 
   clutter_actor_set_reactive ((ClutterActor *) entry, TRUE);
 
@@ -1847,7 +1845,7 @@ _mx_entry_set_icon_from_file (MxEntry       *entry,
       g_signal_handlers_disconnect_by_func (*icon,
                                             _mx_entry_icon_leave_cb,
                                             entry);
-      clutter_actor_unparent (*icon);
+      clutter_actor_remove_child (CLUTTER_ACTOR (entry), *icon);
       *icon = NULL;
     }
 
@@ -1866,9 +1864,7 @@ _mx_entry_set_icon_from_file (MxEntry       *entry,
 
       clutter_actor_set_reactive (*icon, TRUE);
 
-      clutter_actor_push_internal (CLUTTER_ACTOR (entry));
-      clutter_actor_set_parent (*icon, CLUTTER_ACTOR (entry));
-      clutter_actor_pop_internal (CLUTTER_ACTOR (entry));
+      clutter_actor_add_child (CLUTTER_ACTOR (entry), *icon);
 
       g_signal_connect (*icon, "button-release-event",
                         G_CALLBACK (_mx_entry_icon_press_cb), entry);
@@ -1999,8 +1995,8 @@ mx_entry_set_secondary_icon_tooltip_text (MxEntry     *entry,
                                                   NULL);
 
       mx_tooltip_set_text (priv->secondary_icon_tooltip, text);
-      clutter_actor_set_parent (CLUTTER_ACTOR (priv->secondary_icon_tooltip),
-                                CLUTTER_ACTOR (entry));
+      clutter_actor_add_child (CLUTTER_ACTOR (entry),
+                               CLUTTER_ACTOR (priv->secondary_icon_tooltip));
     }
   else
     {
@@ -2032,8 +2028,8 @@ mx_entry_set_primary_icon_tooltip_text (MxEntry *entry,
                                                   NULL);
 
       mx_tooltip_set_text (priv->primary_icon_tooltip, text);
-      clutter_actor_set_parent (CLUTTER_ACTOR (priv->primary_icon_tooltip),
-                                CLUTTER_ACTOR (entry));
+      clutter_actor_add_child (CLUTTER_ACTOR (entry),
+                               CLUTTER_ACTOR (priv->primary_icon_tooltip));
 
 
     }

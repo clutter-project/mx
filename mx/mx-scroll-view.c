@@ -165,13 +165,13 @@ mx_scroll_view_dispose (GObject *object)
 
   if (priv->vscroll)
     {
-      clutter_actor_unparent (priv->vscroll);
+      clutter_actor_remove_child (CLUTTER_ACTOR (object), priv->vscroll);
       priv->vscroll = NULL;
     }
 
   if (priv->hscroll)
     {
-      clutter_actor_unparent (priv->hscroll);
+      clutter_actor_remove_child (CLUTTER_ACTOR (object), priv->hscroll);
       priv->hscroll = NULL;
     }
 
@@ -880,8 +880,8 @@ mx_scroll_view_init (MxScrollView *self)
 
   priv->scroll_policy = MX_SCROLL_POLICY_BOTH;
 
-  clutter_actor_set_parent (priv->hscroll, CLUTTER_ACTOR (self));
-  clutter_actor_set_parent (priv->vscroll, CLUTTER_ACTOR (self));
+  clutter_actor_add_child (CLUTTER_ACTOR (self), priv->hscroll);
+  clutter_actor_add_child (CLUTTER_ACTOR (self), priv->vscroll);
   clutter_actor_hide (priv->hscroll);
   clutter_actor_hide (priv->vscroll);
 
@@ -900,6 +900,9 @@ mx_scroll_view_actor_added (ClutterContainer *container,
 {
   MxScrollView *self = MX_SCROLL_VIEW (container);
   MxScrollViewPrivate *priv = self->priv;
+
+  if (MX_IS_SCROLL_BAR (actor))
+    return;
 
   if (MX_IS_SCROLLABLE (actor))
     {

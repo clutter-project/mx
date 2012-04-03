@@ -572,8 +572,8 @@ mx_tooltip_init (MxTooltip *tooltip)
 
   tooltip->priv->tip_area = NULL;
 
-  clutter_actor_set_parent (CLUTTER_ACTOR (tooltip->priv->label),
-                            CLUTTER_ACTOR (tooltip));
+  clutter_actor_add_child (CLUTTER_ACTOR (tooltip),
+                           CLUTTER_ACTOR (tooltip->priv->label));
 
   g_object_set (tooltip, "show-on-set-parent", FALSE, NULL);
 

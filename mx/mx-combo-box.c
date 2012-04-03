@@ -620,7 +620,7 @@ mx_combo_box_style_changed (MxComboBox *combo, MxStyleChangedFlags flags)
       priv->marker = (ClutterActor *)
         mx_texture_cache_get_texture (cache, marker_filename->uri);
       if (priv->marker)
-        clutter_actor_set_parent (priv->marker, CLUTTER_ACTOR (combo));
+        clutter_actor_add_child (CLUTTER_ACTOR (combo), priv->marker);
 
       g_boxed_free (MX_TYPE_BORDER_IMAGE, marker_filename);
     }
@@ -699,7 +699,7 @@ mx_combo_box_init (MxComboBox *self)
   priv->spacing = 8;
 
   priv->label = clutter_text_new ();
-  clutter_actor_set_parent (priv->label, (ClutterActor*) self);
+  clutter_actor_add_child ((ClutterActor*) self, priv->label);
 
   menu = mx_menu_new ();
   mx_widget_set_menu (MX_WIDGET (self), MX_MENU (menu));
@@ -974,7 +974,7 @@ mx_combo_box_set_active_icon_name (MxComboBox  *box,
             {
               priv->icon = mx_icon_new ();
               mx_icon_set_icon_name (MX_ICON (priv->icon), icon_name);
-              clutter_actor_set_parent (priv->icon, CLUTTER_ACTOR (box));
+              clutter_actor_add_child (CLUTTER_ACTOR (box), priv->icon);
             }
         }
     }
@@ -1056,7 +1056,7 @@ mx_combo_box_set_index (MxComboBox *box,
 
   if (priv->icon)
     {
-      clutter_actor_unparent (priv->icon);
+      clutter_actor_destroy (priv->icon);
       priv->icon = NULL;
     }
 
@@ -1070,7 +1070,7 @@ mx_combo_box_set_index (MxComboBox *box,
         {
           priv->icon = mx_icon_new ();
           mx_icon_set_icon_name (MX_ICON (priv->icon), icon_name);
-          clutter_actor_set_parent (priv->icon, CLUTTER_ACTOR (box));
+          clutter_actor_add_child (CLUTTER_ACTOR (box), priv->icon);
         }
     }
 

@@ -203,7 +203,7 @@ mx_toolbar_dispose (GObject *object)
 
   if (priv->close_button)
     {
-      clutter_actor_unparent (priv->close_button);
+      clutter_actor_destroy (priv->close_button);
       priv->close_button = NULL;
     }
 }
@@ -546,7 +546,7 @@ mx_toolbar_set_has_close_button (MxToolbar *toolbar,
         {
           if (priv->close_button)
             {
-              clutter_actor_unparent (priv->close_button);
+              clutter_actor_destroy (priv->close_button);
               priv->close_button = NULL;
             }
         }
@@ -554,8 +554,8 @@ mx_toolbar_set_has_close_button (MxToolbar *toolbar,
         {
           priv->close_button = mx_button_new ();
           clutter_actor_set_name (priv->close_button, "close-button");
-          clutter_actor_set_parent (priv->close_button,
-                                    CLUTTER_ACTOR (toolbar));
+          clutter_actor_add_child (CLUTTER_ACTOR (toolbar),
+                                   priv->close_button);
           g_signal_connect (priv->close_button, "clicked",
                             G_CALLBACK (close_button_click_cb), toolbar);
           mx_stylable_style_changed (MX_STYLABLE (priv->close_button),

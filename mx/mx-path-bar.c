@@ -286,13 +286,15 @@ mx_path_bar_dispose (GObject *object)
 
   while (priv->crumbs)
     {
-      clutter_actor_unparent ((ClutterActor *)priv->crumbs->data);
+      clutter_actor_remove_child (CLUTTER_ACTOR (object),
+                                  CLUTTER_ACTOR (priv->crumbs->data));
       priv->crumbs = g_list_delete_link (priv->crumbs, priv->crumbs);
     }
 
   if (priv->entry)
     {
-      clutter_actor_unparent (priv->entry);
+      clutter_actor_remove_child (CLUTTER_ACTOR (object),
+                                  priv->entry);
       priv->entry = NULL;
       priv->editable = FALSE;
     }
@@ -695,7 +697,7 @@ mx_path_bar_push (MxPathBar *bar, const gchar *name)
     mx_path_bar_set_text (bar, "");
 
   crumb = mx_path_bar_button_new (name);
-  clutter_actor_set_parent (crumb, CLUTTER_ACTOR (bar));
+  clutter_actor_add_child (CLUTTER_ACTOR (bar), crumb);
 
   priv->crumbs = g_list_insert (priv->crumbs, crumb, priv->current_level);
 
@@ -735,7 +737,7 @@ mx_path_bar_pop_completed_cb (ClutterAnimation *animation,
   MxPathBarPrivate *priv = self->priv;
 
   priv->crumbs = g_list_remove (priv->crumbs, crumb);
-  clutter_actor_unparent (crumb);
+  clutter_actor_destroy (crumb);
 }
 
 gint
@@ -814,7 +816,7 @@ mx_path_bar_entry_faded_cb (ClutterAnimation *animation,
 {
   MxPathBarPrivate *priv = bar->priv;
 
-  clutter_actor_unparent (priv->entry);
+  clutter_actor_destroy (priv->entry);
   priv->entry = NULL;
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (bar));
@@ -860,7 +862,7 @@ mx_path_bar_set_editable (MxPathBar *bar, gboolean editable)
       else
         {
           priv->entry = mx_entry_new ();
-          clutter_actor_set_parent (priv->entry, CLUTTER_ACTOR (bar));
+          clutter_actor_add_child (CLUTTER_ACTOR (bar), priv->entry);
           if (CLUTTER_ACTOR_IS_VISIBLE (priv->entry))
             clutter_actor_set_opacity (priv->entry, 0x00);
         }

@@ -710,13 +710,13 @@ mx_slider_dispose (GObject *object)
 
   if (priv->trough_bg)
     {
-      clutter_actor_unparent (priv->trough_bg);
+      clutter_actor_destroy (priv->trough_bg);
       priv->trough_bg = NULL;
     }
 
   if (priv->fill)
     {
-      clutter_actor_unparent (priv->fill);
+      clutter_actor_destroy (priv->fill);
       priv->fill = NULL;
     }
 
@@ -724,13 +724,13 @@ mx_slider_dispose (GObject *object)
    * trough */
   if (priv->handle)
     {
-      clutter_actor_unparent (priv->handle);
+      clutter_actor_destroy (priv->handle);
       priv->handle = NULL;
     }
 
   if (priv->trough)
     {
-      clutter_actor_unparent (priv->trough);
+      clutter_actor_destroy (priv->trough);
       priv->trough = NULL;
     }
 
@@ -898,7 +898,7 @@ mx_slider_init (MxSlider *self)
   priv->trough_bg = CLUTTER_ACTOR (_mx_progress_bar_fill_new ());
   clutter_actor_set_name (priv->trough_bg, "trough-background");
   clutter_actor_set_reactive (priv->trough_bg, TRUE);
-  clutter_actor_set_parent (priv->trough_bg, CLUTTER_ACTOR (self));
+  clutter_actor_add_child (CLUTTER_ACTOR (self), priv->trough_bg);
   g_signal_connect (priv->trough_bg, "button-press-event",
                     G_CALLBACK (on_trough_bg_button_press_event), self);
   g_signal_connect (priv->trough_bg, "button-release-event",
@@ -908,21 +908,21 @@ mx_slider_init (MxSlider *self)
 
   priv->fill = CLUTTER_ACTOR (_mx_progress_bar_fill_new ());
   clutter_actor_set_name (priv->fill, "fill");
-  clutter_actor_set_parent (priv->fill, CLUTTER_ACTOR (self));
+  clutter_actor_add_child (CLUTTER_ACTOR (self), priv->fill);
 
   priv->trough = CLUTTER_ACTOR (mx_frame_new ());
   clutter_actor_set_name (priv->trough, "trough");
-  clutter_actor_set_parent (priv->trough, CLUTTER_ACTOR (self));
+  clutter_actor_add_child (CLUTTER_ACTOR (self), priv->trough);
 
   self->priv->handle = CLUTTER_ACTOR (mx_button_new ());
   clutter_actor_set_name (priv->handle, "handle");
-  clutter_actor_set_parent (priv->handle, CLUTTER_ACTOR (self));
+  clutter_actor_add_child (CLUTTER_ACTOR (self), priv->handle);
   g_signal_connect (priv->handle, "button-press-event",
                     G_CALLBACK (on_handle_button_press_event), self);
 
   priv->buffer = _mx_progress_bar_fill_new ();
   clutter_actor_set_name (priv->buffer, "buffer");
-  clutter_actor_set_parent (priv->buffer, CLUTTER_ACTOR (self));
+  clutter_actor_add_child (CLUTTER_ACTOR (self), priv->buffer);
 
   g_signal_connect (self, "notify::disabled",
                     G_CALLBACK (mx_slider_disable_notify_cb), NULL);

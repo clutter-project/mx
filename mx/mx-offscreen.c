@@ -895,9 +895,8 @@ mx_offscreen_set_child (MxOffscreen *offscreen, ClutterActor *actor)
       if (clutter_actor_get_parent (priv->child) ==
           (ClutterActor *)offscreen)
         {
-          clutter_actor_unparent (priv->child);
+          clutter_actor_remove_child (CLUTTER_ACTOR (offscreen), priv->child);
           priv->child = NULL;
-          g_signal_emit_by_name (offscreen, "actor-removed", old_child);
         }
       else
         {
@@ -924,8 +923,7 @@ mx_offscreen_set_child (MxOffscreen *offscreen, ClutterActor *actor)
       if (!clutter_actor_get_parent (actor) &&
           !CLUTTER_IS_STAGE (actor))
         {
-          clutter_actor_set_parent (actor, CLUTTER_ACTOR (offscreen));
-          g_signal_emit_by_name (offscreen, "actor-added", actor);
+          clutter_actor_add_child (CLUTTER_ACTOR (offscreen), actor);
         }
       else
         {

@@ -227,14 +227,15 @@ mx_button_style_changed (MxWidget *widget)
 
       if (priv->content_image)
         {
-          clutter_actor_unparent (priv->content_image);
+          clutter_actor_remove_child (CLUTTER_ACTOR (widget),
+                                      priv->content_image);
         }
 
       priv->content_image = clutter_texture_new_from_file (content_image->uri,
                                                            &err);
 
       if (priv->content_image)
-        clutter_actor_set_parent (priv->content_image, CLUTTER_ACTOR (widget));
+        clutter_actor_add_child (CLUTTER_ACTOR (widget), priv->content_image);
 
       if (err)
         {
@@ -252,7 +253,8 @@ mx_button_style_changed (MxWidget *widget)
       /* remove any previous content image */
       if (priv->content_image)
         {
-          clutter_actor_unparent (priv->content_image);
+          clutter_actor_remove_child (CLUTTER_ACTOR (widget),
+                                      priv->content_image);
           priv->content_image = NULL;
         }
 
@@ -566,7 +568,8 @@ mx_button_dispose (GObject *gobject)
 
   if (priv->content_image)
     {
-      clutter_actor_unparent (priv->content_image);
+      clutter_actor_remove_child (CLUTTER_ACTOR (gobject),
+                                  priv->content_image);
       priv->content_image = NULL;
     }
 

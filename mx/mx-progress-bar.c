@@ -98,7 +98,7 @@ mx_progress_bar_dispose (GObject *object)
 
   if (priv->fill)
     {
-      clutter_actor_unparent (CLUTTER_ACTOR (priv->fill));
+      clutter_actor_destroy (CLUTTER_ACTOR (priv->fill));
       priv->fill = NULL;
     }
 
@@ -284,7 +284,7 @@ mx_progress_bar_init (MxProgressBar *self)
   priv->fill = g_object_new (MX_TYPE_PROGRESS_BAR_FILL,
                              "clip-to-allocation", TRUE,
                              NULL);
-  clutter_actor_set_parent (priv->fill, CLUTTER_ACTOR (self));
+  clutter_actor_add_child (CLUTTER_ACTOR (self), priv->fill);
 }
 
 /**
