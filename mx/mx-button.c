@@ -722,9 +722,6 @@ mx_button_pick (ClutterActor *actor, const ClutterColor *color)
 
   if (priv->content_image)
     clutter_actor_paint (priv->content_image);
-  else
-    clutter_actor_paint (mx_bin_get_child (MX_BIN (actor)));
-    /* CLUTTER_ACTOR_CLASS (mx_button_parent_class)->paint (actor); */
 }
 
 static void
