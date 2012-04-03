@@ -39,11 +39,13 @@ G_BEGIN_DECLS
 
 #define MX_TYPE_BORDER_IMAGE          (mx_border_image_get_type ())
 #define MX_TYPE_PADDING               (mx_padding_get_type ())
+#define MX_TYPE_TEXT_SHADOW           (mx_text_shadow_get_type ())
 
 #define MX_PARAM_TRANSLATEABLE 1 << 8
 
 typedef struct _MxBorderImage MxBorderImage;
 typedef struct _MxPadding     MxPadding;
+typedef struct _MxTextShadow  MxTextShadow;
 
 
 GType mx_border_image_get_type (void) G_GNUC_CONST;
@@ -93,6 +95,26 @@ struct _MxPadding
 };
 
 GType mx_padding_get_type (void) G_GNUC_CONST;
+
+/**
+ * MxTextShadow:
+ *
+ * @h_offset: horizontal shadow offset
+ * @v_offset: vertical shadow offset
+ * @blur: blur distance
+ * @color: shadow color
+ *
+ * Properties of a text shadow
+ */
+struct _MxTextShadow
+{
+  gfloat h_offset;
+  gfloat v_offset;
+  gfloat blur;
+  ClutterColor color;
+};
+
+GType mx_text_shadow_get_type (void) G_GNUC_CONST;
 
 
 /**

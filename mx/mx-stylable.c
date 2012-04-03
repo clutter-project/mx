@@ -47,6 +47,9 @@
 #include "mx-stylable.h"
 #include "mx-settings.h"
 
+
+#include <cogl-pango/cogl-pango.h>
+
 enum
 {
   STYLE_CHANGED,
@@ -1120,6 +1123,37 @@ mx_stylable_connect_change_notifiers (MxStylable *stylable)
 
 }
 
+static void
+stylable_destroy_text_shadow (MxTextShadow *text_shadow)
+{
+  g_boxed_free (MX_TYPE_TEXT_SHADOW, text_shadow);
+}
+
+void
+stylable_text_shadow_paint (ClutterText  *text,
+                            MxTextShadow *text_shadow)
+{
+  PangoLayout *layout;
+  CoglColor color;
+  ClutterActorBox box;
+
+  cogl_color_init_from_4ub (&color,
+                            text_shadow->color.red,
+                            text_shadow->color.green,
+                            text_shadow->color.blue,
+                            text_shadow->color.alpha);
+
+  /* pango layout */
+  layout = clutter_text_get_layout (text);
+
+
+  /* shadow position */
+  clutter_actor_get_allocation_box (CLUTTER_ACTOR (text), &box);
+
+  cogl_pango_render_layout (layout,text_shadow->h_offset,
+                            text_shadow->v_offset, &color, 0);
+}
+
 void
 mx_stylable_apply_clutter_text_attributes (MxStylable  *stylable,
                                            ClutterText *text)
@@ -1131,14 +1165,55 @@ mx_stylable_apply_clutter_text_attributes (MxStylable  *stylable,
   PangoWeight weight;
   PangoFontDescription *descr;
   gchar *descr_string;
+  MxTextShadow *text_shadow;
+  MxTextShadow *old_text_shadow;
+
+  static GQuark stylable_text_shadow_quark = 0;
+
+  if (!stylable_text_shadow_quark)
+   stylable_text_shadow_quark = g_quark_from_static_string ("stylable-text-shadow");
+
 
   mx_stylable_get (stylable,
                    "color", &real_color,
                    "font-family", &font_name,
                    "font-size", &font_size,
                    "font-weight", &font_weight,
+                   "text-shadow", &text_shadow,
                    NULL);
 
+
+  old_text_shadow = g_object_get_qdata (G_OBJECT (text),
+                                        stylable_text_shadow_quark);
+
+  if (text_shadow)
+    {
+      if (!old_text_shadow)
+        {
+          g_signal_connect (text, "paint",
+                            G_CALLBACK (stylable_text_shadow_paint),
+                            text_shadow);
+
+          g_object_set_qdata_full (G_OBJECT (text), stylable_text_shadow_quark,
+                                   text_shadow,
+                                   (GDestroyNotify) stylable_destroy_text_shadow);
+        }
+      else
+        {
+          *old_text_shadow = *text_shadow;
+          g_boxed_free (MX_TYPE_TEXT_SHADOW, text_shadow);
+        }
+    }
+  else
+    {
+      if (old_text_shadow)
+        {
+          g_signal_handlers_disconnect_by_func (text,
+                                                stylable_text_shadow_paint,
+                                                old_text_shadow);
+          g_object_set_qdata (G_OBJECT (text), stylable_text_shadow_quark, NULL);
+        }
+    }
 
   /* Create a description, we will convert to a string and set on the
    * ClutterText. When Clutter gets API to set the description directly this

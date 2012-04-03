@@ -50,7 +50,6 @@ void mx_allocate_align_fill (ClutterActor    *child,
 
 void mx_actor_box_clamp_to_pixels (ClutterActorBox *box);
 
-
 G_END_DECLS
 
 #endif /* __MX_UTILS_H__ */

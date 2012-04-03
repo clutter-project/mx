@@ -1214,6 +1214,13 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                   G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
 
+      pspec = g_param_spec_boxed ("text-shadow",
+                                  "Text Shadow",
+                                  "Text Shadow",
+                                  MX_TYPE_TEXT_SHADOW,
+                                  G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
+
       pspec = g_param_spec_uint ("x-mx-border-image-transition-duration",
                                  "background transition duration",
                                  "Length of the cross fade when changing images"

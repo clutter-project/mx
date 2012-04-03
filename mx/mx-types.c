@@ -276,3 +276,103 @@ mx_border_image_get_type (void)
 
   return our_type;
 }
+
+
+/*** MxTextShadow *************************************************************/
+
+static MxTextShadow *
+mx_text_shadow_copy (const MxTextShadow *text_shadow)
+{
+  MxTextShadow *copy;
+
+  g_return_val_if_fail (text_shadow != NULL, NULL);
+
+  copy = g_slice_new0 (MxTextShadow);
+  *copy = *text_shadow;
+
+  return copy;
+}
+
+static void
+mx_text_shadow_free (MxTextShadow *text_shadow)
+{
+  g_slice_free (MxTextShadow, text_shadow);
+}
+
+
+void
+mx_text_shadow_from_string (const GValue *src,
+                            GValue       *dest)
+{
+  const gchar *str;
+  gchar **strv;
+  MxTextShadow text_shadow = { 0, };
+  gint n_tokens;
+
+ /* text-shadow: h-shadow v-shadow blur color; */
+
+  str = g_value_get_string (src);
+
+  /* initialise the colour */
+  text_shadow.color.alpha = 0xff;
+
+  /* empty value */
+  if (!str)
+    {
+      g_value_set_boxed (dest, &text_shadow);
+      return;
+    }
+
+  /* tokenize the string */
+  strv = g_strsplit (str, " ", 0);
+  if (!strv)
+    {
+      g_value_set_boxed (dest, &text_shadow);
+      return;
+    }
+
+  n_tokens = g_strv_length (strv);
+
+  if (n_tokens < 2)
+    {
+      g_strfreev (strv);
+      g_value_set_boxed (dest, &text_shadow);
+      return;
+    }
+
+  /* the first two values are mandatory */
+  text_shadow.h_offset = atoi (strv[0]);
+  text_shadow.v_offset = atoi (strv[1]);
+
+  if (n_tokens == 3)
+    {
+      /* the third parameter could be either blur or a colour */
+      if (!clutter_color_from_string (&text_shadow.color, strv[2]))
+        text_shadow.blur = atoi (strv[2]);
+    }
+  else if (n_tokens == 4)
+    {
+      clutter_color_from_string (&text_shadow.color, strv[3]);
+      text_shadow.blur = atoi (strv[2]);
+    }
+
+  g_strfreev (strv);
+
+  g_value_set_boxed (dest, &text_shadow);
+}
+
+GType
+mx_text_shadow_get_type (void)
+{
+  static GType our_type = 0;
+
+  if (G_UNLIKELY (our_type == 0))
+    our_type = g_boxed_type_register_static (g_intern_static_string ("MxTextShadow"),
+                                             (GBoxedCopyFunc) mx_text_shadow_copy,
+                                             (GBoxedFreeFunc) mx_text_shadow_free);
+
+  g_value_register_transform_func (G_TYPE_STRING, our_type,
+                                   mx_text_shadow_from_string);
+
+  return our_type;
+}
