@@ -1156,7 +1156,7 @@ stylable_destroy_text_shadow (MxTextShadow *text_shadow)
   g_boxed_free (MX_TYPE_TEXT_SHADOW, text_shadow);
 }
 
-void
+static void
 stylable_text_shadow_paint (ClutterText  *text,
                             MxTextShadow *text_shadow)
 {
