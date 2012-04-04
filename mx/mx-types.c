@@ -300,7 +300,7 @@ mx_text_shadow_free (MxTextShadow *text_shadow)
 }
 
 
-void
+static void
 mx_text_shadow_from_string (const GValue *src,
                             GValue       *dest)
 {
