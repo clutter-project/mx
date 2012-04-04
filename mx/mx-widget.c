@@ -267,6 +267,8 @@ mx_widget_dispose (GObject *gobject)
   MxWidget *actor = MX_WIDGET (gobject);
   MxWidgetPrivate *priv = MX_WIDGET (actor)->priv;
 
+  mx_stylable_disconnect_change_notifiers (MX_STYLABLE (gobject));
+
   if (priv->style)
     {
       g_object_unref (priv->style);

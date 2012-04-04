@@ -131,6 +131,7 @@ void         mx_stylable_set_style_pseudo_class (MxStylable  *stylable,
 
 void mx_stylable_style_changed (MxStylable *stylable, MxStyleChangedFlags flags);
 void mx_stylable_connect_change_notifiers (MxStylable *stylable);
+void mx_stylable_disconnect_change_notifiers (MxStylable *stylable);
 
 /* utilities */
 void mx_stylable_apply_clutter_text_attributes (MxStylable  *stylable,

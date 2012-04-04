@@ -1140,6 +1140,21 @@ mx_stylable_connect_change_notifiers (MxStylable *stylable)
 
 }
 
+void
+mx_stylable_disconnect_change_notifiers (MxStylable *stylable)
+{
+  g_return_if_fail (CLUTTER_IS_ACTOR (stylable));
+
+  g_return_if_fail (MX_IS_STYLABLE (stylable));
+
+  g_signal_handlers_disconnect_by_func (stylable,
+                                        mx_stylable_property_changed_notify,
+                                        NULL);
+
+  g_signal_handlers_disconnect_by_func (stylable, mx_stylable_parent_set_notify,
+                                        NULL);
+}
+
 static void
 stylable_destroy_text_shadow (MxTextShadow *text_shadow)
 {
