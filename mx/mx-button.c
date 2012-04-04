@@ -607,12 +607,6 @@ mx_button_dispose (GObject *gobject)
 {
   MxButtonPrivate *priv = MX_BUTTON (gobject)->priv;
 
-  if (priv->hbox)
-    {
-      clutter_actor_destroy (priv->hbox);
-      priv->hbox = NULL;
-    }
-
   if (priv->action)
     {
       g_object_unref (priv->action);
