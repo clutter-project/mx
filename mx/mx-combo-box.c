@@ -623,6 +623,13 @@ mx_combo_box_class_init (MxComboBoxClass *klass)
 }
 
 static void
+mx_combo_box_disable_notify_cb (MxWidget *combo)
+{
+  clutter_actor_set_reactive (CLUTTER_ACTOR (combo),
+                              !mx_widget_get_disabled (combo));
+}
+
+static void
 mx_combo_box_init (MxComboBox *self)
 {
   MxComboBoxPrivate *priv;
@@ -646,6 +653,10 @@ mx_combo_box_init (MxComboBox *self)
                     G_CALLBACK (mx_combo_box_style_changed), NULL);
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
+
+
+  g_signal_connect (self, "notify::disabled",
+                    G_CALLBACK (mx_combo_box_disable_notify_cb), NULL);
 }
 
 static MxFocusable *
