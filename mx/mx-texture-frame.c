@@ -57,6 +57,7 @@ G_DEFINE_TYPE (MxTextureFrame, mx_texture_frame, CLUTTER_TYPE_ACTOR);
 struct _MxTextureFramePrivate
 {
   ClutterTexture *parent_texture;
+  CoglHandle      material;
 
   gfloat          top;
   gfloat          right;
@@ -132,27 +133,22 @@ mx_texture_frame_get_preferred_height (ClutterActor *self,
     }
 }
 
-void
-mx_texture_frame_paint_texture (CoglHandle  texture,
-                                guint8      opacity,
-                                gfloat      top,
-                                gfloat      right,
-                                gfloat      bottom,
-                                gfloat      left,
-                                gfloat      width,
-                                gfloat      height)
+static void
+mx_texture_frame_paint_texture_internal (CoglHandle  material,
+                                         CoglHandle  texture,
+                                         guint8      opacity,
+                                         gfloat      top,
+                                         gfloat      right,
+                                         gfloat      bottom,
+                                         gfloat      left,
+                                         gfloat      width,
+                                         gfloat      height)
 {
   gfloat tex_width, tex_height;
   gfloat ex, ey;
   gfloat tx1, ty1, tx2, ty2;
-  CoglHandle material;
 
-  /* setup the template material */
-  if (!template_material)
-    template_material = cogl_material_new ();
-
-  /* create the material and apply opacity */
-  material = cogl_material_copy (template_material);
+  /* apply opacity */
   cogl_material_set_color4ub (material, opacity, opacity, opacity, opacity);
 
   /* add the texture */
@@ -160,8 +156,6 @@ mx_texture_frame_paint_texture (CoglHandle  texture,
 
   /* set the source */
   cogl_set_source (material);
-
-
 
   tex_width  = cogl_texture_get_width (texture);
   tex_height = cogl_texture_get_height (texture);
@@ -251,6 +245,34 @@ mx_texture_frame_paint_texture (CoglHandle  texture,
 }
 
 void
+mx_texture_frame_paint_texture (CoglHandle  texture,
+                                guint8      opacity,
+                                gfloat      top,
+                                gfloat      right,
+                                gfloat      bottom,
+                                gfloat      left,
+                                gfloat      width,
+                                gfloat      height)
+{
+  CoglHandle material;
+
+  /* setup the template material */
+  if (!template_material)
+    template_material = cogl_material_new ();
+
+  /* create the material and apply opacity */
+  material = cogl_material_copy (template_material);
+
+  mx_texture_frame_paint_texture_internal (material, texture,
+                                           opacity,
+                                           top, right,
+                                           bottom, left,
+                                           width, height);
+
+  cogl_handle_unref (material);
+}
+
+void
 mx_texture_frame_paint_background (CoglHandle  texture,
                                    guint8      opacity,
                                    gfloat      x,
@@ -275,6 +297,8 @@ mx_texture_frame_paint_background (CoglHandle  texture,
   cogl_set_source (material);
 
   cogl_rectangle (x, y, x + width, y + height);
+
+  cogl_handle_unref (material);
 }
 
 static void
@@ -310,11 +334,13 @@ mx_texture_frame_paint (ClutterActor *self)
   width = box.x2 - box.x1;
   height = box.y2 - box.y1;
 
-
   opacity = clutter_actor_get_paint_opacity (self);
 
-  mx_texture_frame_paint_texture (cogl_texture, opacity, priv->top, priv->right,
-                                  priv->bottom, priv->left, width, height);
+  mx_texture_frame_paint_texture_internal (cogl_material, cogl_texture,
+                                           opacity,
+                                           priv->top, priv->right,
+                                           priv->bottom, priv->left,
+                                           width, height);
 }
 
 static inline void
@@ -465,6 +491,12 @@ mx_texture_frame_dispose (GObject *gobject)
       priv->parent_texture = NULL;
     }
 
+  if (priv->material)
+    {
+      cogl_handle_unref (priv->material);
+      priv->material = NULL;
+    }
+
   G_OBJECT_CLASS (mx_texture_frame_parent_class)->dispose (gobject);
 }
 
@@ -546,7 +578,16 @@ mx_texture_frame_class_init (MxTextureFrameClass *klass)
 static void
 mx_texture_frame_init (MxTextureFrame *self)
 {
-  self->priv = MX_TEXTURE_FRAME_GET_PRIVATE (self);
+  MxTextureFramePrivate *priv;
+
+  self->priv = priv = MX_TEXTURE_FRAME_GET_PRIVATE (self);
+
+  /* setup the template material */
+  if (!template_material)
+    template_material = cogl_material_new ();
+
+  /* create the material and apply opacity */
+  priv->material = cogl_material_copy (template_material);
 }
 
 /**
