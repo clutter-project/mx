@@ -512,7 +512,7 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
 {
   MxWidgetPrivate *priv = MX_WIDGET (self)->priv;
   MxBorderImage *border_image = NULL, *background_image = NULL;
-  MxTextureCache *texture_cache;
+  MxTextureCache *texture_cache = mx_texture_cache_get_default ();
   MxPadding *padding = NULL;
   gboolean relayout_needed = FALSE;
   gboolean has_changed = FALSE;
@@ -595,7 +595,6 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
 
       priv->border_image = NULL;
     }
-  texture_cache = mx_texture_cache_get_default ();
 
   /* apply the new border-image, as long as there is a valid URI */
   if (border_image_changed && border_image && border_image->uri)
@@ -628,7 +627,7 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
 
   /* check whether the background-image has changed */
   background_image_changed = !mx_border_image_equal (priv->mx_background_image,
-                                                 background_image);
+                                                     background_image);
 
   /* remove the old background-image if it has changed */
   if (background_image_changed && priv->background_image)
@@ -640,13 +639,12 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
 
       priv->background_image = NULL;
     }
-  texture_cache = mx_texture_cache_get_default ();
 
   /* apply the new background-image, as long as there is a valid URI */
   if (background_image_changed && background_image && background_image->uri)
     {
       priv->background_image = mx_texture_cache_get_cogl_texture (texture_cache,
-                                                              background_image->uri);
+                                                                  background_image->uri);
 
       has_changed = TRUE;
       relayout_needed = TRUE;
