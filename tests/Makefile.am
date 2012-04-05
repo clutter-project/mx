@@ -14,6 +14,7 @@ noinst_PROGRAMS = 			\
 	test-window 			\
 	test-widgets			\
 	test-containers			\
+	test-tooltips			\
 	$(NULL)
 
 test_widgets_SOURCES = test-widgets.c
