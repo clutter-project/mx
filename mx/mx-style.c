@@ -355,7 +355,7 @@ mx_style_transform_css_value (MxStyleSheetValue *css_value,
           g_value_set_int (value, number);
         }
       else
-        g_value_set_int (value, 0);
+        g_value_set_int (value, ((GParamSpecInt *) pspec)->default_value);
     }
   else if (pspec->value_type == G_TYPE_UINT)
     {
@@ -364,7 +364,7 @@ mx_style_transform_css_value (MxStyleSheetValue *css_value,
       if (css_value->string)
         g_value_set_uint (value, atoi (css_value->string));
       else
-        g_value_set_uint (value, 0);
+        g_value_set_uint (value, ((GParamSpecUInt *) pspec)->default_value);
     }
   else if (pspec->value_type == G_TYPE_FLOAT)
     {
@@ -373,7 +373,7 @@ mx_style_transform_css_value (MxStyleSheetValue *css_value,
       if (css_value->string)
         g_value_set_float (value, atof (css_value->string));
       else
-        g_value_set_float (value, 1.0);
+        g_value_set_float (value, ((GParamSpecFloat *) pspec)->default_value);
     }
   else if (pspec->value_type == MX_TYPE_BORDER_IMAGE)
     {
