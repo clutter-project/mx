@@ -139,7 +139,7 @@ mx_stylable_base_init (gpointer g_iface)
   pspec = g_param_spec_string ("style-class",
                                "Style Class",
                                "String representation of the item's class",
-                               "",
+                               NULL,
                                MX_PARAM_READWRITE);
   g_object_interface_install_property (g_iface, pspec);
 
@@ -147,7 +147,7 @@ mx_stylable_base_init (gpointer g_iface)
                                "Style Pseudo Class",
                                "List of pseudo class, such as current state,"
                                "separated by ':'.",
-                               "",
+                               NULL,
                                MX_PARAM_READWRITE);
   g_object_interface_install_property (g_iface, pspec);
 
