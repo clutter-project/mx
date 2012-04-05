@@ -74,6 +74,8 @@ struct _MxWidgetPrivate
 
   guint         tooltip_timeout;
   guint         tooltip_delay;
+
+  guint         in_dispose;
 };
 
 /**

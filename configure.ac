@@ -245,6 +245,7 @@ AC_CONFIG_FILES([
         mx/mx-version.h
         po/Makefile.in
         tests/Makefile
+        tools/Makefile
 ])
 
 AC_OUTPUT
