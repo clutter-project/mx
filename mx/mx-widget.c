@@ -37,6 +37,7 @@
 #include "mx-widget.h"
 
 #include "mx-marshal.h"
+#include "mx-overlay-manager.h"
 #include "mx-private.h"
 #include "mx-stylable.h"
 #include "mx-texture-cache.h"
@@ -69,6 +70,7 @@ struct _MxWidgetPrivate
   guint         is_disabled : 1;
   guint         parent_disabled : 1;
 
+  ClutterActor *stage;
   MxTooltip    *tooltip;
   MxMenu       *menu;
 
@@ -264,6 +266,55 @@ mx_widget_set_tooltip_timeout (MxWidget *widget)
 }
 
 static void
+mx_widget_rehook_tooltip_and_menu (MxWidget *widget, ClutterActor *new_stage)
+{
+  MxWidgetPrivate *priv = widget->priv;
+
+  /* Remove tooltip/menu from old stage */
+  if (priv->tooltip)
+    {
+      ClutterActor *parent =
+        clutter_actor_get_parent (CLUTTER_ACTOR (priv->tooltip));
+
+      if (parent)
+        clutter_actor_remove_child (parent, CLUTTER_ACTOR (priv->tooltip));
+    }
+
+  if (priv->menu)
+    {
+      ClutterActor *parent =
+        clutter_actor_get_parent (CLUTTER_ACTOR (priv->menu));
+
+      if (parent)
+        clutter_actor_remove_child (parent, CLUTTER_ACTOR (priv->menu));
+    }
+
+  /* Add tooltip/menu to new stage */
+  if (new_stage)
+    {
+      MxOverlayManager *manager = mx_overlay_manager_get_for_stage (new_stage);
+
+      if (priv->tooltip)
+        {
+          ClutterActor *overlay =
+            mx_overlay_manager_get_overlay (manager,
+                                            MX_OVERLAY_LAYER_TOOLTIP);
+          clutter_actor_add_child (overlay, CLUTTER_ACTOR (priv->tooltip));
+        }
+
+      if (priv->menu)
+        {
+          ClutterActor *overlay =
+            mx_overlay_manager_get_overlay (manager,
+                                            MX_OVERLAY_LAYER_MENU);
+          clutter_actor_add_child (overlay, CLUTTER_ACTOR (priv->menu));
+        }
+    }
+
+  priv->stage = new_stage;
+}
+
+static void
 mx_widget_dispose (GObject *gobject)
 {
   MxWidget *actor = MX_WIDGET (gobject);
@@ -295,8 +346,24 @@ mx_widget_dispose (GObject *gobject)
       priv->background_image = NULL;
     }
 
-  priv->tooltip = NULL;
-  priv->menu = NULL;
+  if (priv->tooltip)
+    {
+      clutter_actor_destroy (CLUTTER_ACTOR (priv->tooltip));
+      g_object_unref (priv->tooltip);
+      priv->tooltip = NULL;
+    }
+
+  if (priv->menu)
+    {
+      /* We can't destroy the menu because it doesn't belong to us.
+         This makes things a little be trickier... */
+      ClutterActor *parent =
+        clutter_actor_get_parent (CLUTTER_ACTOR (priv->menu));
+      if (parent)
+        clutter_actor_remove_child (parent, CLUTTER_ACTOR (priv->menu));
+      g_object_unref (priv->menu);
+      priv->menu = NULL;
+    }
 
   G_OBJECT_CLASS (mx_widget_parent_class)->dispose (gobject);
 }
@@ -336,6 +403,11 @@ mx_widget_allocate (ClutterActor          *actor,
   MxWidgetPrivate *priv = MX_WIDGET (actor)->priv;
   ClutterActorClass *klass;
   ClutterActorBox frame_box = { 0, 0, box->x2 - box->x1, box->y2 - box->y1 };
+  ClutterActor *stage;
+
+  stage = clutter_actor_get_stage (actor);
+  if (stage != priv->stage)
+    mx_widget_rehook_tooltip_and_menu (MX_WIDGET (actor), stage);
 
   klass = CLUTTER_ACTOR_CLASS (mx_widget_parent_class);
   klass->allocate (actor, box, flags);
@@ -423,13 +495,6 @@ mx_widget_allocate (ClutterActor          *actor,
 
       priv->background_image_box = frame_box;
     }
-
-  if (priv->tooltip)
-    clutter_actor_allocate_preferred_size (CLUTTER_ACTOR (priv->tooltip),
-                                           flags);
-  if (priv->menu)
-    clutter_actor_allocate_preferred_size (CLUTTER_ACTOR (priv->menu),
-                                           flags);
 }
 
 static void
@@ -474,24 +539,6 @@ mx_widget_paint (ClutterActor *actor)
                                        priv->background_image_box.y1,
                                        priv->background_image_box.x2 - priv->background_image_box.x1,
                                        priv->background_image_box.y2 - priv->background_image_box.y1);
-
-  if (priv->tooltip)
-    clutter_actor_paint (CLUTTER_ACTOR (priv->tooltip));
-
-  if (priv->menu)
-    clutter_actor_paint (CLUTTER_ACTOR (priv->menu));
-}
-
-static void
-mx_widget_pick (ClutterActor *self, const ClutterColor *color)
-{
-  MxWidgetPrivate *priv = MX_WIDGET (self)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_widget_parent_class)->pick (self, color);
-
-  if (priv->menu)
-    clutter_actor_paint (CLUTTER_ACTOR (priv->menu));
-
 }
 
 static void
@@ -952,7 +999,6 @@ mx_widget_class_init (MxWidgetClass *klass)
 
   actor_class->allocate = mx_widget_allocate;
   actor_class->paint = mx_widget_paint;
-  actor_class->pick = mx_widget_pick;
 
   actor_class->enter_event = mx_widget_enter;
   actor_class->leave_event = mx_widget_leave;
@@ -1326,10 +1372,24 @@ mx_widget_set_has_tooltip (MxWidget *widget,
 
       if (!priv->tooltip)
         {
-          priv->tooltip = g_object_new (MX_TYPE_TOOLTIP, NULL);
-          clutter_actor_add_child (actor, CLUTTER_ACTOR (priv->tooltip));
-          if (mx_stylable_style_pseudo_class_contains (MX_STYLABLE (widget), "hover"))
-            mx_widget_show_tooltip (widget);
+          ClutterActor *stage = clutter_actor_get_stage (actor);
+
+          priv->tooltip = g_object_new (MX_TYPE_TOOLTIP,
+                                        "parent-actor", widget,
+                                        NULL);
+          g_object_ref_sink (priv->tooltip);
+
+          if (stage != NULL)
+            {
+              MxOverlayManager *manager =
+                mx_overlay_manager_get_for_stage (stage);
+
+              clutter_actor_add_child (mx_overlay_manager_get_overlay (manager,
+                                                                       MX_OVERLAY_LAYER_TOOLTIP),
+                                       CLUTTER_ACTOR (priv->tooltip));
+              if (mx_stylable_style_pseudo_class_contains (MX_STYLABLE (widget), "hover"))
+                mx_widget_show_tooltip (widget);
+            }
         }
     }
   else
@@ -1337,6 +1397,7 @@ mx_widget_set_has_tooltip (MxWidget *widget,
       if (priv->tooltip)
         {
           clutter_actor_destroy (CLUTTER_ACTOR (priv->tooltip));
+          g_object_unref (priv->tooltip);
           priv->tooltip = NULL;
         }
 
@@ -1455,7 +1516,6 @@ mx_widget_show_tooltip (MxWidget *widget)
   area.width = x2 - x;
   area.height = y2 - y;
 
-
   if (widget->priv->tooltip)
     {
       mx_tooltip_set_tip_area (widget->priv->tooltip, &area);
@@ -1518,22 +1578,38 @@ void
 mx_widget_set_menu (MxWidget *widget,
                     MxMenu   *menu)
 {
-  MxWidgetPrivate *priv = widget->priv;
+  MxWidgetPrivate *priv;
+  ClutterActor *stage, *overlay = NULL, *actor;
+
+  g_return_if_fail (MX_IS_WIDGET (widget));
+
+  actor = CLUTTER_ACTOR (widget);
+
+  priv = widget->priv;
+
+  stage = clutter_actor_get_stage (actor);
+  if (stage)
+    {
+      MxOverlayManager *manager = mx_overlay_manager_get_for_stage (stage);
+      overlay = mx_overlay_manager_get_overlay (manager, MX_OVERLAY_LAYER_MENU);
+    }
 
   if (priv->menu)
     {
-      clutter_actor_remove_child (CLUTTER_ACTOR (widget),
-                                  CLUTTER_ACTOR (priv->menu));
+      ClutterActor *parent =
+        clutter_actor_get_parent (CLUTTER_ACTOR (priv->menu));
+      clutter_actor_remove_child (parent, CLUTTER_ACTOR (priv->menu));
+      g_object_unref (priv->menu);
       priv->menu = NULL;
     }
 
   if (menu)
     {
       priv->menu = menu;
-      clutter_actor_add_child (CLUTTER_ACTOR (widget), CLUTTER_ACTOR (menu));
+      g_object_ref (priv->menu);
+      if (overlay)
+        clutter_actor_add_child (overlay, CLUTTER_ACTOR (menu));
     }
-
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (widget));
 }
 
 /**

@@ -54,7 +54,8 @@ enum
   PROP_0,
 
   PROP_TEXT,
-  PROP_TIP_AREA
+  PROP_TIP_AREA,
+  PROP_PARENT_ACTOR
 };
 
 #define MX_TOOLTIP_GET_PRIVATE(obj)    \
@@ -62,6 +63,8 @@ enum
 
 struct _MxTooltipPrivate
 {
+  ClutterActor    *parent;
+
   ClutterActor    *label;
 
   ClutterActorBox  arrow_box;
@@ -91,6 +94,9 @@ static void mx_stylable_iface_init (MxStylableIface *iface);
 G_DEFINE_TYPE_WITH_CODE (MxTooltip, mx_tooltip, MX_TYPE_FLOATING_WIDGET,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
                                                 mx_stylable_iface_init));
+
+static void mx_tooltip_set_parent (MxTooltip *tooltip, ClutterActor *parent);
+
 
 
 /* Stylable Implementation */
@@ -132,6 +138,12 @@ mx_tooltip_set_property (GObject      *gobject,
 
     case PROP_TIP_AREA:
       mx_tooltip_set_tip_area (tooltip, g_value_get_boxed (value));
+      break;
+
+    case PROP_PARENT_ACTOR:
+      mx_tooltip_set_parent (tooltip,
+                             (ClutterActor *) g_value_get_object (value));
+      break;
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, prop_id, pspec);
@@ -155,6 +167,10 @@ mx_tooltip_get_property (GObject    *gobject,
 
     case PROP_TIP_AREA:
       g_value_set_boxed (value, priv->tip_area);
+      break;
+
+    case PROP_PARENT_ACTOR:
+      g_value_set_object (value, priv->parent);
       break;
 
     default:
@@ -519,6 +535,13 @@ mx_tooltip_class_init (MxTooltipClass *klass)
                               CLUTTER_TYPE_GEOMETRY,
                               MX_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_TIP_AREA, pspec);
+
+  pspec = g_param_spec_object ("parent-actor",
+                               "Parent Actor",
+                               "Parent actor to which the tooltip is related to",
+                               MX_TYPE_WIDGET,
+                               MX_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_PARENT_ACTOR, pspec);
 }
 
 static void
@@ -551,7 +574,7 @@ mx_tooltip_update_position (MxTooltip *tooltip)
   MxTooltipPrivate *priv = tooltip->priv;
   ClutterGeometry tip_area = *tooltip->priv->tip_area;
   gfloat tooltip_w, tooltip_h, tooltip_x, tooltip_y, abs_x, abs_y;
-  ClutterActor *stage, *parent;
+  ClutterActor *stage;
   gfloat stage_w, stage_h, parent_w, parent_h;
   MxWindow *window;
 
@@ -564,9 +587,8 @@ mx_tooltip_update_position (MxTooltip *tooltip)
   clutter_actor_get_size (stage, &stage_w, &stage_h);
 
 
-  parent = clutter_actor_get_parent ((ClutterActor *) tooltip);
-  clutter_actor_get_transformed_position (parent, &abs_x, &abs_y);
-  clutter_actor_get_size (parent, &parent_w, &parent_h);
+  clutter_actor_get_transformed_position (priv->parent, &abs_x, &abs_y);
+  clutter_actor_get_size (priv->parent, &parent_w, &parent_h);
 
   /* ensure the tooltip with is not fixed size */
   clutter_actor_set_size ((ClutterActor*) tooltip, -1, -1);
@@ -683,14 +705,9 @@ mx_tooltip_update_position (MxTooltip *tooltip)
   else if (tooltip_x + tooltip_w > stage_w)
     tooltip_x = (int)(stage_w) - tooltip_w;
 
-  gfloat pos_x, pos_y;
-
-  pos_x = tooltip_x - abs_x;
-  pos_y = tooltip_y - abs_y;
-
   /* calculate the arrow offset */
   priv->arrow_offset = tip_area.x + tip_area.width / 2 - tooltip_x;
-  clutter_actor_set_position ((ClutterActor*) tooltip, pos_x, pos_y);
+  clutter_actor_set_position ((ClutterActor*) tooltip, tooltip_x, tooltip_y);
 }
 
 /**
@@ -963,4 +980,14 @@ void mx_tooltip_set_tip_area_from_actor (MxTooltip    *tooltip,
   area.height = y2 - y;
 
   mx_tooltip_set_tip_area (tooltip, &area);
+}
+
+static void
+mx_tooltip_set_parent (MxTooltip *tooltip, ClutterActor *parent)
+{
+  MxTooltipPrivate *priv = tooltip->priv;
+
+  priv->parent = parent;
+
+  mx_tooltip_set_tip_area_from_actor (tooltip, parent);
 }
