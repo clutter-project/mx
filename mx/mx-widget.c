@@ -1197,7 +1197,7 @@ mx_stylable_iface_init (MxStylableIface *iface)
       pspec = g_param_spec_float ("opacity",
                                   "Opacity",
                                   "Opacity of an actor",
-                                  0.0, 1.0, 1.0,
+                                  -1.0, 1.0, -1.0,
                                   G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
 
