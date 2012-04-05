@@ -981,7 +981,7 @@ mx_widget_class_init (MxWidgetClass *klass)
     g_param_spec_string ("tooltip-text",
                          "Tooltip Text",
                          "Text displayed on the tooltip",
-                         "",
+                         NULL,
                          MX_PARAM_READWRITE | MX_PARAM_TRANSLATEABLE);
   g_object_class_install_property (gobject_class, PROP_TOOLTIP_TEXT,
                                    widget_properties[PROP_TOOLTIP_TEXT]);
