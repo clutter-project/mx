@@ -1329,7 +1329,7 @@ mx_widget_set_has_tooltip (MxWidget *widget,
     {
       if (priv->tooltip)
         {
-          clutter_actor_destroy (CLUTTER_ACTOR (priv->tooltip));
+          clutter_actor_remove_child (actor, CLUTTER_ACTOR (priv->tooltip));
           priv->tooltip = NULL;
         }
 
