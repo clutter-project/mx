@@ -124,7 +124,7 @@ guint  mx_widget_get_tooltip_delay (MxWidget *widget);
 
 /* Only to be used by sub-classes of MxWidget */
 ClutterColor *mx_widget_get_background_color (MxWidget  *actor);
-ClutterActor *mx_widget_get_background_image (MxWidget  *actor);
+CoglHandle   *mx_widget_get_background_texture (MxWidget *actor);
 void          mx_widget_get_padding          (MxWidget  *widget,
                                               MxPadding *padding);
 void          mx_widget_apply_style          (MxWidget  *widget,
