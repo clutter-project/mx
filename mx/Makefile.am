@@ -73,6 +73,7 @@ source_h = \
 	$(top_srcdir)/mx/mx-icon-theme.h 	\
 	$(top_srcdir)/mx/mx-label.h 		\
 	$(top_srcdir)/mx/mx-notebook.h 		\
+	$(top_srcdir)/mx/mx-pager.h		\
 	$(top_srcdir)/mx/mx-path-bar.h 		\
 	$(top_srcdir)/mx/mx-progress-bar.h		\
 	$(top_srcdir)/mx/mx-menu.h 		\
@@ -142,6 +143,7 @@ source_c = \
 	$(top_srcdir)/mx/mx-list-view.c 		\
 	$(top_srcdir)/mx/mx-label.c 		\
 	$(top_srcdir)/mx/mx-notebook.c 		\
+	$(top_srcdir)/mx/mx-pager.c		\
 	$(top_srcdir)/mx/mx-path-bar.c 		\
 	$(top_srcdir)/mx/mx-path-bar-button.c 	\
 	$(top_srcdir)/mx/mx-progress-bar.c		\
