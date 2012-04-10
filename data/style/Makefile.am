@@ -21,8 +21,6 @@ dist_style_DATA = \
 		combobox-marker-hover.png \
 		combobox-marker-active.png \
 		combobox-marker-disabled.png \
-		close.png \
-		close-hover.png \
 		default.css \
 		entry.png \
 		entry-focus.png \
