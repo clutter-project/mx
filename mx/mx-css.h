@@ -36,8 +36,12 @@ struct _MxStyleSheetValue
 
 MxStyleSheet*  mx_style_sheet_new            ();
 void           mx_style_sheet_destroy        ();
-gboolean       mx_style_sheet_add_from_file  (MxStyleSheet *sheet,
-                                              const gchar  *filename,
+gboolean       mx_style_sheet_add_from_file  (MxStyleSheet  *sheet,
+                                              const gchar   *filename,
+                                              GError       **error);
+gboolean       mx_style_sheet_add_from_data  (MxStyleSheet  *sheet,
+                                              const gchar   *id,
+                                              const gchar   *data,
                                               GError       **error);
 GHashTable*    mx_style_sheet_get_properties (MxStyleSheet *sheet,
                                               MxStylable   *node);

@@ -522,15 +522,19 @@ css_parse_block (GScanner *scanner, GList **selectors, GList **styles)
 static gboolean
 css_parse_file (MxStyleSheet *sheet,
                 gchar        *filename,
+                const gchar  *data,
                 gint          priority)
 {
   GScanner *scanner;
   int fd;
   GTokenType token;
 
-  fd = open (filename, O_RDONLY);
-  if (fd == -1)
-    return FALSE;
+  if (!data)
+    {
+      fd = open (filename, O_RDONLY);
+      if (fd == -1)
+        return FALSE;
+    }
 
   scanner = g_scanner_new (NULL);
   scanner->input_name = filename;
@@ -545,7 +549,11 @@ css_parse_file (MxStyleSheet *sheet,
   scanner->config->scan_string_sq = FALSE;
   scanner->config->scan_string_dq = FALSE;
 
-  g_scanner_input_file (scanner, fd);
+  if (data)
+    g_scanner_input_text (scanner, data, strlen (data));
+  else
+    g_scanner_input_file (scanner, fd);
+
 
 
   token = g_scanner_peek_next_token (scanner);
@@ -563,7 +571,8 @@ css_parse_file (MxStyleSheet *sheet,
     g_scanner_unexp_token (scanner, token, NULL, NULL, NULL, "Error",
                            TRUE);
 
-  close (fd);
+  if (!data)
+    close (fd);
   g_scanner_destroy (scanner);
 
   if (token == G_TOKEN_EOF)
@@ -969,11 +978,32 @@ mx_style_sheet_add_from_file (MxStyleSheet *sheet,
   gchar *input_name;
 
   g_return_val_if_fail (sheet != NULL, FALSE);
-  g_return_val_if_fail (error == NULL || *error != NULL, FALSE);
+  g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
   g_return_val_if_fail (filename != NULL, FALSE);
 
   input_name = g_strdup (filename);
-  result = css_parse_file (sheet, input_name, g_list_length (sheet->filenames));
+  result = css_parse_file (sheet, input_name, NULL, g_list_length (sheet->filenames));
+  sheet->filenames = g_list_prepend (sheet->filenames, input_name);
+
+  return result;
+}
+
+gboolean
+mx_style_sheet_add_from_data (MxStyleSheet  *sheet,
+                              const gchar   *id,
+                              const gchar   *data,
+                              GError       **error)
+{
+  gboolean result;
+  gchar *input_name;
+
+  g_return_val_if_fail (sheet != NULL, FALSE);
+  g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+  g_return_val_if_fail (id != NULL, FALSE);
+  g_return_val_if_fail (data != NULL, FALSE);
+
+  input_name = g_strdup (id);
+  result = css_parse_file (sheet, input_name, data, g_list_length (sheet->filenames));
   sheet->filenames = g_list_prepend (sheet->filenames, input_name);
 
   return result;
