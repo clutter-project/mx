@@ -29,6 +29,8 @@ main (int argc, char *argv[])
     return -1;
 
   stage = clutter_stage_new ();
+  g_signal_connect (stage, "destroy",
+                    G_CALLBACK (clutter_main_quit), NULL);
 
   button = mx_button_new_with_label ("Hide Me");
   g_signal_connect (button, "clicked",
@@ -80,13 +82,10 @@ main (int argc, char *argv[])
 
   button = mx_button_new_with_label ("Bottom");
   mx_widget_set_tooltip_text (MX_WIDGET (button), "Hello Hello Hello");
-  clutter_actor_add_child (stage, button);
-  clutter_actor_set_position (button, 250, 570);
-
-  button = mx_button_new_with_label ("Bottom");
+  mx_widget_set_tooltip_text (MX_WIDGET (button), NULL);
   mx_widget_set_tooltip_text (MX_WIDGET (button), "Hello Hello Hello");
   clutter_actor_add_child (stage, button);
-  clutter_actor_set_position (button, 250, 700);
+  clutter_actor_set_position (button, 250, 570);
 
   clutter_actor_show (stage);
 
