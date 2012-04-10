@@ -49,7 +49,8 @@ typedef struct _MxStylable            MxStylable; /* dummy typedef */
 typedef struct _MxStylableIface       MxStylableIface;
 
 typedef enum { /*< prefix=MX_STYLE_ERROR >*/
-  MX_STYLE_ERROR_INVALID_FILE
+  MX_STYLE_ERROR_INVALID_FILE,
+  MX_STYLE_ERROR_PARSE_ERROR
 } MxStyleError;
 
 /**
@@ -87,6 +88,10 @@ MxStyle *mx_style_new         (void);
 
 gboolean mx_style_load_from_file (MxStyle      *style,
                                   const gchar  *filename,
+                                  GError      **error);
+gboolean mx_style_load_from_data (MxStyle      *style,
+                                  const gchar  *id,
+                                  const gchar  *data,
                                   GError      **error);
 void     mx_style_get_property   (MxStyle      *style,
                                   MxStylable   *stylable,

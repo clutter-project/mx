@@ -128,20 +128,22 @@ g_style_cache_quark (void)
 }
 
 static gboolean
-mx_style_real_load_from_file (MxStyle    *style,
-                                const gchar  *filename,
-                                GError      **error,
-                                gint          priority)
+mx_style_real_load_from_file (MxStyle      *style,
+                              const gchar  *filename,
+                              const gchar  *data,
+                              GError      **error,
+                              gint          priority)
 {
   MxStylePrivate *priv;
   GError *internal_error;
+  gboolean result;
 
   g_return_val_if_fail (MX_IS_STYLE (style), FALSE);
   g_return_val_if_fail (filename != NULL, FALSE);
 
   priv = MX_STYLE (style)->priv;
 
-  if (!g_file_test (filename, G_FILE_TEST_IS_REGULAR))
+  if (!data && !g_file_test (filename, G_FILE_TEST_IS_REGULAR))
     {
       internal_error = g_error_new (MX_STYLE_ERROR,
                                     MX_STYLE_ERROR_INVALID_FILE,
@@ -153,7 +155,21 @@ mx_style_real_load_from_file (MxStyle    *style,
   if (!priv->stylesheet)
     priv->stylesheet = mx_style_sheet_new ();
 
-  mx_style_sheet_add_from_file (priv->stylesheet, filename, NULL);
+  if (data)
+    result = mx_style_sheet_add_from_data (priv->stylesheet, filename, data,
+                                           NULL);
+  else
+    result = mx_style_sheet_add_from_file (priv->stylesheet, filename,
+                                           NULL);
+
+  if (!result)
+    {
+      internal_error = g_error_new (MX_STYLE_ERROR,
+                                    MX_STYLE_ERROR_PARSE_ERROR,
+                                    "Could not parse '%s'", filename);
+      g_propagate_error (error, internal_error);
+      return FALSE;
+    }
 
   /* Increment the age so we know if a style cache entry is valid */
   priv->age ++;
@@ -175,11 +191,34 @@ mx_style_real_load_from_file (MxStyle    *style,
  * FALSE on error.
  */
 gboolean
-mx_style_load_from_file (MxStyle    *style,
-                           const gchar  *filename,
-                           GError      **error)
+mx_style_load_from_file (MxStyle      *style,
+                         const gchar  *filename,
+                         GError      **error)
 {
-  return mx_style_real_load_from_file (style, filename, error, 0);
+  return mx_style_real_load_from_file (style, filename, NULL, error, 0);
+}
+
+/**
+ * mx_style_load_from_data:
+ * @style: a #MxStyle
+ * @id: identifier of the style sheet to load
+ * @data: CSS data to parse
+ * @error: a #GError or #NULL
+ *
+ * Load style information from @data, using @id to identify the stylesheet.
+ * @id is usually the file name of the style sheet, which is used in the search
+ * path when loading url resources.
+ *
+ * returns: TRUE if the style information was loaded successfully. Returns
+ * FALSE on error.
+ */
+gboolean
+mx_style_load_from_data (MxStyle      *style,
+                         const gchar  *id,
+                         const gchar  *data,
+                         GError      **error)
+{
+  return mx_style_real_load_from_file (style, id, data, error, 0);
 }
 
 static void
@@ -205,7 +244,7 @@ mx_style_load (MxStyle *style)
   if (g_file_test (rc_file, G_FILE_TEST_EXISTS))
     {
       /* load the default theme with lowest priority */
-      if (!mx_style_real_load_from_file (style, rc_file, &error, 0))
+      if (!mx_style_real_load_from_file (style, rc_file, NULL, &error, 0))
         {
           g_critical ("Unable to load resource file '%s': %s",
                       rc_file,
