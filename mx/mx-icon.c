@@ -410,8 +410,6 @@ mx_icon_style_changed_cb (MxWidget *widget)
    */
   if (content_image)
     {
-      GError *error = NULL;
-
       priv->is_content_image = TRUE;
       g_signal_handlers_disconnect_by_func (mx_icon_theme_get_default (),
                                             mx_icon_notify_theme_name_cb,
@@ -424,16 +422,12 @@ mx_icon_style_changed_cb (MxWidget *widget)
         }
 
       if (content_image->uri)
-        priv->icon_texture = clutter_texture_new_from_file (content_image->uri,
-                                                            &error);
+        priv->icon_texture = mx_texture_cache_get_texture (mx_texture_cache_get_default (),
+                                                           content_image->uri);
       if (priv->icon_texture)
         clutter_actor_add_child (CLUTTER_ACTOR (widget), priv->icon_texture);
-
-      if (error)
-        {
-          g_warning ("Could not load content image: %s", error->message);
-          g_error_free (error);
-        }
+      else
+        g_warning ("Could not load content image \"%s\"", content_image->uri);
 
       g_boxed_free (MX_TYPE_BORDER_IMAGE, content_image);
       g_free (icon_name);

@@ -223,26 +223,19 @@ mx_button_style_changed (MxWidget *widget)
 
   if (content_image && content_image->uri)
     {
-      GError *err = NULL;
-
       if (priv->content_image)
         {
           clutter_actor_remove_child (CLUTTER_ACTOR (widget),
                                       priv->content_image);
         }
 
-      priv->content_image = clutter_texture_new_from_file (content_image->uri,
-                                                           &err);
+      priv->content_image = mx_texture_cache_get_texture (mx_texture_cache_get_default (),
+                                                          content_image->uri);
 
       if (priv->content_image)
         clutter_actor_add_child (CLUTTER_ACTOR (widget), priv->content_image);
-
-      if (err)
-        {
-          g_warning ("Could not load content image: %s", err->message);
-
-          g_error_free (err);
-        }
+      else
+        g_warning ("Could not load content image \"%s\"", content_image->uri);
 
       g_boxed_free (MX_TYPE_BORDER_IMAGE, content_image);
 
