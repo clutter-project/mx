@@ -53,6 +53,7 @@ struct _MxTextureCachePrivate
 {
   GHashTable *cache;
   GRegex     *is_uri;
+  GList      *resources;
 };
 
 typedef struct FinalizedClosure
@@ -135,6 +136,14 @@ mx_texture_cache_get_property (GObject    *object,
 static void
 mx_texture_cache_dispose (GObject *object)
 {
+  MxTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE (object);
+
+  if (priv->resources)
+    {
+      g_list_foreach (priv->resources, (GFunc) g_object_unref, NULL);
+      g_list_free (priv->resources);
+    }
+
   if (G_OBJECT_CLASS (mx_texture_cache_parent_class)->dispose)
     G_OBJECT_CLASS (mx_texture_cache_parent_class)->dispose (object);
 }
@@ -317,27 +326,33 @@ mx_texture_cache_get_item (MxTextureCache *self,
   MxTextureCacheItem *item;
   gchar *new_file, *new_uri;
   const gchar *file = NULL;
+  gboolean is_resource = FALSE;
 
   priv = TEXTURE_CACHE_PRIVATE (self);
 
   /* Make sure we have the URI (and the path if we're loading) */
   new_file = new_uri = NULL;
 
-  if (g_regex_match (priv->is_uri, uri, 0, NULL))
-    {
-      if (create_if_not_exists)
-        {
-          file = new_file = mx_texture_cache_uri_to_filename (uri);
-          if (!new_file)
-            return NULL;
-        }
-    }
+  if (g_str_has_prefix (uri, "resource://"))
+    is_resource = TRUE;
   else
     {
-      file = uri;
-      uri = new_uri = mx_texture_cache_filename_to_uri (file);
-      if (!new_uri)
-        return NULL;
+      if (g_regex_match (priv->is_uri, uri, 0, NULL))
+        {
+          if (create_if_not_exists)
+            {
+              file = new_file = mx_texture_cache_uri_to_filename (uri);
+              if (!new_file)
+                return NULL;
+            }
+        }
+      else
+        {
+          file = uri;
+          uri = new_uri = mx_texture_cache_filename_to_uri (file);
+          if (!new_uri)
+            return NULL;
+        }
     }
 
   item = g_hash_table_lookup (priv->cache, uri);
@@ -355,9 +370,62 @@ mx_texture_cache_get_item (MxTextureCache *self,
       else
         created = FALSE;
 
-      item->ptr = cogl_texture_new_from_file (file, COGL_TEXTURE_NONE,
-                                              COGL_PIXEL_FORMAT_ANY,
-                                              &err);
+      if (is_resource)
+        {
+          GdkPixbuf *pixbuf;
+          GInputStream *stream = NULL;
+          gint width, height, has_alpha, rowstride;
+          GList *l;
+          GResource *resource = NULL;
+
+          /* strip the "resource://" prefix */
+          uri = &uri[11];
+
+          /* find the resource that has this path */
+          for (l = priv->resources; l; l = g_list_next (l))
+            {
+              if (g_resource_get_info (l->data, uri,
+                                       G_RESOURCE_LOOKUP_FLAGS_NONE, NULL, NULL,
+                                       NULL))
+                {
+                  resource = l->data;
+                }
+            }
+
+          if (resource)
+            {
+              stream = g_resource_open_stream (resource, uri,
+                                               G_RESOURCE_LOOKUP_FLAGS_NONE,
+                                               &err);
+            }
+
+          if (stream)
+            {
+
+              pixbuf = gdk_pixbuf_new_from_stream (stream, NULL, &err);
+
+
+              width = gdk_pixbuf_get_width (pixbuf);
+              height = gdk_pixbuf_get_height (pixbuf);
+              has_alpha = gdk_pixbuf_get_has_alpha (pixbuf);
+              rowstride = gdk_pixbuf_get_rowstride (pixbuf);
+
+              item->ptr = cogl_texture_new_from_data (width, height,
+                                                      COGL_TEXTURE_NONE,
+                                                      has_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 : COGL_PIXEL_FORMAT_RGB_888,
+                                                      COGL_PIXEL_FORMAT_ANY,
+                                                      rowstride,
+                                                      gdk_pixbuf_get_pixels (pixbuf));
+
+              g_object_unref (stream);
+            }
+        }
+      else
+        {
+          item->ptr = cogl_texture_new_from_file (file, COGL_TEXTURE_NONE,
+                                                  COGL_PIXEL_FORMAT_ANY,
+                                                  &err);
+        }
 
       if (!item->ptr)
         {
@@ -817,4 +885,61 @@ mx_texture_cache_load_cache (MxTextureCache *self,
     }
 
   fclose (file);
+}
+
+/**
+ * mx_texture_cache_add_resource:
+ * @cache: A #MxTextureCache
+ * @resource: A #GResource
+ *
+ * Add a #GResource to the list of resources searched when a texture with a
+ * resource path is requested.
+ *
+ */
+void
+mx_texture_cache_add_resource (MxTextureCache *cache,
+                               GResource      *resource)
+{
+  MxTextureCachePrivate *priv;
+
+  g_return_if_fail (MX_IS_TEXTURE_CACHE (cache));
+  g_return_if_fail (resource == NULL);
+
+  priv = TEXTURE_CACHE_PRIVATE (cache);
+
+  /* prevent duplicates */
+  if (g_list_find (priv->resources, resource))
+    return;
+
+  priv->resources = g_list_prepend (priv->resources, g_object_ref (resource));
+}
+
+/**
+ * mx_texture_cache_remove_resource:
+ * @cache: A #MxTextureCache
+ * @resource: A #GResource
+ *
+ * Remove @resource from the list of resources searched when a texture with a
+ * resources path is requested.
+ *
+ */
+void
+mx_texture_cache_remove_resource (MxTextureCache *cache,
+                                  GResource      *resource)
+{
+  MxTextureCachePrivate *priv;
+  GList *l;
+
+  g_return_if_fail (MX_IS_TEXTURE_CACHE (cache));
+  g_return_if_fail (resource == NULL);
+
+  priv = TEXTURE_CACHE_PRIVATE (cache);
+
+  l = g_list_find (priv->resources, resource);
+
+  if (l)
+    {
+      g_object_unref (l->data);
+      priv->resources = g_list_delete_link (priv->resources, l->data);
+    }
 }
