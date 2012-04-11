@@ -25,6 +25,7 @@
 #define __MX_STYLE_H__
 
 #include <glib-object.h>
+#include <gio/gio.h>
 
 G_BEGIN_DECLS
 
@@ -93,6 +94,12 @@ gboolean mx_style_load_from_data (MxStyle      *style,
                                   const gchar  *id,
                                   const gchar  *data,
                                   GError      **error);
+
+gboolean mx_style_load_from_resource (MxStyle      *style,
+                                      GResource    *resource,
+                                      const gchar  *path,
+                                      GError      **error);
+
 void     mx_style_get_property   (MxStyle      *style,
                                   MxStylable   *stylable,
                                   GParamSpec   *pspec,

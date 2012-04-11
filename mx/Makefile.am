@@ -1,6 +1,17 @@
 NULL =
 
+mx-default-style.c: $(top_srcdir)/data/default-style.gresource.xml $(UI_FILES)
+	glib-compile-resources --target=$@ --sourcedir=$(top_srcdir)/data \
+		--generate-source --c-name mx $(top_srcdir)/data/default-style.gresource.xml
+
+mx-default-style.h: $(top_srcdir)/data/default-style.gresource.xml
+	glib-compile-resources --target=$@  --sourcedir=$(top_srcdir)/data \
+		--generate-header --c-name mx $(top_srcdir)/data/default-style.gresource.xml
+
+
 BUILT_SOURCES = 		\
+	mx-default-style.c	\
+	mx-default-style.h	\
 	mx-enum-types.h 	\
 	mx-enum-types.c 	\
 	mx-marshal.h 		\

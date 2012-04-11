@@ -1,5 +1,4 @@
-styledir = ${datadir}/mx-2.0/style
-dist_style_DATA = \
+EXTRA_DIST = \
 		button-disabled.png \
 		button-active.png \
 		button-hover.png \

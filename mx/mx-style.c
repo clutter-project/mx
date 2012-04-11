@@ -44,6 +44,8 @@
 #include "mx-types.h"
 #include "mx-private.h"
 
+#include "mx-default-style.h"
+
 enum
 {
   CHANGED,
@@ -221,23 +223,53 @@ mx_style_load_from_data (MxStyle      *style,
   return mx_style_real_load_from_file (style, id, data, error, 0);
 }
 
+gboolean
+mx_style_load_from_resource (MxStyle      *style,
+                             GResource    *resource,
+                             const gchar  *path,
+                             GError      **error)
+{
+  GBytes *bytes;
+  GError *internal_error = NULL;
+  gchar *id;
+
+  bytes = g_resource_lookup_data (resource, path, G_RESOURCE_LOOKUP_FLAGS_NONE,
+                                  &internal_error);
+
+  if (!bytes && internal_error)
+    {
+      g_propagate_error (error, internal_error);
+
+      return FALSE;
+    }
+
+  id = g_strconcat ("resource://", path, NULL);
+
+  mx_style_real_load_from_file (style, id, g_bytes_get_data (bytes, NULL),
+                                error, 0);
+
+  /* add the resource to the default texture cache, so that it can open images
+   * from the resource file */
+  mx_texture_cache_add_resource (mx_texture_cache_get_default (), resource);
+
+  g_free (id);
+
+  g_bytes_unref (bytes);
+
+  return TRUE;
+}
+
 static void
 mx_style_load (MxStyle *style)
 {
   const gchar *env_var;
   gchar *rc_file = NULL;
   GError *error;
+  GResource *resource;
 
   env_var = g_getenv ("MX_RC_FILE");
   if (env_var && *env_var)
     rc_file = g_strdup (env_var);
-
-  if (!rc_file)
-    rc_file = g_build_filename (PACKAGE_DATA_DIR,
-                                "mx-2.0",
-                                "style",
-                                "default.css",
-                                NULL);
 
   error = NULL;
 
@@ -249,11 +281,23 @@ mx_style_load (MxStyle *style)
           g_critical ("Unable to load resource file '%s': %s",
                       rc_file,
                       error->message);
-          g_error_free (error);
+          g_clear_error (&error);
         }
     }
 
   g_free (rc_file);
+
+  resource = mx_get_resource ();
+
+  mx_style_load_from_resource (style, resource,
+                               "/org/clutter-project/Mx/style/default.css",
+                               &error);
+
+  if (error)
+    {
+      g_critical ("Unable to load default style: %s", error->message);
+      g_clear_error (&error);
+    }
 }
 
 static MxStyleCacheEntry *

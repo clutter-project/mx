@@ -140,7 +140,7 @@ mx_texture_cache_dispose (GObject *object)
 
   if (priv->resources)
     {
-      g_list_foreach (priv->resources, (GFunc) g_object_unref, NULL);
+      g_list_foreach (priv->resources, (GFunc) g_resource_unref, NULL);
       g_list_free (priv->resources);
     }
 
@@ -903,7 +903,7 @@ mx_texture_cache_add_resource (MxTextureCache *cache,
   MxTextureCachePrivate *priv;
 
   g_return_if_fail (MX_IS_TEXTURE_CACHE (cache));
-  g_return_if_fail (resource == NULL);
+  g_return_if_fail (resource != NULL);
 
   priv = TEXTURE_CACHE_PRIVATE (cache);
 
@@ -911,7 +911,7 @@ mx_texture_cache_add_resource (MxTextureCache *cache,
   if (g_list_find (priv->resources, resource))
     return;
 
-  priv->resources = g_list_prepend (priv->resources, g_object_ref (resource));
+  priv->resources = g_list_prepend (priv->resources, g_resource_ref (resource));
 }
 
 /**
@@ -931,7 +931,7 @@ mx_texture_cache_remove_resource (MxTextureCache *cache,
   GList *l;
 
   g_return_if_fail (MX_IS_TEXTURE_CACHE (cache));
-  g_return_if_fail (resource == NULL);
+  g_return_if_fail (resource != NULL);
 
   priv = TEXTURE_CACHE_PRIVATE (cache);
 
@@ -939,7 +939,7 @@ mx_texture_cache_remove_resource (MxTextureCache *cache,
 
   if (l)
     {
-      g_object_unref (l->data);
+      g_resource_unref (l->data);
       priv->resources = g_list_delete_link (priv->resources, l->data);
     }
 }
