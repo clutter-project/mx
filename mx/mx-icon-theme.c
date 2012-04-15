@@ -848,8 +848,6 @@ mx_icon_theme_get_icons (MxIconTheme *theme,
         break;
     }
 
-  g_object_unref (icon);
-
   return data;
 }
 
