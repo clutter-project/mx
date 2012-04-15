@@ -358,7 +358,7 @@ mx_tooltip_allocate (ClutterActor          *self,
                      ClutterAllocationFlags flags)
 {
   MxTooltipPrivate *priv = MX_TOOLTIP (self)->priv;
-  ClutterActorBox child_box, arrow_box;
+  ClutterActorBox child_box;
   gfloat arrow_height, arrow_width;
   CoglHandle arrow_image;
   MxPadding padding;
@@ -378,8 +378,8 @@ mx_tooltip_allocate (ClutterActor          *self,
 
       priv->arrow_box.x1 = (float)(priv->arrow_offset) - (int)(arrow_width / 2);
       priv->arrow_box.y1 = 0;
-      priv->arrow_box.x2 = arrow_box.x1 + arrow_width;
-      priv->arrow_box.y2 = arrow_box.y1 + arrow_height;
+      priv->arrow_box.x2 = priv->arrow_box.x1 + arrow_width;
+      priv->arrow_box.y2 = arrow_height;
     }
   else
     {
