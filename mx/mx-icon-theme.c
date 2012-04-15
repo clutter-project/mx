@@ -802,23 +802,17 @@ mx_icon_theme_copy_data_list (GList *data)
 
 static GList *
 mx_icon_theme_get_icons (MxIconTheme *theme,
-                         const gchar *icon_name)
+                         GIcon       *icon)
 {
   gint i;
-  GIcon *icon;
   GList *data;
 
   const gchar * const *names = NULL;
   MxIconThemePrivate *priv = theme->priv;
 
-  /* Load the icon, or a fallback */
-  icon = g_themed_icon_new_with_default_fallbacks (icon_name);
   names = g_themed_icon_get_names (G_THEMED_ICON (icon));
   if (!names)
-    {
-      g_object_unref (icon);
-      return NULL;
-    }
+    return NULL;
 
   data = NULL;
   for (i = 0; names[i]; i++)
@@ -861,14 +855,14 @@ mx_icon_theme_get_icons (MxIconTheme *theme,
 
 static MxIconData *
 mx_icon_theme_lookup_internal (MxIconTheme *theme,
-                               const gchar *icon_name,
+                               GIcon       *icon,
                                gint         size)
 {
   MxIconData *best_match;
   GList *d, *data;
   gint distance;
 
-  data = mx_icon_theme_get_icons (theme, icon_name);
+  data = mx_icon_theme_get_icons (theme, icon);
   if (!data)
     return NULL;
 
@@ -934,12 +928,16 @@ mx_icon_theme_lookup (MxIconTheme *theme,
 {
   MxTextureCache *texture_cache;
   MxIconData *icon_data;
+  GIcon *icon;
 
   g_return_val_if_fail (MX_IS_ICON_THEME (theme), NULL);
   g_return_val_if_fail (icon_name, NULL);
   g_return_val_if_fail (size > 0, NULL);
 
-  if (!(icon_data = mx_icon_theme_lookup_internal (theme, icon_name, size)))
+  icon = g_themed_icon_new_with_default_fallbacks (icon_name);
+  icon_data = mx_icon_theme_lookup_internal (theme, icon, size);
+  g_object_unref (icon);
+  if (!icon_data)
     return NULL;
 
   texture_cache = mx_texture_cache_get_default ();
@@ -963,12 +961,45 @@ mx_icon_theme_lookup_texture (MxIconTheme *theme,
 {
   MxTextureCache *texture_cache;
   MxIconData *icon_data;
+  GIcon *icon;
 
   g_return_val_if_fail (MX_IS_ICON_THEME (theme), NULL);
   g_return_val_if_fail (icon_name, NULL);
   g_return_val_if_fail (size > 0, NULL);
 
-  if (!(icon_data = mx_icon_theme_lookup_internal (theme, icon_name, size)))
+  icon = g_themed_icon_new_with_default_fallbacks (icon_name);
+  icon_data = mx_icon_theme_lookup_internal (theme, icon, size);
+  g_object_unref (icon);
+  if (!icon_data)
+    return NULL;
+
+  texture_cache = mx_texture_cache_get_default ();
+  return mx_texture_cache_get_texture (texture_cache, icon_data->path);
+}
+
+/**
+ * mx_icon_theme_load_gicon:
+ * @theme: an #MxIconTheme
+ * @icon: A #GThemedIcon
+ * @size: The desired size of the icon
+ *
+ * If the icon is available, returns a #ClutterTexture of the icon.
+ *
+ * Return value: (transfer none): a #ClutterTexture of the icon, or %NULL.
+ */
+ClutterTexture *
+mx_icon_theme_load_gicon (MxIconTheme *theme,
+                          GIcon       *icon,
+                          gint         size)
+{
+  MxTextureCache *texture_cache;
+  MxIconData *icon_data;
+
+  g_return_val_if_fail (MX_IS_ICON_THEME (theme), NULL);
+  g_return_val_if_fail (G_IS_THEMED_ICON (icon), NULL);
+
+  icon_data = mx_icon_theme_lookup_internal (theme, icon, size);
+  if (!icon_data)
     return NULL;
 
   texture_cache = mx_texture_cache_get_default ();
@@ -979,13 +1010,20 @@ gboolean
 mx_icon_theme_has_icon (MxIconTheme *theme,
                         const gchar *icon_name)
 {
+  gboolean ret;
+  GIcon *icon;
+
   g_return_val_if_fail (MX_IS_ICON_THEME (theme), FALSE);
   g_return_val_if_fail (icon_name, FALSE);
 
-  if (mx_icon_theme_get_icons (theme, icon_name))
-    return TRUE;
+  icon = g_themed_icon_new_with_default_fallbacks (icon_name);
+  if (mx_icon_theme_get_icons (theme, icon))
+    ret = TRUE;
   else
-    return FALSE;
+    ret = FALSE;
+  g_object_unref (icon);
+
+  return ret;
 }
 
 /**
