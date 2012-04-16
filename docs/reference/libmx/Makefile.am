@@ -70,7 +70,8 @@ IGNORE_HFILES= \
 	xsettings-common.h \
 	mx-settings-provider.h \
 	mx-settings-x11.h \
-	mx-window-x11.h
+	mx-window-x11.h \
+	mx-window-wayland.h
 
 # Images to copy into HTML directory.
 # e.g. HTML_IMAGES=$(top_srcdir)/gtk/stock-icons/stock_about_24.png
