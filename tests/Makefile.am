@@ -8,7 +8,6 @@ INCLUDES = \
 	-I$(top_builddir)
 
 noinst_PROGRAMS = 			\
-	test-deform-texture		\
 	test-draggable			\
 	test-droppable			\
 	test-window 			\
@@ -19,8 +18,6 @@ noinst_PROGRAMS = 			\
 
 test_widgets_SOURCES = test-widgets.c
 test_containers_SOURCES = test-containers.c
-
-test_deform_texture_SOURCES = test-deform-texture.c
 
 test_draggable_SOURCES = test-draggable.c
 test_droppable_SOURCES = test-droppable.c

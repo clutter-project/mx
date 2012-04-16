@@ -54,10 +54,6 @@ source_h = \
 	$(top_srcdir)/mx/mx-combo-box.h 		\
 	$(top_srcdir)/mx/mx-button.h 		\
 	$(top_srcdir)/mx/mx-button-group.h 	\
-	$(top_srcdir)/mx/mx-deform-texture.h 	\
-	$(top_srcdir)/mx/mx-deform-bow-tie.h 	\
-	$(top_srcdir)/mx/mx-deform-page-turn.h 	\
-	$(top_srcdir)/mx/mx-deform-waves.h 	\
 	$(top_srcdir)/mx/mx-dialog.h 		\
 	$(top_srcdir)/mx/mx-draggable.h 		\
 	$(top_srcdir)/mx/mx-droppable.h 		\
@@ -72,7 +68,6 @@ source_h = \
 	$(top_srcdir)/mx/mx-item-factory.h		\
 	$(top_srcdir)/mx/mx-item-view.h 		\
 	$(top_srcdir)/mx/mx-list-view.h 		\
-	$(top_srcdir)/mx/mx-offscreen.h 		\
 	$(top_srcdir)/mx/mx-icon.h 			\
 	$(top_srcdir)/mx/mx-image.h 		\
 	$(top_srcdir)/mx/mx-icon-theme.h 	\
@@ -129,10 +124,6 @@ source_c = \
 	$(top_srcdir)/mx/mx-combo-box.c		\
 	$(top_srcdir)/mx/mx-button.c 		\
 	$(top_srcdir)/mx/mx-button-group.c 	\
-	$(top_srcdir)/mx/mx-deform-texture.c 	\
-	$(top_srcdir)/mx/mx-deform-bow-tie.c 	\
-	$(top_srcdir)/mx/mx-deform-page-turn.c 	\
-	$(top_srcdir)/mx/mx-deform-waves.c 	\
 	$(top_srcdir)/mx/mx-dialog.c 		\
 	$(top_srcdir)/mx/mx-draggable.c		\
 	$(top_srcdir)/mx/mx-droppable.c		\
@@ -151,7 +142,6 @@ source_c = \
 	$(top_srcdir)/mx/mx-list-view.c 		\
 	$(top_srcdir)/mx/mx-label.c 		\
 	$(top_srcdir)/mx/mx-notebook.c 		\
-	$(top_srcdir)/mx/mx-offscreen.c 	\
 	$(top_srcdir)/mx/mx-path-bar.c 		\
 	$(top_srcdir)/mx/mx-path-bar-button.c 	\
 	$(top_srcdir)/mx/mx-progress-bar.c		\

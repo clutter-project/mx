@@ -525,28 +525,6 @@ MX_BOX_LAYOUT_CHILD_GET_CLASS
 </SECTION>
 
 <SECTION>
-<FILE>mx-deform-bow-tie</FILE>
-<TITLE>MxDeformBowTie</TITLE>
-MxDeformBowTie
-MxDeformBowTieClass
-mx_deform_bow_tie_new
-mx_deform_bow_tie_get_period
-mx_deform_bow_tie_set_period
-mx_deform_bow_tie_get_flip_back
-mx_deform_bow_tie_set_flip_back
-<SUBSECTION Private>
-MxDeformBowTiePrivate
-<SUBSECTION Standard>
-MX_DEFORM_BOW_TIE
-MX_IS_DEFORM_BOW_TIE
-MX_TYPE_DEFORM_BOW_TIE
-mx_deform_bow_tie_get_type
-MX_DEFORM_BOW_TIE_CLASS
-MX_IS_DEFORM_BOW_TIE_CLASS
-MX_DEFORM_BOW_TIE_GET_CLASS
-</SECTION>
-
-<SECTION>
 <FILE>mx-bin</FILE>
 <TITLE>MxBin</TITLE>
 MxBin
@@ -597,32 +575,6 @@ mx_kinetic_scroll_view_get_type
 MX_KINETIC_SCROLL_VIEW_CLASS
 MX_IS_KINETIC_SCROLL_VIEW_CLASS
 MX_KINETIC_SCROLL_VIEW_GET_CLASS
-</SECTION>
-
-<SECTION>
-<FILE>mx-deform-waves</FILE>
-<TITLE>MxDeformWaves</TITLE>
-MxDeformWaves
-MxDeformWavesClass
-mx_deform_waves_new
-mx_deform_waves_get_period
-mx_deform_waves_set_period
-mx_deform_waves_get_angle
-mx_deform_waves_set_angle
-mx_deform_waves_get_radius
-mx_deform_waves_set_radius
-mx_deform_waves_get_amplitude
-mx_deform_waves_set_amplitude
-<SUBSECTION Private>
-MxDeformWavesPrivate
-<SUBSECTION Standard>
-MX_DEFORM_WAVES
-MX_IS_DEFORM_WAVES
-MX_TYPE_DEFORM_WAVES
-mx_deform_waves_get_type
-MX_DEFORM_WAVES_CLASS
-MX_IS_DEFORM_WAVES_CLASS
-MX_DEFORM_WAVES_GET_CLASS
 </SECTION>
 
 <SECTION>
@@ -875,52 +827,6 @@ mx_stack_child_get_type
 MX_STACK_CHILD_CLASS
 MX_IS_STACK_CHILD_CLASS
 MX_STACK_CHILD_GET_CLASS
-</SECTION>
-
-<SECTION>
-<FILE>mx-deform-texture</FILE>
-<TITLE>MxDeformTexture</TITLE>
-MxDeformTexture
-MxDeformTextureClass
-mx_deform_texture_get_resolution
-mx_deform_texture_set_resolution
-mx_deform_texture_set_textures
-mx_deform_texture_get_textures
-mx_deform_texture_invalidate
-<SUBSECTION Private>
-MxDeformTexturePrivate
-<SUBSECTION Standard>
-MX_DEFORM_TEXTURE
-MX_IS_DEFORM_TEXTURE
-MX_TYPE_DEFORM_TEXTURE
-mx_deform_texture_get_type
-MX_DEFORM_TEXTURE_CLASS
-MX_IS_DEFORM_TEXTURE_CLASS
-MX_DEFORM_TEXTURE_GET_CLASS
-</SECTION>
-
-<SECTION>
-<FILE>mx-deform-page-turn</FILE>
-<TITLE>MxDeformPageTurn</TITLE>
-MxDeformPageTurn
-MxDeformPageTurnClass
-mx_deform_page_turn_new
-mx_deform_page_turn_get_period
-mx_deform_page_turn_set_period
-mx_deform_page_turn_get_angle
-mx_deform_page_turn_set_angle
-mx_deform_page_turn_get_radius
-mx_deform_page_turn_set_radius
-<SUBSECTION Private>
-MxDeformPageTurnPrivate
-<SUBSECTION Standard>
-MX_DEFORM_PAGE_TURN
-MX_IS_DEFORM_PAGE_TURN
-MX_TYPE_DEFORM_PAGE_TURN
-mx_deform_page_turn_get_type
-MX_DEFORM_PAGE_TURN_CLASS
-MX_IS_DEFORM_PAGE_TURN_CLASS
-MX_DEFORM_PAGE_TURN_GET_CLASS
 </SECTION>
 
 <SECTION>
@@ -1188,37 +1094,6 @@ mx_clipboard_get_type
 MX_CLIPBOARD_CLASS
 MX_IS_CLIPBOARD_CLASS
 MX_CLIPBOARD_GET_CLASS
-</SECTION>
-
-<SECTION>
-<FILE>mx-offscreen</FILE>
-<TITLE>MxOffscreen</TITLE>
-MxOffscreen
-MxOffscreenClass
-mx_offscreen_new
-mx_offscreen_set_child
-mx_offscreen_get_child
-mx_offscreen_set_pick_child
-mx_offscreen_get_pick_child
-mx_offscreen_set_auto_update
-mx_offscreen_get_auto_update
-mx_offscreen_set_redirect_enabled
-mx_offscreen_get_redirect_enabled
-mx_offscreen_get_buffer
-mx_offscreen_update
-mx_offscreen_set_accumulation_enabled
-mx_offscreen_get_accumulation_enabled
-mx_offscreen_get_accumulation_material
-<SUBSECTION Private>
-MxOffscreenPrivate
-<SUBSECTION Standard>
-MX_OFFSCREEN
-MX_IS_OFFSCREEN
-MX_TYPE_OFFSCREEN
-mx_offscreen_get_type
-MX_OFFSCREEN_CLASS
-MX_IS_OFFSCREEN_CLASS
-MX_OFFSCREEN_GET_CLASS
 </SECTION>
 
 <SECTION>
