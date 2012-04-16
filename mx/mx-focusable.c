@@ -113,7 +113,7 @@ mx_focusable_move_focus (MxFocusable      *focusable,
       GList *children, *l;
       GList *child_link;
 
-      children = clutter_container_get_children (CLUTTER_CONTAINER (parent));
+      children = clutter_actor_get_children (parent);
 
       /* find the current focused widget */
       child_link = g_list_find (children, actor);
