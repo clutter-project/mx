@@ -27,7 +27,7 @@ AC_HEADER_STDC
 AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
 AM_PROG_CC_C_O
-AM_PATH_GLIB_2_0([2.31.0],
+AM_PATH_GLIB_2_0([2.32.0],
                  [],
                  [AC_MSG_ERROR([glib-2.0 is required])],
                  [gobject gthread gmodule-no-export])
