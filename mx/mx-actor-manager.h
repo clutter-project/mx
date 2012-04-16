@@ -82,11 +82,11 @@ struct _MxActorManagerClass
                          ClutterActor   *actor);
   void (*actor_added) (MxActorManager   *manager,
                        gulong            id,
-                       ClutterContainer *container,
+                       ClutterActor     *container,
                        ClutterActor     *actor);
   void (*actor_removed) (MxActorManager   *manager,
                          gulong            id,
-                         ClutterContainer *container,
+                         ClutterActor     *container,
                          ClutterActor     *actor);
 
   void (*actor_finished) (MxActorManager *manager,
@@ -121,16 +121,16 @@ gulong mx_actor_manager_create_actor (MxActorManager           *manager,
                                       gpointer                  userdata,
                                       GDestroyNotify            destroy_func);
 
-gulong mx_actor_manager_add_actor (MxActorManager   *manager,
-                                   ClutterContainer *container,
-                                   ClutterActor     *actor);
+gulong mx_actor_manager_add_actor (MxActorManager *manager,
+                                   ClutterActor   *container,
+                                   ClutterActor   *actor);
 
-gulong mx_actor_manager_remove_actor (MxActorManager   *manager,
-                                      ClutterContainer *container,
-                                      ClutterActor     *actor);
+gulong mx_actor_manager_remove_actor (MxActorManager *manager,
+                                      ClutterActor   *container,
+                                      ClutterActor   *actor);
 
-void mx_actor_manager_remove_container (MxActorManager   *manager,
-                                        ClutterContainer *container);
+void mx_actor_manager_remove_container (MxActorManager *manager,
+                                        ClutterActor   *container);
 
 void mx_actor_manager_cancel_operation (MxActorManager *manager,
                                         gulong          id);

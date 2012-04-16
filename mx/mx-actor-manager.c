@@ -87,7 +87,7 @@ typedef struct
   gpointer                     userdata;
 
   ClutterActor                *actor;
-  ClutterContainer            *container;
+  ClutterActor                *container;
 } MxActorManagerOperation;
 
 struct _MxActorManagerPrivate
@@ -304,7 +304,7 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
    * MxActorManager::actor-added
    * @manager: the object that received the signal
    * @id: The operation ID
-   * @container: The #ClutterContainer the actor was added to
+   * @container: The #ClutterActor the actor was added to
    * @actor: The added #ClutterActor
    *
    * Emitted when an actor add operation has completed.
@@ -325,7 +325,7 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
    * MxActorManager::actor-removed
    * @manager: the object that received the signal
    * @id: The operation ID
-   * @container: The #ClutterContainer the actor was removed from
+   * @container: The #ClutterActor the actor was removed from
    * @actor: The removed #ClutterActor
    *
    * Emitted when an actor remove operation has completed.
@@ -576,7 +576,7 @@ mx_actor_manager_op_new (MxActorManager              *manager,
                          MxActorManagerCreateFunc     create_func,
                          gpointer                     userdata,
                          ClutterActor                *actor,
-                         ClutterContainer            *container)
+                         ClutterActor                *container)
 {
   GList *op_link;
   MxActorManagerPrivate *priv = manager->priv;
@@ -697,7 +697,7 @@ mx_actor_manager_handle_op (MxActorManager *manager)
         {
           if (op->actor)
             {
-              clutter_container_add_actor (op->container, op->actor);
+              clutter_actor_add_child (op->container, op->actor);
               g_signal_emit (manager, signals[ACTOR_ADDED], 0,
                              op->id, op->container, op->actor);
             }
@@ -717,7 +717,7 @@ mx_actor_manager_handle_op (MxActorManager *manager)
         {
           if (op->actor)
             {
-              clutter_container_remove_actor (op->container, op->actor);
+              clutter_actor_remove_child (op->container, op->actor);
               g_signal_emit (manager, signals[ACTOR_REMOVED], 0,
                              op->id, op->container, op->actor);
             }
@@ -870,7 +870,7 @@ mx_actor_manager_create_actor (MxActorManager           *manager,
 /**
  * mx_actor_manager_add_actor:
  * @manager: A #MxActorManager
- * @container: A #ClutterContainer
+ * @container: A #ClutterActor
  * @actor: A #ClutterActor
  *
  * Adds @actor to @container. The actor may not be parented immediately,
@@ -885,7 +885,7 @@ mx_actor_manager_create_actor (MxActorManager           *manager,
  */
 gulong
 mx_actor_manager_add_actor (MxActorManager   *manager,
-                            ClutterContainer *container,
+                            ClutterActor     *container,
                             ClutterActor     *actor)
 {
   MxActorManagerOperation *op;
@@ -909,7 +909,7 @@ mx_actor_manager_add_actor (MxActorManager   *manager,
 /**
  * mx_actor_manager_remove_actor:
  * @manager: A #MxActorManager
- * @container: A #ClutterContainer
+ * @container: A #ClutterActor
  * @actor: A #ClutterActor
  *
  * Removes @actor from @container.
@@ -928,7 +928,7 @@ mx_actor_manager_add_actor (MxActorManager   *manager,
  */
 gulong
 mx_actor_manager_remove_actor (MxActorManager   *manager,
-                               ClutterContainer *container,
+                               ClutterActor *container,
                                ClutterActor     *actor)
 {
   MxActorManagerOperation *op;
@@ -952,7 +952,7 @@ mx_actor_manager_remove_actor (MxActorManager   *manager,
 /**
  * mx_actor_manager_remove_container:
  * @manager: A #MxActorManager
- * @container: A #ClutterContainer
+ * @container: A #ClutterActor
  *
  * Removes the container. This is a utility function that works by first
  * removing all the children of the container, then the children itself. This
@@ -967,8 +967,8 @@ mx_actor_manager_remove_actor (MxActorManager   *manager,
  * Since: 1.2
  */
 void
-mx_actor_manager_remove_container (MxActorManager   *manager,
-                                   ClutterContainer *container)
+mx_actor_manager_remove_container (MxActorManager *manager,
+                                   ClutterActor   *container)
 {
   GList *children;
   ClutterActor *parent;
@@ -980,7 +980,7 @@ mx_actor_manager_remove_container (MxActorManager   *manager,
   mx_actor_manager_cancel_operations (manager, CLUTTER_ACTOR (container));
 
   /* Remove all children */
-  children = clutter_container_get_children (container);
+  children = clutter_actor_get_children (container);
   while (children)
     {
       ClutterActor *child = children->data;
@@ -998,8 +998,7 @@ mx_actor_manager_remove_container (MxActorManager   *manager,
   if (parent && CLUTTER_IS_CONTAINER (parent))
     {
       g_object_ref (container);
-      clutter_container_remove_actor (CLUTTER_CONTAINER (parent),
-                                      CLUTTER_ACTOR (container));
+      clutter_actor_remove_child (parent, container);
       mx_actor_manager_op_new (manager,
                                MX_ACTOR_MANAGER_UNREF,
                                NULL,
