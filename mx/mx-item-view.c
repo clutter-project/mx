@@ -225,7 +225,7 @@ model_changed_cb (ClutterModel *model,
         }
     }
 
-  children = clutter_container_get_children (CLUTTER_CONTAINER (item_view));
+  children = clutter_actor_get_children (CLUTTER_ACTOR (item_view));
   child_n = g_list_length (children);
 
   if (model)
@@ -247,8 +247,7 @@ model_changed_cb (ClutterModel *model,
           new_child = mx_item_factory_create (priv->factory);
         }
 
-      clutter_container_add_actor (CLUTTER_CONTAINER (item_view),
-                                   new_child);
+      clutter_actor_add_child (CLUTTER_ACTOR (item_view), new_child);
       child_n++;
     }
 
@@ -256,8 +255,7 @@ model_changed_cb (ClutterModel *model,
   l = g_list_last (children);
   while (child_n > model_n)
     {
-      clutter_container_remove_actor (CLUTTER_CONTAINER (item_view),
-                                      (ClutterActor*) l->data);
+      clutter_actor_remove_child (CLUTTER_ACTOR (item_view), l->data);
       l = g_list_previous (l);
       child_n--;
     }
@@ -267,7 +265,7 @@ model_changed_cb (ClutterModel *model,
   if (!priv->model)
     return;
 
-  children = clutter_container_get_children (CLUTTER_CONTAINER (item_view));
+  children = clutter_actor_get_children (CLUTTER_ACTOR (item_view));
 
   /* set the properties on the children */
   iter = clutter_model_get_first_iter (priv->model);
@@ -322,10 +320,10 @@ row_removed_cb (ClutterModel     *model,
   if (item_view->priv->is_frozen)
     return;
 
-  children = clutter_container_get_children (CLUTTER_CONTAINER (item_view));
+  children = clutter_actor_get_children (CLUTTER_ACTOR (item_view));
   l = g_list_nth (children, clutter_model_iter_get_row (iter));
   child = (ClutterActor *) l->data;
-  clutter_container_remove_actor (CLUTTER_CONTAINER (item_view), child);
+  clutter_actor_remove_child (CLUTTER_ACTOR (item_view), child);
   g_list_free (children);
 }
 
