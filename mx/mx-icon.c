@@ -422,8 +422,8 @@ mx_icon_style_changed_cb (MxWidget *widget)
         }
 
       if (content_image->uri)
-        priv->icon_texture = mx_texture_cache_get_texture (mx_texture_cache_get_default (),
-                                                           content_image->uri);
+        priv->icon_texture = (ClutterActor*) mx_texture_cache_get_texture (mx_texture_cache_get_default (),
+                                                                           content_image->uri);
       if (priv->icon_texture)
         clutter_actor_add_child (CLUTTER_ACTOR (widget), priv->icon_texture);
       else
