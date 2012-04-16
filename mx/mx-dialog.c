@@ -38,7 +38,6 @@
 
 #include "mx-dialog.h"
 #include "mx-button-group.h"
-#include "mx-offscreen.h"
 #include "mx-private.h"
 #include "mx-stylable.h"
 #include "mx-utils.h"
@@ -63,15 +62,10 @@ typedef struct {
 struct _MxDialogPrivate
 {
   guint visible          : 1;
-  guint needs_allocation : 1;
-  guint do_paint         : 1;
   guint child_has_focus  : 1;
 
   guint  transition_time;
   gfloat angle;
-
-  ClutterActor    *blur;
-  ClutterShader   *shader;
 
   ClutterTimeline *timeline;
   ClutterAlpha    *alpha;
@@ -80,87 +74,12 @@ struct _MxDialogPrivate
   /* Dialog-specific variables */
   ClutterActor  *background;
   ClutterActor  *button_box;
-  MxButtonGroup *button_group;
   guint          spacing;
   GList         *actions;
 };
 
-static gchar *blur_shader =
-  "uniform sampler2D tex;\n"
-  "uniform float x_step, y_step;\n"
-
-#if 0
-  "void\n"
-  "main ()\n"
-  "  {\n"
-  "    float u, v;\n"
-  "    int count = 0;\n"
-  "    vec4 color = vec4 (0.0, 0.0, 0.0, 0.0);\n"
-
-  "    for (u = -1.0; u <= 1.0; u++)\n"
-  "      for (v = -1.0; v <= 1.0; v++)\n"
-  "        {\n"
-  "          color += texture2D(tex, \n"
-  "              vec2(cogl_tex_coord_in[0].s + u * x_step, \n"
-  "                   cogl_tex_coord_in[0].t + v * y_step));\n"
-  "          count ++;\n"
-  "        }\n"
-
-  "    color = color / float (count);\n"
-  "    cogl_color_out = color * cogl_color_in;\n"
-  "  }\n";
-#else
-  "vec4 get_rgba_rel(sampler2D tex, float dx, float dy)\n"
-  "{\n"
-  "  return texture2D (tex, cogl_tex_coord_in[0].st \n"
-  "                         + vec2(dx, dy));\n"
-  "}\n"
-
-  "void\n"
-  "main ()\n"
-  "  {\n"
-  "    vec4 color;\n"
-  "    color =  get_rgba_rel (tex, -x_step, -y_step);\n"
-  "    color += get_rgba_rel (tex, -x_step,  0.0);\n"
-  "    color += get_rgba_rel (tex, -x_step,  y_step);\n"
-  "    color += get_rgba_rel (tex,  0.0,    -y_step);\n"
-  "    color += get_rgba_rel (tex,  0.0,     0.0);\n"
-  "    color += get_rgba_rel (tex,  0.0,     y_step);\n"
-  "    color += get_rgba_rel (tex,  x_step, -y_step);\n"
-  "    color += get_rgba_rel (tex,  x_step,  0.0);\n"
-  "    color += get_rgba_rel (tex,  x_step,  y_step);\n"
-  "    color = color / 9.0;\n"
-  "    cogl_color_out = color * cogl_color_in;\n"
-  "  }\n";
-#endif
-
 static void mx_dialog_show (ClutterActor *self);
 static void mx_dialog_hide (ClutterActor *self);
-
-static int
-next_p2 (gint a)
-{
-  /* find the next power of two */
-  int rval = 1;
-
-  while (rval < a)
-    rval <<= 1;
-
-  return rval;
-}
-
-static void
-mx_dialog_texture_size_change_cb (ClutterActor *texture,
-                                  gint          width,
-                                  gint          height)
-{
-  clutter_actor_set_shader_param_float (texture,
-                                        "x_step",
-                                        (1.0f / next_p2 (width)) * 2);
-  clutter_actor_set_shader_param_float (texture,
-                                        "y_step",
-                                        (1.0f / next_p2 (height)) * 2);
-}
 
 static MxFocusable *
 mx_dialog_move_focus (MxFocusable      *focusable,
@@ -282,86 +201,10 @@ mx_stylable_iface_init (MxStylableIface *iface)
 }
 
 static void
-mx_dialog_allocate_cb (ClutterActor           *parent,
-                       const ClutterActorBox  *box,
-                       ClutterAllocationFlags  flags,
-                       MxDialog               *self)
-{
-  ClutterActorBox child_box;
-
-  child_box.x1 = 0;
-  child_box.y1 = 0;
-  child_box.x2 = box->x2 - box->x1;
-  child_box.y2 = box->y2 - box->y1;
-
-  clutter_actor_allocate (CLUTTER_ACTOR (self), &child_box, flags);
-}
-
-static void
-mx_dialog_paint_cb (ClutterActor *parent,
-                    ClutterActor *self)
-{
-  MxDialog *dialog = MX_DIALOG (self);
-  MxDialogPrivate *priv = dialog->priv;
-
-  if (priv->needs_allocation)
-    {
-      ClutterActorBox box;
-
-      clutter_actor_get_allocation_box (parent, &box);
-      mx_dialog_allocate_cb (parent,
-                                  &box,
-                                  CLUTTER_ALLOCATION_NONE,
-                                  dialog);
-    }
-
-  priv->do_paint = TRUE;
-  clutter_actor_paint (self);
-}
-
-static void
-mx_dialog_pick_cb (ClutterActor *parent,
-                   ClutterColor *color,
-                   ClutterActor *self)
-{
-  clutter_actor_paint (self);
-}
-
-static void
-mx_dialog_mapped_cb (ClutterActor *parent,
-                     GParamSpec   *pspec,
-                     ClutterActor *self)
-{
-  if (CLUTTER_ACTOR_IS_MAPPED (parent))
-    clutter_actor_map (self);
-  else
-    clutter_actor_unmap (self);
-}
-
-static void
 mx_dialog_dispose (GObject *object)
 {
-  ClutterActor *parent = clutter_actor_get_parent (CLUTTER_ACTOR (object));
   MxDialog *self = MX_DIALOG (object);
   MxDialogPrivate *priv = self->priv;
-
-  if (parent)
-    {
-      g_signal_handlers_disconnect_by_func (parent,
-                                            mx_dialog_mapped_cb, self);
-      g_signal_handlers_disconnect_by_func (parent,
-                                            mx_dialog_allocate_cb, self);
-      g_signal_handlers_disconnect_by_func (parent,
-                                            mx_dialog_paint_cb, self);
-      g_signal_handlers_disconnect_by_func (parent,
-                                            mx_dialog_pick_cb, self);
-    }
-
-  if (priv->blur)
-    {
-      clutter_actor_remove_child (CLUTTER_ACTOR (object), priv->blur);
-      priv->blur = NULL;
-    }
 
   if (priv->background)
     {
@@ -373,14 +216,6 @@ mx_dialog_dispose (GObject *object)
     {
       clutter_actor_remove_child (CLUTTER_ACTOR (object), priv->button_box);
       priv->button_box = NULL;
-    }
-
-
-
-  if (priv->shader)
-    {
-      g_object_unref (priv->shader);
-      priv->shader = NULL;
     }
 
   G_OBJECT_CLASS (mx_dialog_parent_class)->dispose (object);
@@ -628,19 +463,6 @@ mx_dialog_allocate (ClutterActor           *actor,
   inner_box.y2 += padding.bottom;
 
   clutter_actor_allocate (priv->background, &inner_box, flags);
-
-  /* Allocate the blurred background actor */
-  if (priv->blur)
-    {
-      child_box.x1 = 0;
-      child_box.y1 = 0;
-      child_box.x2 = box->x2 - box->x1;
-      child_box.y2 = box->y2 - box->y1;
-
-      clutter_actor_allocate (priv->blur, &child_box, flags);
-    }
-
-  priv->needs_allocation = FALSE;
 }
 
 static void
@@ -650,27 +472,10 @@ mx_dialog_paint (ClutterActor *actor)
   gfloat width, height;
   MxDialogPrivate *priv = MX_DIALOG (actor)->priv;
 
-  if (!priv->do_paint)
-    return;
-
-  priv->do_paint = FALSE;
-
   clutter_actor_get_size (actor, &width, &height);
 
-  if (priv->blur)
-    {
-      CoglHandle material = cogl_material_new ();
-      CoglHandle texture =
-        clutter_texture_get_cogl_texture (CLUTTER_TEXTURE (priv->blur));
-
-      cogl_material_set_color4ub (material, 0xff, 0xff, 0xff, 0xff);
-      cogl_material_set_layer (material, 0, texture);
-      cogl_set_source (material);
-
-      cogl_rectangle (0, 0, width, height);
-
-      clutter_actor_paint (priv->blur);
-    }
+  cogl_set_source_color4ub (0, 0, 0, 0x7b);
+  cogl_rectangle (0, 0, width, height);
 
   cogl_translate (width/2, height/2, 0);
   cogl_scale (priv->zoom, priv->zoom, 1.f);
@@ -698,7 +503,7 @@ mx_dialog_pick (ClutterActor       *actor,
   /* Paint a rectangle over our allocation to block input to
    * other actors.
    */
-  clutter_actor_get_geometry (actor, &geom);
+  clutter_actor_get_allocation_geometry (actor, &geom);
   cogl_set_source_color4ub (color->red,
                             color->green,
                             color->blue,
@@ -737,9 +542,6 @@ mx_dialog_map (ClutterActor *actor)
 
   CLUTTER_ACTOR_CLASS (mx_dialog_parent_class)->map (actor);
 
-  if (priv->blur)
-    clutter_actor_map (priv->blur);
-
   clutter_actor_map (priv->background);
   clutter_actor_map (priv->button_box);
 
@@ -775,9 +577,6 @@ mx_dialog_unmap (ClutterActor *actor)
   clutter_actor_unmap (priv->button_box);
   clutter_actor_unmap (priv->background);
 
-  if (priv->blur)
-    clutter_actor_unmap (priv->blur);
-
   CLUTTER_ACTOR_CLASS (mx_dialog_parent_class)->unmap (actor);
 }
 
@@ -804,51 +603,12 @@ mx_dialog_class_init (MxDialogClass *klass)
 }
 
 static void
-mx_dialog_parent_set_cb (ClutterActor *actor,
-                         ClutterActor *old_parent,
-                         MxDialog     *self)
-{
-  ClutterActor *parent = clutter_actor_get_parent (actor);
-
-  if (old_parent)
-    {
-      MxDialogPrivate *priv = self->priv;
-
-      g_signal_handlers_disconnect_by_func (old_parent,
-                                            mx_dialog_mapped_cb, self);
-
-      g_signal_handlers_disconnect_by_func (old_parent,
-                                            mx_dialog_allocate_cb, self);
-      g_signal_handlers_disconnect_by_func (old_parent,
-                                            mx_dialog_paint_cb, self);
-      g_signal_handlers_disconnect_by_func (old_parent,
-                                            mx_dialog_pick_cb, self);
-
-      priv->visible = FALSE;
-    }
-
-  if (parent)
-    {
-      g_signal_connect (parent, "notify::mapped",
-                        G_CALLBACK (mx_dialog_mapped_cb), self);
-    }
-}
-
-static void
-mx_dialog_queue_relayout_cb (ClutterActor *actor,
-                             MxDialog     *self)
-{
-  self->priv->needs_allocation = TRUE;
-}
-
-static void
 mx_dialog_completed_cb (ClutterTimeline *timeline,
                         ClutterActor    *self)
 {
   ClutterTimelineDirection direction;
 
   MxDialogPrivate *priv = MX_DIALOG (self)->priv;
-  ClutterActor *parent = clutter_actor_get_parent (self);
 
   priv->zoom = 1.f;
 
@@ -868,19 +628,6 @@ mx_dialog_completed_cb (ClutterTimeline *timeline,
   /* Finish hiding */
   CLUTTER_ACTOR_SET_FLAGS (self, CLUTTER_ACTOR_VISIBLE);
   CLUTTER_ACTOR_CLASS (mx_dialog_parent_class)->hide (self);
-
-  if (priv->blur)
-    {
-      clutter_actor_destroy (priv->blur);
-      priv->blur = NULL;
-    }
-
-  g_signal_handlers_disconnect_by_func (parent,
-                                        mx_dialog_paint_cb, self);
-  g_signal_handlers_disconnect_by_func (parent,
-                                        mx_dialog_pick_cb, self);
-  g_signal_handlers_disconnect_by_func (parent,
-                                        mx_dialog_allocate_cb, self);
 }
 
 static void
@@ -939,7 +686,6 @@ mx_dialog_init (MxDialog *self)
   mx_stylable_set_style_class (MX_STYLABLE (priv->button_box),
                                "MxDialogButtonBox");
 
-  priv->button_group = mx_button_group_new ();
   priv->child_has_focus = TRUE;
 
   clutter_actor_add_child (actor, priv->background);
@@ -950,38 +696,11 @@ mx_dialog_init (MxDialog *self)
   g_signal_connect (priv->timeline, "new-frame",
                     G_CALLBACK (mx_dialog_new_frame_cb), self);
 
-  g_signal_connect (self, "parent-set",
-                    G_CALLBACK (mx_dialog_parent_set_cb), self);
-  g_signal_connect (self, "queue-relayout",
-                    G_CALLBACK (mx_dialog_queue_relayout_cb), self);
   g_signal_connect (self, "style-changed",
                     G_CALLBACK (mx_dialog_style_changed_cb), self);
 
   g_object_set (G_OBJECT (self), "show-on-set-parent", FALSE, NULL);
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
-
-  /* Compile the shader when creating the instance so it's ready when we need
-   * it */
-  if (clutter_feature_available (CLUTTER_FEATURE_SHADERS_GLSL) &&
-      clutter_feature_available (CLUTTER_FEATURE_OFFSCREEN))
-    {
-      GError *error = NULL;
-      ClutterShader *shader;
-
-      shader = clutter_shader_new ();
-      clutter_shader_set_fragment_source (shader, blur_shader, -1);
-
-      if (clutter_shader_compile (shader, &error))
-        {
-          priv->shader = shader;
-        }
-      else
-        {
-          g_warning (G_STRLOC ": Error compiling shader: %s", error->message);
-          g_error_free (error);
-          g_object_unref (shader);
-        }
-    }
 }
 
 /**
@@ -1017,6 +736,10 @@ mx_dialog_set_transient_parent (MxDialog *dialog,
   g_return_if_fail (CLUTTER_IS_ACTOR (actor));
 
   clutter_actor_add_child (actor, CLUTTER_ACTOR (dialog));
+  clutter_actor_add_constraint (CLUTTER_ACTOR (dialog),
+                                clutter_bind_constraint_new (actor,
+                                                             CLUTTER_BIND_SIZE,
+                                                             0));
 }
 
 static void
@@ -1060,39 +783,6 @@ mx_dialog_show (ClutterActor *self)
 
           return;
         }
-
-      /* Create the blurred background */
-      if (priv->shader)
-        {
-          gint width, height;
-
-          priv->blur = mx_offscreen_new ();
-          clutter_actor_add_child (self, priv->blur);
-
-          mx_offscreen_set_child (MX_OFFSCREEN (priv->blur), parent);
-          clutter_actor_set_shader (priv->blur, priv->shader);
-
-          g_signal_connect (priv->blur, "size-change",
-                            G_CALLBACK (mx_dialog_texture_size_change_cb),
-                            NULL);
-          clutter_texture_get_base_size (CLUTTER_TEXTURE (priv->blur),
-                                         &width, &height);
-          mx_dialog_texture_size_change_cb (priv->blur, width, height);
-          clutter_actor_set_shader_param_int (priv->blur, "tex", 0);
-
-        }
-
-      /* Hook onto signals necessary for drawing */
-      priv->needs_allocation = TRUE;
-      g_signal_connect (parent, "allocation-changed",
-                        G_CALLBACK (mx_dialog_allocate_cb),
-                        dialog);
-      g_signal_connect_after (parent, "paint",
-                              G_CALLBACK (mx_dialog_paint_cb),
-                              dialog);
-      g_signal_connect_after (parent, "pick",
-                              G_CALLBACK (mx_dialog_pick_cb),
-                              dialog);
 
       clutter_actor_set_opacity (self, 0x00);
       CLUTTER_ACTOR_CLASS (mx_dialog_parent_class)->show (self);
@@ -1174,8 +864,7 @@ mx_dialog_add_action (MxDialog *dialog,
 
   button = mx_button_new ();
   mx_button_set_action (MX_BUTTON (button), action);
-  clutter_container_add_actor (CLUTTER_CONTAINER (priv->button_box), button);
-  mx_button_group_add (priv->button_group, (MxButton *) button);
+  clutter_actor_add_child (priv->button_box, button);
 
   /* So we can maintain the two way relationship between action and button */
   da = g_slice_new (MxDialogAction);
@@ -1226,9 +915,7 @@ mx_dialog_remove_action (MxDialog *dialog,
       return;
     }
 
-  mx_button_group_remove (priv->button_group, MX_BUTTON (da->button));
-  clutter_container_remove_actor (CLUTTER_CONTAINER (priv->button_box),
-                                  da->button);
+  clutter_actor_remove_child (priv->button_box, da->button);
   g_slice_free (MxDialogAction, da);
 }
 
