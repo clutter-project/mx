@@ -229,8 +229,9 @@ mx_button_style_changed (MxWidget *widget)
                                       priv->content_image);
         }
 
-      priv->content_image = mx_texture_cache_get_texture (mx_texture_cache_get_default (),
-                                                          content_image->uri);
+      priv->content_image =
+        (ClutterActor*) mx_texture_cache_get_texture (mx_texture_cache_get_default (),
+                                                      content_image->uri);
 
       if (priv->content_image)
         clutter_actor_add_child (CLUTTER_ACTOR (widget), priv->content_image);
@@ -708,7 +709,7 @@ mx_button_update_contents (MxButton *self)
     {
       clutter_actor_show (priv->icon);
       clutter_actor_hide (priv->label);
-      clutter_actor_lower_bottom (priv->icon);
+      clutter_actor_set_child_below_sibling (priv->hbox, priv->icon, NULL);
       return;
     }
 
@@ -716,7 +717,7 @@ mx_button_update_contents (MxButton *self)
     {
       clutter_actor_hide (priv->icon);
       clutter_actor_show (priv->label);
-      clutter_actor_lower_bottom (priv->label);
+      clutter_actor_set_child_below_sibling (priv->hbox, priv->label, NULL);
       return;
     }
 
@@ -729,7 +730,7 @@ mx_button_update_contents (MxButton *self)
     case MX_POSITION_TOP:
       mx_box_layout_set_orientation (MX_BOX_LAYOUT (priv->hbox),
                                      MX_ORIENTATION_VERTICAL);
-      clutter_actor_lower_bottom (priv->icon);
+      clutter_actor_set_child_below_sibling (priv->hbox, priv->icon, NULL);
 
       clutter_container_child_set (CLUTTER_CONTAINER (priv->hbox),
                                    priv->label, "x-align", MX_ALIGN_MIDDLE,
@@ -742,7 +743,7 @@ mx_button_update_contents (MxButton *self)
     case MX_POSITION_RIGHT:
       mx_box_layout_set_orientation (MX_BOX_LAYOUT (priv->hbox),
                                      MX_ORIENTATION_HORIZONTAL);
-      clutter_actor_raise_top (priv->icon);
+      clutter_actor_set_child_above_sibling (priv->hbox, priv->icon, NULL);
 
       clutter_container_child_set (CLUTTER_CONTAINER (priv->hbox),
                                    priv->label, "x-align", MX_ALIGN_START,
@@ -755,7 +756,7 @@ mx_button_update_contents (MxButton *self)
     case MX_POSITION_BOTTOM:
       mx_box_layout_set_orientation (MX_BOX_LAYOUT (priv->hbox),
                                      MX_ORIENTATION_VERTICAL);
-      clutter_actor_raise_top (priv->icon);
+      clutter_actor_set_child_above_sibling (priv->hbox, priv->icon, NULL);
 
       mx_box_layout_child_set_x_align (MX_BOX_LAYOUT (priv->hbox),
                                        priv->label, MX_ALIGN_MIDDLE);
@@ -770,7 +771,7 @@ mx_button_update_contents (MxButton *self)
     case MX_POSITION_LEFT:
       mx_box_layout_set_orientation (MX_BOX_LAYOUT (priv->hbox),
                                      MX_ORIENTATION_HORIZONTAL);
-      clutter_actor_lower_bottom (priv->icon);
+      clutter_actor_set_child_below_sibling (priv->hbox, priv->icon, NULL);
 
       clutter_container_child_set (CLUTTER_CONTAINER (priv->hbox),
                                    priv->label, "x-align", MX_ALIGN_END,
@@ -908,8 +909,8 @@ mx_button_init (MxButton *button)
                               "ellipsize", PANGO_ELLIPSIZE_END,
                               NULL);
 
-  clutter_container_add (CLUTTER_CONTAINER (priv->hbox), priv->icon,
-                         priv->label, NULL);
+  clutter_actor_add_child (priv->hbox, priv->icon);
+  clutter_actor_add_child (priv->hbox, priv->label);
 
   mx_box_layout_child_set_expand (MX_BOX_LAYOUT (priv->hbox),
                                   priv->label, TRUE);
