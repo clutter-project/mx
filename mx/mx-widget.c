@@ -837,21 +837,19 @@ mx_widget_hide (ClutterActor *actor)
 }
 
 static void
-_mx_widget_propagate_disabled (ClutterContainer *container,
-                               gboolean          disabled)
+_mx_widget_propagate_disabled (ClutterActor *container,
+                               gboolean      disabled)
 {
-  GList *c, *children;
-
-  children = clutter_container_get_children (container);
+  ClutterActorIter iter;
+  ClutterActor *child;
 
   /* Recurse through the children and set the 'parent_disabled' flag. */
-  for (c = children; c; c = c->next)
+  clutter_actor_iter_init (&iter, container);
+  while (clutter_actor_iter_next (&iter, &child))
     {
-      MxWidget *child = c->data;
-
       if (MX_IS_WIDGET (child))
         {
-          MxWidgetPrivate *child_priv = child->priv;
+          MxWidgetPrivate *child_priv = ((MxWidget*) child)->priv;
 
           child_priv->parent_disabled = disabled;
 
@@ -875,11 +873,8 @@ _mx_widget_propagate_disabled (ClutterContainer *container,
             continue;
         }
 
-      if (CLUTTER_IS_CONTAINER (child))
-        _mx_widget_propagate_disabled ((ClutterContainer *) child, disabled);
+      _mx_widget_propagate_disabled (child, disabled);
     }
-
-  g_list_free (children);
 }
 
 static void
@@ -910,9 +905,7 @@ mx_widget_parent_set (ClutterActor *actor,
       if (disabled != priv->parent_disabled)
         {
           priv->parent_disabled = disabled;
-          if (CLUTTER_IS_CONTAINER (widget))
-            _mx_widget_propagate_disabled ((ClutterContainer *) widget,
-                                           disabled);
+          _mx_widget_propagate_disabled ((ClutterActor*) widget, disabled);
         }
     }
 }
@@ -1570,8 +1563,8 @@ mx_widget_set_disabled (MxWidget *widget,
         mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "disabled");
 
       /* Propagate the disabled state to our children, if necessary */
-      if (!priv->parent_disabled && CLUTTER_IS_CONTAINER (widget))
-        _mx_widget_propagate_disabled ((ClutterContainer *) widget, disabled);
+      if (!priv->parent_disabled)
+        _mx_widget_propagate_disabled ((ClutterActor*) widget, disabled);
 
       /* when a widget is disabled, get_style_pseudo_class will always return
        * "disabled" */
