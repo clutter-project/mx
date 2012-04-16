@@ -266,7 +266,7 @@ mx_focus_manager_start_focus (MxFocusManager *manager, MxFocusHint hint)
 
   GList *children, *l;
 
-  children = clutter_container_get_children (CLUTTER_CONTAINER (priv->stage));
+  children = clutter_actor_get_children (priv->stage);
   focusable = NULL;
 
   if (hint == MX_FOCUS_HINT_LAST)
