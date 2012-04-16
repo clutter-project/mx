@@ -277,7 +277,6 @@ mx_stack_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 {
   GList *c, *children;
   MxStackPrivate *priv = MX_STACK (focusable)->priv;
-  ClutterContainer *container = CLUTTER_CONTAINER (focusable);
 
   focusable = NULL;
 
@@ -299,7 +298,7 @@ mx_stack_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 
     case MX_FOCUS_HINT_FIRST:
     case MX_FOCUS_HINT_LAST:
-      children = clutter_container_get_children (container);
+      children = clutter_actor_get_children (CLUTTER_ACTOR (focusable));
       if (hint == MX_FOCUS_HINT_LAST)
         children = g_list_reverse (children);
 
