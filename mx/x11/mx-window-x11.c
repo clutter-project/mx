@@ -827,7 +827,8 @@ mx_window_x11_notify_small_screen_cb (MxWindow    *window,
 
           clutter_actor_show (resize_grip);
           if (child)
-            clutter_actor_raise (resize_grip, child);
+            clutter_actor_set_child_above_sibling (resize_grip, child,
+                                                   NULL);
         }
     }
 }
