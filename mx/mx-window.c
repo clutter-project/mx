@@ -639,7 +639,9 @@ mx_window_fullscreen_set_cb (ClutterStage *stage,
         {
           clutter_actor_show (priv->resize_grip);
           if (priv->child)
-            clutter_actor_raise (priv->resize_grip, priv->child);
+            clutter_actor_set_child_above_sibling (CLUTTER_ACTOR (stage),
+                                                   priv->resize_grip,
+                                                   priv->child);
         }
     }
   else if (priv->resize_grip)
@@ -671,7 +673,8 @@ mx_window_actor_added_cb (ClutterContainer *container,
 {
   MxWindowPrivate *priv = self->priv;
   if (priv->resize_grip && priv->child)
-    clutter_actor_raise (priv->resize_grip, priv->child);
+    clutter_actor_set_child_above_sibling (CLUTTER_ACTOR (container),
+                                           priv->resize_grip, priv->child);
 }
 
 static void
@@ -709,7 +712,9 @@ mx_window_user_resizable_cb (ClutterStage *stage,
         {
           clutter_actor_show (priv->resize_grip);
           if (priv->child)
-            clutter_actor_raise (priv->resize_grip, priv->child);
+            clutter_actor_set_child_above_sibling (CLUTTER_ACTOR (stage),
+                                                   priv->resize_grip,
+                                                   priv->child);
         }
     }
 }
@@ -737,8 +742,7 @@ mx_window_constructed (GObject *object)
 
   priv->resize_grip = mx_icon_new ();
   mx_stylable_set_style_class (MX_STYLABLE (priv->resize_grip), "ResizeGrip");
-  clutter_container_add_actor (CLUTTER_CONTAINER (priv->stage),
-                               priv->resize_grip);
+  clutter_actor_add_child (priv->stage, priv->resize_grip);
   if (priv->fullscreen ||
       !clutter_stage_get_user_resizable (CLUTTER_STAGE (priv->stage)) ||
       !priv->has_toolbar)
@@ -1041,14 +1045,12 @@ mx_window_set_child (MxWindow     *window,
     return;
 
   if (priv->child)
-    clutter_container_remove_actor (CLUTTER_CONTAINER (priv->stage),
-                                    priv->child);
+    clutter_actor_remove_child (priv->stage, priv->child);
 
   if (actor)
     {
       priv->child = actor;
-      clutter_container_add_actor (CLUTTER_CONTAINER (priv->stage),
-                                   priv->child);
+      clutter_actor_add_child (priv->stage, priv->child);
     }
 
   mx_window_reallocate (window);
@@ -1172,8 +1174,7 @@ mx_window_set_toolbar (MxWindow  *window,
                                             window);
       g_object_remove_weak_pointer (G_OBJECT (priv->toolbar),
                                     (gpointer *)&priv->toolbar);
-      clutter_container_remove_actor (CLUTTER_CONTAINER (priv->stage),
-                                      priv->toolbar);
+      clutter_actor_remove_child (priv->stage, priv->toolbar);
     }
 
   priv->toolbar = (ClutterActor *)toolbar;
@@ -1181,8 +1182,7 @@ mx_window_set_toolbar (MxWindow  *window,
   /* Add new toolbar */
   if (toolbar)
     {
-      clutter_container_add_actor (CLUTTER_CONTAINER (priv->stage),
-                                   priv->toolbar);
+      clutter_actor_add_child (priv->stage, priv->toolbar);
       g_object_add_weak_pointer (G_OBJECT (priv->toolbar),
                                  (gpointer *)&priv->toolbar);
       g_signal_connect (priv->toolbar, "allocation-changed",
