@@ -94,8 +94,6 @@ enum {
 
 struct _MxBoxLayoutPrivate
 {
-  GList        *children;
-
   guint         ignore_css_spacing : 1; /* Should we ignore spacing from
                                            the CSS because the application
                                            set it via set_spacing */
@@ -302,14 +300,10 @@ fade_in_actor (ClutterActor *actor)
 }
 
 static void
-mx_box_container_add_actor (ClutterContainer *container,
-                            ClutterActor     *actor)
+mx_box_container_actor_added (ClutterContainer *container,
+                              ClutterActor     *actor)
 {
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (container)->priv;
-
-  clutter_actor_add_child (CLUTTER_ACTOR (container), actor);
-
-  priv->children = g_list_append (priv->children, actor);
 
   if (priv->enable_animations)
     {
@@ -326,30 +320,15 @@ mx_box_container_add_actor (ClutterContainer *container,
 }
 
 static void
-mx_box_container_remove_actor (ClutterContainer *container,
-                               ClutterActor     *actor)
+mx_box_container_actor_removed (ClutterContainer *container,
+                                ClutterActor     *actor)
 {
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (container)->priv;
-
-  GList *item = NULL;
-
-  item = g_list_find (priv->children, actor);
-
-  if (item == NULL)
-    {
-      g_warning ("Actor of type '%s' is not a child of container of type '%s'",
-                 g_type_name (G_OBJECT_TYPE (actor)),
-                 g_type_name (G_OBJECT_TYPE (container)));
-      return;
-    }
 
   g_object_ref (actor);
 
   if ((ClutterActor *)priv->last_focus == actor)
     priv->last_focus = NULL;
-
-  priv->children = g_list_delete_link (priv->children, item);
-  clutter_actor_remove_child (CLUTTER_ACTOR (container), actor);
 
   if (priv->enable_animations)
     _mx_box_layout_start_animation (MX_BOX_LAYOUT (container));
@@ -360,105 +339,10 @@ mx_box_container_remove_actor (ClutterContainer *container,
 }
 
 static void
-mx_box_container_foreach (ClutterContainer *container,
-                          ClutterCallback   callback,
-                          gpointer          callback_data)
-{
-  MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (container)->priv;
-  ClutterActor       *child;
-  GList              *list;
-
-  list = priv->children;
-  while (list)
-    {
-      child = list->data;
-      list  = list->next;
-
-      callback (child, callback_data);
-    }
-}
-
-/*
- * Implementations for raise, lower and sort_by_depth_order are taken from
- * ClutterBox.
- */
-static void
-mx_box_container_lower (ClutterContainer *container,
-                        ClutterActor     *actor,
-                        ClutterActor     *sibling)
-{
-  MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (container)->priv;
-
-  priv->children = g_list_remove (priv->children, actor);
-
-  if (sibling == NULL)
-    priv->children = g_list_prepend (priv->children, actor);
-  else
-    {
-      gint index_ = g_list_index (priv->children, sibling);
-
-      priv->children = g_list_insert (priv->children, actor, index_);
-    }
-
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
-}
-
-static void
-mx_box_container_raise (ClutterContainer *container,
-                        ClutterActor     *actor,
-                        ClutterActor     *sibling)
-{
-  MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (container)->priv;
-
-  priv->children = g_list_remove (priv->children, actor);
-
-  if (sibling == NULL)
-    priv->children = g_list_append (priv->children, actor);
-  else
-    {
-      gint index_ = g_list_index (priv->children, sibling) + 1;
-
-      priv->children = g_list_insert (priv->children, actor, index_);
-    }
-
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
-}
-
-static gint
-sort_by_depth (gconstpointer a,
-               gconstpointer b)
-{
-  gfloat depth_a = clutter_actor_get_depth ((ClutterActor *) a);
-  gfloat depth_b = clutter_actor_get_depth ((ClutterActor *) b);
-
-  if (depth_a < depth_b)
-    return -1;
-
-  if (depth_a > depth_b)
-    return 1;
-
-  return 0;
-}
-
-static void
-mx_box_container_sort_depth_order (ClutterContainer *container)
-{
-  MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (container)->priv;
-
-  priv->children = g_list_sort (priv->children, sort_by_depth);
-
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
-}
-
-static void
 mx_box_container_iface_init (ClutterContainerIface *iface)
 {
-  iface->add = mx_box_container_add_actor;
-  iface->remove = mx_box_container_remove_actor;
-  iface->foreach = mx_box_container_foreach;
-  iface->lower = mx_box_container_lower;
-  iface->raise = mx_box_container_raise;
-  iface->sort_depth_order = mx_box_container_sort_depth_order;
+  iface->actor_added = mx_box_container_actor_added;
+  iface->actor_removed = mx_box_container_actor_removed;
 
   iface->child_meta_type = MX_TYPE_BOX_LAYOUT_CHILD;
 }
@@ -518,14 +402,17 @@ mx_box_layout_move_focus (MxFocusable      *focusable,
                           MxFocusable      *from)
 {
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (focusable)->priv;
-  GList *l, *childlink;
+  GList *l, *childlink, *children;
   MxFocusHint hint;
+  MxFocusable *focused = NULL;
+
 
   /* find the current focus */
-  childlink = g_list_find (priv->children, from);
+  children = clutter_actor_get_children (CLUTTER_ACTOR (focusable));
+  childlink = g_list_find (children, from);
 
   if (!childlink)
-    return NULL;
+    goto out;
 
   priv->last_focus = from;
 
@@ -556,14 +443,12 @@ mx_box_layout_move_focus (MxFocusable      *focusable,
 
           if (MX_IS_FOCUSABLE (child))
             {
-              MxFocusable *focused;
-
               focused = mx_focusable_accept_focus (child, hint);
 
               if (focused)
                 {
                   update_adjustments (MX_BOX_LAYOUT (focusable), child);
-                  return focused;
+                  goto out;
                 }
             }
         }
@@ -576,20 +461,20 @@ mx_box_layout_move_focus (MxFocusable      *focusable,
 
           if (MX_IS_FOCUSABLE (child))
             {
-              MxFocusable *focused;
-
               focused = mx_focusable_accept_focus (child, hint);
 
               if (focused)
                 {
                   update_adjustments (MX_BOX_LAYOUT (focusable), child);
-                  return focused;
+                  goto out;
                 }
             }
         }
     }
 
-  return NULL;
+out:
+  g_list_free (children);
+  return focused;
 }
 
 static MxFocusable*
@@ -598,9 +483,11 @@ mx_box_layout_accept_focus (MxFocusable *focusable, MxFocusHint hint)
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (focusable)->priv;
   MxFocusable *return_focusable;
   MxFocusHint modified_hint;
-  GList* list, *l;
+  GList* list, *l, *children;
 
   return_focusable = NULL;
+
+  children = clutter_actor_get_children (CLUTTER_ACTOR (focusable));
 
   /* Transform the hint based on our orientation */
   modified_hint = hint;
@@ -623,21 +510,21 @@ mx_box_layout_accept_focus (MxFocusable *focusable, MxFocusHint hint)
   switch (modified_hint)
     {
     case MX_FOCUS_HINT_LAST:
-      list = g_list_reverse (g_list_copy (priv->children));
+      list = g_list_reverse (g_list_copy (children));
       break;
 
     default:
     case MX_FOCUS_HINT_PRIOR:
       if (priv->last_focus)
         {
-          list = g_list_copy (g_list_find (priv->children, priv->last_focus));
+          list = g_list_copy (g_list_find (children, priv->last_focus));
           if (list)
             break;
         }
       /* This intentionally runs into the next case */
 
     case MX_FOCUS_HINT_FIRST:
-      list = g_list_copy (priv->children);
+      list = g_list_copy (children);
       break;
     }
 
@@ -658,6 +545,7 @@ mx_box_layout_accept_focus (MxFocusable *focusable, MxFocusHint hint)
     }
 
   g_list_free (list);
+  g_list_free (children);
 
   return return_focusable;
 }
@@ -821,7 +709,8 @@ mx_box_layout_get_preferred_width (ClutterActor *actor,
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (actor)->priv;
   MxPadding padding = { 0, };
   gint n_children = 0;
-  GList *l;
+  ClutterActorIter iter;
+  ClutterActor *child;
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
@@ -834,12 +723,13 @@ mx_box_layout_get_preferred_width (ClutterActor *actor,
   if (for_height > 0)
     for_height = MAX (0, for_height - padding.top - padding.bottom);
 
-  for (l = priv->children; l; l = g_list_next (l))
+  clutter_actor_iter_init (&iter, actor);
+  while (clutter_actor_iter_next (&iter, &child))
     {
       gfloat child_min = 0, child_nat = 0;
       gfloat child_for_height;
 
-      if (!CLUTTER_ACTOR_IS_VISIBLE ((ClutterActor*) l->data))
+      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
         continue;
 
       n_children++;
@@ -849,7 +739,7 @@ mx_box_layout_get_preferred_width (ClutterActor *actor,
       else
         child_for_height = -1;
 
-      clutter_actor_get_preferred_width ((ClutterActor*) l->data,
+      clutter_actor_get_preferred_width (child,
                                          child_for_height,
                                          &child_min,
                                          &child_nat);
@@ -899,7 +789,8 @@ mx_box_layout_get_preferred_height (ClutterActor *actor,
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (actor)->priv;
   MxPadding padding = { 0, };
   gint n_children = 0;
-  GList *l;
+  ClutterActor *child;
+  ClutterActorIter iter;
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
@@ -914,12 +805,13 @@ mx_box_layout_get_preferred_height (ClutterActor *actor,
     for_width = MAX (0, for_width - padding.left - padding.right);
 
 
-  for (l = priv->children; l; l = g_list_next (l))
+  clutter_actor_iter_init (&iter, actor);
+  while (clutter_actor_iter_next (&iter, &child))
     {
       gfloat child_min = 0, child_nat = 0;
       gfloat child_for_width;
 
-      if (!CLUTTER_ACTOR_IS_VISIBLE ((ClutterActor*) l->data))
+      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
         continue;
 
       n_children++;
@@ -929,7 +821,7 @@ mx_box_layout_get_preferred_height (ClutterActor *actor,
       else
         child_for_width = -1;
 
-      clutter_actor_get_preferred_height ((ClutterActor*) l->data,
+      clutter_actor_get_preferred_height (child,
                                           child_for_width,
                                           &child_min,
                                           &child_nat);
@@ -979,25 +871,23 @@ mx_box_layout_allocate (ClutterActor          *actor,
   gboolean allocate_pref;
   gfloat extra_space = 0;
   gfloat position = 0;
-  GList *l;
+  ClutterActor *child;
+  ClutterActorIter iter;
   gint n_expand_children, n_children;
 
   CLUTTER_ACTOR_CLASS (mx_box_layout_parent_class)->allocate (actor, box,
                                                               flags);
 
-  if (priv->children == NULL)
+  if (clutter_actor_get_n_children (actor) == 0)
     return;
 
   /* count the number of children with expand set to TRUE and the
    * amount of visible children.
    */
   n_children = n_expand_children = 0;
-  for (l = priv->children; l; l = l->next)
+  clutter_actor_iter_init (&iter, actor);
+  while (clutter_actor_iter_next (&iter, &child))
     {
-      ClutterActor *child;
-
-      child = (ClutterActor*) l->data;
-
       if (CLUTTER_ACTOR_IS_VISIBLE (child))
         {
           MxBoxLayoutChild *meta;
@@ -1074,10 +964,12 @@ mx_box_layout_allocate (ClutterActor          *actor,
        * In the case where all your children are the same size, this
        * will probably provide the desired behaviour.
        */
-      if (priv->children && priv->orientation == MX_ORIENTATION_VERTICAL)
+      if (clutter_actor_get_n_children (actor) > 0
+          && priv->orientation == MX_ORIENTATION_VERTICAL)
         {
           gfloat child_height;
-          ClutterActor *first_child = (ClutterActor *)priv->children->data;
+          ClutterActor *first_child = clutter_actor_get_child_at_index (actor,
+                                                                        0);
           clutter_actor_get_preferred_height (first_child,
                                               avail_width,
                                               NULL,
@@ -1104,10 +996,12 @@ mx_box_layout_allocate (ClutterActor          *actor,
     {
       gdouble step_inc, page_inc;
 
-      if (priv->children && priv->orientation == MX_ORIENTATION_HORIZONTAL)
+      if (clutter_actor_get_n_children (actor) > 0
+          && priv->orientation == MX_ORIENTATION_HORIZONTAL)
         {
           gfloat child_width;
-          ClutterActor *first_child = (ClutterActor *)priv->children->data;
+          ClutterActor *first_child = clutter_actor_get_child_at_index (actor,
+                                                                        0);
           clutter_actor_get_preferred_width (first_child,
                                              avail_height,
                                              &child_width,
@@ -1153,9 +1047,9 @@ mx_box_layout_allocate (ClutterActor          *actor,
   else
     position = padding.left;
 
-  for (l = priv->children; l; l = l->next)
+  clutter_actor_iter_init (&iter, actor);
+  while (clutter_actor_iter_next (&iter, &child))
     {
-      ClutterActor *child = (ClutterActor*) l->data;
       ClutterActorBox child_box, old_child_box;
       gfloat child_nat, child_min;
       MxBoxLayoutChild *meta;
@@ -1336,14 +1230,15 @@ static void
 mx_box_layout_paint (ClutterActor *actor)
 {
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (actor)->priv;
-  GList *l;
   gdouble x, y;
   ClutterActorBox child_b;
   ClutterActorBox box_b;
+  ClutterActor *child;
+  ClutterActorIter iter;
 
   CLUTTER_ACTOR_CLASS (mx_box_layout_parent_class)->paint (actor);
 
-  if (priv->children == NULL)
+  if (clutter_actor_get_n_children (actor) == 0)
     return;
 
   if (priv->hadjustment)
@@ -1362,10 +1257,9 @@ mx_box_layout_paint (ClutterActor *actor)
   box_b.y2 = (box_b.y2 - box_b.y1) + y;
   box_b.y1 = y;
 
-  for (l = priv->children; l; l = g_list_next (l))
+  clutter_actor_iter_init (&iter, actor);
+  while (clutter_actor_iter_next (&iter, &child))
     {
-      ClutterActor *child = (ClutterActor*) l->data;
-
       if (!CLUTTER_ACTOR_IS_VISIBLE (child))
         continue;
 
@@ -1386,14 +1280,15 @@ mx_box_layout_pick (ClutterActor       *actor,
                     const ClutterColor *color)
 {
   MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (actor)->priv;
-  GList *l;
+  ClutterActor *child;
+  ClutterActorIter iter;
   gdouble x, y;
   ClutterActorBox child_b;
   ClutterActorBox box_b;
 
   CLUTTER_ACTOR_CLASS (mx_box_layout_parent_class)->pick (actor, color);
 
-  if (priv->children == NULL)
+  if (clutter_actor_get_n_children (actor) == 0)
     return;
 
   if (priv->hadjustment)
@@ -1412,10 +1307,9 @@ mx_box_layout_pick (ClutterActor       *actor,
   box_b.y2 = (box_b.y2 - box_b.y1) + y;
   box_b.y1 = y;
 
-  for (l = priv->children; l; l = g_list_next (l))
+  clutter_actor_iter_init (&iter, actor);
+  while (clutter_actor_iter_next (&iter, &child))
     {
-      ClutterActor *child = (ClutterActor*) l->data;
-
       if (!CLUTTER_ACTOR_IS_VISIBLE (child))
         continue;
 
@@ -1745,19 +1639,6 @@ mx_box_layout_set_property_valist (MxBoxLayout  *box,
     }
 }
 
-static void
-mx_box_layout_create_child_meta (MxBoxLayout  *box,
-                                 ClutterActor *actor)
-{
-  ClutterContainer *container = CLUTTER_CONTAINER (box);
-  ClutterContainerIface *iface = CLUTTER_CONTAINER_GET_IFACE (container);
-
-  g_assert (g_type_is_a (iface->child_meta_type, MX_TYPE_BOX_LAYOUT_CHILD));
-
-  if (G_LIKELY (iface->create_child_meta))
-      iface->create_child_meta (container, actor);
-}
-
 /**
  * mx_box_layout_insert_actor:
  * @box: a #MxBoxLayout
@@ -1771,36 +1652,10 @@ mx_box_layout_insert_actor (MxBoxLayout  *box,
                             ClutterActor *actor,
                             gint          position)
 {
-  MxBoxLayoutPrivate *priv;
-
   g_return_if_fail (MX_IS_BOX_LAYOUT (box));
   g_return_if_fail (CLUTTER_IS_ACTOR (actor));
 
-  priv = box->priv;
-
-  /* this is really mx_box_container_add_actor() with a different insert() */
-  priv->children = g_list_insert (priv->children,
-                                  actor,
-                                  position);
-  mx_box_layout_create_child_meta (box, actor);
-  clutter_actor_add_child ((ClutterActor*) box, actor);
-
-  if (priv->enable_animations)
-    {
-      _mx_box_layout_start_animation (box);
-
-      if (priv->timeline)
-        {
-          /* fade in the new actor when there is room */
-          clutter_actor_set_opacity (actor, 0);
-          g_signal_connect_swapped (priv->timeline, "completed",
-                                    G_CALLBACK (fade_in_actor), actor);
-        }
-    }
-  else
-    {
-      clutter_actor_queue_relayout ((ClutterActor *) box);
-    }
+  clutter_actor_insert_child_at_index (CLUTTER_ACTOR (box), actor, position);
 }
 
 /**
@@ -1827,7 +1682,7 @@ mx_box_layout_insert_actor_with_properties (MxBoxLayout  *box,
 {
   va_list var_args;
 
-  mx_box_layout_insert_actor (box, actor, position);
+  clutter_actor_insert_child_at_index (CLUTTER_ACTOR (box), actor, position);
 
   if (first_property == NULL || *first_property == '\0')
     return;

@@ -101,6 +101,7 @@ guint         mx_box_layout_get_spacing    (MxBoxLayout *box);
 gboolean      mx_box_layout_get_enable_animations (MxBoxLayout *box);
 void          mx_box_layout_set_enable_animations (MxBoxLayout *box,
                                                    gboolean     enable_animations);
+G_DEPRECATED_FOR (clutter_actor_insert_child_at_index)
 void          mx_box_layout_insert_actor   (MxBoxLayout  *box,
                                             ClutterActor *actor,
                                             gint          position);
