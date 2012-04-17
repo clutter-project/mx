@@ -437,15 +437,16 @@ widget_captured_event (ClutterActor *widget,
 }
 
 static void
-mx_builder_add_widget (MxBuilder *builder,
-                       MxButton  *button)
+mx_builder_add_widget (MxBuilder  *builder,
+                       GParamSpec *notify_pspec,
+                       MxComboBox *combo)
 {
   const gchar *typename;
   guint id;
   ClutterActor *new_widget;
   GParamSpec *pspec;
 
-  typename = mx_combo_box_get_active_text (MX_COMBO_BOX (builder->combobox));
+  typename = mx_combo_box_get_active_text (combo);
 
   /* skip separators */
   if (typename[0] == ' ')
@@ -475,6 +476,11 @@ mx_builder_add_widget (MxBuilder *builder,
     g_object_set (new_widget, "text", &typename[2], NULL);
 
   mx_builder_set_selected_widget (builder, new_widget);
+
+  /* Reset combo box title */
+  g_signal_handlers_block_by_func (combo, mx_builder_add_widget, builder);
+  mx_combo_box_set_active_text (combo, "Add");
+  g_signal_handlers_unblock_by_func (combo, mx_builder_add_widget, builder);
 }
 
 static void
