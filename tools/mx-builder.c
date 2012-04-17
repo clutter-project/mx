@@ -85,10 +85,10 @@ mx_builder_widget_tree_traverse_children (MxBuilder *builder,
       clutter_actor_set_width (label, depth * 10);
 
       hbox = mx_box_layout_new ();
-      mx_box_layout_insert_actor (MX_BOX_LAYOUT (hbox), label, 0);
-      mx_box_layout_insert_actor (MX_BOX_LAYOUT (hbox), button, 1);
+      clutter_actor_insert_child_at_index (hbox, label, 0);
+      clutter_actor_insert_child_at_index (hbox, button, 1);
 
-      mx_box_layout_insert_actor (MX_BOX_LAYOUT (builder->tree), hbox, -1);
+      clutter_actor_insert_child_at_index (builder->tree, hbox, -1);
 
       if (mx_builder_is_container (children->data))
         {
@@ -116,7 +116,7 @@ mx_builder_widget_tree_rebuild (MxBuilder *builder)
 
   label = mx_label_new_with_text ("<b>Tree</b>");
   mx_label_set_use_markup (MX_LABEL (label), TRUE);
-  mx_box_layout_insert_actor (MX_BOX_LAYOUT (builder->tree), label, 0);
+  clutter_actor_insert_child_at_index (builder->tree, label, 0);
 
   clutter_actor_set_width (builder->tree, MIN_TREE_WIDTH);
 
@@ -190,7 +190,7 @@ mx_builder_create_property_editor (GObject    *object,
 
   label = mx_label_new_with_text (pspec->name);
   clutter_actor_set_width (label, 150);
-  mx_box_layout_insert_actor (MX_BOX_LAYOUT (hbox), label, 0);
+  clutter_actor_insert_child_at_index (hbox, label, 0);
 
   if (pspec->value_type == G_TYPE_BOOLEAN)
     {
@@ -247,7 +247,7 @@ mx_builder_create_property_editor (GObject    *object,
 
   if (value)
     {
-      mx_box_layout_insert_actor (MX_BOX_LAYOUT (hbox), value, 1);
+      clutter_actor_insert_child_at_index (hbox, value, 1);
       return hbox;
     }
   else
@@ -296,7 +296,7 @@ mx_builder_create_packing_properties_inspector (ClutterActor *child)
       /* title */
       label = mx_label_new_with_text ("<b>Packing</b>");
       mx_label_set_use_markup (MX_LABEL (label), TRUE);
-      mx_box_layout_insert_actor (MX_BOX_LAYOUT (vbox), label, -1);
+      clutter_actor_insert_child_at_index (vbox, label, -1);
     }
 
   for (i = n_properties - 1; i >= 0; i--)
@@ -306,7 +306,7 @@ mx_builder_create_packing_properties_inspector (ClutterActor *child)
       editor = mx_builder_create_property_editor (G_OBJECT (meta), properties[i]);
 
       if (editor)
-        mx_box_layout_insert_actor (MX_BOX_LAYOUT (vbox), editor, -1);
+        clutter_actor_insert_child_at_index (vbox, editor, -1);
     }
 
   clutter_actor_set_width (vbox, MIN_INSPECTOR_WIDTH);
@@ -353,7 +353,7 @@ mx_builder_set_selected_widget (MxBuilder    *builder,
   /* Title */
   label = mx_label_new_with_text ("<b>Inspector</b>");
   mx_label_set_use_markup (MX_LABEL (label), TRUE);
-  mx_box_layout_insert_actor (MX_BOX_LAYOUT (builder->inspector), label, 0);
+  clutter_actor_insert_child_at_index (builder->inspector, label, 0);
   clutter_actor_set_width (CLUTTER_ACTOR (label), MIN_INSPECTOR_WIDTH);
 
 
@@ -382,7 +382,7 @@ mx_builder_set_selected_widget (MxBuilder    *builder,
   /* create the scroll view for the inspector */
   scroll = mx_scroll_view_new ();
   clutter_actor_set_width (scroll, 300);
-  mx_box_layout_insert_actor (MX_BOX_LAYOUT (builder->inspector), scroll, 1);
+  clutter_actor_insert_child_at_index (builder->inspector, scroll, 1);
 
 
   /* create the property editors */
@@ -399,12 +399,12 @@ mx_builder_set_selected_widget (MxBuilder    *builder,
       editor = mx_builder_create_property_editor (G_OBJECT (new_widget), properties[i]);
 
       if (editor)
-        mx_box_layout_insert_actor (MX_BOX_LAYOUT (vbox), editor, 0);
+        clutter_actor_insert_child_at_index (vbox, editor, 0);
     }
 
   /* create the packing properties inspector */
   packing_properties = mx_builder_create_packing_properties_inspector (builder->selected_widget);
-  mx_box_layout_insert_actor (MX_BOX_LAYOUT (vbox), packing_properties, -1);
+  clutter_actor_insert_child_at_index (vbox, packing_properties, -1);
 
   /* add the property inspector to the scroll view */
   mx_bin_set_child (MX_BIN (scroll), vbox);
@@ -460,8 +460,10 @@ mx_builder_add_widget (MxBuilder *builder,
                     G_CALLBACK (widget_captured_event),
                     builder);
 
-  clutter_container_add_actor (CLUTTER_CONTAINER (builder->selected_widget),
-                               new_widget);
+  if (MX_IS_BIN (builder->selected_widget))
+    mx_bin_set_child (MX_BIN (builder->selected_widget), new_widget);
+  else
+    clutter_actor_add_child (builder->selected_widget, new_widget);
 
   pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (new_widget), "label");
   if (pspec && g_type_is_a (pspec->value_type, G_TYPE_STRING))
@@ -677,7 +679,7 @@ mx_builder_application_activate (GApplication *app,
 
   builder->tree = mx_box_layout_new_with_orientation (MX_ORIENTATION_VERTICAL);
   clutter_actor_set_width (builder->tree, 150);
-  mx_box_layout_insert_actor (MX_BOX_LAYOUT (hbox), builder->tree, 0);
+  clutter_actor_insert_child_at_index (hbox, builder->tree, 0);
 
   preview = mx_box_layout_new_with_orientation (MX_ORIENTATION_VERTICAL);
 
@@ -685,16 +687,16 @@ mx_builder_application_activate (GApplication *app,
                                               "expand", TRUE, NULL);
 
   builder->status = mx_label_new (),
-  mx_box_layout_insert_actor (MX_BOX_LAYOUT (preview), builder->status, 0);
+  clutter_actor_insert_child_at_index (preview, builder->status, 0);
 
   builder->frame = mx_frame_new ();
   clutter_actor_set_size (builder->frame, 400, 400);
-  mx_box_layout_insert_actor (MX_BOX_LAYOUT (preview), builder->frame, 1);
+  clutter_actor_insert_child_at_index (preview, builder->frame, 1);
   g_signal_connect (builder->frame, "paint",
                     G_CALLBACK (mx_builder_frame_paint), NULL);
 
   builder->inspector = mx_box_layout_new_with_orientation (MX_ORIENTATION_VERTICAL);
-  mx_box_layout_insert_actor (MX_BOX_LAYOUT (hbox), builder->inspector, 2);
+  clutter_actor_insert_child_at_index (hbox, builder->inspector, 2);
 
 
   toolbar = mx_window_get_toolbar (window);
@@ -702,7 +704,7 @@ mx_builder_application_activate (GApplication *app,
   mx_bin_set_child (MX_BIN (toolbar), toolbar_hbox);
 
   builder->combobox = mx_combo_box_new ();
-  mx_box_layout_insert_actor (MX_BOX_LAYOUT (toolbar_hbox), builder->combobox,
+  clutter_actor_insert_child_at_index (toolbar_hbox, builder->combobox,
                               0);
 
   for (i = 0; i < G_N_ELEMENTS (types); i++)
@@ -719,14 +721,14 @@ mx_builder_application_activate (GApplication *app,
                             G_CALLBACK (mx_builder_add_widget), builder);
 
   button = mx_button_new ();
-  mx_box_layout_insert_actor (MX_BOX_LAYOUT (toolbar_hbox), button, -1);
+  clutter_actor_insert_child_at_index (toolbar_hbox, button, -1);
   mx_button_set_icon_name (MX_BUTTON (button), "remove");
   mx_button_set_icon_size (MX_BUTTON (button), 24);
   g_signal_connect_swapped (button, "clicked",
                             G_CALLBACK (mx_builder_remove_widget), builder);
 
   button = mx_button_new ();
-  mx_box_layout_insert_actor (MX_BOX_LAYOUT (toolbar_hbox), button, -1);
+  clutter_actor_insert_child_at_index (toolbar_hbox, button, -1);
   mx_button_set_icon_name (MX_BUTTON (button), "document-save");
   mx_button_set_icon_size (MX_BUTTON (button), 24);
   g_signal_connect_swapped (button, "clicked",
