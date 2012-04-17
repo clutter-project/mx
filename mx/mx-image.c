@@ -1043,10 +1043,9 @@ mx_image_set_from_data_internal (MxImage          *image,
 
   if (G_UNLIKELY (!MX_IS_IMAGE (image)))
     {
-      if (error)
-        g_set_error (error, MX_IMAGE_ERROR,
-                     MX_IMAGE_ERROR_INVALID_PARAMETER,
-                     "image parameter is not a MxImage");
+      g_set_error (error, MX_IMAGE_ERROR,
+                   MX_IMAGE_ERROR_INVALID_PARAMETER,
+                   "image parameter is not a MxImage");
       return FALSE;
     }
 
@@ -1069,9 +1068,8 @@ mx_image_set_from_data_internal (MxImage          *image,
         {
           priv->texture = old_texture;
 
-          if (error)
-            g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_INTERNAL,
-                         "Image '%s' not found in cache", uri);
+          g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_INTERNAL,
+                       "Image '%s' not found in cache", uri);
           return FALSE;
         }
     }
@@ -1087,9 +1085,8 @@ mx_image_set_from_data_internal (MxImage          *image,
         {
           priv->texture = old_texture;
 
-          if (error)
-            g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_BAD_FORMAT,
-                         "Failed to create Cogl texture");
+          g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_BAD_FORMAT,
+                       "Failed to create Cogl texture");
 
           return FALSE;
         }
@@ -1169,10 +1166,9 @@ mx_image_set_from_data (MxImage          *image,
 {
   if (G_UNLIKELY (!MX_IS_IMAGE (image)))
     {
-      if (error)
-        g_set_error (error, MX_IMAGE_ERROR,
-                     MX_IMAGE_ERROR_INVALID_PARAMETER,
-                     "image parameter is not a MxImage");
+      g_set_error (error, MX_IMAGE_ERROR,
+                   MX_IMAGE_ERROR_INVALID_PARAMETER,
+                   "image parameter is not a MxImage");
       return FALSE;
     }
 
@@ -1205,10 +1201,9 @@ mx_image_set_from_pixbuf (MxImage      *image,
 
   if (G_UNLIKELY (!MX_IS_IMAGE (image)))
     {
-      if (error)
-        g_set_error (error, MX_IMAGE_ERROR,
-                     MX_IMAGE_ERROR_INVALID_PARAMETER,
-                     "image parameter is not a MxImage");
+      g_set_error (error, MX_IMAGE_ERROR,
+                   MX_IMAGE_ERROR_INVALID_PARAMETER,
+                   "image parameter is not a MxImage");
       return FALSE;
     }
 
@@ -1219,15 +1214,12 @@ mx_image_set_from_pixbuf (MxImage      *image,
       !mx_texture_cache_contains_meta (cache, filename,
                                        GINT_TO_POINTER (mx_image_cache_quark))))
     {
-      if (error)
-        {
-          if (filename)
-            g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_INTERNAL,
-                         "Texture '%s' not found in cache", filename);
-          else
-            g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_INTERNAL,
-                         "NULL pixbuf and filename");
-        }
+      if (filename)
+        g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_INTERNAL,
+                     "Texture '%s' not found in cache", filename);
+      else
+        g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_INTERNAL,
+                     "NULL pixbuf and filename");
 
       return FALSE;
     }
@@ -1250,9 +1242,8 @@ mx_image_set_from_pixbuf (MxImage      *image,
           !((has_alpha && channels == 4) ||
             (!has_alpha && channels == 3)))
         {
-          if (error)
-            g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_BAD_FORMAT,
-                         "Unsupported image formatting");
+          g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_BAD_FORMAT,
+                       "Unsupported image formatting");
           g_object_unref (pixbuf);
           return FALSE;
         }
@@ -1552,10 +1543,9 @@ mx_image_set_async (MxImage         *image,
 
   if (G_UNLIKELY (!MX_IS_IMAGE (image)))
     {
-      if (error)
-        g_set_error (error, MX_IMAGE_ERROR,
-                     MX_IMAGE_ERROR_INVALID_PARAMETER,
-                     "image parameter is not a MxImage");
+      g_set_error (error, MX_IMAGE_ERROR,
+                   MX_IMAGE_ERROR_INVALID_PARAMETER,
+                   "image parameter is not a MxImage");
       return FALSE;
     }
 
@@ -1693,10 +1683,9 @@ mx_image_set_from_file_at_size (MxImage      *image,
 
   if (G_UNLIKELY (!MX_IS_IMAGE (image)))
     {
-      if (error)
-        g_set_error (error, MX_IMAGE_ERROR,
-                     MX_IMAGE_ERROR_INVALID_PARAMETER,
-                     "image parameter is not a MxImage");
+      g_set_error (error, MX_IMAGE_ERROR,
+                   MX_IMAGE_ERROR_INVALID_PARAMETER,
+                   "image parameter is not a MxImage");
       return FALSE;
     }
 
@@ -1730,10 +1719,9 @@ mx_image_set_from_file_at_size (MxImage      *image,
             }
           else
             {
-              if (error)
-                g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_INTERNAL,
-                             "Setting image '%s' from CoglTexture failed",
-                             filename);
+              g_set_error (error, MX_IMAGE_ERROR, MX_IMAGE_ERROR_INTERNAL,
+                           "Setting image '%s' from CoglTexture failed",
+                           filename);
               return FALSE;
             }
         }
@@ -1930,10 +1918,9 @@ mx_image_set_from_buffer_at_size (MxImage         *image,
 
   if (G_UNLIKELY (!MX_IS_IMAGE (image)))
     {
-      if (error)
-        g_set_error (error, MX_IMAGE_ERROR,
-                     MX_IMAGE_ERROR_INVALID_PARAMETER,
-                     "image parameter is not a MxImage");
+      g_set_error (error, MX_IMAGE_ERROR,
+                   MX_IMAGE_ERROR_INVALID_PARAMETER,
+                   "image parameter is not a MxImage");
       return FALSE;
     }
 
