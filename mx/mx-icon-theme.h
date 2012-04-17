@@ -103,6 +103,10 @@ ClutterTexture *mx_icon_theme_lookup_texture (MxIconTheme *theme,
                                               const gchar *icon_name,
                                               gint         size);
 
+ClutterTexture *mx_icon_theme_load_gicon (MxIconTheme    *theme,
+                                          GIcon          *icon,
+                                          gint            size);
+
 gboolean        mx_icon_theme_has_icon (MxIconTheme *theme,
                                         const gchar *icon_name);
 
