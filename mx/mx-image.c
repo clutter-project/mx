@@ -126,7 +126,10 @@ enum
   PROP_SCALE_WIDTH_THRESHOLD,
   PROP_SCALE_HEIGHT_THRESHOLD,
   PROP_IMAGE_ROTATION,
-  PROP_TRANSITION_DURATION
+  PROP_TRANSITION_DURATION,
+  PROP_FILENAME,
+
+  LAST_PROP
 };
 
 enum
@@ -452,6 +455,10 @@ mx_image_set_property (GObject      *object,
       mx_image_set_transition_duration (image, g_value_get_uint (value));
       break;
 
+    case PROP_FILENAME:
+      mx_image_set_from_file (image, g_value_get_string (value), NULL);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -656,6 +663,13 @@ mx_image_class_init (MxImageClass *klass)
 
   g_object_class_install_property (object_class, PROP_TRANSITION_DURATION, pspec);
 
+  pspec = g_param_spec_string ("filename",
+                               "Filename",
+                               "The name of a file to load",
+                               NULL,
+                               G_PARAM_WRITABLE | G_PARAM_STATIC_STRINGS);
+
+  g_object_class_install_property (object_class, PROP_FILENAME, pspec);
 
   /**
    * MxImage::image-loaded:
