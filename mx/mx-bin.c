@@ -74,12 +74,9 @@ enum
   PROP_Y_FILL
 };
 
-static void clutter_container_iface_init (ClutterContainerIface *iface);
 static void mx_bin_focusable_iface_init (MxFocusableIface *iface);
 
 G_DEFINE_ABSTRACT_TYPE_WITH_CODE (MxBin, mx_bin, MX_TYPE_WIDGET,
-                                  G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
-                                                         clutter_container_iface_init)
                                   G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
                                                          mx_bin_focusable_iface_init));
 
@@ -134,42 +131,6 @@ _mx_bin_get_align_factors (MxBin   *bin,
 
   if (y_align)
     *y_align = factor;
-}
-
-static void
-mx_bin_add (ClutterContainer *container,
-            ClutterActor     *actor)
-{
-  mx_bin_set_child (MX_BIN (container), actor);
-}
-
-static void
-mx_bin_remove (ClutterContainer *container,
-               ClutterActor     *actor)
-{
-  MxBinPrivate *priv = MX_BIN (container)->priv;
-
-  if (priv->child == actor)
-    mx_bin_set_child (MX_BIN (container), NULL);
-}
-
-static void
-mx_bin_foreach (ClutterContainer *container,
-                ClutterCallback   callback,
-                gpointer          user_data)
-{
-  MxBinPrivate *priv = MX_BIN (container)->priv;
-
-  if (priv->child)
-    callback (priv->child, user_data);
-}
-
-static void
-clutter_container_iface_init (ClutterContainerIface *iface)
-{
-  iface->add = mx_bin_add;
-  iface->remove = mx_bin_remove;
-  iface->foreach = mx_bin_foreach;
 }
 
 static MxFocusable*
