@@ -117,23 +117,11 @@ static void mx_grid_get_property        (GObject    *object,
                                          GValue     *value,
                                          GParamSpec *pspec);
 
-static void clutter_container_iface_init  (ClutterContainerIface *iface);
-
-static void mx_grid_real_add            (ClutterContainer *container,
-                                         ClutterActor     *actor);
-static void mx_grid_real_remove         (ClutterContainer *container,
-                                         ClutterActor     *actor);
-static void mx_grid_real_foreach        (ClutterContainer *container,
-                                         ClutterCallback   callback,
-                                         gpointer          user_data);
-static void mx_grid_real_raise          (ClutterContainer *container,
-                                         ClutterActor     *actor,
-                                         ClutterActor     *sibling);
-static void mx_grid_real_lower          (ClutterContainer *container,
-                                         ClutterActor     *actor,
-                                         ClutterActor     *sibling);
-static void
-mx_grid_real_sort_depth_order (ClutterContainer *container);
+static void clutter_container_iface_init (ClutterContainerIface *iface);
+static void mx_grid_actor_added          (ClutterContainer *container,
+                                          ClutterActor     *actor);
+static void mx_grid_actor_removed        (ClutterContainer *container,
+                                          ClutterActor     *actor);
 
 static void
 mx_grid_free_actor_data (gpointer data);
@@ -188,7 +176,6 @@ G_DEFINE_TYPE_WITH_CODE (MxGrid, mx_grid,
 struct _MxGridPrivate
 {
   GHashTable   *hash_table;
-  GList        *list;
 
   gboolean      homogenous_rows;
   gboolean      homogenous_columns;
@@ -519,12 +506,8 @@ mx_grid_class_init (MxGridClass *klass)
 static void
 clutter_container_iface_init (ClutterContainerIface *iface)
 {
-  iface->add              = mx_grid_real_add;
-  iface->remove           = mx_grid_real_remove;
-  iface->foreach          = mx_grid_real_foreach;
-  iface->raise            = mx_grid_real_raise;
-  iface->lower            = mx_grid_real_lower;
-  iface->sort_depth_order = mx_grid_real_sort_depth_order;
+  iface->actor_added = mx_grid_actor_added;
+  iface->actor_removed = mx_grid_actor_removed;
 }
 
 
@@ -579,13 +562,17 @@ mx_grid_move_focus (MxFocusable      *focusable,
                     MxFocusable      *from)
 {
   MxGridPrivate *priv = MX_GRID (focusable)->priv;
-  GList *l, *childlink;
+  GList *l, *childlink, *children;
 
   /* find the current focus */
-  childlink = g_list_find (priv->list, from);
+  children = clutter_actor_get_children (CLUTTER_ACTOR (focusable));
+  childlink = g_list_find (children, from);
 
   if (!childlink)
-    return NULL;
+    {
+      g_list_free (children);
+      return NULL;
+    }
 
   priv->last_focus = from;
 
@@ -604,6 +591,7 @@ mx_grid_move_focus (MxFocusable      *focusable,
               if (focused)
                 {
                   update_adjustments (MX_GRID (focusable), child);
+                  g_list_free (children);
                   return focused;
                 }
             }
@@ -623,6 +611,7 @@ mx_grid_move_focus (MxFocusable      *focusable,
               if (focused)
                 {
                   update_adjustments (MX_GRID (focusable), child);
+                  g_list_free (children);
                   return focused;
                 }
             }
@@ -630,6 +619,7 @@ mx_grid_move_focus (MxFocusable      *focusable,
     }
 
 
+  g_list_free (children);
   return NULL;
 }
 
@@ -638,21 +628,23 @@ mx_grid_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 {
   MxGridPrivate *priv = MX_GRID (focusable)->priv;
   MxFocusable *return_focusable;
-  GList* list, *l;
+  GList* list, *l, *children;
 
   return_focusable = NULL;
+
+  children = clutter_actor_get_children (CLUTTER_ACTOR (focusable));
 
   /* find the first/last focusable widget */
   switch (hint)
     {
     case MX_FOCUS_HINT_LAST:
-      list = g_list_reverse (g_list_copy (priv->list));
+      list = g_list_reverse (g_list_copy (children));
       break;
 
     case MX_FOCUS_HINT_PRIOR:
       if (priv->last_focus)
         {
-          list = g_list_copy (g_list_find (priv->list, priv->last_focus));
+          list = g_list_copy (g_list_find (children, priv->last_focus));
           if (list)
             break;
         }
@@ -660,7 +652,7 @@ mx_grid_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 
     default:
     case MX_FOCUS_HINT_FIRST:
-      list = g_list_copy (priv->list);
+      list = g_list_copy (children);
       break;
     }
 
@@ -681,6 +673,7 @@ mx_grid_accept_focus (MxFocusable *focusable, MxFocusHint hint)
     }
 
   g_list_free (list);
+  g_list_free (children);
 
   return return_focusable;
 }
@@ -1077,8 +1070,8 @@ mx_grid_new (void)
 }
 
 static void
-mx_grid_real_add (ClutterContainer *container,
-                  ClutterActor     *actor)
+mx_grid_actor_added (ClutterContainer *container,
+                     ClutterActor     *actor)
 {
   MxGridPrivate *priv;
   MxGridActorData *data;
@@ -1087,121 +1080,19 @@ mx_grid_real_add (ClutterContainer *container,
 
   priv = MX_GRID (container)->priv;
 
-  g_object_ref (actor);
-
-  clutter_actor_add_child (CLUTTER_ACTOR (container), actor);
-
   data = g_slice_alloc0 (sizeof (MxGridActorData));
 
-  priv->list = g_list_append (priv->list, actor);
   g_hash_table_insert (priv->hash_table, actor, data);
-
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
-
-  g_object_unref (actor);
 }
 
 static void
-mx_grid_real_remove (ClutterContainer *container,
-                     ClutterActor     *actor)
+mx_grid_actor_removed (ClutterContainer *container,
+                       ClutterActor     *actor)
 {
   MxGrid *layout = MX_GRID (container);
   MxGridPrivate *priv = layout->priv;
 
-  g_object_ref (actor);
-
-  if (g_hash_table_remove (priv->hash_table, actor))
-    {
-      clutter_actor_remove_child (CLUTTER_ACTOR (container), actor);
-
-      clutter_actor_queue_relayout (CLUTTER_ACTOR (layout));
-    }
-  priv->list = g_list_remove (priv->list, actor);
-
-  g_object_unref (actor);
-}
-
-static void
-mx_grid_real_foreach (ClutterContainer *container,
-                      ClutterCallback   callback,
-                      gpointer          user_data)
-{
-  MxGrid *layout = MX_GRID (container);
-  MxGridPrivate *priv = layout->priv;
-
-  g_list_foreach (priv->list, (GFunc) callback, user_data);
-}
-
-/*
- * Implementations for raise, lower and sort_by_depth_order are taken from
- * ClutterBox.
- */
-static void
-mx_grid_real_raise (ClutterContainer *container,
-                    ClutterActor     *actor,
-                    ClutterActor     *sibling)
-{
-  MxGridPrivate *priv = MX_GRID (container)->priv;
-
-  priv->list = g_list_remove (priv->list, actor);
-
-  if (sibling == NULL)
-    priv->list = g_list_append (priv->list, actor);
-  else
-    {
-      gint index_ = g_list_index (priv->list, sibling) + 1;
-
-      priv->list = g_list_insert (priv->list, actor, index_);
-    }
-
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
-}
-
-static void
-mx_grid_real_lower (ClutterContainer *container,
-                    ClutterActor     *actor,
-                    ClutterActor     *sibling)
-{
-  MxGridPrivate *priv = MX_GRID (container)->priv;
-
-  priv->list = g_list_remove (priv->list, actor);
-
-  if (sibling == NULL)
-    priv->list = g_list_prepend (priv->list, actor);
-  else
-    {
-      gint index_ = g_list_index (priv->list, sibling);
-
-      priv->list = g_list_insert (priv->list, actor, index_);
-    }
-
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
-}
-
-static gint
-sort_by_depth (gconstpointer a,
-               gconstpointer b)
-{
-  gfloat depth_a = clutter_actor_get_depth ((ClutterActor *) a);
-  gfloat depth_b = clutter_actor_get_depth ((ClutterActor *) b);
-
-  if (depth_a < depth_b)
-    return -1;
-
-  if (depth_a > depth_b)
-    return 1;
-
-  return 0;
-}
-
-static void
-mx_grid_real_sort_depth_order (ClutterContainer *container)
-{
-  MxGridPrivate *priv = MX_GRID (container)->priv;
-
-  priv->list = g_list_sort (priv->list, sort_by_depth);
-
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
+  g_hash_table_remove (priv->hash_table, actor);
 }
 
 static void
@@ -1209,9 +1100,10 @@ mx_grid_paint (ClutterActor *actor)
 {
   MxGrid *layout = (MxGrid *) actor;
   MxGridPrivate *priv = layout->priv;
-  GList *child_item;
   gfloat x, y;
   ClutterActorBox grid_b;
+  ClutterActorIter iter;
+  ClutterActor *child;
 
   if (priv->hadjustment)
     x = mx_adjustment_get_value (priv->hadjustment);
@@ -1231,11 +1123,9 @@ mx_grid_paint (ClutterActor *actor)
   grid_b.y2 = (grid_b.y2 - grid_b.y1) + y;
   grid_b.y1 = y;
 
-  for (child_item = priv->list;
-       child_item != NULL;
-       child_item = child_item->next)
+  clutter_actor_iter_init (&iter, actor);
+  while (clutter_actor_iter_next (&iter, &child))
     {
-      ClutterActor *child = child_item->data;
       ClutterActorBox child_b;
 
       g_assert (child != NULL);
@@ -1260,9 +1150,10 @@ mx_grid_pick (ClutterActor       *actor,
 {
   MxGrid *layout = (MxGrid *) actor;
   MxGridPrivate *priv = layout->priv;
-  GList *child_item;
   gfloat x, y;
   ClutterActorBox grid_b;
+  ClutterActorIter iter;
+  ClutterActor *child;
 
   if (priv->hadjustment)
     x = mx_adjustment_get_value (priv->hadjustment);
@@ -1284,11 +1175,9 @@ mx_grid_pick (ClutterActor       *actor,
   grid_b.y2 = (grid_b.y2 - grid_b.y1) + y;
   grid_b.y1 = y;
 
-  for (child_item = priv->list;
-       child_item != NULL;
-       child_item = child_item->next)
+  clutter_actor_iter_init (&iter, actor);
+  while (clutter_actor_iter_next (&iter, &child))
     {
-      ClutterActor *child = child_item->data;
       ClutterActorBox child_b;
 
       g_assert (child != NULL);
@@ -1354,15 +1243,16 @@ mx_grid_get_preferred_height (ClutterActor *self,
 }
 
 static gfloat
-compute_row_height (GList         *siblings,
-                    gfloat         best_yet,
-                    gfloat         current_a,
-                    MxGridPrivate *priv)
+compute_row_height (ClutterActor     *self,
+                    ClutterActorIter  siblings,
+                    gfloat            best_yet,
+                    gfloat            current_a,
+                    MxGridPrivate    *priv)
 {
-  GList *l;
-
   gboolean homogenous_a;
   gfloat gap;
+
+  ClutterActor *child;
 
   if (priv->orientation == MX_ORIENTATION_VERTICAL)
     {
@@ -1375,9 +1265,9 @@ compute_row_height (GList         *siblings,
       gap          = priv->column_spacing;
     }
 
-  for (l = siblings; l != NULL; l = l->next)
+  clutter_actor_iter_init (&siblings, self);
+  while (clutter_actor_iter_next (&siblings, &child))
     {
-      ClutterActor *child = l->data;
       gfloat natural_width, natural_height;
 
       /* each child will get as much space as they require */
@@ -1414,15 +1304,15 @@ compute_row_height (GList         *siblings,
 
 
 static gfloat
-compute_row_start (GList         *siblings,
-                   gfloat         start_x,
-                   MxGridPrivate *priv)
+compute_row_start (ClutterActor     *container,
+                   ClutterActorIter  siblings,
+                   gfloat            start_x,
+                   MxGridPrivate    *priv)
 {
   gfloat current_a = start_x;
-  GList *l;
-
   gboolean homogenous_a;
   gfloat gap;
+  ClutterActor *child;
 
   if (priv->orientation == MX_ORIENTATION_VERTICAL)
     {
@@ -1435,9 +1325,9 @@ compute_row_start (GList         *siblings,
       gap          = priv->column_spacing;
     }
 
-  for (l = siblings; l != NULL; l = l->next)
+  clutter_actor_iter_init (&siblings, container);
+  while (clutter_actor_iter_next (&siblings, &child))
     {
-      ClutterActor *child = l->data;
       gfloat natural_width, natural_height;
 
       /* each child will get as much space as they require */
@@ -1491,6 +1381,9 @@ mx_grid_do_allocate (ClutterActor          *self,
   gdouble balign;
   int current_stride;
 
+  ClutterActorIter iter;
+  ClutterActor *child;
+
   mx_widget_get_padding (MX_WIDGET (self), &padding);
 
   if (actual_width)
@@ -1506,8 +1399,6 @@ mx_grid_do_allocate (ClutterActor          *self,
     *min_height = 0;
 
   current_a = current_b = next_b = 0;
-
-  GList *iter;
 
   if (priv->orientation == MX_ORIENTATION_VERTICAL)
     {
@@ -1538,9 +1429,9 @@ mx_grid_do_allocate (ClutterActor          *self,
   if (homogenous_a ||
       homogenous_b)
     {
-      for (iter = priv->list; iter; iter = iter->next)
+      clutter_actor_iter_init (&iter, self);
+      while (clutter_actor_iter_next (&iter, &child))
         {
-          ClutterActor *child = iter->data;
           gfloat natural_width;
           gfloat natural_height;
 
@@ -1566,9 +1457,9 @@ mx_grid_do_allocate (ClutterActor          *self,
     }
 
   current_stride = 0;
-  for (iter = priv->list; iter; iter=iter->next)
+  clutter_actor_iter_init (&iter, self);
+  while (clutter_actor_iter_next (&iter, &child))
     {
-      ClutterActor *child = iter->data;
       gfloat natural_a;
       gfloat natural_b;
       gfloat min_a;
@@ -1611,7 +1502,7 @@ mx_grid_do_allocate (ClutterActor          *self,
       if (priv->line_alignment &&
           priv->first_of_batch)
         {
-          current_a = compute_row_start (iter, current_a, priv);
+          current_a = compute_row_start (self, iter, current_a, priv);
           priv->first_of_batch = FALSE;
         }
 
@@ -1629,7 +1520,7 @@ mx_grid_do_allocate (ClutterActor          *self,
           }
         else
           {
-            row_height = compute_row_height (iter, next_b-current_b,
+            row_height = compute_row_height (self, iter, next_b-current_b,
                                              current_a, priv);
           }
 
