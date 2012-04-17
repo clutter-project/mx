@@ -458,7 +458,7 @@ startup_cb (MxApplication *application)
                                               "x-fill", FALSE,
                                               "x-align", MX_ALIGN_START,
                                               NULL);
-  mx_box_layout_insert_actor (MX_BOX_LAYOUT (box), create_rotate_box (window), 1);
+  clutter_actor_insert_child_at_index (box, create_rotate_box (window), 1);
 
   toolbar = mx_window_get_toolbar (window);
   mx_bin_set_child (MX_BIN (toolbar), box);
