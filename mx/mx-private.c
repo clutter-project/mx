@@ -92,3 +92,33 @@ _mx_string_to_enum (GType        type,
 
   return ret;
 }
+
+void
+_mx_paint_texture_with_opacity (CoglHandle texture,
+                                guint8     opacity,
+                                gfloat     x,
+                                gfloat     y,
+                                gfloat     width,
+                                gfloat     height)
+{
+  CoglHandle material;
+  static CoglHandle template_material;
+
+  /* setup the template material */
+  if (!template_material)
+    template_material = cogl_material_new ();
+
+  /* create the material and apply opacity */
+  material = cogl_material_copy (template_material);
+  cogl_material_set_color4ub (material, opacity, opacity, opacity, opacity);
+
+  /* add the texture */
+  cogl_material_set_layer (material, 0, texture);
+
+  /* set the source */
+  cogl_set_source (material);
+
+  cogl_rectangle (x, y, x + width, y + height);
+
+  cogl_handle_unref (material);
+}

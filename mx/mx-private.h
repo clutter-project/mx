@@ -101,6 +101,14 @@ void     _mx_fade_effect_set_freeze_update (MxFadeEffect *effect,
                                             gboolean      freeze);
 gboolean _mx_fade_effect_get_freeze_update (MxFadeEffect *effect);
 
+
+void _mx_paint_texture_with_opacity (CoglHandle texture,
+                                     guint8     opacity,
+                                     gfloat     x,
+                                     gfloat     y,
+                                     gfloat     width,
+                                     gfloat     height);
+
 typedef enum
 {
   MX_DEBUG_LAYOUT      = 1 << 0,

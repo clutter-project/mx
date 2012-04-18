@@ -272,35 +272,6 @@ mx_texture_frame_paint_texture (CoglHandle  texture,
   cogl_handle_unref (material);
 }
 
-void
-mx_texture_frame_paint_background (CoglHandle  texture,
-                                   guint8      opacity,
-                                   gfloat      x,
-                                   gfloat      y,
-                                   gfloat      width,
-                                   gfloat      height)
-{
-  CoglHandle material;
-
-  /* setup the template material */
-  if (!template_material)
-    template_material = cogl_material_new ();
-
-  /* create the material and apply opacity */
-  material = cogl_material_copy (template_material);
-  cogl_material_set_color4ub (material, opacity, opacity, opacity, opacity);
-
-  /* add the texture */
-  cogl_material_set_layer (material, 0, texture);
-
-  /* set the source */
-  cogl_set_source (material);
-
-  cogl_rectangle (x, y, x + width, y + height);
-
-  cogl_handle_unref (material);
-}
-
 static void
 mx_texture_frame_paint (ClutterActor *self)
 {

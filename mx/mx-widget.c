@@ -45,6 +45,8 @@
 #include "mx-enum-types.h"
 #include "mx-settings.h"
 
+#include "mx-private.h"
+
 /*
  * Forward declaration for sake of MxWidgetChild
  */
@@ -481,12 +483,12 @@ mx_widget_paint (ClutterActor *actor)
                                     width, height);
 
   if (priv->background_image)
-    mx_texture_frame_paint_background (priv->background_image,
-                                       alpha,
-                                       priv->background_image_box.x1,
-                                       priv->background_image_box.y1,
-                                       priv->background_image_box.x2 - priv->background_image_box.x1,
-                                       priv->background_image_box.y2 - priv->background_image_box.y1);
+    _mx_paint_texture_with_opacity (priv->background_image,
+                                    alpha,
+                                    priv->background_image_box.x1,
+                                    priv->background_image_box.y1,
+                                    priv->background_image_box.x2 - priv->background_image_box.x1,
+                                    priv->background_image_box.y2 - priv->background_image_box.y1);
 
   if (priv->tooltip)
     clutter_actor_paint (CLUTTER_ACTOR (priv->tooltip));

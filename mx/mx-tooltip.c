@@ -49,6 +49,8 @@
 #include "mx-private.h"
 #include "mx-texture-frame.h"
 
+#include "mx-private.h"
+
 enum
 {
   PROP_0,
@@ -442,10 +444,10 @@ mx_tooltip_paint (ClutterActor *self)
   arrow_image = mx_widget_get_background_texture (MX_WIDGET (self));
   if (arrow_image && !priv->actor_below)
     {
-      mx_texture_frame_paint_background (arrow_image, alpha,
-                                         priv->arrow_box.x1, priv->arrow_box.y1,
-                                         priv->arrow_box.x2 - priv->arrow_box.x1,
-                                         priv->arrow_box.y2 - priv->arrow_box.y1);
+      _mx_paint_texture_with_opacity (arrow_image, alpha,
+                                      priv->arrow_box.x1, priv->arrow_box.y1,
+                                      priv->arrow_box.x2 - priv->arrow_box.x1,
+                                      priv->arrow_box.y2 - priv->arrow_box.y1);
     }
 
   clutter_actor_paint (priv->label);
