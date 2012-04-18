@@ -278,8 +278,6 @@ mx_stack_accept_focus (MxFocusable *focusable, MxFocusHint hint)
   GList *c, *children;
   MxStackPrivate *priv = MX_STACK (focusable)->priv;
 
-  focusable = NULL;
-
   switch (hint)
     {
     default:
