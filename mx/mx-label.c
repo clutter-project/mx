@@ -675,9 +675,9 @@ mx_label_set_text (MxLabel     *label,
   priv = label->priv;
 
   if (clutter_text_get_use_markup (CLUTTER_TEXT (priv->label)))
-    clutter_text_set_markup (CLUTTER_TEXT (priv->label), text);
+    clutter_text_set_markup (CLUTTER_TEXT (priv->label), (text) ? text : "");
   else
-    clutter_text_set_text (CLUTTER_TEXT (priv->label), text);
+    clutter_text_set_text (CLUTTER_TEXT (priv->label), (text) ? text : "");
 
   g_object_notify (G_OBJECT (label), "text");
 }
