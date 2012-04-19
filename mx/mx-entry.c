@@ -245,13 +245,11 @@ mx_entry_get_property (GObject    *gobject,
     }
 }
 
+
 static void
-mx_entry_finalize (GObject *object)
+mx_entry_dispose (GObject *object)
 {
   MxEntryPrivate *priv = MX_ENTRY_PRIV (object);
-
-  g_free (priv->hint);
-  priv->hint = NULL;
 
   if (priv->undo_history)
     {
@@ -271,6 +269,17 @@ mx_entry_finalize (GObject *object)
       g_source_remove (priv->tooltip_timeout);
       priv->tooltip_timeout = 0;
     }
+
+  G_OBJECT_CLASS (mx_entry_parent_class)->dispose (object);
+}
+
+static void
+mx_entry_finalize (GObject *object)
+{
+  MxEntryPrivate *priv = MX_ENTRY_PRIV (object);
+
+  g_free (priv->hint);
+  priv->hint = NULL;
 
   if (priv->preedit_string)
     {
@@ -1044,6 +1053,7 @@ mx_entry_class_init (MxEntryClass *klass)
   gobject_class->set_property = mx_entry_set_property;
   gobject_class->get_property = mx_entry_get_property;
   gobject_class->finalize = mx_entry_finalize;
+  gobject_class->dispose = mx_entry_dispose;
 
   actor_class->get_preferred_width = mx_entry_get_preferred_width;
   actor_class->get_preferred_height = mx_entry_get_preferred_height;
