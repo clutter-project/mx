@@ -23,6 +23,7 @@
 #include "mx-pager.h"
 
 #define PAGER_WIDTH 30. /* width of the pager boxes on the sides */
+#define HOVER_TIMEOUT 300 /* ms until we preview the next page */
 #define ANIMATION_DURATION 200 /* ms to animate page turns */
 
 static void clutter_container_iface_init (gpointer, gpointer);
@@ -40,6 +41,8 @@ struct _MxPagerPrivate
   ClutterActor *button_box;
   MxButtonGroup *button_group;
   GHashTable *pages_to_buttons; /* ClutterActor* -> MxButton* */
+
+  guint hover_timeout;
 };
 
 /**
@@ -197,6 +200,94 @@ mx_pager_class_init (MxPagerClass *klass)
   gobject_class->dispose = mx_pager_dispose;
 }
 
+/**
+ * mx_pager_bump:
+ * @self:
+ * @direction: -1 to bump left, +1 to bump right
+ *
+ * Shows a preview of the prev/next page
+ */
+static void
+mx_pager_bump (MxPager *self,
+               int      direction)
+{
+  ClutterActor *page;
+  GList *other;
+  float x;
+
+  switch (direction)
+    {
+      case -1:
+        other = self->priv->current_page->prev;
+        break;
+
+      case 1:
+        other = self->priv->current_page->next;
+        break;
+
+      default:
+        g_assert_not_reached ();
+    }
+
+  if (other == NULL)
+    return;
+
+  page = self->priv->current_page->data;
+  clutter_actor_get_anchor_point (page, &x, NULL);
+  clutter_actor_animate (page, CLUTTER_EASE_OUT_CIRC, ANIMATION_DURATION,
+      "anchor-x", x + direction * PAGER_WIDTH,
+      NULL);
+
+  page = other->data;
+  clutter_actor_get_anchor_point (page, &x, NULL);
+  clutter_actor_animate (page, CLUTTER_EASE_OUT_CIRC, ANIMATION_DURATION,
+      "anchor-x", x + direction * PAGER_WIDTH,
+      NULL);
+}
+
+static gboolean
+pager_box_hover_timeout (gpointer user_data)
+{
+  ClutterActor *box = user_data;
+  MxPager *self = MX_PAGER (clutter_actor_get_parent (box));;
+  int bump = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (box), "bump"));
+
+  mx_pager_bump (self, bump);
+
+  self->priv->hover_timeout = 0;
+
+  return FALSE;
+}
+
+static void
+pager_box_hover (ClutterActor *box,
+                 ClutterEvent *event,
+                 MxPager      *self)
+{
+  switch (event->type)
+    {
+      case CLUTTER_ENTER:
+        self->priv->hover_timeout = g_timeout_add (HOVER_TIMEOUT,
+            pager_box_hover_timeout,
+            box);
+        break;
+
+      case CLUTTER_LEAVE:
+        if (self->priv->hover_timeout != 0)
+          {
+            g_source_remove (self->priv->hover_timeout);
+            self->priv->hover_timeout = 0;
+          }
+
+        mx_pager_relayout_pages (self, TRUE);
+
+        break;
+
+      default:
+        g_assert_not_reached ();
+    }
+}
+
 static void
 mx_pager_init (MxPager *self)
 {
@@ -224,6 +315,7 @@ mx_pager_init (MxPager *self)
 
   clutter_actor_set_width (prevbox, PAGER_WIDTH);
   clutter_actor_set_reactive (prevbox, TRUE);
+  g_object_set_data (G_OBJECT (prevbox), "bump", GINT_TO_POINTER (-1));
   mx_pager_add_internal_actor (self, prevbox,
       "x-fill", FALSE,
       "x-align", MX_ALIGN_START,
@@ -231,11 +323,16 @@ mx_pager_init (MxPager *self)
 
   g_signal_connect_swapped (prevbox, "button-press-event",
       G_CALLBACK (mx_pager_previous), self);
+  g_signal_connect (prevbox, "enter-event",
+      G_CALLBACK (pager_box_hover), self);
+  g_signal_connect (prevbox, "leave-event",
+      G_CALLBACK (pager_box_hover), self);
 
   nextbox = clutter_rectangle_new_with_color (&transparent);
 
   clutter_actor_set_width (nextbox, PAGER_WIDTH);
   clutter_actor_set_reactive (nextbox, TRUE);
+  g_object_set_data (G_OBJECT (nextbox), "bump", GINT_TO_POINTER (1));
   mx_pager_add_internal_actor (self, nextbox,
       "x-fill", FALSE,
       "x-align", MX_ALIGN_END,
@@ -243,6 +340,10 @@ mx_pager_init (MxPager *self)
 
   g_signal_connect_swapped (nextbox, "button-press-event",
       G_CALLBACK (mx_pager_next), self);
+  g_signal_connect (nextbox, "enter-event",
+      G_CALLBACK (pager_box_hover), self);
+  g_signal_connect (nextbox, "leave-event",
+      G_CALLBACK (pager_box_hover), self);
 }
 
 static void
