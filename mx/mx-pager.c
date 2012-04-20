@@ -35,6 +35,10 @@ struct _MxPagerPrivate
 {
   GList *pages;
   GList *current_page;
+
+  ClutterActor *button_box;
+  MxButtonGroup *button_group;
+  GHashTable *pages_to_buttons; /* ClutterActor* -> MxButton* */
 };
 
 /**
@@ -60,6 +64,53 @@ mx_pager_add_internal_actor (MxPager      *self,
   va_start (var_args, first_prop);
   g_object_set_valist ((GObject *) meta, first_prop, var_args);
   va_end (var_args);
+}
+
+static void
+pager_page_button_clicked (MxButton *button,
+                           MxPager  *self)
+{
+  ClutterActor *page;
+
+  page = g_object_get_data (G_OBJECT (button), "page-actor");
+
+  g_return_if_fail (CLUTTER_IS_ACTOR (page));
+
+  mx_pager_set_current_page_by_actor (self, page, TRUE);
+}
+
+static void
+mx_pager_add_page_button (MxPager      *self,
+                          ClutterActor *page)
+{
+  ClutterActor *button;
+
+  button = mx_button_new ();
+  mx_button_set_is_toggle (MX_BUTTON (button), TRUE);
+  // FIXME: add style class
+
+  mx_button_group_add (self->priv->button_group, MX_BUTTON (button));
+  clutter_container_add_actor (CLUTTER_CONTAINER (self->priv->button_box),
+                               button);
+
+  g_hash_table_insert (self->priv->pages_to_buttons, page, button);
+  g_object_set_data (G_OBJECT (button), "page-actor", page);
+
+  g_signal_connect (button, "clicked",
+      G_CALLBACK (pager_page_button_clicked), self);
+}
+
+static ClutterActor *
+mx_pager_get_button_for_page (MxPager      *self,
+                              ClutterActor *page)
+{
+  ClutterActor *button;
+
+  button = g_hash_table_lookup (self->priv->pages_to_buttons, page);
+
+  g_return_val_if_fail (MX_IS_BUTTON (button), NULL);
+
+  return button;
 }
 
 /**
@@ -92,9 +143,28 @@ mx_pager_change_page (MxPager *self,
       ClutterActor *page = new_page->data;
 
       clutter_actor_set_opacity (page, 0xff);
+
+      mx_button_group_set_active_button (self->priv->button_group,
+          (MxButton *) mx_pager_get_button_for_page (self, page));
     }
 
   self->priv->current_page = new_page;
+}
+
+static void
+mx_pager_dispose (GObject *self)
+{
+  MxPagerPrivate *priv = MX_PAGER (self)->priv;
+
+  g_clear_object (&priv->button_group);
+
+  if (priv->pages_to_buttons != NULL)
+    {
+      g_hash_table_unref (priv->pages_to_buttons);
+      priv->pages_to_buttons = NULL;
+    }
+
+  G_OBJECT_CLASS (mx_pager_parent_class)->dispose (self);
 }
 
 static void
@@ -103,8 +173,9 @@ mx_pager_class_init (MxPagerClass *klass)
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
   g_type_class_add_private (gobject_class, sizeof (MxPagerPrivate));
-}
 
+  gobject_class->dispose = mx_pager_dispose;
+}
 
 static void
 mx_pager_init (MxPager *self)
@@ -117,6 +188,17 @@ mx_pager_init (MxPager *self)
                                             MxPagerPrivate);
 
   clutter_actor_set_clip_to_allocation (CLUTTER_ACTOR (self), TRUE);
+
+  /* refs are held by Clutter */
+  self->priv->pages_to_buttons = g_hash_table_new (NULL, NULL);
+  self->priv->button_group = mx_button_group_new ();
+  self->priv->button_box = mx_box_layout_new ();
+  mx_pager_add_internal_actor (self, self->priv->button_box,
+      "x-fill", FALSE,
+      "x-align", MX_ALIGN_MIDDLE,
+      "y-fill", FALSE,
+      "y-align", MX_ALIGN_END,
+      NULL);
 
   prevbox = clutter_rectangle_new_with_color (&transparent);
 
@@ -156,6 +238,8 @@ mx_pager_add (ClutterContainer *self,
   mx_pager_add_internal_actor ((MxPager *) self, child, NULL);
   clutter_actor_lower_bottom (child);
 
+  mx_pager_add_page_button ((MxPager *) self, child);
+
   if (priv->current_page == NULL)
     mx_pager_change_page (MX_PAGER (self), priv->pages, FALSE);
 }
@@ -191,6 +275,8 @@ mx_pager_remove (ClutterContainer *self,
 
   priv->pages = g_list_delete_link (priv->pages, l);
 
+  clutter_actor_destroy (mx_pager_get_button_for_page ((MxPager *) self,
+                                                       child));
   parent_iface->remove (self, child);
 }
 
