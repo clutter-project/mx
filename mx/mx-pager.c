@@ -221,38 +221,36 @@ static void
 mx_pager_bump (MxPager *self,
                int      direction)
 {
-  ClutterActor *page;
-  GList *other;
-  float x;
+  GList *l;
+
+  g_return_if_fail (direction == -1 || direction == 1);
 
   switch (direction)
     {
       case -1:
-        other = self->priv->current_page->prev;
+        if (self->priv->current_page->prev == NULL)
+          return;
         break;
 
       case 1:
-        other = self->priv->current_page->next;
+        if (self->priv->current_page->next == NULL)
+          return;
         break;
 
       default:
         g_assert_not_reached ();
     }
 
-  if (other == NULL)
-    return;
+  for (l = self->priv->pages; l != NULL; l = l->next)
+    {
+      ClutterActor *page = l->data;
+      float x;
 
-  page = self->priv->current_page->data;
-  clutter_actor_get_anchor_point (page, &x, NULL);
-  clutter_actor_animate (page, CLUTTER_EASE_OUT_CIRC, ANIMATION_DURATION,
-      "anchor-x", x + direction * PAGER_WIDTH,
-      NULL);
-
-  page = other->data;
-  clutter_actor_get_anchor_point (page, &x, NULL);
-  clutter_actor_animate (page, CLUTTER_EASE_OUT_CIRC, ANIMATION_DURATION,
-      "anchor-x", x + direction * PAGER_WIDTH,
-      NULL);
+      clutter_actor_get_anchor_point (page, &x, NULL);
+      clutter_actor_animate (page, CLUTTER_EASE_OUT_CIRC, ANIMATION_DURATION,
+          "anchor-x", x + direction * PAGER_WIDTH,
+          NULL);
+    }
 }
 
 static gboolean
