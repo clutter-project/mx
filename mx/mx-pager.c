@@ -20,6 +20,19 @@
  * Written by: Danielle Madeley <danielle.madeley@collabora.co.uk>
  */
 
+/**
+ * SECTION:mx-pager
+ * @short_description: A widget that can display several pages
+ *
+ * The #MxPager is a widget that can display several pages, each containing
+ * an actor. The user can navigate forwards and back by clicking on the right
+ * or left of the screen or by clicking on the navigation buttons at the
+ * bottom. Hovering on the sides of the widget will also show a preview of
+ * what's on the next page.
+ *
+ * Since: UNRELEASED
+ */
+
 #include "mx-pager.h"
 
 #define PAGER_WIDTH 30. /* width of the pager boxes on the sides */
