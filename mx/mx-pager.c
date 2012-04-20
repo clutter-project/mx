@@ -44,12 +44,22 @@ struct _MxPagerPrivate
  */
 static void
 mx_pager_add_internal_actor (MxPager      *self,
-                             ClutterActor *child)
+                             ClutterActor *child,
+                             const char   *first_prop,
+                             ...)
 {
   ClutterContainerIface *parent_iface =
     g_type_interface_peek_parent (CLUTTER_CONTAINER_GET_IFACE (self));
+  ClutterChildMeta *meta;
+  va_list var_args;
 
   parent_iface->add ((ClutterContainer *) self, child);
+
+  meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
+
+  va_start (var_args, first_prop);
+  g_object_set_valist ((GObject *) meta, first_prop, var_args);
+  va_end (var_args);
 }
 
 /**
@@ -112,9 +122,10 @@ mx_pager_init (MxPager *self)
 
   clutter_actor_set_width (prevbox, PAGER_WIDTH);
   clutter_actor_set_reactive (prevbox, TRUE);
-  mx_pager_add_internal_actor (self, prevbox);
-  mx_stack_child_set_x_fill (MX_STACK (self), prevbox, FALSE);
-  mx_stack_child_set_x_align (MX_STACK (self), prevbox, MX_ALIGN_START);
+  mx_pager_add_internal_actor (self, prevbox,
+      "x-fill", FALSE,
+      "x-align", MX_ALIGN_START,
+      NULL);
 
   g_signal_connect_swapped (prevbox, "button-press-event",
       G_CALLBACK (mx_pager_previous), self);
@@ -123,9 +134,10 @@ mx_pager_init (MxPager *self)
 
   clutter_actor_set_width (nextbox, PAGER_WIDTH);
   clutter_actor_set_reactive (nextbox, TRUE);
-  mx_pager_add_internal_actor (self, nextbox);
-  mx_stack_child_set_x_fill (MX_STACK (self), nextbox, FALSE);
-  mx_stack_child_set_x_align (MX_STACK (self), nextbox, MX_ALIGN_END);
+  mx_pager_add_internal_actor (self, nextbox,
+      "x-fill", FALSE,
+      "x-align", MX_ALIGN_END,
+      NULL);
 
   g_signal_connect_swapped (nextbox, "button-press-event",
       G_CALLBACK (mx_pager_next), self);
@@ -141,7 +153,7 @@ mx_pager_add (ClutterContainer *self,
 
   clutter_actor_set_opacity (child, 0x0);
 
-  mx_pager_add_internal_actor ((MxPager *) self, child);
+  mx_pager_add_internal_actor ((MxPager *) self, child, NULL);
   clutter_actor_lower_bottom (child);
 
   if (priv->current_page == NULL)
