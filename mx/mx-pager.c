@@ -22,7 +22,7 @@
 
 #include "mx-pager.h"
 
-#define PAGER_WIDTH 20.
+#define PAGER_WIDTH 30.
 
 static void clutter_container_iface_init (gpointer, gpointer);
 
@@ -182,7 +182,7 @@ mx_pager_init (MxPager *self)
 {
   ClutterActor *prevbox, *nextbox;
 
-  const ClutterColor transparent = { 0xf0, 0x00, 0x00, 0xf0 };
+  const ClutterColor transparent = { 0xf0, 0x00, 0x00, 0x20 };
 
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, MX_TYPE_PAGER,
                                             MxPagerPrivate);
@@ -233,9 +233,9 @@ mx_pager_add (ClutterContainer *self,
 
   priv->pages = g_list_append (priv->pages, child);
 
-  clutter_actor_set_opacity (child, 0x0);
-
-  mx_pager_add_internal_actor ((MxPager *) self, child, NULL);
+  mx_pager_add_internal_actor ((MxPager *) self, child,
+      "fit", TRUE,
+      NULL);
   clutter_actor_lower_bottom (child);
 
   mx_pager_add_page_button ((MxPager *) self, child);
