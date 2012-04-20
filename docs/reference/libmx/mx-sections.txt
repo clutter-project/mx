@@ -134,6 +134,31 @@ MX_DIALOG_GET_CLASS
 </SECTION>
 
 <SECTION>
+<FILE>mx-pager</FILE>
+<TITLE>MxPager</TITLE>
+MxPager
+MxPagerClass
+mx_pager_new
+mx_pager_previous
+mx_pager_next
+mx_pager_set_current_page
+mx_pager_get_current_page
+mx_pager_set_current_page_by_actor
+mx_pager_get_current_page_actor
+mx_pager_get_actor_for_page
+<SUBSECTION Private>
+MxPagerPrivate
+<SUBSECTION Standard>
+MX_PAGER
+MX_IS_PAGER
+MX_TYPE_PAGER
+mx_pager_get_type
+MX_PAGER_CLASS
+MX_IS_PAGER_CLASS
+MX_PAGER_GET_CLASS
+</SECTION>
+
+<SECTION>
 <FILE>mx-stack</FILE>
 <TITLE>MxStack</TITLE>
 MxStack
