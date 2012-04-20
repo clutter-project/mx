@@ -71,6 +71,16 @@ mx_pager_add_internal_actor (MxPager      *self,
 }
 
 static void
+mx_pager_remove_interal_actor (MxPager      *self,
+                               ClutterActor *child)
+{
+  ClutterContainerIface *parent_iface =
+    g_type_interface_peek_parent (CLUTTER_CONTAINER_GET_IFACE (self));
+
+  parent_iface->remove ((ClutterContainer *) self, child);
+}
+
+static void
 pager_page_button_clicked (MxButton *button,
                            MxPager  *self)
 {
@@ -372,8 +382,6 @@ mx_pager_remove (ClutterContainer *self,
                  ClutterActor     *child)
 {
   MxPagerPrivate *priv = MX_PAGER (self)->priv;
-  ClutterContainerIface *parent_iface =
-    g_type_interface_peek_parent (CLUTTER_CONTAINER_GET_IFACE (self));
   GList *l;
 
   l = g_list_find (priv->pages, child);
@@ -390,17 +398,18 @@ mx_pager_remove (ClutterContainer *self,
   if (priv->current_page == l)
     {
       /* change the current page */
-      if (l->next != NULL)
-        mx_pager_change_page (MX_PAGER (self), l->next, FALSE);
-      else
-        mx_pager_change_page (MX_PAGER (self), priv->pages, FALSE);
-    }
+      priv->current_page = l->next;
 
-  priv->pages = g_list_delete_link (priv->pages, l);
+      if (priv->current_page == NULL)
+        priv->current_page = priv->pages;
+    }
 
   clutter_actor_destroy (mx_pager_get_button_for_page ((MxPager *) self,
                                                        child));
-  parent_iface->remove (self, child);
+
+  priv->pages = g_list_delete_link (priv->pages, l);
+  mx_pager_remove_interal_actor ((MxPager *) self, child);
+  mx_pager_relayout_pages ((MxPager *) self, TRUE);
 }
 
 static void
