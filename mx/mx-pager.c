@@ -22,7 +22,8 @@
 
 #include "mx-pager.h"
 
-#define PAGER_WIDTH 30.
+#define PAGER_WIDTH 30. /* width of the pager boxes on the sides */
+#define ANIMATION_DURATION 200 /* ms to animate page turns */
 
 static void clutter_container_iface_init (gpointer, gpointer);
 
@@ -113,6 +114,33 @@ mx_pager_get_button_for_page (MxPager      *self,
   return button;
 }
 
+static void
+mx_pager_relayout_pages (MxPager *self,
+                         gboolean animate)
+{
+  float width = clutter_actor_get_width (CLUTTER_ACTOR (self));
+  GList *page;
+  int current, i;
+
+  current = mx_pager_get_current_page (self);
+
+  for (page = self->priv->pages, i = 0;
+       page != NULL;
+       page = page->next, i++)
+    {
+      gfloat x = width * (current - i);
+
+      if (animate)
+        clutter_actor_animate (page->data,
+                               CLUTTER_EASE_IN_OUT_SINE,
+                               ANIMATION_DURATION,
+                               "anchor-x", x,
+                               NULL);
+      else
+        clutter_actor_set_anchor_point (page->data, x, 0.);
+    }
+}
+
 /**
  * mx_pager_change_page:
  * @self:
@@ -131,24 +159,16 @@ mx_pager_change_page (MxPager *self,
 
   g_debug ("Change page!");
 
-  if (self->priv->current_page != NULL)
-    {
-      ClutterActor *page = self->priv->current_page->data;
-
-      clutter_actor_set_opacity (page, 0x0);
-    }
-
   if (new_page != NULL)
     {
       ClutterActor *page = new_page->data;
-
-      clutter_actor_set_opacity (page, 0xff);
 
       mx_button_group_set_active_button (self->priv->button_group,
           (MxButton *) mx_pager_get_button_for_page (self, page));
     }
 
   self->priv->current_page = new_page;
+  mx_pager_relayout_pages (self, animate);
 }
 
 static void
@@ -241,7 +261,9 @@ mx_pager_add (ClutterContainer *self,
   mx_pager_add_page_button ((MxPager *) self, child);
 
   if (priv->current_page == NULL)
-    mx_pager_change_page (MX_PAGER (self), priv->pages, FALSE);
+    priv->current_page = priv->pages;
+
+  mx_pager_relayout_pages ((MxPager *) self, FALSE);
 }
 
 static void
