@@ -269,7 +269,7 @@ pager_box_hover_timeout (gpointer user_data)
   return FALSE;
 }
 
-static void
+static gboolean
 pager_box_hover (ClutterActor *box,
                  ClutterEvent *event,
                  MxPager      *self)
@@ -290,12 +290,27 @@ pager_box_hover (ClutterActor *box,
           }
 
         mx_pager_relayout_pages (self, TRUE);
+        break;
 
+      case CLUTTER_BUTTON_PRESS:
+        /* reschedule the timeout after the page flip */
+        if (self->priv->hover_timeout != 0)
+          {
+            g_source_remove (self->priv->hover_timeout);
+            self->priv->hover_timeout = 0;
+          }
+
+        self->priv->hover_timeout = g_timeout_add (
+            HOVER_TIMEOUT + ANIMATION_DURATION,
+            pager_box_hover_timeout,
+            box);
         break;
 
       default:
-        g_assert_not_reached ();
+        break;
     }
+
+  return FALSE;
 }
 
 static void
@@ -333,9 +348,7 @@ mx_pager_init (MxPager *self)
 
   g_signal_connect_swapped (prevbox, "button-press-event",
       G_CALLBACK (mx_pager_previous), self);
-  g_signal_connect (prevbox, "enter-event",
-      G_CALLBACK (pager_box_hover), self);
-  g_signal_connect (prevbox, "leave-event",
+  g_signal_connect (prevbox, "event",
       G_CALLBACK (pager_box_hover), self);
 
   nextbox = clutter_rectangle_new_with_color (&transparent);
@@ -350,9 +363,7 @@ mx_pager_init (MxPager *self)
 
   g_signal_connect_swapped (nextbox, "button-press-event",
       G_CALLBACK (mx_pager_next), self);
-  g_signal_connect (nextbox, "enter-event",
-      G_CALLBACK (pager_box_hover), self);
-  g_signal_connect (nextbox, "leave-event",
+  g_signal_connect (nextbox, "event",
       G_CALLBACK (pager_box_hover), self);
 }
 
