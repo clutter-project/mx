@@ -101,7 +101,7 @@ mx_pager_add_page_button (MxPager      *self,
 
   button = mx_button_new ();
   mx_button_set_is_toggle (MX_BUTTON (button), TRUE);
-  // FIXME: add style class
+  /* FIXME: add style class */
 
   mx_button_group_add (self->priv->button_group, MX_BUTTON (button));
   clutter_container_add_actor (CLUTTER_CONTAINER (self->priv->button_box),
@@ -169,8 +169,6 @@ mx_pager_change_page (MxPager *self,
 {
   if (new_page == self->priv->current_page)
     return;
-
-  g_debug ("Change page!");
 
   if (new_page != NULL)
     {
@@ -275,6 +273,7 @@ pager_box_hover (ClutterActor *box,
   switch (event->type)
     {
       case CLUTTER_ENTER:
+        /* FIXME: change mouse pointer? */
         self->priv->hover_timeout = g_timeout_add (HOVER_TIMEOUT,
             pager_box_hover_timeout,
             box);
@@ -316,7 +315,7 @@ mx_pager_init (MxPager *self)
 {
   ClutterActor *prevbox, *nextbox;
 
-  const ClutterColor transparent = { 0xf0, 0x00, 0x00, 0x20 };
+  const ClutterColor transparent = { 0x00, 0x00, 0x00, 0x00 };
 
   self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self, MX_TYPE_PAGER,
                                             MxPagerPrivate);
@@ -473,8 +472,6 @@ mx_pager_next (MxPager *self)
   if (self->priv->current_page->next == NULL)
     return;
 
-  g_debug ("next page");
-
   mx_pager_change_page (self, self->priv->current_page->next, TRUE);
 }
 
@@ -492,8 +489,6 @@ mx_pager_previous (MxPager *self)
 
   if (self->priv->current_page->prev == NULL)
     return;
-
-  g_debug ("prev page");
 
   mx_pager_change_page (self, self->priv->current_page->prev, TRUE);
 }
