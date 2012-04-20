@@ -34,8 +34,24 @@ pager.add_actor(new Clutter.Texture ({
     'width': 500.,
     'keep-aspect-ratio': true,
   }));
+
 pager.add_actor(new Clutter.Texture ({
     'filename': '/usr/share/backgrounds/gnome/FreshFlower.jpg',
+    'width': 500.,
+    'keep-aspect-ratio': true,
+  }));
+
+let button = new Mx.Button({
+    'label': "Remove page",
+  });
+pager.add_actor(button);
+button.connect('clicked', function ()
+  {
+    pager.remove_actor(button);
+  });
+
+pager.add_actor(new Clutter.Texture ({
+    'filename': '/usr/share/backgrounds/gnome/SundownDunes.jpg',
     'width': 500.,
     'keep-aspect-ratio': true,
   }));
