@@ -625,6 +625,7 @@ save_children (MxBuilder *builder,
         {
           gchar *json_property_name;
           object_class = G_OBJECT_GET_CLASS (parent);
+          n_properties = 0;
           properties = clutter_container_class_list_child_properties (object_class,
                                                                       &n_properties);
           for (i = 0; i < n_properties; i++)
@@ -691,7 +692,19 @@ save_children (MxBuilder *builder,
 
               subarray = save_children (builder, subchildren);
 
-              json_object_set_array_member (object, "children", subarray);
+              if (MX_IS_BIN (child))
+                {
+                  JsonNode *node;
+
+                  node = json_array_dup_element (subarray, 0);
+
+                  json_object_set_member (object, "child", node);
+
+                  json_array_unref (subarray);
+
+                }
+              else
+                json_object_set_array_member (object, "children", subarray);
             }
         }
 
