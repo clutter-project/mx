@@ -674,7 +674,18 @@ save_children (MxBuilder *builder,
 
       if (mx_builder_is_container (child))
         {
-          if ((subchildren = clutter_actor_get_children (child)))
+          if (MX_IS_BIN (child))
+            {
+              ClutterActor *bin_child = mx_bin_get_child (MX_BIN (child));
+              if (bin_child)
+                subchildren = g_list_append (NULL, bin_child);
+              else
+                subchildren = NULL;
+            }
+          else
+            subchildren = clutter_actor_get_children (child);
+
+          if (subchildren)
             {
               JsonArray *subarray;
 
