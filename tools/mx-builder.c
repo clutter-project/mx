@@ -93,7 +93,20 @@ mx_builder_widget_tree_traverse_children (MxBuilder *builder,
 
       if (mx_builder_is_container (children->data))
         {
-          subchildren = clutter_actor_get_children (children->data);
+          if (MX_IS_BIN (children->data))
+            {
+              ClutterActor *bin_child;
+
+              bin_child = mx_bin_get_child (children->data);
+
+              if (bin_child)
+                subchildren = g_list_append (NULL, bin_child);
+              else
+                subchildren = NULL;
+            }
+          else
+            subchildren = clutter_actor_get_children (children->data);
+
           if (subchildren)
             mx_builder_widget_tree_traverse_children (builder, subchildren,
                                                       depth + 1);
