@@ -426,12 +426,35 @@ mx_builder_set_selected_widget (MxBuilder    *builder,
   g_list_free (children);
 }
 
+static void
+paint_widget_hover (ClutterActor *widget)
+{
+  ClutterActorBox actorbox;
+
+  clutter_actor_get_allocation_box (widget, &actorbox);
+
+  cogl_set_source_color4f (0, 0, 1, 0.5);
+  cogl_path_rectangle (0, 0, actorbox.x2 - actorbox.x1,
+                       actorbox.y2 - actorbox.y1);
+  cogl_path_stroke ();
+}
+
 static gboolean
 widget_captured_event (ClutterActor *widget,
                        ClutterEvent *event,
                        MxBuilder    *builder)
 {
-  mx_builder_set_selected_widget (builder, widget);
+  if (event->type == CLUTTER_BUTTON_PRESS)
+    mx_builder_set_selected_widget (builder, widget);
+
+  else if (event->type == CLUTTER_ENTER)
+    {
+      g_signal_connect_after (widget, "paint", G_CALLBACK (paint_widget_hover),
+                              NULL);
+      clutter_actor_queue_redraw (widget);
+    }
+  else if (event->type == CLUTTER_LEAVE)
+    g_signal_handlers_disconnect_by_func (widget, paint_widget_hover, NULL);
 
   return TRUE;
 }
@@ -457,7 +480,7 @@ mx_builder_add_widget (MxBuilder  *builder,
   new_widget = g_object_new (id, NULL);
 
   clutter_actor_set_reactive (new_widget, TRUE);
-  g_signal_connect (new_widget, "button-press-event",
+  g_signal_connect (new_widget, "event",
                     G_CALLBACK (widget_captured_event),
                     builder);
 
@@ -851,7 +874,7 @@ mx_builder_open_file (GApplication *application,
             }
 
           clutter_actor_set_reactive (l->data, TRUE);
-          g_signal_connect (l->data, "button-press-event",
+          g_signal_connect (l->data, "event",
                             G_CALLBACK (widget_captured_event),
                             builder);
         }
