@@ -507,11 +507,11 @@ mx_builder_remove_widget (MxBuilder *builder,
 JsonNode *json_serialize_pspec (const GValue *real_value, GParamSpec *pspec);
 
 static JsonArray*
-save_children (GList *children)
+save_children (MxBuilder *builder,
+               GList     *children)
 {
   GList *subchildren;
   JsonArray *array;
-  gint i;
   GObjectClass *object_class;
   guint n_properties;
   GParamSpec **properties;
@@ -520,15 +520,21 @@ save_children (GList *children)
 
   while (children)
     {
+      ClutterActor *parent;
       ClutterActor *child;
       JsonObject *object;
+      gint i;
 
       child = children->data;
+
+      parent = clutter_actor_get_parent (child);
 
       object = json_object_new ();
 
       json_object_set_string_member (object, "type", G_OBJECT_TYPE_NAME (child));
 
+
+      /* save object properties */
       object_class = G_OBJECT_GET_CLASS (child);
       properties = g_object_class_list_properties (object_class, &n_properties);
       for (i = 0; i < n_properties; i++)
@@ -569,6 +575,54 @@ save_children (GList *children)
         }
       g_free (properties);
 
+      /* save child properties */
+      if (parent != builder->frame)
+        {
+          gchar *json_property_name;
+          object_class = G_OBJECT_GET_CLASS (parent);
+          properties = clutter_container_class_list_child_properties (object_class,
+                                                                      &n_properties);
+          for (i = 0; i < n_properties; i++)
+            {
+              GParamSpec *pspec;
+              JsonNode *node;
+              GValue value = { 0, };
+
+              pspec = properties[i];
+
+              /* don't write out read-only properties */
+              if (!(pspec->flags & G_PARAM_WRITABLE))
+                continue;
+
+              if (g_type_is_a (pspec->value_type, G_TYPE_OBJECT))
+                continue;
+
+              /* only include Mx properties */
+              if (!g_str_has_prefix (g_type_name (pspec->owner_type), "Mx"))
+                continue;
+
+              g_value_init (&value, pspec->value_type);
+              clutter_container_child_get_property (CLUTTER_CONTAINER (parent),
+                                                    child, pspec->name, &value);
+
+              if (g_param_value_defaults (pspec, &value))
+                {
+                  /* skip properties with default values */
+                  g_value_unset (&value);
+                  continue;
+                }
+
+              /* this is private API from json-glib */
+              node = json_serialize_pspec (&value, pspec);
+
+              json_property_name = g_strconcat ("child::", pspec->name, NULL);
+              json_object_set_member (object, json_property_name, node);
+              g_free (json_property_name);
+
+              g_value_unset (&value);
+            }
+          g_free (properties);
+        }
 
       json_array_add_object_element (array, object);
 
@@ -579,7 +633,7 @@ save_children (GList *children)
             {
               JsonArray *subarray;
 
-              subarray = save_children (subchildren);
+              subarray = save_children (builder, subchildren);
 
               json_object_set_array_member (object, "children", subarray);
             }
@@ -601,7 +655,7 @@ mx_builder_save_widgets (MxBuilder *builder,
   gchar *buf;
   gsize buf_len;
 
-  array = save_children (clutter_actor_get_children (builder->frame));
+  array = save_children (builder, clutter_actor_get_children (builder->frame));
 
   generator = json_generator_new ();
   json_generator_set_pretty (generator, TRUE);
