@@ -186,19 +186,35 @@ string_to_num (GBinding     *binding,
   return TRUE;
 }
 
+static gboolean
+skip_property (GParamSpec *pspec)
+{
+  /* skip properties that are not writable */
+  if (!(pspec->flags & G_PARAM_WRITABLE))
+    return TRUE;
+
+  /* include the "name" property */
+  if (g_str_equal (pspec->name, "name"))
+    return FALSE;
+
+  /* skip other properties */
+  if (!g_str_has_prefix (g_type_name (pspec->owner_type), "Mx"))
+    return TRUE;
+
+  if (g_type_is_a (pspec->value_type, G_TYPE_OBJECT))
+    return TRUE;
+
+  return FALSE;
+}
+
 static ClutterActor *
 mx_builder_create_property_editor (GObject    *object,
                                    GParamSpec *pspec)
 {
   ClutterActor *hbox, *label, *value;
 
-  /* skip properties that are not writable */
-  if (!(pspec->flags & G_PARAM_WRITABLE))
+  if (skip_property (pspec))
     return NULL;
-
-  /* skip other properties */
-  if (!g_str_has_prefix (g_type_name (pspec->owner_type), "Mx"))
-      return NULL;
 
   hbox = mx_box_layout_new ();
 
@@ -589,15 +605,7 @@ save_children (MxBuilder *builder,
 
           pspec = properties[i];
 
-          /* don't write out read-only properties */
-          if (!(pspec->flags & G_PARAM_WRITABLE))
-            continue;
-
-          if (g_type_is_a (pspec->value_type, G_TYPE_OBJECT))
-            continue;
-
-          /* only include Mx properties */
-          if (!g_str_has_prefix (g_type_name (pspec->owner_type), "Mx"))
+          if (skip_property (pspec))
             continue;
 
           g_value_init (&value, pspec->value_type);
@@ -614,6 +622,10 @@ save_children (MxBuilder *builder,
           node = json_serialize_pspec (&value, pspec);
 
           json_object_set_member (object, pspec->name, node);
+
+          /* save the "name" property as the ClutterScript "id" */
+          if (g_str_equal (pspec->name, "name"))
+            json_object_set_member (object, "id", node);
 
           g_value_unset (&value);
         }
@@ -637,14 +649,7 @@ save_children (MxBuilder *builder,
               pspec = properties[i];
 
               /* don't write out read-only properties */
-              if (!(pspec->flags & G_PARAM_WRITABLE))
-                continue;
-
-              if (g_type_is_a (pspec->value_type, G_TYPE_OBJECT))
-                continue;
-
-              /* only include Mx properties */
-              if (!g_str_has_prefix (g_type_name (pspec->owner_type), "Mx"))
+              if (skip_property (pspec))
                 continue;
 
               g_value_init (&value, pspec->value_type);
