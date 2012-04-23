@@ -742,7 +742,7 @@ mx_builder_application_activate (GApplication *app,
                                                    "UI Builder");
 
   ClutterActor *hbox = mx_box_layout_new ();
-  ClutterActor *toolbar_hbox, *button, *preview;
+  ClutterActor *toolbar_hbox, *button, *preview, *scroll;
   MxToolbar *toolbar;
   gint i;
 
@@ -768,9 +768,11 @@ mx_builder_application_activate (GApplication *app,
 
   mx_window_set_child (window, hbox);
 
+  scroll = mx_scroll_view_new ();
   builder->tree = mx_box_layout_new_with_orientation (MX_ORIENTATION_VERTICAL);
   clutter_actor_set_width (builder->tree, 150);
-  clutter_actor_insert_child_at_index (hbox, builder->tree, 0);
+  mx_bin_set_child (MX_BIN (scroll), builder->tree);
+  clutter_actor_insert_child_at_index (hbox, scroll, 0);
 
   preview = mx_box_layout_new_with_orientation (MX_ORIENTATION_VERTICAL);
 
