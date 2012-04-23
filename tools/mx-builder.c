@@ -357,10 +357,6 @@ mx_builder_set_selected_widget (MxBuilder    *builder,
   clutter_actor_set_width (CLUTTER_ACTOR (label), MIN_INSPECTOR_WIDTH);
 
 
-  /* set the combo box state */
-  mx_widget_set_disabled (MX_WIDGET (builder->combobox),
-                          !mx_builder_is_container (new_widget));
-
   /* rebuild the widget tree */
   mx_builder_widget_tree_rebuild (builder);
 
@@ -468,6 +464,7 @@ mx_builder_add_widget (MxBuilder  *builder,
   guint id;
   ClutterActor *new_widget;
   GParamSpec *pspec;
+  ClutterActor *parent;
 
   typename = mx_combo_box_get_active_text (combo);
 
@@ -484,10 +481,20 @@ mx_builder_add_widget (MxBuilder  *builder,
                     G_CALLBACK (widget_captured_event),
                     builder);
 
-  if (MX_IS_BIN (builder->selected_widget))
-    mx_bin_set_child (MX_BIN (builder->selected_widget), new_widget);
+  if (mx_builder_is_container (builder->selected_widget))
+    parent = builder->selected_widget;
   else
-    clutter_actor_add_child (builder->selected_widget, new_widget);
+    {
+      /* find a container to add the new widget to */
+      parent = clutter_actor_get_parent (builder->selected_widget);
+      while (parent && !mx_builder_is_container (parent))
+        parent = clutter_actor_get_parent (parent);
+    }
+
+  if (MX_IS_BIN (parent))
+    mx_bin_set_child (MX_BIN (parent), new_widget);
+  else
+    clutter_actor_add_child (parent, new_widget);
 
   pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (new_widget), "label");
   if (pspec && g_type_is_a (pspec->value_type, G_TYPE_STRING))
