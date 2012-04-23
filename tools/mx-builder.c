@@ -46,8 +46,9 @@ typedef GType (*TypeFunc) ();
 static gboolean
 mx_builder_is_container (gpointer widget)
 {
-  if (MX_IS_SCROLL_VIEW(widget) || MX_IS_BOX_LAYOUT(widget)
-      || MX_IS_TABLE (widget) || MX_IS_GRID (widget) || MX_IS_FRAME(widget))
+  if (MX_IS_SCROLL_VIEW (widget) || MX_IS_BOX_LAYOUT (widget)
+      || MX_IS_TABLE (widget) || MX_IS_GRID (widget) || MX_IS_FRAME (widget)
+      || MX_IS_EXPANDER (widget))
     return TRUE;
 
   return FALSE;
@@ -752,6 +753,7 @@ mx_builder_application_activate (GApplication *app,
    mx_grid_get_type (),
    mx_scroll_view_get_type (),
    mx_table_get_type (),
+   mx_expander_get_type (),
    0,
    mx_button_get_type (),
    mx_combo_box_get_type (),
