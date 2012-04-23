@@ -283,6 +283,8 @@ mx_style_load (MxStyle *style)
                       error->message);
           g_clear_error (&error);
         }
+      else
+        return;
     }
 
   g_free (rc_file);
