@@ -573,6 +573,7 @@ save_children (MxBuilder *builder,
 
           g_value_unset (&value);
         }
+
       g_free (properties);
 
       /* save child properties */
@@ -852,7 +853,7 @@ mx_builder_open_file (GApplication *application,
           clutter_actor_set_reactive (l->data, TRUE);
           g_signal_connect (l->data, "button-press-event",
                             G_CALLBACK (widget_captured_event),
-                            NULL);
+                            builder);
         }
     }
   g_list_free (objects);
