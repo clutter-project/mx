@@ -758,7 +758,7 @@ mx_builder_frame_paint (ClutterActor *actor)
   ClutterActorBox box;
   gfloat width, height, x, y;
 
-  cogl_set_source_color4ub (0x72, 0x9f, 0xcf, 0xff);
+  cogl_set_source_color4ub (0x72, 0x9f, 0xcf, 0x80);
 
   clutter_actor_get_allocation_box (actor, &box);
   width = box.x2 - box.x1;
@@ -767,7 +767,8 @@ mx_builder_frame_paint (ClutterActor *actor)
   for (x = 0; x < width; x += 24)
     for (y = 0; y < height; y += 24)
       {
-        cogl_path_rectangle (x, y, 24, 24);
+        cogl_path_line (x, y, x, y + 24);
+        cogl_path_line (x, y, x + 24, y);
         cogl_path_stroke ();
       }
 }
