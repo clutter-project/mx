@@ -34,6 +34,7 @@
  */
 
 #include "mx-pager.h"
+#include "mx-private.h"
 
 #define PAGER_WIDTH 30. /* width of the pager boxes on the sides */
 #define HOVER_TIMEOUT 300 /* ms until we preview the next page */
@@ -46,10 +47,21 @@ G_DEFINE_TYPE_WITH_CODE (MxPager, mx_pager, MX_TYPE_STACK,
                                                 clutter_container_iface_init)
                         )
 
+enum /* properties */
+{
+  PROP_0,
+
+  PROP_EDGE_PREVIEWS,
+
+  LAST_PROP
+};
+
 struct _MxPagerPrivate
 {
   GList *pages;
   GList *current_page;
+
+  gboolean edge_previews;
 
   ClutterActor *button_box;
   MxButtonGroup *button_group;
@@ -183,6 +195,44 @@ mx_pager_change_page (MxPager *self,
 }
 
 static void
+mx_pager_get_property (GObject    *self,
+                       guint       prop_id,
+                       GValue     *value,
+                       GParamSpec *pspec)
+{
+  switch (prop_id)
+    {
+      case PROP_EDGE_PREVIEWS:
+        g_value_set_boolean (value,
+            mx_pager_get_edge_previews (MX_PAGER (self)));
+        break;
+
+      default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (self, prop_id, pspec);
+        break;
+    }
+}
+
+static void
+mx_pager_set_property (GObject      *self,
+                       guint         prop_id,
+                       const GValue *value,
+                       GParamSpec   *pspec)
+{
+  switch (prop_id)
+    {
+      case PROP_EDGE_PREVIEWS:
+        mx_pager_set_edge_previews (MX_PAGER (self),
+            g_value_get_boolean (value));
+        break;
+
+      default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (self, prop_id, pspec);
+        break;
+    }
+}
+
+static void
 mx_pager_dispose (GObject *self)
 {
   MxPagerPrivate *priv = MX_PAGER (self)->priv;
@@ -205,7 +255,17 @@ mx_pager_class_init (MxPagerClass *klass)
 
   g_type_class_add_private (gobject_class, sizeof (MxPagerPrivate));
 
+  gobject_class->get_property = mx_pager_get_property;
+  gobject_class->set_property = mx_pager_set_property;
   gobject_class->dispose = mx_pager_dispose;
+
+  g_object_class_install_property (gobject_class, PROP_EDGE_PREVIEWS,
+      g_param_spec_boolean ("edge-previews",
+        "Edge Previews",
+        "Set TRUE to preview the prev/next page when you hover over the "
+        "left/right edge of the pager.",
+        FALSE,
+        MX_PARAM_READWRITE));
 }
 
 /**
@@ -274,9 +334,11 @@ pager_box_hover (ClutterActor *box,
     {
       case CLUTTER_ENTER:
         /* FIXME: change mouse pointer? */
-        self->priv->hover_timeout = g_timeout_add (HOVER_TIMEOUT,
-            pager_box_hover_timeout,
-            box);
+        if (self->priv->edge_previews)
+          self->priv->hover_timeout = g_timeout_add (HOVER_TIMEOUT,
+              pager_box_hover_timeout,
+              box);
+
         break;
 
       case CLUTTER_LEAVE:
@@ -589,4 +651,48 @@ mx_pager_get_n_pages (MxPager *self)
   g_return_val_if_fail (MX_IS_PAGER (self), 0);
 
   return g_list_length (self->priv->pages);
+}
+
+/**
+ * mx_pager_set_edge_previews:
+ * @self: a #MxPager
+ * @edge_previews: %TRUE to enable edge previews
+ *
+ * Sets the #MxPager:edge-previews property.
+ */
+void
+mx_pager_set_edge_previews (MxPager *self,
+                            gboolean edge_previews)
+{
+  g_return_if_fail (MX_IS_PAGER (self));
+
+  if (self->priv->edge_previews == edge_previews)
+    return;
+
+  if (!edge_previews)
+    {
+      /* disable any currently pending timeout */
+      if (self->priv->hover_timeout > 0)
+        {
+          g_source_remove (self->priv->hover_timeout);
+          self->priv->hover_timeout = 0;
+        }
+    }
+
+  self->priv->edge_previews = edge_previews;
+  g_object_notify (G_OBJECT (self), "edge-previews");
+}
+
+/**
+ * mx_pager_get_edge_previews:
+ * @self: a #MxPager
+ *
+ * Returns: the value of the #MxPager:edge-previews property
+ */
+gboolean
+mx_pager_get_edge_previews (MxPager *self)
+{
+  g_return_val_if_fail (MX_IS_PAGER (self), FALSE);
+
+  return self->priv->edge_previews;
 }

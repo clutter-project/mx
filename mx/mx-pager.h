@@ -69,6 +69,9 @@ ClutterActor *mx_pager_get_current_page_actor (MxPager *self);
 ClutterActor *mx_pager_get_actor_for_page (MxPager *self, guint page);
 guint mx_pager_get_n_pages (MxPager *self);
 
+void mx_pager_set_edge_previews (MxPager *self, gboolean edge_previews);
+gboolean mx_pager_get_edge_previews (MxPager *self);
+
 G_END_DECLS
 
 #endif

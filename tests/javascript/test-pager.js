@@ -26,7 +26,9 @@ Clutter.init (null);
 let stage = Clutter.Stage.get_default ();
 stage.title = "Test Pager";
 
-let pager = new Mx.Pager ();
+let pager = new Mx.Pager ({
+    'edge-previews': true,
+  });
 stage.add_actor (pager);
 
 pager.insert_page(new Clutter.Texture ({
