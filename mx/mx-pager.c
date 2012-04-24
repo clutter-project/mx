@@ -52,6 +52,8 @@ enum /* properties */
   PROP_0,
 
   PROP_EDGE_PREVIEWS,
+  PROP_PAGE_NUM,
+  PROP_PAGE_ACTOR,
 
   LAST_PROP
 };
@@ -191,6 +193,8 @@ mx_pager_change_page (MxPager *self,
     }
 
   self->priv->current_page = new_page;
+  g_object_notify (G_OBJECT (self), "page-num");
+  g_object_notify (G_OBJECT (self), "page-actor");
   mx_pager_relayout_pages (self, animate);
 }
 
@@ -205,6 +209,16 @@ mx_pager_get_property (GObject    *self,
       case PROP_EDGE_PREVIEWS:
         g_value_set_boolean (value,
             mx_pager_get_edge_previews (MX_PAGER (self)));
+        break;
+
+      case PROP_PAGE_NUM:
+        g_value_set_uint (value,
+            mx_pager_get_current_page (MX_PAGER (self)));
+        break;
+
+      case PROP_PAGE_ACTOR:
+        g_value_set_object (value,
+            mx_pager_get_current_page_actor (MX_PAGER (self)));
         break;
 
       default:
@@ -224,6 +238,16 @@ mx_pager_set_property (GObject      *self,
       case PROP_EDGE_PREVIEWS:
         mx_pager_set_edge_previews (MX_PAGER (self),
             g_value_get_boolean (value));
+        break;
+
+      case PROP_PAGE_NUM:
+        mx_pager_set_current_page (MX_PAGER (self),
+            g_value_get_uint (value), TRUE);
+        break;
+
+      case PROP_PAGE_ACTOR:
+        mx_pager_set_current_page_by_actor (MX_PAGER (self),
+            g_value_get_object (value), TRUE);
         break;
 
       default:
@@ -265,6 +289,20 @@ mx_pager_class_init (MxPagerClass *klass)
         "Set TRUE to preview the prev/next page when you hover over the "
         "left/right edge of the pager.",
         FALSE,
+        MX_PARAM_READWRITE));
+
+  g_object_class_install_property (gobject_class, PROP_PAGE_NUM,
+      g_param_spec_uint ("page-num",
+        "Page number",
+        "The number of the current page",
+        0, G_MAXUINT, 0,
+        MX_PARAM_READWRITE));
+
+  g_object_class_install_property (gobject_class, PROP_PAGE_ACTOR,
+      g_param_spec_object ("page-actor",
+        "Page Actor",
+        "The actor being shown on the current page",
+        CLUTTER_TYPE_ACTOR,
         MX_PARAM_READWRITE));
 }
 
@@ -433,7 +471,7 @@ mx_pager_actor_removed (ClutterContainer *self,
                         ClutterActor     *child)
 {
   MxPagerPrivate *priv = MX_PAGER (self)->priv;
-  GList *l;
+  GList *l, *new_page;
 
   l = g_list_find (priv->pages, child);
 
@@ -443,17 +481,17 @@ mx_pager_actor_removed (ClutterContainer *self,
   if (priv->current_page == l)
     {
       /* change the current page */
-      priv->current_page = l->next;
+      new_page = l->next;
 
       if (priv->current_page == NULL)
-        priv->current_page = priv->pages;
+        new_page = priv->pages;
     }
 
   clutter_actor_destroy (mx_pager_get_button_for_page ((MxPager *) self,
                                                        child));
 
   priv->pages = g_list_delete_link (priv->pages, l);
-  mx_pager_relayout_pages ((MxPager *) self, TRUE);
+  mx_pager_change_page ((MxPager *) self, new_page, TRUE);
 }
 
 static void
@@ -502,9 +540,9 @@ mx_pager_insert_page (MxPager      *self,
   mx_pager_add_page_button (self, child);
 
   if (self->priv->current_page == NULL)
-    self->priv->current_page = self->priv->pages;
-
-  mx_pager_relayout_pages (self, FALSE);
+    mx_pager_change_page (self, self->priv->pages, FALSE);
+  else
+    mx_pager_relayout_pages (self, FALSE);
 }
 
 /**
