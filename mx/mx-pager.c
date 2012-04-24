@@ -69,28 +69,16 @@ mx_pager_add_internal_actor (MxPager      *self,
                              const char   *first_prop,
                              ...)
 {
-  ClutterContainerIface *parent_iface =
-    g_type_interface_peek_parent (CLUTTER_CONTAINER_GET_IFACE (self));
   ClutterChildMeta *meta;
   va_list var_args;
 
-  parent_iface->add ((ClutterContainer *) self, child);
+  clutter_actor_add_child (CLUTTER_ACTOR (self), child);
 
   meta = clutter_container_get_child_meta (CLUTTER_CONTAINER (self), child);
 
   va_start (var_args, first_prop);
   g_object_set_valist ((GObject *) meta, first_prop, var_args);
   va_end (var_args);
-}
-
-static void
-mx_pager_remove_interal_actor (MxPager      *self,
-                               ClutterActor *child)
-{
-  ClutterContainerIface *parent_iface =
-    g_type_interface_peek_parent (CLUTTER_CONTAINER_GET_IFACE (self));
-
-  parent_iface->remove ((ClutterContainer *) self, child);
 }
 
 static void
@@ -117,8 +105,7 @@ mx_pager_add_page_button (MxPager      *self,
   /* FIXME: add style class */
 
   mx_button_group_add (self->priv->button_group, MX_BUTTON (button));
-  clutter_container_add_actor (CLUTTER_CONTAINER (self->priv->button_box),
-                               button);
+  clutter_actor_add_child (self->priv->button_box, button);
 
   g_hash_table_insert (self->priv->pages_to_buttons, page, button);
   g_object_set_data (G_OBJECT (button), "page-actor", page);
@@ -378,29 +365,8 @@ mx_pager_init (MxPager *self)
 }
 
 static void
-mx_pager_add (ClutterContainer *self,
-              ClutterActor     *child)
-{
-  MxPagerPrivate *priv = MX_PAGER (self)->priv;
-
-  priv->pages = g_list_append (priv->pages, child);
-
-  mx_pager_add_internal_actor ((MxPager *) self, child,
-      "fit", TRUE,
-      NULL);
-  clutter_actor_lower_bottom (child);
-
-  mx_pager_add_page_button ((MxPager *) self, child);
-
-  if (priv->current_page == NULL)
-    priv->current_page = priv->pages;
-
-  mx_pager_relayout_pages ((MxPager *) self, FALSE);
-}
-
-static void
-mx_pager_remove (ClutterContainer *self,
-                 ClutterActor     *child)
+mx_pager_actor_removed (ClutterContainer *self,
+                        ClutterActor     *child)
 {
   MxPagerPrivate *priv = MX_PAGER (self)->priv;
   GList *l;
@@ -408,13 +374,7 @@ mx_pager_remove (ClutterContainer *self,
   l = g_list_find (priv->pages, child);
 
   if (l == NULL)
-    {
-      g_warning (G_STRLOC ": Actor of type '%s' is not a child of container "
-                 "of type '%s'",
-                 G_OBJECT_TYPE_NAME (child),
-                 G_OBJECT_TYPE_NAME (self));
-      return;
-    }
+    return;
 
   if (priv->current_page == l)
     {
@@ -429,18 +389,7 @@ mx_pager_remove (ClutterContainer *self,
                                                        child));
 
   priv->pages = g_list_delete_link (priv->pages, l);
-  mx_pager_remove_interal_actor ((MxPager *) self, child);
   mx_pager_relayout_pages ((MxPager *) self, TRUE);
-}
-
-static void
-mx_pager_foreach (ClutterContainer *self,
-                  ClutterCallback   callback,
-                  gpointer          user_data)
-{
-  MxPagerPrivate *priv = MX_PAGER (self)->priv;
-
-  g_list_foreach (priv->pages, (GFunc) callback, user_data);
 }
 
 static void
@@ -449,14 +398,7 @@ clutter_container_iface_init (gpointer g_iface,
 {
   ClutterContainerIface *iface = g_iface;
 
-#define IMPLEMENT(x) \
-  iface->x = mx_pager_##x;
-
-  IMPLEMENT (add);
-  IMPLEMENT (remove);
-  IMPLEMENT (foreach);
-
-#undef IMPLEMENT
+  iface->actor_removed = mx_pager_actor_removed;
 }
 
 /**
@@ -468,6 +410,37 @@ ClutterActor *
 mx_pager_new (void)
 {
   return g_object_new (MX_TYPE_PAGER, NULL);
+}
+
+/**
+ * mx_pager_insert_page:
+ * @self: a #MxPager
+ * @child: the page to insert
+ * @position: the position to insert the page. If this is negative, or is
+ *   larger than the number of pages, it will the last page
+ *
+ * Inserts a page into the #MxPager at the position specified by @position.
+ */
+void
+mx_pager_insert_page (MxPager      *self,
+                      ClutterActor *child,
+                      gint          position)
+{
+  g_return_if_fail (MX_IS_PAGER (self));
+
+  self->priv->pages = g_list_insert (self->priv->pages, child, position);
+
+  mx_pager_add_internal_actor (self, child,
+      "fit", TRUE,
+      NULL);
+  clutter_actor_set_child_below_sibling ((ClutterActor *) self, child, NULL);
+
+  mx_pager_add_page_button (self, child);
+
+  if (self->priv->current_page == NULL)
+    self->priv->current_page = self->priv->pages;
+
+  mx_pager_relayout_pages (self, FALSE);
 }
 
 /**
@@ -602,4 +575,18 @@ mx_pager_get_actor_for_page (MxPager *self,
   g_return_val_if_fail (MX_IS_PAGER (self), NULL);
 
   return CLUTTER_ACTOR (g_list_nth_data (self->priv->pages, page));
+}
+
+/**
+ * mx_pager_get_n_pages:
+ * @self: a #MxPager
+ *
+ * Returns: the number of pages in this pager
+ */
+guint
+mx_pager_get_n_pages (MxPager *self)
+{
+  g_return_val_if_fail (MX_IS_PAGER (self), 0);
+
+  return g_list_length (self->priv->pages);
 }

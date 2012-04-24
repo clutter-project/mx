@@ -29,32 +29,32 @@ stage.title = "Test Pager";
 let pager = new Mx.Pager ();
 stage.add_actor (pager);
 
-pager.add_actor(new Clutter.Texture ({
+pager.insert_page(new Clutter.Texture ({
     'filename': '/usr/share/backgrounds/gnome/Aqua.jpg',
     'width': 500.,
     'keep-aspect-ratio': true,
-  }));
+  }), -1);
 
-pager.add_actor(new Clutter.Texture ({
+pager.insert_page(new Clutter.Texture ({
     'filename': '/usr/share/backgrounds/gnome/FreshFlower.jpg',
     'width': 500.,
     'keep-aspect-ratio': true,
-  }));
+  }), -1);
 
 let button = new Mx.Button({
     'label': "Remove page",
   });
-pager.add_actor(button);
+pager.insert_page(button, -1);
 button.connect('clicked', function ()
   {
     pager.remove_actor(button);
   });
 
-pager.add_actor(new Clutter.Texture ({
+pager.insert_page(new Clutter.Texture ({
     'filename': '/usr/share/backgrounds/gnome/SundownDunes.jpg',
     'width': 500.,
     'keep-aspect-ratio': true,
-  }));
+  }), -1);
 
 stage.show ();
 Clutter.main ();

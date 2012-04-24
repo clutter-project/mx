@@ -55,6 +55,8 @@ struct _MxPagerClass
 GType mx_pager_get_type (void);
 ClutterActor *mx_pager_new (void);
 
+void mx_pager_insert_page (MxPager *self, ClutterActor *child, gint position);
+
 void mx_pager_next (MxPager *self);
 void mx_pager_previous (MxPager *self);
 
@@ -65,6 +67,7 @@ void mx_pager_set_current_page_by_actor (MxPager *self, ClutterActor *actor,
 ClutterActor *mx_pager_get_current_page_actor (MxPager *self);
 
 ClutterActor *mx_pager_get_actor_for_page (MxPager *self, guint page);
+guint mx_pager_get_n_pages (MxPager *self);
 
 G_END_DECLS
 
