@@ -139,6 +139,7 @@ MX_DIALOG_GET_CLASS
 MxPager
 MxPagerClass
 mx_pager_new
+mx_pager_insert_page
 mx_pager_previous
 mx_pager_next
 mx_pager_set_current_page
@@ -146,6 +147,7 @@ mx_pager_get_current_page
 mx_pager_set_current_page_by_actor
 mx_pager_get_current_page_actor
 mx_pager_get_actor_for_page
+mx_pager_get_n_pages
 <SUBSECTION Private>
 MxPagerPrivate
 <SUBSECTION Standard>
