@@ -388,6 +388,8 @@ mx_pager_init (MxPager *self)
   self->priv->pages_to_buttons = g_hash_table_new (NULL, NULL);
   self->priv->button_group = mx_button_group_new ();
   self->priv->button_box = mx_box_layout_new ();
+  mx_box_layout_set_enable_animations (MX_BOX_LAYOUT (self->priv->button_box),
+                                       TRUE);
   mx_pager_add_internal_actor (self, self->priv->button_box,
       "x-fill", FALSE,
       "x-align", MX_ALIGN_MIDDLE,
