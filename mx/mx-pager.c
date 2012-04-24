@@ -41,10 +41,13 @@
 #define ANIMATION_DURATION 200 /* ms to animate page turns */
 
 static void clutter_container_iface_init (gpointer, gpointer);
+static void mx_focusable_iface_init (gpointer, gpointer);
 
 G_DEFINE_TYPE_WITH_CODE (MxPager, mx_pager, MX_TYPE_STACK,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
                                                 clutter_container_iface_init)
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
+                                                mx_focusable_iface_init)
                         )
 
 enum /* properties */
@@ -501,6 +504,36 @@ clutter_container_iface_init (gpointer g_iface,
   ClutterContainerIface *iface = g_iface;
 
   iface->actor_removed = mx_pager_actor_removed;
+}
+
+static MxFocusable *
+mx_pager_accept_focus (MxFocusable *self,
+                       MxFocusHint  hint)
+{
+  ClutterActor *child = mx_pager_get_current_page_actor (MX_PAGER (self));
+
+  if (MX_IS_FOCUSABLE (child))
+    return mx_focusable_accept_focus (MX_FOCUSABLE (child), hint);
+  else
+    return NULL;
+}
+
+static MxFocusable *
+mx_pager_move_focus (MxFocusable      *self,
+                     MxFocusDirection  direction,
+                     MxFocusable      *from)
+{
+  return NULL;
+}
+
+static void
+mx_focusable_iface_init (gpointer g_iface,
+                         gpointer iface_data)
+{
+  MxFocusableIface *iface = g_iface;
+
+  iface->accept_focus = mx_pager_accept_focus;
+  iface->move_focus = mx_pager_move_focus;
 }
 
 /**
