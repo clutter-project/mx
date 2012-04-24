@@ -148,6 +148,8 @@ mx_pager_set_current_page_by_actor
 mx_pager_get_current_page_actor
 mx_pager_get_actor_for_page
 mx_pager_get_n_pages
+mx_pager_set_edge_previews
+mx_pager_get_edge_previews
 <SUBSECTION Private>
 MxPagerPrivate
 <SUBSECTION Standard>
