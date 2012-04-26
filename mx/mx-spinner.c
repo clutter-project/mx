@@ -399,9 +399,12 @@ mx_spinner_style_changed_cb (MxStylable          *stylable,
       priv->texture = mx_texture_cache_get_cogl_texture (cache, image->uri);
       g_boxed_free (MX_TYPE_BORDER_IMAGE, image);
 
-      priv->material = cogl_material_new ();
-      cogl_material_set_layer (priv->material, 0, priv->texture);
-      cogl_handle_unref (priv->texture);
+      if (priv->texture)
+        {
+          priv->material = cogl_material_new ();
+          cogl_material_set_layer (priv->material, 0, priv->texture);
+          cogl_handle_unref (priv->texture);
+        }
     }
 
   mx_spinner_update_timeout (spinner);
