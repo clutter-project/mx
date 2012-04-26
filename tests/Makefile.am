@@ -12,8 +12,7 @@ noinst_PROGRAMS = 			\
 	test-droppable			\
 	test-window 			\
 	test-widgets			\
-	test-containers			\
-	test-tooltips			\
+	test-containers
 	$(NULL)
 
 test_widgets_SOURCES = test-widgets.c
