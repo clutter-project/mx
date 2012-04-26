@@ -121,7 +121,7 @@ create_property_editor (GObject    *object,
 
   label = mx_label_new_with_text (pspec->name);
   clutter_actor_set_width (label, 150);
-  clutter_container_add_actor (CLUTTER_CONTAINER (box), label);
+  clutter_actor_add_child (box, label);
 
   if (pspec->value_type == G_TYPE_BOOLEAN)
     {
@@ -178,7 +178,7 @@ create_property_editor (GObject    *object,
 
   if (value)
     {
-      clutter_container_add_actor (CLUTTER_CONTAINER (box), value);
+      clutter_actor_add_child (box, value);
       return box;
     }
   else
@@ -226,7 +226,7 @@ change_widget (MxComboBox *box,
         g_object_set (actor, properties[i]->name, typename, NULL);
 
       if (editor)
-        clutter_container_add_actor (CLUTTER_CONTAINER (vbox), editor);
+        clutter_actor_add_child (vbox, editor);
     }
 
   /* set up various widgets as needed */
@@ -258,7 +258,7 @@ change_widget (MxComboBox *box,
 
   data.inspector = mx_scroll_view_new ();
   clutter_actor_set_width (data.inspector, 300);
-  clutter_container_add_actor (CLUTTER_CONTAINER (data.inspector), vbox);
+  mx_bin_set_child (MX_BIN (data.inspector), vbox);
   mx_table_insert_actor_with_properties (MX_TABLE (data.table), data.inspector,
                                          0, 1,
                                          "x-expand", FALSE,
@@ -401,7 +401,7 @@ create_rotate_box (MxWindow *window)
   mx_bin_set_child (MX_BIN (button), icon);
   g_signal_connect (button, "clicked",
                     G_CALLBACK (rotate_left_clicked_cb), window);
-  clutter_container_add_actor (CLUTTER_CONTAINER (layout), button);
+  clutter_actor_add_child (layout, button);
 
   /* Create rotate-180 button */
   icon = mx_icon_new ();
@@ -411,12 +411,13 @@ create_rotate_box (MxWindow *window)
   mx_icon_set_icon_name (MX_ICON (icon2), "object-rotate-right");
   mx_icon_set_icon_size (MX_ICON (icon2), 16);
   layout2 = mx_box_layout_new ();
-  clutter_container_add (CLUTTER_CONTAINER (layout2), icon, icon2, NULL);
+  clutter_actor_add_child (layout2, icon);
+  clutter_actor_add_child (layout2, icon2);
   button = mx_button_new ();
   mx_bin_set_child (MX_BIN (button), layout2);
   g_signal_connect (button, "clicked",
                     G_CALLBACK (rotate_180_clicked_cb), window);
-  clutter_container_add_actor (CLUTTER_CONTAINER (layout), button);
+  clutter_actor_add_child (layout, button);
 
   /* Create rotate-right button */
   icon = mx_icon_new ();
@@ -426,7 +427,7 @@ create_rotate_box (MxWindow *window)
   mx_bin_set_child (MX_BIN (button), icon);
   g_signal_connect (button, "clicked",
                     G_CALLBACK (rotate_right_clicked_cb), window);
-  clutter_container_add_actor (CLUTTER_CONTAINER (layout), button);
+  clutter_actor_add_child (layout, button);
 
   return layout;
 }
