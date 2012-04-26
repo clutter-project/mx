@@ -53,7 +53,6 @@ struct _MxTextureCachePrivate
 {
   GHashTable *cache;
   GRegex     *is_uri;
-  GList      *resources;
 };
 
 typedef struct FinalizedClosure
@@ -136,14 +135,6 @@ mx_texture_cache_get_property (GObject    *object,
 static void
 mx_texture_cache_dispose (GObject *object)
 {
-  MxTextureCachePrivate *priv = TEXTURE_CACHE_PRIVATE (object);
-
-  if (priv->resources)
-    {
-      g_list_foreach (priv->resources, (GFunc) g_resource_unref, NULL);
-      g_list_free (priv->resources);
-    }
-
   if (G_OBJECT_CLASS (mx_texture_cache_parent_class)->dispose)
     G_OBJECT_CLASS (mx_texture_cache_parent_class)->dispose (object);
 }
@@ -375,29 +366,10 @@ mx_texture_cache_get_item (MxTextureCache *self,
           GdkPixbuf *pixbuf;
           GInputStream *stream = NULL;
           gint width, height, has_alpha, rowstride;
-          GList *l;
-          GResource *resource = NULL;
 
-          /* strip the "resource://" prefix */
-          uri = &uri[11];
-
-          /* find the resource that has this path */
-          for (l = priv->resources; l; l = g_list_next (l))
-            {
-              if (g_resource_get_info (l->data, uri,
-                                       G_RESOURCE_LOOKUP_FLAGS_NONE, NULL, NULL,
-                                       NULL))
-                {
-                  resource = l->data;
-                }
-            }
-
-          if (resource)
-            {
-              stream = g_resource_open_stream (resource, uri,
-                                               G_RESOURCE_LOOKUP_FLAGS_NONE,
-                                               &err);
-            }
+          stream = g_resources_open_stream (&uri[11],
+                                            G_RESOURCE_LOOKUP_FLAGS_NONE,
+                                            &err);
 
           if (stream)
             {
@@ -885,61 +857,4 @@ mx_texture_cache_load_cache (MxTextureCache *self,
     }
 
   fclose (file);
-}
-
-/**
- * mx_texture_cache_add_resource:
- * @cache: A #MxTextureCache
- * @resource: A #GResource
- *
- * Add a #GResource to the list of resources searched when a texture with a
- * resource path is requested.
- *
- */
-void
-mx_texture_cache_add_resource (MxTextureCache *cache,
-                               GResource      *resource)
-{
-  MxTextureCachePrivate *priv;
-
-  g_return_if_fail (MX_IS_TEXTURE_CACHE (cache));
-  g_return_if_fail (resource != NULL);
-
-  priv = TEXTURE_CACHE_PRIVATE (cache);
-
-  /* prevent duplicates */
-  if (g_list_find (priv->resources, resource))
-    return;
-
-  priv->resources = g_list_prepend (priv->resources, g_resource_ref (resource));
-}
-
-/**
- * mx_texture_cache_remove_resource:
- * @cache: A #MxTextureCache
- * @resource: A #GResource
- *
- * Remove @resource from the list of resources searched when a texture with a
- * resources path is requested.
- *
- */
-void
-mx_texture_cache_remove_resource (MxTextureCache *cache,
-                                  GResource      *resource)
-{
-  MxTextureCachePrivate *priv;
-  GList *l;
-
-  g_return_if_fail (MX_IS_TEXTURE_CACHE (cache));
-  g_return_if_fail (resource != NULL);
-
-  priv = TEXTURE_CACHE_PRIVATE (cache);
-
-  l = g_list_find (priv->resources, resource);
-
-  if (l)
-    {
-      g_resource_unref (l->data);
-      priv->resources = g_list_delete_link (priv->resources, l->data);
-    }
 }

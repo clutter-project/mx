@@ -225,7 +225,6 @@ mx_style_load_from_data (MxStyle      *style,
 
 gboolean
 mx_style_load_from_resource (MxStyle      *style,
-                             GResource    *resource,
                              const gchar  *path,
                              GError      **error)
 {
@@ -233,8 +232,8 @@ mx_style_load_from_resource (MxStyle      *style,
   GError *internal_error = NULL;
   gchar *id;
 
-  bytes = g_resource_lookup_data (resource, path, G_RESOURCE_LOOKUP_FLAGS_NONE,
-                                  &internal_error);
+  bytes = g_resources_lookup_data (path, G_RESOURCE_LOOKUP_FLAGS_NONE,
+                                   &internal_error);
 
   if (!bytes && internal_error)
     {
@@ -247,10 +246,6 @@ mx_style_load_from_resource (MxStyle      *style,
 
   mx_style_real_load_from_file (style, id, g_bytes_get_data (bytes, NULL),
                                 error, 0);
-
-  /* add the resource to the default texture cache, so that it can open images
-   * from the resource file */
-  mx_texture_cache_add_resource (mx_texture_cache_get_default (), resource);
 
   g_free (id);
 
@@ -265,7 +260,6 @@ mx_style_load (MxStyle *style)
   const gchar *env_var;
   gchar *rc_file = NULL;
   GError *error;
-  GResource *resource;
 
   env_var = g_getenv ("MX_RC_FILE");
   if (env_var && *env_var)
@@ -289,9 +283,7 @@ mx_style_load (MxStyle *style)
 
   g_free (rc_file);
 
-  resource = mx_get_resource ();
-
-  mx_style_load_from_resource (style, resource,
+  mx_style_load_from_resource (style,
                                "/org/clutter-project/Mx/style/default.css",
                                &error);
 

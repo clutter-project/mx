@@ -124,11 +124,6 @@ void            mx_texture_cache_insert_meta (MxTextureCache *self,
 
 void mx_texture_cache_load_cache (MxTextureCache *self,
                                   const char     *filename);
-
-void mx_texture_cache_add_resource    (MxTextureCache *cache,
-                                       GResource      *resource);
-void mx_texture_cache_remove_resource (MxTextureCache *cache,
-                                       GResource      *resource);
 G_END_DECLS
 
 #endif /* _MX_TEXTURE_CACHE */

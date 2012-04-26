@@ -96,7 +96,6 @@ gboolean mx_style_load_from_data (MxStyle      *style,
                                   GError      **error);
 
 gboolean mx_style_load_from_resource (MxStyle      *style,
-                                      GResource    *resource,
                                       const gchar  *path,
                                       GError      **error);
 
