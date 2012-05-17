@@ -228,11 +228,17 @@ mx_scroll_view_paint (ClutterActor *actor)
   b = color->blue;
   clutter_color_free (color);
 
-  /* MxBin will paint the child */
-  clutter_actor_get_allocation_box (priv->child, &box);
-  cogl_clip_push_rectangle (0, 0, (box.x2 - box.x1), (box.y2 - box.y1));
+  /* If there is a child to paint, clip it */
+  if (priv->child)
+    {
+      clutter_actor_get_allocation_box (priv->child, &box);
+      cogl_clip_push_rectangle (0, 0, (box.x2 - box.x1), (box.y2 - box.y1));
+    }
+
   CLUTTER_ACTOR_CLASS (mx_scroll_view_parent_class)->paint (actor);
-  cogl_clip_pop ();
+
+  if (priv->child)
+    cogl_clip_pop ();
 
 
   clutter_actor_get_allocation_box (actor, &box);
@@ -365,9 +371,19 @@ mx_scroll_view_pick (ClutterActor       *actor,
                      const ClutterColor *color)
 {
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (actor)->priv;
+  ClutterActorBox      box;
 
   /* Chain up so we get a bounding box pained (if we are reactive) */
+  if (priv->child)
+    {
+      clutter_actor_get_allocation_box (priv->child, &box);
+      cogl_clip_push_rectangle (0, 0, (box.x2 - box.x1), (box.y2 - box.y1));
+    }
+
   CLUTTER_ACTOR_CLASS (mx_scroll_view_parent_class)->pick (actor, color);
+
+  if (priv->child)
+    cogl_clip_pop ();
 
   /* paint our custom children */
   if (CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
