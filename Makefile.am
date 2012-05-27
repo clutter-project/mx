@@ -1,6 +1,4 @@
-SUBDIRS = mx
-
-SUBDIRS += data tests docs po tools
+SUBDIRS = mx data docs po
 
 if ENABLE_TESTS
 SUBDIRS +=  tests
@@ -10,6 +8,7 @@ if ENABLE_TOOLS
 SUBDIRS += tools
 endif
 
+DIST_SUBDIRS = mx data docs po tests tools
 
 ACLOCAL_AMFLAGS=-I m4
 
