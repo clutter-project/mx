@@ -67,6 +67,7 @@ struct _MxKineticScrollViewPrivate
   ClutterActor          *child;
 
   guint                  use_captured : 1;
+  guint                  use_clamp    : 1;
   guint                  in_drag      : 1;
   guint                  hmoving      : 1;
   guint                  vmoving      : 1;
@@ -730,7 +731,7 @@ clamp_adjustments (MxKineticScrollView *scroll,
   MxKineticScrollViewPrivate *priv = scroll->priv;
   ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
 
-  if (child)
+  if (child && priv->use_clamp)
     {
       MxAdjustment *hadj, *vadj;
 
@@ -750,8 +751,10 @@ clamp_adjustments (MxKineticScrollView *scroll,
     }
 
 
-  if (priv->hclamping && priv->vclamping)
+  if (priv->hclamping || priv->vclamping)
     set_state (scroll, MX_KINETIC_SCROLL_VIEW_STATE_CLAMPING);
+  else
+    set_state (scroll, MX_KINETIC_SCROLL_VIEW_STATE_IDLE);
 }
 
 static void
@@ -1023,18 +1026,29 @@ button_release (MxKineticScrollView *scroll,
                    * same direction as the push.
                    */
                   priv->dx *= n;
-                  if (ABS (priv->dx) < step_increment / 2)
-                    d = round ((value + priv->dx - lower) / step_increment);
-                  else if (priv->dx > 0)
-                    d = ceil ((value + priv->dx - lower) / step_increment);
-                  else
-                    d = floor ((value + priv->dx - lower) / step_increment);
+                  if (priv->use_clamp)
+                    {
+                      if (ABS (priv->dx) < step_increment / 2)
+                        d = round ((value + priv->dx - lower) / step_increment);
+                      else if (priv->dx > 0)
+                        d = ceil ((value + priv->dx - lower) / step_increment);
+                      else
+                        d = floor ((value + priv->dx - lower) / step_increment);
 
-                  if (priv->overshoot <= 0.0)
-                    d = CLAMP ((d * step_increment) + lower,
-                               lower, upper - page_size) - value;
+                      if (priv->overshoot <= 0.0)
+                        d = CLAMP ((d * step_increment) + lower,
+                                   lower, upper - page_size) - value;
+                      else
+                        d = ((d * step_increment) + lower) - value;
+                    }
                   else
-                    d = ((d * step_increment) + lower) - value;
+                    {
+                      if (priv->overshoot <= 0.0)
+                        d = CLAMP (value + priv->dx + lower,
+                                   lower, upper - page_size) - value;
+                      else
+                        d = priv->dx;
+                    }
 
                   priv->dx = d / ax;
                 }
@@ -1046,18 +1060,29 @@ button_release (MxKineticScrollView *scroll,
                                             &step_increment, NULL, &page_size);
 
                   priv->dy *= n;
-                  if (ABS (priv->dy) < step_increment / 2)
-                    d = round ((value + priv->dy - lower) / step_increment);
-                  else if (priv->dy > 0)
-                    d = ceil ((value + priv->dy - lower) / step_increment);
-                  else
-                    d = floor ((value + priv->dy - lower) / step_increment);
+                  if (priv->use_clamp)
+                    {
+                      if (ABS (priv->dy) < step_increment / 2)
+                        d = round ((value + priv->dy - lower) / step_increment);
+                      else if (priv->dy > 0)
+                        d = ceil ((value + priv->dy - lower) / step_increment);
+                      else
+                        d = floor ((value + priv->dy - lower) / step_increment);
 
-                  if (priv->overshoot <= 0.0)
-                    d = CLAMP ((d * step_increment) + lower,
-                               lower, upper - page_size) - value;
+                      if (priv->overshoot <= 0.0)
+                        d = CLAMP ((d * step_increment) + lower,
+                                   lower, upper - page_size) - value;
+                      else
+                        d = ((d * step_increment) + lower) - value;
+                    }
                   else
-                    d = ((d * step_increment) + lower) - value;
+                    {
+                      if (priv->overshoot <= 0.0)
+                        d = CLAMP (value + priv->dy + lower,
+                                   lower, upper - page_size) - value;
+                      else
+                        d = priv->dy;
+                    }
 
                   priv->dy = d / ay;
                 }
@@ -1206,6 +1231,7 @@ mx_kinetic_scroll_view_init (MxKineticScrollView *self)
   priv->acceleration_factor = 1.0;
   priv->clamp_duration = 250;
   priv->clamp_mode = CLUTTER_EASE_OUT_QUAD;
+  priv->use_clamp = TRUE;
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
   g_signal_connect (self, "button-press-event",
@@ -1689,4 +1715,39 @@ mx_kinetic_scroll_view_get_clamp_to_center (MxKineticScrollView *scroll)
 {
   g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), FALSE);
   return scroll->priv->clamp_to_center;
+}
+
+/**
+ * mx_kinetic_scroll_view_get_clamp:
+ * @scroll: A #MxKineticScrollView
+ *
+ * Retrieves whether to clamp to step increments.
+ *
+ * Returns: Clamp
+ *
+ * Since: 2.0
+ */
+gboolean
+mx_kinetic_scroll_view_get_clamp (MxKineticScrollView *scroll)
+{
+  g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), FALSE);
+  return scroll->priv->use_clamp;
+}
+
+/**
+ * mx_kinetic_scroll_view_get_clamp:
+ * @scroll: A #MxKineticScrollView
+ * @clamp: Clamp
+ *
+ * Set whether to clamp to step increments.
+ *
+ * Since: 2.0
+ */
+void
+mx_kinetic_scroll_view_set_clamp (MxKineticScrollView *scroll,
+                                  gboolean clamp)
+{
+  g_return_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll));
+
+  scroll->priv->use_clamp = !!clamp;
 }

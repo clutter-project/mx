@@ -109,6 +109,10 @@ void mx_kinetic_scroll_view_set_clamp_duration (MxKineticScrollView *scroll,
 guint mx_kinetic_scroll_view_get_clamp_duration (
     MxKineticScrollView *scroll);
 
+void mx_kinetic_scroll_view_set_clamp (MxKineticScrollView *scroll,
+                                       gboolean clamp);
+gboolean mx_kinetic_scroll_view_get_clamp (MxKineticScrollView *scroll);
+
 void mx_kinetic_scroll_view_set_clamp_mode (MxKineticScrollView *scroll,
     gulong clamp_mode);
 gulong mx_kinetic_scroll_view_get_clamp_mode (
