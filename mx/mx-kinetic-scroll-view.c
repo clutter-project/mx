@@ -709,8 +709,12 @@ clamp_adjustment (MxKineticScrollView *scroll,
       d += offset;
     }
 
-  if (mx_adjustment_get_clamp_value (adj))
-    d = CLAMP (d, lower, upper - page_size);
+  if (value != 0)
+    {
+      d = CLAMP (d, lower, upper - page_size);
+      if (fabs ((upper - page_size) - value) < fabs (d - value))
+        d = upper - page_size;
+    }
 
   g_signal_connect (adj, "interpolation-completed",
                     G_CALLBACK (interpolation_completed_cb), scroll);
