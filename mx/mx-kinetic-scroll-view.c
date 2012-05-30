@@ -1735,7 +1735,7 @@ mx_kinetic_scroll_view_get_clamp (MxKineticScrollView *scroll)
 }
 
 /**
- * mx_kinetic_scroll_view_get_clamp:
+ * mx_kinetic_scroll_view_set_clamp:
  * @scroll: A #MxKineticScrollView
  * @clamp: Clamp
  *
