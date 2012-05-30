@@ -159,6 +159,7 @@ mx_grid_do_allocate (ClutterActor          *self,
 
 static void scrollable_interface_init (MxScrollableIface *iface);
 static void mx_grid_focusable_iface_init (MxFocusableIface *iface);
+static void mx_grid_stylable_iface_init (MxStylableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxGrid, mx_grid,
                          MX_TYPE_WIDGET,
@@ -167,7 +168,9 @@ G_DEFINE_TYPE_WITH_CODE (MxGrid, mx_grid,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_SCROLLABLE,
                                                 scrollable_interface_init)
                          G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
-                                                mx_grid_focusable_iface_init));
+                                                mx_grid_focusable_iface_init)
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
+                                                mx_grid_stylable_iface_init));
 
 #define MX_GRID_GET_PRIVATE(obj) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_GRID, \
@@ -180,7 +183,7 @@ struct _MxGridPrivate
   gboolean      homogenous_rows;
   gboolean      homogenous_columns;
   MxAlign       line_alignment;
-  gfloat        column_spacing, row_spacing;
+  gfloat        col_spacing, row_spacing;
   MxAlign       child_x_align;
   MxAlign       child_y_align;
 
@@ -197,6 +200,9 @@ struct _MxGridPrivate
   MxAdjustment *vadjustment;
 
   MxFocusable  *last_focus;
+
+  guint ignore_css_col_spacing : 1;
+  guint ignore_css_row_spacing : 1;
 };
 
 enum
@@ -221,6 +227,37 @@ struct _MxGridActorData
   gfloat   xpos,       ypos;
   gfloat   pref_width, pref_height;
 };
+
+static void
+mx_grid_style_changed (MxWidget *widget, gpointer userdata)
+{
+  MxGridPrivate *priv = MX_GRID (widget)->priv;
+  guint row_spacing, col_spacing;
+  gboolean need_relayout = FALSE;
+
+  mx_stylable_get (MX_STYLABLE (widget),
+                   "x-mx-row-spacing", &row_spacing,
+                   "x-mx-column-spacing", &col_spacing,
+                   NULL);
+
+  if (!priv->ignore_css_row_spacing && (priv->row_spacing != row_spacing))
+    {
+      priv->row_spacing = row_spacing;
+      need_relayout = TRUE;
+    }
+
+  if (!priv->ignore_css_col_spacing && (priv->col_spacing != col_spacing))
+    {
+      priv->col_spacing = col_spacing;
+      need_relayout = TRUE;
+    }
+
+  if (need_relayout)
+    clutter_actor_queue_relayout (CLUTTER_ACTOR (widget));
+  else
+    clutter_actor_queue_redraw (CLUTTER_ACTOR (widget));
+}
+
 
 /* scrollable interface */
 static void
@@ -346,6 +383,33 @@ scrollable_interface_init (MxScrollableIface *iface)
 {
   iface->set_adjustments = scrollable_set_adjustments;
   iface->get_adjustments = scrollable_get_adjustments;
+}
+
+static void
+mx_grid_stylable_iface_init (MxStylableIface *iface)
+{
+  static gboolean is_initialized = FALSE;
+
+  if (G_UNLIKELY (!is_initialized))
+    {
+      GParamSpec *pspec;
+
+      is_initialized = TRUE;
+
+      pspec = g_param_spec_uint ("x-mx-row-spacing",
+                                 "Row Spacing",
+                                 "The size of the spacing between rows",
+                                 0, G_MAXUINT, 0,
+                                 MX_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_GRID, pspec);
+
+      pspec = g_param_spec_uint ("x-mx-column-spacing",
+                                 "Colum Spacing",
+                                 "The size of the spacing between columns",
+                                 0, G_MAXUINT, 0,
+                                 MX_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_GRID, pspec);
+    }
 }
 
 static void
@@ -701,6 +765,9 @@ mx_grid_init (MxGrid *self)
                              g_direct_equal,
                              NULL,
                              mx_grid_free_actor_data);
+
+  g_signal_connect (self, "style-changed",
+                    G_CALLBACK (mx_grid_style_changed), NULL);
 }
 
 static void
@@ -828,9 +895,10 @@ mx_grid_set_column_spacing (MxGrid *self,
 
   priv = self->priv;
 
-  if (priv->column_spacing != value)
+  if (priv->col_spacing != value)
     {
-      priv->column_spacing = value;
+      priv->ignore_css_col_spacing = TRUE;
+      priv->col_spacing = value;
       clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
     }
 }
@@ -840,7 +908,7 @@ mx_grid_get_column_spacing (MxGrid *self)
 {
   g_return_val_if_fail (MX_IS_GRID (self), 0.0);
 
-  return self->priv->column_spacing;
+  return self->priv->col_spacing;
 }
 
 void
@@ -855,6 +923,7 @@ mx_grid_set_row_spacing (MxGrid *self,
 
   if (value != priv->row_spacing)
     {
+      priv->ignore_css_row_spacing = TRUE;
       priv->row_spacing = value;
       clutter_actor_queue_relayout (CLUTTER_ACTOR (self));
     }
@@ -1262,7 +1331,7 @@ compute_row_height (ClutterActor     *self,
   else
     {
       homogenous_a = priv->homogenous_columns;
-      gap          = priv->column_spacing;
+      gap          = priv->col_spacing;
     }
 
   clutter_actor_iter_init (&siblings, self);
@@ -1322,7 +1391,7 @@ compute_row_start (ClutterActor     *container,
   else
     {
       homogenous_a = priv->homogenous_columns;
-      gap          = priv->column_spacing;
+      gap          = priv->col_spacing;
     }
 
   clutter_actor_iter_init (&siblings, container);
@@ -1408,7 +1477,7 @@ mx_grid_do_allocate (ClutterActor          *self,
       aalign = MX_ALIGN_TO_FLOAT (priv->child_y_align);
       balign = MX_ALIGN_TO_FLOAT (priv->child_x_align);
       agap          = priv->row_spacing;
-      bgap          = priv->column_spacing;
+      bgap          = priv->col_spacing;
     }
   else
     {
@@ -1417,7 +1486,7 @@ mx_grid_do_allocate (ClutterActor          *self,
       homogenous_b = priv->homogenous_rows;
       aalign = MX_ALIGN_TO_FLOAT (priv->child_x_align);
       balign = MX_ALIGN_TO_FLOAT (priv->child_y_align);
-      agap          = priv->column_spacing;
+      agap          = priv->col_spacing;
       bgap          = priv->row_spacing;
     }
 
