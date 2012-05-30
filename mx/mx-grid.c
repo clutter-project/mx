@@ -158,7 +158,7 @@ mx_grid_do_allocate (ClutterActor          *self,
                      gfloat                *min_height);
 
 static void scrollable_interface_init (MxScrollableIface *iface);
-static void mx_box_focusable_iface_init (MxFocusableIface *iface);
+static void mx_grid_focusable_iface_init (MxFocusableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxGrid, mx_grid,
                          MX_TYPE_WIDGET,
@@ -167,7 +167,7 @@ G_DEFINE_TYPE_WITH_CODE (MxGrid, mx_grid,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_SCROLLABLE,
                                                 scrollable_interface_init)
                          G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
-                                                mx_box_focusable_iface_init));
+                                                mx_grid_focusable_iface_init));
 
 #define MX_GRID_GET_PRIVATE(obj) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MX_TYPE_GRID, \
@@ -679,7 +679,7 @@ mx_grid_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 }
 
 static void
-mx_box_focusable_iface_init (MxFocusableIface *iface)
+mx_grid_focusable_iface_init (MxFocusableIface *iface)
 {
   iface->move_focus = mx_grid_move_focus;
   iface->accept_focus = mx_grid_accept_focus;
