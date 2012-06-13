@@ -519,6 +519,22 @@ mx_combo_box_button_press_event (ClutterActor       *actor,
 }
 
 static gboolean
+mx_combo_box_touch_event (ClutterActor      *actor,
+                          ClutterTouchEvent *event)
+{
+  switch (event->type)
+    {
+    case CLUTTER_TOUCH_BEGIN:
+      return mx_combo_box_open_menu (MX_COMBO_BOX (actor));
+
+    default:
+      return FALSE;
+    }
+
+  return FALSE;
+}
+
+static gboolean
 mx_combo_box_key_press_event (ClutterActor    *actor,
                               ClutterKeyEvent *event)
 {
@@ -591,6 +607,7 @@ mx_combo_box_class_init (MxComboBoxClass *klass)
   actor_class->allocate = mx_combo_box_allocate;
 
   actor_class->button_press_event = mx_combo_box_button_press_event;
+  actor_class->touch_event = mx_combo_box_touch_event;
   actor_class->key_press_event = mx_combo_box_key_press_event;
 
   pspec = g_param_spec_string ("active-text",
