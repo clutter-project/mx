@@ -172,9 +172,9 @@ button_toggled_notify_cb (MxButton      *button,
 }
 
 static gboolean
-button_click_intercept (MxButton           *button,
-                        ClutterButtonEvent *event,
-                        MxButtonGroup      *group)
+button_click_intercept (MxButton      *button,
+                        ClutterEvent  *event,
+                        MxButtonGroup *group)
 {
   if (button == group->priv->active_button && !group->priv->allow_no_active)
     return TRUE;
@@ -257,6 +257,8 @@ mx_button_group_add (MxButtonGroup   *group,
   g_signal_connect (button, "button-press-event",
                     G_CALLBACK (button_click_intercept), group);
   g_signal_connect (button, "button-release-event",
+                    G_CALLBACK (button_click_intercept), group);
+  g_signal_connect (button, "touch-event",
                     G_CALLBACK (button_click_intercept), group);
 
   g_object_weak_ref (G_OBJECT (button), (GWeakNotify) button_weak_notify,
