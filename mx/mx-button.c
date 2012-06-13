@@ -268,8 +268,8 @@ mx_button_style_changed (MxWidget *widget)
 
 
 static void
-mx_button_push (MxButton           *button,
-                ClutterButtonEvent *event)
+mx_button_push (MxButton     *button,
+                ClutterEvent *event)
 {
   MxWidget *widget = MX_WIDGET (button);
 
@@ -327,7 +327,7 @@ mx_button_button_press (ClutterActor       *actor,
 
   if (event->button == 1)
     {
-      mx_button_push (MX_BUTTON (actor), event);
+      mx_button_push (MX_BUTTON (actor), (ClutterEvent *) event);
 
       return TRUE;
     }

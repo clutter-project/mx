@@ -763,7 +763,7 @@ mx_widget_emit_long_press (MxWidget *widget)
  */
 void
 mx_widget_long_press_query (MxWidget           *widget,
-                            ClutterButtonEvent *event)
+                            ClutterEvent       *event)
 {
   MxWidgetPrivate *priv = widget->priv;
   gboolean query_result = FALSE;
@@ -772,8 +772,24 @@ mx_widget_long_press_query (MxWidget           *widget,
 
   g_object_get (settings, "long-press-timeout", &timeout, NULL);
 
-  g_signal_emit (widget, widget_signals[LONG_PRESS], 0, event->x,
-                 event->y, MX_LONG_PRESS_QUERY, &query_result);
+  switch (event->type)
+    {
+    case CLUTTER_BUTTON_PRESS:
+      g_signal_emit (widget, widget_signals[LONG_PRESS], 0,
+                     event->button.x, event->button.y,
+                     MX_LONG_PRESS_QUERY, &query_result);
+      break;
+
+    case CLUTTER_TOUCH_BEGIN:
+      g_signal_emit (widget, widget_signals[LONG_PRESS], 0,
+                     event->touch.x, event->touch.y,
+                     MX_LONG_PRESS_QUERY, &query_result);
+      break;
+
+    default:
+      g_assert_not_reached ();
+      break;
+    }
 
   if (query_result)
     priv->long_press_source = g_timeout_add (timeout,
@@ -833,7 +849,7 @@ mx_widget_button_press (ClutterActor       *actor,
   if (event->button == 1)
     mx_stylable_style_pseudo_class_add (MX_STYLABLE (widget), "active");
 
-  mx_widget_long_press_query (widget, event);
+  mx_widget_long_press_query (widget, (ClutterEvent *) event);
 
   return FALSE;
 }

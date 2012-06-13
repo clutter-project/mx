@@ -115,8 +115,8 @@ gboolean  mx_widget_get_disabled (MxWidget *widget);
 void      mx_widget_set_disabled (MxWidget *widget,
                                   gboolean  disabled);
 
-void mx_widget_long_press_query  (MxWidget           *widget,
-                                  ClutterButtonEvent *event);
+void mx_widget_long_press_query  (MxWidget     *widget,
+                                  ClutterEvent *event);
 void mx_widget_long_press_cancel (MxWidget           *widget);
 
 void   mx_widget_set_tooltip_delay (MxWidget *widget, guint delay);
