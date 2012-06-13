@@ -53,6 +53,7 @@
 #include "mx-private.h"
 #include "mx-enum-types.h"
 #include "mx-focusable.h"
+#include "mx-widget-private.h"
 
 enum
 {
@@ -347,6 +348,57 @@ mx_button_button_release (ClutterActor       *actor,
       mx_button_pull (MX_BUTTON (actor));
 
       return TRUE;
+    }
+
+  return TRUE;
+}
+
+static gboolean
+mx_button_touch_event (ClutterActor      *actor,
+                       ClutterTouchEvent *event)
+{
+  MxWidget *widget;
+  MxButtonPrivate *priv;
+
+  if (mx_widget_get_disabled (MX_WIDGET (actor)))
+    return TRUE;
+
+  widget = MX_WIDGET (actor);
+  priv = MX_BUTTON (actor)->priv;
+
+  switch (event->type)
+    {
+    case CLUTTER_TOUCH_BEGIN:
+      _mx_widget_add_touch_sequence (widget, event->sequence);
+      mx_button_push (MX_BUTTON (actor), (ClutterEvent *) event);
+      break;
+
+    case CLUTTER_TOUCH_END:
+      if (_mx_widget_has_touch_sequence (widget, event->sequence))
+        {
+          _mx_widget_remove_touch_sequence (widget, event->sequence);
+
+          if (!_mx_widget_has_touch_sequences (widget))
+            mx_button_pull (MX_BUTTON (actor));
+        }
+      break;
+
+    case CLUTTER_TOUCH_CANCEL:
+      if (_mx_widget_has_touch_sequence (widget, event->sequence))
+        {
+          _mx_widget_remove_touch_sequence (widget, event->sequence);
+
+          if (!_mx_widget_has_touch_sequences (widget) && priv->is_pressed)
+            {
+              mx_widget_long_press_cancel (widget);
+              mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "active");
+              priv->is_pressed = FALSE;
+            }
+        }
+      break;
+
+    default:
+      return FALSE;
     }
 
   return TRUE;
@@ -799,6 +851,7 @@ mx_button_class_init (MxButtonClass *klass)
 
   actor_class->button_press_event = mx_button_button_press;
   actor_class->button_release_event = mx_button_button_release;
+  actor_class->touch_event = mx_button_touch_event;
   actor_class->key_press_event = mx_button_key_press;
   actor_class->key_release_event = mx_button_key_release;
   actor_class->enter_event = mx_button_enter;
