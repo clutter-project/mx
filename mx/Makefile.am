@@ -111,6 +111,7 @@ source_h_priv = \
 	$(top_srcdir)/mx/mx-progress-bar-fill.h	\
 	$(top_srcdir)/mx/mx-private.h		\
 	$(top_srcdir)/mx/mx-settings-provider.h	\
+	$(top_srcdir)/mx/mx-widget-private.h	\
 	$(NULL)
 
 source_c = \

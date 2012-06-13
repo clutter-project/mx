@@ -34,7 +34,7 @@
 
 #include <clutter/clutter.h>
 
-#include "mx-widget.h"
+#include "mx-widget-private.h"
 
 #include "mx-marshal.h"
 #include "mx-private.h"
@@ -80,6 +80,8 @@ struct _MxWidgetPrivate
   guint         tooltip_delay;
 
   guint         in_dispose;
+
+  GHashTable   *sequences;
 };
 
 /**
@@ -336,6 +338,12 @@ mx_widget_finalize (GObject *gobject)
     {
       g_boxed_free (MX_TYPE_BORDER_IMAGE, priv->mx_background_image);
       priv->mx_background_image = NULL;
+    }
+
+  if (priv->sequences)
+    {
+      g_hash_table_unref (priv->sequences);
+      priv->sequences = NULL;
     }
 
   clutter_color_free (priv->bg_color);
@@ -1687,4 +1695,53 @@ scriptable_iface_init (ClutterScriptableIface *iface)
                                           (CLUTTER_TYPE_SCRIPTABLE);
 
   iface->set_custom_property = widget_scriptable_set_custom_property;
+}
+
+void
+_mx_widget_add_touch_sequence (MxWidget             *widget,
+                               ClutterEventSequence *sequence)
+{
+  MxWidgetPrivate *priv = widget->priv;
+
+  if (!priv->sequences)
+    priv->sequences = g_hash_table_new_full (g_direct_hash,
+                                             g_direct_equal,
+                                             NULL, NULL);
+
+  g_hash_table_add (priv->sequences, sequence);
+}
+
+void
+_mx_widget_remove_touch_sequence (MxWidget             *widget,
+                                  ClutterEventSequence *sequence)
+{
+  MxWidgetPrivate *priv = widget->priv;
+
+  if (priv->sequences)
+    g_hash_table_remove (priv->sequences, sequence);
+}
+
+gboolean
+_mx_widget_has_touch_sequence (MxWidget             *widget,
+                               ClutterEventSequence *sequence)
+{
+  MxWidgetPrivate *priv = widget->priv;
+
+  if (priv->sequences)
+    return g_hash_table_contains (priv->sequences, sequence);
+
+  return FALSE;
+}
+
+gboolean
+_mx_widget_has_touch_sequences (MxWidget *widget)
+{
+
+  MxWidgetPrivate *priv = widget->priv;
+
+  if (priv->sequences)
+    return g_hash_table_size (priv->sequences) != 0;
+
+  return FALSE;
+
 }
