@@ -871,6 +871,45 @@ mx_widget_button_release (ClutterActor       *actor,
   return FALSE;
 }
 
+static gboolean
+mx_widget_touch_event (ClutterActor      *actor,
+                       ClutterTouchEvent *event)
+{
+  MxWidget *widget = MX_WIDGET (actor);
+
+  if (mx_widget_get_disabled (MX_WIDGET (actor)))
+      return TRUE;
+
+  switch (event->type)
+    {
+    case CLUTTER_TOUCH_BEGIN:
+      mx_stylable_style_pseudo_class_add (MX_STYLABLE (widget), "active");
+      _mx_widget_add_touch_sequence (widget, event->sequence);
+      mx_widget_long_press_query (widget, (ClutterEvent *) event);
+      break;
+
+    case CLUTTER_TOUCH_END:
+    case CLUTTER_TOUCH_CANCEL:
+      if (!_mx_widget_has_touch_sequence (widget, event->sequence))
+        return FALSE;
+
+      _mx_widget_remove_touch_sequence (widget, event->sequence);
+
+      if (!_mx_widget_has_touch_sequences (widget))
+        {
+          mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "active");
+
+          mx_widget_long_press_cancel (widget);
+        }
+      break;
+
+    default:
+      break;
+    }
+
+  return FALSE;
+}
+
 static void
 mx_widget_hide (ClutterActor *actor)
 {
@@ -991,6 +1030,7 @@ mx_widget_class_init (MxWidgetClass *klass)
   actor_class->motion_event = mx_widget_motion;
   actor_class->button_press_event = mx_widget_button_press;
   actor_class->button_release_event = mx_widget_button_release;
+  actor_class->touch_event = mx_widget_touch_event;
 
   actor_class->hide = mx_widget_hide;
   actor_class->parent_set = mx_widget_parent_set;
