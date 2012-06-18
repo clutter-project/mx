@@ -863,7 +863,8 @@ mx_entry_captured_event (ClutterActor *actor,
     }
 
   /* button press should cancel unicode input mode */
-  if (event->type == CLUTTER_BUTTON_PRESS && priv->unicode_input_mode)
+  if (((event->type == CLUTTER_BUTTON_PRESS) ||
+       (event->type == CLUTTER_TOUCH_BEGIN)) && priv->unicode_input_mode)
     {
       clutter_text_set_preedit_string (CLUTTER_TEXT (priv->entry), NULL,
                                        NULL, 0);
@@ -1041,6 +1042,13 @@ mx_entry_swallow_button_event (ClutterActor       *actor,
   return TRUE;
 }
 
+static gboolean
+mx_entry_swallow_touch_event (ClutterActor      *actor,
+                              ClutterTouchEvent *event)
+{
+  return TRUE;
+}
+
 static void
 mx_entry_class_init (MxEntryClass *klass)
 {
@@ -1064,6 +1072,7 @@ mx_entry_class_init (MxEntryClass *klass)
   actor_class->leave_event = mx_entry_swallow_crossing_event;
   actor_class->button_press_event = mx_entry_swallow_button_event;
   actor_class->button_release_event = mx_entry_swallow_button_event;
+  actor_class->touch_event = mx_entry_swallow_touch_event;
 
   actor_class->captured_event = mx_entry_captured_event;
   actor_class->key_press_event = mx_entry_key_press_event;
