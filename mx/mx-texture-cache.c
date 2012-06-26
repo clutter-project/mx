@@ -38,6 +38,19 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <string.h>
 
+#if defined(__ANDROID__) || defined(ANDROID)
+# include <clutter/android/clutter-android-application.h>
+# include <android/asset_manager.h>
+
+extern unsigned char *stbi_load_from_memory (unsigned char const *buffer,
+                                             int                  len,
+                                             int                 *x,
+                                             int                 *y,
+                                             int                 *comp,
+                                             int                  req_comp);
+
+#endif
+
 #include "mx-texture-cache.h"
 #include "mx-marshal.h"
 #include "mx-private.h"
@@ -85,6 +98,12 @@ typedef struct
   CoglHandle     *texture;
   GDestroyNotify  destroy_func;
 } MxTextureCacheMetaEntry;
+
+static GQuark
+mx_texture_cache_error_quark (void)
+{
+  return g_quark_from_static_string ("mx-texture-cache-error-quark");
+}
 
 static MxTextureCacheItem *
 mx_texture_cache_item_new (void)
@@ -394,9 +413,57 @@ mx_texture_cache_get_item (MxTextureCache *self,
         }
       else
         {
+#if defined(__ANDROID__) || defined(ANDROID)
+          ClutterAndroidApplication *application =
+            clutter_android_application_get_default ();
+          const unsigned char *buffer, *pixels;
+          int width, height, stb_pixel_format, i;
+          AAssetManager *asset_manager;
+          AAsset *asset;
+
+          /* Remove preceeding characters, the android asset manager
+             doesn't support paths starting with . or / */
+          for (i = 0; file[i] != '\0'; i++)
+            {
+              if (file[i] != '.' &&
+                  file[i] != '/')
+                break;
+            }
+
+          asset_manager =
+            clutter_android_application_get_asset_manager (application);
+          asset = AAssetManager_open (asset_manager, &file[i], AASSET_MODE_BUFFER);
+
+          if (asset != NULL)
+            {
+              buffer = AAsset_getBuffer (asset);
+              pixels = stbi_load_from_memory (buffer,
+                                              AAsset_getLength (asset),
+                                              &width, &height,
+                                              &stb_pixel_format,
+                                              4 /* STBI_rgb_alpha */);
+
+              if (pixels != NULL)
+                item->ptr = cogl_texture_new_from_data (width, height,
+                                                        COGL_TEXTURE_NONE | COGL_TEXTURE_NO_SLICING,
+                                                        COGL_PIXEL_FORMAT_RGBA_8888,
+                                                        COGL_PIXEL_FORMAT_ANY,
+                                                        width * 4,
+                                                        pixels);
+              else
+                err = g_error_new (mx_texture_cache_error_quark (), 0,
+                                   "Could not decompress image %s", file);
+
+              AAsset_close (asset);
+            }
+          else
+            err = g_error_new (mx_texture_cache_error_quark (), 0,
+                               "Could not open %s", file);
+#else
           item->ptr = cogl_texture_new_from_file (file, COGL_TEXTURE_NONE,
                                                   COGL_PIXEL_FORMAT_ANY,
                                                   &err);
+#endif
         }
 
       if (!item->ptr)
