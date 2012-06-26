@@ -1302,7 +1302,7 @@ mx_kinetic_scroll_view_set_deceleration (MxKineticScrollView *scroll,
   MxKineticScrollViewPrivate *priv;
 
   g_return_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll));
-  g_return_if_fail (rate >= 1.01);
+  g_return_if_fail (rate > 1.0);
 
   priv = scroll->priv;
 
