@@ -799,7 +799,7 @@ deceleration_new_frame_cb (ClutterTimeline     *timeline,
 
           if (hadjust)
             {
-              if (ABS (priv->dx) > 5)
+              if (ABS (priv->dx) > 2)
                 {
                   hvalue = priv->dx + mx_adjustment_get_value (hadjust);
                   mx_adjustment_set_value (hadjust, hvalue);
@@ -830,7 +830,7 @@ deceleration_new_frame_cb (ClutterTimeline     *timeline,
 
           if (vadjust)
             {
-              if (ABS (priv->dy) > 5)
+              if (ABS (priv->dy) > 2)
                 {
                   vvalue = priv->dy + mx_adjustment_get_value (vadjust);
                   mx_adjustment_set_value (vadjust, vvalue);
