@@ -188,6 +188,7 @@ LiveInspector.prototype = {
         while (it_widget != null) {
             var w_name = "" + it_widget;
             var button = new Mx.Button({ label: w_name });
+            button.set_style_class ("css-editor-button");
 
             this._widget_tree[w_name] = it_widget;
 
