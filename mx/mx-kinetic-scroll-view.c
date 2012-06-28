@@ -576,22 +576,48 @@ motion_event_cb (ClutterActor        *actor,
           guint threshold;
           gboolean threshold_passed;
           MxSettings *settings = mx_settings_get_default ();
+          gdouble dx, dy;
 
           g_object_get (G_OBJECT (settings),
                         "drag-threshold", &threshold, NULL);
           motion = &g_array_index (priv->motion_buffer,
                                    MxKineticScrollViewMotion, 0);
 
-          if ((ABS (motion->y - y) >= threshold) &&
+          dx = ABS (motion->x - x);
+          dy = ABS (motion->y - y);
+
+          if ((dy >= threshold) &&
               (priv->scroll_policy == MX_SCROLL_POLICY_VERTICAL ||
                priv->scroll_policy == MX_SCROLL_POLICY_BOTH))
            threshold_passed = TRUE;
-          else if ((ABS (motion->x - x) >= threshold) &&
+          else if ((dx >= threshold) &&
               (priv->scroll_policy == MX_SCROLL_POLICY_HORIZONTAL ||
                priv->scroll_policy == MX_SCROLL_POLICY_BOTH))
            threshold_passed = TRUE;
           else
            threshold_passed = FALSE;
+
+          switch (priv->scroll_policy)
+            {
+            case MX_SCROLL_POLICY_HORIZONTAL:
+              if (dx < dy)
+                {
+                  threshold_passed = FALSE;
+                  g_message ("%p: no capture horizontal !", actor);
+                }
+              break;
+
+            case MX_SCROLL_POLICY_VERTICAL:
+              if (dy < dx)
+                {
+                  threshold_passed = FALSE;
+                  g_message ("%p: no capture vertical !", actor);
+                }
+              break;
+
+            default:
+              break;
+            }
 
           if (threshold_passed)
             {
@@ -601,6 +627,7 @@ motion_event_cb (ClutterActor        *actor,
 
               clutter_stage_set_motion_events_enabled (CLUTTER_STAGE (stage),
                                                        FALSE);
+
               priv->in_drag = TRUE;
 
               set_state (scroll, MX_KINETIC_SCROLL_VIEW_STATE_PANNING);
@@ -615,6 +642,7 @@ motion_event_cb (ClutterActor        *actor,
                                     G_CALLBACK (motion_event_cb),
                                     scroll);
                 }
+
             }
           else
             return FALSE;
