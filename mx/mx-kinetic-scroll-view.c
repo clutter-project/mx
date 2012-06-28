@@ -601,18 +601,12 @@ motion_event_cb (ClutterActor        *actor,
             {
             case MX_SCROLL_POLICY_HORIZONTAL:
               if (dx < dy)
-                {
-                  threshold_passed = FALSE;
-                  g_message ("%p: no capture horizontal !", actor);
-                }
+                threshold_passed = FALSE;
               break;
 
             case MX_SCROLL_POLICY_VERTICAL:
               if (dy < dx)
-                {
-                  threshold_passed = FALSE;
-                  g_message ("%p: no capture vertical !", actor);
-                }
+                threshold_passed = FALSE;
               break;
 
             default:
