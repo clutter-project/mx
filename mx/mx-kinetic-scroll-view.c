@@ -68,13 +68,17 @@ struct _MxKineticScrollViewPrivate
 
   guint                  use_captured : 1;
   guint                  use_clamp    : 1;
+  guint                  use_grab     : 1;
   guint                  in_drag      : 1;
   guint                  hmoving      : 1;
   guint                  vmoving      : 1;
   guint                  hclamping    : 1;
   guint                  vclamping    : 1;
   guint32                button;
+  ClutterInputDevice    *device;
   ClutterEventSequence  *sequence;
+  ClutterActor          *source_press_actor;
+  ClutterEvent          *cancel_event;
 
   /* Mouse motion event information */
   GArray                *motion_buffer;
@@ -107,6 +111,7 @@ enum {
   PROP_VADJUST,
   PROP_BUTTON,
   PROP_USE_CAPTURED,
+  PROP_USE_GRAB,
   PROP_OVERSHOOT,
   PROP_SCROLL_POLICY,
   PROP_ACCELERATION_FACTOR,
@@ -116,9 +121,67 @@ enum {
   PROP_CLAMP_TO_CENTER,
 };
 
+static void
+emit_cursor_actor_cancel (MxKineticScrollView *scroll,
+                          ClutterEvent *event)
+{
+  MxKineticScrollViewPrivate *priv = scroll->priv;
+  ClutterEvent *ev_cancel;
+  ClutterActor *actor = clutter_event_get_source (event), *iactor;
+  gfloat x, y;
+  gint i;
+  GPtrArray *event_tree = NULL;
+
+  event_tree = g_ptr_array_sized_new (64);
+
+  /* Build 'tree' of emitters for the event */
+  iactor = priv->source_press_actor;
+  while (iactor)
+    {
+      ClutterActor *parent;
+
+      parent = clutter_actor_get_parent (iactor);
+
+      if ((clutter_actor_get_reactive (iactor) &&
+           (iactor != (ClutterActor *) scroll)) ||
+          parent == NULL)
+        {
+          g_ptr_array_add (event_tree, g_object_ref (iactor));
+        }
+
+      iactor = parent;
+    }
+
+  clutter_event_get_coords (event, &x, &y);
+
+  ev_cancel = clutter_event_new (CLUTTER_TOUCH_CANCEL);
+  clutter_event_set_device (ev_cancel, priv->device);
+  clutter_event_set_source (ev_cancel, actor);
+  clutter_event_set_coords (ev_cancel, x, y);
+  ev_cancel->touch.sequence = clutter_event_get_event_sequence (event);
+
+  priv->cancel_event = ev_cancel;
+
+  /* Capture */
+  for (i = event_tree->len - 1; i >= 0; i--)
+    clutter_actor_event (g_ptr_array_index (event_tree, i), ev_cancel, TRUE);
+
+  /* Bubble */
+  for (i = 0; i < event_tree->len; i++)
+    clutter_actor_event (g_ptr_array_index (event_tree, i), ev_cancel, FALSE);
+
+  priv->cancel_event = NULL;
+
+  clutter_event_free (ev_cancel);
+  g_ptr_array_free (event_tree, TRUE);
+}
+
 static gboolean release_event (MxKineticScrollView *scroll,
                                gint                 x,
                                gint                 y);
+
+static gboolean mx_kinetic_scroll_view_event (ClutterActor *actor,
+                                              ClutterEvent *event);
 
 /* MxScrollableIface implementation */
 
@@ -207,6 +270,10 @@ mx_kinetic_scroll_view_get_property (GObject    *object,
       g_value_set_boolean (value, priv->use_captured);
       break;
 
+    case PROP_USE_GRAB:
+      g_value_set_boolean (value, priv->use_grab);
+      break;
+
     case PROP_OVERSHOOT:
       g_value_set_double (value, priv->overshoot);
       break;
@@ -286,6 +353,11 @@ mx_kinetic_scroll_view_set_property (GObject      *object,
     case PROP_USE_CAPTURED:
       mx_kinetic_scroll_view_set_use_captured (self,
                                                g_value_get_boolean (value));
+      break;
+
+    case PROP_USE_GRAB:
+      mx_kinetic_scroll_view_set_use_grab (self,
+                                           g_value_get_boolean (value));
       break;
 
     case PROP_OVERSHOOT:
@@ -418,6 +490,8 @@ mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
     mx_kinetic_scroll_view_get_preferred_height;
   actor_class->allocate =
     mx_kinetic_scroll_view_allocate;
+  actor_class->event =
+    mx_kinetic_scroll_view_event;
 
   pspec = g_param_spec_double ("deceleration",
                                "Deceleration",
@@ -448,6 +522,13 @@ mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
                                 FALSE,
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_USE_CAPTURED, pspec);
+
+  pspec = g_param_spec_boolean ("use-grab",
+                                "Use grab",
+                                "Use grab to initiate follow motion events",
+                                FALSE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_USE_GRAB, pspec);
 
   pspec = g_param_spec_double ("overshoot",
                                "Overshoot",
@@ -528,6 +609,13 @@ motion_event_cb (ClutterActor        *actor,
   MxKineticScrollViewPrivate *priv = scroll->priv;
   ClutterEventType type = clutter_event_type (event);
   gfloat x, y;
+  gboolean swallow = TRUE;
+
+  if (priv->device != clutter_event_get_device (event))
+    return FALSE;
+
+  if (priv->cancel_event == event)
+    return FALSE;
 
   if (type == CLUTTER_MOTION)
     {
@@ -574,7 +662,6 @@ motion_event_cb (ClutterActor        *actor,
     }
   else
     return FALSE;
-
 
   if (clutter_actor_transform_stage_point (CLUTTER_ACTOR (scroll),
                                            x, y, &x, &y))
@@ -648,7 +735,22 @@ motion_event_cb (ClutterActor        *actor,
                                     G_CALLBACK (motion_event_cb),
                                     scroll);
                 }
+              else
+                {
+                  /* swallow = FALSE; */
+                  emit_cursor_actor_cancel (scroll, event);
+                }
 
+              if (priv->use_grab)
+                {
+                  if (priv->sequence)
+                    clutter_input_device_sequence_grab (priv->device,
+                                                        priv->sequence,
+                                                        CLUTTER_ACTOR (scroll));
+                  else
+                    clutter_input_device_grab (priv->device,
+                                               CLUTTER_ACTOR (scroll));
+                }
             }
           else
             return FALSE;
@@ -694,7 +796,7 @@ motion_event_cb (ClutterActor        *actor,
       g_get_current_time (&motion->time);
     }
 
-  return TRUE;
+  return swallow;
 }
 
 static void
@@ -912,6 +1014,12 @@ button_release_event_cb (ClutterActor        *stage,
   MxKineticScrollViewPrivate *priv = scroll->priv;
   gfloat x, y;
 
+  if (priv->device != clutter_event_get_device (event))
+    return FALSE;
+
+  if (priv->cancel_event == event)
+    return FALSE;
+
   switch (clutter_event_type (event))
     {
     case CLUTTER_BUTTON_RELEASE:
@@ -926,7 +1034,6 @@ button_release_event_cb (ClutterActor        *stage,
     case CLUTTER_TOUCH_END:
       if (clutter_event_get_event_sequence (event) == priv->sequence)
         {
-          priv->sequence = NULL;
           clutter_event_get_coords (event, &x, &y);
           return release_event (scroll, x, y);
         }
@@ -961,7 +1068,11 @@ release_event (MxKineticScrollView *scroll,
                                         scroll);
 
   if (!priv->in_drag)
-    return FALSE;
+    {
+      priv->device = NULL;
+      priv->sequence = NULL;
+      return FALSE;
+    }
 
   clutter_stage_set_motion_events_enabled (CLUTTER_STAGE (stage), TRUE);
 
@@ -1157,6 +1268,17 @@ release_event (MxKineticScrollView *scroll,
         }
     }
 
+  if (priv->use_grab)
+    {
+      if (priv->sequence)
+        clutter_input_device_sequence_ungrab (priv->device, priv->sequence);
+      else
+        clutter_input_device_ungrab (priv->device);
+    }
+
+  priv->sequence = NULL;
+  priv->device = NULL;
+
   /* Reset motion event buffer */
   priv->last_motion = 0;
 
@@ -1200,7 +1322,7 @@ press_event (MxKineticScrollView *scroll,
 
       if (priv->use_captured)
         {
-          g_signal_connect (stage,
+          g_signal_connect (scroll,
                             "captured-event",
                             G_CALLBACK (motion_event_cb),
                             scroll);
@@ -1216,6 +1338,7 @@ press_event (MxKineticScrollView *scroll,
                             G_CALLBACK (motion_event_cb),
                             scroll);
         }
+
       g_signal_connect (stage,
                         "captured-event",
                         G_CALLBACK (button_release_event_cb),
@@ -1229,6 +1352,16 @@ press_event (MxKineticScrollView *scroll,
           priv->in_drag = TRUE;
           clutter_stage_set_motion_events_enabled (CLUTTER_STAGE (stage),
                                                    FALSE);
+
+          if (priv->use_grab)
+            {
+              if (priv->sequence)
+                clutter_input_device_sequence_grab (priv->device,
+                                                    priv->sequence,
+                                                    CLUTTER_ACTOR (scroll));
+              else
+                clutter_input_device_grab (priv->device, CLUTTER_ACTOR (scroll));
+            }
 
           /* Swallow the press event */
           return TRUE;
@@ -1245,24 +1378,52 @@ button_press_event_cb (ClutterActor        *actor,
                        ClutterEvent        *event,
                        MxKineticScrollView *scroll)
 {
+  MxKineticScrollViewPrivate *priv = scroll->priv;
   gfloat x, y;
+
+  if (priv->device != NULL)
+    return FALSE;
+
+  if (priv->cancel_event == event)
+    return FALSE;
 
   switch (clutter_event_type (event))
     {
     case CLUTTER_BUTTON_PRESS:
-      if (clutter_event_get_button (event) == scroll->priv->button)
+      if (clutter_event_get_button (event) == priv->button)
         {
+          priv->device = clutter_event_get_device (event);
+          priv->sequence = clutter_event_get_event_sequence (event);
+          priv->source_press_actor = clutter_event_get_source (event);
           clutter_event_get_coords (event, &x, &y);
-          return press_event (scroll, x, y);
+          if (press_event (scroll, x, y))
+            {
+              if (priv->use_grab)
+                {
+                  emit_cursor_actor_cancel (scroll, event);
+                  /* return FALSE; */
+                }
+              return TRUE;
+            }
         }
       break;
 
     case CLUTTER_TOUCH_BEGIN:
-      if (scroll->priv->sequence == NULL)
+      if (priv->sequence == NULL)
         {
-          scroll->priv->sequence = clutter_event_get_event_sequence (event);
+          priv->device = clutter_event_get_device (event);
+          priv->sequence = clutter_event_get_event_sequence (event);
+          priv->source_press_actor = clutter_event_get_source (event);
           clutter_event_get_coords (event, &x, &y);
-          return press_event (scroll, x, y);
+          if (press_event (scroll, x, y))
+            {
+              if (priv->use_grab)
+                {
+                  emit_cursor_actor_cancel (scroll, event);
+                  /* return FALSE; */
+                }
+              return TRUE;
+            }
         }
       break;
 
@@ -1272,6 +1433,39 @@ button_press_event_cb (ClutterActor        *actor,
 
   return FALSE;
 }
+
+static gboolean
+mx_kinetic_scroll_view_event (ClutterActor *actor,
+                              ClutterEvent *event)
+{
+  MxKineticScrollView *scroll = MX_KINETIC_SCROLL_VIEW (actor);
+  MxKineticScrollViewPrivate *priv = scroll->priv;
+
+  if (!priv->in_drag)
+    return FALSE;
+
+  if (priv->cancel_event == event)
+    return FALSE;
+
+  switch (clutter_event_type (event))
+    {
+    case CLUTTER_MOTION:
+    case CLUTTER_TOUCH_UPDATE:
+      return motion_event_cb (actor, event, scroll);
+
+    case CLUTTER_TOUCH_END:
+    case CLUTTER_TOUCH_CANCEL:
+      return button_release_event_cb (clutter_actor_get_stage (actor),
+                                      event,
+                                      scroll);
+
+    default:
+      break;
+    }
+
+  return FALSE;
+}
+
 
 static void
 mx_kinetic_scroll_view_actor_added_cb (ClutterContainer *container,
@@ -1559,6 +1753,51 @@ mx_kinetic_scroll_view_get_use_captured (MxKineticScrollView *scroll)
 {
   g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), FALSE);
   return scroll->priv->use_captured;
+}
+
+/**
+ * mx_kinetic_scroll_view_set_use_grab:
+ * @scroll: A #MxKineticScrollView
+ * @use_grab: %TRUE to use grab events
+ *
+ * Sets whether to use grab events to initiate drag events. This can be
+ * used to block events that would initiate scrolling from reaching the child
+ * actor.
+ *
+ * Since: 2.0
+ */
+void
+mx_kinetic_scroll_view_set_use_grab (MxKineticScrollView *scroll,
+                                     gboolean             use_grab)
+{
+  MxKineticScrollViewPrivate *priv;
+
+  g_return_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll));
+
+  priv = scroll->priv;
+  if (priv->use_grab != use_grab)
+    {
+      priv->use_grab = use_grab;
+
+      g_object_notify (G_OBJECT (scroll), "use-grab");
+    }
+}
+
+/**
+ * mx_kinetic_scroll_view_get_use_grab:
+ * @scroll: A #MxKineticScrollView
+ *
+ * Gets the #MxKineticScrollView:use-grab property.
+ *
+ * Returns: %TRUE if grab-events should be used to initiate scrolling
+ *
+ * Since: 2.0
+ */
+gboolean
+mx_kinetic_scroll_view_get_use_grab (MxKineticScrollView *scroll)
+{
+  g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), FALSE);
+  return scroll->priv->use_grab;
 }
 
 /**

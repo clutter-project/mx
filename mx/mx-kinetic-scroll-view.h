@@ -86,6 +86,10 @@ void mx_kinetic_scroll_view_set_use_captured (MxKineticScrollView *scroll,
                                               gboolean        use_captured);
 gboolean mx_kinetic_scroll_view_get_use_captured (MxKineticScrollView *scroll);
 
+void mx_kinetic_scroll_view_set_use_grab (MxKineticScrollView *scroll,
+                                          gboolean             use_grab);
+gboolean mx_kinetic_scroll_view_get_use_grab (MxKineticScrollView *scroll);
+
 void mx_kinetic_scroll_view_set_mouse_button (MxKineticScrollView *scroll,
                                               guint32         button);
 guint32 mx_kinetic_scroll_view_get_mouse_button (MxKineticScrollView *scroll);
