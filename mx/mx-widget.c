@@ -711,7 +711,7 @@ mx_widget_leave (ClutterActor         *actor,
      ignore it so that the actor will retain its hover state until the
      pointer moves to an unrelated actor. For this to work the actual
      leave event from the child needs to bubble up to this actor */
-  if (clutter_actor_contains (actor, event->related))
+  if (event->related && clutter_actor_contains (actor, event->related))
     return FALSE;
 
   mx_widget_hide_tooltip (widget);
