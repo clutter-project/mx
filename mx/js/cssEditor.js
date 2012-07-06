@@ -186,7 +186,11 @@ LiveInspector.prototype = {
         this._widget_tree = new Array();
         var it_widget = widget;
         while (it_widget != null) {
-            var w_name = "" + it_widget;
+            var w_name = "" + GObject.type_name(it_widget.constructor);
+
+            if (it_widget instanceof Mx.Widget)
+                w_name += " class=" + it_widget.get_style_class();
+            w_name += " name=" + it_widget.get_name();
             var button = new Mx.Button({ label: w_name });
             button.set_style_class ("css-editor-button");
 
