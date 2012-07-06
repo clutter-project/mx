@@ -127,6 +127,9 @@ void mx_kinetic_scroll_view_set_clamp_to_center (MxKineticScrollView *scroll,
 gboolean mx_kinetic_scroll_view_get_clamp_to_center (
     MxKineticScrollView *scroll);
 
+void mx_kinetic_scroll_view_ensure_visible (MxKineticScrollView   *scroll,
+                                            const ClutterGeometry *geometry);
+
 G_END_DECLS
 
 #endif /* __MX_KINETIC_SCROLL_VIEW_H__ */

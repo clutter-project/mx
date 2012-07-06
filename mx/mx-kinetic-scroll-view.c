@@ -2096,3 +2096,77 @@ mx_kinetic_scroll_view_set_clamp (MxKineticScrollView *scroll,
 
   scroll->priv->use_clamp = !!clamp;
 }
+
+static void
+_mx_scroll_view_ensure_visible_axis (MxAdjustment *adjust,
+                                     gdouble       lower,
+                                     gdouble       upper)
+{
+  gdouble new_value, adjust_lower, adjust_upper, adjust_page_size;
+
+  gboolean changed = FALSE;
+
+  mx_adjustment_get_values (adjust,
+                            &new_value,
+                            &adjust_lower,
+                            &adjust_upper,
+                            NULL,
+                            NULL,
+                            &adjust_page_size);
+
+  /* Sanitise input values */
+  lower = CLAMP (lower, adjust_lower, adjust_upper - adjust_page_size);
+  upper = CLAMP (upper, adjust_lower + adjust_page_size, adjust_upper);
+
+  /* Ensure the bottom is visible */
+  if (new_value + adjust_page_size < upper)
+    {
+      new_value = upper - adjust_page_size;
+      changed = TRUE;
+    }
+
+  /* Ensure the top is visible */
+  if (lower < new_value)
+    {
+      new_value = lower;
+      changed = TRUE;
+    }
+
+  if (changed)
+    mx_adjustment_interpolate (adjust, new_value,
+                               250, CLUTTER_EASE_OUT_CUBIC);
+}
+
+/**
+ * mx_kinetic_scroll_view_ensure_visible:
+ * @scroll: A #MxKineticScrollView
+ * @geometry: The region to make visible
+ *
+ * Ensures that a given region is visible in the ScrollView, with the top-left
+ * taking precedence.
+ *
+ * Since: 2.0
+ */
+void
+mx_kinetic_scroll_view_ensure_visible (MxKineticScrollView   *scroll,
+                                       const ClutterGeometry *geometry)
+{
+  MxKineticScrollViewPrivate *priv;
+  MxAdjustment *hadjustment, *vadjustment;
+
+  g_return_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll));
+  g_return_if_fail (geometry != NULL);
+
+  priv = scroll->priv;
+
+  mx_scrollable_get_adjustments (MX_SCROLLABLE (priv->child),
+                                 &hadjustment,
+                                 &vadjustment);
+
+  _mx_scroll_view_ensure_visible_axis (hadjustment,
+                                       geometry->x,
+                                       geometry->x + geometry->width);
+  _mx_scroll_view_ensure_visible_axis (vadjustment,
+                                       geometry->y,
+                                       geometry->y + geometry->height);
+}
