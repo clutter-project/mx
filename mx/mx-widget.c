@@ -1759,6 +1759,9 @@ _mx_widget_add_touch_sequence (MxWidget             *widget,
 {
   MxWidgetPrivate *priv = widget->priv;
 
+  if (sequence == NULL)
+    return;
+
   if (!priv->sequences)
     priv->sequences = g_hash_table_new_full (g_direct_hash,
                                              g_direct_equal,
@@ -1773,6 +1776,9 @@ _mx_widget_remove_touch_sequence (MxWidget             *widget,
 {
   MxWidgetPrivate *priv = widget->priv;
 
+  if (sequence == NULL)
+    return;
+
   if (priv->sequences)
     g_hash_table_remove (priv->sequences, sequence);
 }
@@ -1782,6 +1788,9 @@ _mx_widget_has_touch_sequence (MxWidget             *widget,
                                ClutterEventSequence *sequence)
 {
   MxWidgetPrivate *priv = widget->priv;
+
+  if (sequence == NULL)
+    return TRUE;
 
   if (priv->sequences)
     return g_hash_table_contains (priv->sequences, sequence);
