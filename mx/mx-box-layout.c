@@ -1004,8 +1004,8 @@ mx_box_layout_allocate (ClutterActor          *actor,
                                                                         0);
           clutter_actor_get_preferred_width (first_child,
                                              avail_height,
-                                             &child_width,
-                                             NULL);
+                                             NULL,
+                                             &child_width);
           step_inc = child_width;
           page_inc = ((gint)(avail_width / step_inc)) * step_inc;
         }
