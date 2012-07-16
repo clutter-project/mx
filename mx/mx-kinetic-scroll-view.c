@@ -768,13 +768,17 @@ motion_event_cb (ClutterActor        *actor,
                                    MxKineticScrollViewMotion,
                                    priv->last_motion);
 
-          if (hadjust)
+          if (hadjust &&
+              (priv->scroll_policy == MX_SCROLL_POLICY_HORIZONTAL ||
+               priv->scroll_policy == MX_SCROLL_POLICY_BOTH))
             {
               dx = (motion->x - x) + mx_adjustment_get_value (hadjust);
               mx_adjustment_set_value (hadjust, dx);
             }
 
-          if (vadjust)
+          if (vadjust &&
+              (priv->scroll_policy == MX_SCROLL_POLICY_VERTICAL ||
+               priv->scroll_policy == MX_SCROLL_POLICY_BOTH))
             {
               dy = (motion->y - y) + mx_adjustment_get_value (vadjust);
               mx_adjustment_set_value (vadjust, dy);
@@ -933,7 +937,9 @@ deceleration_new_frame_cb (ClutterTimeline     *timeline,
         {
           gdouble hvalue, vvalue;
 
-          if (hadjust)
+          if (hadjust &&
+              (priv->scroll_policy == MX_SCROLL_POLICY_HORIZONTAL ||
+               priv->scroll_policy == MX_SCROLL_POLICY_BOTH))
             {
               if (ABS (priv->dx) > 2)
                 {
@@ -964,7 +970,9 @@ deceleration_new_frame_cb (ClutterTimeline     *timeline,
                 }
             }
 
-          if (vadjust)
+          if (vadjust &&
+              (priv->scroll_policy == MX_SCROLL_POLICY_VERTICAL ||
+               priv->scroll_policy == MX_SCROLL_POLICY_BOTH))
             {
               if (ABS (priv->dy) > 2)
                 {
