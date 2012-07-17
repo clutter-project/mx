@@ -132,6 +132,17 @@ AC_ARG_ENABLE([tools],
               [enable_tools=no])
 AM_CONDITIONAL([ENABLE_TOOLS], [test "x$enable_tools" = "xyes"])
 
+dnl = Disable default style ================================================
+AC_ARG_ENABLE([default-style],
+              [AC_HELP_STRING([--disable-default-style],
+                              [disable the default style])],
+              [],
+              [enable_default_style=yes])
+AM_CONDITIONAL([ENABLE_DEFAULT_STYLE], [test "x$enable_default_style" = "xyes"])
+AS_IF([test "x$enable_default_style" = "xyes"],
+      AC_DEFINE([HAVE_DEFAULT_STYLE], [1],
+                [Defined if the default style is enabled]))
+
 dnl = Required Packages ====================================================
 
 MX_REQUIRES="gdk-pixbuf-2.0"

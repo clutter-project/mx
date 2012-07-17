@@ -1,6 +1,13 @@
 NULL =
 
-mx-default-style.c: $(top_srcdir)/data/default-style.gresource.xml $(UI_FILES)
+BUILT_SOURCES = 		\
+	mx-enum-types.h 	\
+	mx-enum-types.c 	\
+	mx-marshal.h 		\
+	mx-marshal.c
+
+if ENABLE_DEFAULT_STYLE
+mx-default-style.c: $(top_srcdir)/data/default-style.gresource.xml
 	$(GLIB_COMPILE_RESOURCES) --target=$@ --sourcedir=$(top_srcdir)/data \
 		--generate-source --c-name mx $(top_srcdir)/data/default-style.gresource.xml
 
@@ -8,14 +15,9 @@ mx-default-style.h: $(top_srcdir)/data/default-style.gresource.xml
 	$(GLIB_COMPILE_RESOURCES) --target=$@  --sourcedir=$(top_srcdir)/data \
 		--generate-header --c-name mx $(top_srcdir)/data/default-style.gresource.xml
 
+BUILT_SOURCES += mx-default-style.c mx-default-style.h
+endif
 
-BUILT_SOURCES = 		\
-	mx-default-style.c	\
-	mx-default-style.h	\
-	mx-enum-types.h 	\
-	mx-enum-types.c 	\
-	mx-marshal.h 		\
-	mx-marshal.c
 
 WINSYS_SRC = $(NULL)
 if HAVE_X11

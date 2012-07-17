@@ -44,7 +44,9 @@
 #include "mx-types.h"
 #include "mx-private.h"
 
+#ifdef HAVE_DEFAULT_STYLE
 #include "mx-default-style.h"
+#endif
 
 enum
 {
@@ -283,6 +285,7 @@ mx_style_load (MxStyle *style)
 
   g_free (rc_file);
 
+#ifdef HAVE_DEFAULT_STYLE
   mx_style_load_from_resource (style,
                                "/org/clutter-project/Mx/style/default.css",
                                &error);
@@ -292,6 +295,7 @@ mx_style_load (MxStyle *style)
       g_critical ("Unable to load default style: %s", error->message);
       g_clear_error (&error);
     }
+#endif
 }
 
 static MxStyleCacheEntry *
