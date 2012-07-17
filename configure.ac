@@ -115,6 +115,23 @@ AS_IF([test "x$enable_maintainer_flags" = "xyes"],
 AC_SUBST(MX_MAINTAINER_CFLAGS)
 
 
+dnl = Enable tests =========================================================
+AC_ARG_ENABLE([tests],
+              [AC_HELP_STRING([--enable-tests],
+                              [enable building of tests])],
+              [],
+              [enable_tests=no])
+AM_CONDITIONAL([ENABLE_TESTS], [test "x$enable_tests" = "xyes"])
+
+
+dnl = Enable tools =========================================================
+AC_ARG_ENABLE([tools],
+              [AC_HELP_STRING([--enable-tools],
+                              [enable building of tools])],
+              [],
+              [enable_tools=no])
+AM_CONDITIONAL([ENABLE_TOOLS], [test "x$enable_tools" = "xyes"])
+
 dnl = Required Packages ====================================================
 
 MX_REQUIRES="gdk-pixbuf-2.0"
