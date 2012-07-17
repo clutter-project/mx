@@ -527,7 +527,6 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
   gboolean relayout_needed = FALSE;
   gboolean has_changed = FALSE;
   ClutterColor *color;
-  guint duration;
   gfloat opacity = -1;
   gboolean border_image_changed = FALSE, background_image_changed = FALSE;
 
@@ -538,7 +537,6 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
                    "border-image", &border_image,
                    "padding", &padding,
                    "opacity", &opacity,
-                   "x-mx-border-image-transition-duration", &duration,
                    NULL);
 
   if (color)
@@ -598,10 +596,7 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
   /* remove the old border-image if it has changed */
   if (border_image_changed && priv->border_image)
     {
-      if (duration == 0)
-        {
-          cogl_handle_unref (priv->border_image);
-        }
+      cogl_handle_unref (priv->border_image);
 
       priv->border_image = NULL;
     }
@@ -642,10 +637,7 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
   /* remove the old background-image if it has changed */
   if (background_image_changed && priv->background_image)
     {
-      if (duration == 0)
-        {
-          cogl_handle_unref (priv->background_image);
-        }
+      cogl_handle_unref (priv->background_image);
 
       priv->background_image = NULL;
     }
@@ -1276,14 +1268,6 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                   "Text Shadow",
                                   MX_TYPE_TEXT_SHADOW,
                                   G_PARAM_READWRITE);
-      mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
-
-      pspec = g_param_spec_uint ("x-mx-border-image-transition-duration",
-                                 "background transition duration",
-                                 "Length of the cross fade when changing images"
-                                 " in milliseconds",
-                                 0, G_MAXUINT, 0,
-                                 G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
 
       /*
