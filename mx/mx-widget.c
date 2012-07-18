@@ -82,6 +82,20 @@ struct _MxWidgetPrivate
   guint         in_dispose;
 
   GHashTable   *sequences;
+
+  /* width/height set by css */
+  gfloat css_width;
+  gfloat css_height;
+
+  /* previous size state before css width/height were applied */
+  gfloat old_min_width;
+  gfloat old_min_height;
+  gfloat old_nat_width;
+  gfloat old_nat_height;
+  gboolean old_min_width_set;
+  gboolean old_min_height_set;
+  gboolean old_nat_height_set;
+  gboolean old_nat_width_set;
 };
 
 /**
@@ -530,6 +544,7 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
   ClutterColor *color;
   gfloat opacity = -1;
   gboolean border_image_changed = FALSE, background_image_changed = FALSE;
+  gfloat width = -1, height = -1;
 
   /* cache these values for use in the paint function */
   mx_stylable_get (self,
@@ -539,6 +554,8 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
                    "padding", &padding,
                    "opacity", &opacity,
                    "margin", &margin,
+                   "width", &width,
+                   "height", &height,
                    NULL);
 
   if (color)
@@ -570,6 +587,73 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
       has_changed = TRUE;
     }
 
+  /* check if css height has been requested */
+  if (height > -1)
+    {
+      /* check if the height was previously set from css */
+      if (priv->css_height == -1)
+        {
+          /* store the old state before setting the css height */
+
+          g_object_get (self,
+                        "min-height", &priv->old_min_height,
+                        "min-height-set", &priv->old_min_height_set,
+                        "natural-height", &priv->old_nat_height,
+                        "natural-height-set", &priv->old_nat_height_set,
+                        NULL);
+        }
+      clutter_actor_set_height (CLUTTER_ACTOR (self), height);
+    }
+  else if (priv->css_height != -1)
+    {
+      /* no css height to set and css height was previously set, so restore the
+       * saved state */
+
+      g_object_set (self,
+                    "min-height", priv->old_min_height,
+                    "min-height-set", priv->old_min_height_set,
+                    "natural-height", priv->old_nat_height,
+                    "natural-height-set", priv->old_nat_height_set,
+                    NULL);
+    }
+  /* store the css height set (-1 means not set) */
+  priv->css_height = height;
+
+
+  /* check if css width has been requested */
+  if (width > -1)
+    {
+      /* check if the width was previously set from css */
+      if (priv->css_width == -1)
+        {
+          /* store the old state before setting the css width */
+
+          g_object_get (self,
+                        "min-width", &priv->old_min_width,
+                        "min-width-set", &priv->old_min_width_set,
+                        "natural-width", &priv->old_nat_width,
+                        "natural-width-set", &priv->old_nat_width_set,
+                        NULL);
+        }
+      clutter_actor_set_width (CLUTTER_ACTOR (self), width);
+    }
+  else if (priv->css_width != -1)
+    {
+      /* no css width to set and css width was previously set, so restore the
+       * saved state */
+
+      g_object_set (self,
+                    "min-width", priv->old_min_width,
+                    "min-width-set", priv->old_min_width_set,
+                    "natural-width", priv->old_nat_width,
+                    "natural-width-set", priv->old_nat_width_set,
+                    NULL);
+    }
+  /* store the css width set (-1 means not set) */
+  priv->css_width = width;
+
+
+  /* padding */
   if (padding)
     {
       if (priv->padding.top != padding->top ||
@@ -1235,6 +1319,20 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                   G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
 
+      pspec = g_param_spec_float ("width",
+                                  "Width",
+                                  "Width of an actor",
+                                  -1.0, G_MAXFLOAT, -1.0,
+                                  G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
+
+      pspec = g_param_spec_float ("height",
+                                  "Height",
+                                  "Height of an actor",
+                                  -1.0, G_MAXFLOAT, -1.0,
+                                  G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
+
       pspec = g_param_spec_boxed ("background-image",
                                   "Background Image",
                                   "Background image filename",
@@ -1325,6 +1423,9 @@ static void
 mx_widget_init (MxWidget *actor)
 {
   actor->priv = MX_WIDGET_GET_PRIVATE (actor);
+
+  actor->priv->css_width = -1;
+  actor->priv->css_height = -1;
 
   /* set the default style */
   mx_stylable_set_style (MX_STYLABLE (actor), mx_style_get_default ());
