@@ -500,6 +500,24 @@ mx_kinetic_scroll_view_allocate (ClutterActor           *actor,
   mx_bin_allocate_child (MX_BIN (actor), box, flags);
 }
 
+static gboolean
+mx_kinetic_scroll_view_button_event (ClutterActor       *actor,
+                                     ClutterButtonEvent *event)
+{
+  /* Avoid default implementation of MxWidget to set the 'active'
+     state. */
+  return FALSE;
+}
+
+static gboolean
+mx_kinetic_scroll_view_touch_event (ClutterActor      *actor,
+                                    ClutterTouchEvent *event)
+{
+  /* Avoid default implementation of MxWidget to set the 'active'
+     state. */
+  return FALSE;
+}
+
 static void
 mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
 {
@@ -521,8 +539,11 @@ mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
     mx_kinetic_scroll_view_get_preferred_height;
   actor_class->allocate =
     mx_kinetic_scroll_view_allocate;
-  actor_class->event =
-    mx_kinetic_scroll_view_event;
+
+  actor_class->event = mx_kinetic_scroll_view_event;
+  actor_class->button_press_event = mx_kinetic_scroll_view_button_event;
+  actor_class->button_release_event = mx_kinetic_scroll_view_button_event;
+  actor_class->touch_event = mx_kinetic_scroll_view_touch_event;
 
   pspec = g_param_spec_double ("deceleration",
                                "Deceleration",
