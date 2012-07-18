@@ -986,13 +986,8 @@ mx_widget_touch_event (ClutterActor      *actor,
         return FALSE;
 
       _mx_widget_remove_touch_sequence (widget, event->sequence);
-
-      if (!_mx_widget_has_touch_sequences (widget))
-        {
-          mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "active");
-
-          mx_widget_long_press_cancel (widget);
-        }
+      mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "active");
+      mx_widget_long_press_cancel (widget);
       break;
 
     default:
