@@ -565,6 +565,24 @@ mx_scroll_view_style_changed (MxWidget *widget, MxStyleChangedFlags flags)
 }
 
 static gboolean
+mx_scroll_view_button_event (ClutterActor       *self,
+                             ClutterButtonEvent *event)
+{
+  /* Avoid default implementation of MxWidget to set the 'active'
+     state. */
+  return FALSE;
+}
+
+static gboolean
+mx_scroll_view_touch_event (ClutterActor      *self,
+                            ClutterTouchEvent *event)
+{
+  /* Avoid default implementation of MxWidget to set the 'active'
+     state. */
+  return FALSE;
+}
+
+static gboolean
 mx_scroll_view_scroll_event (ClutterActor       *self,
                              ClutterScrollEvent *event)
 {
@@ -714,6 +732,9 @@ mx_scroll_view_class_init (MxScrollViewClass *klass)
   actor_class->get_preferred_width = mx_scroll_view_get_preferred_width;
   actor_class->get_preferred_height = mx_scroll_view_get_preferred_height;
   actor_class->allocate = mx_scroll_view_allocate;
+
+  actor_class->button_press_event = mx_scroll_view_button_event;
+  actor_class->touch_event = mx_scroll_view_touch_event;
   actor_class->scroll_event = mx_scroll_view_scroll_event;
 
   pspec = g_param_spec_boolean ("enable-mouse-scrolling",
