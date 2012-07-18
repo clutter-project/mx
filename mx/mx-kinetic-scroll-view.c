@@ -669,7 +669,7 @@ motion_event_cb (ClutterActor        *actor,
   if (priv->cancel_event == event)
     {
       LOG_DEBUG (scroll, "%s: cancel", G_STRFUNC);
-      return FALSE;
+      return TRUE;
     }
 
   if (type == CLUTTER_MOTION)
@@ -1092,7 +1092,7 @@ button_release_event_cb (ClutterActor        *stage,
   if (priv->cancel_event == event)
     {
       LOG_DEBUG (scroll, "%s: cancel", G_STRFUNC);
-      return FALSE;
+      return TRUE;
     }
 
   switch (clutter_event_type (event))
@@ -1464,7 +1464,7 @@ button_press_event_cb (ClutterActor        *actor,
   if (priv->cancel_event == event)
     {
       LOG_DEBUG (scroll, "%s: cancel", G_STRFUNC);
-      return FALSE;
+      return TRUE;
     }
 
   switch (clutter_event_type (event))
@@ -1518,7 +1518,7 @@ static gboolean
 mx_kinetic_scroll_view_event (ClutterActor *actor,
                               ClutterEvent *event)
 {
-  MxKineticScrollView *scroll = MX_KINETIC_SCROLL_VIEW (actor);
+  MxKineticScrollView *scroll = (MxKineticScrollView *) actor;
   MxKineticScrollViewPrivate *priv = scroll->priv;
 
   if (!priv->in_drag)
@@ -1527,7 +1527,7 @@ mx_kinetic_scroll_view_event (ClutterActor *actor,
   if (priv->cancel_event == event)
     {
       LOG_DEBUG (scroll, "%s: cancel", G_STRFUNC);
-      return FALSE;
+      return TRUE;
     }
 
   switch (clutter_event_type (event))
