@@ -44,6 +44,8 @@
 #include "mx-scrollable.h"
 #include <math.h>
 
+#define _KINETIC_DEBUG 0
+
 static void mx_scrollable_iface_init (MxScrollableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxKineticScrollView,
@@ -121,6 +123,33 @@ enum {
   PROP_CLAMP_TO_CENTER,
 };
 
+#if _KINETIC_DEBUG
+# define LOG_DEBUG(args...) _log_debug(args)
+
+static void
+_log_debug (MxKineticScrollView *scroll, const gchar *fmt, ...)
+{
+  gchar *new_fmt;
+  va_list args;
+
+  va_start (args, fmt);
+
+  new_fmt = g_strdup_printf ("%s(%p): %s",
+                             (scroll->priv->scroll_policy == MX_SCROLL_POLICY_VERTICAL) ?
+                             "vert" :
+                             ((scroll->priv->scroll_policy == MX_SCROLL_POLICY_HORIZONTAL) ? "hori" : "both"),
+                             scroll, fmt);
+
+  g_logv ("Mx", G_LOG_LEVEL_MESSAGE, new_fmt, args);
+
+  g_free (new_fmt);
+
+  va_end (args);
+}
+#else
+# define LOG_DEBUG(args...)
+#endif /* _KINETIC_DEBUG */
+
 static void
 emit_cursor_actor_cancel (MxKineticScrollView *scroll,
                           ClutterEvent *event)
@@ -146,6 +175,8 @@ emit_cursor_actor_cancel (MxKineticScrollView *scroll,
            (iactor != (ClutterActor *) scroll)) ||
           parent == NULL)
         {
+          LOG_DEBUG (scroll, "\tcancel on %s(%p)",
+                     G_OBJECT_TYPE_NAME (iactor), iactor);
           g_ptr_array_add (event_tree, g_object_ref (iactor));
         }
 
@@ -615,7 +646,10 @@ motion_event_cb (ClutterActor        *actor,
     return FALSE;
 
   if (priv->cancel_event == event)
-    return FALSE;
+    {
+      LOG_DEBUG (scroll, "%s: cancel", G_STRFUNC);
+      return FALSE;
+    }
 
   if (type == CLUTTER_MOTION)
     {
@@ -712,6 +746,10 @@ motion_event_cb (ClutterActor        *actor,
               break;
             }
 
+          LOG_DEBUG (scroll, "motion dx=%f dy=%f passed=%i policy=%i threshold=%u",
+                     dx, dy, threshold_passed, priv->scroll_policy, threshold);
+
+
           if (threshold_passed)
             {
               ClutterActor *stage;
@@ -756,6 +794,10 @@ motion_event_cb (ClutterActor        *actor,
             return FALSE;
         }
 
+      LOG_DEBUG (scroll, "motion dx=%f dy=%f",
+                 ABS (g_array_index (priv->motion_buffer, MxKineticScrollViewMotion, priv->motion_buffer->len - 1).x - x),
+                 ABS (g_array_index (priv->motion_buffer, MxKineticScrollViewMotion, priv->motion_buffer->len - 1).y - y));
+
       if (child)
         {
           gdouble dx, dy;
@@ -788,6 +830,7 @@ motion_event_cb (ClutterActor        *actor,
       priv->last_motion ++;
       if (priv->last_motion == priv->motion_buffer->len)
         {
+          LOG_DEBUG (scroll, "reset");
           priv->motion_buffer = g_array_remove_index (priv->motion_buffer, 0);
           g_array_set_size (priv->motion_buffer, priv->last_motion);
           priv->last_motion --;
@@ -1026,7 +1069,10 @@ button_release_event_cb (ClutterActor        *stage,
     return FALSE;
 
   if (priv->cancel_event == event)
-    return FALSE;
+    {
+      LOG_DEBUG (scroll, "%s: cancel", G_STRFUNC);
+      return FALSE;
+    }
 
   switch (clutter_event_type (event))
     {
@@ -1086,7 +1132,7 @@ release_event (MxKineticScrollView *scroll,
 
   if (child)
     {
-      gfloat event_x, event_y;
+      gfloat event_x = x_pos, event_y = y_pos;
 
       if (clutter_actor_transform_stage_point (actor, x_pos, y_pos,
                                                &event_x, &event_y))
@@ -1309,6 +1355,8 @@ press_event (MxKineticScrollView *scroll,
   /* Reset motion buffer */
   priv->last_motion = 0;
   motion = &g_array_index (priv->motion_buffer, MxKineticScrollViewMotion, 0);
+  motion->x = x;
+  motion->y = y;
 
   if (clutter_actor_transform_stage_point (actor, x, y,
                                            &motion->x, &motion->y))
@@ -1393,7 +1441,10 @@ button_press_event_cb (ClutterActor        *actor,
     return FALSE;
 
   if (priv->cancel_event == event)
-    return FALSE;
+    {
+      LOG_DEBUG (scroll, "%s: cancel", G_STRFUNC);
+      return FALSE;
+    }
 
   switch (clutter_event_type (event))
     {
@@ -1453,7 +1504,10 @@ mx_kinetic_scroll_view_event (ClutterActor *actor,
     return FALSE;
 
   if (priv->cancel_event == event)
-    return FALSE;
+    {
+      LOG_DEBUG (scroll, "%s: cancel", G_STRFUNC);
+      return FALSE;
+    }
 
   switch (clutter_event_type (event))
     {
