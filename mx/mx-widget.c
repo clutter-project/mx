@@ -524,6 +524,7 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
   MxBorderImage *border_image = NULL, *background_image = NULL;
   MxTextureCache *texture_cache = mx_texture_cache_get_default ();
   MxPadding *padding = NULL;
+  MxPadding *margin = NULL;
   gboolean relayout_needed = FALSE;
   gboolean has_changed = FALSE;
   ClutterColor *color;
@@ -537,6 +538,7 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
                    "border-image", &border_image,
                    "padding", &padding,
                    "opacity", &opacity,
+                   "margin", &margin,
                    NULL);
 
   if (color)
@@ -582,6 +584,20 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
 
       priv->padding = *padding;
       g_boxed_free (MX_TYPE_PADDING, padding);
+    }
+
+  if (margin)
+    {
+      ClutterMargin clutter_margin;
+
+      clutter_margin.left = margin->left;
+      clutter_margin.right = margin->right;
+      clutter_margin.top = margin->top;
+      clutter_margin.bottom = margin->bottom;
+
+      clutter_actor_set_margin (CLUTTER_ACTOR (self), &clutter_margin);
+
+      g_boxed_free (MX_TYPE_PADDING, margin);
     }
 
 
@@ -1267,6 +1283,13 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                   "Text Shadow",
                                   "Text Shadow",
                                   MX_TYPE_TEXT_SHADOW,
+                                  G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
+
+      pspec = g_param_spec_boxed ("margin",
+                                  "Margin",
+                                  "Margin",
+                                  MX_TYPE_PADDING,
                                   G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
 
