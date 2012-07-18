@@ -146,7 +146,7 @@ AS_IF([test "x$enable_default_style" = "xyes"],
 dnl = Required Packages ====================================================
 
 MX_REQUIRES="gdk-pixbuf-2.0"
-CLUTTER_VERSION_REQUIRED="1.10.0"
+CLUTTER_VERSION_REQUIRED="1.11.8"
 
 dnl = Winsys ===============================================================
 
