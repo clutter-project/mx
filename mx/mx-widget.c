@@ -1304,7 +1304,7 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                         "Text Color",
                                         "The color of the text of an actor",
                                         &color,
-                                        G_PARAM_READWRITE);
+                                        G_PARAM_READWRITE | MX_PARAM_STYLE_INHERIT);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
 
       pspec = g_param_spec_float ("opacity",
@@ -1339,14 +1339,14 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                    "Font Family",
                                    "Name of the font to use",
                                    "Sans",
-                                   G_PARAM_READWRITE);
+                                   G_PARAM_READWRITE | MX_PARAM_STYLE_INHERIT);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
 
       pspec = g_param_spec_int ("font-size",
                                 "Font Size",
                                 "Size of the font to use in pixels",
                                 0, G_MAXINT, 12,
-                                G_PARAM_READWRITE);
+                                G_PARAM_READWRITE | MX_PARAM_STYLE_INHERIT);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
 
       pspec = g_param_spec_enum ("font-weight",
@@ -1354,7 +1354,7 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                  "Font Weight",
                                  MX_TYPE_FONT_WEIGHT,
                                  MX_FONT_WEIGHT_NORMAL,
-                                 G_PARAM_READWRITE);
+                                 G_PARAM_READWRITE | MX_PARAM_STYLE_INHERIT);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
 
       pspec = g_param_spec_boxed ("border-image",

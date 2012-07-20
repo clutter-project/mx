@@ -42,6 +42,7 @@ G_BEGIN_DECLS
 #define MX_TYPE_TEXT_SHADOW           (mx_text_shadow_get_type ())
 
 #define MX_PARAM_TRANSLATEABLE 1 << 8
+#define MX_PARAM_STYLE_INHERIT 1 << 9
 
 typedef struct _MxBorderImage MxBorderImage;
 typedef struct _MxPadding     MxPadding;

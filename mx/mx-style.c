@@ -772,7 +772,30 @@ mx_style_get_property (MxStyle    *style,
 
       if (!css_value)
         {
-          mx_stylable_get_default_value (stylable, pspec->name, value);
+          if (pspec->flags & MX_PARAM_STYLE_INHERIT)
+            {
+              ClutterActor *parent;
+
+              /* if the style property is set to inherit its value, then find a
+               * parent that is an MxStylable and copy its value */
+
+              for (parent = clutter_actor_get_parent ((ClutterActor*) stylable);
+                   parent;
+                   parent = clutter_actor_get_parent (parent))
+                {
+                  if (MX_IS_STYLABLE (parent))
+                    break;
+                }
+
+              if (parent)
+                mx_style_get_property (style, (MxStylable *) parent, pspec,
+                                       value);
+              else
+                mx_stylable_get_default_value (stylable, pspec->name, value);
+
+            }
+          else
+            mx_stylable_get_default_value (stylable, pspec->name, value);
         }
       else
         mx_style_transform_css_value (css_value, stylable, pspec, value);
@@ -837,7 +860,30 @@ mx_style_get_valist (MxStyle     *style,
 
           if (!css_value)
             {
-              mx_stylable_get_default_value (stylable, pspec->name, &value);
+              if (pspec->flags & MX_PARAM_STYLE_INHERIT)
+                {
+                  ClutterActor *parent;
+
+                  /* if the style property is set to inherit its value, then find a
+                   * parent that is an MxStylable and copy its value */
+
+                  for (parent = clutter_actor_get_parent ((ClutterActor*) stylable);
+                       parent;
+                       parent = clutter_actor_get_parent (parent))
+                    {
+                      if (MX_IS_STYLABLE (parent))
+                        break;
+                    }
+
+                  if (parent)
+                    mx_style_get_property (style, (MxStylable *) parent, pspec,
+                                           &value);
+                  else
+                    mx_stylable_get_default_value (stylable, pspec->name, &value);
+
+                }
+              else
+                mx_stylable_get_default_value (stylable, pspec->name, &value);
             }
           else
             mx_style_transform_css_value (css_value, stylable, pspec, &value);
