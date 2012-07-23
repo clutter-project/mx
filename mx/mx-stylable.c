@@ -1058,9 +1058,9 @@ mx_stylable_style_changed_internal (MxStylable          *stylable,
   ClutterActorIter iter;
   MxStylable *child;
 
-  /* don't update stylables until they are mapped (unless ensure is set) */
+  /* don't update stylables until they are realized (unless ensure is set) */
   if (G_LIKELY (CLUTTER_IS_ACTOR (stylable)) &&
-      !CLUTTER_ACTOR_IS_MAPPED (CLUTTER_ACTOR (stylable)) &&
+      !CLUTTER_ACTOR_IS_REALIZED (CLUTTER_ACTOR (stylable)) &&
       !(flags & MX_STYLE_CHANGED_FORCE))
     return;
 
@@ -1122,9 +1122,9 @@ mx_stylable_connect_change_notifiers (MxStylable *stylable)
   g_signal_connect (stylable, "parent-set",
                     G_CALLBACK (mx_stylable_parent_set_notify), NULL);
 
-  /* style-changed is blocked until the actor is mapped, so style-changed
+  /* style-changed is blocked until the actor is realized, so style-changed
    * needs to be sent as soon as the actor is mapped */
-  g_signal_connect (stylable, "notify::mapped",
+  g_signal_connect (stylable, "notify::realized",
                     G_CALLBACK (mx_stylable_property_changed_notify), NULL);
 
   /* MxStylable notifiers */

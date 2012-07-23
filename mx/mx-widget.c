@@ -96,6 +96,13 @@ struct _MxWidgetPrivate
   gboolean old_min_height_set;
   gboolean old_nat_height_set;
   gboolean old_nat_width_set;
+
+  /* the previous opacity value if "visibility" style property was set to
+   * "hidden" */
+  gint old_opacity;
+
+  /* previous visible state if the "display" style property was set to "none" */
+  gint old_visible;
 };
 
 /**
@@ -535,6 +542,7 @@ static void
 mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
 {
   MxWidgetPrivate *priv = MX_WIDGET (self)->priv;
+  ClutterActor *actor = (ClutterActor *) self;
   MxBorderImage *border_image = NULL, *background_image = NULL;
   MxTextureCache *texture_cache = mx_texture_cache_get_default ();
   MxPadding *padding = NULL;
@@ -545,6 +553,8 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
   gfloat opacity = -1;
   gboolean border_image_changed = FALSE, background_image_changed = FALSE;
   gfloat width = -1, height = -1;
+  MxDisplayStyle display;
+  MxVisibilityStyle visibility;
 
   /* cache these values for use in the paint function */
   mx_stylable_get (self,
@@ -556,6 +566,8 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
                    "margin", &margin,
                    "width", &width,
                    "height", &height,
+                   "display", &display,
+                   "visibility", &visibility,
                    NULL);
 
   if (color)
@@ -765,6 +777,47 @@ mx_widget_style_changed (MxStylable *self, MxStyleChangedFlags flags)
       /* If it's not changed just free the one we've requested */
       if (background_image)
         g_boxed_free (MX_TYPE_BORDER_IMAGE, background_image);
+    }
+
+  /* visibility */
+  if (visibility == MX_VISIBILITY_STYLE_HIDDEN)
+    {
+      if (priv->old_opacity == -1)
+        priv->old_opacity = clutter_actor_get_opacity (actor);
+
+      clutter_actor_set_opacity (actor, 0);
+    }
+  else
+    {
+      /* if visibility has been set previously, restore the old opacity or set
+       * it to the current css opacity value */
+      if (priv->old_opacity > -1)
+        {
+          if (opacity < 0)
+            clutter_actor_set_opacity (actor, priv->old_opacity);
+          else
+            clutter_actor_set_opacity (actor, opacity * 255);
+
+          priv->old_opacity = -1;
+        }
+    }
+
+  /* display */
+  if (display == MX_DISPLAY_STYLE_NONE)
+    {
+      if (priv->old_visible == -1)
+        priv->old_visible = (CLUTTER_ACTOR_IS_VISIBLE (actor)) ? 1 : 0;
+
+      clutter_actor_hide (actor);
+    }
+  else
+    {
+      /* if display has been set to none previously and the actor was visible
+       * when it was set, show the actor again */
+      if (priv->old_visible == 1)
+        clutter_actor_show (actor);
+
+      priv->old_visible = -1;
     }
 
   /* If there are any properties above that need to cause a relayout thay
@@ -1386,6 +1439,22 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                   G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
 
+      pspec = g_param_spec_enum ("visibility",
+                                 "Visibility",
+                                 "Visibility",
+                                 MX_TYPE_VISIBILITY_STYLE,
+                                 MX_VISIBILITY_STYLE_VISIBLE,
+                                 G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
+
+      pspec = g_param_spec_enum ("display",
+                                 "Display",
+                                 "Display",
+                                 MX_TYPE_DISPLAY_STYLE,
+                                 MX_DISPLAY_STYLE_INLINE,
+                                 G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
+
       /*
       pspec = g_param_spec_uint ("x-mx-transition-duration",
                                  "transition duration",
@@ -1421,6 +1490,9 @@ mx_widget_init (MxWidget *actor)
 
   actor->priv->css_width = -1;
   actor->priv->css_height = -1;
+
+  actor->priv->old_opacity = -1;
+  actor->priv->old_visible = -1;
 
   /* set the default style */
   mx_stylable_set_style (MX_STYLABLE (actor), mx_style_get_default ());

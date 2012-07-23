@@ -252,6 +252,35 @@ typedef enum /*< prefix=MX_TOOLTIP_ANIMATION >*/
   MX_TOOLTIP_ANIMATION_FADE
 } MxTooltipAnimation;
 
+/**
+ * MxVisibilityStyle:
+ * @visible: The actor is visible
+ * @hidden: The actor is invisible (but is still allocated space)
+ *
+ * Values for the "visibility" style property.
+ *
+ */
+typedef enum /*< prefix=MX_VISIBILITY_STYLE >*/
+{
+  MX_VISIBILITY_STYLE_VISIBLE,
+  MX_VISIBILITY_STYLE_HIDDEN,
+} MxVisibilityStyle;
+
+/**
+ * MxDisplayStyle:
+ * @none: The actor is not displayed at all
+ * @inline: The actor is displayed as normal
+ *
+ * Values for the "display" style property.
+ */
+typedef enum /*< prefix=MX_DISPLAY_STYLE >*/
+{
+  MX_DISPLAY_STYLE_NONE,
+  MX_DISPLAY_STYLE_INLINE
+} MxDisplayStyle;
+
+
+
 G_END_DECLS
 
 #endif /* __MX_TYPES_H__ */
