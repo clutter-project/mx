@@ -669,7 +669,7 @@ motion_event_cb (ClutterActor        *actor,
   if (priv->cancel_event == event)
     {
       LOG_DEBUG (scroll, "%s: cancel", G_STRFUNC);
-      return TRUE;
+      return FALSE;
     }
 
   if (type == CLUTTER_MOTION)
@@ -717,6 +717,8 @@ motion_event_cb (ClutterActor        *actor,
     }
   else
     return FALSE;
+
+  LOG_DEBUG (scroll, "motion point(%fx%f)", x, y);
 
   if (clutter_actor_transform_stage_point (CLUTTER_ACTOR (scroll),
                                            x, y, &x, &y))
@@ -1092,7 +1094,7 @@ button_release_event_cb (ClutterActor        *stage,
   if (priv->cancel_event == event)
     {
       LOG_DEBUG (scroll, "%s: cancel", G_STRFUNC);
-      return TRUE;
+      return FALSE;
     }
 
   switch (clutter_event_type (event))
@@ -1132,6 +1134,8 @@ release_event (MxKineticScrollView *scroll,
   MxKineticScrollViewPrivate *priv = scroll->priv;
   gboolean decelerating = FALSE;
 
+  LOG_DEBUG (scroll, "RELEASE!");
+
   g_signal_handlers_disconnect_by_func (scroll,
                                         motion_event_cb,
                                         scroll);
@@ -1146,6 +1150,7 @@ release_event (MxKineticScrollView *scroll,
     {
       priv->device = NULL;
       priv->sequence = NULL;
+      priv->last_motion = 0;
       return FALSE;
     }
 
@@ -1379,6 +1384,8 @@ press_event (MxKineticScrollView *scroll,
   motion->x = x;
   motion->y = y;
 
+  LOG_DEBUG (scroll, "initial point(%fx%f)", x, y);
+
   if (clutter_actor_transform_stage_point (actor, x, y,
                                            &motion->x, &motion->y))
     {
@@ -1464,7 +1471,7 @@ button_press_event_cb (ClutterActor        *actor,
   if (priv->cancel_event == event)
     {
       LOG_DEBUG (scroll, "%s: cancel", G_STRFUNC);
-      return TRUE;
+      return FALSE;
     }
 
   switch (clutter_event_type (event))
@@ -1527,7 +1534,7 @@ mx_kinetic_scroll_view_event (ClutterActor *actor,
   if (priv->cancel_event == event)
     {
       LOG_DEBUG (scroll, "%s: cancel", G_STRFUNC);
-      return TRUE;
+      return FALSE;
     }
 
   switch (clutter_event_type (event))
