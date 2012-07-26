@@ -279,7 +279,22 @@ typedef enum /*< prefix=MX_DISPLAY_STYLE >*/
   MX_DISPLAY_STYLE_INLINE
 } MxDisplayStyle;
 
-
+/**
+ * MxTextAlign
+ * @left: align text to the left
+ * @right: align text to the right
+ * @center: center the text
+ * @justify: justify the text
+ *
+ * The horizontal alignment and layout of multiple lines of text.
+ */
+typedef enum /*< prefix=MX_TEXT_ALIGN >*/
+{
+  MX_TEXT_ALIGN_LEFT,
+  MX_TEXT_ALIGN_RIGHT,
+  MX_TEXT_ALIGN_CENTER,
+  MX_TEXT_ALIGN_JUSTIFY,
+} MxTextAlign;
 
 G_END_DECLS
 

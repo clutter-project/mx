@@ -1432,6 +1432,15 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                   G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
 
+
+      pspec = g_param_spec_enum ("text-align",
+                                 "Text Alignment",
+                                 "Text Alignment",
+                                 MX_TYPE_TEXT_ALIGN,
+                                 MX_TEXT_ALIGN_LEFT,
+                                 G_PARAM_READWRITE | MX_PARAM_STYLE_INHERIT);
+      mx_stylable_iface_install_property (iface, MX_TYPE_WIDGET, pspec);
+
       pspec = g_param_spec_boxed ("margin",
                                   "Margin",
                                   "Margin",

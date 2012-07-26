@@ -1194,6 +1194,8 @@ mx_stylable_apply_clutter_text_attributes (MxStylable  *stylable,
   gchar *descr_string;
   MxTextShadow *text_shadow;
   MxTextShadow *old_text_shadow;
+  MxTextAlign text_align;
+  PangoAlignment pango_align;
 
   static GQuark stylable_text_shadow_quark = 0;
 
@@ -1207,6 +1209,7 @@ mx_stylable_apply_clutter_text_attributes (MxStylable  *stylable,
                    "font-size", &font_size,
                    "font-weight", &font_weight,
                    "text-shadow", &text_shadow,
+                   "text-align", &text_align,
                    NULL);
 
 
@@ -1271,6 +1274,22 @@ mx_stylable_apply_clutter_text_attributes (MxStylable  *stylable,
     break;
     }
   pango_font_description_set_weight (descr, weight);
+
+  switch (text_align)
+    {
+    case MX_TEXT_ALIGN_JUSTIFY:
+    case MX_TEXT_ALIGN_LEFT:
+      pango_align = PANGO_ALIGN_LEFT;
+      break;
+    case MX_TEXT_ALIGN_RIGHT:
+      pango_align = PANGO_ALIGN_RIGHT;
+      break;
+    case MX_TEXT_ALIGN_CENTER:
+      pango_align = PANGO_ALIGN_CENTER;
+      break;
+    }
+  clutter_text_set_line_alignment (text, pango_align);
+  clutter_text_set_justify (text, (text_align == MX_TEXT_ALIGN_JUSTIFY));
 
   descr_string = pango_font_description_to_string (descr);
   clutter_text_set_font_name (text, descr_string);
