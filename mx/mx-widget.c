@@ -110,7 +110,25 @@ struct _MxWidgetPrivate
  * @short_description: Base class for stylable actors
  *
  * #MxWidget is a simple abstract class on top of #ClutterActor. It
- * provides basic themeing properties.
+ * provides basic styling properties. The style properties provided by #MxWidget
+ * are:
+ *
+ * - background-color
+ * - background-image
+ * - border-image
+ * - color
+ * - display
+ * - font-family
+ * - font-size
+ * - font-weight
+ * - height
+ * - margin
+ * - opacity
+ * - padding
+ * - text-align
+ * - text-shadow
+ * - visibility
+ * - width
  *
  * Actors in the Mx library should subclass #MxWidget if they plan
  * to obey to a certain #MxStyle.
