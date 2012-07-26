@@ -287,7 +287,10 @@ create_combo_box (gchar *selected_widget)
 
   combo = mx_combo_box_new ();
 
-  needle = g_ascii_strdown (selected_widget, -1);
+  if (selected_widget)
+    needle = g_ascii_strdown (selected_widget, -1);
+  else
+    needle = NULL;
 
   for (i = 0; i < G_N_ELEMENTS (types); i++)
     {
@@ -295,7 +298,7 @@ create_combo_box (gchar *selected_widget)
 
       haystack = g_ascii_strdown (g_type_name (types[i]), -1);
 
-      if (strstr (haystack, needle))
+      if (needle && strstr (haystack, needle))
         set_index = i;
 
       g_free (haystack);
@@ -485,7 +488,7 @@ main (int argc, char **argv)
       argc--;
     }
   else
-    data.selected_widget = "";
+    data.selected_widget = NULL;
 
   /* run the application */
   g_application_run (G_APPLICATION (application), argc, argv);
