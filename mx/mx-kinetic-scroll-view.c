@@ -64,6 +64,13 @@ typedef struct {
   GTimeVal time;
 } MxKineticScrollViewMotion;
 
+typedef enum {
+  MX_ALIGNED_SCROLL_NONE,
+  MX_ALIGNED_SCROLL_HORIZONTAL,
+  MX_ALIGNED_SCROLL_VERTICAL
+} MxAlignedScroll;
+
+
 struct _MxKineticScrollViewPrivate
 {
   ClutterActor          *child;
@@ -74,6 +81,7 @@ struct _MxKineticScrollViewPrivate
   guint                  in_drag      : 1;
   guint                  hmoving      : 1;
   guint                  vmoving      : 1;
+  guint                  align_tested : 1;
   guint                  hclamping    : 1;
   guint                  vclamping    : 1;
   guint32                button;
@@ -81,6 +89,8 @@ struct _MxKineticScrollViewPrivate
   ClutterEventSequence  *sequence;
   ClutterActor          *source_press_actor;
   ClutterEvent          *cancel_event;
+
+  MxAlignedScroll        in_aligned_scroll;
 
   /* Mouse motion event information */
   GArray                *motion_buffer;
@@ -744,11 +754,13 @@ motion_event_cb (ClutterActor        *actor,
 
           if ((dy >= threshold) &&
               (priv->scroll_policy == MX_SCROLL_POLICY_VERTICAL ||
-               priv->scroll_policy == MX_SCROLL_POLICY_BOTH))
+               priv->scroll_policy == MX_SCROLL_POLICY_BOTH ||
+               priv->scroll_policy == MX_SCROLL_POLICY_ALIGNED))
            threshold_passed = TRUE;
           else if ((dx >= threshold) &&
               (priv->scroll_policy == MX_SCROLL_POLICY_HORIZONTAL ||
-               priv->scroll_policy == MX_SCROLL_POLICY_BOTH))
+               priv->scroll_policy == MX_SCROLL_POLICY_BOTH ||
+               priv->scroll_policy == MX_SCROLL_POLICY_ALIGNED))
            threshold_passed = TRUE;
           else
            threshold_passed = FALSE;
@@ -833,9 +845,29 @@ motion_event_cb (ClutterActor        *actor,
                                    MxKineticScrollViewMotion,
                                    priv->last_motion);
 
+          if (!priv->align_tested)
+            {
+              priv->align_tested = TRUE;
+              priv->in_aligned_scroll = MX_ALIGNED_SCROLL_NONE;
+              if (priv->scroll_policy == MX_SCROLL_POLICY_ALIGNED)
+                {
+                  gfloat scroll_threshold = M_PI_4/2;
+                  gfloat drag_angle = atan((motion->y - y)/(x - motion->x));
+                  if( (drag_angle > -scroll_threshold) && (drag_angle < scroll_threshold) )
+                    priv->in_aligned_scroll = MX_ALIGNED_SCROLL_HORIZONTAL;
+                  else if ( (drag_angle > (M_PI_2 - scroll_threshold)) ||
+                            (drag_angle < -(M_PI_2 - scroll_threshold)) )
+                    priv->in_aligned_scroll = MX_ALIGNED_SCROLL_VERTICAL;
+                }
+            }
+
+
           if (hadjust &&
               (priv->scroll_policy == MX_SCROLL_POLICY_HORIZONTAL ||
-               priv->scroll_policy == MX_SCROLL_POLICY_BOTH))
+               priv->scroll_policy == MX_SCROLL_POLICY_BOTH ||
+               priv->scroll_policy == MX_SCROLL_POLICY_ALIGNED) &&
+               (priv->in_aligned_scroll == MX_ALIGNED_SCROLL_HORIZONTAL ||
+               priv->in_aligned_scroll == MX_ALIGNED_SCROLL_NONE))
             {
               dx = (motion->x - x) + mx_adjustment_get_value (hadjust);
               mx_adjustment_set_value (hadjust, dx);
@@ -843,7 +875,10 @@ motion_event_cb (ClutterActor        *actor,
 
           if (vadjust &&
               (priv->scroll_policy == MX_SCROLL_POLICY_VERTICAL ||
-               priv->scroll_policy == MX_SCROLL_POLICY_BOTH))
+               priv->scroll_policy == MX_SCROLL_POLICY_BOTH ||
+               priv->scroll_policy == MX_SCROLL_POLICY_ALIGNED) &&
+               (priv->in_aligned_scroll == MX_ALIGNED_SCROLL_VERTICAL ||
+               priv->in_aligned_scroll == MX_ALIGNED_SCROLL_NONE))
             {
               dy = (motion->y - y) + mx_adjustment_get_value (vadjust);
               mx_adjustment_set_value (vadjust, dy);
@@ -1005,7 +1040,9 @@ deceleration_new_frame_cb (ClutterTimeline     *timeline,
 
           if (hadjust &&
               (priv->scroll_policy == MX_SCROLL_POLICY_HORIZONTAL ||
-               priv->scroll_policy == MX_SCROLL_POLICY_BOTH))
+              priv->scroll_policy == MX_SCROLL_POLICY_BOTH ||
+              priv->scroll_policy == MX_SCROLL_POLICY_ALIGNED) &&
+              priv->in_aligned_scroll != MX_ALIGNED_SCROLL_VERTICAL)
             {
               if (ABS (priv->dx) > 2)
                 {
@@ -1038,7 +1075,9 @@ deceleration_new_frame_cb (ClutterTimeline     *timeline,
 
           if (vadjust &&
               (priv->scroll_policy == MX_SCROLL_POLICY_VERTICAL ||
-               priv->scroll_policy == MX_SCROLL_POLICY_BOTH))
+              priv->scroll_policy == MX_SCROLL_POLICY_BOTH ||
+              priv->scroll_policy == MX_SCROLL_POLICY_ALIGNED) &&
+              priv->scroll_policy != MX_ALIGNED_SCROLL_HORIZONTAL)
             {
               if (ABS (priv->dy) > 2)
                 {
@@ -1263,7 +1302,8 @@ release_event (MxKineticScrollView *scroll,
               ay = (1.0 - 1.0 / pow (y, n + 1)) / (1.0 - 1.0 / y);
 
               /* Solving for dx */
-              if (hadjust)
+              if (hadjust &&
+                  priv->in_aligned_scroll != MX_ALIGNED_SCROLL_VERTICAL)
                 {
                   mx_adjustment_get_values (hadjust, &value, &lower, &upper,
                                             &step_increment, NULL, &page_size);
@@ -1300,7 +1340,8 @@ release_event (MxKineticScrollView *scroll,
                 }
 
               /* Solving for dy */
-              if (vadjust)
+              if (vadjust &&
+                  priv->in_aligned_scroll != MX_ALIGNED_SCROLL_HORIZONTAL)
                 {
                   mx_adjustment_get_values (vadjust, &value, &lower, &upper,
                                             &step_increment, NULL, &page_size);
@@ -1377,6 +1418,10 @@ press_event (MxKineticScrollView *scroll,
   ClutterActor *actor = (ClutterActor *) scroll;
   ClutterActor *stage = clutter_actor_get_stage (actor);
   MxKineticScrollViewMotion *motion;
+
+  /* Reset aligned-scroll setting */
+  priv->in_aligned_scroll = MX_ALIGNED_SCROLL_NONE;
+  priv->align_tested = 0;
 
   /* Reset motion buffer */
   priv->last_motion = 0;
@@ -1602,6 +1647,8 @@ mx_kinetic_scroll_view_init (MxKineticScrollView *self)
   priv->decel_rate = 1.1f;
   priv->button = 1;
   priv->scroll_policy = MX_SCROLL_POLICY_BOTH;
+  priv->align_tested = 0;
+  priv->in_aligned_scroll = MX_ALIGNED_SCROLL_NONE;
   priv->acceleration_factor = 1.0;
   priv->clamp_duration = 250;
   priv->clamp_mode = CLUTTER_EASE_OUT_QUAD;

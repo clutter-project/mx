@@ -155,6 +155,8 @@ typedef enum /*< prefix=MX_FONT_WEIGHT >*/
  * @MX_SCROLL_POLICY_HORIZONTAL: Only allow horizontal scrolling
  * @MX_SCROLL_POLICY_VERTICAL: Only allow vertical scrolling
  * @MX_SCROLL_POLICY_BOTH: Allow scrolling both horizontally and vertically
+ * @MX_SCROLL_POLICY_ALIGNED: Automatically align scroll to horizontal
+ * or vertical direction or both depending on the drag angle.
  *
  * Defines the scrolling policy of scrollable widgets.
  */
@@ -163,7 +165,8 @@ typedef enum /*< prefix=MX_SCROLL_POLICY >*/
   MX_SCROLL_POLICY_NONE,
   MX_SCROLL_POLICY_HORIZONTAL,
   MX_SCROLL_POLICY_VERTICAL,
-  MX_SCROLL_POLICY_BOTH
+  MX_SCROLL_POLICY_BOTH,
+  MX_SCROLL_POLICY_ALIGNED
 } MxScrollPolicy;
 
 /**
