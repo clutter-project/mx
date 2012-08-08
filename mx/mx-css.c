@@ -29,7 +29,6 @@
 struct _MxStyleSheet
 {
   GList *selectors;
-  GList *styles;
   GList *filenames;
 };
 
@@ -379,6 +378,8 @@ mx_selector_free (MxSelector *selector)
   g_free (selector->class);
   g_free (selector->pseudo_class);
 
+  g_hash_table_unref (selector->style);
+
   mx_selector_free (selector->parent);
 
   g_slice_free (MxSelector, selector);
@@ -483,7 +484,7 @@ css_parse_ruleset (GScanner *scanner, GList **selectors)
 }
 
 static GTokenType
-css_parse_block (GScanner *scanner, GList **selectors, GList **styles)
+css_parse_block (GScanner *scanner, GList **selectors)
 {
   GTokenType token;
   GHashTable *table;
@@ -508,10 +509,8 @@ css_parse_block (GScanner *scanner, GList **selectors, GList **styles)
 
       sl = (MxSelector*) l->data;
 
-      sl->style = table;
+      sl->style = g_hash_table_ref (table);
     }
-
-  *styles = g_list_append (*styles, table);
 
   *selectors = g_list_concat (*selectors, list);
 
@@ -559,8 +558,7 @@ css_parse_file (MxStyleSheet *sheet,
   token = g_scanner_peek_next_token (scanner);
   while (token != G_TOKEN_EOF)
     {
-      token = css_parse_block (scanner, &sheet->selectors,
-                               &sheet->styles);
+      token = css_parse_block (scanner, &sheet->selectors);
       if (token != G_TOKEN_NONE)
         break;
 
@@ -960,9 +958,6 @@ mx_style_sheet_destroy (MxStyleSheet *sheet)
   g_list_foreach (sheet->selectors, (GFunc) mx_selector_free, NULL);
   g_list_free (sheet->selectors);
 
-  g_list_foreach (sheet->styles, (GFunc) g_hash_table_destroy, NULL);
-  g_list_free (sheet->styles);
-
   g_list_foreach (sheet->filenames, (GFunc) g_free, NULL);
   g_list_free (sheet->filenames);
 
@@ -1007,4 +1002,34 @@ mx_style_sheet_add_from_data (MxStyleSheet  *sheet,
   sheet->filenames = g_list_prepend (sheet->filenames, input_name);
 
   return result;
+}
+
+void
+mx_style_sheet_remove (MxStyleSheet *sheet,
+                       const gchar  *id)
+{
+  GList *l;
+
+  l = sheet->selectors;
+
+  while (l)
+    {
+      MxSelector *selector = l->data;
+      GList *link_to_delete = NULL;
+
+      if (!g_strcmp0 (id, selector->filename))
+        {
+          link_to_delete = l;
+        }
+
+      l = g_list_next (l);
+
+      if (link_to_delete)
+        {
+          sheet->selectors = g_list_delete_link (sheet->selectors,
+                                                 link_to_delete);
+
+          mx_selector_free (selector);
+        }
+    }
 }

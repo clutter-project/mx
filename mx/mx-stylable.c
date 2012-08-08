@@ -753,7 +753,7 @@ mx_stylable_set_style_internal (MxStylable *stylable,
       MxStylableIface *iface = MX_STYLABLE_GET_IFACE (stylable);
 
       if (G_LIKELY (iface->set_style))
-        return iface->set_style (stylable, style);
+        iface->set_style (stylable, style);
 
       /* connect to the "changed" signal of the MxStyle and take a
        * reference to the style */

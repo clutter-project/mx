@@ -131,6 +131,30 @@ g_style_cache_quark (void)
   return g_quark_from_static_string ("mx-style-cache-quark");
 }
 
+static void
+css_file_changed (GFileMonitor      *monitor,
+                  GFile             *file,
+                  GFile             *other_file,
+                  GFileMonitorEvent  event_type,
+                  MxStyle           *style)
+{
+  MxStylePrivate *priv = style->priv;
+  const gchar *path = g_file_get_path (file);
+
+  if (event_type != G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT)
+    return;
+
+  mx_style_sheet_remove (priv->stylesheet, path);
+
+  mx_style_sheet_add_from_file (priv->stylesheet, path, NULL);
+
+
+  /* Increment the age so we know if a style cache entry is valid */
+  priv->age ++;
+
+  g_signal_emit (style, style_signals[CHANGED], 0, NULL);
+}
+
 static gboolean
 mx_style_real_load_from_file (MxStyle      *style,
                               const gchar  *filename,
@@ -179,6 +203,21 @@ mx_style_real_load_from_file (MxStyle      *style,
   priv->age ++;
 
   g_signal_emit (style, style_signals[CHANGED], 0, NULL);
+
+  if (!data)
+    {
+      GFile *file;
+      GFileMonitor *monitor;
+
+      file = g_file_new_for_path (filename);
+      monitor = g_file_monitor (file, G_FILE_MONITOR_NONE, NULL, NULL);
+
+      if (monitor)
+        {
+          g_signal_connect (monitor, "changed", G_CALLBACK (css_file_changed),
+                            style);
+        }
+    }
 
   return TRUE;
 }
