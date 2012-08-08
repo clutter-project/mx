@@ -1,3 +1,17 @@
+1.4.7
+=====
+
+Changes since 1.4.6
+
+Fixed Bugs (from bugzilla.clutter-project.org):
+
+  #2688 - image: add some annotations for mx_image_set_from_buffer/data
+  #2687 - widget: Handle NULL ClutterEventCrossing->related actor in
+          mx_widget_leave
+  #2690 - MxScrollView: Fixed to clip events for clipped child area in
+          ClutterActor->pick()
+
+
 1.4.6
 =====
 
