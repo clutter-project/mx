@@ -1416,7 +1416,7 @@ mx_widget_get_background_image (MxWidget *actor)
 /**
  * mx_widget_get_padding:
  * @widget: A #MxWidget
- * @padding: A pointer to an #MxPadding to fill
+ * @padding: (out): A pointer to an #MxPadding to fill
  *
  * Gets the padding of the widget, set using the "padding" CSS property. This
  * function should normally only be used by subclasses.
