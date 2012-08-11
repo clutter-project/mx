@@ -185,8 +185,9 @@ LiveInspector.prototype = {
         this._inspected_widget = widget;
         this._widget_tree = new Array();
         var it_widget = widget;
+        var index = 0;
         while (it_widget != null) {
-            var w_name = "" + GObject.type_name(it_widget.constructor);
+            var w_name = "" + index + " " + GObject.type_name(it_widget.constructor);
 
             if (it_widget instanceof Mx.Widget)
                 w_name += " class=" + it_widget.get_style_class();
@@ -233,6 +234,7 @@ LiveInspector.prototype = {
             this._parent_box.child_set_expand(button, true);
 
             it_widget = it_widget.get_parent();
+            index += 1;
         }
     },
 
