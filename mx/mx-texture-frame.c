@@ -34,6 +34,7 @@
 #endif
 
 #include <cogl/cogl.h>
+#include <GL/gl.h>
 
 #include "mx-texture-frame.h"
 #include "mx-private.h"
