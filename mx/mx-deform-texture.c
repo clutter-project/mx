@@ -493,9 +493,9 @@ mx_deform_texture_class_init (MxDeformTextureClass *klass)
 static void
 mx_deform_texture_init_arrays (MxDeformTexture *self)
 {
-  GLushort *idx, *bf_idx;
+  gushort *idx, *bf_idx;
   gint x, y, direction;
-  GLushort *static_indices, *static_bf_indices;
+  gushort *static_indices, *static_bf_indices;
   MxDeformTexturePrivate *priv = self->priv;
 
   mx_deform_texture_free_arrays (self);
@@ -503,8 +503,8 @@ mx_deform_texture_init_arrays (MxDeformTexture *self)
   priv->n_indices = (2 + 2 * priv->tiles_x) *
                     priv->tiles_y +
                     (priv->tiles_y - 1);
-  static_indices = g_new (GLushort, priv->n_indices);
-  static_bf_indices = g_new (GLushort, priv->n_indices);
+  static_indices = g_new (gushort, priv->n_indices);
+  static_bf_indices = g_new (gushort, priv->n_indices);
 
 #define MESH_INDEX(X, Y) (Y) * (priv->tiles_x + 1) + (X)
 

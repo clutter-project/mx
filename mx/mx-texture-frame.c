@@ -200,7 +200,7 @@ mx_texture_frame_paint (ClutterActor *self)
 
 
   {
-    GLfloat rectangles[] =
+    gfloat rectangles[] =
     {
       /* top left corner */
       0, 0,
