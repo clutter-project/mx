@@ -29,8 +29,6 @@
  * deformation effects with a texture.
  */
 
-#include <GL/gl.h>
-
 #include "mx-deform-texture.h"
 #include "mx-offscreen.h"
 #include "mx-private.h"
