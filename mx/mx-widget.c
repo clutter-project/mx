@@ -1538,7 +1538,7 @@ mx_widget_init (MxWidget *actor)
  *
  * Returns: (transfer none): a #CoglHandle
  */
-CoglHandle *
+CoglHandle
 mx_widget_get_background_texture (MxWidget *actor)
 {
   MxWidgetPrivate *priv = MX_WIDGET (actor)->priv;
