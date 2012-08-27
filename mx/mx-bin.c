@@ -656,8 +656,8 @@ mx_bin_set_fill (MxBin   *bin,
 /**
  * mx_bin_get_fill:
  * @bin: a #MxBin
- * @x_fill: (out): return location for the horizontal fill, or %NULL
- * @y_fill: (out): return location for the vertical fill, or %NULL
+ * @x_fill: (out) (allow-none): return location for the horizontal fill, or %NULL
+ * @y_fill: (out) (allow-none): return location for the vertical fill, or %NULL
  *
  * Retrieves the horizontal and vertical fill settings
  */
