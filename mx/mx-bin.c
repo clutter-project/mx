@@ -584,8 +584,8 @@ mx_bin_set_alignment (MxBin  *bin,
 /**
  * mx_bin_get_alignment:
  * @bin: a #MxBin
- * @x_align: return location for the horizontal alignment, or %NULL
- * @y_align: return location for the vertical alignment, or %NULL
+ * @x_align: (out) (allow-none): return location for the horizontal alignment, or %NULL
+ * @y_align: (out) (allow-none): return location for the vertical alignment, or %NULL
  *
  * Retrieves the horizontal and vertical alignment of the child
  * inside a #MxBin, as set by mx_bin_set_alignment().
