@@ -397,6 +397,7 @@ MxToolbar {
 }
 
 MxToolbar MxButton#close-button {
+  background-image: url('window-close.png');
   -mx-icon-name: window-close;
   -mx-icon-size: 16;
   padding: 5 7 7 7;

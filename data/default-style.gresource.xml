@@ -120,5 +120,6 @@
     <file>style/toggle-handle.png</file>
     <file>style/toolbar-background.png</file>
     <file>style/tooltip-background.png</file>
+    <file>style/window-close.png</file>
   </gresource>
 </gresources>
