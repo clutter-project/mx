@@ -1420,8 +1420,8 @@ mx_window_get_clutter_stage (MxWindow *window)
 /**
  * mx_window_get_window_position:
  * @window: an #MxWindow
- * @x: (out): A pointer for the x-coordinate
- * @y: (out): A pointer for the y-coordinate
+ * @x: (out) (allow-none): A pointer for the x-coordinate
+ * @y: (out) (allow-none): A pointer for the y-coordinate
  *
  * Retrieves the absolute position of the window on the screen.
  */
@@ -1471,8 +1471,8 @@ mx_window_set_window_position (MxWindow *window,
 /**
  * mx_window_get_window_size:
  * @window: A #MxWindow
- * @width: (out): A #gint pointer for the window's width
- * @height: (out): A #gint pointer for the window's height
+ * @width: (out) (allow-none): A #gint pointer for the window's width
+ * @height: (out) (allow-none): A #gint pointer for the window's height
  *
  * Retrieves the size of the display area of the window, taking into
  * account any window border. This includes the area occupied by the
