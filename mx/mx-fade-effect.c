@@ -840,10 +840,10 @@ mx_fade_effect_set_border (MxFadeEffect *effect,
 /**
  * mx_fade_effect_get_border:
  * @effect: A #MxFadeEffect
- * @top: (out): The upper border, in pixels
- * @right: (out): The right border, in pixels
- * @bottom: (out): The lower border, in pixels
- * @left: (out): The left border, in pixels
+ * @top: (out) (allow-none): The upper border, in pixels
+ * @right: (out) (allow-none): The right border, in pixels
+ * @bottom: (out) (allow-none): The lower border, in pixels
+ * @left: (out) (allow-none): The left border, in pixels
  *
  * Retrieves the border values for @effect.
  *
@@ -988,10 +988,10 @@ mx_fade_effect_set_bounds (MxFadeEffect *effect,
 /**
  * mx_fade_effect_get_bounds:
  * @effect: A #MxFadeEffect
- * @x: (out): The x value of the effect bounds, in pixels
- * @y: (out): The y value of the effect bounds, in pixels
- * @width: (out): The width of the effect bounds, in pixels, or %0
- * @height: (out): The height of the effect bounds, in pixels, or %0
+ * @x: (out) (allow-none): The x value of the effect bounds, in pixels
+ * @y: (out) (allow-none): The y value of the effect bounds, in pixels
+ * @width: (out) (allow-none): The width of the effect bounds, in pixels, or %0
+ * @height: (out) (allow-none): The height of the effect bounds, in pixels, or %0
  *
  * Retrieves the bounding box of the effect.
  *
