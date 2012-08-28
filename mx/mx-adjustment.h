@@ -75,6 +75,7 @@ struct _MxAdjustmentClass
   /*< public >*/
   void (* changed)                 (MxAdjustment *adjustment);
   void (* interpolation_completed) (MxAdjustment *adjustment);
+  void (* changed_immediate)       (MxAdjustment *adjustment);
 
   /* padding for future expansion */
   void (*_padding_0) (void);

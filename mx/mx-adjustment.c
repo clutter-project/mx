@@ -95,6 +95,7 @@ enum
 
 enum
 {
+  CHANGED_IMMEDIATE,
   CHANGED,
   INTERPOLATION_COMPLETED,
 
@@ -377,9 +378,24 @@ mx_adjustment_class_init (MxAdjustmentClass *klass)
                                                          MX_PARAM_READWRITE));
 
   /**
-   * MxAdjustment::changed:
+   * MxAdjustment::changed-immediate:
    *
    * Emitted when any of the adjustment values have changed
+   */
+  signals[CHANGED_IMMEDIATE] =
+    g_signal_new ("changed-immediate",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (MxAdjustmentClass, changed_immediate),
+                  NULL, NULL,
+                  _mx_marshal_VOID__VOID,
+                  G_TYPE_NONE, 0);
+
+  /**
+   * MxAdjustment::changed:
+   *
+   * Emitted when any of the adjustment values have changed at the
+   * next iteration of the GLib mainloop.
    */
   signals[CHANGED] =
     g_signal_new ("changed",
@@ -635,6 +651,8 @@ static void
 mx_adjustment_emit_changed (MxAdjustment *adjustment)
 {
   MxAdjustmentPrivate *priv = adjustment->priv;
+
+  g_signal_emit (adjustment, signals[CHANGED_IMMEDIATE], 0);
 
   if (!priv->changed_source)
     priv->changed_source =
