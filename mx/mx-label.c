@@ -789,7 +789,7 @@ mx_label_get_y_align (MxLabel *label)
 }
 
 /**
- * mx_label_set_alignment:
+ * mx_label_get_alignment:
  * @label: An #MxLabel
  * @x_align: (out) (allow-none): return location for x alignment value
  * @y_align: (out) (allow-none): return location for y alignment value
