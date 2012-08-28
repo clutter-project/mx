@@ -88,6 +88,12 @@ void                  mx_label_set_x_align      (MxLabel *label,
 MxAlign               mx_label_get_y_align      (MxLabel *label);
 void                  mx_label_set_y_align      (MxLabel *label,
                                                  MxAlign  align);
+void                  mx_label_get_alignment    (MxLabel *label,
+                                                 MxAlign *x_align,
+                                                 MxAlign *y_align);
+void                  mx_label_set_alignment    (MxLabel *label,
+                                                 MxAlign  x_align,
+                                                 MxAlign  y_align);
 
 gboolean              mx_label_get_line_wrap    (MxLabel *label);
 void                  mx_label_set_line_wrap    (MxLabel  *label,

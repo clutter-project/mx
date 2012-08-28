@@ -789,6 +789,65 @@ mx_label_get_y_align (MxLabel *label)
 }
 
 /**
+ * mx_label_set_alignment:
+ * @label: An #MxLabel
+ * @x_align: (out) (allow-none): return location for x alignment value
+ * @y_align: (out) (allow-none): return location for y alignment value
+ *
+ * Returns the text alignment on x and y axis.
+ *
+ * Since: 2.0
+ */
+void
+mx_label_get_alignment (MxLabel *label, MxAlign *x_align, MxAlign *y_align)
+{
+  g_return_if_fail (MX_IS_LABEL (label));
+
+  if (x_align)
+    *x_align = label->priv->x_align;
+  if (y_align)
+    *y_align = label->priv->y_align;
+}
+
+/**
+ * mx_label_set_alignment:
+ * @label: An #MxLabel
+ * @x_align: x alignment value
+ * @y_align: y alignment value
+ *
+ * Set the text alignment on x and y axis.
+ *
+ * Since: 2.0
+ */
+void
+mx_label_set_alignment (MxLabel *label, MxAlign x_align, MxAlign y_align)
+{
+  MxLabelPrivate *priv;
+
+  g_return_if_fail (MX_IS_LABEL (label));
+
+  priv = label->priv;
+
+  if (x_align != priv->x_align)
+    {
+      priv->x_align = x_align;
+
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (label));
+
+      g_object_notify (G_OBJECT (label), "x-align");
+    }
+
+  if (y_align != priv->y_align)
+    {
+      priv->y_align = y_align;
+
+      clutter_actor_queue_relayout (CLUTTER_ACTOR (label));
+
+      g_object_notify (G_OBJECT (label), "y-align");
+    }
+}
+
+/**
  * mx_label_set_line_wrap:
  * @label: An #MxLabel
  * @line_wrap: new value of the line-wrap property.
