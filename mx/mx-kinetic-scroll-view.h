@@ -130,6 +130,10 @@ gboolean mx_kinetic_scroll_view_get_clamp_to_center (
 void mx_kinetic_scroll_view_ensure_visible (MxKineticScrollView   *scroll,
                                             const ClutterGeometry *geometry);
 
+void mx_kinetic_scroll_view_get_input (MxKineticScrollView   *scroll,
+                                       ClutterInputDevice   **device,
+                                       ClutterEventSequence **sequence);
+
 G_END_DECLS
 
 #endif /* __MX_KINETIC_SCROLL_VIEW_H__ */

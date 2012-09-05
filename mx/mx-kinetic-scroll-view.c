@@ -2307,3 +2307,32 @@ mx_kinetic_scroll_view_ensure_visible (MxKineticScrollView   *scroll,
                                        geometry->y,
                                        geometry->y + geometry->height);
 }
+
+/**
+ * mx_kinetic_scroll_view_get_input:
+ * @scroll: A #MxKineticScrollView
+ * @device: (allow-none) (out): a pointer to a #ClutterInputDevice pointer
+ * @sequence: (allow-none) (out): a pointer to a #ClutterEventSequence pointer
+ *
+ * Retrieves informations about the current input device driving the
+ * scrolling.
+ *
+ * Since: 2.0
+ */
+void
+mx_kinetic_scroll_view_get_input (MxKineticScrollView   *scroll,
+                                  ClutterInputDevice   **device,
+                                  ClutterEventSequence **sequence)
+{
+  MxKineticScrollViewPrivate *priv;
+
+  g_return_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll));
+
+  priv = scroll->priv;
+
+  if (device != NULL)
+    *device = priv->device;
+
+  if (sequence != NULL)
+    *sequence = priv->sequence;
+}
