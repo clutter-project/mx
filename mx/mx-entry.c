@@ -36,7 +36,7 @@
  *   <para>focus: the widget has focus</para>
  *  </listitem>
  *  <listitem>
- *   <para>indeterminate: the widget is showing the hint text</para>
+ *   <para>indeterminate: the widget is showing the placeholder text</para>
  *  </listitem>
  * </itemizedlist>
  */
@@ -85,7 +85,7 @@ enum
   PROP_0,
 
   PROP_CLUTTER_TEXT,
-  PROP_HINT_TEXT,
+  PROP_PLACEHOLDER,
   PROP_TEXT,
   PROP_PASSWORD_CHAR,
   PROP_ICON_HIGHLIGHT_SUFFIX,
@@ -109,7 +109,7 @@ enum
 struct _MxEntryPrivate
 {
   ClutterActor *entry;
-  gchar        *hint;
+  gchar        *placeholder;
 
   ClutterActor *primary_icon;
   ClutterActor *primary_icon_highlight;
@@ -131,7 +131,6 @@ struct _MxEntryPrivate
   GQueue   *undo_history;
   gulong    undo_timeout_source;
 
-  guint hint_visible : 1;
   guint pause_undo : 1;
   guint scrolling : 1;
   guint unicode_input_mode : 1;
@@ -163,8 +162,8 @@ mx_entry_set_property (GObject      *gobject,
 
   switch (prop_id)
     {
-    case PROP_HINT_TEXT:
-      mx_entry_set_hint_text (entry, g_value_get_string (value));
+    case PROP_PLACEHOLDER:
+      mx_entry_set_placeholder (entry, g_value_get_string (value));
       break;
 
     case PROP_TEXT:
@@ -210,8 +209,8 @@ mx_entry_get_property (GObject    *gobject,
       g_value_set_object (value, priv->entry);
       break;
 
-    case PROP_HINT_TEXT:
-      g_value_set_string (value, priv->hint);
+    case PROP_PLACEHOLDER:
+      g_value_set_string (value, priv->placeholder);
       break;
 
     case PROP_TEXT:
@@ -278,8 +277,8 @@ mx_entry_finalize (GObject *object)
 {
   MxEntryPrivate *priv = MX_ENTRY_PRIV (object);
 
-  g_free (priv->hint);
-  priv->hint = NULL;
+  g_free (priv->placeholder);
+  priv->placeholder = NULL;
 
   if (priv->preedit_string)
     {
@@ -616,33 +615,7 @@ static void
 clutter_text_focus_in_cb (ClutterText  *text,
                           ClutterActor *actor)
 {
-  MxEntryPrivate *priv = MX_ENTRY_PRIV (actor);
-
-  /* remove the hint if visible */
-  if (priv->hint && priv->hint_visible)
-    {
-      priv->hint_visible = FALSE;
-
-      /* We don't want to emit the notify text change when we're swapping
-       * between the hint text and blank for entry.
-       */
-      g_signal_handlers_block_by_func (priv->entry,
-                                       clutter_text_changed_cb,
-                                       MX_ENTRY (actor));
-
-      clutter_text_set_text (text, "");
-
-      g_signal_handlers_unblock_by_func (priv->entry,
-                                         clutter_text_changed_cb,
-                                         MX_ENTRY (actor));
-
-
-      if (priv->password_char != 0)
-        {
-          clutter_text_set_password_char (text, priv->password_char);
-        }
-    }
-  mx_stylable_set_style_pseudo_class (MX_STYLABLE (actor), "focus");
+  mx_stylable_style_pseudo_class_add (MX_STYLABLE (actor), "focus");
   clutter_text_set_cursor_visible (text, TRUE);
 }
 
@@ -655,35 +628,6 @@ clutter_text_focus_out_cb (ClutterText  *text,
   /* move the cursor back to the beginning of the entry */
   clutter_text_set_cursor_position (CLUTTER_TEXT (priv->entry), 0);
 
-  /* add a hint if the entry is empty */
-  if (priv->hint && !strcmp (clutter_text_get_text (text), ""))
-    {
-      priv->hint_visible = TRUE;
-
-      /* We don't want to emit the notify text change when we're swapping
-       * between the hint text and blank for entry.
-       */
-      g_signal_handlers_block_by_func (priv->entry,
-                                       clutter_text_changed_cb,
-                                       MX_ENTRY (actor));
-
-      clutter_text_set_text (text, priv->hint);
-
-      g_signal_handlers_unblock_by_func (priv->entry,
-                                         clutter_text_changed_cb,
-                                         MX_ENTRY (actor));
-
-      mx_stylable_set_style_pseudo_class (MX_STYLABLE (actor), "indeterminate");
-
-      if (clutter_text_get_password_char (text) != 0)
-        {
-          clutter_text_set_password_char (text, 0);
-        }
-    }
-  else
-    {
-      mx_stylable_set_style_pseudo_class (MX_STYLABLE (actor), NULL);
-    }
   clutter_text_set_cursor_visible (text, FALSE);
 }
 
@@ -753,6 +697,38 @@ mx_entry_paint (ClutterActor *actor)
       cogl_color_set_from_4ub (&top[2].color, 0, 0, 0, 0);
       cogl_color_set_from_4ub (&top[3].color, 0, 0, 0, 0);
       cogl_polygon (top, 4, TRUE);
+    }
+
+  if (priv->placeholder && !strcmp ("", clutter_text_get_text (priv->entry)))
+    {
+      PangoLayout *layout;
+      CoglColor color;
+      ClutterActorBox box;
+      ClutterColor clutter_color;
+      gint x;
+
+      clutter_text_get_color (CLUTTER_TEXT (priv->entry), &clutter_color);
+
+      cogl_color_init_from_4ub (&color,
+                                clutter_color.red,
+                                clutter_color.green,
+                                clutter_color.blue,
+                                clutter_color.alpha);
+
+      /* pango layout */
+      layout = clutter_text_get_layout (CLUTTER_TEXT (priv->entry));
+      layout = pango_layout_copy (layout);
+      pango_layout_set_text (layout, priv->placeholder, -1);
+
+      clutter_actor_get_allocation_box (CLUTTER_TEXT (priv->entry), &box);
+
+      cogl_clip_push_rectangle (box.x1, box.y1, box.x2, box.y2);
+
+      x = box.x1 + clutter_text_get_cursor_size (CLUTTER_TEXT (priv->entry));
+
+      cogl_pango_render_layout (layout, x, (int) box.y1, &color, 0);
+
+      cogl_clip_pop ();
     }
 }
 
@@ -1085,12 +1061,11 @@ mx_entry_class_init (MxEntryClass *klass)
 			       G_PARAM_READABLE);
   g_object_class_install_property (gobject_class, PROP_CLUTTER_TEXT, pspec);
 
-  pspec = g_param_spec_string ("hint-text",
-                               "Hint Text",
-                               "Text to display when the entry is not focused "
-                               "and the text property is empty",
+  pspec = g_param_spec_string ("placeholder",
+                               "Placeholder",
+                               "Short hint intended to aid the user with data entry",
                                NULL, G_PARAM_READWRITE);
-  g_object_class_install_property (gobject_class, PROP_HINT_TEXT, pspec);
+  g_object_class_install_property (gobject_class, PROP_PLACEHOLDER, pspec);
 
   pspec = g_param_spec_string ("text",
                                "Text",
@@ -1237,9 +1212,20 @@ static void
 clutter_text_changed_cb (ClutterText *text,
                          MxEntry     *entry)
 {
-  g_return_if_fail (MX_IS_ENTRY (entry));
+  MxEntryPrivate *priv = entry->priv;
 
   g_object_notify (G_OBJECT (entry), "text");
+
+  /* set up the pseudo class for the placeholder */
+  if (priv->placeholder)
+    {
+      if (!strcmp (clutter_text_get_text (text), ""))
+        mx_stylable_style_pseudo_class_add (MX_STYLABLE (entry),
+                                            "indeterminate");
+      else
+        mx_stylable_style_pseudo_class_remove (MX_STYLABLE (entry),
+                                               "indeterminate");
+    }
 
   mx_entry_store_undo_history (text, entry);
 }
@@ -1370,10 +1356,7 @@ mx_entry_get_text (MxEntry *entry)
 {
   g_return_val_if_fail (MX_IS_ENTRY (entry), NULL);
 
-  if (entry->priv->hint_visible)
-    return "";
-  else
-    return clutter_text_get_text (CLUTTER_TEXT (entry->priv->entry));
+  return clutter_text_get_text (CLUTTER_TEXT (entry->priv->entry));
 }
 
 /**
@@ -1400,32 +1383,7 @@ mx_entry_set_text (MxEntry     *entry,
 
   priv = entry->priv;
 
-  /* set a hint if we are blanking the entry */
-  if (priv->hint
-      && text && !strcmp ("", text)
-      && !HAS_FOCUS (priv->entry))
-    {
-      text = priv->hint;
-      priv->hint_visible = TRUE;
-      mx_stylable_set_style_pseudo_class (MX_STYLABLE (entry), "indeterminate");
-      password_char = 0;
-    }
-  else
-    {
-      if (HAS_FOCUS (priv->entry))
-        mx_stylable_set_style_pseudo_class (MX_STYLABLE (entry), "focus");
-      else
-        mx_stylable_set_style_pseudo_class (MX_STYLABLE (entry), NULL);
-
-      priv->hint_visible = FALSE;
-      password_char = priv->password_char;
-    }
-
   clutter_text_set_text (CLUTTER_TEXT (priv->entry), text);
-  if (clutter_text_get_password_char (CLUTTER_TEXT (priv->entry)) != password_char)
-    {
-      clutter_text_set_password_char (CLUTTER_TEXT (priv->entry), password_char);
-    }
 }
 
 /**
@@ -1446,7 +1404,7 @@ mx_entry_get_clutter_text (MxEntry *entry)
 }
 
 /**
- * mx_entry_set_hint_text:
+ * mx_entry_set_placeholder:
  * @entry: a #MxEntry
  * @text: text to set as the entry hint
  *
@@ -1455,55 +1413,38 @@ mx_entry_get_clutter_text (MxEntry *entry)
  * A value of NULL unsets the hint.
  */
 void
-mx_entry_set_hint_text (MxEntry     *entry,
-                        const gchar *text)
+mx_entry_set_placeholder (MxEntry     *entry,
+                          const gchar *text)
 {
-  MxEntryPrivate *priv;
-
   g_return_if_fail (MX_IS_ENTRY (entry));
 
-  priv = entry->priv;
-
-  g_free (priv->hint);
-
-  priv->hint = g_strdup (text);
-
-  if (!strcmp (clutter_text_get_text (CLUTTER_TEXT (priv->entry)), "")
-      && !HAS_FOCUS (priv->entry))
-    {
-      priv->hint_visible = TRUE;
-
-      clutter_text_set_text (CLUTTER_TEXT (priv->entry), priv->hint);
-      mx_stylable_set_style_pseudo_class (MX_STYLABLE (entry), "indeterminate");
-      if (clutter_text_get_password_char (CLUTTER_TEXT (priv->entry)) != 0)
-        {
-          clutter_text_set_password_char (CLUTTER_TEXT (priv->entry), 0);
-        }
-    }
+  g_free (entry->priv->placeholder);
+  entry->priv->placeholder = g_strdup (text);
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (entry));
 }
 
 /**
- * mx_entry_get_hint_text:
+ * mx_entry_get_placeholder:
  * @entry: a #MxEntry
  *
  * Gets the text that is displayed when the entry is empty and unfocused
  *
- * Returns: the current value of the hint property. This string is owned by the
- * #MxEntry and should not be freed or modified.
+ * Returns: (transfer none): the current value of the placeholder property.
+ * This string is owned by the #MxEntry and should not be freed or modified.
  */
 const
 gchar *
-mx_entry_get_hint_text (MxEntry *entry)
+mx_entry_get_placeholder (MxEntry *entry)
 {
   g_return_val_if_fail (MX_IS_ENTRY (entry), NULL);
 
-  return entry->priv->hint;
+  return entry->priv->placeholder;
 }
 
 /**
  * mx_entry_set_password_char:
  * @entry: a #MxEntry
- * @password_char: text to set as the entry hint
+ * @password_char: character to display instead of text
  *
  * Sets the character to display instead of the text. Use 0 to display
  * the actual text.
@@ -1519,12 +1460,6 @@ mx_entry_set_password_char (MxEntry  *entry,
   priv = entry->priv;
 
   priv->password_char = password_char;
-
-  if (!priv->hint_visible)
-    {
-      clutter_text_set_password_char (CLUTTER_TEXT (priv->entry),
-                                      password_char);
-    }
 }
 
 /**

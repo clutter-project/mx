@@ -84,9 +84,9 @@ void                  mx_entry_set_text         (MxEntry     *entry,
                                                  const gchar *text);
 ClutterActor*         mx_entry_get_clutter_text (MxEntry     *entry);
 
-void                  mx_entry_set_hint_text    (MxEntry     *entry,
-                                                 const gchar *text);
-const gchar          *mx_entry_get_hint_text    (MxEntry     *entry);
+void                  mx_entry_set_placeholder    (MxEntry     *entry,
+                                                   const gchar *text);
+const gchar          *mx_entry_get_placeholder    (MxEntry     *entry);
 
 void                  mx_entry_set_password_char (MxEntry  *entry,
                                                   gunichar  password_char);
