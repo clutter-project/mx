@@ -1416,10 +1416,26 @@ void
 mx_entry_set_placeholder (MxEntry     *entry,
                           const gchar *text)
 {
+  MxEntryPrivate *priv = entry->priv;
+
   g_return_if_fail (MX_IS_ENTRY (entry));
 
-  g_free (entry->priv->placeholder);
-  entry->priv->placeholder = g_strdup (text);
+  if (!g_strcmp0 (priv->placeholder, text))
+    return;
+
+  g_free (priv->placeholder);
+  priv->placeholder = g_strdup (text);
+
+  if (priv->placeholder)
+    {
+      if (!strcmp (clutter_text_get_text (CLUTTER_TEXT (priv->entry)), ""))
+        mx_stylable_style_pseudo_class_add (MX_STYLABLE (entry),
+                                            "indeterminate");
+      else
+        mx_stylable_style_pseudo_class_remove (MX_STYLABLE (entry),
+                                               "indeterminate");
+    }
+
   clutter_actor_queue_redraw (CLUTTER_ACTOR (entry));
 }
 
