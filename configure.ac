@@ -83,7 +83,7 @@ AS_CASE([$enable_debug],
 
         [minimum],
         [
-          MX_DEBUG_CFLAGS="-DMX_ENABLE_DEBUG -DG_DISABLE_CAST_CHECKS"
+          MX_DEBUG_CFLAGS="-DMX_ENABLE_DEBUG -DG_DISABLE_CAST_CHECKS -Wno-deprecated-declarations"
         ],
 
         [AC_MSG_ERROR([Invalid value for --enable-debug])]
