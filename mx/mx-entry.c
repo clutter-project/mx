@@ -75,6 +75,8 @@
 #include <X11/cursorfont.h>
 #endif
 
+#include <cogl-pango/cogl-pango.h>
+
 #define HAS_FOCUS(actor) (clutter_actor_get_stage (actor) && clutter_stage_get_key_focus ((ClutterStage *) clutter_actor_get_stage (actor)) == actor)
 
 #define MX_ENTRY_TOOLTIP_DELAY 500
@@ -699,7 +701,8 @@ mx_entry_paint (ClutterActor *actor)
       cogl_polygon (top, 4, TRUE);
     }
 
-  if (priv->placeholder && !strcmp ("", clutter_text_get_text (priv->entry)))
+  if (priv->placeholder
+      && !strcmp ("", clutter_text_get_text (CLUTTER_TEXT (priv->entry))))
     {
       PangoLayout *layout;
       CoglColor color;
@@ -720,7 +723,7 @@ mx_entry_paint (ClutterActor *actor)
       layout = pango_layout_copy (layout);
       pango_layout_set_text (layout, priv->placeholder, -1);
 
-      clutter_actor_get_allocation_box (CLUTTER_TEXT (priv->entry), &box);
+      clutter_actor_get_allocation_box (CLUTTER_ACTOR (priv->entry), &box);
 
       cogl_clip_push_rectangle (box.x1, box.y1, box.x2, box.y2);
 
@@ -1371,7 +1374,6 @@ mx_entry_set_text (MxEntry     *entry,
                    const gchar *entry_text)
 {
   MxEntryPrivate *priv;
-  gunichar password_char;
   const gchar *text;
 
   g_return_if_fail (MX_IS_ENTRY (entry));
