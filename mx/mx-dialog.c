@@ -68,7 +68,6 @@ struct _MxDialogPrivate
   gfloat angle;
 
   ClutterTimeline *timeline;
-  ClutterAlpha    *alpha;
   gfloat           zoom;
 
   /* Dialog-specific variables */
@@ -638,7 +637,7 @@ mx_dialog_new_frame_cb (ClutterTimeline *timeline,
   MxDialog *frame = MX_DIALOG (self);
   MxDialogPrivate *priv = frame->priv;
   ClutterActor *parent = clutter_actor_get_parent (self);
-  gfloat opacity = clutter_alpha_get_alpha (priv->alpha);
+  gfloat opacity = clutter_timeline_get_progress (priv->timeline);
 
   priv->zoom = 1.0f + (1.f - opacity) / 2.f;
   clutter_actor_set_opacity (self, (guint8)(opacity * 255.f));
@@ -675,8 +674,8 @@ mx_dialog_init (MxDialog *self)
 
   priv->transition_time = 250;
   priv->timeline = clutter_timeline_new (priv->transition_time);
-  priv->alpha = clutter_alpha_new_full (priv->timeline,
-                                        CLUTTER_EASE_OUT_QUAD);
+  clutter_timeline_set_progress_mode (priv->timeline,
+                                      CLUTTER_EASE_OUT_QUAD);
 
   priv->background = mx_frame_new ();
   mx_stylable_set_style_class (MX_STYLABLE (priv->background),
@@ -786,7 +785,7 @@ mx_dialog_show (ClutterActor *self)
 
       clutter_actor_set_opacity (self, 0x00);
       CLUTTER_ACTOR_CLASS (mx_dialog_parent_class)->show (self);
-      clutter_alpha_set_mode (priv->alpha, CLUTTER_EASE_OUT_QUAD);
+      clutter_timeline_set_progress_mode (priv->timeline, CLUTTER_EASE_OUT_QUAD);
       clutter_timeline_start (priv->timeline);
 
       mx_dialog_steal_focus (dialog);
@@ -835,7 +834,7 @@ mx_dialog_hide (ClutterActor *self)
         }
 
       /* The timeline is running in reverse, so use ease-in quad */
-      clutter_alpha_set_mode (priv->alpha, CLUTTER_EASE_IN_QUAD);
+      clutter_timeline_set_progress_mode (priv->timeline, CLUTTER_EASE_IN_QUAD);
       clutter_timeline_start (priv->timeline);
     }
 }
