@@ -74,7 +74,6 @@ struct _MxLabelPrivate
   MxAlign y_align;
 
   ClutterTimeline *fade_timeline;
-  ClutterAlpha    *fade_alpha;
 
   gint em_width;
 
@@ -369,12 +368,6 @@ mx_label_dispose (GObject *actor)
       priv->fade_timeline = NULL;
     }
 
-  if (priv->fade_alpha)
-    {
-      g_object_unref (priv->fade_alpha);
-      priv->fade_alpha = NULL;
-    }
-
   G_OBJECT_CLASS (mx_label_parent_class)->dispose (actor);
 }
 
@@ -540,7 +533,7 @@ mx_label_fade_new_frame_cb (ClutterTimeline *timeline,
 
   MxLabelPrivate *priv = self->priv;
 
-  a = (1.0 - clutter_alpha_get_alpha (priv->fade_alpha)) * 255;
+  a = (1.0 - clutter_timeline_get_progress (priv->fade_timeline)) * 255;
 
   color.red = a;
   color.green = a;
@@ -599,8 +592,8 @@ mx_label_init (MxLabel *label)
                             G_CALLBACK (mx_label_label_changed_cb), label);
 
   priv->fade_timeline = clutter_timeline_new (250);
-  priv->fade_alpha = clutter_alpha_new_full (priv->fade_timeline,
-                                             CLUTTER_EASE_OUT_QUAD);
+  clutter_timeline_set_progress_mode (priv->fade_timeline,
+                                      CLUTTER_EASE_OUT_QUAD);
   g_signal_connect (priv->fade_timeline, "new-frame",
                     G_CALLBACK (mx_label_fade_new_frame_cb), label);
   g_signal_connect (priv->fade_timeline, "started",
