@@ -75,7 +75,6 @@ struct _MxAdjustmentPrivate
   ClutterTimeline *interpolation;
   gdouble          old_position;
   gdouble          new_position;
-  ClutterAlpha    *interpolate_alpha;
 };
 
 enum
@@ -273,12 +272,6 @@ mx_adjustment_dispose (GObject *object)
   mx_adjustment_remove_idle (&priv->step_inc_source);
   mx_adjustment_remove_idle (&priv->page_size_source);
   mx_adjustment_remove_idle (&priv->changed_source);
-
-  if (priv->interpolate_alpha)
-    {
-      g_object_unref (priv->interpolate_alpha);
-      priv->interpolate_alpha = NULL;
-    }
 
   G_OBJECT_CLASS (mx_adjustment_parent_class)->dispose (object);
 }
@@ -1060,12 +1053,11 @@ interpolation_new_frame_cb (ClutterTimeline *timeline,
   gdouble new_value;
   MxAdjustmentPrivate *priv = adjustment->priv;
 
-  priv->interpolation = NULL;
-
   new_value = priv->old_position +
-              (priv->new_position - priv->old_position) *
-              clutter_alpha_get_alpha (priv->interpolate_alpha);
+    (priv->new_position - priv->old_position) *
+    clutter_timeline_get_progress (priv->interpolation);
 
+  priv->interpolation = NULL;
   mx_adjustment_set_value (adjustment, new_value);
   priv->interpolation = timeline;
 
@@ -1172,12 +1164,7 @@ mx_adjustment_interpolate (MxAdjustment *adjustment,
       clutter_timeline_rewind (priv->interpolation);
       clutter_timeline_set_duration (priv->interpolation, duration);
     }
-
-  if (priv->interpolate_alpha)
-    g_object_unref (priv->interpolate_alpha);
-
-  priv->interpolate_alpha = clutter_alpha_new_full (priv->interpolation,
-                                                    mode);
+  clutter_timeline_set_progress_mode (priv->interpolation, mode);
 
   clutter_timeline_start (priv->interpolation);
 }
