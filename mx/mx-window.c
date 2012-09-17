@@ -78,7 +78,6 @@ struct _MxWindowPrivate
 
   MxWindowRotation  rotation;
   ClutterTimeline  *rotation_timeline;
-  ClutterAlpha     *rotation_alpha;
   gfloat            start_angle;
   gfloat            end_angle;
   gfloat            angle;
@@ -273,12 +272,6 @@ mx_window_dispose (GObject *object)
     {
       g_object_unref (priv->native_window);
       priv->native_window = NULL;
-    }
-
-  if (priv->rotation_alpha)
-    {
-      g_object_unref (priv->rotation_alpha);
-      priv->rotation_alpha = NULL;
     }
 
   if (priv->rotation_timeline)
@@ -912,7 +905,7 @@ mx_window_rotation_new_frame_cb (ClutterTimeline *timeline,
                                  MxWindow        *self)
 {
   MxWindowPrivate *priv = self->priv;
-  gfloat alpha = clutter_alpha_get_alpha (priv->rotation_alpha);
+  gfloat alpha = clutter_timeline_get_progress (priv->rotation_timeline);
 
   priv->angle = (alpha * priv->end_angle) + ((1.f - alpha) * priv->start_angle);
   mx_window_reallocate (self);
@@ -943,8 +936,8 @@ mx_window_init (MxWindow *self)
   MxWindowPrivate *priv = self->priv = WINDOW_PRIVATE (self);
 
   priv->rotation_timeline = clutter_timeline_new (400);
-  priv->rotation_alpha = clutter_alpha_new_full (priv->rotation_timeline,
-                                                 CLUTTER_EASE_IN_OUT_QUAD);
+  clutter_timeline_set_progress_mode (priv->rotation_timeline,
+                                      CLUTTER_EASE_IN_OUT_QUAD);
   priv->has_toolbar = TRUE;
 
   g_signal_connect (priv->rotation_timeline, "new-frame",
