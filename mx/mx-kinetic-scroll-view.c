@@ -1588,6 +1588,7 @@ mx_kinetic_scroll_view_event (ClutterActor *actor,
     case CLUTTER_TOUCH_UPDATE:
       return motion_event_cb (actor, event, scroll);
 
+    case CLUTTER_BUTTON_RELEASE:
     case CLUTTER_TOUCH_END:
     case CLUTTER_TOUCH_CANCEL:
       return button_release_event_cb (clutter_actor_get_stage (actor),
