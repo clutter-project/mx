@@ -143,9 +143,8 @@ struct _MxTogglePrivate
   ClutterActor *handle;
   gchar        *handle_filename;
 
-
-  ClutterAlpha *alpha;
-  gfloat        position;
+  ClutterTimeline *timeline;
+  gfloat           position;
 
   gfloat        drag_offset;
   gfloat        slide_length;
@@ -249,6 +248,20 @@ static void
 mx_toggle_finalize (GObject *object)
 {
   G_OBJECT_CLASS (mx_toggle_parent_class)->finalize (object);
+}
+
+static void
+mx_toggle_dispose (GObject *object)
+{
+  MxTogglePrivate *priv = ((MxToggle *) object)->priv;
+
+  if (priv->timeline)
+    {
+      g_object_unref (priv->timeline);
+      priv->timeline = NULL;
+    }
+
+  G_OBJECT_CLASS (mx_toggle_parent_class)->dispose (object);
 }
 
 static void
@@ -472,6 +485,7 @@ mx_toggle_class_init (MxToggleClass *klass)
 
   object_class->get_property = mx_toggle_get_property;
   object_class->set_property = mx_toggle_set_property;
+  object_class->dispose = mx_toggle_dispose;
   object_class->finalize = mx_toggle_finalize;
 
   actor_class->pick = mx_toggle_pick;
@@ -501,7 +515,7 @@ mx_toggle_update_position (ClutterTimeline *timeline,
 {
   MxTogglePrivate *priv = toggle->priv;
 
-  priv->position = clutter_alpha_get_alpha (priv->alpha);
+  priv->position = clutter_timeline_get_progress (priv->timeline);
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (toggle));
 }
@@ -509,7 +523,6 @@ mx_toggle_update_position (ClutterTimeline *timeline,
 static void
 mx_toggle_init (MxToggle *self)
 {
-  ClutterTimeline *timeline;
 
   self->priv = TOGGLE_PRIVATE (self);
 
@@ -519,12 +532,9 @@ mx_toggle_init (MxToggle *self)
   g_object_bind_property (self, "disabled", self->priv->handle, "disabled",
                           G_BINDING_SYNC_CREATE);
 
-  timeline = clutter_timeline_new (300);
-  g_signal_connect (timeline, "new-frame",
+  self->priv->timeline = clutter_timeline_new (300);
+  g_signal_connect (self->priv->timeline, "new-frame",
                     G_CALLBACK (mx_toggle_update_position), self);
-
-  self->priv->alpha = clutter_alpha_new_full (timeline,
-                                              CLUTTER_EASE_IN_OUT_CUBIC);
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
   clutter_actor_set_reactive (CLUTTER_ACTOR (self->priv->handle), TRUE);
@@ -557,8 +567,6 @@ mx_toggle_set_active (MxToggle *toggle,
   if (priv->active != active
       || (priv->position > 0 && priv->position < 1))
     {
-      ClutterTimeline *timeline;
-
       priv->active = active;
 
       if (active)
@@ -576,29 +584,27 @@ mx_toggle_set_active (MxToggle *toggle,
           return;
         }
 
-      timeline = clutter_alpha_get_timeline (priv->alpha);
-
       if (active)
-        clutter_timeline_set_direction (timeline, CLUTTER_TIMELINE_FORWARD);
+        clutter_timeline_set_direction (priv->timeline, CLUTTER_TIMELINE_FORWARD);
       else
-        clutter_timeline_set_direction (timeline, CLUTTER_TIMELINE_BACKWARD);
+        clutter_timeline_set_direction (priv->timeline, CLUTTER_TIMELINE_BACKWARD);
 
-      if (clutter_timeline_is_playing (timeline))
+      if (clutter_timeline_is_playing (priv->timeline))
         return;
 
-      clutter_timeline_rewind (timeline);
+      clutter_timeline_rewind (priv->timeline);
 
       if (priv->drag_offset > -1)
         {
-          clutter_alpha_set_mode (priv->alpha, CLUTTER_LINEAR);
-          clutter_timeline_advance (timeline, priv->position * 300);
+          clutter_timeline_set_progress_mode (priv->timeline, CLUTTER_LINEAR);
+          clutter_timeline_advance (priv->timeline, priv->position * 300);
         }
       else
         {
-          clutter_alpha_set_mode (priv->alpha, CLUTTER_EASE_IN_OUT_CUBIC);
+          clutter_timeline_set_progress_mode (priv->timeline, CLUTTER_EASE_IN_OUT_CUBIC);
         }
 
-      clutter_timeline_start (timeline);
+      clutter_timeline_start (priv->timeline);
     }
 }
 
