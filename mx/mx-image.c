@@ -109,7 +109,6 @@ struct _MxImagePrivate
 
   ClutterTimeline *timeline;
   ClutterTimeline *redraw_timeline;
-  ClutterAlpha *redraw_alpha;
 
   guint transition_duration;
 
@@ -324,7 +323,7 @@ mx_image_paint (ClutterActor *actor)
       previous_scale = calculate_scale (priv->texture, priv->rotation, aw, ah,
                                         priv->previous_mode);
 
-      progress = clutter_alpha_get_alpha (priv->redraw_alpha);
+      progress = clutter_timeline_get_progress (priv->redraw_timeline);
       scale = scale + (previous_scale - scale) * (1 - progress);
     }
 
@@ -530,13 +529,6 @@ mx_image_dispose (GObject *object)
       g_object_unref (priv->redraw_timeline);
 
       priv->redraw_timeline = NULL;
-    }
-
-  if (priv->redraw_alpha)
-    {
-      g_object_unref (priv->redraw_alpha);
-
-      priv->redraw_alpha = NULL;
     }
 
   if (priv->material)
@@ -793,8 +785,8 @@ mx_image_init (MxImage *self)
   priv->transition_duration = DEFAULT_DURATION;
   priv->timeline = clutter_timeline_new (priv->transition_duration);
   priv->redraw_timeline = clutter_timeline_new (200);
-  priv->redraw_alpha = clutter_alpha_new_full (priv->redraw_timeline,
-                                               CLUTTER_EASE_OUT_CUBIC);
+  clutter_timeline_set_progress_mode (priv->redraw_timeline,
+                                      CLUTTER_EASE_OUT_CUBIC);
 
   g_signal_connect (priv->timeline, "new-frame", G_CALLBACK (new_frame_cb),
                     self);
@@ -916,7 +908,7 @@ mx_image_animate_scale_mode (MxImage          *image,
 
       clutter_timeline_stop (priv->redraw_timeline);
       clutter_timeline_set_duration (priv->redraw_timeline, duration);
-      clutter_alpha_set_mode (priv->redraw_alpha, mode);
+      clutter_timeline_set_progress_mode (priv->redraw_timeline, mode);
       clutter_timeline_start (priv->redraw_timeline);
 
       g_object_notify (G_OBJECT (image), "scale-mode");
