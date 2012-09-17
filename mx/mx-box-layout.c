@@ -104,7 +104,6 @@ struct _MxBoxLayoutPrivate
 
   GHashTable      *start_allocations;
   ClutterTimeline *timeline;
-  ClutterAlpha    *alpha;
   guint            is_animating : 1;
   guint            enable_animations : 1;
   guint            scroll_to_focused : 1;
@@ -135,8 +134,7 @@ _mx_box_layout_start_animation (MxBoxLayout *box)
   g_signal_connect_swapped (priv->timeline, "completed",
                             G_CALLBACK (_mx_box_layout_finish_animation), box);
 
-  priv->alpha = clutter_alpha_new_full (priv->timeline,
-                                        CLUTTER_EASE_OUT_CUBIC);
+  clutter_timeline_set_progress_mode (priv->timeline, CLUTTER_EASE_OUT_CUBIC);
 
   clutter_timeline_start (priv->timeline);
 }
@@ -150,12 +148,6 @@ _mx_box_layout_finish_animation (MxBoxLayout *box)
     {
       g_object_unref (priv->timeline);
       priv->timeline = NULL;
-    }
-
-  if (priv->alpha)
-    {
-      g_object_unref (priv->alpha);
-      priv->alpha = NULL;
     }
 
   priv->is_animating = FALSE;
@@ -1137,7 +1129,7 @@ mx_box_layout_allocate (ClutterActor          *actor,
 
           start = g_hash_table_lookup (priv->start_allocations, child);
           end = &child_box;
-          alpha = clutter_alpha_get_alpha (priv->alpha);
+          alpha = clutter_timeline_get_progress (priv->timeline);
 
           if (!start)
             {
