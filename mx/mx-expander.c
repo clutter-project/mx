@@ -83,7 +83,6 @@ struct _MxExpanderPrivate {
   gfloat           spacing;
 
   ClutterTimeline *timeline;
-  ClutterAlpha    *alpha;
   gdouble          progress;
 
   guint            expanded : 1;
@@ -154,12 +153,6 @@ mx_expander_dispose (GObject *object)
       priv->timeline = NULL;
     }
 
-  if (priv->alpha)
-    {
-      g_object_unref (priv->alpha);
-      priv->alpha = NULL;
-    }
-
   G_OBJECT_CLASS (mx_expander_parent_class)->dispose (object);
 }
 
@@ -221,7 +214,7 @@ new_frame (ClutterTimeline *timeline,
 {
   MxExpanderPrivate *priv = MX_EXPANDER (expander)->priv;
 
-  priv->progress = clutter_alpha_get_alpha (priv->alpha);
+  priv->progress = clutter_timeline_get_progress (priv->timeline);
 
   clutter_actor_queue_relayout (expander);
 }
@@ -603,11 +596,10 @@ mx_expander_init (MxExpander *self)
   priv->spacing = 10.0f;
 
   priv->timeline = clutter_timeline_new (250);
+  clutter_timeline_set_progress_mode (priv->timeline, CLUTTER_EASE_IN_SINE);
   g_signal_connect (priv->timeline, "new-frame", G_CALLBACK (new_frame), self);
   g_signal_connect (priv->timeline, "completed", G_CALLBACK (timeline_complete), self);
 
-  priv->alpha = clutter_alpha_new_full (priv->timeline, CLUTTER_EASE_IN_SINE);
-  g_object_ref_sink (priv->alpha);
 
   clutter_actor_set_reactive ((ClutterActor *) self, TRUE);
 
