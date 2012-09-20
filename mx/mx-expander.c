@@ -192,7 +192,7 @@ timeline_complete (ClutterTimeline *timeline,
 
   /* we can't do an animation if there is already one in progress,
    * because we cannot get the actors original opacity */
-  if (clutter_actor_get_animation (child))
+  if (clutter_actor_get_transition (child, "opacity"))
     {
       clutter_actor_show (child);
       return;
@@ -202,9 +202,12 @@ timeline_complete (ClutterTimeline *timeline,
   clutter_actor_set_opacity (child, 0);
 
   clutter_actor_show (child);
-  clutter_actor_animate (child, CLUTTER_EASE_IN_SINE, 100,
-                         "opacity", opacity,
-                         NULL);
+
+  clutter_actor_save_easing_state (child);
+  clutter_actor_set_easing_mode (child, CLUTTER_EASE_IN_SINE);
+  clutter_actor_set_easing_duration (child, 100);
+  clutter_actor_set_opacity (child, opacity);
+  clutter_actor_restore_easing_state (child);
 }
 
 static void
