@@ -579,10 +579,10 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
                     "x", padding.left + x,
                     "y", toolbar_height + padding.top + y,
                     NULL);
-      clutter_actor_set_pivot_point (priv->child, CLUTTER_Z_AXIS, priv->angle);
-      clutter_actor_set_rotation_angle (priv->child,
-                                        width / 2.f - padding.left,
-                                        height / 2.f - padding.top - toolbar_height);
+      clutter_actor_set_rotation_angle (priv->child, CLUTTER_Z_AXIS, priv->angle);
+      clutter_actor_set_pivot_point (priv->child,
+                                     width / 2.f - padding.left,
+                                     height / 2.f - padding.top - toolbar_height);
     }
 
   if (priv->resize_grip)
