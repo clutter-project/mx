@@ -288,7 +288,11 @@ mx_box_scrollable_interface_init (MxScrollableIface *iface)
 static void
 fade_in_actor (ClutterActor *actor)
 {
-  clutter_actor_animate (actor, CLUTTER_LINEAR, 300, "opacity", 0xff, NULL);
+  clutter_actor_save_easing_state (actor);
+  clutter_actor_set_easing_mode (actor, CLUTTER_LINEAR);
+  clutter_actor_set_easing_duration (actor, 300);
+  clutter_actor_set_opacity (actor, 0xff);
+  clutter_actor_restore_easing_state (actor);
 }
 
 static void
