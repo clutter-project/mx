@@ -496,18 +496,18 @@ mx_dialog_pick (ClutterActor       *actor,
                 const ClutterColor *color)
 {
   gfloat width, height;
-  ClutterGeometry geom;
+  ClutterActorBox box;
   MxDialogPrivate *priv = MX_DIALOG (actor)->priv;
 
   /* Paint a rectangle over our allocation to block input to
    * other actors.
    */
-  clutter_actor_get_allocation_geometry (actor, &geom);
+  clutter_actor_get_allocation_box (actor, &box);
   cogl_set_source_color4ub (color->red,
                             color->green,
                             color->blue,
                             color->alpha);
-  cogl_rectangle (0, 0, geom.width, geom.height);
+  cogl_rectangle (0, 0, box.x2 - box.x1, box.y2 - box.y1);
 
   clutter_actor_get_size (actor, &width, &height);
   cogl_translate (width/2, height/2, 0);
