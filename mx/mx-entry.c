@@ -668,11 +668,11 @@ mx_entry_paint (ClutterActor *actor)
 
   if (clutter_stage_get_key_focus (stage) != priv->entry && priv->scrolling)
     {
-      ClutterGeometry geo;
+      ClutterActorBox box;
       CoglTextureVertex top[4] = { { 0,}, };
       ClutterColor *color;
       guint8 r, g, b;
-
+      gfloat width, height;
 
       mx_stylable_get (MX_STYLABLE (actor), "background-color", &color, NULL);
 
@@ -683,16 +683,18 @@ mx_entry_paint (ClutterActor *actor)
 
       cogl_set_source_color4ub (0, 0, 0, 0);
 
-      clutter_actor_get_allocation_geometry (priv->entry, &geo);
+      clutter_actor_get_allocation_box (priv->entry, &box);
+      width = box.x2 - box.x1;
+      height = box.y2 - box.y1;
 
-      top[0].x = geo.x + geo.width;
-      top[0].y = geo.y + geo.height;
-      top[1].x = geo.x + geo.width;
-      top[1].y = geo.y;
-      top[2].x = geo.x + geo.width - 30;
-      top[2].y = geo.y;
-      top[3].x = geo.x + geo.width - 30;
-      top[3].y = geo.y + geo.height;
+      top[0].x = box.x1 + width;
+      top[0].y = box.y1 + height;
+      top[1].x = box.x1 + width;
+      top[1].y = box.y1;
+      top[2].x = box.x1 + width - 30;
+      top[2].y = box.y1;
+      top[3].x = box.x1 + width - 30;
+      top[3].y = box.y1 + height;
 
       cogl_color_set_from_4ub (&top[0].color, r, g, b, 0xff);
       cogl_color_set_from_4ub (&top[1].color, r, g, b, 0xff);
