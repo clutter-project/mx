@@ -1077,7 +1077,7 @@ deceleration_new_frame_cb (ClutterTimeline     *timeline,
               (priv->scroll_policy == MX_SCROLL_POLICY_VERTICAL ||
               priv->scroll_policy == MX_SCROLL_POLICY_BOTH ||
               priv->scroll_policy == MX_SCROLL_POLICY_AUTOMATIC) &&
-              priv->scroll_policy != MX_AUTOMATIC_SCROLL_HORIZONTAL)
+              priv->in_automatic_scroll != MX_AUTOMATIC_SCROLL_HORIZONTAL)
             {
               if (ABS (priv->dy) > 2)
                 {
