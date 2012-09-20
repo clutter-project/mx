@@ -374,8 +374,7 @@ debug_paint (ClutterActor *stage,
           CoglMatrix actor_matrix;
 
           cogl_matrix_init_identity (&actor_matrix);
-          clutter_actor_get_transformation_matrix (CLUTTER_ACTOR (l->data),
-                                                   &actor_matrix);
+          clutter_actor_get_transform (CLUTTER_ACTOR (l->data), &actor_matrix);
 
           cogl_matrix_multiply (&matrix,
                                 &matrix,
@@ -554,11 +553,12 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
           clutter_actor_set_position (priv->toolbar,
                                       padding.left + x,
                                       padding.top + y);
-          clutter_actor_set_rotation (priv->toolbar,
-                                      CLUTTER_Z_AXIS,
-                                      priv->angle,
-                                      width / 2.f - padding.left,
-                                      height / 2.f - padding.top, 0);
+          clutter_actor_set_pivot_point (priv->toolbar,
+                                         width / 2.f - padding.left,
+                                         height / 2.f - padding.top);
+          clutter_actor_set_rotation_angle (priv->toolbar,
+                                            CLUTTER_Z_AXIS,
+                                            priv->angle);
           g_object_set (G_OBJECT (priv->toolbar),
                         "natural-width",
                         width - padding.left - padding.right,
@@ -579,12 +579,10 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
                     "x", padding.left + x,
                     "y", toolbar_height + padding.top + y,
                     NULL);
-      clutter_actor_set_rotation (priv->child,
-                                  CLUTTER_Z_AXIS,
-                                  priv->angle,
-                                  width / 2.f - padding.left,
-                                  height / 2.f - padding.top - toolbar_height,
-                                  0);
+      clutter_actor_set_pivot_point (priv->child, CLUTTER_Z_AXIS, priv->angle);
+      clutter_actor_set_rotation_angle (priv->child,
+                                        width / 2.f - padding.left,
+                                        height / 2.f - padding.top - toolbar_height);
     }
 
   if (priv->resize_grip)
