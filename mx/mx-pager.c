@@ -161,13 +161,15 @@ mx_pager_relayout_pages (MxPager *self,
       gfloat x = width * (current - i);
 
       if (animate)
-        clutter_actor_animate (page->data,
-                               CLUTTER_EASE_IN_OUT_SINE,
-                               ANIMATION_DURATION,
-                               "anchor-x", x,
-                               NULL);
+        {
+          clutter_actor_save_easing_state (page->data);
+          clutter_actor_set_easing_mode (page->data, CLUTTER_EASE_IN_OUT_SINE);
+          clutter_actor_set_easing_duration (page->data, ANIMATION_DURATION);
+          clutter_actor_set_pivot_point (page->data, x, 0.);
+          clutter_actor_restore_easing_state (page->data);
+        }
       else
-        clutter_actor_set_anchor_point (page->data, x, 0.);
+        clutter_actor_set_pivot_point (page->data, x, 0.);
     }
 }
 
@@ -343,12 +345,15 @@ mx_pager_bump (MxPager *self,
   for (l = self->priv->pages; l != NULL; l = l->next)
     {
       ClutterActor *page = l->data;
-      float x;
+      float x, y;
 
-      clutter_actor_get_anchor_point (page, &x, NULL);
-      clutter_actor_animate (page, CLUTTER_EASE_OUT_CIRC, ANIMATION_DURATION,
-          "anchor-x", x + direction * PAGER_WIDTH,
-          NULL);
+      clutter_actor_get_pivot_point (page, &x, &y);
+
+      clutter_actor_save_easing_state (page);
+      clutter_actor_set_easing_mode (page, CLUTTER_EASE_OUT_CIRC);
+      clutter_actor_set_easing_duration (page, ANIMATION_DURATION);
+      clutter_actor_set_pivot_point (page, x + direction * PAGER_WIDTH, y);
+      clutter_actor_restore_easing_state (page);
     }
 }
 
@@ -438,7 +443,8 @@ mx_pager_init (MxPager *self)
       "y-align", MX_ALIGN_END,
       NULL);
 
-  prevbox = clutter_rectangle_new_with_color (&transparent);
+  prevbox = clutter_actor_new ();
+  clutter_actor_set_background_color (prevbox, &transparent);
 
   clutter_actor_set_width (prevbox, PAGER_WIDTH);
   clutter_actor_set_reactive (prevbox, TRUE);
@@ -453,7 +459,8 @@ mx_pager_init (MxPager *self)
   g_signal_connect (prevbox, "event",
       G_CALLBACK (pager_box_hover), self);
 
-  nextbox = clutter_rectangle_new_with_color (&transparent);
+  nextbox = clutter_actor_new ();
+  clutter_actor_set_background_color (nextbox, &transparent);
 
   clutter_actor_set_width (nextbox, PAGER_WIDTH);
   clutter_actor_set_reactive (nextbox, TRUE);
