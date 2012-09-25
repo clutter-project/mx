@@ -183,7 +183,7 @@ mx_texture_frame_paint_texture_internal (CoglHandle  material,
 
 
   {
-    GLfloat rectangles[] =
+    float rectangles[] =
     {
       /* top left corner */
       0, 0,
