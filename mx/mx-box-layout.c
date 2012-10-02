@@ -857,6 +857,84 @@ mx_box_layout_get_preferred_height (ClutterActor *actor,
 }
 
 static void
+mx_box_layout_update_adjustments (ClutterActor *actor,
+                                  gfloat        avail_width,
+                                  gfloat        avail_height,
+                                  gfloat        pref_width,
+                                  gfloat        pref_height)
+{
+  MxBoxLayoutPrivate *priv = MX_BOX_LAYOUT (actor)->priv;
+
+  if (priv->vadjustment)
+    {
+      gdouble step_inc, page_inc;
+
+      /* Base the adjustment stepping on the size of the first child.
+       * In the case where all your children are the same size, this
+       * will probably provide the desired behaviour.
+       */
+      if (clutter_actor_get_n_children (actor) > 0
+          && priv->orientation == MX_ORIENTATION_VERTICAL)
+        {
+          gfloat child_height;
+          ClutterActor *first_child = clutter_actor_get_child_at_index (actor,
+                                                                        0);
+          clutter_actor_get_preferred_height (first_child,
+                                              avail_width,
+                                              NULL,
+                                              &child_height);
+          step_inc = child_height;
+          page_inc = ((gint)(avail_height / step_inc)) * step_inc;
+        }
+      else
+        {
+          step_inc = avail_height / 6;
+          page_inc = avail_height;
+        }
+
+      g_object_set (G_OBJECT (priv->vadjustment),
+                    "lower", 0.0,
+                    "upper", pref_height,
+                    "page-size", avail_height,
+                    "step-increment", step_inc,
+                    "page-increment", page_inc,
+                    NULL);
+    }
+
+  if (priv->hadjustment)
+    {
+      gdouble step_inc, page_inc;
+
+      if (clutter_actor_get_n_children (actor) > 0
+          && priv->orientation == MX_ORIENTATION_HORIZONTAL)
+        {
+          gfloat child_width;
+          ClutterActor *first_child = clutter_actor_get_child_at_index (actor,
+                                                                        0);
+          clutter_actor_get_preferred_width (first_child,
+                                             avail_height,
+                                             NULL,
+                                             &child_width);
+          step_inc = child_width;
+          page_inc = ((gint)(avail_width / step_inc)) * step_inc;
+        }
+      else
+        {
+          step_inc = avail_width / 6;
+          page_inc = avail_width;
+        }
+
+      g_object_set (G_OBJECT (priv->hadjustment),
+                    "lower", 0.0,
+                    "upper", pref_width,
+                    "page-size", avail_width,
+                    "step-increment", step_inc,
+                    "page-increment", page_inc,
+                    NULL);
+    }
+}
+
+static void
 mx_box_layout_allocate (ClutterActor          *actor,
                         const ClutterActorBox *box,
                         ClutterAllocationFlags flags)
@@ -952,73 +1030,8 @@ mx_box_layout_allocate (ClutterActor          *actor,
   pref_height -= padding.top + padding.bottom;
 
   /* update adjustments for scrolling */
-  if (priv->vadjustment)
-    {
-      gdouble step_inc, page_inc;
-
-      /* Base the adjustment stepping on the size of the first child.
-       * In the case where all your children are the same size, this
-       * will probably provide the desired behaviour.
-       */
-      if (clutter_actor_get_n_children (actor) > 0
-          && priv->orientation == MX_ORIENTATION_VERTICAL)
-        {
-          gfloat child_height;
-          ClutterActor *first_child = clutter_actor_get_child_at_index (actor,
-                                                                        0);
-          clutter_actor_get_preferred_height (first_child,
-                                              avail_width,
-                                              NULL,
-                                              &child_height);
-          step_inc = child_height;
-          page_inc = ((gint)(avail_height / step_inc)) * step_inc;
-        }
-      else
-        {
-          step_inc = avail_height / 6;
-          page_inc = avail_height;
-        }
-
-      g_object_set (G_OBJECT (priv->vadjustment),
-                    "lower", 0.0,
-                    "upper", pref_height,
-                    "page-size", avail_height,
-                    "step-increment", step_inc,
-                    "page-increment", page_inc,
-                    NULL);
-    }
-
-  if (priv->hadjustment)
-    {
-      gdouble step_inc, page_inc;
-
-      if (clutter_actor_get_n_children (actor) > 0
-          && priv->orientation == MX_ORIENTATION_HORIZONTAL)
-        {
-          gfloat child_width;
-          ClutterActor *first_child = clutter_actor_get_child_at_index (actor,
-                                                                        0);
-          clutter_actor_get_preferred_width (first_child,
-                                             avail_height,
-                                             NULL,
-                                             &child_width);
-          step_inc = child_width;
-          page_inc = ((gint)(avail_width / step_inc)) * step_inc;
-        }
-      else
-        {
-          step_inc = avail_width / 6;
-          page_inc = avail_width;
-        }
-
-      g_object_set (G_OBJECT (priv->hadjustment),
-                    "lower", 0.0,
-                    "upper", pref_width,
-                    "page-size", avail_width,
-                    "step-increment", step_inc,
-                    "page-increment", page_inc,
-                    NULL);
-    }
+  mx_box_layout_update_adjustments (actor, avail_width, avail_height,
+                                    pref_width, pref_height);
 
   /* We're allocating our preferred size or higher, so calculate
    * the extra space to give to expanded children.
