@@ -534,7 +534,7 @@ mx_focus_manager_push_focus_with_hint (MxFocusManager *manager,
 }
 
 /**
- * mx_focus_manager_move_focus
+ * mx_focus_manager_move_focus:
  * @manager: the focus manager
  * @direction: The direction to move focus in
  *
@@ -605,4 +605,3 @@ mx_focus_manager_move_focus (MxFocusManager   *manager,
   if (priv->focused != old_focus)
     g_object_notify (G_OBJECT (manager), "focused");
 }
-

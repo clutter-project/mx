@@ -62,7 +62,7 @@ struct _MxAdjustment
 };
 
 /**
- * MxAdjustmentClass
+ * MxAdjustmentClass:
  * @changed: Class handler for the ::changed signal.
  *
  * Base class for #MxAdjustment.

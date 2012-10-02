@@ -99,7 +99,6 @@ GType mx_padding_get_type (void) G_GNUC_CONST;
 
 /**
  * MxTextShadow:
- *
  * @h_offset: horizontal shadow offset
  * @v_offset: vertical shadow offset
  * @blur: blur distance
@@ -283,7 +282,7 @@ typedef enum /*< prefix=MX_DISPLAY_STYLE >*/
 } MxDisplayStyle;
 
 /**
- * MxTextAlign
+ * MxTextAlign:
  * @left: align text to the left
  * @right: align text to the right
  * @center: center the text

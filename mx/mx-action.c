@@ -379,7 +379,7 @@ mx_action_class_init (MxActionClass *klass)
 
 
   /**
-   * MxAction:active
+   * MxAction:active:
    *
    * Deprecated: 1.4: use the #GAction:enabled property instead
    */
@@ -438,7 +438,7 @@ mx_action_class_init (MxActionClass *klass)
   g_object_class_override_property (object_class, PROP_STATE, "state");
 
   /**
-   * MxAction::activated
+   * MxAction::activated:
    * @action: the object that received the signal
    *
    * Emitted when the MxAction is activated.

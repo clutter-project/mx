@@ -526,7 +526,7 @@ mx_list_view_add_attribute (MxListView  *list_view,
 }
 
 /**
- * mx_list_view_freeze
+ * mx_list_view_freeze:
  * @list_view: An #MxListView
  *
  * Freeze the view. This means that the view will not act on changes to the
@@ -545,7 +545,7 @@ mx_list_view_freeze (MxListView *list_view)
 }
 
 /**
- * mx_list_view_thaw
+ * mx_list_view_thaw:
  * @list_view: An #MxListView
  *
  * Thaw the view. This means that the view will now act on changes to the

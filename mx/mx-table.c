@@ -1602,7 +1602,7 @@ mx_table_new (void)
 }
 
 /**
- * mx_table_set_column_spacing
+ * mx_table_set_column_spacing:
  * @table: a #MxTable
  * @spacing: spacing in pixels
  *
@@ -1632,7 +1632,7 @@ mx_table_set_column_spacing (MxTable *table,
 }
 
 /**
- * mx_table_set_row_spacing
+ * mx_table_set_row_spacing:
  * @table: a #MxTable
  * @spacing: spacing in pixels
  *
@@ -1662,7 +1662,7 @@ mx_table_set_row_spacing (MxTable *table,
 }
 
 /**
- * mx_table_get_row_spacing
+ * mx_table_get_row_spacing:
  * @table: a #MxTable
  *
  * Gets the amount of spacing between rows.
@@ -1681,7 +1681,7 @@ mx_table_get_row_spacing (MxTable *table)
 }
 
 /**
- * mx_table_get_column_spacing
+ * mx_table_get_column_spacing:
  * @table: a #MxTable
  *
  * Gets the amount of spacing between columns.
@@ -1742,7 +1742,7 @@ mx_table_insert_actor (MxTable      *table,
 }
 
 /**
- * mx_table_insert_actor_with_properties
+ * mx_table_insert_actor_with_properties:
  * @table: a #MxTable
  * @actor: the child #ClutterActor
  * @row: the row to place the child into

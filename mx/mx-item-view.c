@@ -506,7 +506,7 @@ mx_item_view_add_attribute (MxItemView  *item_view,
 }
 
 /**
- * mx_item_view_freeze
+ * mx_item_view_freeze:
  * @item_view: An #MxItemView
  *
  * Freeze the view. This means that the view will not act on changes to the
@@ -521,7 +521,7 @@ mx_item_view_freeze (MxItemView *item_view)
 }
 
 /**
- * mx_item_view_thaw
+ * mx_item_view_thaw:
  * @item_view: An #MxItemView
  *
  * Thaw the view. This means that the view will now act on changes to the

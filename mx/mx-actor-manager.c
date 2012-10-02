@@ -281,7 +281,7 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
   g_object_class_install_property (object_class, PROP_N_OPERATIONS, pspec);
 
   /**
-   * MxActorManager::actor-created
+   * MxActorManager::actor-created:
    * @manager: the object that received the signal
    * @id: The operation ID
    * @actor: The created #ClutterActor
@@ -301,7 +301,7 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                   G_TYPE_ULONG, CLUTTER_TYPE_ACTOR);
 
   /**
-   * MxActorManager::actor-added
+   * MxActorManager::actor-added:
    * @manager: the object that received the signal
    * @id: The operation ID
    * @container: The #ClutterActor the actor was added to
@@ -322,7 +322,7 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                   G_TYPE_ULONG, CLUTTER_TYPE_ACTOR, CLUTTER_TYPE_ACTOR);
 
   /**
-   * MxActorManager::actor-removed
+   * MxActorManager::actor-removed:
    * @manager: the object that received the signal
    * @id: The operation ID
    * @container: The #ClutterActor the actor was removed from
@@ -343,7 +343,7 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                   G_TYPE_ULONG, CLUTTER_TYPE_ACTOR, CLUTTER_TYPE_ACTOR);
 
   /**
-   * MxActorManager::actor-finished
+   * MxActorManager::actor-finished:
    * @manager: the object that received the signal
    * @actor: The #ClutterActor to which the signal pertains
    *
@@ -362,7 +362,7 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                   CLUTTER_TYPE_ACTOR);
 
   /**
-   * MxActorManager::operation-completed
+   * MxActorManager::operation-completed:
    * @manager: the object that received the signal
    * @id: The operation id
    *
@@ -381,7 +381,7 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                   G_TYPE_ULONG);
 
   /**
-   * MxActorManager::operation-cancelled
+   * MxActorManager::operation-cancelled:
    * @manager: the object that received the signal
    * @id: The operation id
    *
@@ -400,7 +400,7 @@ mx_actor_manager_class_init (MxActorManagerClass *klass)
                   G_TYPE_ULONG);
 
   /**
-   * MxActorManager::operation-failed
+   * MxActorManager::operation-failed:
    * @manager: the object that received the signal
    * @id: The operation id
    * @error: A #GError describing the reason of the failure
@@ -1160,4 +1160,3 @@ mx_actor_manager_get_n_operations (MxActorManager *manager)
   g_return_val_if_fail (MX_IS_ACTOR_MANAGER (manager), 0);
   return g_queue_get_length (manager->priv->ops);
 }
-
