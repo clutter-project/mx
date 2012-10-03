@@ -934,6 +934,43 @@ mx_box_layout_update_adjustments (ClutterActor *actor,
     }
 }
 
+
+typedef struct
+{
+  ClutterActor *child;
+  gfloat pref_size;
+  gfloat min_size;
+  ClutterActorBox *box;
+  gboolean skip;
+} MxBoxLayoutChildInfo;
+
+
+static void
+mx_box_layout_child_info_free (MxBoxLayoutChildInfo *info)
+{
+  clutter_actor_box_free (info->box);
+  g_slice_free (MxBoxLayoutChildInfo, info);
+}
+
+static MxBoxLayoutChildInfo*
+mx_box_layout_child_info_new (ClutterActor          *child,
+                              gfloat                 pref_size,
+                              gfloat                 min_size,
+                              const ClutterActorBox *box)
+{
+  MxBoxLayoutChildInfo *info;
+
+  info = g_slice_new (MxBoxLayoutChildInfo);
+
+  info->child = child;
+  info->pref_size = pref_size;
+  info->min_size = min_size;
+  info->box = clutter_actor_box_copy (box);
+  info->skip = FALSE;
+
+  return info;
+}
+
 static void
 mx_box_layout_allocate (ClutterActor          *actor,
                         const ClutterActorBox *box,
@@ -945,9 +982,11 @@ mx_box_layout_allocate (ClutterActor          *actor,
   gboolean allocate_pref;
   gfloat extra_space = 0;
   gfloat position = 0;
+  gfloat actual_size = 0;
   ClutterActor *child;
   ClutterActorIter iter;
   gint n_expand_children, n_children;
+  GList *boxes = NULL, *l;
 
   CLUTTER_ACTOR_CLASS (mx_box_layout_parent_class)->allocate (actor, box,
                                                               flags);
@@ -973,7 +1012,6 @@ mx_box_layout_allocate (ClutterActor          *actor,
 
           if (meta->expand)
             n_expand_children++;
-
         }
     }
 
@@ -1036,19 +1074,17 @@ mx_box_layout_allocate (ClutterActor          *actor,
   /* We're allocating our preferred size or higher, so calculate
    * the extra space to give to expanded children.
    */
-  if (allocate_pref)
+  if (allocate_pref && n_expand_children > 0)
     {
-      if (n_expand_children > 0)
-        {
-          if (priv->orientation == MX_ORIENTATION_VERTICAL)
-            extra_space = (avail_height - pref_height) / n_expand_children;
-          else
-            extra_space = (avail_width - pref_width) / n_expand_children;
+      if (priv->orientation == MX_ORIENTATION_VERTICAL)
+        extra_space = (avail_height - pref_height) / n_expand_children;
+      else
+        extra_space = (avail_width - pref_width) / n_expand_children;
 
-          /* don't shrink anything */
-          if (extra_space < 0)
-            extra_space = 0;
-        }
+      /* this can be less than zero if (for example) scrolling with an
+       * expanded child */
+      if (extra_space < 0)
+        extra_space = 0;
     }
 
   if (priv->orientation == MX_ORIENTATION_VERTICAL)
@@ -1076,25 +1112,10 @@ mx_box_layout_allocate (ClutterActor          *actor,
 
           child_box.y1 = position;
 
-          if (allocate_pref)
-            {
-              if (meta->expand)
-                child_box.y2 = position + child_nat + (int)extra_space;
-              else
-                child_box.y2 = position + child_nat;
-            }
+          if (allocate_pref && meta->expand)
+            child_box.y2 = position + child_nat + (int)extra_space;
           else
-            {
-              child_box.y2 =
-                position + MIN (child_nat,
-                                child_min + (int)(extra_space / n_children));
-
-              n_children --;
-              if (extra_space >= (child_box.y2 - child_box.y1 - child_min))
-                extra_space -= child_box.y2 - child_box.y1 - child_min;
-              else
-                extra_space = 0;
-            }
+            child_box.y2 = position + child_nat;
 
           child_box.x1 = padding.left;
           child_box.x2 = avail_width + padding.left;
@@ -1106,29 +1127,17 @@ mx_box_layout_allocate (ClutterActor          *actor,
 
           child_box.x1 = position;
 
-          if (allocate_pref)
-            {
-              if (meta->expand)
-                child_box.x2 = position + child_nat + (int)extra_space;
-              else
-                child_box.x2 = position + child_nat;
-            }
+          if (allocate_pref && meta->expand)
+            child_box.x2 = position + child_nat + (int)extra_space;
           else
-            {
-              child_box.x2 =
-                position + MIN (child_nat,
-                                child_min + (int)(extra_space / n_children));
-
-              n_children --;
-              if (extra_space >= (child_box.x2 - child_box.x1 - child_min))
-                extra_space -= child_box.x2 - child_box.x1 - child_min;
-              else
-                extra_space = 0;
-            }
+            child_box.x2 = position + child_nat;
 
           child_box.y1 = padding.top;
           child_box.y2 = avail_height + padding.top;
         }
+
+      /* calculate the actual total size of all the children */
+      actual_size += child_nat;
 
       /* Adjust the box for alignment/fill */
       old_child_box = child_box;
@@ -1140,10 +1149,6 @@ mx_box_layout_allocate (ClutterActor          *actor,
           ClutterActorBox *start, *end, now;
           gdouble alpha;
 
-          ClutterActorBox *copy = g_new (ClutterActorBox, 1);
-
-          *copy = child_box;
-
           start = g_hash_table_lookup (priv->start_allocations, child);
           end = &child_box;
           alpha = clutter_timeline_get_progress (priv->timeline);
@@ -1152,7 +1157,11 @@ mx_box_layout_allocate (ClutterActor          *actor,
             {
               /* don't know where this actor was from (possibly recently
                * added), so just allocate the end co-ordinates */
-              clutter_actor_allocate (child, end, flags);
+              boxes = g_list_prepend (boxes,
+                                      mx_box_layout_child_info_new (child,
+                                                                    child_nat,
+                                                                    child_min,
+                                                                    end));
               goto next;
             }
 
@@ -1161,7 +1170,11 @@ mx_box_layout_allocate (ClutterActor          *actor,
           now.y1 = (int) (start->y1 + (end->y1 - start->y1) * alpha);
           now.y2 = (int) (start->y2 + (end->y2 - start->y2) * alpha);
 
-          clutter_actor_allocate (child, &now, flags);
+          boxes = g_list_prepend (boxes,
+                                  mx_box_layout_child_info_new (child,
+                                                                child_nat,
+                                                                child_min,
+                                                                &now));
         }
       else
         {
@@ -1179,15 +1192,118 @@ mx_box_layout_allocate (ClutterActor          *actor,
               copy = &child_box;
             }
 
-          clutter_actor_allocate (child, copy, flags);
+          boxes = g_list_prepend (boxes,
+                                  mx_box_layout_child_info_new (child,
+                                                                child_nat,
+                                                                child_min,
+                                                                copy));
         }
-
 next:
       if (priv->orientation == MX_ORIENTATION_VERTICAL)
         position += (old_child_box.y2 - old_child_box.y1) + priv->spacing;
       else
         position += (old_child_box.x2 - old_child_box.x1) + priv->spacing;
     }
+
+  actual_size += priv->spacing * (n_children - 1);
+
+  /* reduce the child boxes */
+  if (!allocate_pref)
+    {
+      gint n_children_remaining;
+
+      /* elements in the boxes list are prepended when added, so the last item
+       * is the first child */
+      GList *start_at = g_list_last (boxes);
+
+      /* target is avail_size, current size is actual_size */
+      gfloat avail_size;
+
+      if (priv->orientation == MX_ORIENTATION_HORIZONTAL)
+        avail_size = avail_width;
+      else
+        avail_size = avail_height;
+
+
+      /* the number of children that are still able to be reduced in size */
+      n_children_remaining = g_list_length (boxes);
+
+
+      while (actual_size > avail_size && n_children_remaining > 0)
+        {
+          gfloat new_pos = 0;
+
+          /* iterate over the children, reducing the size of those that can be
+           * reduced and repositions the next actor to accommodate */
+          for (l = start_at; l; l = g_list_previous (l))
+            {
+              MxBoxLayoutChildInfo *info = l->data;
+
+              if (priv->orientation == MX_ORIENTATION_HORIZONTAL)
+                {
+                  info->box->x2 += new_pos;
+                  info->box->x1 += new_pos;
+
+                  if (info->skip)
+                    continue;
+
+                  /* if the correct size has been reached, do not resize any
+                   * more actors, but continue to move them to the correct
+                   * position */
+                  if (actual_size <= avail_size)
+                    continue;
+
+                  if (info->box->x2 - info->box->x1 > info->min_size)
+                    {
+                      actual_size--;
+                      info->box->x2--;
+                      new_pos--;
+                    }
+                  else
+                    {
+                      n_children_remaining--;
+                      info->skip = TRUE;
+                    }
+                }
+              else /* orientation == MX_ORIENTATION_VERTICAL */
+                {
+                  info->box->y2 += new_pos;
+                  info->box->y1 += new_pos;
+
+                  if (info->skip)
+                    continue;
+
+                  /* if the correct size has been reached, do not resize any
+                   * more actors, but continue to move them to the correct
+                   * position */
+                  if (actual_size <= avail_size)
+                    continue;
+
+                  if (info->box->y2 - info->box->y1 > info->min_size)
+                    {
+                      actual_size--;
+                      info->box->y2--;
+                      new_pos--;
+                    }
+                  else
+                    {
+                      n_children_remaining--;
+                      info->skip = TRUE;
+                    }
+                }
+            }
+        }
+    }
+
+  /* finally, allocate the children */
+  for (l = boxes; l; l = g_list_next (l))
+    {
+      MxBoxLayoutChildInfo *info = l->data;
+
+      clutter_actor_allocate (info->child, info->box, flags);
+    }
+
+  g_list_free_full (boxes, (GDestroyNotify) mx_box_layout_child_info_free);
 }
 
 static void
