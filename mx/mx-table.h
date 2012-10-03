@@ -89,6 +89,10 @@ void mx_table_insert_actor       (MxTable      *table,
                                   gint          row,
                                   gint          column);
 
+ClutterActor *mx_table_get_actor_at (MxTable *table,
+                                     gint     row,
+                                     gint     column);
+
 void mx_table_insert_actor_with_properties (MxTable      *table,
                                             ClutterActor *actor,
                                             gint          row,

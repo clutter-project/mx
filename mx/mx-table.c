@@ -1292,6 +1292,7 @@ mx_table_preferred_allocate (ClutterActor          *self,
             }
         }
 
+
       /* set up childbox */
       childbox.x1 = (float) child_x;
       childbox.x2 = (float) MAX (0, child_x + col_width);
@@ -1791,6 +1792,28 @@ mx_table_insert_actor_with_properties (MxTable      *table,
   _mx_table_update_row_col (table, meta);
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (table));
+}
+
+/**
+ * mx_table_get_actor_at:
+ * @table: a #MxTable
+ * @row: the row to look into
+ * @column: the column to look into
+ *
+ * Get an actor at a given position in @table.
+ *
+ * Return value: (transfer none): the #ClutterActor a the given position, or NULL.
+ */
+ClutterActor *
+mx_table_get_actor_at (MxTable *table,
+                       gint     row,
+                       gint     column)
+{
+  g_return_val_if_fail (MX_IS_TABLE (table), NULL);
+  g_return_val_if_fail (row >= 0, NULL);
+  g_return_val_if_fail (column >= 0, NULL);
+
+  return mx_table_find_actor_at (table, row, column);
 }
 
 /**
