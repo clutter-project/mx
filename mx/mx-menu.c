@@ -897,6 +897,7 @@ mx_menu_add_action (MxMenu   *menu,
                     MxAction *action)
 {
   MxMenuChild child;
+  ClutterActor *button_child;
 
   g_return_if_fail (MX_IS_MENU (menu));
   g_return_if_fail (MX_IS_ACTION (action));
@@ -907,9 +908,13 @@ mx_menu_add_action (MxMenu   *menu,
   /* TODO: Connect to notify signals in case action properties change */
   child.box = g_object_new (MX_TYPE_BUTTON,
                             "action", child.action,
-                            "x-align", MX_ALIGN_START,
                             NULL);
   mx_button_set_action (MX_BUTTON (child.box), child.action);
+
+  /* align to the left */
+  button_child = clutter_actor_get_child_at_index (child.box, 0);
+  clutter_actor_set_x_align (button_child, CLUTTER_ACTOR_ALIGN_START);
+
 
   g_signal_connect (child.box, "clicked",
                     G_CALLBACK (mx_menu_button_clicked_cb), action);

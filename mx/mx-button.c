@@ -97,6 +97,7 @@ struct _MxButtonPrivate
   ClutterAnimation *animation;
 
   ClutterActor *content_image;
+  ClutterActor *child;
 
   MxAction   *action;
   MxPosition  icon_position;
@@ -118,7 +119,7 @@ static void mx_button_update_contents (MxButton *self);
 static void mx_stylable_iface_init (MxStylableIface *iface);
 static void mx_focusable_iface_init (MxFocusableIface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (MxButton, mx_button, MX_TYPE_BIN,
+G_DEFINE_TYPE_WITH_CODE (MxButton, mx_button, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
                                                 mx_stylable_iface_init)
                          G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
@@ -267,6 +268,29 @@ mx_button_style_changed (MxWidget *widget)
     }
 }
 
+static void
+mx_button_actor_added_cb (ClutterActor *container,
+                          ClutterActor *actor,
+                          gpointer      user_data)
+{
+  MxButtonPrivate *priv = MX_BUTTON (container)->priv;
+
+  if (priv->child)
+    clutter_actor_remove_child (container, priv->child);
+
+  priv->child = actor;
+}
+
+static void
+mx_button_actor_removed_cb (ClutterActor *container,
+                            ClutterActor *actor,
+                            gpointer      user_data)
+{
+  MxButtonPrivate *priv = MX_BUTTON (container)->priv;
+
+  if (priv->child == actor)
+    priv->child = NULL;
+}
 
 static void
 mx_button_push (MxButton     *button,
@@ -633,6 +657,7 @@ mx_button_allocate (ClutterActor           *actor,
                     ClutterAllocationFlags  flags)
 {
   MxButtonPrivate *priv = MX_BUTTON (actor)->priv;
+  ClutterActorBox child_box;
 
   CLUTTER_ACTOR_CLASS (mx_button_parent_class)->allocate (actor, box, flags);
 
@@ -646,9 +671,12 @@ mx_button_allocate (ClutterActor           *actor,
       childbox.y2 = (box->y2 - box->y1);
 
       clutter_actor_allocate (priv->content_image, &childbox, flags);
+
+      return;
     }
 
-  mx_bin_allocate_child (MX_BIN (actor), box, flags);
+  mx_widget_get_available_area (MX_WIDGET (actor), box, &child_box);
+  clutter_actor_allocate (priv->child, &child_box, flags);
 }
 
 static void
@@ -658,6 +686,7 @@ mx_button_get_preferred_width (ClutterActor *actor,
                                gfloat       *pref_width)
 {
   MxButtonPrivate *priv = MX_BUTTON (actor)->priv;
+  MxPadding padding;
 
   if (priv->content_image)
     {
@@ -673,10 +702,21 @@ mx_button_get_preferred_width (ClutterActor *actor,
       return;
     }
 
-  CLUTTER_ACTOR_CLASS (mx_button_parent_class)->get_preferred_width (actor,
-                                                                     for_height,
-                                                                     min_width,
-                                                                     pref_width);
+  mx_widget_get_padding (MX_WIDGET (actor), &padding);
+
+  if (priv->child)
+    {
+      clutter_actor_get_preferred_width (priv->child,
+                                         for_height - padding.top - padding.bottom,
+                                         min_width, pref_width);
+    }
+
+  if (min_width)
+    *min_width += padding.left + padding.right;
+
+  if (pref_width)
+    *pref_width += padding.left + padding.right;
+
 }
 
 static void
@@ -686,6 +726,7 @@ mx_button_get_preferred_height (ClutterActor *actor,
                                 gfloat       *pref_height)
 {
   MxButtonPrivate *priv = MX_BUTTON (actor)->priv;
+  MxPadding padding;
 
   if (priv->content_image)
     {
@@ -701,10 +742,20 @@ mx_button_get_preferred_height (ClutterActor *actor,
       return;
     }
 
-  CLUTTER_ACTOR_CLASS (mx_button_parent_class)->get_preferred_height (actor,
-                                                                      for_width,
-                                                                      min_height,
-                                                                      pref_height);
+  mx_widget_get_padding (MX_WIDGET (actor), &padding);
+
+  if (priv->child)
+    {
+      clutter_actor_get_preferred_height (priv->child,
+                                          for_width - padding.left - padding.right,
+                                          min_height, pref_height);
+    }
+
+  if (min_height)
+    *min_height += padding.top + padding.bottom;
+
+  if (pref_height)
+    *pref_height += padding.top + padding.bottom;
 }
 
 static void
@@ -715,14 +766,18 @@ mx_button_paint (ClutterActor *actor)
   if (priv->content_image)
     clutter_actor_paint (priv->content_image);
   else
-    CLUTTER_ACTOR_CLASS (mx_button_parent_class)->paint (actor);
+    {
+      CLUTTER_ACTOR_CLASS (mx_button_parent_class)->paint (actor);
+
+      if (priv->child)
+        clutter_actor_paint (priv->child);
+    }
 }
 
 static void
 mx_button_update_contents (MxButton *self)
 {
   MxButtonPrivate *priv = self->priv;
-  ClutterActor *child;
   gboolean icon_visible, label_visible;
   const gchar *text;
 
@@ -742,10 +797,8 @@ mx_button_update_contents (MxButton *self)
     label_visible = FALSE;
 
   /* replace any custom content */
-  child = mx_bin_get_child (MX_BIN (self));
-
-  if (child != priv->hbox)
-    mx_bin_set_child (MX_BIN (self), priv->hbox);
+  if (priv->child != priv->hbox)
+    clutter_actor_add_child (CLUTTER_ACTOR (self), priv->hbox);
 
   /* Handle the simple cases first */
   if (!icon_visible && !label_visible)
@@ -947,6 +1000,11 @@ mx_button_init (MxButton *button)
 
   g_signal_connect (button, "style-changed",
                     G_CALLBACK (mx_button_style_changed), NULL);
+  g_signal_connect (button, "actor-added",
+                    G_CALLBACK (mx_button_actor_added_cb), NULL);
+  g_signal_connect (button, "actor-removed",
+                    G_CALLBACK (mx_button_actor_removed_cb), NULL);
+
 
   priv->icon_visible = TRUE;
   priv->label_visible = TRUE;
@@ -954,7 +1012,7 @@ mx_button_init (MxButton *button)
 
   /* take an extra reference to the hbox */
   priv->hbox = g_object_ref (mx_box_layout_new ());
-  mx_bin_set_child (MX_BIN (button), priv->hbox);
+  clutter_actor_add_child (CLUTTER_ACTOR (button), priv->hbox);
 
   priv->icon = mx_icon_new ();
   priv->label = g_object_new (CLUTTER_TYPE_TEXT,

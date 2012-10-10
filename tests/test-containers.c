@@ -525,7 +525,7 @@ create_rotate_box (MxWindow *window)
   mx_icon_set_icon_name (MX_ICON (icon), "object-rotate-left");
   mx_icon_set_icon_size (MX_ICON (icon), 16);
   button = mx_button_new ();
-  mx_bin_set_child (MX_BIN (button), icon);
+  clutter_actor_add_child (button, icon);
   g_signal_connect (button, "clicked",
                     G_CALLBACK (rotate_left_clicked_cb), window);
   clutter_actor_add_child (layout, button);
@@ -541,7 +541,7 @@ create_rotate_box (MxWindow *window)
   clutter_actor_add_child (layout2, icon);
   clutter_actor_add_child (layout2, icon2);
   button = mx_button_new ();
-  mx_bin_set_child (MX_BIN (button), layout2);
+  clutter_actor_add_child (button, layout2);
   g_signal_connect (button, "clicked",
                     G_CALLBACK (rotate_180_clicked_cb), window);
   clutter_actor_add_child (layout, button);
@@ -551,7 +551,7 @@ create_rotate_box (MxWindow *window)
   mx_icon_set_icon_name (MX_ICON (icon), "object-rotate-right");
   mx_icon_set_icon_size (MX_ICON (icon), 16);
   button = mx_button_new ();
-  mx_bin_set_child (MX_BIN (button), icon);
+  clutter_actor_add_child (button, icon);
   g_signal_connect (button, "clicked",
                     G_CALLBACK (rotate_right_clicked_cb), window);
   clutter_actor_add_child (layout, button);

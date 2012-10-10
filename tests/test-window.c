@@ -220,7 +220,7 @@ startup_cb (MxApplication *app)
   mx_icon_set_icon_name (MX_ICON (icon), "object-rotate-right");
   mx_icon_set_icon_size (MX_ICON (icon), 16);
   button = mx_button_new ();
-  mx_bin_set_child (MX_BIN (button), icon);
+  clutter_actor_add_child (button, icon);
   g_signal_connect (button, "clicked", G_CALLBACK (rotate_clicked_cb), window);
   clutter_container_add_actor (
     CLUTTER_CONTAINER (mx_window_get_toolbar (window)), button);
