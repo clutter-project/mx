@@ -775,6 +775,20 @@ mx_button_paint (ClutterActor *actor)
 }
 
 static void
+mx_button_pick (ClutterActor *actor, const ClutterColor *color)
+{
+  MxButtonPrivate *priv = MX_BUTTON (actor)->priv;
+
+  CLUTTER_ACTOR_CLASS (mx_button_parent_class)->pick (actor, color);
+
+  if (!priv->content_image)
+    {
+      if (priv->child)
+        clutter_actor_paint (priv->child);
+    }
+}
+
+static void
 mx_button_update_contents (MxButton *self)
 {
   MxButtonPrivate *priv = self->priv;
@@ -912,6 +926,7 @@ mx_button_class_init (MxButtonClass *klass)
   actor_class->get_preferred_width = mx_button_get_preferred_width;
   actor_class->get_preferred_height = mx_button_get_preferred_height;
   actor_class->paint = mx_button_paint;
+  actor_class->pick = mx_button_pick;
 
   actor_class->allocate = mx_button_allocate;
 
