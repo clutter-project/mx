@@ -66,7 +66,8 @@ typedef enum
   MX_SETTINGS_FONT_NAME,
   MX_SETTINGS_LONG_PRESS_TIMEOUT,
   MX_SETTINGS_SMALL_SCREEN,
-  MX_SETTINGS_DRAG_THRESHOLD
+  MX_SETTINGS_DRAG_THRESHOLD,
+  MX_SETTINGS_TOUCH_MODE
 } MxSettingsProperty;
 
 
@@ -108,6 +109,9 @@ void _mx_paint_texture_with_opacity (CoglHandle texture,
                                      gfloat     y,
                                      gfloat     width,
                                      gfloat     height);
+
+gboolean _mx_settings_get_touch_mode (MxSettings *settings);
+
 
 typedef enum
 {

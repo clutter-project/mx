@@ -909,6 +909,11 @@ mx_stylable_style_pseudo_class_add (MxStylable  *stylable,
   g_return_if_fail (MX_IS_STYLABLE (stylable));
   g_return_if_fail (new_class != NULL);
 
+  /**/
+  if (g_str_equal (new_class, "hover") &&
+      _mx_settings_get_touch_mode (mx_settings_get_default()))
+    return;
+
   /* check if the pseudo class already contains new_class */
   if (mx_stylable_style_pseudo_class_contains (stylable, new_class))
     return;

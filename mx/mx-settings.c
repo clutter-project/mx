@@ -45,6 +45,7 @@ struct _MxSettingsPrivate
   guint  long_press_timeout;
   guint  drag_threshold;
   guint  small_screen : 1;
+  guint  touch_mode : 1;
 };
 
 static void
@@ -99,6 +100,14 @@ mx_settings_get_property (GObject    *object,
               g_value_set_uint (value, uint_value);
               return;
             }
+
+        case MX_SETTINGS_TOUCH_MODE:
+          if (_mx_settings_provider_get_setting (priv->provider, property_id,
+                                                 &boolean_value))
+            {
+              g_value_set_boolean (value, boolean_value);
+              return;
+            }
         }
     }
 
@@ -123,6 +132,10 @@ mx_settings_get_property (GObject    *object,
 
     case MX_SETTINGS_DRAG_THRESHOLD:
       g_value_set_uint (value, priv->drag_threshold);
+      break;
+
+    case MX_SETTINGS_TOUCH_MODE:
+      g_value_set_boolean (value, priv->touch_mode);
       break;
 
     default:
@@ -175,6 +188,13 @@ mx_settings_set_property (GObject      *object,
                                                  &uint_value))
             return;
           break;
+
+        case MX_SETTINGS_TOUCH_MODE:
+          boolean_value = g_value_get_boolean (value);
+          if (_mx_settings_provider_set_setting (priv->provider, property_id,
+                                                 &boolean_value))
+            return;
+          break;
         }
     }
 
@@ -200,6 +220,10 @@ mx_settings_set_property (GObject      *object,
 
     case MX_SETTINGS_DRAG_THRESHOLD:
       priv->drag_threshold = g_value_get_uint (value);
+      break;
+
+    case MX_SETTINGS_TOUCH_MODE:
+      priv->touch_mode = g_value_get_boolean (value);
       break;
 
     default:
@@ -351,6 +375,14 @@ mx_settings_class_init (MxSettingsClass *klass)
                              MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, MX_SETTINGS_DRAG_THRESHOLD,
                                    pspec);
+
+  pspec = g_param_spec_boolean ("touch-mode",
+                                "Touch mode",
+                                "Special behavior for touch mode",
+                                FALSE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, MX_SETTINGS_TOUCH_MODE,
+                                   pspec);
 }
 
 static void
@@ -364,7 +396,10 @@ mx_settings_init (MxSettings *self)
   priv->long_press_timeout = 500;
   priv->small_screen = FALSE;
   priv->drag_threshold = 8;
+  priv->touch_mode = FALSE;
 }
+
+static MxSettings *default_settings = NULL;
 
 /**
  * mx_settings_get_default:
@@ -378,5 +413,14 @@ mx_settings_init (MxSettings *self)
 MxSettings *
 mx_settings_get_default (void)
 {
-  return g_object_new (MX_TYPE_SETTINGS, NULL);
+  if (G_UNLIKELY (default_settings == NULL))
+    default_settings = g_object_new (MX_TYPE_SETTINGS, NULL);
+
+  return default_settings;
+}
+
+gboolean
+_mx_settings_get_touch_mode (MxSettings *settings)
+{
+  return settings->priv->touch_mode;
 }
