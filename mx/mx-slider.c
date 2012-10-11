@@ -34,6 +34,7 @@
 #include "mx-button.h"
 #include "mx-frame.h"
 #include "mx-focusable.h"
+#include "mx-private.h"
 
 static void mx_stylable_iface_init (MxStylableIface *iface);
 static void mx_focusable_iface_init (MxFocusableIface *iface);
@@ -109,7 +110,8 @@ mx_slider_move_focus (MxFocusable      *focusable,
                       MxFocusDirection  direction,
                       MxFocusable      *old_focus)
 {
-  mx_stylable_style_pseudo_class_remove (MX_STYLABLE (focusable), "focus");
+  mx_stylable_style_pseudo_class_remove (MX_STYLABLE (focusable),
+                                         _MX_STYLE_GET_STYLE_CLASS (focus));
 
   return NULL;
 }
@@ -120,7 +122,8 @@ mx_slider_accept_focus (MxFocusable *focusable,
 {
   clutter_actor_grab_key_focus (CLUTTER_ACTOR (focusable));
 
-  mx_stylable_style_pseudo_class_add (MX_STYLABLE (focusable), "focus");
+  mx_stylable_style_pseudo_class_add (MX_STYLABLE (focusable),
+                                      _MX_STYLE_GET_STYLE_CLASS (focus));
 
   return focusable;
 }

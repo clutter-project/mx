@@ -859,7 +859,8 @@ mx_widget_enter (ClutterActor         *actor,
   /* This is also expected to handle enter events from child actors
      because they will bubble up */
 
-  mx_stylable_style_pseudo_class_add (MX_STYLABLE (widget), "hover");
+  mx_stylable_style_pseudo_class_add (MX_STYLABLE (widget),
+                                      _MX_STYLE_GET_STYLE_CLASS (hover));
 
   return FALSE;
 }
@@ -880,8 +881,10 @@ mx_widget_leave (ClutterActor         *actor,
   mx_widget_hide_tooltip (widget);
 
   mx_widget_long_press_cancel (widget);
-  mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "active");
-  mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "hover");
+  mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget),
+                                         _MX_STYLE_GET_STYLE_CLASS (active));
+  mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget),
+                                         _MX_STYLE_GET_STYLE_CLASS (hover));
 
   return FALSE;
 }
@@ -1010,7 +1013,8 @@ mx_widget_button_press (ClutterActor       *actor,
       return TRUE;
 
   if (event->button == 1)
-    mx_stylable_style_pseudo_class_add (MX_STYLABLE (widget), "active");
+    mx_stylable_style_pseudo_class_add (MX_STYLABLE (widget),
+                                        _MX_STYLE_GET_STYLE_CLASS (active));
 
   mx_widget_long_press_query (widget, (ClutterEvent *) event);
 
@@ -1027,7 +1031,8 @@ mx_widget_button_release (ClutterActor       *actor,
       return TRUE;
 
   if (event->button == 1)
-    mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "active");
+    mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget),
+                                           _MX_STYLE_GET_STYLE_CLASS (active));
 
   mx_widget_long_press_cancel (widget);
 
@@ -1046,7 +1051,8 @@ mx_widget_touch_event (ClutterActor      *actor,
   switch (event->type)
     {
     case CLUTTER_TOUCH_BEGIN:
-      mx_stylable_style_pseudo_class_add (MX_STYLABLE (widget), "active");
+      mx_stylable_style_pseudo_class_add (MX_STYLABLE (widget),
+                                          _MX_STYLE_GET_STYLE_CLASS (active));
       _mx_widget_add_touch_sequence (widget, event->sequence);
       mx_widget_long_press_query (widget, (ClutterEvent *) event);
       break;
@@ -1057,7 +1063,8 @@ mx_widget_touch_event (ClutterActor      *actor,
         return FALSE;
 
       _mx_widget_remove_touch_sequence (widget, event->sequence);
-      mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "active");
+      mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget),
+                                             _MX_STYLE_GET_STYLE_CLASS (active));
       mx_widget_long_press_cancel (widget);
       break;
 
@@ -1103,10 +1110,10 @@ _mx_widget_propagate_disabled (ClutterActor *container,
 
           if (disabled)
             mx_stylable_style_pseudo_class_add (MX_STYLABLE (child),
-                                                "disabled");
+                                                _MX_STYLE_GET_STYLE_CLASS (disabled));
           else
             mx_stylable_style_pseudo_class_remove (MX_STYLABLE (child),
-                                                   "disabled");
+                                                   _MX_STYLE_GET_STYLE_CLASS (disabled));
 
           /* If this child has already been disabled explicitly,
            * we don't need to recurse through its children to set
@@ -1602,7 +1609,8 @@ mx_widget_set_has_tooltip (MxWidget *widget,
         {
           priv->tooltip = g_object_new (MX_TYPE_TOOLTIP, NULL);
           clutter_actor_add_child (actor, CLUTTER_ACTOR (priv->tooltip));
-          if (mx_stylable_style_pseudo_class_contains (MX_STYLABLE (widget), "hover"))
+          if (mx_stylable_style_pseudo_class_contains (MX_STYLABLE (widget),
+                                                       _MX_STYLE_GET_STYLE_CLASS (hover)))
             mx_widget_show_tooltip (widget);
         }
     }
@@ -1846,9 +1854,11 @@ mx_widget_set_disabled (MxWidget *widget,
       priv->is_disabled = disabled;
 
       if (disabled)
-        mx_stylable_style_pseudo_class_add (MX_STYLABLE (widget), "disabled");
+        mx_stylable_style_pseudo_class_add (MX_STYLABLE (widget),
+                                            _MX_STYLE_GET_STYLE_CLASS (disabled));
       else
-        mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "disabled");
+        mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget),
+                                               _MX_STYLE_GET_STYLE_CLASS (disabled));
 
       /* Propagate the disabled state to our children, if necessary */
       if (!priv->parent_disabled)

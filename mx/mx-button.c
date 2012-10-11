@@ -170,7 +170,8 @@ mx_stylable_iface_init (MxStylableIface *iface)
 static MxFocusable*
 mx_button_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 {
-  mx_stylable_style_pseudo_class_add (MX_STYLABLE (focusable), "focus");
+  mx_stylable_style_pseudo_class_add (MX_STYLABLE (focusable),
+                                      _MX_STYLE_GET_STYLE_CLASS (focus));
 
   clutter_actor_grab_key_focus (CLUTTER_ACTOR (focusable));
 
@@ -184,7 +185,8 @@ mx_button_move_focus (MxFocusable      *focusable,
 {
   /* check if focus is being moved from us */
   if (focusable == from)
-    mx_stylable_style_pseudo_class_remove (MX_STYLABLE (focusable), "focus");
+    mx_stylable_style_pseudo_class_remove (MX_STYLABLE (focusable),
+                                           _MX_STYLE_GET_STYLE_CLASS (focus));
 
   return NULL;
 }
@@ -304,7 +306,8 @@ mx_button_push (MxButton     *button,
 
   //clutter_grab_pointer (CLUTTER_ACTOR (button));
 
-  mx_stylable_style_pseudo_class_add (MX_STYLABLE (button), "active");
+  mx_stylable_style_pseudo_class_add (MX_STYLABLE (button),
+                                      _MX_STYLE_GET_STYLE_CLASS(active));
 
   if (event)
     mx_widget_long_press_query (widget, event);
@@ -339,7 +342,8 @@ mx_button_pull (MxButton *button)
 
   mx_widget_long_press_cancel (widget);
 
-  mx_stylable_style_pseudo_class_remove (MX_STYLABLE (button), "active");
+  mx_stylable_style_pseudo_class_remove (MX_STYLABLE (button),
+                                         _MX_STYLE_GET_STYLE_CLASS(active));
 }
 
 static gboolean
@@ -415,7 +419,8 @@ mx_button_touch_event (ClutterActor      *actor,
           if (!_mx_widget_has_touch_sequences (widget) && priv->is_pressed)
             {
               mx_widget_long_press_cancel (widget);
-              mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "active");
+              mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget),
+                                                     _MX_STYLE_GET_STYLE_CLASS(active));
               priv->is_pressed = FALSE;
             }
         }
@@ -476,7 +481,8 @@ mx_button_enter (ClutterActor         *actor,
     return FALSE;
 
 
-  mx_stylable_style_pseudo_class_add (MX_STYLABLE (widget), "hover");
+  mx_stylable_style_pseudo_class_add (MX_STYLABLE (widget),
+                                      _MX_STYLE_GET_STYLE_CLASS(hover));
 
   return FALSE;
 }
@@ -504,11 +510,13 @@ mx_button_leave (ClutterActor         *actor,
       //clutter_ungrab_pointer ();
 
       mx_widget_long_press_cancel (widget);
-      mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "active");
+      mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget),
+                                             _MX_STYLE_GET_STYLE_CLASS(active));
       button->priv->is_pressed = FALSE;
     }
 
-  mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget), "hover");
+  mx_stylable_style_pseudo_class_remove (MX_STYLABLE (widget),
+                                         _MX_STYLE_GET_STYLE_CLASS(hover));
 
   return FALSE;
 }

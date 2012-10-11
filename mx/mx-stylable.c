@@ -61,6 +61,17 @@ enum
   LAST_SIGNAL
 };
 
+#define _MX_STYLE_DEFINE_STYLE_CLASS_FUNC(name) \
+  const gchar* _mx_style_common_style_class_##name(void) \
+  {                                                     \
+    return #name;                                       \
+  }
+
+_MX_STYLE_DEFINE_STYLE_CLASS_FUNC (active);
+_MX_STYLE_DEFINE_STYLE_CLASS_FUNC (disabled);
+_MX_STYLE_DEFINE_STYLE_CLASS_FUNC (focus);
+_MX_STYLE_DEFINE_STYLE_CLASS_FUNC (hover);
+
 static GObjectNotifyContext property_notify_context = { 0, };
 
 static GParamSpecPool *style_property_spec_pool = NULL;
@@ -908,6 +919,11 @@ mx_stylable_style_pseudo_class_add (MxStylable  *stylable,
 
   g_return_if_fail (MX_IS_STYLABLE (stylable));
   g_return_if_fail (new_class != NULL);
+
+  /**/
+  if (new_class == _MX_STYLE_GET_STYLE_CLASS(hover) &&
+      _mx_settings_get_touch_mode (mx_settings_get_default()))
+    return;
 
   /* check if the pseudo class already contains new_class */
   if (mx_stylable_style_pseudo_class_contains (stylable, new_class))
