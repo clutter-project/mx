@@ -80,6 +80,7 @@
 #define HAS_FOCUS(actor) (clutter_actor_get_stage (actor) && clutter_stage_get_key_focus ((ClutterStage *) clutter_actor_get_stage (actor)) == actor)
 
 #define MX_ENTRY_TOOLTIP_DELAY 500
+#define PLACEHOLDER_SPACING 4
 
 /* properties */
 enum
@@ -729,7 +730,8 @@ mx_entry_paint (ClutterActor *actor)
 
       cogl_clip_push_rectangle (box.x1, box.y1, box.x2, box.y2);
 
-      x = box.x1 + clutter_text_get_cursor_size (CLUTTER_TEXT (priv->entry));
+      x = box.x1 + clutter_text_get_cursor_size (CLUTTER_TEXT (priv->entry))
+        + PLACEHOLDER_SPACING;
 
       cogl_pango_render_layout (layout, x, (int) box.y1, &color, 0);
 
