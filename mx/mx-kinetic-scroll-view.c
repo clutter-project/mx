@@ -75,15 +75,17 @@ struct _MxKineticScrollViewPrivate
 {
   ClutterActor          *child;
 
-  guint                  use_captured : 1;
-  guint                  use_clamp    : 1;
-  guint                  use_grab     : 1;
-  guint                  in_drag      : 1;
-  guint                  hmoving      : 1;
-  guint                  vmoving      : 1;
-  guint                  align_tested : 1;
-  guint                  hclamping    : 1;
-  guint                  vclamping    : 1;
+  guint                  use_captured        : 1;
+  guint                  use_grab            : 1;
+  guint                  in_drag             : 1;
+  guint                  hmoving             : 1;
+  guint                  vmoving             : 1;
+  guint                  align_tested        : 1;
+  guint                  hclamping           : 1;
+  guint                  vclamping           : 1;
+  guint                  clamp_to_center     : 1;
+  guint                  snap_on_page        : 1;
+
   guint32                button;
   ClutterInputDevice    *device;
   ClutterEventSequence  *sequence;
@@ -109,7 +111,6 @@ struct _MxKineticScrollViewPrivate
 
   guint                  clamp_duration;
   gulong                 clamp_mode;
-  gboolean               clamp_to_center;
 
   MxKineticScrollViewState state;
 };
@@ -131,6 +132,7 @@ enum {
   PROP_CLAMP_MODE,
   PROP_STATE,
   PROP_CLAMP_TO_CENTER,
+  PROP_SNAP_ON_PAGE,
 };
 
 #if _KINETIC_DEBUG
@@ -343,6 +345,10 @@ mx_kinetic_scroll_view_get_property (GObject    *object,
       g_value_set_boolean (value, priv->clamp_to_center);
       break;
 
+    case PROP_SNAP_ON_PAGE :
+      g_value_set_boolean (value, priv->snap_on_page);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -426,6 +432,11 @@ mx_kinetic_scroll_view_set_property (GObject      *object,
 
     case PROP_CLAMP_TO_CENTER :
       mx_kinetic_scroll_view_set_clamp_to_center (self,
+          g_value_get_boolean (value));
+      break;
+
+    case PROP_SNAP_ON_PAGE:
+      mx_kinetic_scroll_view_set_snap_on_page (self,
           g_value_get_boolean (value));
       break;
 
@@ -643,6 +654,13 @@ mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
                                 FALSE,
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_CLAMP_TO_CENTER, pspec);
+
+  pspec = g_param_spec_boolean ("snap-on-page",
+                                "Snap on page",
+                                "Whether to stop animations on step increments.",
+                                FALSE,
+                                MX_PARAM_READWRITE);
+  g_object_class_install_property (object_class, PROP_SNAP_ON_PAGE, pspec);
 
   /* MxScrollable properties */
   g_object_class_override_property (object_class,
@@ -936,8 +954,11 @@ clamp_adjustment (MxKineticScrollView *scroll,
   mx_adjustment_get_values (adj, &value, &lower, &upper,
                             &step_increment, NULL, &page_size);
 
-  d = (rint ((value - lower) / step_increment) *
-      step_increment) + lower;
+  if (priv->snap_on_page)
+    d = (rint ((value - lower) / step_increment) *
+         step_increment) + lower;
+  else
+    d = value;
 
   if (priv->clamp_to_center)
     {
@@ -1312,7 +1333,7 @@ release_event (MxKineticScrollView *scroll,
                    * same direction as the push.
                    */
                   priv->dx *= n;
-                  if (priv->use_clamp)
+                  if (priv->snap_on_page)
                     {
                       if (ABS (priv->dx) < step_increment / 2)
                         d = round ((value + priv->dx - lower) / step_increment);
@@ -1347,7 +1368,7 @@ release_event (MxKineticScrollView *scroll,
                                             &step_increment, NULL, &page_size);
 
                   priv->dy *= n;
-                  if (priv->use_clamp)
+                  if (priv->snap_on_page)
                     {
                       if (ABS (priv->dy) < step_increment / 2)
                         d = round ((value + priv->dy - lower) / step_increment);
@@ -1653,7 +1674,7 @@ mx_kinetic_scroll_view_init (MxKineticScrollView *self)
   priv->acceleration_factor = 1.0;
   priv->clamp_duration = 250;
   priv->clamp_mode = CLUTTER_EASE_OUT_QUAD;
-  priv->use_clamp = TRUE;
+  priv->snap_on_page = TRUE;
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
   g_signal_connect (self, "button-press-event",
@@ -2178,7 +2199,7 @@ mx_kinetic_scroll_view_set_clamp_to_center (MxKineticScrollView *scroll,
 
   if (priv->clamp_to_center != clamp_to_center)
     {
-      priv->clamp_to_center = clamp_to_center;
+      priv->clamp_to_center = !!clamp_to_center;
       g_object_notify (G_OBJECT (scroll), "clamp-to-center");
     }
 }
@@ -2201,38 +2222,46 @@ mx_kinetic_scroll_view_get_clamp_to_center (MxKineticScrollView *scroll)
 }
 
 /**
- * mx_kinetic_scroll_view_get_clamp:
+ * mx_kinetic_scroll_view_get_snap_on_page:
  * @scroll: A #MxKineticScrollView
  *
- * Retrieves whether to clamp to step increments.
+ * Retrieves whether animations end on step increments.
  *
- * Returns: Clamp
+ * Returns: #true if animations end on step increments, #false otherwise.
  *
  * Since: 2.0
  */
 gboolean
-mx_kinetic_scroll_view_get_clamp (MxKineticScrollView *scroll)
+mx_kinetic_scroll_view_get_snap_on_page (MxKineticScrollView *scroll)
 {
   g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), FALSE);
-  return scroll->priv->use_clamp;
+  return scroll->priv->snap_on_page;
 }
 
 /**
- * mx_kinetic_scroll_view_set_clamp:
+ * mx_kinetic_scroll_view_set_snap_on_page:
  * @scroll: A #MxKineticScrollView
- * @clamp: Clamp
+ * @snap_on_page: #true to stop animations on step increments
  *
- * Set whether to clamp to step increments.
+ * Set whether to stop animations on step increments.
  *
  * Since: 2.0
  */
 void
-mx_kinetic_scroll_view_set_clamp (MxKineticScrollView *scroll,
-                                  gboolean clamp)
+mx_kinetic_scroll_view_set_snap_on_page (MxKineticScrollView *scroll,
+                                         gboolean snap_on_page)
 {
+  MxKineticScrollViewPrivate *priv;
+
   g_return_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll));
 
-  scroll->priv->use_clamp = !!clamp;
+  priv = scroll->priv;
+
+  if (priv->snap_on_page != snap_on_page)
+    {
+      priv->snap_on_page = !!snap_on_page;
+      g_object_notify (G_OBJECT (scroll), "snap-on-page");
+    }
 }
 
 static void

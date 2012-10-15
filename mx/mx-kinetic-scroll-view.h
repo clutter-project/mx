@@ -113,10 +113,6 @@ void mx_kinetic_scroll_view_set_clamp_duration (MxKineticScrollView *scroll,
 guint mx_kinetic_scroll_view_get_clamp_duration (
     MxKineticScrollView *scroll);
 
-void mx_kinetic_scroll_view_set_clamp (MxKineticScrollView *scroll,
-                                       gboolean clamp);
-gboolean mx_kinetic_scroll_view_get_clamp (MxKineticScrollView *scroll);
-
 void mx_kinetic_scroll_view_set_clamp_mode (MxKineticScrollView *scroll,
     gulong clamp_mode);
 gulong mx_kinetic_scroll_view_get_clamp_mode (
@@ -126,6 +122,10 @@ void mx_kinetic_scroll_view_set_clamp_to_center (MxKineticScrollView *scroll,
     gboolean clamp_to_center);
 gboolean mx_kinetic_scroll_view_get_clamp_to_center (
     MxKineticScrollView *scroll);
+
+void mx_kinetic_scroll_view_set_snap_on_page (MxKineticScrollView *scroll,
+                                              gboolean snap_on_page);
+gboolean mx_kinetic_scroll_view_get_snap_on_page (MxKineticScrollView *scroll);
 
 void mx_kinetic_scroll_view_ensure_visible (MxKineticScrollView   *scroll,
                                             const ClutterGeometry *geometry);
