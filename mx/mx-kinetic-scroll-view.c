@@ -972,7 +972,7 @@ clamp_adjustments (MxKineticScrollView *scroll,
   MxKineticScrollViewPrivate *priv = scroll->priv;
   ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
 
-  if (child && priv->use_clamp)
+  if (child)
     {
       MxAdjustment *hadj, *vadj;
 
