@@ -1001,12 +1001,12 @@ mx_adjustment_set_values (MxAdjustment *adjustment,
 /**
  * mx_adjustment_get_values:
  * @adjustment: A #MxAdjustment
- * @value: A #gdouble
- * @lower: A #gdouble
- * @upper: A #gdouble
- * @step_increment: A #gdouble
- * @page_increment: A #gdouble
- * @page_size: A #gdouble
+ * @value: (out) (allow-none): A #gdouble
+ * @lower: (out) (allow-none): A #gdouble
+ * @upper: (out) (allow-none): A #gdouble
+ * @step_increment: (out) (allow-none): A #gdouble
+ * @page_increment: (out) (allow-none): A #gdouble
+ * @page_size: (out) (allow-none): A #gdouble
  *
  * Get the various properties of MxAdjustment.
  *
