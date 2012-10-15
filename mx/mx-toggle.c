@@ -174,8 +174,10 @@ mx_toggle_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 {
   MxTogglePrivate *priv = MX_TOGGLE (focusable)->priv;
 
-  mx_stylable_style_pseudo_class_add (MX_STYLABLE (focusable), "focus");
-  mx_stylable_style_pseudo_class_add (MX_STYLABLE (priv->handle), "focus");
+  mx_stylable_style_pseudo_class_add (MX_STYLABLE (focusable),
+                                      _MX_STYLE_GET_STYLE_CLASS (focus));
+  mx_stylable_style_pseudo_class_add (MX_STYLABLE (priv->handle),
+                                      _MX_STYLE_GET_STYLE_CLASS (focus));
 
   clutter_actor_grab_key_focus (CLUTTER_ACTOR (focusable));
 
@@ -192,8 +194,10 @@ mx_toggle_move_focus (MxFocusable      *focusable,
     {
       MxTogglePrivate *priv = MX_TOGGLE (focusable)->priv;
 
-      mx_stylable_style_pseudo_class_remove (MX_STYLABLE (focusable), "focus");
-      mx_stylable_style_pseudo_class_remove (MX_STYLABLE (priv->handle), "focus");
+      mx_stylable_style_pseudo_class_remove (MX_STYLABLE (focusable),
+                                             _MX_STYLE_GET_STYLE_CLASS (focus));
+      mx_stylable_style_pseudo_class_remove (MX_STYLABLE (priv->handle),
+                                             _MX_STYLE_GET_STYLE_CLASS (focus));
     }
 
   return NULL;
@@ -387,7 +391,8 @@ mx_toggle_handle_button_release_event (ClutterActor       *actor,
    * during the grab */
   clutter_actor_get_allocation_box (actor, &box);
   if (!clutter_actor_box_contains (&box, event->x, event->y))
-    mx_stylable_style_pseudo_class_remove (MX_STYLABLE (actor), "hover");
+    mx_stylable_style_pseudo_class_remove (MX_STYLABLE (actor),
+                                           _MX_STYLE_GET_STYLE_CLASS (hover));
 
   return TRUE;
 }

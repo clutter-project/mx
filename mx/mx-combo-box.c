@@ -466,7 +466,8 @@ mx_combo_box_action_activated_cb (ClutterActor *menu,
   mx_combo_box_set_index (box, index);
 
   /* reset the combobox style */
-  mx_stylable_style_pseudo_class_remove (MX_STYLABLE (box), "hover");
+  mx_stylable_style_pseudo_class_remove (MX_STYLABLE (box),
+                                         _MX_STYLE_GET_STYLE_CLASS (hover));
 }
 
 static void
@@ -675,7 +676,8 @@ mx_combo_box_init (MxComboBox *self)
 static MxFocusable *
 mx_combo_box_accept_focus (MxFocusable *focusable, MxFocusHint hint)
 {
-  mx_stylable_style_pseudo_class_add (MX_STYLABLE (focusable), "focus");
+  mx_stylable_style_pseudo_class_add (MX_STYLABLE (focusable),
+                                      _MX_STYLE_GET_STYLE_CLASS (focus));
 
   clutter_actor_grab_key_focus (CLUTTER_ACTOR (focusable));
 
@@ -689,7 +691,8 @@ mx_combo_box_move_focus (MxFocusable      *focusable,
 {
   if (focusable == from)
     {
-      mx_stylable_style_pseudo_class_remove (MX_STYLABLE (focusable), "focus");
+      mx_stylable_style_pseudo_class_remove (MX_STYLABLE (focusable),
+                                             _MX_STYLE_GET_STYLE_CLASS (focus));
     }
 
   return NULL;

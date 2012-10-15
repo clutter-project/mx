@@ -618,7 +618,8 @@ static void
 clutter_text_focus_in_cb (ClutterText  *text,
                           ClutterActor *actor)
 {
-  mx_stylable_style_pseudo_class_add (MX_STYLABLE (actor), "focus");
+  mx_stylable_style_pseudo_class_add (MX_STYLABLE (actor),
+                                      _MX_STYLE_GET_STYLE_CLASS (focus));
   clutter_text_set_cursor_visible (text, TRUE);
 }
 
