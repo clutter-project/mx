@@ -205,7 +205,7 @@ change_widget (MxComboBox *box,
 
   class = G_OBJECT_GET_CLASS (actor);
 
-  mx_bin_set_child (MX_BIN (data.frame), actor);
+  clutter_actor_add_child (data.frame, actor);
 
   if (data.inspector)
     clutter_actor_destroy (data.inspector);
@@ -447,6 +447,8 @@ startup_cb (MxApplication *application)
   /* main content */
   data.table = mx_table_new ();
   data.frame = mx_frame_new ();
+  clutter_actor_set_x_align (data.frame, CLUTTER_ACTOR_ALIGN_CENTER);
+  clutter_actor_set_y_align (data.frame, CLUTTER_ACTOR_ALIGN_CENTER);
   data.inspector = NULL;
 
   mx_table_insert_actor (MX_TABLE (data.table), data.frame, 0, 0);

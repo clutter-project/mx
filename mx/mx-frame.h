@@ -26,7 +26,7 @@
 #ifndef _MX_FRAME_H
 #define _MX_FRAME_H
 
-#include "mx-bin.h"
+#include "mx-widget.h"
 
 G_BEGIN_DECLS
 
@@ -64,14 +64,14 @@ typedef struct _MxFramePrivate MxFramePrivate;
  */
 struct _MxFrame
 {
-  MxBin parent;
+  MxWidget parent;
 
   MxFramePrivate *priv;
 };
 
 struct _MxFrameClass
 {
-  MxBinClass parent_class;
+  MxWidgetClass parent_class;
 
   /* padding for future expansion */
   void (*_padding_0) (void);

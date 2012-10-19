@@ -262,9 +262,6 @@ change_widget (MxComboBox *box,
   typename = mx_combo_box_get_active_text (box);
   id = g_type_from_name (typename);
 
-  if (data.container)
-    clutter_actor_destroy (data.container);
-
   data.container = actor = g_object_new (id, NULL);
 
   class = G_OBJECT_GET_CLASS (actor);
@@ -277,7 +274,7 @@ change_widget (MxComboBox *box,
     }
   else
     {
-      mx_bin_set_child (MX_BIN (data.frame), actor);
+      clutter_actor_add_child (CLUTTER_ACTOR (data.frame), actor);
       clutter_actor_hide (data.scroll);
       clutter_actor_show (data.frame);
     }
@@ -421,7 +418,8 @@ create_combo_box (gchar *selected_widget)
    mx_stack_get_type (),
    mx_viewport_get_type (),
    mx_kinetic_scroll_view_get_type (),
-   mx_expander_get_type ()
+   mx_expander_get_type (),
+   mx_frame_get_type ()
   };
 
   combo = mx_combo_box_new ();
@@ -587,7 +585,6 @@ startup_cb (MxApplication *application)
   data.table = mx_table_new ();
   data.scroll = mx_scroll_view_new ();
   data.frame = mx_frame_new ();
-  mx_bin_set_fill (MX_BIN (data.frame), TRUE, TRUE);
   data.container = NULL;
   data.inspector = NULL;
   data.child_inspector = NULL;
