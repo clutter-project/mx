@@ -1,7 +1,7 @@
 /*
  * mx-toolbar.h: toolbar actor
  *
- * Copyright 2009 Intel Corporation
+ * Copyright 2009, 2012 Intel Corporation
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -28,6 +28,7 @@
 
 #include "mx-widget.h"
 #include "mx-button.h"
+#include "mx-bin.h"
 
 G_BEGIN_DECLS
 

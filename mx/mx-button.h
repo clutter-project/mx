@@ -3,7 +3,7 @@
  * mx-button.h: Plain button actor
  *
  * Copyright 2007 OpenedHand
- * Copyright 2008, 2009 Intel Corporation.
+ * Copyright 2008, 2009, 2012 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -33,8 +33,8 @@
 
 G_BEGIN_DECLS
 
-#include <mx/mx-bin.h>
 #include <mx/mx-action.h>
+#include <mx/mx-widget.h>
 
 #define MX_TYPE_BUTTON                (mx_button_get_type ())
 #define MX_BUTTON(obj)                (G_TYPE_CHECK_INSTANCE_CAST ((obj), MX_TYPE_BUTTON, MxButton))
@@ -57,14 +57,14 @@ typedef struct _MxButtonClass         MxButtonClass;
 struct _MxButton
 {
   /*< private >*/
-  MxBin parent_instance;
+  MxWidget parent_instance;
 
   MxButtonPrivate *priv;
 };
 
 struct _MxButtonClass
 {
-  MxBinClass parent_class;
+  MxWidgetClass parent_class;
 
   /* signals */
   void     (* clicked)    (MxButton          *button);
