@@ -269,11 +269,13 @@ mx_button_style_changed (MxWidget *widget)
 }
 
 static void
-mx_button_actor_added_cb (ClutterActor *container,
-                          ClutterActor *actor,
-                          gpointer      user_data)
+mx_button_actor_added (ClutterActor *container,
+                       ClutterActor *actor)
 {
   MxButtonPrivate *priv = MX_BUTTON (container)->priv;
+
+  if (MX_IS_TOOLTIP (actor))
+    return;
 
   if (priv->child)
     clutter_actor_remove_child (container, priv->child);
@@ -282,9 +284,8 @@ mx_button_actor_added_cb (ClutterActor *container,
 }
 
 static void
-mx_button_actor_removed_cb (ClutterActor *container,
-                            ClutterActor *actor,
-                            gpointer      user_data)
+mx_button_actor_removed (ClutterActor *container,
+                         ClutterActor *actor)
 {
   MxButtonPrivate *priv = MX_BUTTON (container)->priv;
 
@@ -1016,9 +1017,9 @@ mx_button_init (MxButton *button)
   g_signal_connect (button, "style-changed",
                     G_CALLBACK (mx_button_style_changed), NULL);
   g_signal_connect (button, "actor-added",
-                    G_CALLBACK (mx_button_actor_added_cb), NULL);
+                    G_CALLBACK (mx_button_actor_added), NULL);
   g_signal_connect (button, "actor-removed",
-                    G_CALLBACK (mx_button_actor_removed_cb), NULL);
+                    G_CALLBACK (mx_button_actor_removed), NULL);
 
 
   priv->icon_visible = TRUE;
