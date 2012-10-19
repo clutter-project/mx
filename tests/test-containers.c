@@ -612,8 +612,7 @@ startup_cb (MxApplication *application)
   clutter_actor_insert_child_at_index (box, create_rotate_box (window), 1);
 
   toolbar = mx_window_get_toolbar (window);
-  mx_bin_set_child (MX_BIN (toolbar), box);
-  mx_bin_set_fill (MX_BIN (toolbar), TRUE, TRUE);
+  clutter_actor_add_child (CLUTTER_ACTOR (toolbar), box);
 
 
   /* show the window */

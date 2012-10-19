@@ -222,10 +222,10 @@ startup_cb (MxApplication *app)
   button = mx_button_new ();
   clutter_actor_add_child (button, icon);
   g_signal_connect (button, "clicked", G_CALLBACK (rotate_clicked_cb), window);
-  clutter_container_add_actor (
-    CLUTTER_CONTAINER (mx_window_get_toolbar (window)), button);
-  mx_bin_set_alignment (MX_BIN (mx_window_get_toolbar (window)),
-                        MX_ALIGN_END, MX_ALIGN_MIDDLE);
+  clutter_actor_add_child (
+    CLUTTER_ACTOR (mx_window_get_toolbar (window)), button);
+  clutter_actor_set_x_align (button, CLUTTER_ACTOR_ALIGN_END);
+  clutter_actor_set_y_align (button, CLUTTER_ACTOR_ALIGN_CENTER);
 
   clutter_actor_show (stage);
 }

@@ -839,7 +839,7 @@ mx_builder_application_activate (GApplication *app,
 
   toolbar = mx_window_get_toolbar (window);
   toolbar_hbox = mx_box_layout_new ();
-  mx_bin_set_child (MX_BIN (toolbar), toolbar_hbox);
+  clutter_actor_add_child (CLUTTER_ACTOR (toolbar), toolbar_hbox);
 
   builder->combobox = mx_combo_box_new ();
   clutter_actor_insert_child_at_index (toolbar_hbox, builder->combobox,

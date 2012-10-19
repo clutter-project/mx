@@ -28,7 +28,6 @@
 
 #include "mx-widget.h"
 #include "mx-button.h"
-#include "mx-bin.h"
 
 G_BEGIN_DECLS
 
@@ -66,14 +65,14 @@ typedef struct _MxToolbarPrivate MxToolbarPrivate;
 
 struct _MxToolbar
 {
-  MxBin parent;
+  MxWidget parent;
 
   MxToolbarPrivate *priv;
 };
 
 struct _MxToolbarClass
 {
-  MxBinClass parent_class;
+  MxWidgetClass parent_class;
 
   /* signals */
   gboolean (*close_button_clicked) (MxToolbar *toolbar);
