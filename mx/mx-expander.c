@@ -2,7 +2,7 @@
 /*
  * mx-expander.c: Expander Widget
  *
- * Copyright 2009, 2010 Intel Corporation.
+ * Copyright 2009, 2010, 2012 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -52,13 +52,7 @@
 #include "mx-stylable.h"
 #include "mx-icon.h"
 
-static void clutter_container_iface_init (ClutterContainerIface *iface);
-
-G_DEFINE_TYPE_WITH_CODE (MxExpander, mx_expander, MX_TYPE_BIN,
-                         G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
-                                                clutter_container_iface_init))
-
-static ClutterContainerIface *container_parent_class = NULL;
+G_DEFINE_TYPE (MxExpander, mx_expander, MX_TYPE_WIDGET)
 
 #define GET_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MX_TYPE_EXPANDER, MxExpanderPrivate))
@@ -86,6 +80,8 @@ struct _MxExpanderPrivate {
   gdouble          progress;
 
   guint            expanded : 1;
+
+  ClutterActor    *child;
 };
 
 static guint expander_signals[LAST_SIGNAL] = { 0, };
@@ -167,7 +163,6 @@ timeline_complete (ClutterTimeline *timeline,
                    ClutterActor    *expander)
 {
   guchar opacity;
-  ClutterActor *child;
   MxExpanderPrivate *priv = MX_EXPANDER (expander)->priv;
 
   g_signal_emit (expander, expander_signals[EXPAND_COMPLETE], 0);
@@ -181,9 +176,7 @@ timeline_complete (ClutterTimeline *timeline,
       clutter_actor_queue_relayout (expander);
     }
 
-  child = mx_bin_get_child (MX_BIN (expander));
-
-  if (!child)
+  if (!priv->child)
     return;
 
   /* continue only if we are "opening" */
@@ -192,22 +185,22 @@ timeline_complete (ClutterTimeline *timeline,
 
   /* we can't do an animation if there is already one in progress,
    * because we cannot get the actors original opacity */
-  if (clutter_actor_get_transition (child, "opacity"))
+  if (clutter_actor_get_transition (priv->child, "opacity"))
     {
-      clutter_actor_show (child);
+      clutter_actor_show (priv->child);
       return;
     }
 
-  opacity = clutter_actor_get_opacity (child);
-  clutter_actor_set_opacity (child, 0);
+  opacity = clutter_actor_get_opacity (priv->child);
+  clutter_actor_set_opacity (priv->child, 0);
 
-  clutter_actor_show (child);
+  clutter_actor_show (priv->child);
 
-  clutter_actor_save_easing_state (child);
-  clutter_actor_set_easing_mode (child, CLUTTER_EASE_IN_SINE);
-  clutter_actor_set_easing_duration (child, 100);
-  clutter_actor_set_opacity (child, opacity);
-  clutter_actor_restore_easing_state (child);
+  clutter_actor_save_easing_state (priv->child);
+  clutter_actor_set_easing_mode (priv->child, CLUTTER_EASE_IN_SINE);
+  clutter_actor_set_easing_duration (priv->child, 100);
+  clutter_actor_set_opacity (priv->child, opacity);
+  clutter_actor_restore_easing_state (priv->child);
 }
 
 static void
@@ -226,7 +219,6 @@ static void
 mx_expander_update (MxExpander *expander)
 {
   MxExpanderPrivate *priv = expander->priv;
-  ClutterActor *child;
 
   if (priv->expanded)
     {
@@ -235,15 +227,13 @@ mx_expander_update (MxExpander *expander)
     }
   /* closed state is set when animation is finished */
 
-  child = mx_bin_get_child (MX_BIN (expander));
-
-  if (!child)
+  if (!priv->child)
     return;
 
   /* setup and start the expansion animation */
   if (!priv->expanded)
     {
-      clutter_actor_hide (child);
+      clutter_actor_hide (priv->child);
       clutter_timeline_set_direction (priv->timeline,
                                       CLUTTER_TIMELINE_BACKWARD);
     }
@@ -261,14 +251,21 @@ mx_expander_update (MxExpander *expander)
 }
 
 static gboolean
+mx_expander_button_press (ClutterActor       *actor,
+                          ClutterButtonEvent *event)
+{
+  return TRUE;
+}
+
+static gboolean
 mx_expander_button_release (ClutterActor       *actor,
                             ClutterButtonEvent *event)
 {
-  MxExpander *expander = MX_EXPANDER (actor);
+  MxExpanderPrivate *priv = MX_EXPANDER (actor)->priv;
 
-  mx_expander_set_expanded (expander, !expander->priv->expanded);
+  mx_expander_set_expanded (MX_EXPANDER (actor), !priv->expanded);
 
-  return FALSE;
+  return TRUE;
 }
 
 static void
@@ -278,16 +275,14 @@ mx_expander_get_preferred_width (ClutterActor *actor,
                                  gfloat       *pref_width)
 {
   MxExpanderPrivate *priv = MX_EXPANDER (actor)->priv;
-  ClutterActor *child;
   MxPadding padding;
   gfloat min_child_w, pref_child_w, min_label_w, pref_label_w, arrow_w;
 
-  child = mx_bin_get_child (MX_BIN (actor));
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
 
-  if (child)
+  if (priv->child)
     {
-      clutter_actor_get_preferred_width (child,
+      clutter_actor_get_preferred_width (priv->child,
                                          -1,
                                          &min_child_w,
                                          &pref_child_w);
@@ -325,19 +320,16 @@ mx_expander_get_preferred_height (ClutterActor *actor,
                                   gfloat       *pref_height)
 {
   MxExpanderPrivate *priv = MX_EXPANDER (actor)->priv;
-  ClutterActor *child;
   MxPadding padding;
   gfloat min_child_h, pref_child_h, min_label_h, pref_label_h, arrow_h;
   gfloat available_w;
 
-  child = mx_bin_get_child (MX_BIN (actor));
-
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
   available_w = for_width - padding.left - padding.right;
 
-  if (child)
+  if (priv->child)
     {
-      clutter_actor_get_preferred_height (child,
+      clutter_actor_get_preferred_height (priv->child,
                                           available_w,
                                           &min_child_h,
                                           &pref_child_h);
@@ -382,25 +374,16 @@ mx_expander_allocate (ClutterActor          *actor,
                       const ClutterActorBox *box,
                       ClutterAllocationFlags flags)
 {
-  ClutterActor *child;
   MxExpanderPrivate *priv = MX_EXPANDER (actor)->priv;
   ClutterActorBox child_box;
   MxPadding padding;
   gfloat label_w, label_h;
   gfloat available_w, available_h, min_w, min_h, arrow_h, arrow_w;
-  MxAlign x_align, y_align;
-  gboolean x_fill, y_fill;
 
   /* chain up to store allocation */
   CLUTTER_ACTOR_CLASS (mx_expander_parent_class)->allocate (actor, box, flags);
 
   mx_widget_get_padding (MX_WIDGET (actor), &padding);
-  g_object_get (G_OBJECT (actor),
-                "x-align", &x_align,
-                "y-align", &y_align,
-                "x-fill", &x_fill,
-                "y-fill", &y_fill,
-                NULL);
 
   available_w = (box->x2 - box->x1) - padding.left - padding.right;
   available_h = (box->y2 - box->y1) - padding.top - padding.bottom;
@@ -443,29 +426,41 @@ mx_expander_allocate (ClutterActor          *actor,
   available_h -= MAX (label_h, arrow_h) + priv->spacing;
 
   /* child */
-  child = mx_bin_get_child (MX_BIN (actor));
-  if (child && CLUTTER_ACTOR_IS_VISIBLE (child))
+  if (priv->expanded && priv->child && CLUTTER_ACTOR_IS_VISIBLE (priv->child))
     {
       child_box.x1 = padding.left;
       child_box.x2 = child_box.x1 + available_w;
       child_box.y1 = padding.top + priv->spacing + MAX (label_h, arrow_h);
       child_box.y2 = child_box.y1 + available_h;
 
-      mx_allocate_align_fill (child, &child_box,
-                              x_align, y_align,
-                              x_fill, y_fill);
-
-      clutter_actor_allocate (child, &child_box, flags);
+      clutter_actor_allocate (priv->child, &child_box, flags);
     }
 }
 
 static void
 mx_expander_paint (ClutterActor *actor)
 {
+  MxExpanderPrivate *priv = ((MxExpander* ) actor)->priv;
+
   CLUTTER_ACTOR_CLASS (mx_expander_parent_class)->paint (actor);
 
-  clutter_actor_paint (((MxExpander* ) actor)->priv->label);
-  clutter_actor_paint (((MxExpander* ) actor)->priv->arrow);
+  clutter_actor_paint (priv->label);
+  clutter_actor_paint (priv->arrow);
+
+  if (priv->expanded)
+    clutter_actor_paint (priv->child);
+}
+
+static void
+mx_expander_pick (ClutterActor       *actor,
+                  const ClutterColor *color)
+{
+  MxExpanderPrivate *priv = ((MxExpander* ) actor)->priv;
+
+  CLUTTER_ACTOR_CLASS (mx_expander_parent_class)->pick (actor, color);
+
+  if (priv->expanded)
+    clutter_actor_paint (priv->child);
 }
 
 static void
@@ -485,46 +480,31 @@ mx_expander_style_changed (MxStylable *stylable)
 }
 
 static void
-mx_expander_foreach (ClutterContainer *container,
-                     ClutterCallback   callback,
-                     gpointer          user_data)
+mx_expander_actor_added (ClutterActor *container,
+                         ClutterActor *child)
 {
-  ClutterActor *child;
+  MxExpanderPrivate *priv = MX_EXPANDER (container)->priv;
 
-  child = mx_bin_get_child (MX_BIN (container));
+  if (MX_IS_TOOLTIP (child))
+    return;
 
-  if (child)
-    callback (child, user_data);
-}
+  if (priv->child)
+    clutter_actor_remove_child (container, priv->child);
 
-static void
-mx_expander_add (ClutterContainer *container,
-                 ClutterActor     *actor)
-{
-  MxExpander *expander = MX_EXPANDER (container);
-  MxExpanderPrivate *priv = expander->priv;
-
-  /* Override the container add method so we can hide the actor if the
-     expander is not expanded */
-
-  /* chain up */
-  container_parent_class->add (container, actor);
+  priv->child = child;
 
   if (!priv->expanded)
-    {
-      actor = mx_bin_get_child (MX_BIN (container));
-      if (actor)
-        clutter_actor_hide (actor);
-    }
+    clutter_actor_hide (child);
 }
 
 static void
-clutter_container_iface_init (ClutterContainerIface *iface)
+mx_expander_actor_removed (ClutterActor *container,
+                           ClutterActor *child)
 {
-  container_parent_class = g_type_interface_peek_parent (iface);
+  MxExpanderPrivate *priv = MX_EXPANDER (container)->priv;
 
-  iface->foreach = mx_expander_foreach;
-  iface->add = mx_expander_add;
+  if (priv->child == child)
+    priv->child = NULL;
 }
 
 static void
@@ -541,11 +521,13 @@ mx_expander_class_init (MxExpanderClass *klass)
   object_class->dispose = mx_expander_dispose;
   object_class->finalize = mx_expander_finalize;
 
+  actor_class->button_press_event = mx_expander_button_press;
   actor_class->button_release_event = mx_expander_button_release;
   actor_class->allocate = mx_expander_allocate;
   actor_class->get_preferred_width = mx_expander_get_preferred_width;
   actor_class->get_preferred_height = mx_expander_get_preferred_height;
   actor_class->paint = mx_expander_paint;
+  actor_class->pick = mx_expander_pick;
 
   pspec = g_param_spec_boolean ("expanded",
                                 "Expanded",
@@ -608,6 +590,11 @@ mx_expander_init (MxExpander *self)
 
   g_signal_connect (self, "style-changed",
                     G_CALLBACK (mx_expander_style_changed), NULL);
+
+  g_signal_connect (self, "actor-added",
+                    G_CALLBACK (mx_expander_actor_added), NULL);
+  g_signal_connect (self, "actor-removed",
+                    G_CALLBACK (mx_expander_actor_removed), NULL);
 }
 
 /**

@@ -2,7 +2,7 @@
 /*
  * mx-expander.h: Expander Widget
  *
- * Copyright 2009 Intel Corporation.
+ * Copyright 2009, 2012 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -29,8 +29,7 @@
 #ifndef _MX_EXPANDER
 #define _MX_EXPANDER
 
-#include <glib-object.h>
-#include <mx/mx-bin.h>
+#include <mx/mx-widget.h>
 
 G_BEGIN_DECLS
 
@@ -61,13 +60,13 @@ typedef struct _MxExpanderPrivate MxExpanderPrivate;
  */
 typedef struct {
   /*< private >*/
-  MxBin parent;
+  MxWidget parent;
 
   MxExpanderPrivate *priv;
 } MxExpander;
 
 typedef struct {
-  MxBinClass parent_class;
+  MxWidgetClass parent_class;
 
   /* signals */
   void (* expand_complete)   (MxExpander *expander);
