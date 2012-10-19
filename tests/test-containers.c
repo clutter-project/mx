@@ -306,15 +306,22 @@ change_widget (MxComboBox *box,
         clutter_actor_add_child (vbox, editor);
     }
 
-  if (MX_IS_VIEWPORT (actor) || MX_IS_KINETIC_SCROLL_VIEW (actor))
+  if (MX_IS_VIEWPORT (actor) || MX_IS_KINETIC_SCROLL_VIEW (actor)
+      || MX_IS_EXPANDER (actor))
     {
       ClutterActor *child, *texture;
-      gint x, y;
+      gint x, y, n;
+
+      if (MX_IS_EXPANDER (actor))
+        n = 3;
+      else
+        n = 10;
+
 
       child = clutter_actor_new ();
 
-      for (x = 0; x < 10; x++)
-        for (y = 0; y < 10; y++)
+      for (x = 0; x < n; x++)
+        for (y = 0; y < n; y++)
           {
             texture = clutter_texture_new_from_file ("redhand.png", NULL);
             clutter_texture_set_keep_aspect_ratio (CLUTTER_TEXTURE (texture), TRUE);
@@ -331,7 +338,14 @@ change_widget (MxComboBox *box,
           child = viewport;
         }
 
-      mx_bin_set_child (MX_BIN (actor), child);
+      if (MX_IS_EXPANDER (actor))
+        {
+          clutter_actor_set_x_align (actor, CLUTTER_ACTOR_ALIGN_CENTER);
+          clutter_actor_set_y_align (actor, CLUTTER_ACTOR_ALIGN_CENTER);
+          clutter_actor_add_child (actor, child);
+        }
+      else
+        mx_bin_set_child (MX_BIN (actor), child);
     }
   else
     {
@@ -406,7 +420,8 @@ create_combo_box (gchar *selected_widget)
    mx_table_get_type (),
    mx_stack_get_type (),
    mx_viewport_get_type (),
-   mx_kinetic_scroll_view_get_type ()
+   mx_kinetic_scroll_view_get_type (),
+   mx_expander_get_type ()
   };
 
   combo = mx_combo_box_new ();
