@@ -2341,8 +2341,8 @@ mx_kinetic_scroll_view_ensure_visible (MxKineticScrollView   *scroll,
 /**
  * mx_kinetic_scroll_view_get_input:
  * @scroll: A #MxKineticScrollView
- * @device: (allow-none) (out): a pointer to a #ClutterInputDevice pointer
- * @sequence: (allow-none) (out): a pointer to a #ClutterEventSequence pointer
+ * @device: (allow-none) (out) (transfer none): a pointer to a #ClutterInputDevice pointer
+ * @sequence: (allow-none) (out) (transfer none): a pointer to a #ClutterEventSequence pointer
  *
  * Retrieves informations about the current input device driving the
  * scrolling.
