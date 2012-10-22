@@ -25,8 +25,7 @@
 #ifndef _MX_DIALOG_H
 #define _MX_DIALOG_H
 
-#include <glib-object.h>
-#include <mx/mx-bin.h>
+#include <mx/mx-widget.h>
 #include <mx/mx-action.h>
 
 G_BEGIN_DECLS
@@ -66,14 +65,14 @@ typedef struct _MxDialogPrivate MxDialogPrivate;
 struct _MxDialog
 {
   /*< private >*/
-  MxBin parent;
+  MxWidget parent;
 
   MxDialogPrivate *priv;
 };
 
 struct _MxDialogClass
 {
-  MxBinClass parent_class;
+  MxWidgetClass parent_class;
 };
 
 GType mx_dialog_get_type (void) G_GNUC_CONST;

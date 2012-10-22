@@ -45,7 +45,7 @@
 static void mx_stylable_iface_init (MxStylableIface *iface);
 static void mx_focusable_iface_init (MxFocusableIface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (MxDialog, mx_dialog, MX_TYPE_BIN,
+G_DEFINE_TYPE_WITH_CODE (MxDialog, mx_dialog, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
                                                 mx_stylable_iface_init)
                          G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
@@ -61,6 +61,8 @@ typedef struct {
 
 struct _MxDialogPrivate
 {
+  ClutterActor *child;
+
   guint visible          : 1;
   guint child_has_focus  : 1;
 
@@ -90,7 +92,7 @@ mx_dialog_move_focus (MxFocusable      *focusable,
   MxDialog *self = MX_DIALOG (focusable);
   MxDialogPrivate *priv = self->priv;
 
-  child = mx_bin_get_child (MX_BIN (focusable));
+  child = priv->child;
   if (child && !MX_IS_FOCUSABLE (child))
     child = NULL;
 
@@ -134,7 +136,7 @@ mx_dialog_accept_focus (MxFocusable *focusable, MxFocusHint hint)
   MxDialog *self = MX_DIALOG (focusable);
   MxDialogPrivate *priv = self->priv;
 
-  child = mx_bin_get_child (MX_BIN (focusable));
+  child = priv->child;
   if (child && !MX_IS_FOCUSABLE (child))
     {
       hint = MX_FOCUS_HINT_PRIOR;
@@ -245,7 +247,6 @@ mx_dialog_get_preferred_width (ClutterActor *actor,
                                gfloat       *min_width_p,
                                gfloat       *nat_width_p)
 {
-  ClutterActor *child;
   MxPadding padding, ipadding;
   gfloat child_width[2], button_width[2];
 
@@ -275,9 +276,8 @@ mx_dialog_get_preferred_width (ClutterActor *actor,
     }
 
   /* Get the minimum/preferred width of the child */
-  child = mx_bin_get_child (MX_BIN (actor));
-  if (child)
-    clutter_actor_get_preferred_width (child, for_height,
+  if (priv->child)
+    clutter_actor_get_preferred_width (priv->child, for_height,
                                        &child_width[0], &child_width[1]);
   else
     child_width[0] = child_width[1] = 0;
@@ -308,7 +308,6 @@ mx_dialog_get_preferred_height (ClutterActor *actor,
                                 gfloat       *min_height_p,
                                 gfloat       *nat_height_p)
 {
-  ClutterActor *child;
   MxPadding padding, ipadding;
   gfloat min_height, nat_height;
 
@@ -333,10 +332,9 @@ mx_dialog_get_preferred_height (ClutterActor *actor,
   nat_height += padding.top + padding.bottom + ipadding.top + ipadding.bottom;
 
   /* If the child exists, add its height + spacing to the result */
-  child = mx_bin_get_child (MX_BIN (actor));
-  if (child)
+  if (priv->child)
     {
-      clutter_actor_get_preferred_height (child, for_width,
+      clutter_actor_get_preferred_height (priv->child, for_width,
                                           min_height_p, nat_height_p);
       if (min_height_p)
         *min_height_p += min_height + priv->spacing;
@@ -358,7 +356,6 @@ mx_dialog_allocate (ClutterActor           *actor,
                     ClutterAllocationFlags  flags)
 {
   MxPadding padding;
-  ClutterActor *child;
   gfloat button_width, button_height;
   ClutterActorBox inner_box, child_box;
 
@@ -389,7 +386,6 @@ mx_dialog_allocate (ClutterActor           *actor,
     button_width = button_height = 0;
 
   /* Allocate the child */
-  child = mx_bin_get_child (MX_BIN (actor));
 
   /* Calculate the available space for the child */
   child_box = inner_box;
@@ -401,16 +397,14 @@ mx_dialog_allocate (ClutterActor           *actor,
   /* Allocate the child and work out the allocation box for the
    * button box.
    */
-  if (child)
+  if (priv->child)
     {
-      gboolean x_fill, y_fill, width;
-      MxAlign x_align, y_align;
+      gfloat width;
 
-      mx_bin_get_fill (MX_BIN (actor), &x_fill, &y_fill);
-      mx_bin_get_alignment (MX_BIN (actor), &x_align, &y_align);
-      mx_allocate_align_fill (child, &child_box,
-                              x_align, y_align,
-                              x_fill, y_fill);
+      mx_allocate_align_fill (priv->child, &child_box,
+                              MX_ALIGN_MIDDLE, MX_ALIGN_MIDDLE,
+                              FALSE, FALSE);
+
 
       width = child_box.x2 - child_box.x1;
 
@@ -432,7 +426,7 @@ mx_dialog_allocate (ClutterActor           *actor,
           child_box.x2 = child_box.x1 + width;
         }
 
-      clutter_actor_allocate (child, &child_box, flags);
+      clutter_actor_allocate (priv->child, &child_box, flags);
 
       child_box.y1 = child_box.y2 + priv->spacing;
       if (button_width > width)
@@ -467,7 +461,6 @@ mx_dialog_allocate (ClutterActor           *actor,
 static void
 mx_dialog_paint (ClutterActor *actor)
 {
-  ClutterActor *child;
   gfloat width, height;
   MxDialogPrivate *priv = MX_DIALOG (actor)->priv;
 
@@ -483,9 +476,8 @@ mx_dialog_paint (ClutterActor *actor)
 
   clutter_actor_paint (priv->background);
 
-  child = mx_bin_get_child (MX_BIN (actor));
-  if (child)
-    clutter_actor_paint (child);
+  if (priv->child)
+    clutter_actor_paint (priv->child);
 
   if (priv->actions)
     clutter_actor_paint (priv->button_box);
@@ -517,6 +509,9 @@ mx_dialog_pick (ClutterActor       *actor,
 
   /* Chain up */
   CLUTTER_ACTOR_CLASS (mx_dialog_parent_class)->pick (actor, color);
+
+  if (priv->child)
+    clutter_actor_paint (priv->child);
 
   if (priv->actions)
     clutter_actor_paint (priv->button_box);
@@ -667,6 +662,31 @@ mx_dialog_style_changed_cb (MxDialog *self)
 }
 
 static void
+mx_dialog_actor_added (ClutterActor *container,
+                       ClutterActor *actor)
+{
+  MxDialogPrivate *priv = MX_DIALOG (container)->priv;
+
+  if (MX_IS_TOOLTIP (actor))
+    return;
+
+  if (priv->child)
+    clutter_actor_remove_child (container, priv->child);
+
+  priv->child = actor;
+}
+
+static void
+mx_dialog_actor_removed (ClutterActor *container,
+                         ClutterActor *actor)
+{
+  MxDialogPrivate *priv = MX_DIALOG (container)->priv;
+
+  if (priv->child == actor)
+    priv->child = NULL;
+}
+
+static void
 mx_dialog_init (MxDialog *self)
 {
   ClutterActor *actor = CLUTTER_ACTOR (self);
@@ -697,6 +717,11 @@ mx_dialog_init (MxDialog *self)
 
   g_signal_connect (self, "style-changed",
                     G_CALLBACK (mx_dialog_style_changed_cb), self);
+
+  g_signal_connect (self, "actor-added",
+                    G_CALLBACK (mx_dialog_actor_added), NULL);
+  g_signal_connect (self, "actor-removed",
+                    G_CALLBACK (mx_dialog_actor_removed), NULL);
 
   g_object_set (G_OBJECT (self), "show-on-set-parent", FALSE, NULL);
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
