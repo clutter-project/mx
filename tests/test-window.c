@@ -73,6 +73,20 @@ resizable_cb (MxToggle     *toggle,
 }
 
 static void
+close_dialog_cb (MxAction     *action,
+                 ClutterActor *dialog)
+{
+  clutter_actor_hide (dialog);
+}
+
+static void
+show_dialog_cb (MxButton     *button,
+                ClutterActor *dialog)
+{
+  clutter_actor_show (dialog);
+}
+
+static void
 rotate_clicked_cb (ClutterActor *button,
                    MxWindow     *window)
 {
@@ -101,7 +115,7 @@ static void
 startup_cb (MxApplication *app)
 {
   MxWindow *window;
-  ClutterActor *stage, *toggle, *label, *table, *button, *icon;
+  ClutterActor *stage, *toggle, *label, *table, *button, *icon, *dialog;
 
   window = mx_application_create_window (app, "Test Window");
   stage = (ClutterActor *)mx_window_get_clutter_stage (window);
@@ -215,6 +229,29 @@ startup_cb (MxApplication *app)
                                          "y-fill", FALSE,
                                          "x-fill", FALSE,
                                          NULL);
+
+  /* dialog test */
+  dialog = mx_dialog_new ();
+  mx_dialog_set_transient_parent (MX_DIALOG (dialog),
+                                  CLUTTER_ACTOR (mx_window_get_clutter_stage (window)));
+  mx_dialog_add_action (MX_DIALOG (dialog), mx_action_new_full ("close",
+                                                                "Close",
+                                                                G_CALLBACK (close_dialog_cb),
+                                                                dialog));
+  clutter_actor_add_child (dialog, mx_label_new_with_text ("Dialog Window"));
+
+  button = mx_button_new_with_label ("Show Dialog");
+  g_signal_connect (button, "clicked", G_CALLBACK (show_dialog_cb), dialog);
+  mx_table_insert_actor_with_properties (MX_TABLE (table),
+                                         button,
+                                         5, 0,
+                                         "column-span", 2,
+                                         "x-expand", TRUE,
+                                         "x-align", MX_ALIGN_MIDDLE,
+                                         "y-fill", FALSE,
+                                         "x-fill", FALSE,
+                                         NULL);
+
 
   icon = mx_icon_new ();
   mx_icon_set_icon_name (MX_ICON (icon), "object-rotate-right");
