@@ -356,8 +356,9 @@ mx_dialog_allocate (ClutterActor           *actor,
                     ClutterAllocationFlags  flags)
 {
   MxPadding padding;
-  gfloat button_width, button_height;
-  ClutterActorBox inner_box, child_box;
+  gfloat button_width, button_height, child_width, child_height;
+  gfloat inner_width, inner_height;
+  ClutterActorBox inner_box, child_box, avail_box;
 
   MxDialogPrivate *priv = MX_DIALOG (actor)->priv;
 
@@ -365,11 +366,7 @@ mx_dialog_allocate (ClutterActor           *actor,
     allocate (actor, box, flags);
 
   /* Get the available space */
-  mx_widget_get_padding (MX_WIDGET (actor), &padding);
-  inner_box.x1 = padding.left;
-  inner_box.y1 = padding.top;
-  inner_box.x2 = box->x2 - box->x1 - padding.right;
-  inner_box.y2 = box->y2 - box->y1 - padding.bottom;
+  mx_widget_get_available_area (MX_WIDGET (actor), box, &avail_box);
 
   /* Get the padding of the background box */
   mx_widget_get_padding (MX_WIDGET (priv->background), &padding);
@@ -380,82 +377,69 @@ mx_dialog_allocate (ClutterActor           *actor,
       clutter_actor_get_preferred_size (priv->button_box,
                                         NULL, NULL,
                                         &button_width, &button_height);
-      button_height += priv->spacing;
     }
   else
     button_width = button_height = 0;
 
-  /* Allocate the child */
-
-  /* Calculate the available space for the child */
-  child_box = inner_box;
-  child_box.x1 += padding.left;
-  child_box.y1 += padding.top;
-  child_box.x2 -= padding.right;
-  child_box.y2 -= padding.bottom + button_height;
-
-  /* Allocate the child and work out the allocation box for the
-   * button box.
-   */
+  /* Get the size of the child */
   if (priv->child)
     {
-      gfloat width;
-
-      mx_allocate_align_fill (priv->child, &child_box,
-                              MX_ALIGN_MIDDLE, MX_ALIGN_MIDDLE,
-                              FALSE, FALSE);
-
-
-      width = child_box.x2 - child_box.x1;
-
-      /* Adjust the allocation if the button-box is wider than
-       * the dialog contents.
-       */
-      if (button_width > width)
-        {
-          child_box.x1 += (gint)((button_width - width)/2.f);
-          child_box.x2 += (gint)((button_width - width)/2.f);
-        }
-
-      inner_box = child_box;
-      inner_box.y2 += button_height;
-      if (button_width > width)
-        {
-          inner_box.x1 = inner_box.x2 - button_width;
-          child_box.x1 = inner_box.x1;
-          child_box.x2 = child_box.x1 + width;
-        }
-
-      clutter_actor_allocate (priv->child, &child_box, flags);
-
-      child_box.y1 = child_box.y2 + priv->spacing;
-      if (button_width > width)
-        child_box.x2 = child_box.x1 + button_width;
-      else
-        child_box.x1 = child_box.x2 - button_width;
-      child_box.y2 = child_box.y1 + button_height - priv->spacing;
+      clutter_actor_get_preferred_size (priv->child,
+                                        NULL, NULL,
+                                        &child_width, &child_height);
     }
   else
-    {
-      child_box.x1 += (child_box.x2 - child_box.x1 - button_width) / 2.f;
-      child_box.y1 += (child_box.y2 - child_box.y1 - button_height) / 2.f;
-      child_box.x2 = child_box.x1 + button_width;
-      child_box.y2 = child_box.y2 + button_height;
+    child_width = child_height = 0;
 
-      inner_box = child_box;
-    }
+  /* calculate the background area (the size of the children, plus any padding
+   * on the background) */
+  inner_width = MAX (child_width, button_width) + padding.left + padding.right;
+  inner_height = child_height + priv->spacing + button_height + padding.top + padding.bottom;
 
-  /* Allocate the button-box if necessary */
-  if (priv->actions)
-    clutter_actor_allocate (priv->button_box, &child_box, flags);
+  inner_box.x1 = (int) (avail_box.x1
+    + clutter_actor_box_get_width (&avail_box) / 2.0
+    - inner_width / 2.0);
 
-  /* Allocate the background */
-  inner_box.x1 -= padding.left;
-  inner_box.y1 -= padding.top;
-  inner_box.x2 += padding.right;
-  inner_box.y2 += padding.bottom;
+  inner_box.y1 = (int) (avail_box.y1
+    + clutter_actor_box_get_height (&avail_box) / 2.0
+    - inner_height / 2.0);
+
+  inner_box.x2 = inner_box.x1 + inner_width;
+  inner_box.y2 = inner_box.y1 + inner_height;
 
   clutter_actor_allocate (priv->background, &inner_box, flags);
+
+  /* calculate the child area */
+  mx_widget_get_available_area (MX_WIDGET (priv->background), &inner_box, &child_box);
+  child_box.x1 += inner_box.x1;
+  child_box.y1 += inner_box.y1;
+  child_box.x2 += inner_box.x1;
+  child_box.y2 += inner_box.y1;
+
+  clutter_actor_allocate (priv->button_box, &child_box, flags);
+  if (priv->child)
+    {
+      if (priv->actions)
+        child_box.y2 -= button_height + priv->spacing;
+
+      clutter_actor_allocate (priv->child, &child_box, flags);
+    }
+
+
+  /* calculate the button area */
+  if (priv->actions)
+    {
+      if (priv->child)
+        {
+          child_box.y1 = child_box.y2 + priv->spacing;
+          child_box.y2 += button_height + priv->spacing;
+        }
+
+      /* align to the right */
+      child_box.x1 = child_box.x2 - button_width;
+
+      clutter_actor_allocate (priv->button_box, &child_box, flags);
+    }
 }
 
 static void
