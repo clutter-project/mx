@@ -232,7 +232,9 @@ mx_scroll_view_paint (ClutterActor *actor)
   if (priv->child)
     {
       clutter_actor_get_allocation_box (priv->child, &box);
-      cogl_clip_push_rectangle (0, 0, (box.x2 - box.x1), (box.y2 - box.y1));
+      cogl_clip_push_rectangle (box.x1, box.y1,
+                                box.x2 - box.x1,
+                                box.y2 - box.y1);
     }
 
   CLUTTER_ACTOR_CLASS (mx_scroll_view_parent_class)->paint (actor);
@@ -371,13 +373,15 @@ mx_scroll_view_pick (ClutterActor       *actor,
                      const ClutterColor *color)
 {
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (actor)->priv;
-  ClutterActorBox      box;
 
   /* Chain up so we get a bounding box pained (if we are reactive) */
   if (priv->child)
     {
+      ClutterActorBox box;
+
       clutter_actor_get_allocation_box (priv->child, &box);
-      cogl_clip_push_rectangle (0, 0, (box.x2 - box.x1), (box.y2 - box.y1));
+      cogl_clip_push_rectangle (box.x1, box.y1,
+                                box.x2 - box.x1, box.y2 - box.y1);
     }
 
   CLUTTER_ACTOR_CLASS (mx_scroll_view_parent_class)->pick (actor, color);
