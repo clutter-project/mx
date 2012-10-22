@@ -521,6 +521,47 @@ mx_kinetic_scroll_view_allocate (ClutterActor           *actor,
   mx_bin_allocate_child (MX_BIN (actor), box, flags);
 }
 
+static void
+mx_kinetic_scroll_view_paint (ClutterActor *actor)
+{
+  MxKineticScrollViewPrivate *priv = ((MxKineticScrollView *) actor)->priv;
+  ClutterActorBox box;
+
+  if (priv->child)
+    {
+      clutter_actor_get_allocation_box (priv->child, &box);
+      cogl_clip_push_rectangle (box.x1, box.y1,
+                                box.x2 - box.x1,
+                                box.y2 - box.y1);
+    }
+
+  CLUTTER_ACTOR_CLASS (mx_kinetic_scroll_view_parent_class)->paint (actor);
+
+  if (priv->child)
+    cogl_clip_pop ();
+}
+
+static void
+mx_kinetic_scroll_view_pick (ClutterActor *actor, const ClutterColor *color)
+{
+  MxKineticScrollViewPrivate *priv = ((MxKineticScrollView *) actor)->priv;
+  ClutterActorBox box;
+
+  if (priv->child)
+    {
+      clutter_actor_get_allocation_box (priv->child, &box);
+      cogl_clip_push_rectangle (box.x1, box.y1,
+                                box.x2 - box.x1,
+                                box.y2 - box.y1);
+    }
+
+  CLUTTER_ACTOR_CLASS (mx_kinetic_scroll_view_parent_class)->pick (actor,
+                                                                   color);
+
+  if (priv->child)
+    cogl_clip_pop ();
+}
+
 static gboolean
 mx_kinetic_scroll_view_button_event (ClutterActor       *actor,
                                      ClutterButtonEvent *event)
@@ -560,6 +601,10 @@ mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
     mx_kinetic_scroll_view_get_preferred_height;
   actor_class->allocate =
     mx_kinetic_scroll_view_allocate;
+  actor_class->paint =
+    mx_kinetic_scroll_view_paint;
+  actor_class->pick =
+    mx_kinetic_scroll_view_pick;
 
   actor_class->event = mx_kinetic_scroll_view_event;
   actor_class->button_press_event = mx_kinetic_scroll_view_button_event;
