@@ -466,7 +466,8 @@ mx_dialog_paint (ClutterActor *actor)
 
   clutter_actor_get_size (actor, &width, &height);
 
-  cogl_set_source_color4ub (0, 0, 0, 0x7b);
+  cogl_set_source_color4ub (0, 0, 0,
+                            0x7b * (clutter_actor_get_opacity (actor) / 255.0));
   cogl_rectangle (0, 0, width, height);
 
   cogl_translate (width/2, height/2, 0);
