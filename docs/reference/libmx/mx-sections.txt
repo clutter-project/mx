@@ -271,8 +271,6 @@ MxScrollViewClass
 mx_scroll_view_new
 mx_scroll_view_set_enable_mouse_scrolling
 mx_scroll_view_get_enable_mouse_scrolling
-mx_scroll_view_set_enable_gestures
-mx_scroll_view_get_enable_gestures
 mx_scroll_view_set_scroll_policy
 mx_scroll_view_get_scroll_policy
 mx_scroll_view_ensure_visible
@@ -1420,8 +1418,6 @@ mx_notebook_set_current_page
 mx_notebook_get_current_page
 mx_notebook_previous_page
 mx_notebook_next_page
-mx_notebook_get_enable_gestures
-mx_notebook_set_enable_gestures
 <SUBSECTION Private>
 MxNotebookPrivate
 <SUBSECTION Standard>

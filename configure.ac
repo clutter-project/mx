@@ -207,23 +207,6 @@ AS_IF([test "x$with_clutter_imcontext" != xno],
       ))
 
 
-AC_ARG_WITH([clutter-gesture],
-            [AC_HELP_STRING([--with-clutter-gesture],
-                            [enable gesture support])],
-            [],
-            [with_clutter_gesture=auto])
-
-AS_IF([test "x$with_clutter_gesture" != xno],
-      [PKG_CHECK_EXISTS([clutter-gesture],
-                        [AC_DEFINE([HAVE_CLUTTER_GESTURE], [1],
-                                   [Define if clutter-gesture is available])
-                         MX_REQUIRES="$MX_REQUIRES clutter-gesture"
-                         with_clutter_gesture=yes],
-                        [AS_IF([test "x$with_clutter_gesture" = xyes],
-                                AC_MSG_FAILURE([Could not find clutter-gesture. Use --without-clutter-gesture to disable gesture support.]))
-                        with_clutter_gesture=no]]
-       ))
-
 AC_ARG_WITH([startup-notification],
             [AC_HELP_STRING([--without-startup-notification],
                             [disable startup notification])],
@@ -296,7 +279,6 @@ echo " Mx Toolkit - $VERSION"
 echo ""
 echo " Features:"
 echo "   Clutter-Imcontext:    $with_clutter_imcontext"
-echo "   Clutter-Gesture:      $with_clutter_gesture"
 echo "   Startup Notification: $with_startup_notification"
 echo "   Windowing system:     $MX_WINSYS"
 echo ""

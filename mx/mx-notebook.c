@@ -25,9 +25,6 @@
 #include "mx-notebook.h"
 #include "mx-private.h"
 #include "mx-focusable.h"
-#ifdef HAVE_CLUTTER_GESTURE
-#include <clutter-gesture/clutter-gesture.h>
-#endif
 
 static void clutter_container_iface_init (ClutterContainerIface *iface);
 static void mx_focusable_iface_init (MxFocusableIface *iface);
@@ -46,18 +43,11 @@ struct _MxNotebookPrivate
   ClutterActor *current_page;
 
   GList *children;
-
-  gboolean enable_gestures;
-
-#if HAVE_CLUTTER_GESTURE
-  ClutterGesture *gesture;
-#endif
 };
 
 enum
 {
   PROP_CURRENT_PAGE = 1,
-  PROP_ENABLE_GESTURES
 };
 
 static void
@@ -231,10 +221,6 @@ mx_notebook_get_property (GObject    *object,
       g_value_set_object (value, priv->current_page);
       break;
 
-    case PROP_ENABLE_GESTURES:
-      g_value_set_boolean (value, priv->enable_gestures);
-      break;
-
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -253,11 +239,6 @@ mx_notebook_set_property (GObject      *object,
                                     (ClutterActor *)g_value_get_object (value));
       break;
 
-    case PROP_ENABLE_GESTURES:
-      mx_notebook_set_enable_gestures (MX_NOTEBOOK (object),
-                                       g_value_get_boolean (value));
-      break;
-
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -266,16 +247,6 @@ mx_notebook_set_property (GObject      *object,
 static void
 mx_notebook_dispose (GObject *object)
 {
-#ifdef HAVE_CLUTTER_GESTURE
-  MxNotebookPrivate *priv = MX_NOTEBOOK (object)->priv;
-
-  if (priv->gesture)
-    {
-      g_object_unref (priv->gesture);
-      priv->gesture = NULL;
-    }
-#endif
-
   G_OBJECT_CLASS (mx_notebook_parent_class)->dispose (object);
 }
 
@@ -432,36 +403,6 @@ mx_notebook_allocate (ClutterActor          *actor,
     }
 }
 
-#ifdef HAVE_CLUTTER_GESTURE
-static gboolean
-mx_notebook_gesture_slide_event_cb (ClutterGesture           *gesture,
-                                    ClutterGestureSlideEvent *event,
-                                    MxNotebook               *book)
-{
-  GList *item;
-  MxNotebookPrivate *priv = book->priv;
-
-  if (!priv->enable_gestures || !priv->current_page)
-    return FALSE;
-
-  item = g_list_find (priv->children, priv->current_page);
-  if (!item)
-    {
-      g_warning ("Current page not found in child list");
-      return FALSE;
-    }
-
-  if (event->direction % 2)
-    /* up, left (1, 3) */
-    mx_notebook_previous_page (book);
-  else
-    /* down, right (2, 4) */
-    mx_notebook_next_page (book);
-
-  return TRUE;
-}
-#endif
-
 static void
 mx_notebook_class_init (MxNotebookClass *klass)
 {
@@ -488,13 +429,6 @@ mx_notebook_class_init (MxNotebookClass *klass)
                                CLUTTER_TYPE_ACTOR,
                                MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_CURRENT_PAGE, pspec);
-
-  pspec = g_param_spec_boolean ("enable-gestures",
-                                "Enable Gestures",
-                                "Enable use of pointer gestures to switch page",
-                                FALSE,
-                                G_PARAM_READWRITE);
-  g_object_class_install_property (object_class, PROP_ENABLE_GESTURES, pspec);
 }
 
 static void
@@ -605,46 +539,4 @@ mx_notebook_next_page (MxNotebook *notebook)
   else
     mx_notebook_set_current_page (notebook,
                                   (ClutterActor *)priv->children->data);
-}
-
-void
-mx_notebook_set_enable_gestures (MxNotebook *book,
-                                 gboolean    enabled)
-{
-  MxNotebookPrivate *priv;
-
-  g_return_if_fail (MX_IS_NOTEBOOK (book));
-
-  priv = book->priv;
-
-  if (priv->enable_gestures != enabled)
-    {
-      priv->enable_gestures = enabled;
-
-#ifndef HAVE_CLUTTER_GESTURE
-      g_warning ("Gestures are disabled as Clutter Gesture is not available");
-#else
-      if (enabled && !priv->gesture)
-        {
-          priv->gesture = clutter_gesture_new (CLUTTER_ACTOR (book));
-          clutter_gesture_set_gesture_mask (priv->gesture,
-                                            CLUTTER_ACTOR (book),
-                                            GESTURE_MASK_SLIDE);
-          g_signal_connect (priv->gesture, "gesture-slide-event",
-                            G_CALLBACK (mx_notebook_gesture_slide_event_cb),
-                            book);
-          clutter_actor_set_reactive (CLUTTER_ACTOR (book), TRUE);
-        }
-#endif
-
-      g_object_notify (G_OBJECT (book), "enable-gestures");
-    }
-}
-
-gboolean
-mx_notebook_get_enable_gestures (MxNotebook *book)
-{
-  g_return_val_if_fail (MX_IS_NOTEBOOK (book), FALSE);
-
-  return book->priv->enable_gestures;
 }
