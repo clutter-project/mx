@@ -1,7 +1,7 @@
 /* mx-kinetic-scroll-view.c: Kinetic scrolling container actor
  *
  * Copyright (C) 2008 OpenedHand
- * Copyright (C) 2010 Intel Corporation.
+ * Copyright (C) 2010, 2012 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -49,7 +49,7 @@
 static void mx_scrollable_iface_init (MxScrollableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxKineticScrollView,
-                         mx_kinetic_scroll_view, MX_TYPE_BIN,
+                         mx_kinetic_scroll_view, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_SCROLLABLE,
                                                 mx_scrollable_iface_init))
 
@@ -515,10 +515,13 @@ mx_kinetic_scroll_view_allocate (ClutterActor           *actor,
                                  const ClutterActorBox  *box,
                                  ClutterAllocationFlags  flags)
 {
+  MxKineticScrollViewPrivate *priv = MX_KINETIC_SCROLL_VIEW (actor)->priv;
+
   CLUTTER_ACTOR_CLASS (mx_kinetic_scroll_view_parent_class)->
     allocate (actor, box, flags);
 
-  mx_bin_allocate_child (MX_BIN (actor), box, flags);
+  if (priv->child)
+    clutter_actor_allocate (priv->child, box, flags);
 }
 
 static void
@@ -527,18 +530,17 @@ mx_kinetic_scroll_view_paint (ClutterActor *actor)
   MxKineticScrollViewPrivate *priv = ((MxKineticScrollView *) actor)->priv;
   ClutterActorBox box;
 
+  CLUTTER_ACTOR_CLASS (mx_kinetic_scroll_view_parent_class)->paint (actor);
+
   if (priv->child)
     {
       clutter_actor_get_allocation_box (priv->child, &box);
       cogl_clip_push_rectangle (box.x1, box.y1,
                                 box.x2 - box.x1,
                                 box.y2 - box.y1);
+      clutter_actor_paint (priv->child);
+      cogl_clip_pop ();
     }
-
-  CLUTTER_ACTOR_CLASS (mx_kinetic_scroll_view_parent_class)->paint (actor);
-
-  if (priv->child)
-    cogl_clip_pop ();
 }
 
 static void
@@ -547,19 +549,18 @@ mx_kinetic_scroll_view_pick (ClutterActor *actor, const ClutterColor *color)
   MxKineticScrollViewPrivate *priv = ((MxKineticScrollView *) actor)->priv;
   ClutterActorBox box;
 
+  CLUTTER_ACTOR_CLASS (mx_kinetic_scroll_view_parent_class)->pick (actor,
+                                                                   color);
+
   if (priv->child)
     {
       clutter_actor_get_allocation_box (priv->child, &box);
       cogl_clip_push_rectangle (box.x1, box.y1,
                                 box.x2 - box.x1,
                                 box.y2 - box.y1);
+      clutter_actor_paint (priv->child);
+      cogl_clip_pop ();
     }
-
-  CLUTTER_ACTOR_CLASS (mx_kinetic_scroll_view_parent_class)->pick (actor,
-                                                                   color);
-
-  if (priv->child)
-    cogl_clip_pop ();
 }
 
 static gboolean
@@ -595,16 +596,11 @@ mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
   object_class->dispose = mx_kinetic_scroll_view_dispose;
   object_class->finalize = mx_kinetic_scroll_view_finalize;
 
-  actor_class->get_preferred_width =
-    mx_kinetic_scroll_view_get_preferred_width;
-  actor_class->get_preferred_height =
-    mx_kinetic_scroll_view_get_preferred_height;
-  actor_class->allocate =
-    mx_kinetic_scroll_view_allocate;
-  actor_class->paint =
-    mx_kinetic_scroll_view_paint;
-  actor_class->pick =
-    mx_kinetic_scroll_view_pick;
+  actor_class->get_preferred_width = mx_kinetic_scroll_view_get_preferred_width;
+  actor_class->get_preferred_height = mx_kinetic_scroll_view_get_preferred_height;
+  actor_class->allocate = mx_kinetic_scroll_view_allocate;
+  actor_class->paint = mx_kinetic_scroll_view_paint;
+  actor_class->pick = mx_kinetic_scroll_view_pick;
 
   actor_class->event = mx_kinetic_scroll_view_event;
   actor_class->button_press_event = mx_kinetic_scroll_view_button_event;
@@ -797,7 +793,6 @@ motion_event_cb (ClutterActor        *actor,
                                            x, y, &x, &y))
     {
       MxKineticScrollViewMotion *motion;
-      ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
 
       /* Check if we've passed the drag threshold */
       if (!priv->in_drag)
@@ -896,12 +891,12 @@ motion_event_cb (ClutterActor        *actor,
                  ABS (g_array_index (priv->motion_buffer, MxKineticScrollViewMotion, priv->motion_buffer->len - 1).x - x),
                  ABS (g_array_index (priv->motion_buffer, MxKineticScrollViewMotion, priv->motion_buffer->len - 1).y - y));
 
-      if (child)
+      if (priv->child)
         {
           gdouble dx, dy;
           MxAdjustment *hadjust, *vadjust;
 
-          mx_scrollable_get_adjustments (MX_SCROLLABLE (child),
+          mx_scrollable_get_adjustments (MX_SCROLLABLE (priv->child),
                                          &hadjust, &vadjust);
 
           motion = &g_array_index (priv->motion_buffer,
@@ -1036,13 +1031,12 @@ clamp_adjustments (MxKineticScrollView *scroll,
                    gboolean             vertical)
 {
   MxKineticScrollViewPrivate *priv = scroll->priv;
-  ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
 
-  if (child)
+  if (priv->child)
     {
       MxAdjustment *hadj, *vadj;
 
-      mx_scrollable_get_adjustments (MX_SCROLLABLE (child), &hadj, &vadj);
+      mx_scrollable_get_adjustments (MX_SCROLLABLE (priv->child), &hadj, &vadj);
 
       if (horizontal && hadj)
         {
@@ -1084,15 +1078,14 @@ deceleration_new_frame_cb (ClutterTimeline     *timeline,
                            MxKineticScrollView *scroll)
 {
   MxKineticScrollViewPrivate *priv = scroll->priv;
-  ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
 
-  if (child)
+  if (priv->child)
     {
       MxAdjustment *hadjust, *vadjust;
 
       gboolean stop = TRUE;
 
-      mx_scrollable_get_adjustments (MX_SCROLLABLE (child),
+      mx_scrollable_get_adjustments (MX_SCROLLABLE (priv->child),
                                      &hadjust, &vadjust);
 
       priv->accumulated_delta += clutter_timeline_get_delta (timeline);
@@ -1235,7 +1228,6 @@ release_event (MxKineticScrollView *scroll,
 {
   ClutterActor *actor = CLUTTER_ACTOR (scroll);
   ClutterActor *stage = clutter_actor_get_stage (actor);
-  ClutterActor *child = mx_bin_get_child (MX_BIN (scroll));
   MxKineticScrollViewPrivate *priv = scroll->priv;
   gboolean decelerating = FALSE;
 
@@ -1261,7 +1253,7 @@ release_event (MxKineticScrollView *scroll,
 
   clutter_stage_set_motion_events_enabled (CLUTTER_STAGE (stage), TRUE);
 
-  if (child)
+  if (priv->child)
     {
       gfloat event_x = x_pos, event_y = y_pos;
 
@@ -1362,7 +1354,7 @@ release_event (MxKineticScrollView *scroll,
                */
 
               /* Get adjustments, work out y^n */
-              mx_scrollable_get_adjustments (MX_SCROLLABLE (child),
+              mx_scrollable_get_adjustments (MX_SCROLLABLE (priv->child),
                                              &hadjust, &vadjust);
               ax = (1.0 - 1.0 / pow (y, n + 1)) / (1.0 - 1.0 / y);
               ay = (1.0 - 1.0 / pow (y, n + 1)) / (1.0 - 1.0 / y);
@@ -1670,10 +1662,13 @@ mx_kinetic_scroll_view_event (ClutterActor *actor,
 
 
 static void
-mx_kinetic_scroll_view_actor_added_cb (ClutterContainer *container,
-                                       ClutterActor     *actor)
+mx_kinetic_scroll_view_actor_added (ClutterActor *container,
+                                    ClutterActor *actor)
 {
   MxKineticScrollViewPrivate *priv = MX_KINETIC_SCROLL_VIEW (container)->priv;
+
+  if (MX_IS_TOOLTIP (actor))
+    return;
 
   if (MX_IS_SCROLLABLE (actor))
     {
@@ -1695,11 +1690,13 @@ mx_kinetic_scroll_view_actor_added_cb (ClutterContainer *container,
 }
 
 static void
-mx_kinetic_scroll_view_actor_removed_cb (ClutterContainer *container,
-                                         ClutterActor     *actor)
+mx_kinetic_scroll_view_actor_removed (ClutterActor *container,
+                                      ClutterActor *actor)
 {
   MxKineticScrollViewPrivate *priv = MX_KINETIC_SCROLL_VIEW (container)->priv;
-  priv->child = NULL;
+
+  if (priv->child == actor)
+    priv->child = NULL;
 }
 
 static void
@@ -1727,11 +1724,9 @@ mx_kinetic_scroll_view_init (MxKineticScrollView *self)
   g_signal_connect (self, "touch-event",
                     G_CALLBACK (button_press_event_cb), self);
   g_signal_connect (self, "actor-added",
-                    G_CALLBACK (mx_kinetic_scroll_view_actor_added_cb), self);
+                    G_CALLBACK (mx_kinetic_scroll_view_actor_added), NULL);
   g_signal_connect (self, "actor-removed",
-                    G_CALLBACK (mx_kinetic_scroll_view_actor_removed_cb), self);
-
-  mx_bin_set_alignment (MX_BIN (self), MX_ALIGN_START, MX_ALIGN_START);
+                    G_CALLBACK (mx_kinetic_scroll_view_actor_removed), NULL);
 }
 
 /**

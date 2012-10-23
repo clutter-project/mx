@@ -266,9 +266,12 @@ change_widget (MxComboBox *box,
 
   class = G_OBJECT_GET_CLASS (actor);
 
-  if (MX_IS_SCROLLABLE (actor))
+  if (MX_IS_KINETIC_SCROLL_VIEW (actor))
+    clutter_actor_set_clip_to_allocation (actor, TRUE);
+
+  if (MX_IS_SCROLLABLE (actor) && !MX_IS_KINETIC_SCROLL_VIEW (actor))
     {
-      mx_bin_set_child (MX_BIN (data.scroll), actor);
+      clutter_actor_add_child (data.scroll, actor);
       clutter_actor_show (data.scroll);
       clutter_actor_hide (data.frame);
     }
@@ -339,10 +342,9 @@ change_widget (MxComboBox *box,
         {
           clutter_actor_set_x_align (actor, CLUTTER_ACTOR_ALIGN_CENTER);
           clutter_actor_set_y_align (actor, CLUTTER_ACTOR_ALIGN_CENTER);
-          clutter_actor_add_child (actor, child);
         }
-      else
-        mx_bin_set_child (MX_BIN (actor), child);
+
+      clutter_actor_add_child (actor, child);
     }
   else
     {
@@ -398,7 +400,7 @@ change_widget (MxComboBox *box,
 
   data.inspector = mx_scroll_view_new ();
   clutter_actor_set_width (data.inspector, 300);
-  mx_bin_set_child (MX_BIN (data.inspector), vbox);
+  clutter_actor_add_child (data.inspector, vbox);
   mx_table_insert_actor_with_properties (MX_TABLE (data.table), data.inspector,
                                          1, 1,
                                          "x-expand", FALSE,

@@ -3,7 +3,7 @@
  * mx-scroll-view.h: Container with scroll-bars
  *
  * Copyright 2008 OpenedHand
- * Copyright 2009, 2010 Intel Corporation.
+ * Copyright 2009, 2010, 2012 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,
@@ -54,12 +54,9 @@
 
 #include "config.h"
 
-static void clutter_container_iface_init (ClutterContainerIface *iface);
 static void mx_stylable_iface_init (MxStylableIface *iface);
 
-G_DEFINE_TYPE_WITH_CODE (MxScrollView, mx_scroll_view, MX_TYPE_BIN,
-                         G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTAINER,
-                                                clutter_container_iface_init)
+G_DEFINE_TYPE_WITH_CODE (MxScrollView, mx_scroll_view, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_STYLABLE,
                                                 mx_stylable_iface_init))
 
@@ -69,10 +66,6 @@ G_DEFINE_TYPE_WITH_CODE (MxScrollView, mx_scroll_view, MX_TYPE_BIN,
 
 struct _MxScrollViewPrivate
 {
-  /* a pointer to the child; this is actually stored
-   * inside MxBin:child, but we keep it to avoid
-   * calling mx_bin_get_child() every time we need it
-   */
   ClutterActor *child;
 
   ClutterActor *hscroll;
@@ -94,6 +87,15 @@ enum {
   PROP_SCROLL_POLICY,
   PROP_SCROLL_VISIBILITY
 };
+
+
+
+
+static void mx_scroll_view_actor_added (ClutterActor *container,
+                                        ClutterActor *actor);
+static void mx_scroll_view_actor_removed (ClutterActor *container,
+                                          ClutterActor *actor);
+
 
 static void
 mx_scroll_view_get_property (GObject    *object,
@@ -189,6 +191,8 @@ mx_scroll_view_paint (ClutterActor *actor)
   guint8 r, g, b;
   const gint shadow = 15;
 
+  CLUTTER_ACTOR_CLASS (mx_scroll_view_parent_class)->paint (actor);
+
   mx_stylable_get (MX_STYLABLE (actor), "background-color", &color, NULL);
 
   r = color->red;
@@ -200,16 +204,15 @@ mx_scroll_view_paint (ClutterActor *actor)
   if (priv->child)
     {
       clutter_actor_get_allocation_box (priv->child, &box);
+
       cogl_clip_push_rectangle (box.x1, box.y1,
                                 box.x2 - box.x1,
                                 box.y2 - box.y1);
+
+      clutter_actor_paint (priv->child);
+
+      cogl_clip_pop ();
     }
-
-  CLUTTER_ACTOR_CLASS (mx_scroll_view_parent_class)->paint (actor);
-
-  if (priv->child)
-    cogl_clip_pop ();
-
 
   clutter_actor_get_allocation_box (actor, &box);
 
@@ -342,20 +345,23 @@ mx_scroll_view_pick (ClutterActor       *actor,
 {
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (actor)->priv;
 
+  CLUTTER_ACTOR_CLASS (mx_scroll_view_parent_class)->pick (actor, color);
+
   /* Chain up so we get a bounding box pained (if we are reactive) */
   if (priv->child)
     {
       ClutterActorBox box;
 
       clutter_actor_get_allocation_box (priv->child, &box);
+
       cogl_clip_push_rectangle (box.x1, box.y1,
                                 box.x2 - box.x1, box.y2 - box.y1);
+
+      clutter_actor_paint (priv->child);
+
+      cogl_clip_pop ();
     }
 
-  CLUTTER_ACTOR_CLASS (mx_scroll_view_parent_class)->pick (actor, color);
-
-  if (priv->child)
-    cogl_clip_pop ();
 
   /* paint our custom children */
   if (CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
@@ -892,17 +898,24 @@ mx_scroll_view_init (MxScrollView *self)
 
   g_signal_connect (self, "style-changed",
                     G_CALLBACK (mx_scroll_view_style_changed), NULL);
+  g_signal_connect (self, "actor-added",
+                    G_CALLBACK (mx_scroll_view_actor_added), NULL);
+  g_signal_connect (self, "actor-removed",
+                    G_CALLBACK (mx_scroll_view_actor_removed), NULL);
 
 }
 
 static void
-mx_scroll_view_actor_added (ClutterContainer *container,
-                            ClutterActor     *actor)
+mx_scroll_view_actor_added (ClutterActor *container,
+                            ClutterActor *actor)
 {
   MxScrollView *self = MX_SCROLL_VIEW (container);
   MxScrollViewPrivate *priv = self->priv;
 
   if (MX_IS_SCROLL_BAR (actor))
+    return;
+
+  if (MX_IS_TOOLTIP (actor))
     return;
 
   if (MX_IS_SCROLLABLE (actor))
@@ -929,8 +942,8 @@ mx_scroll_view_actor_added (ClutterContainer *container,
 }
 
 static void
-mx_scroll_view_actor_removed (ClutterContainer *container,
-                              ClutterActor     *actor)
+mx_scroll_view_actor_removed (ClutterActor *container,
+                              ClutterActor *actor)
 {
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (container)->priv;
 
@@ -951,40 +964,6 @@ mx_scroll_view_actor_removed (ClutterContainer *container,
     }
 }
 
-static void
-mx_scroll_view_foreach_with_internals (ClutterContainer *container,
-                                       ClutterCallback   callback,
-                                       gpointer          user_data)
-{
-  MxScrollViewPrivate *priv = MX_SCROLL_VIEW (container)->priv;
-
-  if (priv->child != NULL)
-    callback (priv->child, user_data);
-
-  if (priv->hscroll != NULL)
-    callback (priv->hscroll, user_data);
-
-  if (priv->vscroll != NULL)
-    callback (priv->vscroll, user_data);
-}
-
-static void
-clutter_container_iface_init (ClutterContainerIface *iface)
-{
-  iface->foreach_with_internals = mx_scroll_view_foreach_with_internals;
-
-  iface->actor_added = mx_scroll_view_actor_added;
-  iface->actor_removed = mx_scroll_view_actor_removed;
-}
-
-/**
- * mx_scroll_view_get_hscroll_bar:
- * @scroll: a #MxScrollView
- *
- * Gets the horizontal scrollbar of the scrollbiew
- *
- * Return value: (transfer none): the horizontal #MxScrollbar
- */
 ClutterActor *
 mx_scroll_view_new (void)
 {

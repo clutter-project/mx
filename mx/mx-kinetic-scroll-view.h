@@ -1,7 +1,7 @@
 /* mx-kinetic-scroll-view.h: Kinetic scrolling container actor
  *
  * Copyright (C) 2008 OpenedHand
- * Copyright (C) 2010 Intel Corporation.
+ * Copyright (C) 2010, 2012 Intel Corporation.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,7 @@
 #define __MX_KINETIC_SCROLL_VIEW_H__
 
 #include <glib-object.h>
-#include <mx/mx-bin.h>
+#include <mx/mx-widget.h>
 
 G_BEGIN_DECLS
 
@@ -56,14 +56,14 @@ typedef enum {
 struct _MxKineticScrollView
 {
   /*< private >*/
-  MxBin                  parent_instance;
+  MxWidget parent_instance;
 
   MxKineticScrollViewPrivate *priv;
 };
 
 struct _MxKineticScrollViewClass
 {
-  MxBinClass parent_class;
+  MxWidgetClass parent_class;
 };
 
 GType mx_kinetic_scroll_view_get_type (void) G_GNUC_CONST;
