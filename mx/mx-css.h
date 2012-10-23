@@ -45,5 +45,7 @@ gboolean       mx_style_sheet_add_from_data  (MxStyleSheet  *sheet,
                                               GError       **error);
 GHashTable*    mx_style_sheet_get_properties (MxStyleSheet *sheet,
                                               MxStylable   *node);
+void           mx_style_sheet_remove         (MxStyleSheet *sheet,
+                                              const gchar  *id);
 
 #endif /* MX_CSS_H */
