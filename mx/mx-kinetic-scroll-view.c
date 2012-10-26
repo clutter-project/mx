@@ -516,12 +516,17 @@ mx_kinetic_scroll_view_allocate (ClutterActor           *actor,
                                  ClutterAllocationFlags  flags)
 {
   MxKineticScrollViewPrivate *priv = MX_KINETIC_SCROLL_VIEW (actor)->priv;
+  ClutterActorBox childbox;
 
   CLUTTER_ACTOR_CLASS (mx_kinetic_scroll_view_parent_class)->
     allocate (actor, box, flags);
 
+
   if (priv->child)
-    clutter_actor_allocate (priv->child, box, flags);
+    {
+      mx_widget_get_available_area (actor, box, &childbox);
+      clutter_actor_allocate (priv->child, &childbox, flags);
+    }
 }
 
 static void
