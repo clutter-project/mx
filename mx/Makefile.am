@@ -307,6 +307,25 @@ typelibsdir = $(libdir)/girepository-1.0/
 typelibs_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
 
 CLEANFILES += $(gir_DATA) $(typelibs_DATA)
+
+# Vapi Generation
+if ENABLE_VAPIGEN
+-include $(VAPIGEN_MAKEFILE)
+
+mx-@MX_API_VERSION@.vapi: Mx-@MX_API_VERSION@.gir
+
+VAPIGEN_VAPIS = mx-@MX_API_VERSION@.vapi
+
+mx_@MX_API_VERSION_AM@_vapi_DEPS = atk clutter-1.0 pango cogl-1.0 cogl-pango-1.0 pangocairo
+mx_@MX_API_VERSION_AM@_vapi_FILES = Mx-@MX_API_VERSION@.gir
+
+vapidir = $(datadir)/vala/vapi
+vapi_DATA = $(VAPIGEN_VAPIS)
+
+
+endif #ENABLE_VAPIGEN
+
+
 endif # HAVE_INTROSPECTION
 
 -include $(top_srcdir)/git.mk

@@ -253,6 +253,7 @@ GTK_DOC_CHECK([1.14], [--flavour no-tmpl])
 ])
 
 GOBJECT_INTROSPECTION_CHECK([0.6.4])
+VAPIGEN_CHECK()
 
 AC_CONFIG_FILES([
         Makefile
