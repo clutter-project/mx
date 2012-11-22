@@ -1698,6 +1698,12 @@ mx_kinetic_scroll_view_actor_added (ClutterActor *container,
   if (MX_IS_TOOLTIP (actor))
     return;
 
+  if (priv->child)
+    {
+      clutter_actor_remove_child (container, priv->child);
+      priv->child = NULL;
+    }
+
   if (MX_IS_SCROLLABLE (actor))
     {
       MxAdjustment *hadjust, *vadjust;
