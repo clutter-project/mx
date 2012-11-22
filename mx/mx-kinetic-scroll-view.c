@@ -42,16 +42,20 @@
 #include "mx-marshal.h"
 #include "mx-private.h"
 #include "mx-scrollable.h"
+#include "mx-focusable.h"
 #include <math.h>
 
 #define _KINETIC_DEBUG 0
 
 static void mx_scrollable_iface_init (MxScrollableIface *iface);
+static void mx_kinetic_scroll_view_focusable_iface_init (MxFocusableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (MxKineticScrollView,
                          mx_kinetic_scroll_view, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_SCROLLABLE,
-                                                mx_scrollable_iface_init))
+                                                mx_scrollable_iface_init)
+                         G_IMPLEMENT_INTERFACE (MX_TYPE_FOCUSABLE,
+                                                mx_kinetic_scroll_view_focusable_iface_init))
 
 #define KINETIC_SCROLL_VIEW_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), \
                                         MX_TYPE_KINETIC_SCROLL_VIEW, \
@@ -161,6 +165,25 @@ _log_debug (MxKineticScrollView *scroll, const gchar *fmt, ...)
 #else
 # define LOG_DEBUG(args...)
 #endif /* _KINETIC_DEBUG */
+
+static MxFocusable*
+mx_kinetic_scroll_view_accept_focus (MxFocusable *focusable,
+                                     MxFocusHint  hint)
+{
+  MxKineticScrollViewPrivate *priv = MX_KINETIC_SCROLL_VIEW (focusable)->priv;
+
+  if (MX_IS_FOCUSABLE (priv->child))
+    return mx_focusable_accept_focus (MX_FOCUSABLE (priv->child), hint);
+  else
+    return NULL;
+}
+
+static void
+mx_kinetic_scroll_view_focusable_iface_init (MxFocusableIface *iface)
+{
+  iface->accept_focus = mx_kinetic_scroll_view_accept_focus;
+}
+
 
 static void
 emit_cursor_actor_cancel (MxKineticScrollView *scroll,
