@@ -554,8 +554,8 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
                                       padding.left + x,
                                       padding.top + y);
           clutter_actor_set_pivot_point (priv->toolbar,
-                                         width / 2.f - padding.left,
-                                         height / 2.f - padding.top);
+                                         (width / 2.f - padding.left) / clutter_actor_get_width (priv->toolbar),
+                                         (height / 2.f - padding.top) / clutter_actor_get_height (priv->toolbar));
           clutter_actor_set_rotation_angle (priv->toolbar,
                                             CLUTTER_Z_AXIS,
                                             priv->angle);
@@ -581,8 +581,8 @@ mx_window_allocation_changed_cb (ClutterActor           *actor,
                     NULL);
       clutter_actor_set_rotation_angle (priv->child, CLUTTER_Z_AXIS, priv->angle);
       clutter_actor_set_pivot_point (priv->child,
-                                     width / 2.f - padding.left,
-                                     height / 2.f - padding.top - toolbar_height);
+                                     (width / 2.f - padding.left) / clutter_actor_get_width (priv->child),
+                                     (height / 2.f - padding.top - toolbar_height) / clutter_actor_get_height (priv->child));
     }
 
   if (priv->resize_grip)
@@ -1668,4 +1668,3 @@ mx_window_hide (MxWindow *window)
   g_return_if_fail (MX_IS_WINDOW (window));
   clutter_actor_hide (window->priv->stage);
 }
-
