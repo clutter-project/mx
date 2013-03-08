@@ -46,9 +46,6 @@
       <title>Containers</title>
       <xi:include href="xml/mx-box-layout-child.xml"/>
       <xi:include href="xml/mx-box-layout.xml"/>
-      <xi:include href="xml/mx-deform-bow-tie.xml"/>
-      <xi:include href="xml/mx-deform-page-turn.xml"/>
-      <xi:include href="xml/mx-deform-waves.xml"/>
       <xi:include href="xml/mx-expander.xml"/>
       <xi:include href="xml/mx-grid.xml"/>
       <xi:include href="xml/mx-pager.xml"/>
@@ -58,7 +55,6 @@
       <xi:include href="xml/mx-table.xml"/>
       <xi:include href="xml/mx-viewport.xml"/>
       <xi:include href="xml/mx-notebook.xml"/>
-      <xi:include href="xml/mx-offscreen.xml"/>
       <xi:include href="xml/mx-stack-child.xml"/>
       <xi:include href="xml/mx-stack.xml"/>
     </chapter>
@@ -89,7 +85,6 @@
       <xi:include href="xml/mx-button-group.xml"/>
       <xi:include href="xml/mx-bin.xml"/>
       <xi:include href="xml/mx-clipboard.xml"/>
-      <xi:include href="xml/mx-deform-texture.xml"/>
       <xi:include href="xml/mx-focus-manager.xml"/>
       <xi:include href="xml/mx-floating-widget.xml"/>
       <xi:include href="xml/mx-icon-theme.xml"/>
