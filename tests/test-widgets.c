@@ -258,7 +258,7 @@ change_widget (MxComboBox *box,
 
   data.inspector = mx_scroll_view_new ();
   clutter_actor_set_width (data.inspector, 300);
-  mx_bin_set_child (MX_BIN (data.inspector), vbox);
+  clutter_actor_add_child (data.inspector, vbox);
   mx_table_insert_actor_with_properties (MX_TABLE (data.table), data.inspector,
                                          0, 1,
                                          "x-expand", FALSE,
