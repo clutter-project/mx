@@ -29,7 +29,6 @@
 #include <mx/mx-actor-manager.h>
 #include <mx/mx-adjustment.h>
 #include <mx/mx-application.h>
-#include <mx/mx-bin.h>
 #include <mx/mx-box-layout.h>
 #include <mx/mx-box-layout-child.h>
 #include <mx/mx-button.h>

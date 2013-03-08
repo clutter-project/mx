@@ -552,30 +552,6 @@ MX_BOX_LAYOUT_CHILD_GET_CLASS
 </SECTION>
 
 <SECTION>
-<FILE>mx-bin</FILE>
-<TITLE>MxBin</TITLE>
-MxBin
-MxBinClass
-mx_bin_allocate_child
-mx_bin_set_child
-mx_bin_get_child
-mx_bin_set_alignment
-mx_bin_get_alignment
-mx_bin_set_fill
-mx_bin_get_fill
-<SUBSECTION Private>
-MxBinPrivate
-<SUBSECTION Standard>
-MX_BIN
-MX_IS_BIN
-MX_TYPE_BIN
-mx_bin_get_type
-MX_BIN_CLASS
-MX_IS_BIN_CLASS
-MX_BIN_GET_CLASS
-</SECTION>
-
-<SECTION>
 <FILE>mx-kinetic-scroll-view</FILE>
 <TITLE>MxKineticScrollView</TITLE>
 MxKineticScrollView

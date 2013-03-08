@@ -50,7 +50,6 @@ source_h = \
 	$(top_srcdir)/mx/mx-actor-manager.h	\
 	$(top_srcdir)/mx/mx-adjustment.h		\
 	$(top_srcdir)/mx/mx-application.h	\
-	$(top_srcdir)/mx/mx-bin.h			\
 	$(top_srcdir)/mx/mx-box-layout.h		\
 	$(top_srcdir)/mx/mx-box-layout-child.h	\
 	$(top_srcdir)/mx/mx-combo-box.h 		\
@@ -121,7 +120,6 @@ source_c = \
 	$(top_srcdir)/mx/mx-action.c 		\
 	$(top_srcdir)/mx/mx-actor-manager.c 	\
 	$(top_srcdir)/mx/mx-application.c	\
-	$(top_srcdir)/mx/mx-bin.c			\
 	$(top_srcdir)/mx/mx-box-layout.c		\
 	$(top_srcdir)/mx/mx-box-layout-child.c	\
 	$(top_srcdir)/mx/mx-css.c		\

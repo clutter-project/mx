@@ -93,19 +93,7 @@ mx_builder_widget_tree_traverse_children (MxBuilder *builder,
 
       if (mx_builder_is_container (children->data))
         {
-          if (MX_IS_BIN (children->data))
-            {
-              ClutterActor *bin_child;
-
-              bin_child = mx_bin_get_child (children->data);
-
-              if (bin_child)
-                subchildren = g_list_append (NULL, bin_child);
-              else
-                subchildren = NULL;
-            }
-          else
-            subchildren = clutter_actor_get_children (children->data);
+          subchildren = clutter_actor_get_children (children->data);
 
           if (subchildren)
             mx_builder_widget_tree_traverse_children (builder, subchildren,
@@ -413,7 +401,7 @@ mx_builder_set_selected_widget (MxBuilder    *builder,
 
   /* create the property editors */
   vbox = mx_box_layout_new_with_orientation (MX_ORIENTATION_VERTICAL);
-  mx_bin_set_child (MX_BIN (scroll), vbox);
+  clutter_actor_add_child (scroll, vbox);
 
   class = G_OBJECT_GET_CLASS (new_widget);
   properties = g_object_class_list_properties (class, &n_properties);
@@ -433,7 +421,7 @@ mx_builder_set_selected_widget (MxBuilder    *builder,
   clutter_actor_insert_child_at_index (vbox, packing_properties, -1);
 
   /* add the property inspector to the scroll view */
-  mx_bin_set_child (MX_BIN (scroll), vbox);
+  clutter_actor_add_child (scroll, vbox);
 
   /* find the tree item to select */
   children = clutter_actor_get_children (builder->tree);
@@ -521,10 +509,7 @@ mx_builder_add_widget (MxBuilder  *builder,
         parent = clutter_actor_get_parent (parent);
     }
 
-  if (MX_IS_BIN (parent))
-    mx_bin_set_child (MX_BIN (parent), new_widget);
-  else
-    clutter_actor_add_child (parent, new_widget);
+  clutter_actor_add_child (parent, new_widget);
 
   pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (new_widget), "label");
   if (pspec && g_type_is_a (pspec->value_type, G_TYPE_STRING))
@@ -680,16 +665,7 @@ save_children (MxBuilder *builder,
 
       if (mx_builder_is_container (child))
         {
-          if (MX_IS_BIN (child))
-            {
-              ClutterActor *bin_child = mx_bin_get_child (MX_BIN (child));
-              if (bin_child)
-                subchildren = g_list_append (NULL, bin_child);
-              else
-                subchildren = NULL;
-            }
-          else
-            subchildren = clutter_actor_get_children (child);
+          subchildren = clutter_actor_get_children (child);
 
           if (subchildren)
             {
@@ -697,19 +673,7 @@ save_children (MxBuilder *builder,
 
               subarray = save_children (builder, subchildren);
 
-              if (MX_IS_BIN (child))
-                {
-                  JsonNode *node;
-
-                  node = json_array_dup_element (subarray, 0);
-
-                  json_object_set_member (object, "child", node);
-
-                  json_array_unref (subarray);
-
-                }
-              else
-                json_object_set_array_member (object, "children", subarray);
+              json_object_set_array_member (object, "children", subarray);
             }
         }
 
@@ -816,7 +780,7 @@ mx_builder_application_activate (GApplication *app,
   scroll = mx_scroll_view_new ();
   builder->tree = mx_box_layout_new_with_orientation (MX_ORIENTATION_VERTICAL);
   clutter_actor_set_width (builder->tree, 150);
-  mx_bin_set_child (MX_BIN (scroll), builder->tree);
+  clutter_actor_add_child (scroll, builder->tree);
   clutter_actor_insert_child_at_index (hbox, scroll, 0);
 
   preview = mx_box_layout_new_with_orientation (MX_ORIENTATION_VERTICAL);
@@ -922,7 +886,7 @@ mx_builder_open_file (GApplication *application,
               while (clutter_actor_get_parent (toplevel))
                 toplevel = clutter_actor_get_parent (toplevel);
 
-              mx_bin_set_child (MX_BIN (builder->frame), toplevel);
+              clutter_actor_add_child (builder->frame, toplevel);
               mx_builder_set_selected_widget (builder, toplevel);
               found = TRUE;
             }

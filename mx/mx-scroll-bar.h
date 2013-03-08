@@ -32,7 +32,7 @@
 #define __MX_SCROLL_BAR_H__
 
 #include <mx/mx-adjustment.h>
-#include <mx/mx-bin.h>
+#include <mx/mx-widget.h>
 
 G_BEGIN_DECLS
 

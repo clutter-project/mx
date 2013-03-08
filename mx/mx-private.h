@@ -75,10 +75,6 @@ ClutterActor *_mx_widget_get_dnd_clone (MxWidget *widget);
 
 void _mx_box_layout_start_animation (MxBoxLayout *box);
 
-void _mx_bin_get_align_factors (MxBin   *bin,
-                                gdouble *x_align,
-                                gdouble *y_align);
-
 /* used by MxTableChild to update row/column count */
 void _mx_table_update_row_col (MxTable      *table,
                                MxTableChild *meta);
