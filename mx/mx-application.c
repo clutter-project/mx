@@ -290,8 +290,6 @@ mx_application_new (const gchar *application_id,
 
   g_return_val_if_fail (g_application_id_is_valid (application_id), NULL);
 
-  g_type_init ();
-
   app = g_object_new (MX_TYPE_APPLICATION,
                       "application-id", application_id,
                       "flags", flags,
