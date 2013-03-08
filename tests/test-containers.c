@@ -334,7 +334,7 @@ change_widget (MxComboBox *box,
       if (MX_IS_KINETIC_SCROLL_VIEW (actor))
         {
           ClutterActor *viewport = mx_viewport_new ();
-          mx_bin_set_child (MX_BIN (viewport), child);
+          clutter_actor_add_child (viewport, child);
           child = viewport;
         }
 

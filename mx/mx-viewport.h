@@ -31,8 +31,7 @@
 #ifndef __MX_VIEWPORT_H__
 #define __MX_VIEWPORT_H__
 
-#include <clutter/clutter.h>
-#include <mx/mx-bin.h>
+#include <mx/mx-widget.h>
 
 G_BEGIN_DECLS
 
@@ -56,14 +55,14 @@ typedef struct _MxViewportClass     MxViewportClass;
 struct _MxViewport
 {
   /*< private >*/
-  MxBin parent;
+  MxWidget parent;
 
   MxViewportPrivate *priv;
 };
 
 struct _MxViewportClass
 {
-  MxBinClass parent_class;
+  MxWidgetClass parent_class;
 
   /* padding for future expansion */
   void (*_padding_0) (void);

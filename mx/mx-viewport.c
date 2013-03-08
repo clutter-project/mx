@@ -59,7 +59,6 @@
 #include "mx-adjustment.h"
 #include "mx-scrollable.h"
 #include "mx-private.h"
-#include "mx-bin.h"
 
 static void scrollable_interface_init (MxScrollableIface *iface);
 
@@ -71,7 +70,7 @@ static void scrollable_get_adjustments (MxScrollable  *scrollable,
                                         MxAdjustment **hadjustment,
                                         MxAdjustment **vadjustment);
 
-G_DEFINE_TYPE_WITH_CODE (MxViewport, mx_viewport, MX_TYPE_BIN,
+G_DEFINE_TYPE_WITH_CODE (MxViewport, mx_viewport, MX_TYPE_WIDGET,
                          G_IMPLEMENT_INTERFACE (MX_TYPE_SCROLLABLE,
                                                 scrollable_interface_init))
 
@@ -89,6 +88,8 @@ struct _MxViewportPrivate
   MxAdjustment *vadjustment;
 
   gboolean      sync_adjustments;
+
+  ClutterActor *child;
 };
 
 enum
@@ -227,83 +228,19 @@ mx_viewport_allocate (ClutterActor          *self,
                       ClutterAllocationFlags flags)
 {
   MxViewportPrivate *priv = MX_VIEWPORT (self)->priv;
-  MxPadding padding;
-  ClutterActor *child;
   gfloat width, height;
-  gfloat available_width, available_height;
+  ClutterActorBox childbox;
 
   /* Chain up. */
   CLUTTER_ACTOR_CLASS (mx_viewport_parent_class)-> allocate (self, box, flags);
 
-  mx_widget_get_padding (MX_WIDGET (self), &padding);
-  available_width = box->x2 - box->x1 - padding.left - padding.right;
-  available_height = box->y2 - box->y1 - padding.top - padding.bottom;
+  mx_widget_get_available_area (MX_WIDGET (self), box, &childbox);
 
-  child = mx_bin_get_child (MX_BIN (self));
-
-  if (child)
+  if (priv->child)
     {
-      gfloat natural_width, natural_height;
-      ClutterActorBox child_box;
-      MxAlign x_align, y_align;
-      gboolean x_fill, y_fill;
-
-      clutter_actor_get_preferred_size (child, NULL, NULL, &natural_width,
-                                        &natural_height);
-      mx_bin_get_fill (MX_BIN (self), &x_fill, &y_fill);
-
-      if (x_fill && (available_width > natural_width))
-        width = available_width;
-      else
-        width = natural_width;
-
-      if (y_fill && (available_height > natural_height))
-        height = available_height;
-      else
-        height = natural_height;
-
-      mx_bin_get_alignment (MX_BIN (self), &x_align, &y_align);
-
-      if (!x_fill && width < available_width)
-        {
-          switch (x_align)
-            {
-            case MX_ALIGN_START:
-              child_box.x1 = padding.left;
-              break;
-            case MX_ALIGN_MIDDLE:
-              child_box.x1 = padding.left + (available_width - width) / 2.f;
-              break;
-            case MX_ALIGN_END:
-              child_box.x1 = box->x2 - box->x1 - padding.right - width;
-              break;
-            }
-        }
-      else
-        child_box.x1 = padding.left;
-
-      if (!y_fill && height < available_height)
-        {
-          switch (y_align)
-            {
-            case MX_ALIGN_START:
-              child_box.y1 = padding.top;
-              break;
-            case MX_ALIGN_MIDDLE:
-              child_box.y1 = padding.top + (available_height - height) / 2.f;
-              break;
-            case MX_ALIGN_END:
-              child_box.y1 = box->y2 - box->y1 - padding.bottom - height;
-              break;
-            }
-        }
-      else
-        child_box.y1 = padding.top;
-
-      child_box.x2 = child_box.x1 + width;
-      child_box.y2 = child_box.y1 + height;
-
-      clutter_actor_allocate (child, &child_box, flags);
+      clutter_actor_get_preferred_size (priv->child, NULL, &width, NULL,
+                                        &height);
+      clutter_actor_allocate (priv->child, &childbox, flags);
     }
   else
     {
@@ -311,13 +248,13 @@ mx_viewport_allocate (ClutterActor          *self,
       height = 0;
     }
 
-
-
   /* Refresh adjustments */
   if (priv->sync_adjustments)
     {
       if (priv->hadjustment)
         {
+          gfloat available_width = clutter_actor_box_get_width (&childbox);
+
           g_object_set (G_OBJECT (priv->hadjustment),
                         "lower", 0.0,
                         "page-size", available_width,
@@ -329,6 +266,8 @@ mx_viewport_allocate (ClutterActor          *self,
 
       if (priv->vadjustment)
         {
+          gfloat available_height = clutter_actor_box_get_height (&childbox);
+
           g_object_set (G_OBJECT (priv->vadjustment),
                         "lower", 0.0,
                         "page-size", available_height,
@@ -342,7 +281,7 @@ mx_viewport_allocate (ClutterActor          *self,
 
 static gboolean
 mx_viewport_get_paint_volume (ClutterActor       *actor,
-                          ClutterPaintVolume *volume)
+                              ClutterPaintVolume *volume)
 {
   MxViewportPrivate *priv = MX_VIEWPORT (actor)->priv;
   ClutterVertex vertex;
@@ -385,6 +324,91 @@ mx_viewport_apply_transform (ClutterActor *actor,
   cogl_matrix_translate (matrix, (int) -x, (int) -y, 0);
 }
 
+static void
+mx_viewport_paint (ClutterActor *self)
+{
+  MxViewportPrivate *priv = ((MxViewport *) self)->priv;
+
+  CLUTTER_ACTOR_CLASS (mx_viewport_parent_class)->paint (self);
+
+  if (priv->child)
+    clutter_actor_paint (priv->child);
+}
+
+static void
+mx_viewport_pick (ClutterActor       *self,
+                  const ClutterColor *color)
+{
+  MxViewportPrivate *priv = ((MxViewport *) self)->priv;
+
+  CLUTTER_ACTOR_CLASS (mx_viewport_parent_class)->pick (self, color);
+
+  if (priv->child)
+    clutter_actor_paint (priv->child);
+}
+
+static void
+mx_viewport_get_preferred_width (ClutterActor *actor,
+                                 gfloat        for_height,
+                                 gfloat       *min_width,
+                                 gfloat       *pref_width)
+{
+  MxViewportPrivate *priv = ((MxViewport *) actor)->priv;
+  MxPadding padding;
+
+  mx_widget_get_padding (MX_WIDGET (actor), &padding);
+
+  if (min_width)
+    *min_width = 0;
+
+  if (pref_width)
+    *pref_width = 0;
+
+  if (priv->child)
+    {
+      clutter_actor_get_preferred_width (priv->child,
+                                         for_height - padding.top - padding.bottom,
+                                         min_width, pref_width);
+    }
+
+  if (min_width)
+    *min_width += padding.left + padding.right;
+
+  if (pref_width)
+    *pref_width += padding.left + padding.right;
+
+}
+
+static void
+mx_viewport_get_preferred_height (ClutterActor *actor,
+                                  gfloat        for_width,
+                                  gfloat       *min_height,
+                                  gfloat       *pref_height)
+{
+  MxViewportPrivate *priv = ((MxViewport *) actor)->priv;
+  MxPadding padding;
+
+  mx_widget_get_padding (MX_WIDGET (actor), &padding);
+
+  if (min_height)
+    *min_height = 0;
+
+  if (pref_height)
+    *pref_height = 0;
+
+  if (priv->child)
+    {
+      clutter_actor_get_preferred_height (priv->child,
+                                          for_width - padding.left - padding.right,
+                                          min_height, pref_height);
+    }
+
+  if (min_height)
+    *min_height += padding.top + padding.bottom;
+
+  if (pref_height)
+    *pref_height += padding.top + padding.bottom;
+}
 
 static void
 mx_viewport_class_init (MxViewportClass *klass)
@@ -402,6 +426,10 @@ mx_viewport_class_init (MxViewportClass *klass)
   actor_class->allocate = mx_viewport_allocate;
   actor_class->get_paint_volume = mx_viewport_get_paint_volume;
   actor_class->apply_transform = mx_viewport_apply_transform;
+  actor_class->paint = mx_viewport_paint;
+  actor_class->pick = mx_viewport_pick;
+  actor_class->get_preferred_width = mx_viewport_get_preferred_width;
+  actor_class->get_preferred_height = mx_viewport_get_preferred_height;
 
 
   pspec = g_param_spec_float ("x-origin",
@@ -592,6 +620,32 @@ scrollable_interface_init (MxScrollableIface *iface)
 }
 
 static void
+mx_viewport_actor_added (ClutterActor *container,
+                         ClutterActor *actor)
+{
+  MxViewportPrivate *priv = MX_VIEWPORT (container)->priv;
+
+  if (MX_IS_TOOLTIP (actor))
+    return;
+
+  if (priv->child)
+    clutter_actor_remove_child (container, priv->child);
+
+  priv->child = actor;
+}
+
+static void
+mx_viewport_actor_removed (ClutterActor *container,
+                           ClutterActor *actor)
+{
+  MxViewportPrivate *priv = MX_VIEWPORT (container)->priv;
+
+  if (priv->child == actor)
+    priv->child = NULL;
+}
+
+
+static void
 mx_viewport_init (MxViewport *self)
 {
   self->priv = VIEWPORT_PRIVATE (self);
@@ -603,6 +657,11 @@ mx_viewport_init (MxViewport *self)
                 "x-align", MX_ALIGN_START,
                 "y-align", MX_ALIGN_START,
                 NULL);
+
+  g_signal_connect (self, "actor-added", G_CALLBACK (mx_viewport_actor_added),
+                    NULL);
+  g_signal_connect (self, "actor-removed", G_CALLBACK (mx_viewport_actor_removed),
+                    NULL);
 }
 
 ClutterActor *
