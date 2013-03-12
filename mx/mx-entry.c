@@ -53,6 +53,7 @@
 #include <glib.h>
 
 #include <clutter/clutter.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
 #ifdef HAVE_CLUTTER_IMCONTEXT
 #include <clutter-imcontext/clutter-imtext.h>
 #endif
@@ -1719,13 +1720,27 @@ _mx_entry_set_icon_from_file (MxEntry       *entry,
 
   if (filename)
     {
-      MxTextureCache *cache;
+      ClutterContent *content;
+      GdkPixbuf *pixbuf;
 
-      cache = mx_texture_cache_get_default ();
+      *icon = clutter_actor_new ();
 
+      content = clutter_image_new ();
 
+      pixbuf = gdk_pixbuf_new_from_file (filename, NULL);
+      content = clutter_image_new ();
+      clutter_image_set_data (CLUTTER_IMAGE (content),
+                              gdk_pixbuf_get_pixels (pixbuf),
+                              gdk_pixbuf_get_has_alpha (pixbuf)
+                              ? COGL_PIXEL_FORMAT_RGBA_8888
+                              : COGL_PIXEL_FORMAT_RGB_888,
+                              gdk_pixbuf_get_width (pixbuf),
+                              gdk_pixbuf_get_height (pixbuf),
+                              gdk_pixbuf_get_rowstride (pixbuf),
+                              NULL);
+      g_object_unref (pixbuf);
 
-      *icon = (ClutterActor*) mx_texture_cache_get_texture (cache, filename);
+      clutter_actor_set_content (*icon, content);
 
       if (!*icon)
           return;

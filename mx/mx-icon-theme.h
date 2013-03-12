@@ -99,10 +99,6 @@ CoglHandle      mx_icon_theme_lookup (MxIconTheme *theme,
                                       const gchar *icon_name,
                                       gint         size);
 
-ClutterTexture *mx_icon_theme_lookup_texture (MxIconTheme *theme,
-                                              const gchar *icon_name,
-                                              gint         size);
-
 gboolean        mx_icon_theme_has_icon (MxIconTheme *theme,
                                         const gchar *icon_name);
 

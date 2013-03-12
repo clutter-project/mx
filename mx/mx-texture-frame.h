@@ -32,79 +32,16 @@
 
 G_BEGIN_DECLS
 
-#define MX_TYPE_TEXTURE_FRAME                 (mx_texture_frame_get_type ())
-#define MX_TEXTURE_FRAME(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), MX_TYPE_TEXTURE_FRAME, MxTextureFrame))
-#define MX_TEXTURE_FRAME_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), MX_TYPE_TEXTURE_FRAME, MxTextureFrameClass))
-#define MX_IS_TEXTURE_FRAME(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MX_TYPE_TEXTURE_FRAME))
-#define MX_IS_TEXTURE_FRAME_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), MX_TYPE_TEXTURE_FRAME))
-#define MX_TEXTURE_FRAME_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), MX_TYPE_TEXTURE_FRAME, MxTextureFrameClass))
-
-typedef struct _MxTextureFrame                MxTextureFrame;
-typedef struct _MxTextureFramePrivate         MxTextureFramePrivate;
-typedef struct _MxTextureFrameClass           MxTextureFrameClass;
-
-/**
- * MxTextureFrame:
- *
- * The contents of this structure are private and should only be accessed
- * through the public API.
- */
-struct _MxTextureFrame
-{
-  /*< private >*/
-  ClutterActor parent_instance;
-
-  MxTextureFramePrivate    *priv;
-};
-
-struct _MxTextureFrameClass
-{
-  ClutterActorClass parent_class;
-
-  /* padding for future expansion */
-  void (*_padding_0) (void);
-  void (*_padding_1) (void);
-  void (*_padding_2) (void);
-  void (*_padding_3) (void);
-  void (*_padding_4) (void);
-};
-
 GType mx_texture_frame_get_type (void) G_GNUC_CONST;
 
-ClutterActor   *mx_texture_frame_new                (ClutterTexture *texture,
-                                                     gfloat          top,
-                                                     gfloat          right,
-                                                     gfloat          bottom,
-                                                     gfloat          left);
-void            mx_texture_frame_set_parent_texture (MxTextureFrame *frame,
-                                                     ClutterTexture *texture);
-ClutterTexture *mx_texture_frame_get_parent_texture (MxTextureFrame *frame);
-void            mx_texture_frame_set_border_values  (MxTextureFrame *frame,
-                                                     gfloat          top,
-                                                     gfloat          right,
-                                                     gfloat          bottom,
-                                                     gfloat          left);
-void            mx_texture_frame_get_border_values  (MxTextureFrame *frame,
-                                                     gfloat         *top,
-                                                     gfloat         *right,
-                                                     gfloat         *bottom,
-                                                     gfloat         *left);
-
-void mx_texture_frame_paint_texture    (CoglHandle  texture,
-                                        guint8      opacity,
-                                        gfloat      top,
-                                        gfloat      right,
-                                        gfloat      bottom,
-                                        gfloat      left,
-                                        gfloat      width,
-                                        gfloat      height);
-void mx_texture_frame_paint_background (CoglHandle  texture,
-                                        guint8      opacity,
-                                        gfloat      x,
-                                        gfloat      y,
-                                        gfloat      width,
-                                        gfloat      height);
-
+void mx_texture_frame_paint_texture (CoglHandle  texture,
+                                     guint8      opacity,
+                                     gfloat      top,
+                                     gfloat      right,
+                                     gfloat      bottom,
+                                     gfloat      left,
+                                     gfloat      width,
+                                     gfloat      height);
 G_END_DECLS
 
 #endif /* __MX_TEXTURE_FRAME_H__ */

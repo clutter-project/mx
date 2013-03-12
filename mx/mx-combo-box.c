@@ -51,7 +51,7 @@ struct _MxComboBoxPrivate
 {
   ClutterActor *label;
   ClutterActor *icon;
-  ClutterActor *marker;
+  CoglTexture  *marker;
   GSList       *actions;
   gfloat        clip_x;
   gfloat        clip_y;
@@ -181,7 +181,24 @@ mx_combo_box_paint (ClutterActor *actor)
     clutter_actor_paint (priv->icon);
 
   if (priv->marker)
-    clutter_actor_paint (priv->marker);
+    {
+      ClutterActorBox allocation, box;
+      gfloat x, y, width, height;
+
+      clutter_actor_get_allocation_box (actor, &allocation);
+      mx_widget_get_available_area (MX_WIDGET (actor), &allocation, &box);
+
+      width = cogl_texture_get_width (priv->marker);
+      height = cogl_texture_get_height (priv->marker);
+
+      height = width = MAX (width, height);
+
+      x = box.x1 + clutter_actor_box_get_width (&box) - width;
+      y = box.y1 + (clutter_actor_box_get_height (&box) / 2) - (height / 2);
+
+      cogl_set_source_texture (priv->marker);
+      cogl_rectangle (x, y, x + width, y + height);
+    }
 }
 
 static void
@@ -196,7 +213,7 @@ mx_combo_box_get_preferred_width (ClutterActor *actor,
 
   gfloat min_icon_w = 0, nat_icon_w = 0;
   gfloat min_menu_w = 0, nat_menu_w = 0;
-  gfloat min_marker_w = 0, nat_marker_w = 0;
+  gfloat marker_w = 0;
   MxComboBoxPrivate *priv = MX_COMBO_BOX (actor)->priv;
 
   MxPadding padding;
@@ -238,13 +255,10 @@ mx_combo_box_get_preferred_width (ClutterActor *actor,
 
   if (priv->marker)
     {
-      clutter_actor_get_preferred_width (priv->marker,
-                                         height,
-                                         &min_marker_w,
-                                         &nat_marker_w);
+      marker_w = cogl_texture_get_width (priv->marker);
 
-      min_w += min_marker_w + priv->spacing;
-      nat_w += nat_marker_w + priv->spacing;
+      min_w += marker_w + priv->spacing;
+      nat_w += marker_w + priv->spacing;
     }
 
   if (min_width_p)
@@ -263,7 +277,7 @@ mx_combo_box_get_preferred_height (ClutterActor *actor,
   MxComboBoxPrivate *priv = MX_COMBO_BOX (actor)->priv;
   gfloat min_label_h, nat_label_h;
   gfloat min_icon_h = 0, nat_icon_h = 0;
-  gfloat min_marker_h = 0, nat_marker_h = 0;
+  gfloat marker_h = 0;
   gfloat min_h, nat_h;
   MxPadding padding;
 
@@ -283,15 +297,10 @@ mx_combo_box_get_preferred_height (ClutterActor *actor,
     }
 
   if (priv->marker)
-    {
-      clutter_actor_get_preferred_height (priv->marker,
-                                          -1,
-                                          &min_marker_h,
-                                          &nat_marker_h);
-    }
+    marker_h = cogl_texture_get_height (priv->marker);
 
-  min_h = MAX (MAX (min_icon_h, min_label_h), min_marker_h);
-  nat_h = MAX (MAX (nat_icon_h, nat_label_h), nat_marker_h);
+  min_h = MAX (MAX (min_icon_h, min_label_h), marker_h);
+  nat_h = MAX (MAX (nat_icon_h, nat_label_h), marker_h);
 
   if (min_height_p)
     *min_height_p = padding.top + padding.bottom + min_h;
@@ -311,7 +320,7 @@ mx_combo_box_allocate (ClutterActor          *actor,
   gfloat min_menu_h, nat_menu_h;
   gfloat label_h;
   gfloat nat_icon_h, icon_h, icon_w;
-  gfloat nat_marker_h, marker_h, marker_w;
+  gfloat marker_w;
   ClutterActorBox childbox;
   ClutterActor *menu, *stage;
 
@@ -355,29 +364,7 @@ mx_combo_box_allocate (ClutterActor          *actor,
 
   if (priv->marker)
     {
-      clutter_actor_get_preferred_height (priv->marker, -1,
-                                          NULL, &nat_marker_h);
-
-      if (height >= nat_marker_h)
-        {
-          marker_h = nat_marker_h;
-          clutter_actor_get_preferred_width (priv->marker, -1, NULL,
-                                             &marker_w);
-        }
-      else
-        {
-          marker_h = height;
-          clutter_actor_get_preferred_width (priv->marker, marker_h,
-                                             NULL, &marker_w);
-        }
-
-      childbox.x2 = (int)(x + width);
-      childbox.x1 = (int)(childbox.x2 - marker_w);
-      childbox.y1 = (int)(y + (height - marker_h) / 2);
-      childbox.y2 = (int)(childbox.y1 + marker_h);
-
-      clutter_actor_allocate (priv->marker, &childbox, flags);
-
+      marker_w = cogl_texture_get_width (priv->marker);
       marker_w += priv->spacing;
     }
 
@@ -566,17 +553,15 @@ mx_combo_box_style_changed (MxComboBox *combo, MxStyleChangedFlags flags)
 
   if (priv->marker)
     {
-      clutter_actor_destroy (priv->marker);
+      cogl_object_unref (priv->marker);
       priv->marker = NULL;
     }
 
   if (marker_filename)
     {
       MxTextureCache *cache = mx_texture_cache_get_default ();
-      priv->marker = (ClutterActor *)
-        mx_texture_cache_get_texture (cache, marker_filename->uri);
-      if (priv->marker)
-        clutter_actor_add_child (CLUTTER_ACTOR (combo), priv->marker);
+      priv->marker = mx_texture_cache_get_cogl_texture (cache,
+                                                        marker_filename->uri);
 
       g_boxed_free (MX_TYPE_BORDER_IMAGE, marker_filename);
     }

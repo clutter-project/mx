@@ -96,7 +96,7 @@ struct _MxButtonPrivate
 
   ClutterAnimation *animation;
 
-  ClutterActor *content_image;
+  CoglTexture  *content_image;
   ClutterActor *child;
 
   MxAction   *action;
@@ -226,18 +226,12 @@ mx_button_style_changed (MxWidget *widget)
   if (content_image && content_image->uri)
     {
       if (priv->content_image)
-        {
-          clutter_actor_remove_child (CLUTTER_ACTOR (widget),
-                                      priv->content_image);
-        }
+        cogl_object_unref (priv->content_image);
 
-      priv->content_image =
-        (ClutterActor*) mx_texture_cache_get_texture (mx_texture_cache_get_default (),
-                                                      content_image->uri);
+      priv->content_image = mx_texture_cache_get_cogl_texture (mx_texture_cache_get_default (),
+                                                               content_image->uri);
 
-      if (priv->content_image)
-        clutter_actor_add_child (CLUTTER_ACTOR (widget), priv->content_image);
-      else
+      if (!priv->content_image)
         g_warning ("Could not load content image \"%s\"", content_image->uri);
 
       g_boxed_free (MX_TYPE_BORDER_IMAGE, content_image);
@@ -248,11 +242,7 @@ mx_button_style_changed (MxWidget *widget)
     {
       /* remove any previous content image */
       if (priv->content_image)
-        {
-          clutter_actor_remove_child (CLUTTER_ACTOR (widget),
-                                      priv->content_image);
-          priv->content_image = NULL;
-        }
+        cogl_object_unref (priv->content_image);
 
       if (content_image)
         g_boxed_free (MX_TYPE_BORDER_IMAGE, content_image);
@@ -645,7 +635,7 @@ mx_button_dispose (GObject *gobject)
 
   if (priv->content_image)
     {
-      clutter_actor_remove_child (CLUTTER_ACTOR (gobject), priv->content_image);
+      cogl_object_unref (priv->content_image);
       priv->content_image = NULL;
     }
 
@@ -661,20 +651,6 @@ mx_button_allocate (ClutterActor           *actor,
   ClutterActorBox child_box;
 
   CLUTTER_ACTOR_CLASS (mx_button_parent_class)->allocate (actor, box, flags);
-
-  if (priv->content_image)
-    {
-      ClutterActorBox childbox;
-
-      childbox.x1 = 0;
-      childbox.y1 = 0;
-      childbox.x2 = (box->x2 - box->x1);
-      childbox.y2 = (box->y2 - box->y1);
-
-      clutter_actor_allocate (priv->content_image, &childbox, flags);
-
-      return;
-    }
 
   mx_widget_get_available_area (MX_WIDGET (actor), box, &child_box);
   clutter_actor_allocate (priv->child, &child_box, flags);
@@ -693,8 +669,8 @@ mx_button_get_preferred_width (ClutterActor *actor,
     {
       gfloat width;
 
-      clutter_actor_get_preferred_width (priv->content_image, for_height,
-                                         NULL, &width);
+      width = cogl_texture_get_width (priv->content_image);
+
       if (min_width)
         *min_width = width;
       if (pref_width)
@@ -733,8 +709,8 @@ mx_button_get_preferred_height (ClutterActor *actor,
     {
       gfloat height;
 
-      clutter_actor_get_preferred_height (priv->content_image, for_width,
-                                          NULL, &height);
+      height = cogl_texture_get_height (priv->content_image);
+
       if (min_height)
         *min_height = height;
       if (pref_height)
@@ -765,7 +741,14 @@ mx_button_paint (ClutterActor *actor)
   MxButtonPrivate *priv = MX_BUTTON (actor)->priv;
 
   if (priv->content_image)
-    clutter_actor_paint (priv->content_image);
+    {
+      ClutterActorBox box;
+      clutter_actor_get_allocation_box (actor, &box);
+
+      cogl_set_source_texture (priv->content_image);
+      cogl_rectangle (0, 0, clutter_actor_box_get_width (&box),
+                      clutter_actor_box_get_height (&box));
+    }
   else
     {
       CLUTTER_ACTOR_CLASS (mx_button_parent_class)->paint (actor);

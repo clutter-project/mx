@@ -59,7 +59,7 @@ struct _MxIconPrivate
   guint         size_set         : 1;
   guint         is_content_image : 1;
 
-  ClutterActor *icon_texture;
+  CoglTexture  *icon_texture;
 
   gchar        *icon_name;
   gchar        *icon_suffix;
@@ -203,9 +203,9 @@ mx_icon_get_preferred_height (ClutterActor *actor,
   if (priv->icon_texture)
     {
       gint width, height;
-      clutter_texture_get_base_size (CLUTTER_TEXTURE (priv->icon_texture),
-                                     &width,
-                                     &height);
+
+      width = cogl_texture_get_width (priv->icon_texture);
+      height = cogl_texture_get_height (priv->icon_texture);
 
       if (!priv->is_content_image)
         {
@@ -244,9 +244,9 @@ mx_icon_get_preferred_width (ClutterActor *actor,
   if (priv->icon_texture)
     {
       gint width, height;
-      clutter_texture_get_base_size (CLUTTER_TEXTURE (priv->icon_texture),
-                                     &width,
-                                     &height);
+
+      width = cogl_texture_get_width (priv->icon_texture);
+      height = cogl_texture_get_height (priv->icon_texture);
 
       if (!priv->is_content_image)
         {
@@ -272,30 +272,6 @@ mx_icon_get_preferred_width (ClutterActor *actor,
 }
 
 static void
-mx_icon_allocate (ClutterActor           *actor,
-                  const ClutterActorBox  *box,
-                  ClutterAllocationFlags  flags)
-{
-  MxIconPrivate *priv = MX_ICON (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (mx_icon_parent_class)->allocate (actor, box, flags);
-
-  if (priv->icon_texture)
-    {
-      MxPadding padding;
-      ClutterActorBox child_box;
-
-      mx_widget_get_padding (MX_WIDGET (actor), &padding);
-      child_box.x1 = padding.left;
-      child_box.y1 = padding.top;
-      child_box.x2 = box->x2 - box->x1 - padding.right;
-      child_box.y2 = box->y2 - box->y1 - padding.bottom;
-
-      clutter_actor_allocate (priv->icon_texture, &child_box, flags);
-    }
-}
-
-static void
 mx_icon_paint (ClutterActor *actor)
 {
   MxIconPrivate *priv = MX_ICON (actor)->priv;
@@ -305,7 +281,15 @@ mx_icon_paint (ClutterActor *actor)
     CLUTTER_ACTOR_CLASS (mx_icon_parent_class)->paint (actor);
 
   if (priv->icon_texture)
-    clutter_actor_paint (priv->icon_texture);
+    {
+      ClutterActorBox allocation, box;
+
+      clutter_actor_get_allocation_box (actor, &allocation);
+      mx_widget_get_available_area (MX_WIDGET (actor), &allocation, &box);
+
+      cogl_set_source_texture (priv->icon_texture);
+      cogl_rectangle (box.x1, box.y1, box.x2, box.y2);
+    }
 }
 
 static void
@@ -325,7 +309,6 @@ mx_icon_class_init (MxIconClass *klass)
 
   actor_class->get_preferred_height = mx_icon_get_preferred_height;
   actor_class->get_preferred_width = mx_icon_get_preferred_width;
-  actor_class->allocate = mx_icon_allocate;
   actor_class->paint = mx_icon_paint;
 
   pspec = g_param_spec_string ("icon-name",
@@ -357,7 +340,7 @@ mx_icon_update (MxIcon *icon)
   /* Get rid of the old one */
   if (priv->icon_texture)
     {
-      clutter_actor_destroy (priv->icon_texture);
+      cogl_object_unref (priv->icon_texture);
       priv->icon_texture = NULL;
     }
 
@@ -368,19 +351,14 @@ mx_icon_update (MxIcon *icon)
       MxIconTheme *theme = mx_icon_theme_get_default ();
 
       icon_name = g_strconcat (priv->icon_name, priv->icon_suffix, NULL);
-      priv->icon_texture = (ClutterActor *)
-        mx_icon_theme_lookup_texture (theme, icon_name, priv->icon_size);
+      priv->icon_texture = mx_icon_theme_lookup (theme, icon_name,
+                                                 priv->icon_size);
       g_free (icon_name);
 
       /* If the icon is missing, use the image-missing icon */
       if (!priv->icon_texture)
-        priv->icon_texture = (ClutterActor *)
-          mx_icon_theme_lookup_texture (theme,
-                                        "image-missing",
-                                        priv->icon_size);
-
-      if (priv->icon_texture)
-        clutter_actor_add_child (CLUTTER_ACTOR (icon), priv->icon_texture);
+        priv->icon_texture = mx_icon_theme_lookup (theme, "image-missing",
+                                                   priv->icon_size);
     }
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (icon));
@@ -417,16 +395,14 @@ mx_icon_style_changed_cb (MxWidget *widget)
 
       if (priv->icon_texture)
         {
-          clutter_actor_destroy (priv->icon_texture);
+          cogl_object_unref (priv->icon_texture);
           priv->icon_texture = NULL;
         }
 
       if (content_image->uri)
-        priv->icon_texture = (ClutterActor*) mx_texture_cache_get_texture (mx_texture_cache_get_default (),
-                                                                           content_image->uri);
-      if (priv->icon_texture)
-        clutter_actor_add_child (CLUTTER_ACTOR (widget), priv->icon_texture);
-      else
+        priv->icon_texture = mx_texture_cache_get_cogl_texture (mx_texture_cache_get_default (),
+                                                                content_image->uri);
+      if (!priv->icon_texture)
         g_warning ("Could not load content image \"%s\"", content_image->uri);
 
       g_boxed_free (MX_TYPE_BORDER_IMAGE, content_image);

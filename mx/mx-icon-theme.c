@@ -946,35 +946,6 @@ mx_icon_theme_lookup (MxIconTheme *theme,
   return mx_texture_cache_get_cogl_texture (texture_cache, icon_data->path);
 }
 
-/**
- * mx_icon_theme_lookup_texture:
- * @theme: an #MxIconTheme
- * @icon_name: The name of the icon
- * @size: The desired size of the icon
- *
- * If the icon is available, returns a #ClutterTexture of the icon.
- *
- * Return value: (transfer none): a #ClutterTexture of the icon, or %NULL.
- */
-ClutterTexture *
-mx_icon_theme_lookup_texture (MxIconTheme *theme,
-                              const gchar *icon_name,
-                              gint         size)
-{
-  MxTextureCache *texture_cache;
-  MxIconData *icon_data;
-
-  g_return_val_if_fail (MX_IS_ICON_THEME (theme), NULL);
-  g_return_val_if_fail (icon_name, NULL);
-  g_return_val_if_fail (size > 0, NULL);
-
-  if (!(icon_data = mx_icon_theme_lookup_internal (theme, icon_name, size)))
-    return NULL;
-
-  texture_cache = mx_texture_cache_get_default ();
-  return mx_texture_cache_get_texture (texture_cache, icon_data->path);
-}
-
 gboolean
 mx_icon_theme_has_icon (MxIconTheme *theme,
                         const gchar *icon_name)

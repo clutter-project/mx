@@ -69,14 +69,6 @@ typedef struct {
 typedef struct {
   GObjectClass parent_class;
 
-  void (* loaded)        (MxTextureCache *self,
-                          const gchar      *uri,
-                          ClutterTexture   *texture);
-
-  void (* error_loading) (MxTextureCache *self,
-                          GError           *error);
-
-
   /* padding for future expansion */
   void (*_padding_0) (void);
   void (*_padding_1) (void);
@@ -89,16 +81,9 @@ GType mx_texture_cache_get_type (void);
 
 MxTextureCache* mx_texture_cache_get_default (void);
 
-ClutterTexture* mx_texture_cache_get_texture (MxTextureCache *self,
-                                              const gchar    *uri);
-ClutterActor*   mx_texture_cache_get_actor   (MxTextureCache *self,
-                                              const gchar    *uri);
 CoglHandle      mx_texture_cache_get_cogl_texture (MxTextureCache *self,
                                                    const gchar    *uri);
 
-ClutterTexture *mx_texture_cache_get_meta_texture (MxTextureCache *self,
-                                                   const gchar    *uri,
-                                                   gpointer        ident);
 CoglHandle      mx_texture_cache_get_meta_cogl_texture (MxTextureCache *self,
                                                         const gchar    *uri,
                                                         gpointer        ident);
