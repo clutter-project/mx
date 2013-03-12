@@ -912,7 +912,7 @@ mx_menu_add_action (MxMenu   *menu,
   mx_button_set_action (MX_BUTTON (child.box), child.action);
 
   /* align to the left */
-  button_child = clutter_actor_get_child_at_index (child.box, 0);
+  button_child = clutter_actor_get_child_at_index ((ClutterActor*) child.box, 0);
   clutter_actor_set_x_align (button_child, CLUTTER_ACTOR_ALIGN_START);
 
 

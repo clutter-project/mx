@@ -547,7 +547,7 @@ mx_kinetic_scroll_view_allocate (ClutterActor           *actor,
 
   if (priv->child)
     {
-      mx_widget_get_available_area (actor, box, &childbox);
+      mx_widget_get_available_area (MX_WIDGET (actor), box, &childbox);
       clutter_actor_allocate (priv->child, &childbox, flags);
     }
 }
