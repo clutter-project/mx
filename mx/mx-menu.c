@@ -571,6 +571,35 @@ mx_menu_unmap (ClutterActor *actor)
     }
 }
 
+static void
+mx_menu_close_complete (ClutterActor *menu,
+                        gchar        *name,
+                        gboolean      is_finished,
+                        gpointer      user_data)
+{
+  clutter_actor_hide (menu);
+
+  g_signal_handlers_disconnect_by_func (menu, mx_menu_close_complete,
+                                        user_data);
+}
+
+static void
+mx_menu_close (ClutterActor *menu)
+{
+  ClutterActor *actor = (ClutterActor *) menu;
+
+  clutter_actor_save_easing_state (actor);
+  clutter_actor_set_easing_mode (actor, CLUTTER_LINEAR);
+  clutter_actor_set_easing_duration (actor, 250);
+  clutter_actor_set_opacity (actor, 0);
+  clutter_actor_restore_easing_state (actor);
+
+  g_signal_connect (actor, "transition-stopped::opacity",
+                    G_CALLBACK (mx_menu_close_complete), NULL);
+
+  clutter_actor_set_reactive ((ClutterActor*) menu, FALSE);
+}
+
 static gboolean
 mx_menu_event (ClutterActor *actor,
                ClutterEvent *event)
@@ -592,13 +621,7 @@ mx_menu_event (ClutterActor *actor,
       if (((ClutterKeyEvent*) event)->keyval == CLUTTER_KEY_Escape
           && CLUTTER_ACTOR_IS_VISIBLE (actor))
         {
-          clutter_actor_set_reactive (actor, FALSE);
-          clutter_actor_animate (actor, CLUTTER_LINEAR, 250,
-                                 "opacity", (guchar) 0,
-                                 "signal-swapped::completed",
-                                 clutter_actor_hide,
-                                 actor,
-                                 NULL);
+          mx_menu_close (actor);
         }
 
     default:
@@ -635,23 +658,7 @@ mx_menu_captured_event_handler (ClutterActor *actor,
 
   /* hide the menu if the user clicks outside the menu */
   if (event->type == CLUTTER_BUTTON_PRESS)
-    {
-      if (clutter_actor_get_animation (menu))
-        {
-          clutter_animation_completed (clutter_actor_get_animation (menu));
-
-          return FALSE;
-        }
-
-
-      clutter_actor_set_reactive (menu, FALSE);
-      clutter_actor_animate (menu, CLUTTER_LINEAR, 250,
-                             "opacity", (guchar) 0,
-                             "signal-swapped::completed", clutter_actor_hide,
-                             menu,
-                             NULL);
-    }
-
+    mx_menu_close (menu);
 
   return TRUE;
 }
@@ -659,15 +666,8 @@ mx_menu_captured_event_handler (ClutterActor *actor,
 static void
 mx_menu_show (ClutterActor *actor)
 {
-  ClutterAnimation *animation = NULL;
   ClutterStage *stage;
 
-  /* set reactive and opacity, since these may have been set by the fade-out
-   * animation (e.g. from captured_event_handler or button_release_cb) */
-  if ((animation = clutter_actor_get_animation (actor)))
-    {
-      clutter_animation_completed (animation);
-    }
   clutter_actor_set_reactive (actor, TRUE);
   clutter_actor_set_opacity (actor, 0xff);
 
@@ -843,20 +843,13 @@ mx_menu_button_clicked_cb (ClutterActor *box,
 
   menu = MX_MENU (clutter_actor_get_parent (box));
 
-  /* set the menu unreactive to prevent other items being hilighted */
-  clutter_actor_set_reactive ((ClutterActor*) menu, FALSE);
-
-
   g_object_ref (menu);
   g_object_ref (action);
 
   g_signal_emit (menu, signals[ACTION_ACTIVATED], 0, action);
   g_signal_emit_by_name (action, "activated");
 
-  clutter_actor_animate (CLUTTER_ACTOR (menu), CLUTTER_LINEAR, 250,
-                         "opacity", (guchar) 0,
-                         "signal-swapped::completed", clutter_actor_hide, menu,
-                         NULL);
+  mx_menu_close (CLUTTER_ACTOR (menu));
 
   g_object_unref (action);
   g_object_unref (menu);

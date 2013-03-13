@@ -302,11 +302,20 @@ mx_path_bar_get_preferred_width (ClutterActor *actor,
     {
       gfloat cmin_width, cnat_width;
       ClutterActor *crumb = c->data;
+      ClutterTimeline *timeline;
 
       clutter_actor_get_preferred_width (crumb,
                                          for_height,
                                          &cmin_width,
                                          &cnat_width);
+
+      timeline = g_object_get_data (G_OBJECT (crumb), "timeline");
+      if (timeline)
+        {
+          cnat_width = clutter_timeline_get_progress (timeline) * cnat_width;
+          cmin_width = clutter_timeline_get_progress (timeline) * cmin_width;
+        }
+
       min_width += cmin_width;
       nat_width += cnat_width;
 
@@ -450,11 +459,19 @@ mx_path_bar_allocate (ClutterActor           *actor,
     {
       gfloat cmin_width, cnat_width;
       ClutterActor *crumb = c->data;
+      ClutterTimeline *timeline;
 
       clutter_actor_get_preferred_width (crumb,
                                          child_box.y2 - child_box.y1,
                                          &cmin_width,
                                          &cnat_width);
+
+      timeline = g_object_get_data (G_OBJECT (crumb), "timeline");
+      if (timeline)
+        {
+          cnat_width = clutter_timeline_get_progress (timeline) * cnat_width;
+          cmin_width = clutter_timeline_get_progress (timeline) * cmin_width;
+        }
 
       if (!allocate_pref)
         {
@@ -610,6 +627,59 @@ mx_path_bar_reset_last_crumb (MxPathBar *bar)
                                  priv->editable ? NULL : "End");
 }
 
+static void
+mx_path_bar_button_animation_stopped (ClutterTimeline *timeline,
+                                      gboolean         is_finished,
+                                      MxPathBarButton *button)
+{
+  g_object_set_data (G_OBJECT (button), "timeline", NULL);
+
+  g_object_unref (timeline);
+
+  if (clutter_timeline_get_direction (timeline) == CLUTTER_TIMELINE_BACKWARD)
+    {
+      MxPathBarPrivate *priv = MX_PATH_BAR (clutter_actor_get_parent (CLUTTER_ACTOR (button)))->priv;
+      priv->crumbs = g_list_remove (priv->crumbs, button);
+      clutter_actor_destroy (CLUTTER_ACTOR (button));
+    }
+}
+
+static void
+mx_path_bar_button_animation_new_frame (ClutterTimeline *timeline,
+                                        gint             msecs,
+                                        MxPathBarButton *button)
+{
+  clutter_actor_queue_relayout ((ClutterActor *) button);
+}
+
+static void
+mx_path_bar_animate_button (MxPathBar    *bar,
+                            ClutterActor *button,
+                            gboolean      reverse)
+{
+  ClutterTimeline *timeline;
+
+  timeline = clutter_timeline_new (150);
+  clutter_timeline_set_progress_mode (timeline, CLUTTER_EASE_OUT_QUAD);
+
+  g_signal_connect (timeline, "new-frame",
+                    G_CALLBACK (mx_path_bar_button_animation_new_frame),
+                    button);
+  g_signal_connect (timeline, "stopped",
+                    G_CALLBACK (mx_path_bar_button_animation_stopped),
+                    button);
+
+  g_object_set_data (G_OBJECT (button), "timeline", timeline);
+
+  if (reverse)
+    {
+      clutter_timeline_set_direction (timeline, CLUTTER_TIMELINE_BACKWARD);
+      clutter_timeline_rewind (timeline);
+    }
+
+  clutter_timeline_start (timeline);
+}
+
 gint
 mx_path_bar_push (MxPathBar *bar, const gchar *name)
 {
@@ -646,25 +716,13 @@ mx_path_bar_push (MxPathBar *bar, const gchar *name)
   g_signal_connect (crumb, "clicked",
                     G_CALLBACK (mx_path_bar_crumb_clicked_cb), bar);
 
-  clutter_actor_animate (crumb, CLUTTER_EASE_OUT_QUAD, 150,
-                         "transition", 1.0,
-                         NULL);
+  mx_path_bar_animate_button (bar, crumb, FALSE);
+
   clutter_actor_queue_relayout (CLUTTER_ACTOR (bar));
 
   g_object_notify (G_OBJECT (bar), "level");
 
   return priv->current_level;
-}
-
-static void
-mx_path_bar_pop_completed_cb (ClutterAnimation *animation,
-                              ClutterActor     *crumb)
-{
-  MxPathBar *self = MX_PATH_BAR (clutter_actor_get_parent (crumb));
-  MxPathBarPrivate *priv = self->priv;
-
-  priv->crumbs = g_list_remove (priv->crumbs, crumb);
-  clutter_actor_destroy (crumb);
 }
 
 gint
@@ -684,11 +742,8 @@ mx_path_bar_pop (MxPathBar *bar)
     return 0;
 
   crumb = g_list_nth_data (priv->crumbs, priv->current_level - 1);
-  clutter_actor_animate (crumb, CLUTTER_EASE_IN_QUAD, 150,
-                         "transition", 0.0,
-                         "signal-after::completed",
-                           mx_path_bar_pop_completed_cb, crumb,
-                         NULL);
+
+  mx_path_bar_animate_button (bar, crumb, TRUE);
 
   priv->current_level --;
   mx_path_bar_reset_last_crumb (bar);
@@ -738,8 +793,10 @@ mx_path_bar_get_editable (MxPathBar *bar)
 }
 
 static void
-mx_path_bar_entry_faded_cb (ClutterAnimation *animation,
-                            MxPathBar        *bar)
+mx_path_bar_entry_faded_cb (ClutterActor *entry,
+                            gchar        *name,
+                            gboolean      is_finished,
+                            MxPathBar    *bar)
 {
   MxPathBarPrivate *priv = bar->priv;
 
@@ -771,18 +828,21 @@ mx_path_bar_set_editable (MxPathBar *bar, gboolean editable)
   priv->editable = editable;
   if (!editable)
     {
-      clutter_actor_animate (priv->entry, CLUTTER_EASE_OUT_QUAD, 150,
-                             "opacity", 0x00,
-                             "signal-after::completed",
-                               mx_path_bar_entry_faded_cb, bar,
-                             NULL);
+      clutter_actor_save_easing_state (priv->entry);
+      clutter_actor_set_easing_mode (priv->entry, CLUTTER_EASE_OUT_QUAD);
+      clutter_actor_set_easing_duration (priv->entry, 150);
+      clutter_actor_set_opacity (priv->entry, 0x00);
+      clutter_actor_restore_easing_state (priv->entry);
+
+      g_signal_connect_after (priv->entry, "transition-stopped::opacity",
+                              G_CALLBACK (mx_path_bar_entry_faded_cb),
+                              bar);
     }
   else
     {
       if (priv->entry)
         {
-          ClutterAnimation *anim = clutter_actor_get_animation (priv->entry);
-          g_signal_handlers_disconnect_by_func (anim,
+          g_signal_handlers_disconnect_by_func (priv->entry,
                                                 mx_path_bar_entry_faded_cb,
                                                 bar);
         }
@@ -794,8 +854,11 @@ mx_path_bar_set_editable (MxPathBar *bar, gboolean editable)
             clutter_actor_set_opacity (priv->entry, 0x00);
         }
 
-      clutter_actor_animate (priv->entry, CLUTTER_EASE_OUT_QUAD, 150,
-                             "opacity", 0xff, NULL);
+      clutter_actor_save_easing_state (priv->entry);
+      clutter_actor_set_easing_mode (priv->entry, CLUTTER_EASE_OUT_QUAD);
+      clutter_actor_set_easing_duration (priv->entry, 150);
+      clutter_actor_set_opacity (priv->entry, 0xff);
+      clutter_actor_restore_easing_state (priv->entry);
     }
 
   mx_path_bar_reset_last_crumb (bar);

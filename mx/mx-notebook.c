@@ -51,7 +51,10 @@ enum
 };
 
 static void
-mx_notebook_show_complete_cb (MxNotebook *book)
+mx_notebook_show_complete_cb (ClutterActor *actor,
+                              gchar        *name,
+                              gboolean      is_finished,
+                              MxNotebook   *book)
 {
   MxNotebookPrivate *priv = book->priv;
   GList *l;
@@ -76,31 +79,19 @@ mx_notebook_update_children (MxNotebook *book)
   for (l = priv->children; l; l = l->next)
     {
       ClutterActor *child = CLUTTER_ACTOR (l->data);
-      ClutterAnimation *anim = clutter_actor_get_animation (child);
-
-      if (anim)
-        {
-          /* A bit of a hack - we want to just abort the animation,
-           * but there's no way of aborting an animation that was
-           * started with clutter_actor_animate().
-           */
-          guint8 opacity = clutter_actor_get_opacity (child);
-          g_signal_handlers_disconnect_by_func (anim,
-                                                mx_notebook_show_complete_cb,
-                                                book);
-          clutter_animation_completed (anim);
-          clutter_actor_set_opacity (child, opacity);
-        }
 
       if (child == priv->current_page)
         {
           clutter_actor_show (child);
-          clutter_actor_animate (child, CLUTTER_LINEAR, 250,
-                                 "opacity", 255,
-                                 "signal-swapped::completed",
-                                   mx_notebook_show_complete_cb,
-                                   book,
-                                 NULL);
+
+          clutter_actor_save_easing_state (child);
+          clutter_actor_set_easing_mode (child, CLUTTER_LINEAR);
+          clutter_actor_set_easing_duration (child, 250);
+          clutter_actor_set_opacity (child, 0xff);
+          clutter_actor_restore_easing_state (child);
+
+          g_signal_connect (child, "transition-stopped::opacity",
+                            G_CALLBACK (mx_notebook_show_complete_cb), book);
         }
     }
 }
