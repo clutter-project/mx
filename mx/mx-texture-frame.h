@@ -32,8 +32,6 @@
 
 G_BEGIN_DECLS
 
-GType mx_texture_frame_get_type (void) G_GNUC_CONST;
-
 void mx_texture_frame_paint_texture (CoglHandle  texture,
                                      guint8      opacity,
                                      gfloat      top,

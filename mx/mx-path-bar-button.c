@@ -1,7 +1,7 @@
 /*
  * mx-path-bar-button.c: A button actor for the path bar
  *
- * Copyright 2010 Intel Corporation.
+ * Copyright 2010,2013 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU Lesser General Public License,

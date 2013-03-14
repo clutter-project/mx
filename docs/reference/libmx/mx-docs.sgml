@@ -35,7 +35,6 @@
       <xi:include href="xml/mx-path-bar.xml"/>
       <xi:include href="xml/mx-scroll-bar.xml"/>
       <xi:include href="xml/mx-slider.xml"/>
-      <xi:include href="xml/mx-texture-frame.xml"/>
       <xi:include href="xml/mx-toggle.xml"/>
       <xi:include href="xml/mx-toolbar.xml"/>
       <xi:include href="xml/mx-tooltip.xml"/>
@@ -83,7 +82,6 @@
       <xi:include href="xml/mx-application.xml"/>
       <xi:include href="xml/mx-adjustment.xml"/>
       <xi:include href="xml/mx-button-group.xml"/>
-      <xi:include href="xml/mx-bin.xml"/>
       <xi:include href="xml/mx-clipboard.xml"/>
       <xi:include href="xml/mx-focus-manager.xml"/>
       <xi:include href="xml/mx-floating-widget.xml"/>

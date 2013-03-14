@@ -244,6 +244,7 @@ change_widget (MxComboBox *box,
       mx_path_bar_push (MX_PATH_BAR (actor), "Mx");
       mx_path_bar_push (MX_PATH_BAR (actor), "Path");
       mx_path_bar_push (MX_PATH_BAR (actor), "Bar");
+      g_timeout_add_seconds (1, mx_path_bar_push, actor);
     }
   else if (g_str_equal (typename, "MxProgressBar"))
     {
@@ -262,6 +263,7 @@ change_widget (MxComboBox *box,
   mx_table_insert_actor_with_properties (MX_TABLE (data.table), data.inspector,
                                          0, 1,
                                          "x-expand", FALSE,
+                                         "y-expand", FALSE,
                                          NULL);
 }
 
