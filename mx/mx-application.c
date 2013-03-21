@@ -394,6 +394,10 @@ mx_application_remove_window (MxApplication *application,
       return;
     }
 
+  g_signal_handlers_disconnect_by_func (window,
+                                        G_CALLBACK (mx_application_window_destroy_cb),
+                                        application);
+
   g_object_unref (G_OBJECT (list->data));
 
   g_application_release (G_APPLICATION (application));
