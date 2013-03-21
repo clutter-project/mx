@@ -429,7 +429,7 @@ mx_application_get_windows (MxApplication *application)
  * Creates a new #MxWindow and adds it to MxApplication. The application must be
  * registered before this function is run.
  *
- * Returns: (transfer full): The newly created MxWindow
+ * Returns: (transfer none): The newly created MxWindow
  */
 MxWindow*
 mx_application_create_window (MxApplication *application,
