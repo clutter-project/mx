@@ -110,6 +110,7 @@ mx_item_view_set_property (GObject      *object,
     case PROP_MODEL:
       mx_item_view_set_model ((MxItemView*) object,
                               (ClutterModel*) g_value_get_object (value));
+      break;
     case PROP_ITEM_TYPE:
       mx_item_view_set_item_type ((MxItemView*) object,
                                   g_value_get_gtype (value));
