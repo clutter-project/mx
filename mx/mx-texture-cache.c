@@ -319,6 +319,14 @@ mx_texture_cache_uri_to_filename (const gchar *uri)
   return file;
 }
 
+#if defined(__ANDROID__) || defined(ANDROID)
+static GQuark
+mx_texture_cache_error_quark (void)
+{
+  return g_quark_from_static_string ("mx-texture-cache-error-quark");
+}
+#endif
+
 static MxTextureCacheItem *
 mx_texture_cache_get_item (MxTextureCache *self,
                            const gchar    *uri,
