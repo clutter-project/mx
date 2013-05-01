@@ -12,7 +12,8 @@ noinst_PROGRAMS = 			\
 	test-droppable			\
 	test-window 			\
 	test-widgets			\
-	test-containers
+	test-containers			\
+	test-kinetic-scroll-view	\
 	$(NULL)
 
 test_widgets_SOURCES = test-widgets.c
@@ -22,6 +23,8 @@ test_draggable_SOURCES = test-draggable.c
 test_droppable_SOURCES = test-droppable.c
 
 test_window_SOURCES = test-window.c
+
+test_kinetic_scroll_view_SOURCES = test-kinetic-scroll-view.c
 
 EXTRA_DIST = redhand.png
 
