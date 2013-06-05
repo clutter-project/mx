@@ -1040,7 +1040,7 @@ clamp_adjustment (MxKineticScrollView *scroll,
       d += offset;
     }
 
-  if (value != 0)
+  if (mx_adjustment_get_clamp_value (adj))
     {
       d = CLAMP (d, lower, upper - page_size);
       if (fabs ((upper - page_size) - value) < fabs (d - value))
