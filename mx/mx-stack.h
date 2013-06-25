@@ -87,7 +87,7 @@ struct _MxStackClass
 
 GType mx_stack_get_type (void) G_GNUC_CONST;
 
-ClutterActor *mx_stack_new ();
+ClutterActor *mx_stack_new (void);
 
 G_END_DECLS
 
