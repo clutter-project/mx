@@ -567,6 +567,26 @@ mx_style_transform_css_value (MxStyleSheetValue *css_value,
 
       g_type_class_unref (class);
     }
+  else if (g_type_is_a (pspec->value_type, G_TYPE_BOOLEAN))
+    {
+      g_value_init (value, pspec->value_type);
+
+      if (css_value->string)
+        {
+          gboolean b = TRUE;
+
+          if (g_ascii_strcasecmp (css_value->string, "false") == 0 ||
+              strcmp (css_value->string, "0") == 0)
+            b = FALSE;
+
+          g_value_set_boolean (value, b);
+        }
+      else
+        {
+          g_value_set_boolean (value,
+              ((GParamSpecUInt *) pspec)->default_value);
+        }
+    }
   else
     {
       GValue strval = { 0, };
