@@ -1692,7 +1692,8 @@ _mx_entry_icon_leave_cb (ClutterActor *actor,
       priv->tooltip_timeout = 0;
     }
 
-  mx_tooltip_hide (target_tooltip);
+  if (target_tooltip)
+    mx_tooltip_hide (target_tooltip);
 
   return FALSE;
 }
