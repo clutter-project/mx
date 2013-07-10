@@ -1329,6 +1329,9 @@ compute_row_height (GList         *siblings,
       ClutterActor *child = l->data;
       gfloat natural_width, natural_height;
 
+      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
+
       /* each child will get as much space as they require */
       clutter_actor_get_preferred_size (CLUTTER_ACTOR (child),
                                         NULL, NULL,
@@ -1388,6 +1391,9 @@ compute_row_start (GList         *siblings,
     {
       ClutterActor *child = l->data;
       gfloat natural_width, natural_height;
+
+      if (!CLUTTER_ACTOR_IS_VISIBLE (child))
+        continue;
 
       /* each child will get as much space as they require */
       clutter_actor_get_preferred_size (CLUTTER_ACTOR (child),
