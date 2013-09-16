@@ -246,6 +246,8 @@ mx_button_style_changed (MxWidget *widget)
 
       if (content_image)
         g_boxed_free (MX_TYPE_BORDER_IMAGE, content_image);
+
+      priv->content_image = NULL;
     }
 
   if (priv->icon_size == 0)
