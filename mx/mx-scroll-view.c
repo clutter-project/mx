@@ -76,6 +76,11 @@ struct _MxScrollViewPrivate
   guint         scrollbar_width;
   guint         scrollbar_height;
 
+  gboolean      top_shading;
+  gboolean      bottom_shading;
+  gboolean      left_shading;
+  gboolean      right_shading;
+
   MxScrollPolicy scroll_policy;
   MxScrollPolicy scroll_visibility;
 };
@@ -242,7 +247,8 @@ mx_scroll_view_paint (ClutterActor *actor)
   if (vadjustment)
     {
       gdouble len;
-      if ((len = mx_adjustment_get_value (vadjustment)) > 0)
+      if ((len = mx_adjustment_get_value (vadjustment)) > 0 &&
+          priv->top_shading)
         {
           CoglTextureVertex top[4] = { { 0,}, };
 
@@ -263,7 +269,8 @@ mx_scroll_view_paint (ClutterActor *actor)
 
       if ((len = (mx_adjustment_get_upper (vadjustment)
                  - mx_adjustment_get_page_size (vadjustment))
-         - mx_adjustment_get_value (vadjustment)) > 0)
+         - mx_adjustment_get_value (vadjustment)) > 0 &&
+          priv->bottom_shading)
         {
           CoglTextureVertex bottom[4] = { {0, }, };
 
@@ -290,7 +297,8 @@ mx_scroll_view_paint (ClutterActor *actor)
     {
       gdouble len;
 
-      if ((len = mx_adjustment_get_value (hadjustment)) > 0)
+      if ((len = mx_adjustment_get_value (hadjustment)) > 0 &&
+          priv->left_shading)
         {
 
           CoglTextureVertex left[4] = { { 0, }, };
@@ -313,7 +321,8 @@ mx_scroll_view_paint (ClutterActor *actor)
 
       if ((len = (mx_adjustment_get_upper (hadjustment)
                  - mx_adjustment_get_page_size (hadjustment))
-         - mx_adjustment_get_value (hadjustment)) > 0)
+         - mx_adjustment_get_value (hadjustment)) > 0 &&
+          priv->right_shading)
         {
           CoglTextureVertex right[4] = { { 0, }, };
 
@@ -543,17 +552,31 @@ mx_scroll_view_style_changed (MxWidget *widget, MxStyleChangedFlags flags)
 {
   MxScrollViewPrivate *priv = MX_SCROLL_VIEW (widget)->priv;
   gint scrollbar_width, scrollbar_height;
+  gboolean top_shading, bottom_shading, left_shading, right_shading;
 
   mx_stylable_get (MX_STYLABLE (widget),
                    "x-mx-scrollbar-width", &scrollbar_width,
                    "x-mx-scrollbar-height", &scrollbar_height,
+                   "x-mx-top-shading", &top_shading,
+                   "x-mx-bottom-shading", &bottom_shading,
+                   "x-mx-left-shading", &left_shading,
+                   "x-mx-right-shading", &right_shading,
                    NULL);
 
+
   if (scrollbar_width != priv->scrollbar_width ||
-      scrollbar_height != priv->scrollbar_height)
+      scrollbar_height != priv->scrollbar_height ||
+      top_shading != priv->top_shading ||
+      bottom_shading != priv->bottom_shading ||
+      left_shading != priv->left_shading ||
+      right_shading != priv->right_shading)
     {
       priv->scrollbar_width = scrollbar_width;
       priv->scrollbar_height = scrollbar_height;
+      priv->top_shading = top_shading;
+      priv->bottom_shading = bottom_shading;
+      priv->left_shading = left_shading;
+      priv->right_shading = right_shading;
       clutter_actor_queue_relayout (CLUTTER_ACTOR (widget));
     }
 }
@@ -780,6 +803,38 @@ mx_stylable_iface_init (MxStylableIface *iface)
                                  "Thickness of horizontal scrollbar, in px",
                                  0, G_MAXUINT, 24,
                                  G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_SCROLL_VIEW, pspec);
+
+      pspec = g_param_spec_boolean ("x-mx-top-shading",
+                                    "Display top shading",
+                                    "If we should display a shading on top "
+                                    "of the view",
+                                    TRUE,
+                                    G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_SCROLL_VIEW, pspec);
+
+      pspec = g_param_spec_boolean ("x-mx-bottom-shading",
+                                    "Display bottom shading",
+                                    "If we should display a shading on bottom "
+                                    "of the view",
+                                    TRUE,
+                                    G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_SCROLL_VIEW, pspec);
+
+      pspec = g_param_spec_boolean ("x-mx-left-shading",
+                                    "Display left shading",
+                                    "If we should display a shading on left "
+                                    "of the view",
+                                    TRUE,
+                                    G_PARAM_READWRITE);
+      mx_stylable_iface_install_property (iface, MX_TYPE_SCROLL_VIEW, pspec);
+
+      pspec = g_param_spec_boolean ("x-mx-right-shading",
+                                    "Display right shading",
+                                    "If we should display a shading on right "
+                                    "of the view",
+                                    TRUE,
+                                    G_PARAM_READWRITE);
       mx_stylable_iface_install_property (iface, MX_TYPE_SCROLL_VIEW, pspec);
     }
 }
