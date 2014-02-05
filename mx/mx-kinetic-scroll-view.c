@@ -61,6 +61,8 @@ G_DEFINE_TYPE_WITH_CODE (MxKineticScrollView,
                                         MX_TYPE_KINETIC_SCROLL_VIEW, \
                                         MxKineticScrollViewPrivate))
 
+#define KINETIC_INTERPOLATION_TIMEOUT 10
+
 typedef struct {
   /* Units to store the origin of a click when scrolling */
   gfloat   x;
@@ -955,8 +957,13 @@ motion_event_cb (ClutterActor        *actor,
                (priv->in_automatic_scroll == MX_AUTOMATIC_SCROLL_HORIZONTAL ||
                priv->in_automatic_scroll == MX_AUTOMATIC_SCROLL_NONE))
             {
-              dx = (motion->x - x) + mx_adjustment_get_value (hadjust);
-              mx_adjustment_set_value (hadjust, dx);
+              gdouble current = mx_adjustment_get_value (hadjust);
+              dx = (motion->x - x) + current;
+              if (dx > current ? dx - current : current - dx >
+                  (((mx_adjustment_get_upper (hadjust) - mx_adjustment_get_lower (hadjust)) / 100) * 30))
+                mx_adjustment_interpolate (hadjust, dx, KINETIC_INTERPOLATION_TIMEOUT, CLUTTER_LINEAR);
+              else
+                mx_adjustment_set_value (hadjust, dx);
             }
 
           if (vadjust &&
@@ -966,8 +973,13 @@ motion_event_cb (ClutterActor        *actor,
                (priv->in_automatic_scroll == MX_AUTOMATIC_SCROLL_VERTICAL ||
                priv->in_automatic_scroll == MX_AUTOMATIC_SCROLL_NONE))
             {
-              dy = (motion->y - y) + mx_adjustment_get_value (vadjust);
-              mx_adjustment_set_value (vadjust, dy);
+              gdouble current = mx_adjustment_get_value (vadjust);
+              dy = (motion->y - y) + current;
+              if (dy > current ? dy - current : current - dy >
+                  (((mx_adjustment_get_upper (vadjust) - mx_adjustment_get_lower (vadjust)) / 100) * 30))
+                mx_adjustment_interpolate (vadjust, dy, KINETIC_INTERPOLATION_TIMEOUT, CLUTTER_LINEAR);
+              else
+                mx_adjustment_set_value (vadjust, dy);
             }
         }
 
