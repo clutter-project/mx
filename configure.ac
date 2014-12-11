@@ -152,7 +152,7 @@ dnl = Winsys ===============================================================
 
 MX_WINSYS=x11
 AC_ARG_WITH([winsys],
-            [AC_HELP_STRING([--with-winsys=@<:@none/x11@:>@],
+            [AC_HELP_STRING([--with-winsys=@<:@none/x11/wayland/mir@:>@],
                             [Select the window system backend])],
             [MX_WINSYS=$with_winsys])
 
@@ -170,12 +170,18 @@ AS_CASE([$MX_WINSYS],
            WINSYS_WAYLAND_REQUIRES="clutter-wayland-1.0 wayland-client"
            MX_REQUIRES="$MX_REQUIRES $WINSYS_WAYLAND_REQUIRES"
         ],
+        [mir],
+        [
+           SUPPORT_MIR=yes
+           WINSYS_MIR_REQUIRES="clutter-mir-1.0"
+           MX_REQUIRES="$MX_REQUIRES $WINSYS_MIR_REQUIRES"
+        ],
         [none],
         [
           WINSYS_NONE_REQUIRES="clutter-1.0 >= $CLUTTER_VERSION_REQUIRED"
 	  MX_REQUIRES="$MX_REQUIRES $WINSYS_NONE_REQUIRES"
         ],
-        [AC_MSG_ERROR([Invalid winsys: use 'x11' or 'none'])]
+        [AC_MSG_ERROR([Invalid winsys: use 'x11', 'wayland', 'mir' or 'none'])]
 )
 
 AS_IF([test "x$SUPPORT_X11" = "xyes"],
@@ -185,6 +191,10 @@ AM_CONDITIONAL([HAVE_X11], [test "x$SUPPORT_X11" = "xyes"])
 AS_IF([test "x$SUPPORT_WAYLAND" = "xyes"],
       [AC_DEFINE([HAVE_WAYLAND], [1], [Mx supports the WAYLAND window system])])
 AM_CONDITIONAL([HAVE_WAYLAND], [test "x$SUPPORT_WAYLAND" = "xyes"])
+
+AS_IF([test "x$SUPPORT_MIR" = "xyes"],
+      [AC_DEFINE([HAVE_MIR], [1], [Mx supports the Mir window system])])
+AM_CONDITIONAL([HAVE_MIR], [test "x$SUPPORT_MIR" = "xyes"])
 
 AC_SUBST(MX_WINSYS)
 

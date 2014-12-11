@@ -39,6 +39,12 @@ WINSYS_SRC += \
 	$(top_srcdir)/mx/wayland/mx-window-wayland.h \
 	$(NULL)
 endif
+if HAVE_MIR
+WINSYS_SRC += \
+	$(top_srcdir)/mx/mir/mx-window-mir.c \
+	$(top_srcdir)/mx/mir/mx-window-mir.h \
+	$(NULL)
+endif
 WINSYS_SRC += \
 	$(top_srcdir)/mx/mx-clipboard-default.c	\
 	$(NULL)
