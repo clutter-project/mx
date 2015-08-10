@@ -727,7 +727,7 @@ mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
   pspec = g_param_spec_boolean ("snap-on-page",
                                 "Snap on page",
                                 "Whether to stop animations on step increments.",
-                                FALSE,
+                                TRUE,
                                 MX_PARAM_READWRITE);
   g_object_class_install_property (object_class, PROP_SNAP_ON_PAGE, pspec);
 
