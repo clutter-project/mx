@@ -308,7 +308,7 @@ mx_style_load (MxStyle *style)
 
   error = NULL;
 
-  if (g_file_test (rc_file, G_FILE_TEST_EXISTS))
+  if (rc_file != NULL && g_file_test (rc_file, G_FILE_TEST_EXISTS))
     {
       /* load the default theme with lowest priority */
       if (!mx_style_real_load_from_file (style, rc_file, NULL, &error, 0))
