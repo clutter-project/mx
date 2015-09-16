@@ -745,8 +745,13 @@ set_state (MxKineticScrollView *scroll, MxKineticScrollViewState state)
 {
   MxKineticScrollViewPrivate *priv = scroll->priv;
 
+  LOG_DEBUG (scroll, "%s: old state = %u, new state = %u",
+             G_STRFUNC, priv->state, state);
+
   priv->state = state;
   g_object_notify (G_OBJECT (scroll), "state");
+
+  LOG_DEBUG (scroll, "%s: finished setting state to %u", G_STRFUNC, state);
 }
 
 static gboolean
@@ -1094,6 +1099,12 @@ deceleration_stopped_cb (ClutterTimeline     *timeline,
   MxKineticScrollViewPrivate *priv = scroll->priv;
   guint duration;
 
+  LOG_DEBUG (scroll, "%s: priv->overshoot = %f, priv->clamp_duration = %u, "
+             "priv->hmoving = %s, priv->vmoving = %s",
+             G_STRFUNC, priv->overshoot, priv->clamp_duration,
+             priv->hmoving ? "true" : "false",
+             priv->vmoving ? "true" : "false");
+
   duration = (priv->overshoot > 0.0) ? priv->clamp_duration : 10;
   clamp_adjustments (scroll, duration, priv->hmoving, priv->vmoving);
 
@@ -1102,7 +1113,7 @@ deceleration_stopped_cb (ClutterTimeline     *timeline,
 
 static void
 deceleration_new_frame_cb (ClutterTimeline     *timeline,
-                           gint                 frame_num,
+                           gint                 msecs,
                            MxKineticScrollView *scroll)
 {
   MxKineticScrollViewPrivate *priv = scroll->priv;
@@ -1116,6 +1127,11 @@ deceleration_new_frame_cb (ClutterTimeline     *timeline,
       mx_scrollable_get_adjustments (MX_SCROLLABLE (priv->child),
                                      &hadjust, &vadjust);
 
+      LOG_DEBUG (scroll, "%s: initialising: msecs = %i, "
+                 "priv->accumulated_delta = %f, delta = %u",
+                 G_STRFUNC, msecs, priv->accumulated_delta,
+                 clutter_timeline_get_delta (timeline));
+
       priv->accumulated_delta += clutter_timeline_get_delta (timeline);
 
       if (priv->accumulated_delta <= 1000.0/60.0)
@@ -1124,6 +1140,19 @@ deceleration_new_frame_cb (ClutterTimeline     *timeline,
       while (priv->accumulated_delta > 1000.0/60.0)
         {
           gdouble hvalue, vvalue;
+
+          LOG_DEBUG (scroll, "%s: looping: stop = %s, "
+                     "priv->accumulated_delta = %f, hadjust = %p, "
+                     "vadjust = %p, priv->scroll_policy = %u, "
+                     "priv->in_automatic_scroll = %u, priv->dx = %f, "
+                     "priv->dy = %f, priv->overshoot = %f, "
+                     "priv->hmoving = %s, priv->vmoving = %s",
+                     G_STRFUNC, stop ? "true" : "false",
+                     priv->accumulated_delta, hadjust, vadjust,
+                     priv->scroll_policy, priv->in_automatic_scroll, priv->dx,
+                     priv->dy, priv->overshoot,
+                     priv->hmoving ? "true" : "false",
+                     priv->vmoving ? "true" : "false");
 
           if (hadjust &&
               (priv->scroll_policy == MX_SCROLL_POLICY_HORIZONTAL ||
@@ -1272,6 +1301,8 @@ release_event (MxKineticScrollView *scroll,
 
   if (!priv->in_drag)
     {
+      LOG_DEBUG (scroll, "%s: priv->in_drag = false", G_STRFUNC);
+
       priv->device = NULL;
       priv->sequence = NULL;
       priv->last_motion = 0;
@@ -1364,6 +1395,20 @@ release_event (MxKineticScrollView *scroll,
           n = MAX (nx, ny);
 
           duration = MAX (1, (gint)(MAX (nx, ny) * (1000/60.0)));
+
+          LOG_DEBUG (scroll, "%s: checking duration: x_pos = %i, y_pos = %i, "
+                     "event_x = %f, event_y = %f, y = %f, nx = %f, ny = %f, "
+                     "n = %f, frac = %f, x_origin = %f, y_origin = %f, "
+                     "time_diff = %lu, duration = %u, "
+                     "priv->last_motion = %u, priv->dx = %f, "
+                     "priv->dy = %f, priv->decel_rate = %f, "
+                     "priv->overshoot = %f, priv->accumulated_delta = %f, "
+                     "priv->acceleration_factor = %f",
+                     G_STRFUNC, x_pos, y_pos, event_x, event_y,
+                     y, nx, ny, n, frac, x_origin, y_origin, time_diff,
+                     duration, priv->last_motion, priv->dx, priv->dy,
+                     priv->decel_rate, priv->overshoot,
+                     priv->accumulated_delta, priv->acceleration_factor);
 
           if (duration > 250)
             {
@@ -1466,6 +1511,23 @@ release_event (MxKineticScrollView *scroll,
                   priv->dy = d / ay;
                 }
 
+              LOG_DEBUG (scroll, "%s: release: x_pos = %i, y_pos = %i, "
+                         "event_x = %f, event_y = %f, value = %f, lower = %f, "
+                         "upper = %f, step_increment = %f, page_size = %f, "
+                         "d = %f, ax = %f, ay = %f, y = %f, nx = %f, ny = %f, "
+                         "n = %f, frac = %f, x_origin = %f, y_origin = %f, "
+                         "time_diff = %lu, duration = %u, "
+                         "priv->last_motion = %u, priv->dx = %f, "
+                         "priv->dy = %f, priv->decel_rate = %f, "
+                         "priv->overshoot = %f, priv->accumulated_delta = %f, "
+                         "priv->acceleration_factor = %f",
+                         G_STRFUNC, x_pos, y_pos, event_x, event_y, value,
+                         lower, upper, step_increment, page_size, d, ax, ay, y,
+                         nx, ny, n, frac, x_origin, y_origin, time_diff,
+                         duration, priv->last_motion, priv->dx, priv->dy,
+                         priv->decel_rate, priv->overshoot,
+                         priv->accumulated_delta, priv->acceleration_factor);
+
               priv->deceleration_timeline = clutter_timeline_new (duration);
 
               g_signal_connect (priv->deceleration_timeline, "new_frame",
@@ -1479,6 +1541,15 @@ release_event (MxKineticScrollView *scroll,
               set_state (scroll, MX_KINETIC_SCROLL_VIEW_STATE_SCROLLING);
             }
         }
+      else
+        {
+          LOG_DEBUG (scroll, "%s: failed to transform point (%f, %f)",
+                     G_STRFUNC, x_pos, y_pos);
+        }
+    }
+  else
+    {
+      LOG_DEBUG (scroll, "%s: no child set", G_STRFUNC);
     }
 
   if (priv->use_grab)
