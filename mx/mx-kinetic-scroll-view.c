@@ -831,6 +831,7 @@ motion_event_cb (ClutterActor        *actor,
 
           g_object_get (G_OBJECT (settings),
                         "drag-threshold", &threshold, NULL);
+          g_assert (priv->motion_buffer->len > 0);
           motion = &g_array_index (priv->motion_buffer,
                                    MxKineticScrollViewMotion, 0);
 
@@ -914,6 +915,7 @@ motion_event_cb (ClutterActor        *actor,
             return FALSE;
         }
 
+      g_assert (priv->motion_buffer->len > 0);
       LOG_DEBUG (scroll, "motion dx=%f dy=%f",
                  ABS (g_array_index (priv->motion_buffer, MxKineticScrollViewMotion, priv->motion_buffer->len - 1).x - x),
                  ABS (g_array_index (priv->motion_buffer, MxKineticScrollViewMotion, priv->motion_buffer->len - 1).y - y));
@@ -926,6 +928,7 @@ motion_event_cb (ClutterActor        *actor,
           mx_scrollable_get_adjustments (MX_SCROLLABLE (priv->child),
                                          &hadjust, &vadjust);
 
+          g_assert (priv->last_motion < priv->motion_buffer->len);
           motion = &g_array_index (priv->motion_buffer,
                                    MxKineticScrollViewMotion,
                                    priv->last_motion);
@@ -973,10 +976,8 @@ motion_event_cb (ClutterActor        *actor,
       priv->last_motion ++;
       if (priv->last_motion == priv->motion_buffer->len)
         {
-          LOG_DEBUG (scroll, "reset");
-          priv->motion_buffer = g_array_remove_index (priv->motion_buffer, 0);
-          g_array_set_size (priv->motion_buffer, priv->last_motion);
-          priv->last_motion --;
+          LOG_DEBUG (scroll, "increase buffer size to %u", priv->last_motion);
+          g_array_set_size (priv->motion_buffer, priv->last_motion + 1);
         }
 
       motion = &g_array_index (priv->motion_buffer,
@@ -1300,6 +1301,13 @@ release_event (MxKineticScrollView *scroll,
 
           /* Get average position/time of last x mouse events */
           priv->last_motion ++;
+          if (priv->last_motion == priv->motion_buffer->len)
+            {
+              LOG_DEBUG (scroll, "increase buffer size to %u",
+                         priv->last_motion);
+              g_array_set_size (priv->motion_buffer, priv->last_motion + 1);
+            }
+
           x_origin = y_origin = 0;
           motion_time = (GTimeVal){ 0, 0 };
           for (i = 0; i < priv->last_motion; i++)
@@ -1734,7 +1742,7 @@ mx_kinetic_scroll_view_init (MxKineticScrollView *self)
     KINETIC_SCROLL_VIEW_PRIVATE (self);
 
   priv->motion_buffer =
-    g_array_sized_new (FALSE, TRUE, sizeof (MxKineticScrollViewMotion), 3);
+    g_array_sized_new (FALSE, TRUE, sizeof (MxKineticScrollViewMotion), 30);
   g_array_set_size (priv->motion_buffer, 3);
   priv->decel_rate = 1.1f;
   priv->button = 1;
