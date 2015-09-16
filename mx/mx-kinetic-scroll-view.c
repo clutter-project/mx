@@ -476,8 +476,7 @@ mx_kinetic_scroll_view_dispose (GObject *object)
   if (priv->deceleration_timeline)
     {
       clutter_timeline_stop (priv->deceleration_timeline);
-      g_object_unref (priv->deceleration_timeline);
-      priv->deceleration_timeline = NULL;
+      g_clear_object (&priv->deceleration_timeline);
     }
 
   G_OBJECT_CLASS (mx_kinetic_scroll_view_parent_class)->dispose (object);
@@ -1087,8 +1086,9 @@ clamp_adjustments (MxKineticScrollView *scroll,
 }
 
 static void
-deceleration_completed_cb (ClutterTimeline     *timeline,
-                           MxKineticScrollView *scroll)
+deceleration_stopped_cb (ClutterTimeline     *timeline,
+                         gboolean             is_finished,
+                         MxKineticScrollView *scroll)
 {
   MxKineticScrollViewPrivate *priv = scroll->priv;
   guint duration;
@@ -1096,8 +1096,7 @@ deceleration_completed_cb (ClutterTimeline     *timeline,
   duration = (priv->overshoot > 0.0) ? priv->clamp_duration : 10;
   clamp_adjustments (scroll, duration, priv->hmoving, priv->vmoving);
 
-  g_object_unref (timeline);
-  priv->deceleration_timeline = NULL;
+  g_clear_object (&priv->deceleration_timeline);
 }
 
 static void
@@ -1201,7 +1200,6 @@ deceleration_new_frame_cb (ClutterTimeline     *timeline,
       if (stop)
         {
           clutter_timeline_stop (timeline);
-          deceleration_completed_cb (timeline, scroll);
         }
     }
 }
@@ -1464,8 +1462,8 @@ release_event (MxKineticScrollView *scroll,
 
               g_signal_connect (priv->deceleration_timeline, "new_frame",
                                 G_CALLBACK (deceleration_new_frame_cb), scroll);
-              g_signal_connect (priv->deceleration_timeline, "completed",
-                                G_CALLBACK (deceleration_completed_cb), scroll);
+              g_signal_connect (priv->deceleration_timeline, "stopped",
+                                G_CALLBACK (deceleration_stopped_cb), scroll);
               priv->accumulated_delta = 0;
               priv->hmoving = priv->vmoving = TRUE;
               clutter_timeline_start (priv->deceleration_timeline);
@@ -1528,11 +1526,7 @@ press_event (MxKineticScrollView *scroll,
       if (priv->deceleration_timeline)
         {
           clutter_timeline_stop (priv->deceleration_timeline);
-          g_object_unref (priv->deceleration_timeline);
-          priv->deceleration_timeline = NULL;
-
-          clamp_adjustments (scroll, priv->clamp_duration, priv->hmoving,
-                             priv->vmoving);
+          g_clear_object (&priv->deceleration_timeline);
         }
 
       if (priv->use_captured)
@@ -1798,8 +1792,7 @@ mx_kinetic_scroll_view_stop (MxKineticScrollView *scroll)
   if (priv->deceleration_timeline)
     {
       clutter_timeline_stop (priv->deceleration_timeline);
-      g_object_unref (priv->deceleration_timeline);
-      priv->deceleration_timeline = NULL;
+      g_clear_object (&priv->deceleration_timeline);
     }
 }
 
