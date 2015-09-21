@@ -66,7 +66,7 @@ typedef struct {
   /* Units to store the origin of a click when scrolling */
   gfloat   x;
   gfloat   y;
-  GTimeVal time;
+  gint64   time;  /* use g_get_real_time() for this */
 } MxKineticScrollViewMotion;
 
 typedef enum {
@@ -757,12 +757,12 @@ add_motion_event (MxKineticScrollView  *scroll,
                   gfloat                y)
 {
   MxKineticScrollViewPrivate *priv = scroll->priv;
-  GTimeVal tv;
+  gint64 tv;
 
   LOG_DEBUG (scroll, "%s: x = %f, y = %f, n_motions = %u",
              G_STRFUNC, x, y, priv->n_motions);
 
-  g_get_current_time (&tv);
+  tv = g_get_real_time ();
 
   if (priv->n_motions == 0)
     {
@@ -785,8 +785,7 @@ add_motion_event (MxKineticScrollView  *scroll,
 
       priv->motion_total.x += x;
       priv->motion_total.y += y;
-      priv->motion_total.time.tv_sec += tv.tv_sec;
-      priv->motion_total.time.tv_usec += tv.tv_usec;
+      priv->motion_total.time += tv;
 
       /* Avoid overflow by only taking this branch if n_motions will not
        * overflow. Subsequent motions are ignored. */
@@ -1358,37 +1357,28 @@ release_event (MxKineticScrollView *scroll,
           gdouble value, lower, upper, step_increment, page_size,
                   d, ax, ay, y, nx, ny, n;
           gfloat frac, x_origin, y_origin;
-          GTimeVal release_time, motion_time;
+          gint64 release_time, motion_time;  /* real microseconds */
           MxAdjustment *hadjust, *vadjust;
-          glong time_diff;
+          gint64 time_diff;  /* real microseconds */
           guint duration;
 
           /* Get time delta */
-          g_get_current_time (&release_time);
+          release_time = g_get_real_time ();
 
           /* Get average position/time of last x mouse events */
           x_origin = y_origin = 0;
-          motion_time = (GTimeVal){ 0, 0 };
+          motion_time = 0;
 
           g_assert (priv->n_motions > 0);
 
           x_origin = priv->motion_total.x / priv->n_motions;
           y_origin = priv->motion_total.y / priv->n_motions;
-          motion_time.tv_sec = priv->motion_total.time.tv_sec / priv->n_motions;
-          motion_time.tv_usec = priv->motion_total.time.tv_usec / priv->n_motions;
+          motion_time = priv->motion_total.time / priv->n_motions;
 
-          /* Normalise the GTimeVal. */
-          motion_time.tv_sec += motion_time.tv_usec / G_USEC_PER_SEC;
-          motion_time.tv_usec %= G_USEC_PER_SEC;
-
-          if (motion_time.tv_sec == release_time.tv_sec)
-            time_diff = release_time.tv_usec - motion_time.tv_usec;
-          else
-            time_diff = release_time.tv_usec +
-                        (G_USEC_PER_SEC - motion_time.tv_usec);
+          time_diff = release_time - motion_time;
 
           /* Work out the fraction of 1/60th of a second that has elapsed */
-          frac = (time_diff/1000.0) / (1000.0/60.0);
+          frac = (time_diff / 1000.0) / (1000.0 / 60.0);
 
           /* See how many units to move in 1/60th of a second */
           priv->dx = (x_origin - event_x) / frac * priv->acceleration_factor;
@@ -1420,7 +1410,7 @@ release_event (MxKineticScrollView *scroll,
           LOG_DEBUG (scroll, "%s: checking duration: x_pos = %i, y_pos = %i, "
                      "event_x = %f, event_y = %f, y = %f, nx = %f, ny = %f, "
                      "n = %f, frac = %f, x_origin = %f, y_origin = %f, "
-                     "time_diff = %lu, duration = %u, "
+                     "time_diff = %" G_GINT64_FORMAT ", duration = %u, "
                      "priv->n_motions = %u, priv->dx = %f, "
                      "priv->dy = %f, priv->decel_rate = %f, "
                      "priv->overshoot = %f, priv->accumulated_delta = %f, "
@@ -1537,7 +1527,7 @@ release_event (MxKineticScrollView *scroll,
                          "upper = %f, step_increment = %f, page_size = %f, "
                          "d = %f, ax = %f, ay = %f, y = %f, nx = %f, ny = %f, "
                          "n = %f, frac = %f, x_origin = %f, y_origin = %f, "
-                         "time_diff = %lu, duration = %u, "
+                         "time_diff = %" G_GINT64_FORMAT ", duration = %u, "
                          "priv->n_motions = %u, priv->dx = %f, "
                          "priv->dy = %f, priv->decel_rate = %f, "
                          "priv->overshoot = %f, priv->accumulated_delta = %f, "
