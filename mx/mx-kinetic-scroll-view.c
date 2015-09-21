@@ -163,11 +163,11 @@ _log_debug (MxKineticScrollView *scroll, const gchar *fmt, ...)
 
   va_start (args, fmt);
 
-  new_fmt = g_strdup_printf ("%s(%p): %s",
+  new_fmt = g_strdup_printf ("%s(%p): %" G_GINT64_FORMAT ": %s",
                              (scroll->priv->scroll_policy == MX_SCROLL_POLICY_VERTICAL) ?
                              "vert" :
                              ((scroll->priv->scroll_policy == MX_SCROLL_POLICY_HORIZONTAL) ? "hori" : "both"),
-                             scroll, fmt);
+                             scroll, g_get_monotonic_time (), fmt);
 
   g_logv ("Mx", G_LOG_LEVEL_MESSAGE, new_fmt, args);
 
