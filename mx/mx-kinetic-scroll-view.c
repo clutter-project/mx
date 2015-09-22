@@ -44,6 +44,7 @@
 #include "mx-scrollable.h"
 #include "mx-focusable.h"
 #include <math.h>
+#include <string.h>
 
 #define _KINETIC_DEBUG 0
 
@@ -65,7 +66,7 @@ typedef struct {
   /* Units to store the origin of a click when scrolling */
   gfloat   x;
   gfloat   y;
-  GTimeVal time;
+  gint64   time;  /* use g_get_real_time() for this */
 } MxKineticScrollViewMotion;
 
 typedef enum {
@@ -98,9 +99,21 @@ struct _MxKineticScrollViewPrivate
 
   MxAutomaticScroll        in_automatic_scroll;
 
-  /* Mouse motion event information */
-  GArray                *motion_buffer;
-  guint                  last_motion;
+  /* Mouse motion event information.
+   * @motion_origin is the details of the first motion event in a sequence.
+   * @motion_last is the most recent motion event in a sequence.
+   * @motion_total is the total value of all the motion events in a sequence.
+   * FIXME: The code does not currently handle overflow here.
+   * @n_motions is the number of events used in the calculation of
+   * @motion_total.
+   *
+   * @motion_origin, @motion_last and @motion_total are valid iff
+   * @n_motions > 0.
+   */
+  MxKineticScrollViewMotion  motion_origin;
+  MxKineticScrollViewMotion  motion_last;
+  MxKineticScrollViewMotion  motion_total;
+  guint                      n_motions;
 
   /* Variables for storing acceleration information */
   ClutterTimeline       *deceleration_timeline;
@@ -150,11 +163,11 @@ _log_debug (MxKineticScrollView *scroll, const gchar *fmt, ...)
 
   va_start (args, fmt);
 
-  new_fmt = g_strdup_printf ("%s(%p): %s",
+  new_fmt = g_strdup_printf ("%s(%p): %" G_GINT64_FORMAT ": %s",
                              (scroll->priv->scroll_policy == MX_SCROLL_POLICY_VERTICAL) ?
                              "vert" :
                              ((scroll->priv->scroll_policy == MX_SCROLL_POLICY_HORIZONTAL) ? "hori" : "both"),
-                             scroll, fmt);
+                             scroll, g_get_monotonic_time (), fmt);
 
   g_logv ("Mx", G_LOG_LEVEL_MESSAGE, new_fmt, args);
 
@@ -309,12 +322,6 @@ mx_kinetic_scroll_view_get_property (GObject    *object,
     case PROP_DECELERATION :
       g_value_set_double (value, priv->decel_rate);
       break;
-
-/*
-    case PROP_BUFFER_SIZE :
-      g_value_set_uint (value, priv->motion_buffer->len);
-      break;
-*/
 
     case PROP_HADJUST:
       mx_kinetic_scroll_view_get_adjustments (MX_SCROLLABLE (object),
@@ -476,21 +483,10 @@ mx_kinetic_scroll_view_dispose (GObject *object)
   if (priv->deceleration_timeline)
     {
       clutter_timeline_stop (priv->deceleration_timeline);
-      g_object_unref (priv->deceleration_timeline);
-      priv->deceleration_timeline = NULL;
+      g_clear_object (&priv->deceleration_timeline);
     }
 
   G_OBJECT_CLASS (mx_kinetic_scroll_view_parent_class)->dispose (object);
-}
-
-static void
-mx_kinetic_scroll_view_finalize (GObject *object)
-{
-  MxKineticScrollViewPrivate *priv = MX_KINETIC_SCROLL_VIEW (object)->priv;
-
-  g_array_free (priv->motion_buffer, TRUE);
-
-  G_OBJECT_CLASS (mx_kinetic_scroll_view_parent_class)->finalize (object);
 }
 
 static void
@@ -622,7 +618,6 @@ mx_kinetic_scroll_view_class_init (MxKineticScrollViewClass *klass)
   object_class->get_property = mx_kinetic_scroll_view_get_property;
   object_class->set_property = mx_kinetic_scroll_view_set_property;
   object_class->dispose = mx_kinetic_scroll_view_dispose;
-  object_class->finalize = mx_kinetic_scroll_view_finalize;
 
   actor_class->get_preferred_width = mx_kinetic_scroll_view_get_preferred_width;
   actor_class->get_preferred_height = mx_kinetic_scroll_view_get_preferred_height;
@@ -746,8 +741,67 @@ set_state (MxKineticScrollView *scroll, MxKineticScrollViewState state)
 {
   MxKineticScrollViewPrivate *priv = scroll->priv;
 
+  LOG_DEBUG (scroll, "%s: old state = %u, new state = %u",
+             G_STRFUNC, priv->state, state);
+
   priv->state = state;
   g_object_notify (G_OBJECT (scroll), "state");
+
+  LOG_DEBUG (scroll, "%s: finished setting state to %u", G_STRFUNC, state);
+}
+
+/* Add a motion event to the rolling average of motion events. */
+static void
+add_motion_event (MxKineticScrollView  *scroll,
+                  gfloat                x,
+                  gfloat                y)
+{
+  MxKineticScrollViewPrivate *priv = scroll->priv;
+  gint64 tv;
+
+  LOG_DEBUG (scroll, "%s: x = %f, y = %f, n_motions = %u",
+             G_STRFUNC, x, y, priv->n_motions);
+
+  tv = g_get_real_time ();
+
+  if (priv->n_motions == 0)
+    {
+      priv->motion_origin.x = x;
+      priv->motion_origin.y = y;
+      priv->motion_origin.time = tv;
+
+      memcpy (&priv->motion_last, &priv->motion_origin,
+              sizeof (priv->motion_last));
+      memcpy (&priv->motion_total, &priv->motion_origin,
+              sizeof (priv->motion_total));
+
+      priv->n_motions = 1;
+    }
+  else if (priv->n_motions < G_MAXUINT)
+    {
+      priv->motion_last.x = x;
+      priv->motion_last.y = y;
+      priv->motion_last.time = tv;
+
+      priv->motion_total.x += x;
+      priv->motion_total.y += y;
+      priv->motion_total.time += tv;
+
+      /* Avoid overflow by only taking this branch if n_motions will not
+       * overflow. Subsequent motions are ignored. */
+      priv->n_motions++;
+    }
+}
+
+static void
+reset_motion_events (MxKineticScrollView  *scroll)
+{
+  MxKineticScrollViewPrivate *priv = scroll->priv;
+
+  memset (&priv->motion_origin, 0, sizeof (priv->motion_origin));
+  memset (&priv->motion_last, 0, sizeof (priv->motion_last));
+  memset (&priv->motion_total, 0, sizeof (priv->motion_total));
+  priv->n_motions = 0;
 }
 
 static gboolean
@@ -832,8 +886,8 @@ motion_event_cb (ClutterActor        *actor,
 
           g_object_get (G_OBJECT (settings),
                         "drag-threshold", &threshold, NULL);
-          motion = &g_array_index (priv->motion_buffer,
-                                   MxKineticScrollViewMotion, 0);
+          g_assert (priv->n_motions > 0);
+          motion = &priv->motion_origin;
 
           dx = ABS (motion->x - x);
           dy = ABS (motion->y - y);
@@ -915,9 +969,10 @@ motion_event_cb (ClutterActor        *actor,
             return FALSE;
         }
 
+      g_assert (priv->n_motions > 0);
       LOG_DEBUG (scroll, "motion dx=%f dy=%f",
-                 ABS (g_array_index (priv->motion_buffer, MxKineticScrollViewMotion, priv->motion_buffer->len - 1).x - x),
-                 ABS (g_array_index (priv->motion_buffer, MxKineticScrollViewMotion, priv->motion_buffer->len - 1).y - y));
+                 ABS (priv->motion_last.x - x),
+                 ABS (priv->motion_last.y - y));
 
       if (priv->child)
         {
@@ -927,9 +982,7 @@ motion_event_cb (ClutterActor        *actor,
           mx_scrollable_get_adjustments (MX_SCROLLABLE (priv->child),
                                          &hadjust, &vadjust);
 
-          motion = &g_array_index (priv->motion_buffer,
-                                   MxKineticScrollViewMotion,
-                                   priv->last_motion);
+          motion = &priv->motion_last;
 
           if (!priv->align_tested)
             {
@@ -971,20 +1024,7 @@ motion_event_cb (ClutterActor        *actor,
             }
         }
 
-      priv->last_motion ++;
-      if (priv->last_motion == priv->motion_buffer->len)
-        {
-          LOG_DEBUG (scroll, "reset");
-          priv->motion_buffer = g_array_remove_index (priv->motion_buffer, 0);
-          g_array_set_size (priv->motion_buffer, priv->last_motion);
-          priv->last_motion --;
-        }
-
-      motion = &g_array_index (priv->motion_buffer,
-                               MxKineticScrollViewMotion, priv->last_motion);
-      motion->x = x;
-      motion->y = y;
-      g_get_current_time (&motion->time);
+      add_motion_event (scroll, x, y);
     }
 
   return swallow;
@@ -1087,22 +1127,28 @@ clamp_adjustments (MxKineticScrollView *scroll,
 }
 
 static void
-deceleration_completed_cb (ClutterTimeline     *timeline,
-                           MxKineticScrollView *scroll)
+deceleration_stopped_cb (ClutterTimeline     *timeline,
+                         gboolean             is_finished,
+                         MxKineticScrollView *scroll)
 {
   MxKineticScrollViewPrivate *priv = scroll->priv;
   guint duration;
 
+  LOG_DEBUG (scroll, "%s: priv->overshoot = %f, priv->clamp_duration = %u, "
+             "priv->hmoving = %s, priv->vmoving = %s",
+             G_STRFUNC, priv->overshoot, priv->clamp_duration,
+             priv->hmoving ? "true" : "false",
+             priv->vmoving ? "true" : "false");
+
   duration = (priv->overshoot > 0.0) ? priv->clamp_duration : 10;
   clamp_adjustments (scroll, duration, priv->hmoving, priv->vmoving);
 
-  g_object_unref (timeline);
-  priv->deceleration_timeline = NULL;
+  g_clear_object (&priv->deceleration_timeline);
 }
 
 static void
 deceleration_new_frame_cb (ClutterTimeline     *timeline,
-                           gint                 frame_num,
+                           gint                 msecs,
                            MxKineticScrollView *scroll)
 {
   MxKineticScrollViewPrivate *priv = scroll->priv;
@@ -1116,6 +1162,11 @@ deceleration_new_frame_cb (ClutterTimeline     *timeline,
       mx_scrollable_get_adjustments (MX_SCROLLABLE (priv->child),
                                      &hadjust, &vadjust);
 
+      LOG_DEBUG (scroll, "%s: initialising: msecs = %i, "
+                 "priv->accumulated_delta = %f, delta = %u",
+                 G_STRFUNC, msecs, priv->accumulated_delta,
+                 clutter_timeline_get_delta (timeline));
+
       priv->accumulated_delta += clutter_timeline_get_delta (timeline);
 
       if (priv->accumulated_delta <= 1000.0/60.0)
@@ -1124,6 +1175,19 @@ deceleration_new_frame_cb (ClutterTimeline     *timeline,
       while (priv->accumulated_delta > 1000.0/60.0)
         {
           gdouble hvalue, vvalue;
+
+          LOG_DEBUG (scroll, "%s: looping: stop = %s, "
+                     "priv->accumulated_delta = %f, hadjust = %p, "
+                     "vadjust = %p, priv->scroll_policy = %u, "
+                     "priv->in_automatic_scroll = %u, priv->dx = %f, "
+                     "priv->dy = %f, priv->overshoot = %f, "
+                     "priv->hmoving = %s, priv->vmoving = %s",
+                     G_STRFUNC, stop ? "true" : "false",
+                     priv->accumulated_delta, hadjust, vadjust,
+                     priv->scroll_policy, priv->in_automatic_scroll, priv->dx,
+                     priv->dy, priv->overshoot,
+                     priv->hmoving ? "true" : "false",
+                     priv->vmoving ? "true" : "false");
 
           if (hadjust &&
               (priv->scroll_policy == MX_SCROLL_POLICY_HORIZONTAL ||
@@ -1201,7 +1265,6 @@ deceleration_new_frame_cb (ClutterTimeline     *timeline,
       if (stop)
         {
           clutter_timeline_stop (timeline);
-          deceleration_completed_cb (timeline, scroll);
         }
     }
 }
@@ -1273,9 +1336,12 @@ release_event (MxKineticScrollView *scroll,
 
   if (!priv->in_drag)
     {
+      LOG_DEBUG (scroll, "%s: priv->in_drag = false", G_STRFUNC);
+
       priv->device = NULL;
       priv->sequence = NULL;
-      priv->last_motion = 0;
+      reset_motion_events (scroll);
+
       return FALSE;
     }
 
@@ -1291,46 +1357,28 @@ release_event (MxKineticScrollView *scroll,
           gdouble value, lower, upper, step_increment, page_size,
                   d, ax, ay, y, nx, ny, n;
           gfloat frac, x_origin, y_origin;
-          GTimeVal release_time, motion_time;
+          gint64 release_time, motion_time;  /* real microseconds */
           MxAdjustment *hadjust, *vadjust;
-          glong time_diff;
+          gint64 time_diff;  /* real microseconds */
           guint duration;
-          gint i;
 
           /* Get time delta */
-          g_get_current_time (&release_time);
+          release_time = g_get_real_time ();
 
           /* Get average position/time of last x mouse events */
-          priv->last_motion ++;
           x_origin = y_origin = 0;
-          motion_time = (GTimeVal){ 0, 0 };
-          for (i = 0; i < priv->last_motion; i++)
-            {
-              MxKineticScrollViewMotion *motion =
-                &g_array_index (priv->motion_buffer, MxKineticScrollViewMotion, i);
+          motion_time = 0;
 
-              /* FIXME: This doesn't guard against overflows - Should
-               *        either fix that, or calculate the correct maximum
-               *        value for the buffer size
-               */
-              x_origin += motion->x;
-              y_origin += motion->y;
-              motion_time.tv_sec += motion->time.tv_sec;
-              motion_time.tv_usec += motion->time.tv_usec;
-            }
-          x_origin = x_origin / priv->last_motion;
-          y_origin = y_origin / priv->last_motion;
-          motion_time.tv_sec /= priv->last_motion;
-          motion_time.tv_usec /= priv->last_motion;
+          g_assert (priv->n_motions > 0);
 
-          if (motion_time.tv_sec == release_time.tv_sec)
-            time_diff = release_time.tv_usec - motion_time.tv_usec;
-          else
-            time_diff = release_time.tv_usec +
-                        (G_USEC_PER_SEC - motion_time.tv_usec);
+          x_origin = priv->motion_total.x / priv->n_motions;
+          y_origin = priv->motion_total.y / priv->n_motions;
+          motion_time = priv->motion_total.time / priv->n_motions;
+
+          time_diff = release_time - motion_time;
 
           /* Work out the fraction of 1/60th of a second that has elapsed */
-          frac = (time_diff/1000.0) / (1000.0/60.0);
+          frac = (time_diff / 1000.0) / (1000.0 / 60.0);
 
           /* See how many units to move in 1/60th of a second */
           priv->dx = (x_origin - event_x) / frac * priv->acceleration_factor;
@@ -1358,6 +1406,20 @@ release_event (MxKineticScrollView *scroll,
           n = MAX (nx, ny);
 
           duration = MAX (1, (gint)(MAX (nx, ny) * (1000/60.0)));
+
+          LOG_DEBUG (scroll, "%s: checking duration: x_pos = %i, y_pos = %i, "
+                     "event_x = %f, event_y = %f, y = %f, nx = %f, ny = %f, "
+                     "n = %f, frac = %f, x_origin = %f, y_origin = %f, "
+                     "time_diff = %" G_GINT64_FORMAT ", duration = %u, "
+                     "priv->n_motions = %u, priv->dx = %f, "
+                     "priv->dy = %f, priv->decel_rate = %f, "
+                     "priv->overshoot = %f, priv->accumulated_delta = %f, "
+                     "priv->acceleration_factor = %f",
+                     G_STRFUNC, x_pos, y_pos, event_x, event_y,
+                     y, nx, ny, n, frac, x_origin, y_origin, time_diff,
+                     duration, priv->n_motions, priv->dx, priv->dy,
+                     priv->decel_rate, priv->overshoot,
+                     priv->accumulated_delta, priv->acceleration_factor);
 
           if (duration > 250)
             {
@@ -1460,12 +1522,29 @@ release_event (MxKineticScrollView *scroll,
                   priv->dy = d / ay;
                 }
 
+              LOG_DEBUG (scroll, "%s: release: x_pos = %i, y_pos = %i, "
+                         "event_x = %f, event_y = %f, value = %f, lower = %f, "
+                         "upper = %f, step_increment = %f, page_size = %f, "
+                         "d = %f, ax = %f, ay = %f, y = %f, nx = %f, ny = %f, "
+                         "n = %f, frac = %f, x_origin = %f, y_origin = %f, "
+                         "time_diff = %" G_GINT64_FORMAT ", duration = %u, "
+                         "priv->n_motions = %u, priv->dx = %f, "
+                         "priv->dy = %f, priv->decel_rate = %f, "
+                         "priv->overshoot = %f, priv->accumulated_delta = %f, "
+                         "priv->acceleration_factor = %f",
+                         G_STRFUNC, x_pos, y_pos, event_x, event_y, value,
+                         lower, upper, step_increment, page_size, d, ax, ay, y,
+                         nx, ny, n, frac, x_origin, y_origin, time_diff,
+                         duration, priv->n_motions, priv->dx, priv->dy,
+                         priv->decel_rate, priv->overshoot,
+                         priv->accumulated_delta, priv->acceleration_factor);
+
               priv->deceleration_timeline = clutter_timeline_new (duration);
 
               g_signal_connect (priv->deceleration_timeline, "new_frame",
                                 G_CALLBACK (deceleration_new_frame_cb), scroll);
-              g_signal_connect (priv->deceleration_timeline, "completed",
-                                G_CALLBACK (deceleration_completed_cb), scroll);
+              g_signal_connect (priv->deceleration_timeline, "stopped",
+                                G_CALLBACK (deceleration_stopped_cb), scroll);
               priv->accumulated_delta = 0;
               priv->hmoving = priv->vmoving = TRUE;
               clutter_timeline_start (priv->deceleration_timeline);
@@ -1473,6 +1552,15 @@ release_event (MxKineticScrollView *scroll,
               set_state (scroll, MX_KINETIC_SCROLL_VIEW_STATE_SCROLLING);
             }
         }
+      else
+        {
+          LOG_DEBUG (scroll, "%s: failed to transform point (%f, %f)",
+                     G_STRFUNC, x_pos, y_pos);
+        }
+    }
+  else
+    {
+      LOG_DEBUG (scroll, "%s: no child set", G_STRFUNC);
     }
 
   if (priv->use_grab)
@@ -1487,7 +1575,7 @@ release_event (MxKineticScrollView *scroll,
   priv->device = NULL;
 
   /* Reset motion event buffer */
-  priv->last_motion = 0;
+  reset_motion_events (scroll);
 
   if (!decelerating)
     clamp_adjustments (scroll, priv->clamp_duration, TRUE, TRUE);
@@ -1503,36 +1591,32 @@ press_event (MxKineticScrollView *scroll,
   MxKineticScrollViewPrivate *priv = scroll->priv;
   ClutterActor *actor = (ClutterActor *) scroll;
   ClutterActor *stage = clutter_actor_get_stage (actor);
-  MxKineticScrollViewMotion *motion;
+  gfloat event_x, event_y;
 
   /* Reset automatic-scroll setting */
   priv->in_automatic_scroll = MX_AUTOMATIC_SCROLL_NONE;
   priv->align_tested = 0;
 
   /* Reset motion buffer */
-  priv->last_motion = 0;
-  motion = &g_array_index (priv->motion_buffer, MxKineticScrollViewMotion, 0);
-  motion->x = x;
-  motion->y = y;
+  reset_motion_events (scroll);
+
+  event_x = x;
+  event_y = y;
 
   LOG_DEBUG (scroll, "initial point(%fx%f)", x, y);
 
   if (clutter_actor_transform_stage_point (actor, x, y,
-                                           &motion->x, &motion->y))
+                                           &event_x, &event_y))
     {
       guint threshold;
       MxSettings *settings = mx_settings_get_default ();
 
-      g_get_current_time (&motion->time);
+      add_motion_event (scroll, event_x, event_y);
 
       if (priv->deceleration_timeline)
         {
           clutter_timeline_stop (priv->deceleration_timeline);
-          g_object_unref (priv->deceleration_timeline);
-          priv->deceleration_timeline = NULL;
-
-          clamp_adjustments (scroll, priv->clamp_duration, priv->hmoving,
-                             priv->vmoving);
+          g_clear_object (&priv->deceleration_timeline);
         }
 
       if (priv->use_captured)
@@ -1739,9 +1823,6 @@ mx_kinetic_scroll_view_init (MxKineticScrollView *self)
   MxKineticScrollViewPrivate *priv = self->priv =
     KINETIC_SCROLL_VIEW_PRIVATE (self);
 
-  priv->motion_buffer =
-    g_array_sized_new (FALSE, TRUE, sizeof (MxKineticScrollViewMotion), 3);
-  g_array_set_size (priv->motion_buffer, 3);
   priv->decel_rate = 1.1f;
   priv->button = 1;
   priv->scroll_policy = MX_SCROLL_POLICY_BOTH;
@@ -1798,8 +1879,7 @@ mx_kinetic_scroll_view_stop (MxKineticScrollView *scroll)
   if (priv->deceleration_timeline)
     {
       clutter_timeline_stop (priv->deceleration_timeline);
-      g_object_unref (priv->deceleration_timeline);
-      priv->deceleration_timeline = NULL;
+      g_clear_object (&priv->deceleration_timeline);
     }
 }
 
@@ -1848,32 +1928,6 @@ mx_kinetic_scroll_view_get_deceleration (MxKineticScrollView *scroll)
   g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), 1.01);
   return scroll->priv->decel_rate;
 }
-
-/*
-void
-mx_kinetic_scroll_view_set_buffer_size (MxKineticScrollView *scroll,
-                                        guint                size)
-{
-  MxKineticScrollViewPrivate *priv;
-
-  g_return_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll));
-  g_return_if_fail (size > 0);
-
-  priv = scroll->priv;
-  if (priv->motion_buffer->len != size)
-    {
-      g_array_set_size (priv->motion_buffer, size);
-      g_object_notify (G_OBJECT (scroll), "buffer-size");
-    }
-}
-
-guint
-mx_kinetic_scroll_view_get_buffer_size (MxKineticScrollView *scroll)
-{
-  g_return_val_if_fail (MX_IS_KINETIC_SCROLL_VIEW (scroll), 0);
-  return scroll->priv->motion_buffer->len;
-}
-*/
 
 /**
  * mx_kinetic_scroll_view_set_mouse_button:
