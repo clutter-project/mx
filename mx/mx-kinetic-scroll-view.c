@@ -1504,6 +1504,7 @@ press_event (MxKineticScrollView *scroll,
   ClutterActor *actor = (ClutterActor *) scroll;
   ClutterActor *stage = clutter_actor_get_stage (actor);
   MxKineticScrollViewMotion *motion;
+  gboolean timeline_stopped = FALSE;
 
   /* Reset automatic-scroll setting */
   priv->in_automatic_scroll = MX_AUTOMATIC_SCROLL_NONE;
@@ -1530,6 +1531,7 @@ press_event (MxKineticScrollView *scroll,
           clutter_timeline_stop (priv->deceleration_timeline);
           g_object_unref (priv->deceleration_timeline);
           priv->deceleration_timeline = NULL;
+          timeline_stopped = TRUE;
 
           clamp_adjustments (scroll, priv->clamp_duration, priv->hmoving,
                              priv->vmoving);
@@ -1585,7 +1587,7 @@ press_event (MxKineticScrollView *scroll,
         priv->in_drag = FALSE;
     }
 
-  return FALSE;
+  return timeline_stopped;
 }
 
 static gboolean
